@@ -85,12 +85,19 @@ const getCashVoucherData = (data: any, mode: CashVoucherMode) => {
     return { error: 'Invalid voucher structure' } as const;
   }
 
+  const partyInfo = entry?.coa_l4?.cust_party_infos;
+  const partyAddress =
+    String(partyInfo?.manual_address ?? '').trim() ||
+    String(entry?.coa_l4?.manual_address ?? '').trim() ||
+    String(partyInfo?.address ?? '').trim() ||
+    String(entry?.coa_l4?.address ?? '').trim();
+
   return {
     headOfAccount: entry?.coa_l4?.name ?? '',
     amount: Number(mode === 'payment' ? entry?.debit : entry?.credit) ?? 0,
     remarks: entry?.remarks ?? '',
-    address: entry?.coa_l4?.cust_party_infos?.address ?? '',
-    mobile: entry?.coa_l4?.cust_party_infos?.mobile ?? '',
+    address: partyAddress,
+    mobile: partyInfo?.mobile ?? entry?.coa_l4?.mobile ?? '',
     orderNumber: data?.order_number ?? trxMaster?.order_number ?? trxMaster?.order_no ?? '',
     preparedBy: data?.user?.name ?? '',
     approvedBy: data?.approved_user?.name ?? data?.approved_by ?? '',

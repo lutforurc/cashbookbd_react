@@ -120,7 +120,7 @@ const CustomerDashboard: React.FC = () => {
         id: currentCustomer.id,
         name: currentCustomer.name,
         phone: currentCustomer.mobile,
-        address: currentCustomer.address || '',
+        address: currentCustomer.manual_address || currentCustomer.address || '',
         // The API resolves this to an absolute URL; the portal never has to
         // work out where the file lives.
         photoUrl: customer?.me?.data?.photo_url || '',

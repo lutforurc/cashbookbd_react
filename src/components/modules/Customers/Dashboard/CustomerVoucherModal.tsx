@@ -4,6 +4,8 @@ import { FiPrinter, FiX } from 'react-icons/fi';
 import customerHttpService from '../../../services/customerHttpService';
 import { API_CUSTOMER_VOUCHER_URL } from '../../../services/apiRoutes';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import PurchaseInvoicePrint from '../../vouchers/print_items/PurchaseInvoicePrint';
+import ElectronicsSalesInvoicePrint from '../../invoices/sales/ElectronicsSalesInvoicePrint';
 
 type Props = {
   mtmId: number | string;
@@ -52,9 +54,18 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
   const [error, setError] = useState('');
 
   const printRef = useRef<HTMLDivElement>(null);
+  const invoice = data?.invoice;
+  const isInvoice = Boolean(
+    (invoice?.type === 'purchase' || invoice?.type === 'sales') && invoice?.data,
+  );
+  const invoiceTitle = invoice?.type === 'purchase' ? 'Purchase Invoice' : 'Sales Invoice';
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: data?.voucher?.vr_no ? `Voucher-${data.voucher.vr_no}` : 'Voucher',
+    documentTitle: isInvoice
+      ? `${invoiceTitle}-${data?.voucher?.vr_no || mtmId}`
+      : data?.voucher?.vr_no
+        ? `Voucher-${data.voucher.vr_no}`
+        : 'Voucher',
     removeAfterPrint: true,
   });
 
@@ -79,7 +90,9 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
       <div className="w-full max-w-3xl rounded-xl bg-white shadow-xl dark:bg-boxdark" onClick={(e) => e.stopPropagation()}>
         {/* Toolbar (not printed) */}
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-strokedark">
-          <h3 className="text-base font-semibold text-gray-800 dark:text-white">Voucher</h3>
+          <h3 className="text-base font-semibold text-gray-800 dark:text-white">
+            {isInvoice ? invoiceTitle : 'Voucher'}
+          </h3>
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
@@ -101,7 +114,25 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
           {loading && <p className="py-8 text-center text-gray-500">Loading…</p>}
           {error && <p className="py-8 text-center text-red-600">{error}</p>}
 
-          {!loading && !error && voucher && (
+          {!loading && !error && isInvoice && (
+            invoice.type === 'purchase' ? (
+              <PurchaseInvoicePrint
+                ref={printRef}
+                data={invoice.data}
+                rowsPerPage={12}
+                fontSize={12}
+              />
+            ) : (
+              <ElectronicsSalesInvoicePrint
+                ref={printRef}
+                data={invoice.data}
+                rowsPerPage={12}
+                fontSize={12}
+              />
+            )
+          )}
+
+          {!loading && !error && voucher && !isInvoice && (
             /* ===== Printable voucher (always light, like a real document) ===== */
             <div ref={printRef} className="bg-white p-6 text-[13px] text-gray-900">
               <style>{`@media print { @page { size: A4 portrait; margin: 10mm; } }`}</style>
@@ -145,7 +176,9 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
                     <td className="border border-black px-2 align-top">
                       <div className="pt-1">
                         <div>{head?.head_of_account}</div>
-                        {head?.party_address && <div>{head.party_address}</div>}
+                        {(head?.party_manual_address || head?.party_address) && (
+                          <div>{head.party_manual_address || head.party_address}</div>
+                        )}
                         {String(head?.party_mobile || '').length > 5 && <div>{head.party_mobile}</div>}
                         {head?.remarks && <div>{head.remarks}</div>}
                       </div>

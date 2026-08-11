@@ -10,6 +10,7 @@ type StatementRow = {
   mtm_id: number;
   vr_no: string;
   vr_date: string;
+  ledger_name: string;
   remarks: string;
   debit: number;
   credit: number;
@@ -187,7 +188,16 @@ const CustomerStatement: React.FC<CustomerStatementProps> = ({
                     {r.vr_no}
                   </button>
                 </td>
-                <td className="p-2">{r.remarks}</td>
+                <td className="p-2">
+                  <div className="font-medium text-gray-800 dark:text-gray-100">
+                    {r.ledger_name || 'Transaction'}
+                  </div>
+                  {r.remarks && r.remarks !== r.ledger_name && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {r.remarks}
+                    </div>
+                  )}
+                </td>
                 <td className="p-2 text-right">{r.debit ? thousandSeparator(r.debit.toFixed(2)) : '-'}</td>
                 <td className="p-2 text-right">{r.credit ? thousandSeparator(r.credit.toFixed(2)) : '-'}</td>
                 <td className="p-2 text-right">{thousandSeparator(r.balance.toFixed(2))}</td>
