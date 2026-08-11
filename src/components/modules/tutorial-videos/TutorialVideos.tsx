@@ -593,6 +593,7 @@ const TutorialVideos = () => {
         title="Remove screen"
         loading={removing}
         confirmLabel="Remove"
+        className="bg-red-600 hover:bg-red-700 min-w-[128px]"
         onCancel={() => setRemoveRow(null)}
         onConfirm={handleRemove}
         message={
