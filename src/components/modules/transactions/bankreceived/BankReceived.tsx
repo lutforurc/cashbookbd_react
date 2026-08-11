@@ -1,5 +1,8 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
+import TutorialVideoLink, {
+  CASH_BANK_ENTRY_VIDEO,
+} from '../../../utils/others/TutorialVideoLink';
 import {
   FiEdit2,
   FiHome,
@@ -490,7 +493,10 @@ const BankReceived = () => {
 
   return (
     <>
-      <HelmetTitle title="Bank Received" />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title="Bank Received" />
+        <TutorialVideoLink href={CASH_BANK_ENTRY_VIDEO} label="bank received" />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         {isLoading && <Loader />}
         <div className="col-span-1">

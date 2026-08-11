@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import InputElement from '../../../utils/fields/InputElement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
+import TutorialVideoLink, {
+  CASH_BANK_ENTRY_VIDEO,
+} from '../../../utils/others/TutorialVideoLink';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import Link from '../../../utils/others/Link';
@@ -365,7 +368,10 @@ const GeneralCashReceived = () => {
 
   return (
     <>
-      <HelmetTitle title="Cash Received" />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title="Cash Received" />
+        <TutorialVideoLink href={CASH_BANK_ENTRY_VIDEO} label="cash received" />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">
