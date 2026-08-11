@@ -4,7 +4,6 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { generateUserTemporaryPassword, getUser, toggleUserStatus } from './userSlice';
 import Loader from '../../../common/Loader';
-import { FaYoutube } from 'react-icons/fa';
 import { FiCheckSquare, FiEdit2, FiKey, FiPlus } from 'react-icons/fi';
 import Pagination from '../../utils/utils-functions/Pagination';
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -18,9 +17,7 @@ import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 
 const UserList = () => {
   const userList = useSelector((state) => state.users);
-  const settings = useSelector((state: any) => state.settings);
-  const showTutorial = String(settings?.data?.branch?.need_demo_tutorial) === '1';
-  const subscription = useSelector((state: any) => state.subscription);
+  const settings = useSelector((state: any) => state.settings);  const subscription = useSelector((state: any) => state.subscription);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userPermissions = settings?.data?.permissions || [];
@@ -335,22 +332,7 @@ const UserList = () => {
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title={'User List'} />
-        {/* Offered only where the branch asked for walkthroughs. A branch whose
-            staff know their way around turns "Need Demo Tutorial?" off in its
-            setup, and this goes with it. */}
-        {showTutorial ? (
-          <a
-            href="https://www.youtube.com/watch?v=ZAlHW1F-9vw&list=PLZcNDKJT-3gc"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Watch the user list video"
-            title="Watch the user list video"
-            className="inline-flex h-8 w-8 items-center justify-center text-red-600 transition dark:text-red-400"
-          >
-            <FaYoutube className="text-base" />
-          </a>
-        ) : null}
+        <HelmetTitle title={'User List'} screen="user-list" />
       </div>
       <div className="flex justify-between mb-1">
         <div className="flex gap-2">

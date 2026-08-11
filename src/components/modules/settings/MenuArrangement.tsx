@@ -10,7 +10,6 @@ import {
   FiRotateCcw,
   FiTrash2,
 } from 'react-icons/fi';
-import { FaYoutube } from 'react-icons/fa';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { SIDEBAR_MENUS, SIDEBAR_SUBMENUS } from '../../Sidebar';
@@ -40,9 +39,7 @@ import {
 type DragState = { id: string; over: string | null } | null;
 
 const MenuArrangement = () => {
-  const settings = useSelector((state: any) => state.settings);
-  const showTutorial = String(settings?.data?.branch?.need_demo_tutorial) === '1';
-
+  const settings = useSelector((state: any) => state.settings);
   const {
     ordered: orderedMenus,
     move: moveMenu,
@@ -100,22 +97,7 @@ const MenuArrangement = () => {
   return (
     <div className="p-2">
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Arrange Menu" />
-        {/* Offered only where the branch asked for walkthroughs. A branch whose
-            staff know their way around turns "Need Demo Tutorial?" off in its
-            setup, and this goes with it. */}
-        {showTutorial ? (
-          <a
-            href="https://www.youtube.com/watch?v=5pECj1Ze7TI"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Watch the menu arrangement video"
-            title="Watch the menu arrangement video"
-            className="inline-flex h-8 w-8 items-center justify-center text-red-600 transition dark:text-red-400"
-          >
-            <FaYoutube className="text-base" />
-          </a>
-        ) : null}
+        <HelmetTitle title="Arrange Menu" screen="menu-arrangement" />
       </div>
 
       {/* The controls sit in the panel they act on, not in a banner above both.

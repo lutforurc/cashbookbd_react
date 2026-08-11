@@ -524,7 +524,9 @@ const HeadOfficeCashReceived = () => {
 
   return (
     <>
-      <HelmetTitle title="Cash Received" />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title="Cash Received" screen="cash-received.head-office" />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">

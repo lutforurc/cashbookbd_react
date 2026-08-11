@@ -466,7 +466,9 @@ const TradingSalesImport = () => {
 
   return (
     <>
-      <HelmetTitle title="Trading Sales Invoice Import" />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title="Trading Sales Invoice Import" screen="sales-import.trading" />
+      </div>
       {sales.isLoading ? <div className="mb-2 text-sm dark:text-white">Saving...</div> : null}
       <div className="grid grid-cols-1 gap-4">
         {!preview && (

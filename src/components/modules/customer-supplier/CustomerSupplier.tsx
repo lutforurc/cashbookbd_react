@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
-import { FaYoutube } from "react-icons/fa";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import SearchInput from "../../utils/fields/SearchInput";
@@ -563,21 +562,7 @@ const CustomerSupplier = () => {
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="List Customers" />
-        {/* Shown only where the branch asked for walkthroughs, the same as
-            every other video link. */}
-        {String(settings?.data?.branch?.need_demo_tutorial) === '1' ? (
-          <a
-            href="https://www.youtube.com/watch?v=YW7R8KeWC2Y&feature=youtu.be"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Watch customer list video"
-            title="Watch customer list video"
-            className="inline-flex h-8 w-8 items-center justify-center text-red-600 transition dark:text-red-400"
-          >
-            <FaYoutube className="text-base" />
-          </a>
-        ) : null}
+        <HelmetTitle title="List Customers" screen="customer-supplier" />
       </div>
 
       {/* Top Search Panel */}

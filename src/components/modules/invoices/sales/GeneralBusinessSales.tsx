@@ -567,7 +567,9 @@ const GeneralBusinessSales = () => {
 
   return (
     <>
-      <HelmetTitle title="General Sales Invoice" />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title="General Sales Invoice" screen="sales.general" />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         {sales.isLoading ? <Loader /> : null}
         <div className="self-start md:self-auto">

@@ -10,7 +10,6 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import { useNavigate } from 'react-router-dom';
 import ActionButtons from '../../utils/fields/ActionButton';
-import { FaYoutube } from 'react-icons/fa';
 import { FiPlus } from 'react-icons/fi';
 import { hasPermission } from '../../utils/permissionChecker';
 
@@ -138,22 +137,7 @@ const BranchList = () => {
   return (
     <div className=''>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title={'Branch List'} />
-        {/* Shown only where the branch asked for walkthroughs, the same as every
-            other video link. This one used to show regardless, which is what the
-            "Need Demo Tutorial?" switch was supposed to decide. */}
-        {String(settings?.data?.branch?.need_demo_tutorial) === '1' ? (
-          <a
-            href="https://www.youtube.com/watch?v=WMebDncBOrY&list=PLZcNDKJT-3gc"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Watch registration video"
-            title="Watch registration video"
-            className="inline-flex h-8 w-8 items-center justify-center text-red-600 transition  dark:text-red-400"
-          >
-            <FaYoutube className="text-base" />
-          </a>
-        ) : null}
+        <HelmetTitle title={'Branch List'} screen="branch-list" />
       </div>
       
       <div className="flex justify-between mb-1">

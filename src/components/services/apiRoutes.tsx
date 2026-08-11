@@ -203,6 +203,9 @@ export const API_ADMIN_NOTIFICATIONS_URL = `${API_BASE_URL}/admin/notifications`
 // Inventory System lookup (platform admin CRUD + open ddl for branch settings)
 export const API_ADMIN_INVENTORY_SYSTEMS_URL = `${API_BASE_URL}/admin/inventory-systems`;
 export const API_INVENTORY_SYSTEMS_DDL_URL = `${API_BASE_URL}/inventory-systems/ddl`;
+// Editing the walkthrough links. Reading them needs no endpoint -- the settings
+// payload already carries the screen_key -> url map every screen looks up.
+export const API_ADMIN_TUTORIAL_VIDEOS_URL = `${API_BASE_URL}/admin/tutorial-videos`;
 
 // Highlight Rules (platform admin CRUD + open active list the reports apply)
 export const API_ADMIN_HIGHLIGHT_RULES_URL = `${API_BASE_URL}/admin/highlight-rules`;

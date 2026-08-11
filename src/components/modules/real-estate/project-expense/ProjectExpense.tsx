@@ -492,7 +492,9 @@ const ProjectExpense = () => {
 
   return (
     <>
-      <HelmetTitle title="Cash Payment" />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title="Cash Payment" screen="cash-payment.project-expense" />
+      </div>
 
 
 

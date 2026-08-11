@@ -18,6 +18,7 @@ const ROUTES = {
   admin_in_app_message_create: '/admin/in-app-messages/create',
   admin_in_app_message_edit: '/admin/in-app-messages/edit/:id',
   inventory_systems: '/admin/inventory-systems',
+  tutorial_videos: '/admin/tutorial-videos',
   highlight_rules: '/admin/highlight-rules',
   reseller_dashboard: '/reseller/dashboard',
 

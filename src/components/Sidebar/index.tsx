@@ -137,6 +137,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'admin_notifications', title: "Admin Notifications" },
     { id: 'admin_in_app_messages', title: "In-App Messages" },
     { id: 'inventory_systems', title: "Inventory Systems" },
+    { id: 'tutorial_videos', title: "Tutorial Videos" },
     { id: 'highlight_rules', title: "Highlight Rules" },
     { id: 'roles', title: "Roles" },
     { id: 'add_role', title: "Add Roles" },
@@ -2569,6 +2570,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   }
                                 >
                                   Inventory Systems
+                                </NavLink>
+                              </li>
+                            )}
+                          {(hasPermission(permissions, 'reseller.view') ||
+                            hasPermission(permissions, 'subscription.view') ||
+                            hasPermission(permissions, 'all.user.view')) && (
+                              <li style={subSlot('admin', 'tutorial_videos')}>
+                                <NavLink
+                                  to={routes.tutorial_videos}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Tutorial Videos
                                 </NavLink>
                               </li>
                             )}

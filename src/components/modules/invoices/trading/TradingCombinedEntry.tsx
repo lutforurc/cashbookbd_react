@@ -889,7 +889,9 @@ const TradingCombinedEntry = () => {
 
   return (
     <>
-      <HelmetTitle title={editingCombinedNumber ? 'Edit Combined Invoice' : 'Combined Invoice'} />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title={editingCombinedNumber ? 'Edit Combined Invoice' : 'Combined Invoice'} screen="combined-entry.trading" />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         <div className="self-start md:self-auto">
           <div className="grid grid-cols-1 gap-y-1">

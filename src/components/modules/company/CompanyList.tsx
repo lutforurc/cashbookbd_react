@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FaYoutube } from 'react-icons/fa';
 import { FiEdit2, FiSearch } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -16,9 +15,7 @@ import { getCompanies } from './companySlice';
 const CompanyList = () => {
   const company = useSelector((state: any) => state.company);
   const environment = useSelector((state: any) => state.settings?.data?.env);
-  const settings = useSelector((state: any) => state.settings);
-  const showTutorial = String(settings?.data?.branch?.need_demo_tutorial) === '1';
-  const dispatch = useDispatch<any>();
+  const settings = useSelector((state: any) => state.settings);  const dispatch = useDispatch<any>();
   const navigate = useNavigate();
 
   const [search, setSearchValue] = useState('');
@@ -165,22 +162,7 @@ const CompanyList = () => {
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Company List" />
-        {/* Offered only where the branch asked for walkthroughs. A branch whose
-            staff know their way around turns "Need Demo Tutorial?" off in its
-            setup, and this goes with it. */}
-        {showTutorial ? (
-          <a
-            href="https://www.youtube.com/watch?v=ZAlHW1F-9vw&list=PLZcNDKJT-3gc"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Watch the company list video"
-            title="Watch the company list video"
-            className="inline-flex h-8 w-8 items-center justify-center text-red-600 transition dark:text-red-400"
-          >
-            <FaYoutube className="text-base" />
-          </a>
-        ) : null}
+        <HelmetTitle title="Company List" screen="company-list" />
       </div>
 
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">

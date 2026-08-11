@@ -466,7 +466,9 @@ const TradingPurchaseImport = () => {
 
   return (
     <>
-      <HelmetTitle title="Trading Purchase Invoice Import" />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title="Trading Purchase Invoice Import" screen="purchase-import.trading" />
+      </div>
       {purchase.isLoading ? <div className="mb-2 text-sm dark:text-white">Saving...</div> : null}
       <div className="grid grid-cols-1 gap-4">
         {!preview && (

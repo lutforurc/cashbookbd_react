@@ -474,7 +474,9 @@ function ConstructionLabourInvoice(): JSX.Element {
   ------------------------- */
   return (
     <>
-      <HelmetTitle title="Labour Invoice" />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title="Labour Invoice" screen="labour.construction" />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         {labourInvoice.isLoading ? <Loader /> : null}

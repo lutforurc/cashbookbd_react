@@ -1,8 +1,5 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import TutorialVideoLink, {
-  CASH_BANK_ENTRY_VIDEO,
-} from '../../../utils/others/TutorialVideoLink';
 import { FiEdit2, FiHome, FiPlus, FiSave, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
@@ -482,8 +479,7 @@ const BankPayment = () => {
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Bank Payment" />
-        <TutorialVideoLink href={CASH_BANK_ENTRY_VIDEO} label="bank payment" />
+        <HelmetTitle title="Bank Payment" screen="bank-payment" />
       </div>
       {/* <span className="text-2xl font-bold text-red-500 text-center block">(Not Ready)</span> */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">

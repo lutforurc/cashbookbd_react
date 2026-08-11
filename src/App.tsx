@@ -204,6 +204,7 @@ import AdminNotifications from './components/modules/admin-notifications/AdminNo
 import AdminInAppMessages from './components/modules/in-app-messages/AdminInAppMessages';
 import AdminInAppMessageForm from './components/modules/in-app-messages/AdminInAppMessageForm';
 import InventorySystem from './components/modules/inventory-system/InventorySystem';
+import TutorialVideos from './components/modules/tutorial-videos/TutorialVideos';
 import HighlightRules from './components/modules/highlight-rules/HighlightRules';
 import SubscriptionPlanList from './components/modules/subscription/SubscriptionPlanList';
 import SubscriptionPlanForm from './components/modules/subscription/SubscriptionPlanForm';
@@ -308,6 +309,7 @@ function App() {
                 <Route path={routes.admin_in_app_message_create} element={<AdminInAppMessageForm />} />
                 <Route path={routes.admin_in_app_message_edit} element={<AdminInAppMessageForm />} />
                 <Route path={routes.inventory_systems} element={<InventorySystem />} />
+                <Route path={routes.tutorial_videos} element={<TutorialVideos />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['highlight.rules']} loading={permissionsLoading} />}>
                 <Route path={routes.highlight_rules} element={<HighlightRules />} />
