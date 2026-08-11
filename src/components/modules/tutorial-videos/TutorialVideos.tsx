@@ -25,7 +25,13 @@ import {
   updateTutorialVideo,
 } from './tutorialVideoSlice';
 
-const emptyForm = { screen_key: '', title: '', group_name: '', url: '' };
+const emptyForm = {
+  screen_key: '',
+  title: '',
+  group_name: '',
+  web_url: '',
+  mobile_url: '',
+};
 
 const labelClass =
   'mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300';
@@ -63,15 +69,20 @@ const humaniseGroup = (group: string) =>
     .join(' ');
 
 /**
- * Editing the walkthrough link each screen offers.
+ * Editing the walkthrough links each screen offers.
  *
- * Rows are not created or deleted here. They describe screens that exist, so
- * they arrive on their own: opening a screen the list has never seen registers
- * it, and it is waiting here the next time this page is loaded. The job here is
+ * Two per screen, one per platform: the web app and the Android app walk
+ * through the same job differently enough that a single recording could only
+ * ever suit one of them. Either box may be left empty, and a screen with a web
+ * link and no mobile one offers the video on the web and nothing in the app.
+ *
+ * Most rows are not created here. They describe screens that exist, so they
+ * arrive on their own: opening a screen the list has never seen registers it,
+ * and it is waiting here the next time this page is loaded. The job here is
  * filling in and retiring URLs.
  *
- * An empty box is how a video is retired -- the settings payload drops rows
- * without a URL, so the screen simply stops offering the link.
+ * An empty box is how a video is retired -- the settings payload drops the row
+ * from that platform's map, so the screen simply stops offering the link there.
  */
 const TutorialVideos = () => {
   const [rows, setRows] = useState<TutorialVideo[]>([]);
@@ -133,8 +144,9 @@ const TutorialVideos = () => {
     [rows],
   );
 
-  const valueOf = (row: TutorialVideo) =>
-    edits[row.screen_key]?.url ?? row.url ?? '';
+  /** What a row's box holds right now: the edit if it has one, else the row. */
+  const valueOf = (row: TutorialVideo, field: 'web_url' | 'mobile_url') =>
+    edits[row.screen_key]?.[field] ?? row[field] ?? '';
 
   const statusOf = (row: TutorialVideo) =>
     Number(edits[row.screen_key]?.status ?? row.status);
@@ -176,9 +188,10 @@ const TutorialVideos = () => {
       screen_key: row.screen_key,
       title: row.title,
       group_name: row.group_name || '',
-      // Whatever is in the row's box right now, so opening the panel does not
+      // Whatever is in the row's boxes right now, so opening the panel does not
       // quietly undo a URL typed but not yet saved.
-      url: valueOf(row),
+      web_url: valueOf(row, 'web_url'),
+      mobile_url: valueOf(row, 'mobile_url'),
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -194,7 +207,8 @@ const TutorialVideos = () => {
       screen_key: form.screen_key.trim(),
       title: form.title.trim(),
       group_name: form.group_name.trim() || undefined,
-      url: form.url.trim() || null,
+      web_url: form.web_url.trim() || null,
+      mobile_url: form.mobile_url.trim() || null,
     };
 
     setAdding(true);
@@ -249,7 +263,8 @@ const TutorialVideos = () => {
       .filter((row) => edits[row.screen_key])
       .map((row) => ({
         id: row.id,
-        url: valueOf(row).trim() || null,
+        web_url: valueOf(row, 'web_url').trim() || null,
+        mobile_url: valueOf(row, 'mobile_url').trim() || null,
         status: statusOf(row),
       }));
 
@@ -277,9 +292,12 @@ const TutorialVideos = () => {
       </div>
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        {/* Counted per platform, because that is the question being asked --
+            "how much is left to record" has a different answer for each. */}
         <span className="text-sm font-semibold text-slate-500 dark:text-slate-300">
-          {rows.filter((row) => row.url).length} of {rows.length} screens have a
-          video
+          {rows.filter((row) => row.web_url).length} web and{' '}
+          {rows.filter((row) => row.mobile_url).length} mobile videos across{' '}
+          {rows.length} screens
         </span>
 
         <div className="grid grid-cols-3 gap-x-1 gap-y-1">
@@ -327,7 +345,7 @@ const TutorialVideos = () => {
               : 'Only needed for a screen that never registers itself. Open the screen first and check this list — if it is already here, there is nothing to add.'}
           </p>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             <div>
               <label className={labelClass}>Screen key</label>
               <input
@@ -380,16 +398,36 @@ const TutorialVideos = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Video URL</label>
+              <label className={labelClass}>Web URL</label>
               <input
                 type="url"
-                value={form.url}
+                value={form.web_url}
                 placeholder="https://www.youtube.com/watch?v=..."
-                onChange={(e) => setForm({ ...form, url: e.target.value })}
+                onChange={(e) => setForm({ ...form, web_url: e.target.value })}
                 className={fieldClass}
               />
               <p className="mt-1 text-[11px] text-slate-400">
-                Optional. Can be filled in later from the list.
+                Shown in the browser. Optional; can be filled in later from the
+                list.
+              </p>
+            </div>
+
+            <div>
+              <label className={labelClass}>Mobile URL</label>
+              <input
+                type="url"
+                value={form.mobile_url}
+                placeholder="https://www.youtube.com/watch?v=..."
+                onChange={(e) =>
+                  setForm({ ...form, mobile_url: e.target.value })
+                }
+                className={fieldClass}
+              />
+              {/* Worth saying, because filling only the web box and expecting
+                  the app to follow is the mistake this column exists to stop. */}
+              <p className="mt-1 text-[11px] text-slate-400">
+                Shown in the Android app. Left empty, the app offers no video
+                for this screen.
               </p>
             </div>
           </div>
@@ -431,12 +469,12 @@ const TutorialVideos = () => {
       {!loading && rows.length ? (
         <div className="overflow-hidden border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-gray-800">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[62rem] table-fixed text-sm">
+            <table className="w-full min-w-[72rem] table-fixed text-sm">
               <colgroup>
                 <col className="w-14" />
-                <col className="w-80" />
+                <col className="w-72" />
                 <col />
-                <col className="w-24" />
+                <col />
                 <col className="w-20" />
                 <col className="w-20" />
                 <col className="w-20" />
@@ -446,9 +484,9 @@ const TutorialVideos = () => {
                 <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-400 dark:border-slate-700">
                   <th className="px-4 py-2 text-right font-semibold">Sl.</th>
                   <th className="px-4 py-2 font-semibold">Screen</th>
-                  <th className="px-4 py-2 font-semibold">Video URL</th>
+                  <th className="px-4 py-2 font-semibold">Web URL</th>
+                  <th className="px-4 py-2 font-semibold">Mobile URL</th>
                   <th className="px-4 py-2 text-center font-semibold">Show</th>
-                  <th className="px-4 py-2 text-center font-semibold">Open</th>
                   <th className="px-4 py-2 text-center font-semibold">Edit</th>
                   <th className="px-4 py-2 text-center font-semibold">Remove</th>
                 </tr>
@@ -465,14 +503,17 @@ const TutorialVideos = () => {
                         <div className="flex items-center justify-between gap-3">
                           <span>{humaniseGroup(group)}</span>
                           <span className="text-xs font-semibold text-slate-400">
-                            {items.filter((item) => item.url).length} / {items.length}
+                            web {items.filter((item) => item.web_url).length} /{' '}
+                            {items.length}
+                            <span className="px-1.5 text-slate-300">&middot;</span>
+                            mobile {items.filter((item) => item.mobile_url).length}{' '}
+                            / {items.length}
                           </span>
                         </div>
                       </td>
                     </tr>
 
                     {items.map((row, index) => {
-                    const url = valueOf(row);
                     const shown = statusOf(row) === 1;
 
                     return (
@@ -505,15 +546,45 @@ const TutorialVideos = () => {
                           </div>
                         </td>
 
-                        <td className="px-4 py-2">
-                          <input
-                            type="url"
-                            value={url}
-                            placeholder="https://www.youtube.com/watch?v=..."
-                            onChange={(e) => setEdit(row, { url: e.target.value })}
-                            className="w-full rounded border border-slate-300 bg-transparent px-3 py-1.5 text-sm outline-none transition focus:border-primary dark:border-slate-600 dark:text-white"
-                          />
-                        </td>
+                        {/* One box per platform, each with its own way of
+                            being watched -- an operator checking a link should
+                            not have to work out which of two it belongs to. */}
+                        {(['web_url', 'mobile_url'] as const).map((field) => {
+                          const url = valueOf(row, field);
+                          const platform = field === 'web_url' ? 'web' : 'mobile';
+
+                          return (
+                            <td className="px-4 py-2" key={field}>
+                              <div className="flex items-center gap-1">
+                                <input
+                                  type="url"
+                                  value={url}
+                                  placeholder="https://www.youtube.com/watch?v=..."
+                                  onChange={(e) =>
+                                    setEdit(row, { [field]: e.target.value })
+                                  }
+                                  className="w-full rounded border border-slate-300 bg-transparent px-3 py-1.5 text-sm outline-none transition focus:border-primary dark:border-slate-600 dark:text-white"
+                                />
+                                {url ? (
+                                  <a
+                                    href={url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    aria-label={`Open the ${platform} video for ${row.title}`}
+                                    title={`Open the ${platform} video`}
+                                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-red-600 transition dark:text-red-400"
+                                  >
+                                    <FaYoutube className="text-base" />
+                                  </a>
+                                ) : (
+                                  // A placeholder of the same width, so the
+                                  // boxes down the column keep one edge.
+                                  <span className="inline-block h-8 w-8 shrink-0" />
+                                )}
+                              </div>
+                            </td>
+                          );
+                        })}
 
                         <td className="px-4 py-2 text-center">
                           <button
@@ -529,23 +600,6 @@ const TutorialVideos = () => {
                           >
                             {shown ? <FiEye /> : <FiEyeOff />}
                           </button>
-                        </td>
-
-                        <td className="px-4 py-2 text-center">
-                          {url ? (
-                            <a
-                              href={url}
-                              target="_blank"
-                              rel="noreferrer"
-                              aria-label={`Open the ${row.title} video`}
-                              title={`Open the ${row.title} video`}
-                              className="inline-flex h-8 w-8 items-center justify-center text-red-600 transition dark:text-red-400"
-                            >
-                              <FaYoutube className="text-base" />
-                            </a>
-                          ) : (
-                            <span className="text-xs text-slate-400">&mdash;</span>
-                          )}
                         </td>
 
                         <td className="px-4 py-2 text-center">
@@ -600,14 +654,15 @@ const TutorialVideos = () => {
           <div className="text-sm">
             <p>
               Remove <span className="font-semibold">{removeRow?.title}</span>{' '}
-              and its video link from the list?
+              and both of its video links from the list?
             </p>
             {/* Worth saying: a live screen simply comes back, so this is not
                 the way to stop one offering a video. Clearing its URL is. */}
             <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
               If the screen still exists in the app it will register itself again
               the next time you open it. To stop a screen offering a video,
-              clear its URL instead.
+              clear its URL instead — one box to silence one platform, the Show
+              switch to silence both.
             </p>
           </div>
         }

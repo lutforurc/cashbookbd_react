@@ -15,15 +15,24 @@ export type TutorialVideo = {
   route_path: string | null;
   /** 1 when the row registered itself, 0 when it was seeded. */
   is_auto: number;
-  url: string | null;
+  /**
+   * One recording per platform, and either may be empty.
+   *
+   * The web app and the Android app walk through the same job differently, so a
+   * single link could only ever be right for one of them. A screen with a web
+   * link and no mobile one offers the video on the web and nothing in the app.
+   */
+  web_url: string | null;
+  mobile_url: string | null;
   sort_order: number;
   status: number;
 };
 
-/** Only the two columns the operator owns; the rest describe the screen. */
+/** Only the columns the operator owns; the rest describe the screen. */
 export type TutorialVideoEdit = {
   id: number;
-  url: string | null;
+  web_url: string | null;
+  mobile_url: string | null;
   status: number;
 };
 
@@ -49,7 +58,8 @@ export type NewTutorialVideo = {
   screen_key: string;
   title: string;
   group_name?: string;
-  url?: string | null;
+  web_url?: string | null;
+  mobile_url?: string | null;
 };
 
 /**
