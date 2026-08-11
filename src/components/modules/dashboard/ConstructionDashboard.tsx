@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { dispatchRemittance, getDashboard } from './dashboardSlice';
+import {
+  dispatchRemittance,
+  getDashboard,
+  getDashboardSummary,
+} from './dashboardSlice';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import TransactionChart from './TransactionChart';
@@ -29,17 +33,35 @@ import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { formatDate } from '../../utils/utils-functions/formatDate';
 import { FaRightToBracket } from 'react-icons/fa6';
 import CompareSingleItem from './CompareSingleItem';
+import KpiRow, { CONSTRUCTION_TILES } from './KpiRow';
+import Sparkline from './Sparkline';
 import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
 
 const CONSTRUCTION_DASHBOARD_WIDGETS: DashboardWidget[] = [
+  { id: 'kpi-row', title: 'Today at a Glance' },
   { id: 'summary', title: 'Balance Summary' },
   { id: 'top-purchase', title: 'Top Purchase' },
   { id: 'receive-details', title: 'Receive Details' },
   { id: 'charts', title: 'Charts' },
 ];
+
+const DASHBOARD_COLUMNS =
+  'grid grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))]';
+
+/**
+ * The same track as DASHBOARD_COLUMNS but auto-fill rather than auto-fit.
+ *
+ * The band carries fewer tiles than the grid below carries cards, and auto-fit
+ * collapses the tracks it has nothing to put in — two tiles would then stretch
+ * across the whole width and tower over the cards underneath. auto-fill keeps
+ * the empty tracks, so a tile stays the width of a card and the spare space
+ * falls off the right-hand end.
+ */
+const KPI_COLUMNS =
+  'grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))]';
 
 const ConstructionDashboard = () => {
   const dashboard = useSelector((state) => state.dashboard);
@@ -50,6 +72,8 @@ const ConstructionDashboard = () => {
   const protectedBranches = useSelector(
     (s: any) => s.branchDdl?.protectedData?.data || [],
   );
+  const summary = useSelector((s: any) => s.dashboard?.summary);
+  const summaryData = summary?.data;
   const [displayMonth, setDisplayMonth] = useState<number | ''>('');
   const [branchId, setBranchId] = useState<number | null>(null);
   const [loadingItems, setLoadingItems] = useState<{ [key: string]: boolean }>(
@@ -66,6 +90,7 @@ const ConstructionDashboard = () => {
     // dispatch(getBranchChart());
     dispatch(getHeadOfficeReceivedChart());
     dispatch(getDdlProtectedBranch());
+    dispatch(getDashboardSummary());
   }, []);
 
   const groupedReceiveDetails = useMemo(() => {
@@ -267,9 +292,25 @@ const ConstructionDashboard = () => {
           onReset={reset}
         />
       </div>
+      {/* Above the grid rather than as one of its cards: it is a summary band,
+          and a widget order saved before it existed would otherwise sink it to
+          the bottom of the page for existing users. */}
+      {isWidgetVisible('kpi-row') ? (
+        <div className="mt-4">
+          <KpiRow
+            kpis={summaryData?.kpis}
+            isLoading={summary?.isLoading}
+            trxDate={summaryData?.trxDate}
+            gapClass={dashboardGapClass}
+            tiles={CONSTRUCTION_TILES}
+            columnsClass={KPI_COLUMNS}
+          />
+        </div>
+      ) : null}
+
       <div
         aria-busy={dashboard.isLoading}
-        className={`mt-4 grid grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] items-start ${dashboardGapClass}`}
+        className={`mt-4 ${DASHBOARD_COLUMNS} items-start ${dashboardGapClass}`}
       >
         {dashboard.isLoading == false ? (
           <>
@@ -344,6 +385,15 @@ const ConstructionDashboard = () => {
                         : 0}
                     </p>
                   </div>
+                  {/* h-12 rather than the h-16 the trading card uses: this card
+                      is pinned to a fixed height, and three taller rows would
+                      push its footer past the bottom edge. */}
+                  <Sparkline
+                    values={summaryData?.kpis?.received?.spark ?? []}
+                    stroke="#10b981"
+                    className="h-12 min-w-0 flex-1"
+                    ariaLabel="Received over the last 14 days"
+                  />
                 </div>
 
                 <div className={`flex items-center gap-3 ${summaryRowClass}`}>
@@ -360,6 +410,12 @@ const ConstructionDashboard = () => {
                         : 0}
                     </p>
                   </div>
+                  <Sparkline
+                    values={summaryData?.kpis?.payment?.spark ?? []}
+                    stroke="#f43f5e"
+                    className="h-12 min-w-0 flex-1"
+                    ariaLabel="Payment over the last 14 days"
+                  />
                 </div>
 
                 <div className={`flex items-center gap-3 ${summaryRowClass}`}>
@@ -380,6 +436,12 @@ const ConstructionDashboard = () => {
                             0))}
                     </p>
                   </div>
+                  <Sparkline
+                    values={summaryData?.kpis?.balance?.spark ?? []}
+                    stroke="#6366f1"
+                    className="h-12 min-w-0 flex-1"
+                    ariaLabel="Balance over the last 14 days"
+                  />
                 </div>
               </div>
 

@@ -9,15 +9,32 @@ interface KpiValue {
   spark: number[];
 }
 
+export interface KpiTileSpec {
+  key: string;
+  label: string;
+  colour: string;
+  money?: boolean;
+}
+
 interface KpiRowProps {
   kpis?: Record<string, KpiValue>;
   isLoading?: boolean;
   trxDate?: string;
   /**
    * Gutter class from the dashboard's density setting. It has to be the same
-   * value the widget grid below uses — see GRID_COLUMNS.
+   * value the widget grid below uses — see DEFAULT_COLUMNS.
    */
   gapClass?: string;
+  /**
+   * Which figures to show. A branch only earns a tile for something it actually
+   * moves — see DEFAULT_TILES and CONSTRUCTION_TILES.
+   */
+  tiles?: KpiTileSpec[];
+  /**
+   * Column class of the widget grid this band sits above. The two dashboards
+   * lay their cards out differently, so the band follows whichever it is on.
+   */
+  columnsClass?: string;
 }
 
 /**
@@ -25,9 +42,10 @@ interface KpiRowProps {
  *
  * The two grids sit directly on top of each other, so any difference in column
  * count or gutter leaves the tiles straddling the card edges below them. They
- * have to be changed together.
+ * have to be changed together. ConstructionDashboard uses an auto-fit track
+ * instead and passes its own class.
  */
-const GRID_COLUMNS = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+const DEFAULT_COLUMNS = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
 /**
  * Fixed order, fixed hue per tile.
@@ -37,18 +55,28 @@ const GRID_COLUMNS = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-col
  * genuine warnings (ageing debt, negative stock), and paying a supplier is not
  * a bad outcome that deserves a red number.
  */
-const TILES: Array<{
-  key: string;
-  label: string;
-  colour: string;
-  money?: boolean;
-}> = [
+const DEFAULT_TILES: KpiTileSpec[] = [
   // Received, payment and balance are not here on purpose: the branch summary
   // card already carries all three, now with their own sparklines. Repeating
   // them would be the same number twice on one screen.
   { key: 'sales', label: 'Today Sales', colour: '#14b8a6', money: true },
   { key: 'purchase', label: 'Today Purchase', colour: '#f59e0b', money: true },
   { key: 'newCustomers', label: 'New Customers', colour: '#06b6d4' },
+  { key: 'vouchers', label: 'Today Vouchers', colour: '#64748b' },
+];
+
+/**
+ * A construction site sells nothing and registers no customers of its own — it
+ * draws money from head office, buys materials and pays them out — so the sales
+ * and customer tiles would print a permanent zero there.
+ *
+ * Received and payment are left out for the same reason they are absent from
+ * the default set: the summary card below already carries both, each with its
+ * own sparkline, and repeating them would be the same number twice on one
+ * screen.
+ */
+export const CONSTRUCTION_TILES: KpiTileSpec[] = [
+  { key: 'purchase', label: 'Today Purchase', colour: '#f59e0b', money: true },
   { key: 'vouchers', label: 'Today Vouchers', colour: '#64748b' },
 ];
 
@@ -137,11 +165,13 @@ const KpiRow: React.FC<KpiRowProps> = ({
   isLoading,
   trxDate,
   gapClass = 'gap-4',
+  tiles = DEFAULT_TILES,
+  columnsClass = DEFAULT_COLUMNS,
 }) => {
   if (isLoading && !kpis) {
     return (
-      <div className={`${GRID_COLUMNS} ${gapClass}`}>
-        {TILES.map((tile) => (
+      <div className={`${columnsClass} ${gapClass}`}>
+        {tiles.map((tile) => (
           <div
             key={tile.key}
             className="h-[86px] animate-pulse bg-slate-100 dark:bg-gray-800"
@@ -169,8 +199,8 @@ const KpiRow: React.FC<KpiRowProps> = ({
         </span>
       </div>
 
-      <div className={`${GRID_COLUMNS} ${gapClass}`}>
-        {TILES.map((tile) => (
+      <div className={`${columnsClass} ${gapClass}`}>
+        {tiles.map((tile) => (
           <KpiTile
             key={tile.key}
             label={tile.label}
