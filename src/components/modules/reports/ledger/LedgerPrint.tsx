@@ -108,10 +108,10 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
     const partyInfo = coal4?.cust_party_infos || {};
     const ledgerCode = partyInfo?.idfr_code ?? coal4?.idfr_code;
     const ledgerAddress =
-      coal4?.address ||
-      partyInfo?.address ||
-      coal4?.manual_address ||
       partyInfo?.manual_address ||
+      coal4?.manual_address ||
+      partyInfo?.address ||
+      coal4?.address ||
       '';
     const ledgerMobile = partyInfo?.mobile || coal4?.mobile || '';
 
