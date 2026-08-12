@@ -409,10 +409,28 @@ const AddOrder = (user: any) => {
 
     const handleOrderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData((prevState) => ({
-            ...prevState,
-            [name]: value,
-        }));
+
+        // Auto-calculate contract_order_qty when total_order or order_rate changes
+        if (name === 'total_order' || name === 'order_rate') {
+            const totalQty = Number(name === 'total_order' ? value : formData.total_order) || 0;
+            const rate = Number(name === 'order_rate' ? value : formData.order_rate) || 0;
+            const calculatedAmount = totalQty * rate;
+            const formattedAmount = calculatedAmount.toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+
+            setFormData((prevState) => ({
+                ...prevState,
+                [name]: value,
+                contract_order_qty: formattedAmount,
+            }));
+        } else {
+            setFormData((prevState) => ({
+                ...prevState,
+                [name]: value,
+            }));
+        }
 
         if (name === 'order_number' || name === 'delivery_location' || name === 'notes') {
             applyMatchedOrderSuggestion(name, value, orderSuggestionRows[name] || []);
