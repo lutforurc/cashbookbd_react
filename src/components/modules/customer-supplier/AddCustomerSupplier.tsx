@@ -50,6 +50,7 @@ const AddCustomerSupplier = () => {
   const needOccupation = String(branchSettings?.need_customer_occupation) === '1';
   const needPermanentAddress = String(branchSettings?.need_customer_permanent_address) === '1';
   const needPhoto = String(branchSettings?.need_customer_photo) === '1';
+  const needNationalId = String(branchSettings?.need_customer_national_id) === '1';
   const needNomineePhoto = String(branchSettings?.need_nominee_photo) === '1';
   // Unlike the switches above it, this one is a column on the branch rather
   // than a meta, so it arrives as a number and not as the string '1'.
@@ -616,16 +617,17 @@ const AddCustomerSupplier = () => {
                 </div>
               </>
             )}
-            <InputElement
-              id="national_id"
-              name="national_id"
-              value={formik.values.national_id}
-              placeholder="Enter National ID"
-              label="National ID"
-              onChange={formik.handleChange}
-              onKeyDown={handleEnterNavigation('national_id')}
-            />
-
+            {needNationalId && (
+              <InputElement
+                id="national_id"
+                name="national_id"
+                value={formik.values.national_id}
+                placeholder="Enter National ID"
+                label="National ID"
+                onChange={formik.handleChange}
+                onKeyDown={handleEnterNavigation('national_id')}
+              />
+            )}
 
             <div className="text-left flex flex-col">
               <InputElement

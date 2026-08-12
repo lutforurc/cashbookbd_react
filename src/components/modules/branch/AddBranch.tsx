@@ -109,6 +109,7 @@ interface branchItem {
   need_customer_occupation: boolean;
   need_customer_permanent_address: boolean;
   need_customer_photo: boolean;
+  need_customer_national_id: boolean;
   need_nominee_photo: boolean;
   need_customer_area: boolean;
   show_voucher_image: boolean;
@@ -363,6 +364,7 @@ const AddBranch = () => {
     need_customer_occupation: false,
     need_customer_permanent_address: false,
     need_customer_photo: false,
+    need_customer_national_id: false,
     need_nominee_photo: false,
     need_customer_area: false,
     show_voucher_image: false,
@@ -605,6 +607,7 @@ const AddBranch = () => {
         need_customer_occupation: toBooleanFlag(b.need_customer_occupation),
         need_customer_permanent_address: toBooleanFlag(b.need_customer_permanent_address),
         need_customer_photo: toBooleanFlag(b.need_customer_photo),
+        need_customer_national_id: toBooleanFlag(b.need_customer_national_id),
         need_nominee_photo: toBooleanFlag(b.need_nominee_photo),
         need_customer_area: toBooleanFlag(b.need_customer_area),
         show_voucher_image: toBooleanFlag(b.show_voucher_image),
@@ -1384,6 +1387,12 @@ const AddBranch = () => {
                       description="Adds the photo upload to the customer form."
                       checked={Boolean(formData.need_customer_photo)}
                       onChange={(checked) => handleToggleFieldChange('need_customer_photo', checked)}
+                    />
+                    <FormToggleField
+                      label="Need Customer National ID?"
+                      description="Adds the national ID field to the customer form."
+                      checked={Boolean(formData.need_customer_national_id)}
+                      onChange={(checked) => handleToggleFieldChange('need_customer_national_id', checked)}
                     />
                     <FormToggleField
                       label="Use Bangla?"
