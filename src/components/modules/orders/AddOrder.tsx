@@ -356,6 +356,21 @@ const AddOrder = (user: any) => {
         setLastDeliveryDate(toValidDate(editData?.last_delivery_date));
     }, [isEditMode, ordersState?.editData]);
 
+    useEffect(() => {
+        const totalQty = Number(formData.total_order) || 0;
+        const rate = Number(formData.order_rate) || 0;
+        const calculatedAmount = totalQty * rate;
+        const formattedAmount = calculatedAmount.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+
+        setFormData((prevState) => ({
+            ...prevState,
+            contract_order_qty: formattedAmount,
+        }));
+    }, [formData.total_order, formData.order_rate]);
+
     const selectedOrderFor = useMemo(() => {
         if (!formData.order_for) return null;
         return {
@@ -777,19 +792,28 @@ const AddOrder = (user: any) => {
                                 }
                             }}
                         />
-                        <InputElement id="order_rate"
-                            value={formData.order_rate || ''}
-                            name="order_rate"
-                            placeholder={'Order Rate'}
-                            label={'Order Rate'}
-                            className={'h-10'}
-                            onChange={handleOrderChange}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    focusNextField('contract_order_qty');
-                                }
-                            }}
-                        />
+                        <div className='flex flex-col'>
+                            <label htmlFor="order_rate">Order Rate</label>
+                            <div className='relative'>
+                                <input
+                                    id="order_rate"
+                                    type="number"
+                                    value={formData.order_rate || ''}
+                                    name="order_rate"
+                                    placeholder={'Order Rate'}
+                                    className='h-10 w-full px-1.5 bg-slate-700 border border-slate-600 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-500'
+                                    onChange={handleOrderChange}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            focusNextField('contract_order_qty');
+                                        }
+                                    }}
+                                />
+                                <div className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none'>
+                                    = {formData.contract_order_qty || '0.00'}
+                                </div>
+                            </div>
+                        </div>
 
                     </>
                 )}
