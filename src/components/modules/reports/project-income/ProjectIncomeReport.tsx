@@ -44,7 +44,7 @@ const SECTIONS: { key: Section; title: string; blurb: string }[] = [
     key: 'untagged',
     title: 'Income Without a Project',
     blurb:
-      'Income lines nobody tagged. Unit sale receipts belong here — they carry no project dimension by design — so read this as a list to check, not a list to empty.',
+      'Income lines carrying no project. Branch income that never had one belongs here; a unit sale does not — it tags itself, so one showing up is a sale whose unit could not be traced to a live building.',
   },
 ];
 
@@ -67,11 +67,17 @@ const amount = (value: any) => (Number(value) === 0 ? '0.00' : thousandSeparator
  * earnings off the same rows would leave nobody sure which of the two a given
  * number belonged to.
  *
- * Unit sales are deliberately not here. A flat sold goes through Unit Sales and
- * the unit payment screens, which carry the buyer and the installment schedule,
- * and none of that reaches the project dimension. This is the other income a
- * project earns: rent on unsold space, scrap and surplus material, forfeited
- * booking money, service charges recovered from buyers.
+ * Income reaches it from two places. Unit sales tag themselves -- the sale
+ * screen works the project and building out from the unit -- so a flat sold
+ * appears here without a second entry. The Project Income screen covers the
+ * rest: rent on unsold space, scrap and surplus material, forfeited booking
+ * money, service charges recovered from buyers.
+ *
+ * It follows the SALE, not the cash. A unit sale books its whole contract value
+ * as income on the day the flat is sold, while the money arrives over months of
+ * installments, so what a project shows here is what it has sold rather than
+ * what it has collected. For the collected figure, read the installment and due
+ * reports -- that is their question.
  */
 const ProjectIncomeReport = ({ user }: any) => {
   const dispatch = useDispatch();

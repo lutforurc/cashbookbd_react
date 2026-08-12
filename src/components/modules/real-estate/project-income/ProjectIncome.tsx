@@ -24,7 +24,15 @@ interface Option {
   label: string;
 }
 
-interface AccountOption extends Option {
+/**
+ * Not an `Option`. DdlMultiline types its option values as strings, so an
+ * account id is a string from the moment it leaves the API -- see
+ * loadAccountOptions. The plain <select> dropdowns above take `Option`, which
+ * keeps the number.
+ */
+interface AccountOption {
+  value: string;
+  label: string;
   label_2?: string;
   is_income?: boolean | number;
 }
@@ -93,9 +101,12 @@ const focusField = (id: string) => {
  *
  * WHAT BELONGS HERE -- rent on unsold space, scrap and surplus material sold
  * off site, forfeited booking money, service charges recovered from buyers.
- * NOT a flat or unit sale: that goes through Unit Sales and the unit payment
- * screens, which carry the buyer and the installment schedule. Entering one
- * here as well would count the same money twice.
+ *
+ * NOT a flat or unit sale. Not because a sale is not project income, but
+ * because it is already recorded as such: the Unit Sales screen tags its own
+ * income line with the project and building of the unit being sold, so a sale
+ * reaches the project income report on its own. Entering one here as well
+ * would count the same money twice.
  *
  * Building is deliberately optional. Income the whole project earns -- ground
  * rent, a hoarding on the boundary wall -- belongs to no single building, and
@@ -228,7 +239,13 @@ const ProjectIncome = () => {
       params: { search: inputValue },
     });
 
-    return payloadOf(response) || [];
+    // The API answers with numeric ids and the dropdown wants strings.
+    // Converted here, at the edge, rather than declaring a type that says
+    // string and handing it a number.
+    return (payloadOf(response) || []).map((option: any) => ({
+      ...option,
+      value: String(option.value),
+    }));
   };
 
   const handleProjectChange = (value: string) => {
