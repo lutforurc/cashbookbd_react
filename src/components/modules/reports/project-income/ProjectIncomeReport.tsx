@@ -84,6 +84,7 @@ const ProjectIncomeReport = ({ user }: any) => {
   const navigate = useNavigate();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
+  const unitSaleState = useSelector((state: any) => state.unitSale);
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -133,6 +134,28 @@ const ProjectIncomeReport = ({ user }: any) => {
       }
     }
   }, [branchDdlData?.protectedData?.data, branchDdlData?.protectedData?.transactionDate]);
+
+  // Invalidate and reload all sections when a unit sale is updated, since updating
+  // a sale affects summary, detail (moving it to a project), and untagged sections.
+  useEffect(() => {
+    if (unitSaleState?.reportInvalidationTimestamp > 0 && branchId && loaded[section]) {
+      // Mark all sections as stale
+      setLoaded((prev) => ({ ...prev, summary: false, detail: false, untagged: false }));
+      // Trigger reload of current section
+      (async () => {
+        try {
+          const response = await httpService.get(URL_FOR[section], { params: params() });
+          if (response?.data?.success) {
+            const data = payloadOf(response);
+            setRows((prev) => ({ ...prev, [section]: data?.rows || [] }));
+            setLoaded((prev) => ({ ...prev, [section]: true }));
+          }
+        } catch (error) {
+          // Error already logged by httpService
+        }
+      })();
+    }
+  }, [unitSaleState?.reportInvalidationTimestamp]);
 
   const params = () => ({
     branch_id: Number(branchId),

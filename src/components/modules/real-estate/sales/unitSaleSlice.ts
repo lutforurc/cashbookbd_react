@@ -26,6 +26,7 @@ interface UnitSaleState {
   soldUnits: SoldUnitsResult;
   soldUnitsLoading: boolean;
   soldUnitsError: string | null;
+  reportInvalidationTimestamp: number;
 }
 
 const emptySoldUnits: SoldUnitsResult = {
@@ -51,6 +52,7 @@ const initialState: UnitSaleState = {
   soldUnits: emptySoldUnits,
   soldUnitsLoading: false,
   soldUnitsError: null,
+  reportInvalidationTimestamp: 0,
 };
 
 /* ================= ASYNC THUNK ================= */
@@ -257,6 +259,7 @@ const unitSaleSlice = createSlice({
         state.loading = false;
         state.success = true;
         state.message = action.payload?.message || "Sale updated successfully";
+        state.reportInvalidationTimestamp = Date.now();
       })
       .addCase(updateSalePricing.rejected, (state, action) => {
         state.loading = false;
