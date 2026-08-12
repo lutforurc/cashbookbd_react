@@ -282,6 +282,9 @@ const ROUTES = {
   real_estate_charge_type_edit: '/real-estate/charge-types/edit',
   real_estate_unit_types_list: '/real-estate/unit-types/list',
   real_estate_unit_sales: '/real-estate/unit-sales',
+  // The same pricing screen, opened on a sale that already exists. Reached from
+  // the sold-units report, which is where a wrong figure is noticed.
+  real_estate_unit_sale_edit: '/real-estate/unit-sales/edit/:id',
   real_estate_sold_units: '/real-estate/sold-units',
   real_estate_installment_create: '/real-estate/installment-create',
   real_estate_project_expense: '/real-estate/project-expense',

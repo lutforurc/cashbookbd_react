@@ -2,17 +2,20 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   FiClipboard,
+  FiEdit2,
   FiFilePlus,
   FiFileText,
   FiPaperclip,
   FiPrinter,
   FiRefreshCcw,
   FiSearch,
+  FiSlash,
   FiTrash2,
   FiUpload,
   FiUsers,
   FiX,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -29,11 +32,12 @@ import {
   API_UNIT_SALE_BOOKING_FORM_URL,
   API_UNIT_SALE_DOCUMENTS_URL,
 } from "../../../services/apiRoutes";
-import { fetchSoldUnits } from "./unitSaleSlice";
+import { cancelSale, fetchSoldUnits } from "./unitSaleSlice";
 import { fetchProjectDdl } from "../project/projectSlice";
 import { fetchBuildingDdl } from "../buildings/buildingsSlice";
 import ConfirmModal from "../../../utils/components/ConfirmModalProps";
 import { hasPermission } from "../../../utils/permissionChecker";
+import routes from "../../../services/appRoutes";
 import { SoldUnitCustomer, SoldUnitRow } from "./types";
 import {
   customerColor,
@@ -53,6 +57,7 @@ const MAX_DOCUMENT_BYTES = 1.5 * 1024 * 1024;
 
 const SoldUnitList: React.FC = () => {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
 
   const { soldUnits, soldUnitsLoading } = useSelector(
     (state: any) => state.unitSale
@@ -74,6 +79,12 @@ const SoldUnitList: React.FC = () => {
   const permissions = useSelector((state: any) => state.settings?.data?.permissions) ?? [];
   const canDeleteLetter = hasPermission(permissions, "allotment.letter.delete");
   const canDeleteBookingForm = hasPermission(permissions, "booking.form.delete");
+  // Rewriting what a flat was sold for is not the same trust as selling one, so
+  // it has a permission of its own and the row offers nothing without it.
+  const canEditSale = hasPermission(permissions, "unit.sale.edit");
+  // Withdrawing a sale is heavier again — it puts a flat somebody may already
+  // hold the keys to back on the market — so it is granted separately.
+  const canCancelSale = hasPermission(permissions, "unit.sale.cancel");
 
   const [projectId, setProjectId] = useState<string>("");
   const [buildingId, setBuildingId] = useState<string>("");
@@ -101,6 +112,12 @@ const SoldUnitList: React.FC = () => {
   // The sale whose nominees are being named. Done here as well as at booking:
   // most buyers settle on a nominee after the money has been taken.
   const [nomineeUnit, setNomineeUnit] = useState<SoldUnitRow | null>(null);
+  // The sale about to be withdrawn, and why. The reason is asked for rather
+  // than offered: this frees a flat and takes a voucher off the books, and
+  // "why is 5/B for sale again?" is a question somebody will ask later.
+  const [cancelUnit, setCancelUnit] = useState<SoldUnitRow | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
   // The issued paper waiting to be withdrawn. Asked first, and named in full in
   // the question: this removes a copy that may already have been handed over.
   const [confirmWithdraw, setConfirmWithdraw] = useState<{
@@ -346,6 +363,42 @@ const SoldUnitList: React.FC = () => {
       );
     } finally {
       setBusySaleId(null);
+    }
+  };
+
+  /**
+   * Withdraws the sale itself.
+   *
+   * The server does the refusing — an approved voucher, papers already issued,
+   * a live installment schedule, receipts taken after the booking — and each
+   * refusal names what has to be dealt with first, so its sentence is shown
+   * rather than a general "could not cancel".
+   */
+  const handleCancelSale = async () => {
+    if (!cancelUnit) return;
+
+    if (cancelReason.trim().length < 3) {
+      toast.info("Please say why this sale is being cancelled.");
+      return;
+    }
+
+    setCancelling(true);
+
+    try {
+      const response: any = await dispatch(
+        cancelSale({ saleId: cancelUnit.sale_id, reason: cancelReason.trim() }),
+      );
+
+      if (cancelSale.fulfilled.match(response)) {
+        toast.success(response?.payload?.message || "Sale cancelled.");
+        setCancelUnit(null);
+        setCancelReason("");
+        loadData();
+      } else {
+        toast.error(response?.payload || "Could not cancel the sale.");
+      }
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -837,6 +890,44 @@ const SoldUnitList: React.FC = () => {
                                 })}
                               >
                                 <div className="flex flex-col items-center gap-1">
+                                  {/* The sale itself, before the papers that
+                                      print it. Correcting the figure and
+                                      withdrawing the sale sit together because
+                                      they answer the same question — something
+                                      about this sale is wrong — and which one
+                                      applies depends on what is wrong. */}
+                                  {(canEditSale || canCancelSale) && (
+                                    <div className="flex w-full items-center justify-center gap-3 border-b border-stroke pb-1 dark:border-strokedark">
+                                      {canEditSale && (
+                                        <button
+                                          type="button"
+                                          title="Correct this sale's charges, parking or date"
+                                          disabled={busySaleId === unit.sale_id}
+                                          onClick={() =>
+                                            navigate(
+                                              `${routes.real_estate_unit_sales}/edit/${unit.sale_id}`,
+                                            )
+                                          }
+                                          className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
+                                        >
+                                          <FiEdit2 /> EDIT
+                                        </button>
+                                      )}
+
+                                      {canCancelSale && (
+                                        <button
+                                          type="button"
+                                          title="Withdraw this sale and put the flat back on the market"
+                                          disabled={busySaleId === unit.sale_id}
+                                          onClick={() => setCancelUnit(unit)}
+                                          className="flex items-center gap-1 text-xs text-danger hover:opacity-80 disabled:opacity-50"
+                                        >
+                                          <FiSlash /> CANCEL
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+
                                   {/* The page's own button, the same one the
                                       Search and Print controls above use. */}
                                   <ButtonLoading
@@ -1239,6 +1330,57 @@ const SoldUnitList: React.FC = () => {
         loading={busySaleId === confirmDeleteUnit?.sale_id}
         onCancel={() => setConfirmDeleteUnit(null)}
         onConfirm={handleDeleteDocument}
+      />
+
+      {/* Withdrawing the sale itself. Unlike the two above this one is not
+          final — the voucher goes to the recycle bin and restoring it brings
+          the sale, the flat and the receipts back — and the dialog says so,
+          because a clerk who believes it is final will avoid it and leave a
+          wrong sale standing instead. */}
+      <ConfirmModal
+        show={Boolean(cancelUnit)}
+        title="Cancel Sale"
+        message={
+          <>
+            Withdraw the sale of
+            <span className="mt-1 block font-bold">
+              {cancelUnit?.unit_no || cancelUnit?.parking_no || "this unit"}
+              {cancelUnit?.parking_no && cancelUnit?.unit_no
+                ? ` and ${cancelUnit.parking_no}`
+                : ""}{" "}
+              ?
+            </span>
+            <span className="mt-2 block text-xs text-body dark:text-bodydark">
+              The flat goes back on the market and the voucher moves to the
+              Recycle Bin, where restoring it puts the sale back as it was.
+              Money already received stops counting until then.
+            </span>
+
+            <label className="mt-3 block text-left text-xs font-semibold">
+              Why is it being cancelled?
+            </label>
+            <InputElement
+              id="cancel_reason"
+              name="cancel_reason"
+              type="text"
+              label=""
+              placeholder="Wrong unit, buyer withdrew, duplicate entry…"
+              className="text-sm"
+              value={cancelReason}
+              onChange={(e: any) => setCancelReason(e.target.value)}
+            />
+          </>
+        }
+        confirmLabel="Cancel Sale"
+        // The button carries no colour of its own, and this one frees a flat.
+        className="bg-red-600 hover:bg-red-700 min-w-[128px]"
+        cancelLabel="Keep"
+        loading={cancelling}
+        onCancel={() => {
+          setCancelUnit(null);
+          setCancelReason("");
+        }}
+        onConfirm={handleCancelSale}
       />
 
       {/* Naming who a sold property is left to. Reloads the report on save, so

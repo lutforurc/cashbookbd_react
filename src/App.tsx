@@ -770,6 +770,7 @@ function App() {
 
               <Route path={routes.real_estate_unit_types_list} element={<ChargeTypeList user={me} />} />
               <Route path={routes.real_estate_unit_sales} element={<UnitSalePage />} />
+              <Route path={routes.real_estate_unit_sale_edit} element={<UnitSalePage />} />
               <Route path={routes.real_estate_sold_units} element={<SoldUnitList />} />
               <Route path={routes.real_estate_installment_create} element={<RealEstateInstallmentCreate />} />
               <Route path={routes.real_estate_project_expense} element={<ProjectExpense />} />

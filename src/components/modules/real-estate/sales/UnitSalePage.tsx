@@ -16,10 +16,17 @@ import BuildingUnitDropdown from "../../../utils/utils-functions/BuildingUnitDro
 import BuildingParkingDropdown from "../../../utils/utils-functions/BuildingParkingDropdown";
 import BuildingUnitChargesDropdown from "../../../utils/utils-functions/BuildingUnitChargesDropdown";
 import InputElement from "../../../utils/fields/InputElement";
+import InputDatePicker from "../../../utils/fields/DatePicker";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
-import { useLocation, useNavigate } from "react-router-dom";
-import { storeSalePricing } from "./unitSaleSlice";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  fetchSaleForEdit,
+  storeSalePricing,
+  updateSalePricing,
+} from "./unitSaleSlice";
+import { SaleEditGuards } from "./types";
+import routes from "../../../services/appRoutes";
 import { unitDdl } from "../units/unitSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -108,10 +115,53 @@ const titleCase = (value?: string | null) =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
+/**
+ * The date as the server takes it.
+ *
+ * Built from the local parts rather than toISOString(), which converts to UTC
+ * first and hands back yesterday for anything before 6am here.
+ */
+const isoDate = (date: Date | null) =>
+  date
+    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+        date.getDate(),
+      ).padStart(2, "0")}`
+    : null;
+
+/** "2026-01-20" from the server, as a Date the picker can hold. */
+const parseDate = (value?: string | null) => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
 /* ================= PAGE ================= */
 
+/**
+ * Pricing a flat, and correcting one already priced.
+ *
+ * The same screen does both: an edit is the same set of charges being typed
+ * again, and a second screen for it would drift from this one the first time a
+ * charge type changed. What differs is what is allowed to move. The buyer and
+ * the flat are printed on papers the buyer already holds -- the allotment
+ * letter, the booking form, the money receipt -- so in edit mode they are shown
+ * and not touched, and correcting either is a cancellation rather than an edit.
+ * The money taken so far is not touched here either; that lives on the payment
+ * screens, and this one only says how much has come in so the total is not set
+ * below it.
+ */
 export default function UnitSalePage() {
   const { loading } = useSelector((state: any) => state.unitSale ?? { loading: false });
+
+  // A sale id in the path is what puts this screen into edit mode. Reached from
+  // the sold-units report, which is where a wrong figure is noticed.
+  const { id } = useParams();
+  const saleId = Number(id) || 0;
+  const isEdit = saleId > 0;
+
+  const [saleLoading, setSaleLoading] = useState(false);
+  const [guards, setGuards] = useState<SaleEditGuards | null>(null);
+  const [saleDate, setSaleDate] = useState<Date | null>(null);
 
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [selectedUnit, setSelectedUnit] = useState<any>(null);
@@ -146,6 +196,56 @@ export default function UnitSalePage() {
   const dispatch = useDispatch();
 
   /**
+   * Fills the screen from the sale being corrected.
+   *
+   * The customer, unit and parking come back as the dropdown options they were
+   * picked from, so they drop straight into the state a fresh selection would
+   * have set — which is how the read-only boxes print their labels without a
+   * second lookup, and how the parking dropdown opens showing what is on the
+   * sale today.
+   */
+  useEffect(() => {
+    if (!isEdit) return;
+
+    let cancelled = false;
+    setSaleLoading(true);
+
+    (dispatch as any)(fetchSaleForEdit(saleId))
+      .unwrap()
+      .then((data: any) => {
+        if (cancelled) return;
+
+        const sale = data?.sale ?? {};
+
+        setSelectedCustomer(sale.customer ?? null);
+        setSelectedUnit(sale.unit ?? null);
+        setSelectedParking(sale.parking ?? null);
+        setNote(sale.note ?? "");
+        setSaleDate(parseDate(sale.sale_date));
+        setGuards(data?.guards ?? null);
+
+        setItems(
+          (Array.isArray(sale.items) ? sale.items : []).map((item: any) => ({
+            ...item,
+            // Decimal columns come back as strings, and the total is added up
+            // from these.
+            amount: safeNumber(item.amount),
+          })),
+        );
+      })
+      .catch((message: string) =>
+        cancelled ? null : toast.error(message || "Could not load this sale."),
+      )
+      .finally(() => {
+        if (!cancelled) setSaleLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isEdit, saleId]);
+
+  /**
    * Loads the buyer's nominee list whenever the buyer changes.
    *
    * Nothing is ticked to begin with. The customer screen's list is an address
@@ -153,6 +253,11 @@ export default function UnitSalePage() {
    * people on a booking form nobody chose to put there.
    */
   useEffect(() => {
+    // Not part of an edit. Who a flat is left to is named against the property
+    // from the sold-units report, which is also where it is changed afterwards
+    // -- and most buyers decide long after the booking money is taken.
+    if (isEdit) return;
+
     const coa4Id = selectedCustomer?.value;
 
     setNomineePicks({});
@@ -511,6 +616,64 @@ export default function UnitSalePage() {
     due, // optional (frontend convenience)
   };
 
+  /**
+   * Sends back only what an edit is allowed to move.
+   *
+   * The buyer and the flat are deliberately absent from the payload: the server
+   * reads both off the sale, so a screen holding the wrong ones cannot put them
+   * on the books. Booking money is absent for the same reason from the other
+   * side -- money that changed hands is corrected where it was taken.
+   */
+  const submitEdit = async () => {
+    if (loading) return;
+
+    if (!items.length) {
+      toast.info("A sale needs at least one charge line.");
+      return;
+    }
+
+    const received = guards?.received ?? 0;
+
+    // Said here as well as on the server: the clerk should learn it while the
+    // figure is still in front of them, not after the save is attempted.
+    if (received > 0 && total < received) {
+      toast.info(
+        `Tk. ${formatAmount(received)} has already been received against this sale, so the total cannot be less than that.`,
+      );
+      return;
+    }
+
+    const response: any = await dispatch(
+      updateSalePricing({
+        saleId,
+        payload: {
+          parking: selectedParking,
+          items: items.map((it) => ({
+            id: it.id,
+            type: it.type,
+            title: it.title,
+            effect: it.effect,
+            linkedTo: it.linkedTo,
+            amount: it.amount,
+            note: it.note ?? null,
+            editMode: it.editMode,
+          })),
+          total,
+          sale_date: isoDate(saleDate),
+          note: note || null,
+        },
+      }) as any,
+    );
+
+    if (updateSalePricing.fulfilled.match(response)) {
+      toast.success(response?.payload?.message || "Sale updated.");
+      // Back to where the wrong figure was spotted, with the corrected one on it.
+      navigate(routes.real_estate_sold_units);
+    } else {
+      toast.error(response?.payload || "Could not update the sale.");
+    }
+  };
+
   const submitToApi = async () => {
     if (loading) return; // ✅ block double click
 
@@ -595,15 +758,19 @@ export default function UnitSalePage() {
 
   return (
     <div className="mx-auto">
-      <HelmetTitle title="Unit Sales" />
+      <HelmetTitle title={isEdit ? "Edit Unit Sale" : "Unit Sales"} />
 
       <div className="mb-2 flex justify-between">
         <div>
           <h1 className="text-md font-semibold text-gray-900 dark:text-white">
-            Unit Sales Pricing Builder
+            {isEdit ? "Edit Unit Sale" : "Unit Sales Pricing Builder"}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Unit & Parking with others calculation
+            {isEdit
+              ? `Charges, parking and date${
+                  guards?.vr_no ? ` · Vr. No. ${guards.vr_no}` : ""
+                }`
+              : "Unit & Parking with others calculation"}
           </p>
         </div>
 
@@ -616,12 +783,22 @@ export default function UnitSalePage() {
           </div>
 
           <div className="flex justify-end gap-4">
+            {/* On an edit the money is history, not something being typed: what
+                matters is what has come in and what is still owed on the
+                corrected figure. */}
             <div className="text-gray-700 dark:text-gray-200">
-              Booking:{" "}
-              <span className="font-semibold">{formatAmount(bookingAmt)}</span>
+              {isEdit ? "Received: " : "Booking: "}
+              <span className="font-semibold">
+                {formatAmount(isEdit ? guards?.received ?? 0 : bookingAmt)}
+              </span>
             </div>
             <div className="text-gray-700 dark:text-gray-200">
-              Due: <span className="font-semibold">{formatAmount(due)}</span>
+              Due:{" "}
+              <span className="font-semibold">
+                {formatAmount(
+                  isEdit ? Math.max(total - (guards?.received ?? 0), 0) : due,
+                )}
+              </span>
             </div>
           </div>
         </div>
@@ -631,21 +808,43 @@ export default function UnitSalePage() {
         {/* LEFT */}
         <div className="lg:col-span-4 space-y-1">
           <div className="rounded  dark:bg-gray-800 py-3 px-4">
-            <label className="text-sm font-semibold">Select Customer</label>
-            <DdlMultiline onSelect={setSelectedCustomer} acType="" />
+            {/* Both are on papers the buyer already holds, so an edit shows them
+                and leaves them alone. Getting either wrong is a cancellation,
+                not a correction. */}
+            <label className="text-sm font-semibold">
+              {isEdit ? "Customer" : "Select Customer"}
+            </label>
+            {isEdit ? (
+              <div className="mb-1 rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-700/40 dark:text-gray-200">
+                {selectedCustomer?.label || "—"}
+              </div>
+            ) : (
+              <DdlMultiline onSelect={setSelectedCustomer} acType="" />
+            )}
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
               <div>
                 <label className="block mt-1 text-sm font-semibold">
-                  Select Unit
+                  {isEdit ? "Unit" : "Select Unit"}
                 </label>
-                <BuildingUnitDropdown onSelect={onUnitSelect} value={selectedUnit} />
+                {isEdit ? (
+                  <div className="rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-700/40 dark:text-gray-200">
+                    {selectedUnit?.label || "—"}
+                  </div>
+                ) : (
+                  <BuildingUnitDropdown onSelect={onUnitSelect} value={selectedUnit} />
+                )}
               </div>
               <div>
                 <label className="block mt-1 text-sm font-semibold">
                   Select Parking
                 </label>
-                <BuildingParkingDropdown onSelect={onParkingSelect} />
+                {/* Editable in both modes: a parking added, dropped or swapped
+                    is the correction this screen is most often opened for. */}
+                <BuildingParkingDropdown
+                  onSelect={onParkingSelect}
+                  value={selectedParking}
+                />
               </div>
             </div>
 
@@ -681,7 +880,7 @@ export default function UnitSalePage() {
                 the list is theirs, and an empty box before that explains
                 nothing. People are added on the customer screen -- this screen
                 only decides which of them stand against THIS property. */}
-            {selectedCustomer && (
+            {!isEdit && selectedCustomer && (
               <div className="mt-3 border-t border-gray-300 pt-2 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-semibold">Nominee for this property</label>
@@ -771,6 +970,85 @@ export default function UnitSalePage() {
             )}
           </div>
 
+          {/* Correcting a sale asks for none of the payment boxes: the booking
+              money is a receipt with its own number, already in the buyer's
+              hands and on the cash book. What an edit needs instead is the date
+              the sale is dated, a note, and the plain facts that decide whether
+              the figure below may move at all. */}
+          {isEdit ? (
+            <div className="rounded bg-white dark:bg-gray-800 pt-1 py-2 px-4">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
+                <div>
+                  <label className="block mt-1 text-sm font-semibold">Sale Date</label>
+                  <InputDatePicker
+                    id="sale_date"
+                    name="sale_date"
+                    selectedDate={saleDate}
+                    setSelectedDate={setSaleDate}
+                    setCurrentDate={setSaleDate}
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block mt-1 text-sm font-semibold">Note</label>
+                  <InputElement
+                    id="note"
+                    name="note"
+                    type="text"
+                    label=""
+                    placeholder="Why this was corrected"
+                    className="text-sm"
+                    value={note}
+                    onChange={(e: any) => setNote(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-2 space-y-1 border-t border-gray-300 pt-2 text-xs dark:border-gray-700">
+                <p className="text-gray-600 dark:text-gray-300">
+                  Received so far:{" "}
+                  <span className="font-semibold">
+                    {formatAmount(guards?.received ?? 0)}
+                  </span>{" "}
+                  — the total cannot go below it. Money itself is corrected from
+                  the payment screens.
+                </p>
+
+                {guards?.is_approved ? (
+                  <p className="text-red-500">
+                    This sale sits on an approved voucher. Remove the approval
+                    before saving, or the save will be refused.
+                  </p>
+                ) : null}
+
+                {(guards?.letter_count ?? 0) > 0 ||
+                (guards?.booking_form_count ?? 0) > 0 ? (
+                  <p className="text-amber-600 dark:text-amber-500">
+                    {guards?.letter_count
+                      ? `${guards.letter_count} allotment letter${
+                          guards.letter_count > 1 ? "s" : ""
+                        }`
+                      : ""}
+                    {guards?.letter_count && guards?.booking_form_count ? " and " : ""}
+                    {guards?.booking_form_count
+                      ? `${guards.booking_form_count} booking form${
+                          guards.booking_form_count > 1 ? "s" : ""
+                        }`
+                      : ""}{" "}
+                    already issued. Changing the amount leaves them out of date —
+                    withdraw and reissue afterwards.
+                  </p>
+                ) : null}
+
+                {(guards?.installment_count ?? 0) > 0 ? (
+                  <p className="text-amber-600 dark:text-amber-500">
+                    {guards?.installment_count} installments are scheduled against
+                    this sale. Check the schedule after changing the total.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          ) : (
           <div className="rounded  bg-white dark:bg-gray-800 pt-1 py-2 px-4">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
               <div>
@@ -874,11 +1152,12 @@ export default function UnitSalePage() {
               </>
             )}
           </div>
+          )}
 
           <div className="flex gap-2">
             <ButtonLoading
-              onClick={submitToApi}
-              label={"Save"}
+              onClick={isEdit ? submitEdit : submitToApi}
+              label={isEdit ? "Update" : "Save"}
               icon={
                 loading ? (
                   <FiLoader className="animate-spin text-white text-lg ml-2 mr-2 " />
@@ -887,11 +1166,17 @@ export default function UnitSalePage() {
                 )
               }
               className="mt-2 p-2 flex-1"
-              disabled={!items.length || loading}
+              disabled={!items.length || loading || saleLoading}
             />
 
             <ButtonLoading
-              onClick={() => navigate("../real-estate/unit/list")}
+              onClick={() =>
+                navigate(
+                  // Back where it was opened from: the report a wrong figure is
+                  // noticed on, or the unit list a sale is started from.
+                  isEdit ? routes.real_estate_sold_units : "../real-estate/unit/list",
+                )
+              }
               label="Back"
               icon={<FiArrowLeft className="mr-3" />}
               className="mt-2 p-2 flex-1"
@@ -978,7 +1263,9 @@ export default function UnitSalePage() {
                     className="py-2 px-4 text-center text-gray-500 dark:text-gray-400"
                     colSpan={4}
                   >
-                    No pricing items yet. Select Unit to start.
+                    {saleLoading
+                      ? "Loading this sale…"
+                      : "No pricing items yet. Select Unit to start."}
                   </td>
                 </tr>
               )}

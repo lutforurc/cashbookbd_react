@@ -34,6 +34,54 @@ export interface SalePricingPayload {
   total: number;
 }
 
+/* ================= EDITING A SALE ALREADY ON THE BOOKS ================= */
+
+/**
+ * What the pricing screen sends back when it is correcting a sale.
+ *
+ * No customer and no unit: both are printed on papers the buyer already holds,
+ * so the server reads them off the sale rather than believing the screen. What
+ * is left is what the sale is worth, and when it happened.
+ */
+export interface SaleUpdatePayload {
+  parking?: DropdownOption | null;
+  items: SaleItem[];
+  total: number;
+  sale_date?: string | null;
+  note?: string | null;
+}
+
+/**
+ * Why a box on the edit screen might be shut, or a warning worth printing.
+ *
+ * Only the approval actually stops an edit — the server refuses that one. An
+ * issued letter is a reason to reissue it afterwards, not a reason to leave a
+ * wrong figure standing, so it is said rather than enforced.
+ */
+export interface SaleEditGuards {
+  vr_no: string | null;
+  is_approved: boolean;
+  /** Confirmed money against the sale; the total cannot be set below it. */
+  received: number;
+  letter_count: number;
+  booking_form_count: number;
+  installment_count: number;
+}
+
+export interface SaleEditData {
+  sale: {
+    id: number;
+    customer: DropdownOption | null;
+    unit: DropdownOption | null;
+    parking: DropdownOption | null;
+    note: string | null;
+    sale_date: string | null;
+    total: number;
+    items: SaleItem[];
+  };
+  guards: SaleEditGuards;
+}
+
 /* ================= SOLD UNIT (CUSTOMER WISE) REPORT ================= */
 
 export interface SoldUnitLine {

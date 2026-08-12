@@ -776,6 +776,15 @@ export const API_UNIT_CHARGE_TYPE_EDIT_URL = `${API_BASE_URL}/real-estate/units/
 export const API_UNIT_SALE_STORE_URL = `${API_BASE_URL}/real-estate/unit/sales`;
 export const API_UNIT_SALE_DDL_URL = `${API_BASE_URL}/real-estate/unit-sale/ddl`;
 export const API_UNIT_SALE_SUMMARY_URL = `${API_BASE_URL}/real-estate/unit-sale/summary`;
+// Correcting a sale already on the books — suffix the sale id. The buyer and
+// the flat are not sent back: the server reads those off the sale, because both
+// are printed on papers the buyer already holds.
+export const API_UNIT_SALE_EDIT_URL = `${API_BASE_URL}/real-estate/unit-sale/edit/`;
+export const API_UNIT_SALE_UPDATE_URL = `${API_BASE_URL}/real-estate/unit-sale/update/`;
+// Withdrawing a sale — the wrong buyer or the wrong flat, which the edit above
+// refuses. Suffix the sale id. Sends the voucher to the recycle bin, so it is
+// undone by restoring the voucher rather than by another call here.
+export const API_UNIT_SALE_CANCEL_URL = `${API_BASE_URL}/real-estate/unit-sale/cancel/`;
 export const API_UNIT_SALE_SOLD_UNITS_URL = `${API_BASE_URL}/real-estate/unit-sale/sold-units`;
 export const API_UNIT_SALE_ALLOTMENT_LETTER_URL = `${API_BASE_URL}/real-estate/unit-sale/allotment-letter/`;
 // One buyer's nominee list while the booking is still being typed — suffix the
