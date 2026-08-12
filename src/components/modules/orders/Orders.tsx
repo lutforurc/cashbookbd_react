@@ -24,6 +24,7 @@ import { API_ORDERS_LIST_URL, API_ORDERS_STATUS_URL, API_ORDERS_TRANSACTION_URL 
 import httpService from '../../services/httpService';
 import { toast } from 'react-toastify';
 import { ORDER_STATUS } from '../../constant/constant/variables';
+import { ORDER_LIST_SUCCESS } from '../../constant/constant/constant';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { render } from 'react-dom';
 import { isUserFeatureEnabled } from '../../utils/userFeatureSettings';
@@ -779,6 +780,21 @@ const Orders = () => {
 
 
     const nextStatus = Number(row?.status) === 1 ? 2 : 1;
+    const ordersData = orders?.data ?? {};
+    const originalTableData = Array.isArray(ordersData?.data) ? [...ordersData.data] : [];
+
+    // Optimistic update: immediately toggle only this row's status
+    const updatedTableData = originalTableData.map((order: any) =>
+      order.id === row.id ? { ...order, status: nextStatus } : order
+    );
+
+    dispatch({
+      type: ORDER_LIST_SUCCESS,
+      payload: {
+        ...ordersData,
+        data: updatedTableData,
+      },
+    });
 
     try {
       const response = await httpService.post(API_ORDERS_STATUS_URL, {
@@ -788,15 +804,41 @@ const Orders = () => {
 
       if (response.data?.success) {
         toast.success(nextStatus === 1 ? 'Order activated successfully.' : 'Order inactivated successfully.');
-        refreshOrders();
+        // If status changed from current filter, remove after brief delay
+        if (orderStatus !== nextStatus) {
+          setTimeout(() => {
+            const finalData = updatedTableData.filter((order: any) => order.id !== row.id);
+            dispatch({
+              type: ORDER_LIST_SUCCESS,
+              payload: {
+                ...ordersData,
+                data: finalData,
+              },
+            });
+          }, 300);
+        }
         return;
       }
 
       toast.error(response.data?.message || response.data?.error?.message || 'Order status update failed.');
-      refreshOrders();
+      // Revert on error
+      dispatch({
+        type: ORDER_LIST_SUCCESS,
+        payload: {
+          ...ordersData,
+          data: originalTableData,
+        },
+      });
     } catch (error: any) {
       toast.error(error?.response?.data?.message || error?.response?.data?.error?.message || 'Order status update failed.');
-      refreshOrders();
+      // Revert on error
+      dispatch({
+        type: ORDER_LIST_SUCCESS,
+        payload: {
+          ...ordersData,
+          data: originalTableData,
+        },
+      });
     }
   };
 
