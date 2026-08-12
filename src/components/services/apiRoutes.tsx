@@ -712,6 +712,16 @@ export const API_PROJECT_EXPENSE_STORE_URL = `${API_BASE_URL}/real-estate/projec
 export const API_PROJECT_EXPENSE_EDIT_URL = `${API_BASE_URL}/real-estate/project-expense/edit`;
 export const API_PROJECT_EXPENSE_UPDATE_URL = `${API_BASE_URL}/real-estate/project-expense/update`;
 
+// Project income — a cash receipt that says which project and which building
+// earned the money. The mirror of project expense, and its own screen rather
+// than a variant of Cash Received, which is left exactly as it is.
+export const API_PROJECT_INCOME_ACCOUNTS_DDL_URL = `${API_BASE_URL}/real-estate/project-income/accounts/ddl`;
+export const API_PROJECT_INCOME_PROJECTS_DDL_URL = `${API_BASE_URL}/real-estate/project-income/projects/ddl`;
+export const API_PROJECT_INCOME_BUILDINGS_DDL_URL = `${API_BASE_URL}/real-estate/project-income/buildings/ddl`;
+export const API_PROJECT_INCOME_STORE_URL = `${API_BASE_URL}/real-estate/project-income/store`;
+export const API_PROJECT_INCOME_EDIT_URL = `${API_BASE_URL}/real-estate/project-income/edit`;
+export const API_PROJECT_INCOME_UPDATE_URL = `${API_BASE_URL}/real-estate/project-income/update`;
+
 // Project purchase — material bought for a project and its buildings. One
 // Purchase ledger line per building, so a building can be asked what it cost.
 export const API_PROJECT_PURCHASE_STORE_URL = `${API_BASE_URL}/real-estate/project-purchase/store`;
@@ -727,6 +737,12 @@ export const API_PROJECT_LABOUR_UPDATE_URL = `${API_BASE_URL}/real-estate/projec
 export const API_REPORT_PROJECT_SUMMARY_URL = `${API_BASE_URL}/real-estate/reports/project-summary`;
 export const API_REPORT_PROJECT_BUILDING_DETAIL_URL = `${API_BASE_URL}/real-estate/reports/building-detail`;
 export const API_REPORT_PROJECT_UNTAGGED_URL = `${API_BASE_URL}/real-estate/reports/untagged-expense`;
+
+// What each project has earned. A report of its own rather than columns on the
+// cost one, where every figure is something spent.
+export const API_REPORT_PROJECT_INCOME_SUMMARY_URL = `${API_BASE_URL}/real-estate/reports/income-summary`;
+export const API_REPORT_PROJECT_INCOME_DETAIL_URL = `${API_BASE_URL}/real-estate/reports/income-detail`;
+export const API_REPORT_PROJECT_INCOME_UNTAGGED_URL = `${API_BASE_URL}/real-estate/reports/untagged-income`;
 
 // Real Estate Flat url
 export const API_FLAT_STORE_URL = `${API_BASE_URL}/real-estate/flats`;

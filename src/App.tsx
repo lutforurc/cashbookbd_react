@@ -155,9 +155,11 @@ import ProductUnits from './components/modules/product/unit/ProductUnits';
 import EditCustomerSupplier from './components/modules/customer-supplier/EditCustomerSupplier';
 import UnitSalePage from './components/modules/real-estate/sales/UnitSalePage';
 import ProjectExpense from './components/modules/real-estate/project-expense/ProjectExpense';
+import ProjectIncome from './components/modules/real-estate/project-income/ProjectIncome';
 import ProjectPurchase from './components/modules/real-estate/project-purchase/ProjectPurchase';
 import ProjectLabour from './components/modules/real-estate/project-labour/ProjectLabour';
 import ProjectCostReport from './components/modules/reports/project-cost/ProjectCostReport';
+import ProjectIncomeReport from './components/modules/reports/project-income/ProjectIncomeReport';
 import SoldUnitList from './components/modules/real-estate/sales/SoldUnitList';
 import RequirePermission from "./components/auth/RequirePermission";
 import NoAccess from './components/modules/pages/NoAccess';
@@ -771,9 +773,11 @@ function App() {
               <Route path={routes.real_estate_sold_units} element={<SoldUnitList />} />
               <Route path={routes.real_estate_installment_create} element={<RealEstateInstallmentCreate />} />
               <Route path={routes.real_estate_project_expense} element={<ProjectExpense />} />
+              <Route path={routes.real_estate_project_income} element={<ProjectIncome />} />
               <Route path={routes.real_estate_project_purchase} element={<ProjectPurchase />} />
               <Route path={routes.real_estate_project_labour} element={<ProjectLabour />} />
               <Route path={routes.real_estate_project_cost_report} element={<ProjectCostReport user={me} />} />
+              <Route path={routes.real_estate_project_income_report} element={<ProjectIncomeReport user={me} />} />
             </Route>
 
 
