@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
@@ -9,14 +9,18 @@ import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomB
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
+import WarehouseDropdown from "../../../utils/utils-functions/WarehouseDropdown";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
+import { getDdlWarehouse } from "../../warehouse/ddlWarehouseSlider";
 import httpService from "../../../services/httpService";
 
 type StockRow = {
+  branch_name?: string;
   warehouse: string;
+  product_name: string;
+  unit?: string;
   stock_qty: number;
-  remarks?: string;
 };
 
 const toNum = (value: any) => {
@@ -29,6 +33,7 @@ const fmt = (value: any) => thousandSeparator(Math.round(toNum(value)));
 const GodownStockReport = ({ user }: any) => {
   const dispatch = useDispatch<any>();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const warehouseDdlData = useSelector((state: any) => state.activeWarehouse);
   const authUser = user?.user ?? user;
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -43,6 +48,7 @@ const GodownStockReport = ({ user }: any) => {
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
+    dispatch(getDdlWarehouse());
   }, [dispatch]);
 
   useEffect(() => {
@@ -59,16 +65,18 @@ const GodownStockReport = ({ user }: any) => {
     }
   }, [branchDdlData?.protectedData, authUser?.branch_id]);
 
+  // The branch DDL selects id/name/address/phone only — it carries no godowns —
+  // so the warehouses come from /active/warehouse, listed whole the way the
+  // purchase and sales invoices list them. Ids are stringified so the print
+  // header can match the selected value.
   const warehouseOptions = (() => {
-    if (!branchId || !dropdownData.length) return [];
-    const branch = dropdownData.find(b => b.id?.toString() === branchId?.toString());
-    const options = branch?.godowns?.map((g: any) => ({
-      value: g.id?.toString(),
-      label: g.name,
-    })) || [];
-    console.log('branchId:', branchId, 'branch:', branch, 'options:', options);
-    return options;
+    const allWarehouses = Array.isArray(warehouseDdlData?.data) ? warehouseDdlData.data : [];
+    return allWarehouses.map((w: any) => ({ id: w.id?.toString(), name: w.name }));
   })();
+
+  const handleWarehouseChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setGodownId(e.target.value);
+  };
 
   const selectedBranchName = (() => {
     return dropdownData.find(b => b.id?.toString() === branchId?.toString())?.name || '';
@@ -103,7 +111,8 @@ const GodownStockReport = ({ user }: any) => {
       });
 
       if (response.data?.success) {
-        const data = response.data?.data || [];
+        // foundData() nests the payload one level deeper: { data: { data: [...] } }.
+        const data = response.data?.data?.data || [];
         setRows(Array.isArray(data) ? data : []);
         if (!data || data.length === 0) {
           setError(response.data?.message || "No stock data found");
@@ -134,7 +143,6 @@ const GodownStockReport = ({ user }: any) => {
     removeAfterPrint: true,
   });
 
-  const grandTotal = rows.reduce((sum, row) => sum + toNum(row.stock_qty), 0);
 
   return (
     <div className="">
@@ -159,23 +167,14 @@ const GodownStockReport = ({ user }: any) => {
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Warehouse</label>
-            <select
-              value={godownId == null ? "" : String(godownId)}
-              onChange={(e) => {
-                const selectedValue = e.target.value;
-                setGodownId(selectedValue);
-                const selected = warehouseOptions.find(w => w.value === selectedValue);
-                setSelectedWarehouse(selected || null);
-              }}
-              className="w-full font-medium text-sm p-2 h-10 min-w-[260px] rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            >
-              <option value="">Select Warehouse</option>
-              {warehouseOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            {warehouseDdlData.isLoading ? <Loader /> : null}
+            <WarehouseDropdown
+              id="warehouse"
+              onChange={handleWarehouseChange}
+              className="w-full font-medium text-sm p-2 h-10 min-w-[260px]"
+              warehouseDdl={warehouseOptions}
+              defaultValue={godownId == null ? "" : String(godownId)}
+            />
           </div>
 
           <div>
@@ -221,8 +220,9 @@ const GodownStockReport = ({ user }: any) => {
             <tr>
               <th className="w-[80px] px-3 py-3 text-center font-semibold">Sl. No</th>
               <th className="px-3 py-3 font-semibold">Warehouse</th>
+              <th className="px-3 py-3 font-semibold">Product</th>
+              <th className="w-[110px] px-3 py-3 font-semibold">Unit</th>
               <th className="w-[150px] px-3 py-3 text-right font-semibold">Stock (Qty)</th>
-              <th className="px-3 py-3 font-semibold">Remarks</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
@@ -238,29 +238,19 @@ const GodownStockReport = ({ user }: any) => {
                 >
                   <td className="px-3 py-2 text-center">{index + 1}</td>
                   <td className="px-3 py-2">{row.warehouse}</td>
+                  <td className="px-3 py-2">{row.product_name}</td>
+                  <td className="px-3 py-2">{row.unit || '-'}</td>
                   <td className={`px-3 py-2 text-right font-semibold ${toNum(row.stock_qty) < 0 ? 'text-red-600 dark:text-red-400' : ''}`}>
                     {toNum(row.stock_qty) < 0 ? '-' : ''}{fmt(Math.abs(toNum(row.stock_qty)))}
                   </td>
-                  <td className="px-3 py-2">{row.remarks || '-'}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="py-4 text-center text-gray-500 dark:text-gray-400">No data found</td>
+                <td colSpan={5} className="py-4 text-center text-gray-500 dark:text-gray-400">No data found</td>
               </tr>
             )}
           </tbody>
-          {rows.length ? (
-            <tfoot className="bg-slate-50 text-sm font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
-              <tr>
-                <td colSpan={2} className="px-3 py-3 text-right">Grand Total</td>
-                <td className={`px-3 py-3 text-right ${grandTotal < 0 ? 'text-red-600 dark:text-red-400' : ''}`}>
-                  {grandTotal < 0 ? '-' : ''}{fmt(Math.abs(grandTotal))}
-                </td>
-                <td></td>
-              </tr>
-            </tfoot>
-          ) : null}
         </table>
       </div>
 
@@ -268,8 +258,8 @@ const GodownStockReport = ({ user }: any) => {
         {selectedBranchName && (
           <h2 className="text-lg font-bold mb-4">Branch: {selectedBranchName}</h2>
         )}
-        {godownId && warehouseOptions.find(w => w.value === godownId)?.label && (
-          <h3 className="text-base font-semibold mb-4">Warehouse: {warehouseOptions.find(w => w.value === godownId)?.label}</h3>
+        {godownId && warehouseOptions.find(w => w.id === String(godownId))?.name && (
+          <h3 className="text-base font-semibold mb-4">Warehouse: {warehouseOptions.find(w => w.id === String(godownId))?.name}</h3>
         )}
         {endDate && (
           <p className="mb-4 text-sm text-gray-600">End Date: {dayjs(endDate).format("DD/MM/YYYY")}</p>
@@ -280,8 +270,9 @@ const GodownStockReport = ({ user }: any) => {
             <tr>
               <th className="w-[80px] px-3 py-2 text-center font-semibold border border-gray-400">Sl. No</th>
               <th className="px-3 py-2 font-semibold border border-gray-400">Warehouse</th>
+              <th className="px-3 py-2 font-semibold border border-gray-400">Product</th>
+              <th className="w-[110px] px-3 py-2 font-semibold border border-gray-400">Unit</th>
               <th className="w-[150px] px-3 py-2 text-right font-semibold border border-gray-400">Stock (Qty)</th>
-              <th className="px-3 py-2 font-semibold border border-gray-400">Remarks</th>
             </tr>
           </thead>
           <tbody>
@@ -289,24 +280,14 @@ const GodownStockReport = ({ user }: any) => {
               <tr key={index}>
                 <td className="px-3 py-2 text-center border border-gray-400">{index + 1}</td>
                 <td className="px-3 py-2 border border-gray-400">{row.warehouse}</td>
+                <td className="px-3 py-2 border border-gray-400">{row.product_name}</td>
+                <td className="px-3 py-2 border border-gray-400">{row.unit || '-'}</td>
                 <td className="px-3 py-2 text-right font-semibold border border-gray-400">
                   {toNum(row.stock_qty) < 0 ? '-' : ''}{fmt(Math.abs(toNum(row.stock_qty)))}
                 </td>
-                <td className="px-3 py-2 border border-gray-400">{row.remarks || '-'}</td>
               </tr>
             ))}
           </tbody>
-          {rows.length ? (
-            <tfoot>
-              <tr>
-                <td colSpan={2} className="px-3 py-2 text-right font-semibold border border-gray-400">Grand Total</td>
-                <td className="px-3 py-2 text-right font-semibold border border-gray-400">
-                  {grandTotal < 0 ? '-' : ''}{fmt(Math.abs(grandTotal))}
-                </td>
-                <td className="border border-gray-400"></td>
-              </tr>
-            </tfoot>
-          ) : null}
         </table>
       </div>
     </div>
