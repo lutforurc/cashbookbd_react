@@ -175,7 +175,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white" htmlFor="type">Alert Type</label>
                 <div className="relative z-20 w-full rounded border border-stroke p-1.5 pr-8 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input">
                   <div className="flex flex-wrap items-center"></div>
-                  <span className={`${formState.type == 0 ? "bg-[#04b20c]" : formState.type == 1 ? "bg-[#eab90f]" : "bg-[#e13f32]"} m-1.5 flex items-center justify-center rounded border-[.5px] border-stroke py-1.5 px-2.5 text-white font-medium dark:border-strokedark`}>
+                  <span className={`${formState.type == 0 ? "bg-[rgb(var(--c-success))]" : formState.type == 1 ? "bg-[rgb(var(--c-meta-6))]" : "bg-[rgb(var(--c-danger))]"} m-1.5 flex items-center justify-center rounded border-[.5px] border-stroke py-1.5 px-2.5 text-white font-medium dark:border-strokedark`}>
                     {formState.type == 0 ? "Info" : formState.type == 1 ? "Warning" : "Alert"}
 
 

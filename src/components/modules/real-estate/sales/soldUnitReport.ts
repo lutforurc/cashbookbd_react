@@ -79,14 +79,14 @@ export const reportTotals = (
  * units, parking and charge lines read as one group. Colours cycle by position.
  */
 export const CUSTOMER_COLORS = [
-  { border: "#2563eb", tint: "rgba(37, 99, 235, 0.10)" }, // blue
-  { border: "#059669", tint: "rgba(5, 150, 105, 0.10)" }, // emerald
-  { border: "#d97706", tint: "rgba(217, 119, 6, 0.10)" }, // amber
-  { border: "#7c3aed", tint: "rgba(124, 58, 237, 0.10)" }, // violet
-  { border: "#db2777", tint: "rgba(219, 39, 119, 0.10)" }, // pink
-  { border: "#0891b2", tint: "rgba(8, 145, 178, 0.10)" }, // cyan
-  { border: "#65a30d", tint: "rgba(101, 163, 13, 0.10)" }, // lime
-  { border: "#e11d48", tint: "rgba(225, 29, 72, 0.10)" }, // rose
+  { border: "rgb(var(--c-blue-600))", tint: "rgb(var(--c-blue-600) / 0.10)" }, // blue
+  { border: "rgb(var(--c-emerald-600))", tint: "rgb(var(--c-emerald-600) / 0.10)" }, // emerald
+  { border: "rgb(var(--c-amber-600))", tint: "rgb(var(--c-amber-600) / 0.10)" }, // amber
+  { border: "rgb(var(--c-violet-600))", tint: "rgb(var(--c-violet-600) / 0.10)" }, // violet
+  { border: "rgb(var(--c-pink-600))", tint: "rgb(var(--c-pink-600) / 0.10)" }, // pink
+  { border: "rgb(var(--c-cyan-600))", tint: "rgb(var(--c-cyan-600) / 0.10)" }, // cyan
+  { border: "rgb(var(--c-lime-600))", tint: "rgb(var(--c-lime-600) / 0.10)" }, // lime
+  { border: "rgb(var(--c-rose-600))", tint: "rgb(var(--c-rose-600) / 0.10)" }, // rose
 ];
 
 export const customerColor = (index: number) =>

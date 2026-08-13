@@ -117,7 +117,7 @@ const SignIn: React.FC = () => {
           {/* h-screen, not h-full: the grid row stretches to whichever column is
               taller, so h-full would inherit the form's height and park the
               branding content above the fold instead of centring it. */}
-          <div className="relative hidden h-full bg-[#0B1B26] xl:flex xl:h-screen xl:flex-col xl:justify-center xl:overflow-hidden">
+          <div className="relative hidden h-full bg-[rgb(var(--c-gray-950))] xl:flex xl:h-screen xl:flex-col xl:justify-center xl:overflow-hidden">
 
             {/* Ambient glows */}
             <div className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-meta-3/20 blur-[120px]" />

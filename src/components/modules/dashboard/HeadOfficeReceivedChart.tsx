@@ -5,6 +5,7 @@ import { getHeadOfficeReceivedChart } from "./chartSlice";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import Loader from "../../../common/Loader";
 import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
+import { readToken, chartSeries } from '../../../theme/themeColors';
 
 interface ChartData {
   labels: string[];
@@ -20,7 +21,7 @@ const HeadOfficeReceivedChart: React.FC<HeadOfficeReceivedChartProps> = ({ month
   const charts = useSelector((state) => state.charts);
   const dispatch = useDispatch();
   const [colorMode] = useLocalStorage("color-theme", "light");
-  const [titleColor] = useState(colorMode === "dark" ? "#fff" : "#666666");
+  const [titleColor] = useState(readToken('chart-text'));
 
   const [chartData, setChartData] = useState<ChartData>({
     labels: [],
@@ -54,7 +55,7 @@ const HeadOfficeReceivedChart: React.FC<HeadOfficeReceivedChartProps> = ({ month
     dataLabels: { enabled: false },
     legend: { show: false },
     stroke: { curve: "smooth", show: true, width: 3 },
-    colors: ["#2E93fA", "#66DA26", "#546E7A", "#E91E63", "#FF9800", "#DC9899", "#A6D21E"],
+    colors: chartSeries(7),
     xaxis: { categories: chartData.labels },
     title: { text: "Received from Branch and Head Office", align: "center", style: { color: titleColor } },
     tooltip: {

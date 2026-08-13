@@ -95,14 +95,14 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
                bright rectangle on the screen. Tailwind runs in class mode, so
                these hang off html.dark and leave the light theme untouched. */
             .dark .react-datepicker {
-              background-color: #24303f;
-              border-color: #3d4d60;
-              color: #e5e7eb;
+              background-color: rgb(var(--c-boxdark));
+              border-color: rgb(var(--c-form-strokedark));
+              color: rgb(var(--c-gray-200));
             }
 
             .dark .react-datepicker__header {
-              background-color: #1d2a39;
-              border-bottom-color: #3d4d60;
+              background-color: rgb(var(--c-form-input));
+              border-bottom-color: rgb(var(--c-form-strokedark));
             }
 
             .dark .react-datepicker__current-month,
@@ -111,18 +111,18 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
             .dark .react-datepicker__day,
             .dark .react-datepicker__month-text,
             .dark .react-datepicker__time-name {
-              color: #e5e7eb;
+              color: rgb(var(--c-gray-200));
             }
 
             /* Days spilling in from the neighbouring month stay legible but
                clearly not part of this month. */
             .dark .react-datepicker__day--outside-month {
-              color: #7b8794;
+              color: rgb(var(--c-gray-400));
             }
 
             .dark .react-datepicker__day:hover,
             .dark .react-datepicker__month-text:hover {
-              background-color: #3d4d60;
+              background-color: rgb(var(--c-form-strokedark));
               color: #fff;
             }
 
@@ -137,27 +137,27 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
             .dark .react-datepicker__day--today,
             .dark .react-datepicker__month-text--today {
               font-weight: 700;
-              color: #93c5fd;
+              color: rgb(var(--c-blue-300));
             }
 
             .dark .react-datepicker__day--disabled {
-              color: #5a6472;
+              color: rgb(var(--c-gray-500));
             }
 
             /* The time column that appears beside the calendar when a field
                schedules something rather than just dating it. */
             .dark .react-datepicker__time-container,
             .dark .react-datepicker__time-container .react-datepicker__time {
-              background-color: #24303f;
-              border-left-color: #3d4d60;
+              background-color: rgb(var(--c-boxdark));
+              border-left-color: rgb(var(--c-form-strokedark));
             }
 
             .dark .react-datepicker__time-list-item {
-              color: #e5e7eb;
+              color: rgb(var(--c-gray-200));
             }
 
             .dark .react-datepicker__time-list-item:hover {
-              background-color: #3d4d60 !important;
+              background-color: rgb(var(--c-form-strokedark)) !important;
             }
 
             .dark .react-datepicker__time-list-item--selected {
@@ -170,15 +170,15 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
             .dark .react-datepicker__month-select,
             .dark .react-datepicker__year-select,
             .dark .react-datepicker__month-year-select {
-              background-color: #24303f;
-              border: 1px solid #3d4d60;
-              color: #e5e7eb;
+              background-color: rgb(var(--c-boxdark));
+              border: 1px solid rgb(var(--c-form-strokedark));
+              color: rgb(var(--c-gray-200));
             }
 
             .dark .react-datepicker__navigation-icon::before,
             .dark .react-datepicker__year-read-view--down-arrow,
             .dark .react-datepicker__month-read-view--down-arrow {
-              border-color: #9aa5b1;
+              border-color: rgb(var(--c-bodydark2));
             }
 
             .dark .react-datepicker__navigation:hover *::before {
@@ -187,13 +187,13 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
 
             /* The little arrow joining the popup to the input. */
             .dark .react-datepicker__triangle::before {
-              border-bottom-color: #3d4d60 !important;
-              border-top-color: #3d4d60 !important;
+              border-bottom-color: rgb(var(--c-form-strokedark)) !important;
+              border-top-color: rgb(var(--c-form-strokedark)) !important;
             }
 
             .dark .react-datepicker__triangle::after {
-              border-bottom-color: #1d2a39 !important;
-              border-top-color: #24303f !important;
+              border-bottom-color: rgb(var(--c-form-input)) !important;
+              border-top-color: rgb(var(--c-boxdark)) !important;
             }
 
             .cashbook-month-picker {

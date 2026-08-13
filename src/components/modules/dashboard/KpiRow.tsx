@@ -59,10 +59,10 @@ const DEFAULT_TILES: KpiTileSpec[] = [
   // Received, payment and balance are not here on purpose: the branch summary
   // card already carries all three, now with their own sparklines. Repeating
   // them would be the same number twice on one screen.
-  { key: 'sales', label: 'Today Sales', colour: '#14b8a6', money: true },
-  { key: 'purchase', label: 'Today Purchase', colour: '#f59e0b', money: true },
-  { key: 'newCustomers', label: 'New Customers', colour: '#06b6d4' },
-  { key: 'vouchers', label: 'Today Vouchers', colour: '#64748b' },
+  { key: 'sales', label: 'Today Sales', colour: 'rgb(var(--c-teal-500))', money: true },
+  { key: 'purchase', label: 'Today Purchase', colour: 'rgb(var(--c-amber-500))', money: true },
+  { key: 'newCustomers', label: 'New Customers', colour: 'rgb(var(--c-cyan-500))' },
+  { key: 'vouchers', label: 'Today Vouchers', colour: 'rgb(var(--c-body))' },
 ];
 
 /**
@@ -76,8 +76,8 @@ const DEFAULT_TILES: KpiTileSpec[] = [
  * screen.
  */
 export const CONSTRUCTION_TILES: KpiTileSpec[] = [
-  { key: 'purchase', label: 'Today Purchase', colour: '#f59e0b', money: true },
-  { key: 'vouchers', label: 'Today Vouchers', colour: '#64748b' },
+  { key: 'purchase', label: 'Today Purchase', colour: 'rgb(var(--c-amber-500))', money: true },
+  { key: 'vouchers', label: 'Today Vouchers', colour: 'rgb(var(--c-body))' },
 ];
 
 const formatValue = (value: number, money?: boolean) => {

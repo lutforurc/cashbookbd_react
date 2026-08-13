@@ -38,6 +38,34 @@
   --c-meta-9: 225 231 238;           /* #E1E7EE */
   --c-meta-10: 18 162 196;           /* #12A2C4 */
 
+  /* Charts.
+   *
+   * A deliberate categorical set rather than whatever each chart reached for --
+   * the dashboard had ApexCharts' own defaults on one card, hand-picked hexes on
+   * the next, and the same series drawn in two different greens. Ordered so the
+   * first few are the furthest apart, which is what a two-series chart needs.
+   *
+   * Chrome (the axis text and grid lines) is the one part that has to differ
+   * per mode; it is overridden further down. */
+  --c-chart-1: 43 95 217;            /* #2B5FD9 */
+  --c-chart-2: 18 166 110;           /* #12A66E */
+  --c-chart-3: 224 138 12;           /* #E08A0C */
+  --c-chart-4: 203 58 76;            /* #CB3A4C */
+  --c-chart-5: 124 92 224;           /* #7C5CE0 */
+  --c-chart-6: 18 162 196;           /* #12A2C4 */
+  --c-chart-7: 217 82 126;           /* #D9527E */
+  --c-chart-8: 110 120 133;          /* #6E7885 */
+  --c-chart-text: 70 80 91;          /* #46505B */
+  --c-chart-grid: 225 231 238;       /* #E1E7EE */
+
+  /* Highlight rules.
+   *
+   * The one colour in the palette that is deliberately not tasteful: the
+   * report highlight rules want a border nobody can miss, and Tailwind's
+   * red-500 reads as a washed-out coral against a dark page. Kept as its own
+   * name so nothing else picks it up by accident. */
+  --c-highlight-red: 255 0 0;        /* #FF0000 */
+
   /* Text */
   --c-black: 26 32 41;               /* #1A2029 */
   --c-black-2: 11 14 18;             /* #0B0E12 */
@@ -339,6 +367,11 @@ html.dark {
      enough to read on a card -- 219 of its 301 text uses are dark-mode. */
   --c-gray-400: 153 163 176;          /* #99A3B0 */
   --c-slate-400: 153 163 176;         /* #99A3B0 */
+
+  /* Axis labels and grid lines. The series colours themselves hold in both
+     modes; only the chrome around them has to lighten. */
+  --c-chart-text: 163 173 185;        /* #A3ADB9 */
+  --c-chart-grid: 47 56 68;           /* #2F3844 */
 }
 
 /* Paper is white whoever is printing.

@@ -11,11 +11,11 @@ const MapOne = () => {
 
       regionStyle: {
         initial: {
-          fill: '#C8D0D8',
+          fill: 'rgb(var(--c-gray-300))',
         },
         hover: {
           fillOpacity: 1,
-          fill: '#3056D3',
+          fill: 'rgb(var(--c-primary))',
         },
       },
       regionLabelStyle: {

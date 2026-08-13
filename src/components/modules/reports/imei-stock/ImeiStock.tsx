@@ -95,13 +95,13 @@ const ImeiStock = () => {
 
   const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-white';
   const controlClass =
-    'h-10 w-full rounded-none border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none focus:border-primary dark:border-[#465367] dark:bg-[#1c2735] dark:text-white dark:focus:border-slate-300';
+    'h-10 w-full rounded-none border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none focus:border-primary dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-white dark:focus:border-slate-300';
 
   return (
-    <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[#18212e] dark:text-white">
+    <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-white">
       <HelmetTitle title="IMEI Stock" />
 
-      <div className="bg-white px-5 py-4 shadow-sm dark:bg-[#1d2735]">
+      <div className="bg-white px-5 py-4 shadow-sm dark:bg-[rgb(var(--c-boxdark))]">
 
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
@@ -167,7 +167,7 @@ const ImeiStock = () => {
         </div>
       </div>
 
-      <div ref={printRef} className="mt-4 bg-white px-5 py-5 text-center shadow-sm dark:bg-[#1d2735]">
+      <div ref={printRef} className="mt-4 bg-white px-5 py-5 text-center shadow-sm dark:bg-[rgb(var(--c-boxdark))]">
        
 
         {loading ? (

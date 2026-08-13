@@ -351,7 +351,7 @@ const AdminInAppMessageForm: React.FC = () => {
               <label className="block text-sm">Background colour</label>
               <input
                 type="color"
-                value={form.bg_color || '#ffffff'}
+                value={form.bg_color || 'rgb(var(--c-white))'}
                 onChange={(e) => set('bg_color', e.target.value)}
                 className="h-8.5 w-full rounded-xs border border-gray-300 dark:border-gray-600"
               />
@@ -360,7 +360,7 @@ const AdminInAppMessageForm: React.FC = () => {
               <label className="block text-sm">Text colour</label>
               <input
                 type="color"
-                value={form.text_color || '#111827'}
+                value={form.text_color || 'rgb(var(--c-gray-900))'}
                 onChange={(e) => set('text_color', e.target.value)}
                 className="h-8.5 w-full rounded-xs border border-gray-300 dark:border-gray-600"
               />
@@ -369,7 +369,7 @@ const AdminInAppMessageForm: React.FC = () => {
               <label className="block text-sm">Button colour</label>
               <input
                 type="color"
-                value={form.button_color || '#3c50e0'}
+                value={form.button_color || 'rgb(var(--c-primary))'}
                 onChange={(e) => set('button_color', e.target.value)}
                 className="h-8.5 w-full rounded-xs border border-gray-300 dark:border-gray-600"
               />

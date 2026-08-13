@@ -7,6 +7,7 @@ import useLocalStorage from "../../../hooks/useLocalStorage";
 import ChartCard from "./ChartCard";
 import { getApexTheme } from "./chartTheme";
 import { chartDate, formatDate } from "../../utils/utils-functions/formatDate";
+import { readToken } from '../../../theme/themeColors';
 
 const DailyPurchaseChart = () => {
   const dispatch = useDispatch();
@@ -36,7 +37,7 @@ const DailyPurchaseChart = () => {
 
   const options = {
     ...getApexTheme(mode), // include theme colors, grid, labels
-    colors: ["#00b894"], // purchase line color
+    colors: [readToken('chart-2')], // purchase line
     title: {
       // text: "Daily Purchase (Last 1 Month)",
       align: "center",

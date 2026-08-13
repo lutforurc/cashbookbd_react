@@ -25,7 +25,7 @@ interface DueAgingCardProps {
  * are an ordered scale, not four unrelated things; the darkening itself says
  * "this end is the problem" without needing a legend.
  */
-const RAMP = ['#fcd34d', '#fbbf24', '#f59e0b', '#b45309'];
+const RAMP = ['rgb(var(--c-amber-300))', 'rgb(var(--c-amber-400))', 'rgb(var(--c-amber-500))', 'rgb(var(--c-amber-700))'];
 
 const DueAgingCard: React.FC<DueAgingCardProps> = ({ aging, isLoading }) => {
   if (isLoading && !aging) {

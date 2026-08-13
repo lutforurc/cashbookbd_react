@@ -1,7 +1,17 @@
 // chartTheme.ts
+import { readToken } from '../../../theme/themeColors';
+
+/**
+ * The shared ApexCharts options.
+ *
+ * The two chrome colours used to be spelled out here, once per mode. They are
+ * read from the palette now -- tokens.css already carries a light and a dark
+ * value for each, so this no longer has to know which mode it is in. `mode` is
+ * still taken because Apex's own tooltip skin is named, not coloured.
+ */
 export const getApexTheme = (mode: string) => {
-  const textColor = mode === "dark" ? "#dfe6e9" : "#2d3436";
-  const gridColor = mode === "dark" ? "#2f3640" : "#dfe6e9";
+  const textColor = readToken('chart-text');
+  const gridColor = readToken('chart-grid');
 
   return {
     chart: {

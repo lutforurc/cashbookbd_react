@@ -320,25 +320,25 @@ const ApprovalAudit = ({ user }: any) => {
             {filters.date_from || 'Beginning'} to {filters.date_to || 'Today'}
             {filters.action ? ` | Action: ${actionLabel(filters.action)}` : ''}
           </p>
-          <table className="w-full border-collapse text-xs" style={{ borderColor: '#cbd5e1' }}>
+          <table className="w-full border-collapse text-xs" style={{ borderColor: 'rgb(var(--c-slate-300))' }}>
             <thead>
               <tr>
                 {['Action At', 'Attendance Date', 'Employee', 'Serial', 'Branch/Project', 'Action', 'Action By', 'Remarks'].map((head) => (
-                  <th key={head} style={{ border: '1px solid #cbd5e1', padding: '4px', textAlign: 'left' }}>{head}</th>
+                  <th key={head} style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px', textAlign: 'left' }}>{head}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {rows.map((row: any) => (
                 <tr key={row.id}>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{dateTimeText(row.action_at)}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.attendance_date ? chartDate(row.attendance_date) : '-'}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.employee_name || '-'}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.employee_serial || '-'}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.branch_name || '-'}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{actionLabel(row.action)}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.action_by_name || '-'}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.remarks || '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{dateTimeText(row.action_at)}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.attendance_date ? chartDate(row.attendance_date) : '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.employee_name || '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.employee_serial || '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.branch_name || '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{actionLabel(row.action)}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.action_by_name || '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.remarks || '-'}</td>
                 </tr>
               ))}
             </tbody>

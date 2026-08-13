@@ -88,7 +88,7 @@ const normalizeLookupText = (value: any) =>
     .replace(/\s+/g, ' ');
 
 const autofillHighlightClass =
-  'border-blue-500 ring-1 ring-blue-500 bg-[#243245] dark:bg-[#243245]';
+  'border-blue-500 ring-1 ring-blue-500 bg-[rgb(var(--c-strokedark))] dark:bg-[rgb(var(--c-strokedark))]';
 
 const getCashReceivedDebit = (transaction: any): string => {
   const masters = Array.isArray(transaction?.acc_transaction_master)

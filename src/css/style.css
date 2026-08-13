@@ -402,8 +402,8 @@ span.flatpickr-weekday,
 .flatpickr-day.inRange {
   @apply dark:!shadow-7;
   box-shadow:
-    -5px 0 0 #eff4fb,
-    5px 0 0 #eff4fb;
+    -5px 0 0 rgb(var(--c-gray-DEFAULT)),
+    5px 0 0 rgb(var(--c-gray-DEFAULT));
 }
 .flatpickr-day.inRange,
 .flatpickr-day.prevMonthDay.inRange,
@@ -443,13 +443,13 @@ span.flatpickr-weekday,
 .flatpickr-day.selected.nextMonthDay,
 .flatpickr-day.startRange.nextMonthDay,
 .flatpickr-day.endRange.nextMonthDay {
-  background: #3c50e0;
+  background: rgb(var(--c-primary));
   @apply !border-primary !bg-primary hover:!border-primary hover:!bg-primary;
 }
 .flatpickr-day.selected.startRange + .endRange:not(:nth-child(7n + 1)),
 .flatpickr-day.startRange.startRange + .endRange:not(:nth-child(7n + 1)),
 .flatpickr-day.endRange.startRange + .endRange:not(:nth-child(7n + 1)) {
-  box-shadow: -10px 0 0 #3c50e0;
+  box-shadow: -10px 0 0 rgb(var(--c-primary));
 }
 
 .map-btn .jvm-zoom-btn {
@@ -515,7 +515,7 @@ input[type='number'] {
   @apply flex items-center justify-between w-12 h-6 mx-auto;
 }
 .threes.primary .three {
-  @apply !bg-[#1BAFB3] my-2;
+  @apply !bg-[rgb(var(--c-meta-10))] my-2;
 }
 .threes .three {
   @apply inline-flex w-3 h-3 rounded-full bg-white;
@@ -541,7 +541,7 @@ input[type='number'] {
   }
 }
 .otp-wrap input[type="text"]{
-  @apply !w-9 sm:!w-12 !h-9 sm:!h-12 text-center mx-1 border-none outline-none bg-[#f4f4f4] rounded-lg text-xl font-medium;
+  @apply !w-9 sm:!w-12 !h-9 sm:!h-12 text-center mx-1 border-none outline-none bg-[rgb(var(--c-gray-100))] rounded-lg text-xl font-medium;
 }
 
 
@@ -549,7 +549,7 @@ input[type='number'] {
   @apply flex items-center justify-between w-12 h-6 mx-auto;
 }
 .threes.primary .three {
-  @apply !bg-[#1BAFB3] my-2;
+  @apply !bg-[rgb(var(--c-meta-10))] my-2;
 }
 .threes .three {
   @apply inline-flex w-3 h-3 rounded-full bg-white;
