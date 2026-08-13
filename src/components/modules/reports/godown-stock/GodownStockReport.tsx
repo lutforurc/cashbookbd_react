@@ -165,6 +165,7 @@ const GodownStockReport = ({ user }: any) => {
             />
           </div>
 
+
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Warehouse</label>
             {warehouseDdlData.isLoading ? <Loader /> : null}
