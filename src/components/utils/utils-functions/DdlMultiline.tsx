@@ -81,15 +81,29 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   const [internalSelectedOption, setInternalSelectedOption] = React.useState<OptionType | null>(
     value ?? defaultValue ?? null,
   );
+  const [darkMode, setDarkMode] = React.useState(() =>
+    document.documentElement.classList.contains('dark')
+  );
   const dispatch = useDispatch();
 
-  const themeMode = useLocalStorage('color-theme', 'light');
-  const darkMode = themeMode[0] === 'dark';
   const controlHeight = getControlHeightFromClassName(className);
 
   React.useEffect(() => {
     setInternalSelectedOption(value ?? defaultValue ?? null);
   }, [value, defaultValue]);
+
+  React.useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setDarkMode(document.documentElement.classList.contains('dark'));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const minimumChars = minChars ?? (fetchOptions ? 0 : 3);
 
