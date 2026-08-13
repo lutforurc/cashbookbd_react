@@ -32,14 +32,29 @@ export const token = (name: string, alpha?: number): string =>
  * is a smaller problem than a dashboard that fails to render, and the fallback
  * only ever shows if the stylesheet has not loaded.
  */
-export const readToken = (name: string, fallback = 'rgb(105 115 128)'): string => {
+export const readToken = (name: string, fallback = 'rgb(105, 115, 128)'): string => {
   if (typeof document === 'undefined') return fallback;
 
   const channels = getComputedStyle(document.documentElement)
     .getPropertyValue(`--c-${name}`)
     .trim();
 
-  return channels ? `rgb(${channels})` : fallback;
+  if (!channels) return fallback;
+
+  // Commas, not the spaces the tokens are stored with.
+  //
+  // `rgb(110 155 255)` is valid CSS and the browser draws it correctly, which
+  // is why this looked right. But ApexCharts parses the colours it is handed,
+  // and its rgb2hex() matches a comma-separated form only:
+  //
+  //     /^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)/i
+  //
+  // The space-separated form does not match, so rgb2hex() returns '', and
+  // hexToRgba() replaces anything that does not start with '#' by its own
+  // #999999. Every area fill in the app was therefore drawn the same grey at a
+  // tenth of an opacity -- invisible on a white card and on a dark one alike,
+  // whatever colour the palette said. Charts drew, and showed nothing.
+  return `rgb(${channels.split(/\s+/).join(', ')})`;
 };
 
 /**
@@ -78,6 +93,36 @@ export function useThemeTokens<K extends string>(
   }, [read]);
 
   return colors;
+}
+
+/**
+ * Whether the dark theme is on, kept current.
+ *
+ * The charts took this from useLocalStorage('color-theme'), which reads the
+ * value once on mount and never hears the toggle -- each component holds its
+ * own copy of that state, so flipping the theme somewhere else leaves a chart
+ * with the wrong tooltip skin and the wrong gradient until something unrelated
+ * re-renders it. The class on <html> is what actually changes, so watch that.
+ */
+export function useIsDark(): boolean {
+  const read = () =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+
+  const [isDark, setIsDark] = useState(read);
+
+  useEffect(() => {
+    setIsDark(read());
+
+    const observer = new MutationObserver(() => setIsDark(read()));
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
 }
 
 /**

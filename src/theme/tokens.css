@@ -386,10 +386,27 @@ html.dark {
   --c-gray-400: 153 163 176;          /* #99A3B0 */
   --c-slate-400: 153 163 176;         /* #99A3B0 */
 
-  /* Axis labels and grid lines. The series colours themselves hold in both
-     modes; only the chrome around them has to lighten. */
+  /* Axis labels and grid lines. */
   --c-chart-text: 163 173 185;        /* #A3ADB9 */
   --c-chart-grid: 47 56 68;           /* #2F3844 */
+
+  /* The series colours, which do NOT hold in both modes -- the claim that used
+     to stand here. They were chosen to read as ink on white, so against a
+     #212932 card the darkest of them sits at about 2:1: a line you have to
+     look for, and an area fill at a tenth of that opacity which is not there
+     at all. The dashboard's Purchase & Sales chart was drawing correctly and
+     showing nothing.
+
+     Same hues, lifted until each clears 4.5:1 on the card, so a series keeps
+     its identity between modes and the reader keeps the series. */
+  --c-chart-1: 110 155 255;           /* #6E9BFF  was #2B5FD9 */
+  --c-chart-2: 52 211 153;            /* #34D399  was #12A66E */
+  --c-chart-3: 245 181 68;            /* #F5B544  was #E08A0C */
+  --c-chart-4: 248 115 133;           /* #F87385  was #CB3A4C */
+  --c-chart-5: 167 139 250;           /* #A78BFA  was #7C5CE0 */
+  --c-chart-6: 56 189 248;            /* #38BDF8  was #12A2C4 */
+  --c-chart-7: 245 138 172;           /* #F58AAC  was #D9527E */
+  --c-chart-8: 154 165 180;           /* #9AA5B4  was #6E7885 */
 
   /* The ageing ramp, dimmed further. A colour that reads as muted on white is
      still bright against a dark card -- the surface behind it dropped by a

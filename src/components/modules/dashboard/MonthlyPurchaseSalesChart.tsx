@@ -3,21 +3,23 @@ import ApexChart from "react-apexcharts";
 import { useDispatch, useSelector } from "react-redux";
 import { getMonthlyPurchaseSales } from "./chartSlice";
 import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
-import useLocalStorage from "../../../hooks/useLocalStorage";
 import ChartCard from "./ChartCard";
 import { getApexTheme } from "./chartTheme";
-import { readToken } from '../../../theme/themeColors';
+import { useIsDark, useThemeTokens } from '../../../theme/themeColors';
 
 const MonthlyPurchaseSalesChart: React.FC = () => {
   const dispatch = useDispatch();
   const { purchaseSales, loading } = useSelector((state: any) => state.charts);
 
-  // 🌗 Theme Mode
-  const [mode] = useLocalStorage("color-theme", "light");
+  // 🌗 Theme Mode. Read from the document rather than localStorage, so the
+  // chart is redrawn when the theme is switched instead of keeping the colours
+  // it happened to mount with.
+  const isDark = useIsDark();
+  const mode = isDark ? "dark" : "light";
 
   // Line Colors
-  const purchaseColor = readToken('chart-2');
-  const salesColor = readToken('chart-1');
+  const { 'chart-2': purchaseColor, 'chart-1': salesColor, 'chart-text': axisColor } =
+    useThemeTokens(['chart-2', 'chart-1', 'chart-text']);
 
   const [chartData, setChartData] = useState({
     labels: [],
@@ -63,12 +65,19 @@ const MonthlyPurchaseSalesChart: React.FC = () => {
       ...getApexTheme(mode).xaxis,
       categories: chartData.labels,
     },
+    // Spread, not replaced: writing a bare yaxis here dropped the theme's
+    // label colour with it, and Apex's own default is a near-black that the
+    // dark card swallowed -- the figures up the side were being drawn, in a
+    // colour nobody could read.
     yaxis: {
-    title: {
-        text: 'Purchase & Sales'
+      ...getApexTheme(mode).yaxis,
+      title: {
+        text: 'Purchase & Sales',
+        style: { color: axisColor },
       },
       labels: {
-        formatter: function (value:number) {
+        style: { colors: axisColor },
+        formatter: function (value: number) {
           return thousandSeparator(value);
         }
       }

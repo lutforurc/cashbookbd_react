@@ -3,16 +3,20 @@ import ApexChart from "react-apexcharts";
 import { useDispatch, useSelector } from "react-redux";
 import { getMonthlyPurchaseSales } from "./chartSlice";
 import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
-import useLocalStorage from "../../../hooks/useLocalStorage";
 import ChartCard from "./ChartCard";
 import { getApexTheme } from "./chartTheme";
 import { chartDate, formatDate } from "../../utils/utils-functions/formatDate";
-import { readToken } from '../../../theme/themeColors';
+import { useIsDark, useThemeTokens } from '../../../theme/themeColors';
 
 const DailyPurchaseChart = () => {
   const dispatch = useDispatch();
   const { purchaseSales, loading } = useSelector((state) => state.charts);
-  const [mode] = useLocalStorage("color-theme", "light");
+
+  // Taken from the document, so switching the theme redraws the chart.
+  const isDark = useIsDark();
+  const mode = isDark ? "dark" : "light";
+  const { 'chart-2': purchaseColor, 'chart-text': axisColor } =
+    useThemeTokens(['chart-2', 'chart-text']);
 
   const [chartData, setChartData] = useState({
     labels: [],
@@ -37,7 +41,7 @@ const DailyPurchaseChart = () => {
 
   const options = {
     ...getApexTheme(mode), // include theme colors, grid, labels
-    colors: [readToken('chart-2')], // purchase line
+    colors: [purchaseColor], // purchase line
     title: {
       // text: "Daily Purchase (Last 1 Month)",
       align: "center",
@@ -50,12 +54,17 @@ const DailyPurchaseChart = () => {
       ...getApexTheme(mode).xaxis,
       categories: chartData.labels,
     },
+    // Spread, so the theme's label colour is not lost with it -- see the same
+    // note on the Purchase & Sales chart.
     yaxis: {
-    title: {
-        text: 'Purchase'
+      ...getApexTheme(mode).yaxis,
+      title: {
+        text: 'Purchase',
+        style: { color: axisColor },
       },
       labels: {
-        formatter: function (value:number) {
+        style: { colors: axisColor },
+        formatter: function (value: number) {
           return thousandSeparator(value);
         }
       }

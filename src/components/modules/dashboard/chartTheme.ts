@@ -58,13 +58,19 @@ export const getApexTheme = (mode: string) => {
       style: { fontSize: "12px" },
     },
 
+    // An area fill has to sit above the surface it is drawn on, and Apex's
+    // `shade` says which way to take the series colour. "dark" was being asked
+    // for in dark mode, which walked the fill towards black -- towards the card
+    // behind it -- so the band under the line disappeared into the card. Both
+    // modes lift the colour away from their own background instead, and dark
+    // mode starts from a higher opacity because it has less room to work in.
     fill: {
       type: "gradient",
       gradient: {
-        shade: mode === "dark" ? "dark" : "light",
+        shade: "light",
         type: "vertical",
-        opacityFrom: 0.4,
-        opacityTo: 0.1,
+        opacityFrom: mode === "dark" ? 0.55 : 0.4,
+        opacityTo: mode === "dark" ? 0.05 : 0.1,
         stops: [0, 90, 100],
       },
     },
