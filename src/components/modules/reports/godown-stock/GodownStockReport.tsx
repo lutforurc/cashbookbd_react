@@ -9,7 +9,6 @@ import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomB
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
-import DdlMultiline from "../../../utils/utils-functions/DdlMultiline";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import httpService from "../../../services/httpService";
@@ -41,7 +40,6 @@ const GodownStockReport = ({ user }: any) => {
   const [rows, setRows] = useState<StockRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedWarehouse, setSelectedWarehouse] = useState<any>(null);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -50,6 +48,7 @@ const GodownStockReport = ({ user }: any) => {
   useEffect(() => {
     if (branchDdlData?.protectedData?.data && branchDdlData?.protectedData?.transactionDate) {
       setDropdownData(branchDdlData.protectedData.data);
+      console.log('Branch data loaded:', branchDdlData.protectedData.data);
 
       const [day, month, year] = branchDdlData.protectedData.transactionDate.split("/");
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
@@ -63,10 +62,12 @@ const GodownStockReport = ({ user }: any) => {
   const warehouseOptions = (() => {
     if (!branchId || !dropdownData.length) return [];
     const branch = dropdownData.find(b => b.id?.toString() === branchId?.toString());
-    return branch?.godowns?.map((g: any) => ({
+    const options = branch?.godowns?.map((g: any) => ({
       value: g.id?.toString(),
       label: g.name,
     })) || [];
+    console.log('branchId:', branchId, 'branch:', branch, 'options:', options);
+    return options;
   })();
 
   const selectedBranchName = (() => {
@@ -124,7 +125,6 @@ const GodownStockReport = ({ user }: any) => {
     setError(null);
     setEndDate(defaultTransactionDate);
     setGodownId(null);
-    setSelectedWarehouse(null);
     if (authUser?.branch_id) setBranchId(authUser.branch_id);
   };
 
@@ -149,7 +149,6 @@ const GodownStockReport = ({ user }: any) => {
               onChange={(e: any) => {
                 setBranchId(e.target.value);
                 setGodownId(null);
-                setSelectedWarehouse(null);
                 setRows([]);
               }}
               value={branchId == null ? "" : String(branchId)}
@@ -160,18 +159,23 @@ const GodownStockReport = ({ user }: any) => {
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Warehouse</label>
-            <DdlMultiline
-              id="godown_id"
-              placeholder="Select Warehouse"
-              value={selectedWarehouse}
-              onSelect={(option: any) => {
-                setGodownId(option?.value || null);
-                setSelectedWarehouse(option);
+            <select
+              value={godownId == null ? "" : String(godownId)}
+              onChange={(e) => {
+                const selectedValue = e.target.value;
+                setGodownId(selectedValue);
+                const selected = warehouseOptions.find(w => w.value === selectedValue);
+                setSelectedWarehouse(selected || null);
               }}
-              defaultOptions={true}
-              fetchOptions={async () => warehouseOptions}
-              className="w-full font-medium text-sm p-2 h-10 min-w-[260px]"
-            />
+              className="w-full font-medium text-sm p-2 h-10 min-w-[260px] rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            >
+              <option value="">Select Warehouse</option>
+              {warehouseOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -264,8 +268,8 @@ const GodownStockReport = ({ user }: any) => {
         {selectedBranchName && (
           <h2 className="text-lg font-bold mb-4">Branch: {selectedBranchName}</h2>
         )}
-        {selectedWarehouse?.label && (
-          <h3 className="text-base font-semibold mb-4">Warehouse: {selectedWarehouse.label}</h3>
+        {godownId && warehouseOptions.find(w => w.value === godownId)?.label && (
+          <h3 className="text-base font-semibold mb-4">Warehouse: {warehouseOptions.find(w => w.value === godownId)?.label}</h3>
         )}
         {endDate && (
           <p className="mb-4 text-sm text-gray-600">End Date: {dayjs(endDate).format("DD/MM/YYYY")}</p>
