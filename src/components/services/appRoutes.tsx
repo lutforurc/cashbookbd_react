@@ -146,6 +146,7 @@ const ROUTES = {
   report_closing_stock: '/reports/closing-stock',
   somity_stock_details: '/somity-report/stock-details',
   report_imei_stock: '/reports/stock-imei',
+  report_godown_stock: '/reports/godown-stock',
   cat_wise_in_out: '/reports/cat-wise/in-out',
   purchase_ledger: '/reports/purchase-ledger',
   sales_ledger: '/reports/sales-ledger',

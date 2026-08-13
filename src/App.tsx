@@ -183,6 +183,7 @@ import BalanceSheet from './components/modules/reports/balance-sheet/BalanceShee
 import TrialBalanceLevel3 from './components/modules/reports/trial-balance-level3/TrialBalanceLevel3';
 import TrialBalanceLevel4 from './components/modules/reports/trial-balance-level4/TrialBalanceLevel4';
 import ExpenseReport from './components/modules/reports/expense-report/ExpenseReport';
+import GodownStockReport from './components/modules/reports/godown-stock/GodownStockReport';
 import LedgerWithProduct from './components/modules/reports/ledger-with-product/LedgerWithProduct';
 import CollectionSheet from './components/modules/reports/somity/CollectionSheet';
 import MonthlyReport from './components/modules/reports/somity/MonthlyReport';
@@ -614,6 +615,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view', 'imei.stock']} loading={permissionsLoading} />}>
               <Route path={routes.report_imei_stock} element={<ImeiStock />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_godown_stock} element={<GodownStockReport user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create', 'product.stock.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_branch_transfer} element={<BranchTransferReport user={me} />} />

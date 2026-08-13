@@ -81,6 +81,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'reports/product/stock', title: "Product Stock" },
     { id: 'somity_stock_details', title: "Stock Details" },
     { id: 'report_imei_stock', title: "IMEI Stock" },
+    { id: 'report_godown_stock', title: "Godown Stock" },
     { id: 'reports/cat-wise/in-out', title: "Cat-wise In\/Out" },
     { id: 'reports/purchase-ledger', title: "Purchase Ledger" },
     { id: 'reports/sales-ledger', title: "Sales Ledger" },
@@ -1170,6 +1171,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === routes.report_closing_stock ||
                     pathname === routes.somity_stock_details ||
                     pathname === routes.report_imei_stock ||
+                    pathname === routes.report_godown_stock ||
                     pathname === '/reports/due-list' ||
                     pathname === '/reports/purchase-ledger' ||
                     pathname === '/reports/sales-ledger' ||
@@ -1197,6 +1199,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname.includes(routes.report_closing_stock) ||
                           pathname.includes(routes.somity_stock_details) ||
                           pathname.includes(routes.report_imei_stock) ||
+                          pathname.includes(routes.report_godown_stock) ||
                           pathname.includes(routes.report_date_wise_in_out) ||
                           pathname.includes('/reports/cat-wise/in-out') ||
                           pathname.includes('/reports/purchase-ledger') ||
@@ -1586,6 +1589,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 IMEI Stock
+                              </NavLink>
+                            </li>
+                          )}
+                          {/* Godown Stock */}
+                          {hasPermission(permissions, 'product.stock.view') && (
+                            <li style={subSlot('reports', 'report_godown_stock')}>
+                              <NavLink
+                                to={routes.report_godown_stock}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Godown Stock
                               </NavLink>
                             </li>
                           )}
