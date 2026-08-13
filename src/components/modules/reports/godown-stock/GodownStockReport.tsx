@@ -69,8 +69,8 @@ const GodownStockReport = ({ user }: any) => {
   // so the warehouses come from /active/warehouse, listed whole the way the
   // purchase and sales invoices list them. Ids are stringified so the print
   // header can match the selected value.
-  const warehouseOptions = (() => {
-    const allWarehouses = Array.isArray(warehouseDdlData?.data) ? warehouseDdlData.data : [];
+  const warehouseOptions: Array<{ id: string; name: string }> = (() => {
+    const allWarehouses: any[] = Array.isArray(warehouseDdlData?.data) ? warehouseDdlData.data : [];
     return allWarehouses.map((w: any) => ({ id: w.id?.toString(), name: w.name }));
   })();
 
@@ -87,10 +87,8 @@ const GodownStockReport = ({ user }: any) => {
       setError("Branch select korun");
       return;
     }
-    if (!godownId) {
-      setError("Warehouse select korun");
-      return;
-    }
+    // No warehouse chosen is a choice of its own — every warehouse — which the
+    // report reads as an unfiltered godown_id.
     if (!endDate) {
       setError("End date din");
       return;
@@ -172,6 +170,7 @@ const GodownStockReport = ({ user }: any) => {
             <WarehouseDropdown
               id="warehouse"
               onChange={handleWarehouseChange}
+              emptyLabel="All Warehouse"
               className="w-full font-medium text-sm p-2 h-10 min-w-[260px]"
               warehouseDdl={warehouseOptions}
               defaultValue={godownId == null ? "" : String(godownId)}
@@ -194,7 +193,7 @@ const GodownStockReport = ({ user }: any) => {
               buttonLoading={loading}
               label="Apply"
               icon={<FiCheckSquare />}
-              className="h-10 px-6"
+              className="h-10 min-w-30"
             />
             <ButtonLoading
               onClick={handleReset}
@@ -259,9 +258,9 @@ const GodownStockReport = ({ user }: any) => {
         {selectedBranchName && (
           <h2 className="text-lg font-bold mb-4">Branch: {selectedBranchName}</h2>
         )}
-        {godownId && warehouseOptions.find(w => w.id === String(godownId))?.name && (
-          <h3 className="text-base font-semibold mb-4">Warehouse: {warehouseOptions.find(w => w.id === String(godownId))?.name}</h3>
-        )}
+        <h3 className="text-base font-semibold mb-4">
+          Warehouse: {warehouseOptions.find(w => w.id === String(godownId))?.name || 'All Warehouse'}
+        </h3>
         {endDate && (
           <p className="mb-4 text-sm text-gray-600">End Date: {dayjs(endDate).format("DD/MM/YYYY")}</p>
         )}

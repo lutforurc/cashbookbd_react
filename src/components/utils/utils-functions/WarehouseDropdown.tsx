@@ -9,6 +9,12 @@ interface SelectOptionProps {
   id?: string;
   name?: string; // New prop for name
   defaultValue?: string; // New prop for default value
+  /**
+   * What the blank option reads. An invoice line either belongs to a warehouse
+   * or it does not, so it stays "Not Applicable"; a report filter reads the
+   * same blank value as "every warehouse" and says so.
+   */
+  emptyLabel?: string;
 }
 
 const WarehouseDropdown: React.FC<SelectOptionProps> = ({
@@ -16,9 +22,10 @@ const WarehouseDropdown: React.FC<SelectOptionProps> = ({
   onChange,
   onKeyDown,
   className,
-  id, 
+  id,
   name,
   defaultValue,
+  emptyLabel = 'Not Applicable',
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>(defaultValue || '');
 
@@ -43,7 +50,7 @@ const WarehouseDropdown: React.FC<SelectOptionProps> = ({
       onKeyDown={onKeyDown} // Pass it to the select element
       className={`${FIELD_SELECT} block w-full text-sm ${className}`}
     >
-      <option value="">Not Applicable</option>
+      <option value="">{emptyLabel}</option>
       {warehouseDdl &&
         warehouseDdl.map((item: any, index: number) => (
           <option key={index} value={item.id}>{item.name}</option>
