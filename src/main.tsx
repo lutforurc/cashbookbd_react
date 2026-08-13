@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+// First, so every colour the sheets below reach for is already defined.
+import './theme/tokens.css';
 import './css/style.css';
 import './css/satoshi.css';
 import 'jsvectormap/dist/jsvectormap.css';

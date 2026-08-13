@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Table from '../../../utils/others/Table';
 import StatusIcon from '../../../utils/utils-functions/StatusIcon';
 import { FaSun, FaMoon } from 'react-icons/fa';
+import useColorMode from '../../../../hooks/useColorMode';
 import {
   FiLogOut,
   FiShoppingBag,
@@ -60,8 +61,14 @@ interface Payment {
 const CustomerDashboard: React.FC = () => {
   const dispatch = useDispatch();
   const customer = useSelector((state: any) => state.customerAuth);
-  // Theme state: true = dark, false = light
-  const [isDark, setIsDark] = useState<boolean>(false);
+  // Theme state: true = dark, false = light.
+  //
+  // Read through the app's own hook rather than a local useState. This screen
+  // used to keep its own flag and write the dark class to <html> itself, which
+  // meant two mechanisms writing the same class, its choice was forgotten on
+  // reload, and opening this page quietly undid the theme chosen elsewhere.
+  const [colorMode, setColorMode] = useColorMode();
+  const isDark = colorMode === 'dark';
   // Active tab: 'overview' | 'installments' | 'payments'
   const [activeTab, setActiveTab] = useState<'overview' | 'statement' | 'due' | 'installments' | 'payments' | 'others'>('overview');
   const [installments, setInstallments] = useState(null);
@@ -153,11 +160,8 @@ const CustomerDashboard: React.FC = () => {
   }, [customer]);
  
 
-  // Apply 'dark' class to <html> or <body> when isDark is true
-  useEffect(() => {
-    if (isDark) document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
-  }, [isDark]);
+  // The class itself is applied by useColorMode, which every other screen uses
+  // too — nothing to do here.
 
 
 const paymentList = customer?.me?.data?.payments?.original?.data?.data?.payments || [];
@@ -335,7 +339,7 @@ const allPayments = paymentList.map((pay: any) => ({
 
             <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
               <button
-                onClick={() => setIsDark((prev) => !prev)}
+                onClick={() => setColorMode(isDark ? 'light' : 'dark')}
                 title="Toggle theme"
                 aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-strokedark"
