@@ -51,7 +51,7 @@ const MonthlyPurchaseSalesChart: React.FC = () => {
     title: {
     //   text: "",
       align: "center",
-      style: { color: mode === "dark" ? "#fff" : "#333", fontSize: "16px" },
+      style: { color: mode === "dark" ? "rgb(var(--c-white))" : "rgb(var(--c-gray-800))", fontSize: "16px" },
     },
 
     tooltip: {

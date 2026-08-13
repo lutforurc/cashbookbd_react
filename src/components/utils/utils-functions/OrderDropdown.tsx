@@ -54,14 +54,14 @@ const OrderOption = (props: OptionProps<OptionType, false>) => {
         document.documentElement.classList.contains('dark');
 
     const backgroundColor = props.isSelected
-        ? (isDarkMode ? '#1d4ed8' : '#2563eb')
+        ? (isDarkMode ? 'rgb(var(--c-blue-700))' : 'rgb(var(--c-blue-600))')
         : props.isFocused
-            ? (isDarkMode ? '#475569' : '#dbeafe')
-            : (isDarkMode ? '#374151' : '#f3f4f6');
+            ? (isDarkMode ? 'rgb(var(--c-slate-600))' : 'rgb(var(--c-blue-100))')
+            : (isDarkMode ? 'rgb(var(--c-gray-700))' : 'rgb(var(--c-gray-100))');
 
     const color = props.isSelected
-        ? '#ffffff'
-        : (isDarkMode ? '#f8fafc' : '#0f172a');
+        ? 'rgb(var(--c-white))'
+        : (isDarkMode ? 'rgb(var(--c-slate-50))' : 'rgb(var(--c-slate-900))');
 
     return (
         <components.Option
@@ -72,8 +72,8 @@ const OrderOption = (props: OptionProps<OptionType, false>) => {
                     ...(props.innerProps.style || {}),
                     backgroundColor,
                     color,
-                    borderLeft: props.isFocused || props.isSelected ? '4px solid #60a5fa' : '4px solid transparent',
-                    boxShadow: props.isFocused ? `inset 0 0 0 1px ${isDarkMode ? '#93c5fd' : '#60a5fa'}` : 'none',
+                    borderLeft: props.isFocused || props.isSelected ? '4px solid rgb(var(--c-blue-400))' : '4px solid transparent',
+                    boxShadow: props.isFocused ? `inset 0 0 0 1px ${isDarkMode ? 'rgb(var(--c-blue-300))' : 'rgb(var(--c-blue-400))'}` : 'none',
                 },
             }}
         >
@@ -293,18 +293,18 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                         borderColor: 'blue',
                         paddingLeft: 12,
                         backgroundColor: state.isSelected
-                            ? (isDarkMode ? '#1d4ed8' : '#2563eb')
+                            ? (isDarkMode ? 'rgb(var(--c-blue-700))' : 'rgb(var(--c-blue-600))')
                             : state.isFocused
-                                ? (isDarkMode ? '#334155' : '#dbeafe')
-                                : (isDarkMode ? '#374151' : '#f3f4f6'),
+                                ? (isDarkMode ? 'rgb(var(--c-slate-700))' : 'rgb(var(--c-blue-100))')
+                                : (isDarkMode ? 'rgb(var(--c-gray-700))' : 'rgb(var(--c-gray-100))'),
                         color: state.isSelected
-                            ? '#ffffff'
-                            : (isDarkMode ? '#f3f4f6' : '#0f172a'),
+                            ? 'rgb(var(--c-white))'
+                            : (isDarkMode ? 'rgb(var(--c-gray-100))' : 'rgb(var(--c-slate-900))'),
                     }),
                     menu: (base) => ({
                         ...base,
                         zIndex: 1000,
-                        borderColor: '#000',
+                        borderColor: 'rgb(var(--c-black-2))',
                     }),
                 }}
                 defaultValue={defaultValue}

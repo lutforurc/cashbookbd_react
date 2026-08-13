@@ -40,7 +40,7 @@ const DailySalesChart = () => {
     title: {
     //   text: "Daily Sales (Last 1 Month)",
       align: "center",
-      style: { color: mode === "dark" ? "#fff" : "#333" },
+      style: { color: mode === "dark" ? "rgb(var(--c-white))" : "rgb(var(--c-gray-800))" },
     },
     tooltip: {
       y: { formatter: (v) => thousandSeparator(v) },

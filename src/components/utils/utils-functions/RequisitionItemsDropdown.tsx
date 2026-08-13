@@ -74,12 +74,12 @@ const RequisitionItemsDropdown: React.FC<DropdownProps> = ({
       ...provided,
       borderRadius: '0',
       borderColor: state.isFocused
-        ? 'rgb(59 130 246)'
+        ? 'rgb(var(--c-blue-500))'
         : darkMode
-          ? '#363843'
-          : '#d2d6dc',
-      backgroundColor: darkMode ? '#1f212a' : '#fcfcfc',
-      color: darkMode ? '#fff' : '#000',
+          ? 'rgb(var(--c-strokedark))'
+          : 'rgb(var(--c-gray-300))',
+      backgroundColor: darkMode ? 'rgb(var(--c-form-input))' : 'rgb(var(--c-gray-3))',
+      color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))',
       boxShadow: state.isFocused ? 'none' : 'none',
       fontSize: '0.9rem',
     }),
@@ -89,40 +89,40 @@ const RequisitionItemsDropdown: React.FC<DropdownProps> = ({
       whiteSpace: 'normal',
       backgroundColor: isFocused
         ? darkMode
-          ? '#3b3e47'
-          : '#E5E7EB'
+          ? 'rgb(var(--c-graydark))'
+          : 'rgb(var(--c-gray-200))'
         : isSelected
           ? darkMode
-            ? '#50535e'
-            : '#d1d5db'
+            ? 'rgb(var(--c-gray-600))'
+            : 'rgb(var(--c-gray-300))'
           : darkMode
-            ? '#1f212a'
-            : '#fff',
-      color: darkMode ? '#fff' : '#000',
+            ? 'rgb(var(--c-form-input))'
+            : 'rgb(var(--c-white))',
+      color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))',
       fontSize: '0.8rem',
       '&:hover': {
-        backgroundColor: darkMode ? '#50535e' : '#d1d5db',
-        color: darkMode ? '#fff' : '#000',
+        backgroundColor: darkMode ? 'rgb(var(--c-gray-600))' : 'rgb(var(--c-gray-300))',
+        color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))',
       },
     }),
     menu: (base) => ({
       ...base,
       zIndex: 1000,
-      backgroundColor: darkMode ? '#3b3e47' : '#fff',
-      borderColor: darkMode ? '#808290' : '#000',
+      backgroundColor: darkMode ? 'rgb(var(--c-graydark))' : 'rgb(var(--c-white))',
+      borderColor: darkMode ? 'rgb(var(--c-bodydark2))' : 'rgb(var(--c-black-2))',
     }),
 
     placeholder: (base) => ({
       ...base,
-      color: darkMode ? '#9CA3AF' : '#c2c2c2',
+      color: darkMode ? 'rgb(var(--c-gray-400))' : 'rgb(var(--c-gray-400))',
     }),
     singleValue: (base) => ({
       ...base,
-      color: darkMode ? '#fff' : '#000',
+      color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))',
     }),
     input: (base) => ({
       ...base,
-      color: darkMode ? '#fff' : '#000',
+      color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))',
     }),
   };
 

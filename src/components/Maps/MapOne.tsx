@@ -22,7 +22,7 @@ const MapOne = () => {
         initial: {
           fontFamily: 'Satoshi',
           fontWeight: 'semibold',
-          fill: '#fff',
+          fill: 'rgb(var(--c-white))',
         },
         hover: {
           cursor: 'pointer',

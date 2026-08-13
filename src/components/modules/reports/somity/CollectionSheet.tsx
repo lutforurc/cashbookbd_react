@@ -246,21 +246,21 @@ const CollectionSheet = (user: any) => {
   };
 
   const labelClass = 'mb-1 block text-sm font-semibold text-slate-900 dark:text-white';
-  const controlClass = 'h-10 w-full rounded-none !border !border-slate-300 !bg-white px-3 text-sm font-semibold !text-slate-900 outline-none focus:!border-slate-500 dark:!border-[#3a475b] dark:!bg-[#1c2938] dark:!text-white dark:focus:!border-[#59677c]';
-  const buttonClass = 'inline-flex h-10 items-center justify-center gap-2 rounded-none bg-slate-800 px-6 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#3b4658] dark:hover:bg-[#465267]';
+  const controlClass = 'h-10 w-full rounded-none !border !border-slate-300 !bg-white px-3 text-sm font-semibold !text-slate-900 outline-none focus:!border-slate-500 dark:!border-[rgb(var(--c-form-strokedark))] dark:!bg-[rgb(var(--c-form-input))] dark:!text-white dark:focus:!border-[rgb(var(--c-gray-600))]';
+  const buttonClass = 'inline-flex h-10 items-center justify-center gap-2 rounded-none bg-slate-800 px-6 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[rgb(var(--c-form-strokedark))] dark:hover:bg-[rgb(var(--c-gray-600))]';
   const somitySelectStyles: StylesConfig<SomityOption, false> = {
     control: (provided, state) => ({
       ...provided,
       minHeight: '2.5rem',
       height: '2.5rem',
       borderRadius: 0,
-      borderColor: state.isFocused ? '#59677c' : darkMode ? '#3a475b' : '#cbd5e1',
-      backgroundColor: darkMode ? '#1c2938' : '#ffffff',
+      borderColor: state.isFocused ? 'rgb(var(--c-gray-600))' : darkMode ? 'rgb(var(--c-form-strokedark))' : 'rgb(var(--c-slate-300))',
+      backgroundColor: darkMode ? 'rgb(var(--c-form-input))' : 'rgb(var(--c-white))',
       boxShadow: 'none',
       fontSize: '0.875rem',
       fontWeight: 600,
       '&:hover': {
-        borderColor: state.isFocused ? '#59677c' : darkMode ? '#3a475b' : '#cbd5e1',
+        borderColor: state.isFocused ? 'rgb(var(--c-gray-600))' : darkMode ? 'rgb(var(--c-form-strokedark))' : 'rgb(var(--c-slate-300))',
       },
     }),
     valueContainer: (provided) => ({
@@ -270,17 +270,17 @@ const CollectionSheet = (user: any) => {
     }),
     input: (provided) => ({
       ...provided,
-      color: darkMode ? '#ffffff' : '#0f172a',
+      color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-slate-900))',
       margin: 0,
       padding: 0,
     }),
     placeholder: (provided) => ({
       ...provided,
-      color: darkMode ? '#ffffff' : '#0f172a',
+      color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-slate-900))',
     }),
     singleValue: (provided) => ({
       ...provided,
-      color: darkMode ? '#ffffff' : '#0f172a',
+      color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-slate-900))',
     }),
     indicatorsContainer: (provided) => ({
       ...provided,
@@ -288,20 +288,20 @@ const CollectionSheet = (user: any) => {
     }),
     indicatorSeparator: (provided) => ({
       ...provided,
-      backgroundColor: darkMode ? '#637086' : '#94a3b8',
+      backgroundColor: darkMode ? 'rgb(var(--c-gray-400))' : 'rgb(var(--c-slate-400))',
     }),
     dropdownIndicator: (provided) => ({
       ...provided,
-      color: darkMode ? '#cbd5e1' : '#475569',
+      color: darkMode ? 'rgb(var(--c-slate-300))' : 'rgb(var(--c-slate-600))',
       '&:hover': {
-        color: darkMode ? '#ffffff' : '#0f172a',
+        color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-slate-900))',
       },
     }),
     menu: (provided) => ({
       ...provided,
       zIndex: 1000,
       borderRadius: 2,
-      backgroundColor: darkMode ? '#3b4658' : '#ffffff',
+      backgroundColor: darkMode ? 'rgb(var(--c-form-strokedark))' : 'rgb(var(--c-white))',
     }),
     menuPortal: (provided) => ({
       ...provided,
@@ -311,26 +311,26 @@ const CollectionSheet = (user: any) => {
       ...provided,
       backgroundColor: isSelected
         ? darkMode
-          ? '#59677c'
-          : '#cbd5e1'
+          ? 'rgb(var(--c-gray-600))'
+          : 'rgb(var(--c-slate-300))'
         : isFocused
           ? darkMode
-            ? '#465267'
-            : '#e2e8f0'
+            ? 'rgb(var(--c-gray-600))'
+            : 'rgb(var(--c-stroke))'
           : darkMode
-            ? '#3b4658'
-            : '#ffffff',
-      color: darkMode ? '#ffffff' : '#0f172a',
+            ? 'rgb(var(--c-form-strokedark))'
+            : 'rgb(var(--c-white))',
+      color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-slate-900))',
       fontSize: '0.875rem',
     }),
     noOptionsMessage: (provided) => ({
       ...provided,
-      color: darkMode ? '#d1d5db' : '#64748b',
+      color: darkMode ? 'rgb(var(--c-gray-300))' : 'rgb(var(--c-body))',
     }),
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 p-3 text-slate-900 dark:bg-[#18212e] dark:text-white">
+    <div className="min-h-screen bg-slate-100 p-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-white">
       <HelmetTitle title="Collection Sheet" />
 
       <div className="mb-3 flex flex-wrap items-end gap-3">
@@ -428,9 +428,9 @@ const CollectionSheet = (user: any) => {
 
       <div className="overflow-x-auto">
         {loading ? <Loader /> : null}
-        <table className="w-full min-w-[980px] table-fixed border-collapse bg-white text-sm text-slate-900 dark:bg-[#1d2735] dark:text-[#d7deea]">
+        <table className="w-full min-w-[980px] table-fixed border-collapse bg-white text-sm text-slate-900 dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-bodydark1))]">
           <thead>
-            <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[#3a4659] dark:text-white">
+            <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-white">
               <th className="w-20 px-3 py-4 text-center">SL. NO</th>
               <th className="px-3 py-4 text-left">MEMBER DETAILS</th>
               <th className="w-36 px-3 py-4 text-right">TOTAL SALES</th>
@@ -441,7 +441,7 @@ const CollectionSheet = (user: any) => {
               <th className="w-36 px-3 py-4 text-right">BALANCE</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-[#2e394b]">
+          <tbody className="divide-y divide-slate-100 dark:divide-[rgb(var(--c-strokedark))]">
             {rows.length > 0 ? (
               rows.map((row, index) => {
                 const balance =
@@ -453,13 +453,13 @@ const CollectionSheet = (user: any) => {
                 const guardianName = guardianNameOf(row);
 
                 return (
-                  <tr key={`${row.idfr_code ?? index}-${index}`} className={balance === 0 ? 'bg-slate-50 font-semibold dark:bg-[#243445]' : 'bg-white dark:bg-[#1d2735]'}>
+                  <tr key={`${row.idfr_code ?? index}-${index}`} className={balance === 0 ? 'bg-slate-50 font-semibold dark:bg-[rgb(var(--c-strokedark))]' : 'bg-white dark:bg-[rgb(var(--c-boxdark))]'}>
                     <td className="px-3 py-4 text-center align-middle">{index + 1}</td>
                     <td className="px-3 py-4">
                       {banglaName ? <div className={banglaTextClass(banglaName)}>{withCode(banglaName, row.idfr_code)}</div> : null}
                       <div className="text-slate-950 dark:text-white">{withCode(row.name || '-', row.idfr_code)}</div>
                       {guardianName ? (
-                        <div className="text-slate-600 dark:text-[#b6c0cf]">
+                        <div className="text-slate-600 dark:text-[rgb(var(--c-gray-300))]">
                           পি:/স্বা: <span className={hasBanglaText(guardianName) ? '' : 'sutonny-text text-[20px] leading-6'}>{guardianName}</span>
                         </div>
                       ) : null}
@@ -476,13 +476,13 @@ const CollectionSheet = (user: any) => {
               })
             ) : (
               <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-slate-500 dark:text-[#b6c0cf]">
+                <td colSpan={8} className="px-3 py-8 text-center text-slate-500 dark:text-[rgb(var(--c-gray-300))]">
                   No data found
                 </td>
               </tr>
             )}
             {rows.length > 0 ? (
-              <tr className="bg-slate-300 font-bold text-slate-950 dark:bg-[#3a4659] dark:text-white">
+              <tr className="bg-slate-300 font-bold text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-white">
                 <td colSpan={2} className="px-3 py-3 text-right">Grand Total</td>
                 <td className="px-3 py-3 text-right">{thousandSeparator(totals.sales)}</td>
                 <td className="px-3 py-3 text-right">{thousandSeparator(totals.downPayment)}</td>

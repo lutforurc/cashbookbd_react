@@ -129,10 +129,10 @@ const SignIn: React.FC = () => {
               className="pointer-events-none absolute inset-0 opacity-[0.06]"
               style={{
                 backgroundImage:
-                  'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)',
+                  'linear-gradient(to right, rgb(var(--c-white)) 1px, transparent 1px), linear-gradient(to bottom, rgb(var(--c-white)) 1px, transparent 1px)',
                 backgroundSize: '48px 48px',
-                maskImage: 'radial-gradient(120% 90% at 0% 0%, #000 0%, transparent 65%)',
-                WebkitMaskImage: 'radial-gradient(120% 90% at 0% 0%, #000 0%, transparent 65%)',
+                maskImage: 'radial-gradient(120% 90% at 0% 0%, rgb(var(--c-black-2)) 0%, transparent 65%)',
+                WebkitMaskImage: 'radial-gradient(120% 90% at 0% 0%, rgb(var(--c-black-2)) 0%, transparent 65%)',
               }}
             />
 

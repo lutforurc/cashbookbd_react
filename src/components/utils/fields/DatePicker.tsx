@@ -123,15 +123,15 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
             .dark .react-datepicker__day:hover,
             .dark .react-datepicker__month-text:hover {
               background-color: rgb(var(--c-form-strokedark));
-              color: #fff;
+              color: rgb(var(--c-white));
             }
 
             .dark .react-datepicker__day--selected,
             .dark .react-datepicker__day--keyboard-selected,
             .dark .react-datepicker__month-text--selected,
             .dark .react-datepicker__month-text--keyboard-selected {
-              background-color: rgb(59 130 246);
-              color: #fff;
+              background-color: rgb(var(--c-blue-500));
+              color: rgb(var(--c-white));
             }
 
             .dark .react-datepicker__day--today,
@@ -161,8 +161,8 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
             }
 
             .dark .react-datepicker__time-list-item--selected {
-              background-color: rgb(59 130 246) !important;
-              color: #fff;
+              background-color: rgb(var(--c-blue-500)) !important;
+              color: rgb(var(--c-white));
             }
 
             /* The month and year selects sit inside the header and would
@@ -182,7 +182,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
             }
 
             .dark .react-datepicker__navigation:hover *::before {
-              border-color: #fff;
+              border-color: rgb(var(--c-white));
             }
 
             /* The little arrow joining the popup to the input. */

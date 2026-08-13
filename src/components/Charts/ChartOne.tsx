@@ -71,7 +71,7 @@ const options: ApexOptions = {
   },
   markers: {
     size: 4,
-    colors: '#fff',
+    colors: 'rgb(var(--c-white))',
     strokeColors: chartSeries(2),
     strokeWidth: 3,
     strokeOpacity: 0.9,
