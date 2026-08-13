@@ -20,47 +20,47 @@
 
 :root {
   /* Brand and interaction */
-  --c-primary: 60 80 224;             /* #3C50E0 */
-  --c-secondary: 128 202 238;         /* #80CAEE */
+  --c-primary: 43 95 217;            /* #2B5FD9 */
+  --c-secondary: 127 190 234;        /* #7FBEEA */
 
   /* Meaning: money, state, alerts */
-  --c-success: 33 150 83;             /* #219653 */
-  --c-danger: 211 64 83;              /* #D34053 */
-  --c-warning: 255 167 11;            /* #FFA70B */
-  --c-meta-1: 220 53 69;              /* #DC3545 */
-  --c-meta-2: 239 242 247;            /* #EFF2F7 */
-  --c-meta-3: 16 185 129;             /* #10B981 */
-  --c-meta-4: 49 61 74;               /* #313D4A */
-  --c-meta-5: 37 154 230;             /* #259AE6 */
-  --c-meta-6: 255 186 0;              /* #FFBA00 */
-  --c-meta-7: 255 103 102;            /* #FF6766 */
-  --c-meta-8: 240 149 12;             /* #F0950C */
-  --c-meta-9: 229 231 235;            /* #E5E7EB */
-  --c-meta-10: 15 173 207;            /* #0FADCF */
+  --c-success: 23 128 76;            /* #17804C */
+  --c-danger: 203 58 76;             /* #CB3A4C */
+  --c-warning: 240 160 0;            /* #F0A000 */
+  --c-meta-1: 203 58 76;             /* #CB3A4C */
+  --c-meta-2: 238 242 246;           /* #EEF2F6 */
+  --c-meta-3: 18 166 110;            /* #12A66E */
+  --c-meta-4: 42 50 60;              /* #2A323C */
+  --c-meta-5: 46 144 224;            /* #2E90E0 */
+  --c-meta-6: 240 180 41;            /* #F0B429 */
+  --c-meta-7: 228 103 106;           /* #E4676A */
+  --c-meta-8: 224 138 12;            /* #E08A0C */
+  --c-meta-9: 225 231 238;           /* #E1E7EE */
+  --c-meta-10: 18 162 196;           /* #12A2C4 */
 
   /* Text */
-  --c-black: 28 36 52;                /* #1C2434 */
-  --c-black-2: 1 1 1;                 /* #010101 */
-  --c-body: 100 116 139;              /* #64748B */
-  --c-bodydark: 174 183 192;          /* #AEB7C0 */
-  --c-bodydark1: 222 228 238;         /* #DEE4EE */
-  --c-bodydark2: 138 153 175;         /* #8A99AF */
+  --c-black: 26 32 41;               /* #1A2029 */
+  --c-black-2: 11 14 18;             /* #0B0E12 */
+  --c-body: 89 99 111;               /* #59636F */
+  --c-bodydark: 163 173 185;         /* #A3ADB9 */
+  --c-bodydark1: 216 222 231;        /* #D8DEE7 */
+  --c-bodydark2: 133 144 160;        /* #8590A0 */
   --c-white: 255 255 255;             /* #FFFFFF */
 
   /* Surfaces and lines */
-  --c-stroke: 226 232 240;            /* #E2E8F0 */
-  --c-strokedark: 46 58 71;           /* #2E3A47 */
-  --c-form-strokedark: 61 77 96;      /* #3D4D60 */
-  --c-form-input: 29 42 57;           /* #1D2A39 */
-  --c-boxdark: 36 48 63;              /* #24303F */
-  --c-boxdark-2: 26 34 44;            /* #1A222C */
-  --c-graydark: 51 58 72;             /* #333A48 */
-  --c-whiten: 241 245 249;            /* #F1F5F9 */
-  --c-whiter: 245 247 253;            /* #F5F7FD */
-  --c-gray-DEFAULT: 239 244 251;      /* #EFF4FB */
-  --c-gray-2: 247 249 252;            /* #F7F9FC */
-  --c-gray-3: 250 250 250;            /* #FAFAFA */
-  --c-red-DEFAULT: 251 84 84;         /* #FB5454 */
+  --c-stroke: 225 231 238;           /* #E1E7EE */
+  --c-strokedark: 47 56 68;          /* #2F3844 */
+  --c-form-strokedark: 58 68 81;     /* #3A4451 */
+  --c-form-input: 28 35 44;          /* #1C232C */
+  --c-boxdark: 33 41 50;             /* #212932 */
+  --c-boxdark-2: 23 29 37;           /* #171D25 */
+  --c-graydark: 49 57 69;            /* #313945 */
+  --c-whiten: 244 247 250;           /* #F4F7FA */
+  --c-whiter: 246 248 251;           /* #F6F8FB */
+  --c-gray-DEFAULT: 238 242 246;     /* #EEF2F6 */
+  --c-gray-2: 247 249 251;           /* #F7F9FB */
+  --c-gray-3: 250 251 252;           /* #FAFBFC */
+  --c-red-DEFAULT: 228 103 106;      /* #E4676A */
 
   /* ---------------------------------------------------------------------
    * The palette ramps.
@@ -72,30 +72,30 @@
    * ------------------------------------------------------------------- */
 
   /* gray */
-  --c-gray-50: 249 250 251;           /* #F9FAFB */
-  --c-gray-100: 243 244 246;          /* #F3F4F6 */
-  --c-gray-200: 229 231 235;          /* #E5E7EB */
-  --c-gray-300: 209 213 219;          /* #D1D5DB */
-  --c-gray-400: 156 163 175;          /* #9CA3AF */
-  --c-gray-500: 107 114 128;          /* #6B7280 */
-  --c-gray-600: 75 85 99;             /* #4B5563 */
-  --c-gray-700: 55 65 81;             /* #374151 */
-  --c-gray-800: 31 41 55;             /* #1F2937 */
-  --c-gray-900: 17 24 39;             /* #111827 */
-  --c-gray-950: 3 7 18;               /* #030712 */
+  --c-gray-50: 247 249 251;          /* #F7F9FB */
+  --c-gray-100: 238 242 246;         /* #EEF2F6 */
+  --c-gray-200: 225 231 238;         /* #E1E7EE */
+  --c-gray-300: 203 211 222;         /* #CBD3DE */
+  --c-gray-400: 105 115 128;         /* #697380 */
+  --c-gray-500: 89 99 111;           /* #59636F */
+  --c-gray-600: 70 80 91;            /* #46505B */
+  --c-gray-700: 47 56 68;            /* #2F3844 */
+  --c-gray-800: 33 41 50;            /* #212932 */
+  --c-gray-900: 23 29 37;            /* #171D25 */
+  --c-gray-950: 14 19 25;            /* #0E1319 */
 
   /* slate */
-  --c-slate-50: 248 250 252;          /* #F8FAFC */
-  --c-slate-100: 241 245 249;         /* #F1F5F9 */
-  --c-slate-200: 226 232 240;         /* #E2E8F0 */
-  --c-slate-300: 203 213 225;         /* #CBD5E1 */
-  --c-slate-400: 148 163 184;         /* #94A3B8 */
-  --c-slate-500: 100 116 139;         /* #64748B */
-  --c-slate-600: 71 85 105;           /* #475569 */
-  --c-slate-700: 51 65 85;            /* #334155 */
-  --c-slate-800: 30 41 59;            /* #1E293B */
-  --c-slate-900: 15 23 42;            /* #0F172A */
-  --c-slate-950: 2 6 23;              /* #020617 */
+  --c-slate-50: 247 249 251;         /* #F7F9FB */
+  --c-slate-100: 238 242 246;        /* #EEF2F6 */
+  --c-slate-200: 225 231 238;        /* #E1E7EE */
+  --c-slate-300: 203 211 222;        /* #CBD3DE */
+  --c-slate-400: 105 115 128;        /* #697380 */
+  --c-slate-500: 89 99 111;          /* #59636F */
+  --c-slate-600: 70 80 91;           /* #46505B */
+  --c-slate-700: 47 56 68;           /* #2F3844 */
+  --c-slate-800: 33 41 50;           /* #212932 */
+  --c-slate-900: 23 29 37;           /* #171D25 */
+  --c-slate-950: 14 19 25;           /* #0E1319 */
 
   /* blue */
   --c-blue-50: 239 246 255;           /* #EFF6FF */
@@ -317,6 +317,39 @@
   --c-fuchsia-800: 134 25 143;        /* #86198F */
   --c-fuchsia-900: 112 26 117;        /* #701A75 */
   --c-fuchsia-950: 74 4 78;           /* #4A044E */
+}
+
+/* ---------------------------------------------------------------------------
+ * What differs between the two modes.
+ *
+ * Most colours are one value in both -- the markup already says which to use
+ * where (`bg-white dark:bg-boxdark`). These three cannot be said that way,
+ * because the same class name has to mean something different in each mode.
+ * ------------------------------------------------------------------------ */
+
+html.dark {
+  /* Pure white text on a dark page bleeds at the edges -- the effect people
+     describe as "my eyes hurt after a few hours". Softening it here reaches all
+     1,229 `dark:text-white` uses without touching one of them. Contrast drops
+     from roughly 15:1 to 11:1, still far above what is required. */
+  --c-white: 230 234 240;             /* #E6EAF0 */
+
+  /* The 400 step is muted text, and it is asked to work on both a white page
+     and a dark one. Above it is dark enough to read on white; here it is light
+     enough to read on a card -- 219 of its 301 text uses are dark-mode. */
+  --c-gray-400: 153 163 176;          /* #99A3B0 */
+  --c-slate-400: 153 163 176;         /* #99A3B0 */
+}
+
+/* Paper is white whoever is printing.
+ *
+ * Print runs with whatever theme is on screen, so without this a report sent to
+ * the printer from dark mode would come out on a grey background. */
+@media print {
+  :root,
+  html.dark {
+    --c-white: 255 255 255;           /* #FFFFFF */
+  }
 }
 
 /* The page itself, painted before React runs.
