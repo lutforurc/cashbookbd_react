@@ -5,6 +5,7 @@ import { getBranchChart, getHeadOfficePaymentChart } from "./chartSlice";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import Loader from "../../../common/Loader";
 import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
+import { readToken, chartSeries } from '../../../theme/themeColors';
 
 // Define types for the response data
 interface ChartData {
@@ -16,7 +17,7 @@ const HeadOfficePaymentChart: React.FC = () => {
   const charts = useSelector((state) => state.charts);
   const dispatch = useDispatch();
   const [colorMode, setColorMode] = useLocalStorage('color-theme', 'light');
-  const [titleColor, setTitleColor] = useState(colorMode === 'dark' ? '#fff' : '#666666');
+  const [titleColor, setTitleColor] = useState(readToken('chart-text'));
   
   const [chartData, setChartData] = useState<ChartData>({
     labels: [],
@@ -38,7 +39,7 @@ const HeadOfficePaymentChart: React.FC = () => {
 
 
   const isDark = colorMode === 'dark';
-  const axisColor = isDark ? '#94a3b8' : '#94a3b8';
+  const axisColor = readToken('chart-text');
 
   const options: any = {
     chart: {
@@ -60,19 +61,18 @@ const HeadOfficePaymentChart: React.FC = () => {
       fontWeight: 600,
       offsetY: 4,
       markers: { width: 9, height: 9, radius: 12 },
-      labels: { colors: isDark ? '#e2e8f0' : '#475569' },
+      labels: { colors: readToken('chart-text') },
       itemMargin: { horizontal: 8, vertical: 3 },
     },
 
     stroke: { curve: 'smooth', width: 2.5, lineCap: 'round' },
 
     colors: [
-      '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-      '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#14b8a6',
+      ...chartSeries(),
     ],
 
     grid: {
-      borderColor: isDark ? '#334155' : '#eef2f7',
+      borderColor: readToken('chart-grid'),
       strokeDashArray: 4,
       xaxis: { lines: { show: false } },
       yaxis: { lines: { show: true } },
@@ -116,7 +116,7 @@ const HeadOfficePaymentChart: React.FC = () => {
           .map((name: string, i: number) => {
             const value = series[i]?.[dataPointIndex];
             if (value === null || value === undefined) return '';
-            const color = w.globals.colors?.[i] || '#64748b';
+            const color = w.globals.colors?.[i] || readToken('chart-8');
             return (
               '<div class="cx-tip-row" style="color:' + color + '">' +
               '<span class="cx-tip-dot" style="background:' + color + '"></span>' +
@@ -147,24 +147,24 @@ const HeadOfficePaymentChart: React.FC = () => {
           font-size: 12px;
           overflow: hidden;
           border-radius: 6px;
-          background: #ffffff;
-          color: #1e293b;
-          border: 1px solid #e2e8f0;
+          background: rgb(var(--c-white));
+          color: rgb(var(--c-slate-800));
+          border: 1px solid rgb(var(--c-stroke));
           box-shadow: 0 6px 16px rgba(15, 23, 42, 0.14);
         }
         .cx-tip-title {
           padding: 6px 10px;
           font-weight: 600;
-          background: #f1f5f9;
-          border-bottom: 1px solid #e2e8f0;
+          background: rgb(var(--c-whiten));
+          border-bottom: 1px solid rgb(var(--c-stroke));
         }
         .cx-tip-body { padding: 6px 10px; }
         .cx-tip-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
         .cx-tip-dot { width: 10px; height: 10px; border-radius: 9999px; flex: 0 0 auto; }
         .cx-tip-name { flex: 1; white-space: nowrap; font-weight: 400; }
         .cx-tip-val { font-weight: 400; }
-        .dark .cx-tip { background: #1e293b; color: #e2e8f0; border-color: #334155; }
-        .dark .cx-tip-title { background: #0f172a; border-color: #334155; }
+        .dark .cx-tip { background: rgb(var(--c-slate-800)); color: rgb(var(--c-stroke)); border-color: rgb(var(--c-slate-700)); }
+        .dark .cx-tip-title { background: rgb(var(--c-slate-900)); border-color: rgb(var(--c-slate-700)); }
       `}</style>
       {chartData.series.length > 0 ? (
         <ApexChart

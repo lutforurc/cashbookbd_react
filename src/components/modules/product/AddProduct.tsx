@@ -16,6 +16,7 @@ import { FiSave } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { fetchBrandDdl } from './brand/brandSlice';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
+import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
 
 interface productItem {
   id: string | number;
@@ -502,7 +503,7 @@ console.log('====================================');
                 value={formData.opening_serial_no ?? ''}
                 onChange={handleOnChange}
                 placeholder={'One IMEI / serial per line'}
-                className="block w-full resize-y rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+                className={`${FIELD_TEXTAREA} block w-full resize-y p-2 text-sm`}
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 One per line. The quantity below counts them as you type.

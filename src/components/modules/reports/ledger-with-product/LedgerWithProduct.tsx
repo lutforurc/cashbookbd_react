@@ -70,7 +70,7 @@ const excelCell = (
   align: 'left' | 'right' | 'center' = 'left',
   extraStyle = '',
 ) =>
-  `<${tag} style="border:.5pt solid #d0d0d0;padding:3px;text-align:${align};vertical-align:top;${extraStyle}">${escapeExcelHtml(
+  `<${tag} style="border:.5pt solid rgb(var(--c-gray-300));padding:3px;text-align:${align};vertical-align:top;${extraStyle}">${escapeExcelHtml(
     value,
   )}</${tag}>`;
 
@@ -393,7 +393,7 @@ const LedgerWithProduct = (user: any) => {
           <meta charset="utf-8" />
           <style>
             table { border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11px; }
-            .sheet th { background: #f2f2f2; font-weight: 700; }
+            .sheet th { background: rgb(var(--c-gray-100)); font-weight: 700; }
             .title { font-size: 16px; font-weight: 700; text-align: center; }
           </style>
         </head>
@@ -415,7 +415,7 @@ const LedgerWithProduct = (user: any) => {
               <col style="width:105px" />
             </colgroup>
             <tr>
-              <th colspan="13" style="border:.5pt solid #d0d0d0;padding:5px;text-align:center;font-size:16px;font-weight:700;">
+              <th colspan="13" style="border:.5pt solid rgb(var(--c-gray-300));padding:5px;text-align:center;font-size:16px;font-weight:700;">
                 Ledger Details
               </th>
             </tr>
@@ -1091,13 +1091,13 @@ const LedgerWithProduct = (user: any) => {
         </div>
 
         {statementState?.loading ? (
-          <div className="rounded-sm border border-slate-200 bg-white p-8 shadow-default dark:border-slate-700 dark:bg-[#1f2733]">
+          <div className="rounded-sm border border-slate-200 bg-white p-8 shadow-default dark:border-slate-700 dark:bg-[rgb(var(--c-boxdark))]">
             <Loader />
           </div>
         ) : null}
 
         {!statementState?.loading && !hasLoaded ? (
-          <div className="rounded-sm border border-slate-200 bg-white px-6 py-12 text-center shadow-default dark:border-slate-700 dark:bg-[#1f2733]">
+          <div className="rounded-sm border border-slate-200 bg-white px-6 py-12 text-center shadow-default dark:border-slate-700 dark:bg-[rgb(var(--c-boxdark))]">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-white">
               No statement loaded yet
             </h3>
@@ -1109,7 +1109,7 @@ const LedgerWithProduct = (user: any) => {
         ) : null}
 
         {!statementState?.loading && hasLoaded ? (
-          <div className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-default dark:border-slate-700 dark:bg-[#1f2733]">
+          <div className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-default dark:border-slate-700 dark:bg-[rgb(var(--c-boxdark))]">
             <Table
               columns={columns}
               data={rows}
@@ -1119,15 +1119,15 @@ const LedgerWithProduct = (user: any) => {
                   : 'No transactions found'
               }
               // tableClassName="min-w-full table-fixed text-sm text-slate-700 dark:text-slate-100"
-              // theadClassName="bg-slate-100 text-xs uppercase text-slate-700 dark:bg-[#3a475c] dark:text-slate-100"
+              // theadClassName="bg-slate-100 text-xs uppercase text-slate-700 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-slate-100"
               // tbodyClassName="divide-y-0 bg-transparent dark:bg-transparent"
-              // rowClassName="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-[#243040]"
+              // rowClassName="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-[rgb(var(--c-strokedark))]"
               getRowKey={(row: any, index: number) =>
                 `${row?.vr_no || 'row'}-${index}`
               }
               tableStyle={{ fontSize: `${effectiveFontSize}px` }}
               footerRows={footerRows}
-              className="[&_table]:shadow-none [&_tbody_tr:hover]:bg-slate-50 dark:[&_tbody_tr:hover]:bg-[#2b394b]"
+              className="[&_table]:shadow-none [&_tbody_tr:hover]:bg-slate-50 dark:[&_tbody_tr:hover]:bg-[rgb(var(--c-strokedark))]"
             />
           </div>
         ) : null}

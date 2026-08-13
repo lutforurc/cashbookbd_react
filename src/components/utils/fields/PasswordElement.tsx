@@ -1,4 +1,5 @@
 import React from 'react';
+import { FIELD_LABEL, fieldClass } from '../../../theme/fieldStyles';
 
 interface InputElementProps {
   // Define the prop types here if known
@@ -24,7 +25,7 @@ const PasswordElement: React.FC<InputElementProps> = ({
     <div className="text-left flex flex-col">
       <label
         htmlFor={id || name}
-        className="text-black dark:text-white text-left"
+        className={`${FIELD_LABEL} text-left`}
       >
         {label}
       </label>
@@ -35,9 +36,7 @@ const PasswordElement: React.FC<InputElementProps> = ({
         value={value}
         type={'password'}
         placeholder={placeholder || 'Enter text'}
-        className={`form-input px-3 py-2 text-gray-600 outline-none form-input bg-white border border-gray-300 rounded-xs 
-        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 
-        focus:outline-none focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${className}`}
+        className={fieldClass(undefined, className)}
       />
     </div>
   );

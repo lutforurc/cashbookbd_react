@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import dataJSON from '../../public/data.json';
+import { FIELD_BASE } from '../theme/fieldStyles';
 
 
 
@@ -78,7 +79,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
               <div className="form-group w-full col-span-3">
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white"
                   htmlFor="id">Bond ID (Input "ALL" to track all bonds with paramaters below)</label>
-                <input className="w-full rounded border border-stroke bg-gray py-3 pl-3 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                <input className={`${FIELD_BASE} w-full py-3 pl-3 pr-4.5`}
                   name="id" onChange={handleChange} value={formState.id} />
               </div>
 
@@ -167,7 +168,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
               </div>
               <div className="form-group w-full">
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white" htmlFor="value">Value to give Alert</label>
-                <input className="w-full rounded border border-stroke bg-gray py-3 pl-3 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                <input className={`${FIELD_BASE} w-full py-3 pl-3 pr-4.5`}
                   name="value" onChange={handleChange} value={formState.value} />
               </div>
 
@@ -175,7 +176,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white" htmlFor="type">Alert Type</label>
                 <div className="relative z-20 w-full rounded border border-stroke p-1.5 pr-8 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input">
                   <div className="flex flex-wrap items-center"></div>
-                  <span className={`${formState.type == 0 ? "bg-[#04b20c]" : formState.type == 1 ? "bg-[#eab90f]" : "bg-[#e13f32]"} m-1.5 flex items-center justify-center rounded border-[.5px] border-stroke py-1.5 px-2.5 text-white font-medium dark:border-strokedark`}>
+                  <span className={`${formState.type == 0 ? "bg-[rgb(var(--c-success))]" : formState.type == 1 ? "bg-[rgb(var(--c-meta-6))]" : "bg-[rgb(var(--c-danger))]"} m-1.5 flex items-center justify-center rounded border-[.5px] border-stroke py-1.5 px-2.5 text-white font-medium dark:border-strokedark`}>
                     {formState.type == 0 ? "Info" : formState.type == 1 ? "Warning" : "Alert"}
 
 

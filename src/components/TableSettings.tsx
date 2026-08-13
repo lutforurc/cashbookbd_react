@@ -25,26 +25,26 @@ export const Table = ({ rows, deleteRow, editRow }) => {
 
             return (
               <tr key={idx} className="content-center">
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">{row.id}</td>
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                <td className="border-b border-[rgb(var(--c-gray-100))] py-5 px-4 dark:border-strokedark">{row.id}</td>
+                <td className="border-b border-[rgb(var(--c-gray-100))] py-5 px-4 dark:border-strokedark">
                   <span className={`label label-${row.para}`}>
                     {row.para}
                   </span>
                 </td>
                 
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                <td className="border-b border-[rgb(var(--c-gray-100))] py-5 px-4 dark:border-strokedark">
                   <span>
                     {row.criterion==0?"goes down by":row.criterion==1?"goes up by":row.criterion==2?"is smaller than":row.criterion==3?"is greater than":"is equal to"}
                   </span>
                 </td>
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">{row.value}</td>
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                <td className="border-b border-[rgb(var(--c-gray-100))] py-5 px-4 dark:border-strokedark">{row.value}</td>
+                <td className="border-b border-[rgb(var(--c-gray-100))] py-5 px-4 dark:border-strokedark">
                   <span>
                     {row.type==0?'Info':row.type==1?"Warning":"Alert"}
                   </span>
                 </td>
                 
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                <td className="border-b border-[rgb(var(--c-gray-100))] py-5 px-4 dark:border-strokedark">
                   <span className="actions flex grid-cols-2 gap-4">
                     <BsFillTrashFill
                       className="delete-btn cursor-pointer"

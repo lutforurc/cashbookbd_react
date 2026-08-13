@@ -158,6 +158,10 @@ const CustomerLogin = () => {
                         <button
                           type="button"
                           onClick={() => setShowPassword((shown) => !shown)}
+                          // Out of the tab order: Tab from the password field
+                          // belongs on Login, not on a convenience the keyboard
+                          // user has not asked for. The mouse still reaches it.
+                          tabIndex={-1}
                           aria-label={showPassword ? "Hide password" : "Show password"}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-primary hover:opacity-80"
                         >

@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiArrowRightCircle, FiCheck, FiPrinter } from 'react-icons/fi';
+import { BUTTON_BASE, BUTTON_VARIANT, ButtonVariant } from '../../theme/buttonStyles';
 
 // Define the props for the Button component
 interface ButtonProps {
@@ -27,6 +28,15 @@ interface ButtonProps {
   size?: 'sm' | 'md';
   /** Tooltip. Falls back to the label when the label itself is hidden. */
   title?: string;
+  /**
+   * What the button is for, said in colour: the ordinary action, the one the
+   * screen exists for, or one that removes something.
+   *
+   * Left off, it stays the grey-turning-blue button the app is full of. Naming
+   * it is what a screen should do instead of overriding the background with
+   * `!important`, which is how the Sign In button used to get its brand blue.
+   */
+  variant?: ButtonVariant;
 }
 /**
  * One shape for a row of Save / Cancel / Delete buttons inside a table.
@@ -55,6 +65,7 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
   responsiveLabel = false,
   size = 'md',
   title,
+  variant = 'default',
 }) => {
   const safeLabel = typeof label === 'string' || typeof label === 'number' ? String(label) : '';
 
@@ -80,7 +91,7 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
       disabled={disabled}
       onKeyDown={onKeyDown}
       title={title ?? (responsiveLabel && hasLabel ? safeLabel : undefined)}
-      className={`text-white bg-gray-700 hover:bg-blue-400 focus:outline-none font-medium ${textClass} ${paddingClass} text-center dark:hover:bg-blue-400 focus:bg-blue-400 inline-flex justify-center items-center ${className}`}
+      className={`${BUTTON_BASE} ${BUTTON_VARIANT[variant]} ${textClass} ${paddingClass} ${className}`}
     >
       <span className="flex items-center">
         {buttonLoading ? (

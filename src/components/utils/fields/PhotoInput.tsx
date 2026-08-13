@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { FiTrash2, FiUpload } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
+import { FIELD_FILE_BUTTON, FIELD_LABEL } from '../../../theme/fieldStyles';
 
 /** Matches the API's limit so an oversized file fails before the upload. */
 const MAX_PHOTO_KB = 150;
@@ -84,7 +85,7 @@ const PhotoInput: React.FC<PhotoInputProps> = ({
 
   return (
     <div className="text-left flex flex-col">
-      <label htmlFor={id || name} className="text-black dark:text-white">
+      <label htmlFor={id || name} className={FIELD_LABEL}>
         {label}
       </label>
 
@@ -123,7 +124,7 @@ const PhotoInput: React.FC<PhotoInputProps> = ({
           accept="image/*"
           disabled={disabled}
           onChange={handleFileChange}
-          className="w-full text-sm text-black file:mr-2 file:rounded-sm file:border-0 file:bg-primary file:px-3 file:py-1 file:text-white dark:text-white"
+          className={`w-full text-sm text-black dark:text-white ${FIELD_FILE_BUTTON}`}
         />
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import { FiArrowLeft } from 'react-icons/fi';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -185,7 +186,7 @@ const AddCoaL3 = () => {
               name="coal2_id"
               value={formData.coal2_id}
               onChange={handleSelectChange('coal2_id')}
-              className="w-full rounded-xs border border-gray-300 bg-transparent p-1 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              className={`${FIELD_SELECT} w-full p-1 text-sm`}
             >
               <option value="">Select COA L2</option>
               {coaL2Options.map((item) => (
@@ -206,7 +207,7 @@ const AddCoaL3 = () => {
                 name="source_id"
                 value={formData.source_id}
                 onChange={handleSelectChange('source_id')}
-                className="w-full rounded-xs border border-gray-300 bg-transparent p-1 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className={`${FIELD_SELECT} w-full p-1 text-sm`}
               >
                 {sourceOptions.map((item) => (
                   <option key={item.id} value={item.id}>

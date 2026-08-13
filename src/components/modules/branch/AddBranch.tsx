@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { FIELD_FILE } from '../../../theme/fieldStyles';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import RichTextEditor from '../../utils/fields/RichTextEditor';
@@ -1093,7 +1094,7 @@ const AddBranch = () => {
                           type="file"
                           accept="image/*"
                           onChange={handlePadImageChange}
-                          className="form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent dark:border-gray-600 dark:text-white"
+                          className={FIELD_FILE}
                         />
                         <span className="mt-1 text-xs text-gray-500">
                           This image will print when `Custom Image Pad` is selected.

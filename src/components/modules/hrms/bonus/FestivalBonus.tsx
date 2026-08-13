@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
@@ -274,7 +275,7 @@ const FestivalBonus = ({ user }: any) => {
               e.target.value = "";
               void handleActionChange(row, value);
             }}
-            className="min-w-28 border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className={`${FIELD_SELECT} min-w-28 px-2 py-1 text-sm`}
           >
             <option value="">Select</option>
             <option value="update">Update</option>

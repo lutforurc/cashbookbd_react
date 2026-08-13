@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { FIELD_OPTION, FIELD_SELECT } from '../../../theme/fieldStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
@@ -261,10 +262,10 @@ const AdminNotifications = () => {
             <select
               value={tone}
               onChange={(e) => setTone(e.target.value as Tone)}
-              className="h-10 w-full rounded-sm border border-slate-300 bg-white px-3 text-sm text-black outline-none focus:border-blue-500 dark:border-form-strokedark dark:bg-transparent dark:text-white"
+              className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
             >
               {TONES.map((item) => (
-                <option key={item.value} value={item.value} className="dark:bg-boxdark">
+                <option key={item.value} value={item.value} className={FIELD_OPTION}>
                   {item.label}
                 </option>
               ))}
@@ -281,10 +282,10 @@ const AdminNotifications = () => {
             <select
               value={audience}
               onChange={(e) => setAudience(e.target.value as Audience)}
-              className="h-10 w-full rounded-sm border border-slate-300 bg-white px-3 text-sm text-black outline-none focus:border-blue-500 dark:border-form-strokedark dark:bg-transparent dark:text-white"
+              className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
             >
               {AUDIENCES.map((item) => (
-                <option key={item.value} value={item.value} className="dark:bg-boxdark">
+                <option key={item.value} value={item.value} className={FIELD_OPTION}>
                   {item.label}
                 </option>
               ))}
@@ -314,13 +315,13 @@ const AdminNotifications = () => {
               <select
                 value={roleId}
                 onChange={(e) => setRoleId(e.target.value)}
-                className="h-10 w-full rounded-sm border border-slate-300 bg-white px-3 text-sm text-black outline-none focus:border-blue-500 dark:border-form-strokedark dark:bg-transparent dark:text-white"
+                className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
               >
-                <option value="" className="dark:bg-boxdark">
+                <option value="" className={FIELD_OPTION}>
                   Select role
                 </option>
                 {roles.map((role: any) => (
-                  <option key={role.id} value={role.id} className="dark:bg-boxdark">
+                  <option key={role.id} value={role.id} className={FIELD_OPTION}>
                     {role.name}
                   </option>
                 ))}

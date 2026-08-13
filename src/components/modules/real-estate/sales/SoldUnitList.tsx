@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { FIELD_CHECKBOX } from '../../../../theme/fieldStyles';
 import { useDispatch, useSelector } from "react-redux";
 import {
   FiClipboard,
@@ -657,6 +658,7 @@ const SoldUnitList: React.FC = () => {
             type="checkbox"
             checked={dueOnly}
             onChange={(e) => setDueOnly(e.target.checked)}
+            className={FIELD_CHECKBOX}
           />
           Only units having due
         </label>

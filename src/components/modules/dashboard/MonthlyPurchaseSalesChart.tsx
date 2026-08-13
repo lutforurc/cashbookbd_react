@@ -6,6 +6,7 @@ import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import ChartCard from "./ChartCard";
 import { getApexTheme } from "./chartTheme";
+import { readToken } from '../../../theme/themeColors';
 
 const MonthlyPurchaseSalesChart: React.FC = () => {
   const dispatch = useDispatch();
@@ -15,8 +16,8 @@ const MonthlyPurchaseSalesChart: React.FC = () => {
   const [mode] = useLocalStorage("color-theme", "light");
 
   // Line Colors
-  const purchaseColor = mode === "dark" ? "#55efc4" : "#00b894";
-  const salesColor = mode === "dark" ? "#74b9ff" : "#0984e3";
+  const purchaseColor = readToken('chart-2');
+  const salesColor = readToken('chart-1');
 
   const [chartData, setChartData] = useState({
     labels: [],
@@ -50,7 +51,7 @@ const MonthlyPurchaseSalesChart: React.FC = () => {
     title: {
     //   text: "",
       align: "center",
-      style: { color: mode === "dark" ? "#fff" : "#333", fontSize: "16px" },
+      style: { color: mode === "dark" ? "rgb(var(--c-white))" : "rgb(var(--c-gray-800))", fontSize: "16px" },
     },
 
     tooltip: {

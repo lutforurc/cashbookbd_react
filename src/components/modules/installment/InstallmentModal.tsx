@@ -1,6 +1,7 @@
 import React from "react";
 import { ButtonLoading } from "../../../pages/UiElements/CustomButtons";
 import { FiCheckSquare, FiX } from "react-icons/fi";
+import { FIELD_BASE, FIELD_TEXTAREA } from '../../../theme/fieldStyles';
 
 interface InstallmentModalProps {
   open: boolean;
@@ -32,7 +33,7 @@ const InstallmentModal: React.FC<InstallmentModalProps> = ({
           <label className="block text-sm mb-1">Amount</label>
           <input
             type="number"
-            className="w-full border p-2 rounded bg-white dark:bg-gray-700 dark:border-gray-600"
+            className={`${FIELD_BASE} w-full p-2`}
             value={amount}
             // onChange={(e) => setAmount(e.target.value)}
             onChange={(e) => setAmount(Number(e.target.value))}
@@ -42,7 +43,7 @@ const InstallmentModal: React.FC<InstallmentModalProps> = ({
         <div className="mb-4">
           <label className="block text-sm mb-1">Remarks</label>
           <textarea
-            className="w-full border p-2 rounded bg-white dark:bg-gray-700 dark:border-gray-600"
+            className={`${FIELD_TEXTAREA} w-full p-2`}
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
           />

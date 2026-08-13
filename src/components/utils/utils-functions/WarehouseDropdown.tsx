@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FIELD_SELECT } from '../../../theme/fieldStyles';
 
 interface SelectOptionProps {
   warehouseDdl: Array<{ id: string; name: string }>; // Assuming warehouseDdl is an array of objects
@@ -40,7 +41,7 @@ const WarehouseDropdown: React.FC<SelectOptionProps> = ({
       value={selectedValue} // Bind the value to state
       onChange={handleSelectChange}
       onKeyDown={onKeyDown} // Pass it to the select element
-      className={`block w-full text-sm text-gray-900 border border-gray-300 rounded-xs outline-none dark:bg-boxdark dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}
+      className={`${FIELD_SELECT} block w-full text-sm ${className}`}
     >
       <option value="">Not Applicable</option>
       {warehouseDdl &&

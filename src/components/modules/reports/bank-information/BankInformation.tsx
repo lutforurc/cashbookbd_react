@@ -137,11 +137,11 @@ const BankInformation = () => {
   });
 
   const controlClass =
-    'h-10 w-full rounded-none border border-slate-600 bg-transparent px-3 text-sm font-bold text-slate-950 outline-none focus:border-slate-400 dark:border-[#465367] dark:bg-[#1c2735] dark:text-white dark:focus:border-slate-300';
+    'h-10 w-full rounded-none border border-slate-600 bg-transparent px-3 text-sm font-bold text-slate-950 outline-none focus:border-slate-400 dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-white dark:focus:border-slate-300';
   const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-white';
 
   return (
-    <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[#18212e] dark:text-white">
+    <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-white">
       <HelmetTitle title="Bank Information" />
       <div className="mb-3 flex flex-wrap items-end gap-3">
         <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
@@ -174,7 +174,7 @@ const BankInformation = () => {
               selectedDate={endDate}
               setSelectedDate={setEndDate}
               setCurrentDate={setEndDate}
-              className="h-10 rounded-none !border !border-slate-600 bg-transparent px-3 text-sm font-bold dark:!border-[#465367] dark:!bg-[#1c2735]"
+              className="h-10 rounded-none !border !border-slate-600 bg-transparent px-3 text-sm font-bold dark:!border-[rgb(var(--c-gray-600))] dark:!bg-[rgb(var(--c-boxdark))]"
             />
           </div>
         </div>
@@ -232,24 +232,24 @@ const BankInformation = () => {
           <Loader />
         </div>
       ) : (
-        <div className="overflow-x-auto bg-white dark:bg-[#1d2735]">
+        <div className="overflow-x-auto bg-white dark:bg-[rgb(var(--c-boxdark))]">
           <table className="w-full min-w-[760px] table-fixed border-collapse text-sm" style={{ fontSize }}>
             <thead>
-              <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[#3a4659] dark:text-white">
+              <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-white">
                 <th className="w-24 px-3 py-4 text-center">Sl. No.</th>
                 <th className="px-3 py-4 text-left">Bank Name</th>
                 <th className="w-40 px-3 py-4 text-right">Debit Balance</th>
                 <th className="w-40 px-3 py-4 text-right">Credit Balance</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-900 dark:divide-[#2e394b] dark:text-[#d7deea]">
+            <tbody className="divide-y divide-slate-100 text-slate-900 dark:divide-[rgb(var(--c-strokedark))] dark:text-[rgb(var(--c-bodydark1))]">
               {rows.length > 0 ? (
                 rows.map((row, index) => {
                   const debit = toNumber(row.dr_bal);
                   const credit = toNumber(row.cr_bal);
 
                   return (
-                    <tr key={`${row.coa4_id ?? row.bank_name ?? index}-${index}`} className="bg-white dark:bg-[#1d2735]">
+                    <tr key={`${row.coa4_id ?? row.bank_name ?? index}-${index}`} className="bg-white dark:bg-[rgb(var(--c-boxdark))]">
                       <td className="px-3 py-3 text-center">{index + 1}</td>
                       <td className="px-3 py-3 text-sky-950 dark:text-slate-100">
                         {row.bank_name || '-'}
@@ -271,7 +271,7 @@ const BankInformation = () => {
                 </tr>
               )}
             </tbody>
-            <tfoot className="bg-slate-100 font-bold text-slate-950 dark:bg-[#253141] dark:text-white">
+            <tfoot className="bg-slate-100 font-bold text-slate-950 dark:bg-[rgb(var(--c-meta-4))] dark:text-white">
               <tr className="font-bold">
                 <td colSpan={2} className="px-3 py-3 text-right">Total</td>
                 <td className="px-3 py-3 text-right">

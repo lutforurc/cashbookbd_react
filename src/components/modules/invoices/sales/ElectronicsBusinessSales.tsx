@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { FIELD_CHECKBOX } from '../../../../theme/fieldStyles';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
@@ -998,7 +999,7 @@ const ElectronicsBusinessSales = () => {
                             type="checkbox"
                             checked={isEarlyPayment}
                             onChange={handleEarlyPayment}
-                            className="w-4 h-4"
+                            className={FIELD_CHECKBOX}
                             aria-label="Enable installment sale"
                           />
                         </div>

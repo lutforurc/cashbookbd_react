@@ -12,6 +12,7 @@ import DatePickerOne from '../../components/Forms/DatePicker/DatePickerOne';
 import DatePickerTwo from '../../components/Forms/DatePicker/DatePickerTwo';
 import SelectGroupTwo from '../../components/Forms/SelectGroup/SelectGroupTwo';
 import MultiSelect from '../../components/Forms/MultiSelect';
+import { FIELD_BASE, FIELD_TEXTAREA } from '../../theme/fieldStyles';
 
 const FormElements = () => {
   return (
@@ -35,7 +36,7 @@ const FormElements = () => {
                 <input
                   type="text"
                   placeholder="Default Input"
-                  className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                  className={`${FIELD_BASE} w-full py-3 px-5`}
                 />
               </div>
 
@@ -46,7 +47,7 @@ const FormElements = () => {
                 <input
                   type="text"
                   placeholder="Active Input"
-                  className="w-full rounded-lg border-[1.5px] border-primary bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:bg-form-input dark:text-white"
+                  className={`${FIELD_BASE} w-full py-3 px-5`}
                 />
               </div>
 
@@ -58,7 +59,7 @@ const FormElements = () => {
                   type="text"
                   placeholder="Disabled label"
                   disabled
-                  className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary dark:disabled:bg-black"
+                  className={`${FIELD_BASE} w-full py-3 px-5`}
                 />
               </div>
             </div>
@@ -116,7 +117,7 @@ const FormElements = () => {
                 </label>
                 <input
                   type="file"
-                  className="w-full rounded-md border border-stroke p-3 outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-[#EEEEEE] file:py-1 file:px-2.5 file:text-sm focus:border-primary file:focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-strokedark dark:file:bg-white/30 dark:file:text-white"
+                  className="w-full rounded-md border border-stroke p-3 outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-[rgb(var(--c-gray-100))] file:py-1 file:px-2.5 file:text-sm focus:border-primary file:focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-strokedark dark:file:bg-white/30 dark:file:text-white"
                 />
               </div>
             </div>
@@ -139,7 +140,7 @@ const FormElements = () => {
                 <textarea
                   rows={6}
                   placeholder="Default textarea"
-                  className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                  className={`${FIELD_TEXTAREA} w-full py-3 px-5`}
                 ></textarea>
               </div>
 
@@ -150,7 +151,7 @@ const FormElements = () => {
                 <textarea
                   rows={6}
                   placeholder="Active textarea"
-                  className="w-full rounded-lg border-[1.5px] border-primary bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:bg-form-input dark:text-white"
+                  className={`${FIELD_TEXTAREA} w-full py-3 px-5`}
                 ></textarea>
               </div>
 
@@ -162,7 +163,7 @@ const FormElements = () => {
                   rows={6}
                   disabled
                   placeholder="Disabled textarea"
-                  className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary dark:disabled:bg-black"
+                  className={`${FIELD_TEXTAREA} w-full py-3 px-5`}
                 ></textarea>
               </div>
             </div>

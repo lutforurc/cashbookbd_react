@@ -7,6 +7,7 @@ import useLocalStorage from "../../../hooks/useLocalStorage";
 import ChartCard from "./ChartCard";
 import { getApexTheme } from "./chartTheme";
 import { chartDate } from "../../utils/utils-functions/formatDate";
+import { readToken } from '../../../theme/themeColors';
 
 const DailySalesChart = () => {
   const dispatch = useDispatch();
@@ -35,11 +36,11 @@ const DailySalesChart = () => {
 
   const options = {
     ...getApexTheme(mode),
-    colors: ["#6c5ce7"],
+    colors: [readToken('chart-5')],
     title: {
     //   text: "Daily Sales (Last 1 Month)",
       align: "center",
-      style: { color: mode === "dark" ? "#fff" : "#333" },
+      style: { color: mode === "dark" ? "rgb(var(--c-white))" : "rgb(var(--c-gray-800))" },
     },
     tooltip: {
       y: { formatter: (v) => thousandSeparator(v) },

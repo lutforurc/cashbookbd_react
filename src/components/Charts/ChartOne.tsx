@@ -1,6 +1,7 @@
 import { ApexOptions } from 'apexcharts';
 import React, { useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
+import { chartSeries } from '../../theme/themeColors';
 
 
 const options: ApexOptions = {
@@ -9,7 +10,7 @@ const options: ApexOptions = {
     position: 'top',
     horizontalAlign: 'left',
   },
-  colors: ['#3C50E0', '#80CAEE'],
+  colors: chartSeries(2),
   chart: {
     fontFamily: 'Satoshi, sans-serif',
     height: 335,
@@ -70,8 +71,8 @@ const options: ApexOptions = {
   },
   markers: {
     size: 4,
-    colors: '#fff',
-    strokeColors: ['#3056D3', '#80CAEE'],
+    colors: 'rgb(var(--c-white))',
+    strokeColors: chartSeries(2),
     strokeWidth: 3,
     strokeOpacity: 0.9,
     strokeDashArray: 0,

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FIELD_OPTION, FIELD_SELECT } from '../../../theme/fieldStyles';
 import { toast } from 'react-toastify';
 import { FiEdit2, FiLock, FiPlus, FiRefreshCw, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 
@@ -174,10 +175,10 @@ const InventorySystem = () => {
             <select
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: Number(e.target.value) }))}
-              className="h-10 w-full rounded-sm border border-slate-300 bg-white px-3 text-sm text-black outline-none focus:border-blue-500 dark:border-form-strokedark dark:bg-transparent dark:text-white"
+              className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
             >
-              <option value={1} className="dark:bg-boxdark">Active</option>
-              <option value={0} className="dark:bg-boxdark">Inactive</option>
+              <option value={1} className={FIELD_OPTION}>Active</option>
+              <option value={0} className={FIELD_OPTION}>Inactive</option>
             </select>
           </div>
 

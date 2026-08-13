@@ -35,7 +35,7 @@ const DropdownDefault = () => {
   return (
     <div className="relative flex">
       <button
-        className="text-[#98A6AD] hover:text-body"
+        className="text-[rgb(var(--c-bodydark2))] hover:text-body"
         ref={trigger}
         onClick={() => setDropdownOpen(!dropdownOpen)}
       >

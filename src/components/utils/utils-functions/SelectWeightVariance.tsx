@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FIELD_SELECT } from '../../../theme/fieldStyles';
 
 interface SelectOptionProps {
   onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -41,7 +42,7 @@ const SelectWeightVariance: React.FC<SelectOptionProps> = ({
       name={'weightVariance'} // Assuming name is a string for the select element
       value={selectedValue}
       onChange={handleSelectChange}
-      className={`block p-2 text-sm text-gray-900 border border-gray-300 rounded-xs bg-white outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}
+      className={`${FIELD_SELECT} block p-2 text-sm ${className}`}
     >
         {VARIANCE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>

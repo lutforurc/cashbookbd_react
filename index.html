@@ -6,6 +6,27 @@
   <link rel="icon" href="/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <script>
+    /* The theme, decided before the first frame is painted.
+     *
+     * React sets this class too, but only once it has mounted and its effects
+     * have run -- and the browser has drawn a white page by then. Someone who
+     * works in dark mode all day was seeing that flash on every single load.
+     *
+     * Deliberately silent about the system preference: the app's own default is
+     * light, and guessing dark here only to have React switch it back would
+     * trade one flash for another. */
+    (function () {
+      try {
+        var stored = window.localStorage.getItem('color-theme');
+        if (stored && stored.replace(/^"|"$/g, '') === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {
+        /* Private mode, storage disabled -- light is a fine answer. */
+      }
+    })();
+  </script>
 </head>
 
 <body>

@@ -13,7 +13,7 @@ const chatData: Chat[] = [
     text: 'How are you?',
     time: 12,
     textCount: 3,
-    color: '#10B981',
+    color: 'rgb(var(--c-meta-3))',
   },
   {
     avatar: UserTwo,
@@ -21,7 +21,7 @@ const chatData: Chat[] = [
     text: 'Waiting for you!',
     time: 12,
     textCount: 0,
-    color: '#DC3545',
+    color: 'rgb(var(--c-meta-1))',
   },
   {
     avatar: UserFour,
@@ -29,7 +29,7 @@ const chatData: Chat[] = [
     text: "What's up?",
     time: 32,
     textCount: 0,
-    color: '#10B981',
+    color: 'rgb(var(--c-meta-3))',
   },
   {
     avatar: UserFive,
@@ -37,7 +37,7 @@ const chatData: Chat[] = [
     text: 'Great',
     time: 32,
     textCount: 2,
-    color: '#FFBA00',
+    color: 'rgb(var(--c-meta-6))',
   },
   {
     avatar: UserOne,
@@ -45,7 +45,7 @@ const chatData: Chat[] = [
     text: 'How are you?',
     time: 32,
     textCount: 0,
-    color: '#10B981',
+    color: 'rgb(var(--c-meta-3))',
   },
   {
     avatar: UserThree,
@@ -53,7 +53,7 @@ const chatData: Chat[] = [
     text: 'How are you?',
     time: 32,
     textCount: 3,
-    color: '#FFBA00',
+    color: 'rgb(var(--c-meta-6))',
   },
 ];
 

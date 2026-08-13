@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCoal4Ddl } from '../../../modules/extrasliders/coal4Sliders';
+import { FIELD_BASE } from '../../../theme/fieldStyles';
 
 interface DropAccountsProps {
     setSelectValue: (value: any) => void;
@@ -66,7 +67,7 @@ const DropAccounts: React.FC<DropAccountsProps> = ({ setSelectValue, account, se
                         ref={searchInput}
                         onChange={handleSearchChange}
                         placeholder="Search Account"
-                        className="w-full p-1 text-gray-700 placeholder-gray-400 bg-transparent focus:outline-none"
+                        className={`${FIELD_BASE} w-full p-1`}
                         onFocus={() => handleShow(true)}
                     />
                 )}

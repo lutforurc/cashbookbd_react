@@ -62,25 +62,25 @@ const TrackedProductField: React.FC<Props> = ({
       minHeight: '2.1rem',
       height: '2.1rem',
       borderRadius: '0.0rem',
-      borderColor: state.isFocused ? 'rgb(59 130 246)' : isDark ? '#363843' : '#d2d6dc',
-      backgroundColor: isDark ? '#1f212a' : '#fcfcfc',
-      color: isDark ? '#fff' : '#000',
-      boxShadow: state.isFocused ? '0 0 0 1px rgb(59 130 246)' : '',
+      borderColor: state.isFocused ? 'rgb(var(--c-blue-500))' : isDark ? 'rgb(var(--c-strokedark))' : 'rgb(var(--c-gray-300))',
+      backgroundColor: isDark ? 'rgb(var(--c-form-input))' : 'rgb(var(--c-gray-3))',
+      color: isDark ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))',
+      boxShadow: state.isFocused ? '0 0 0 1px rgb(var(--c-blue-500))' : '',
       fontSize: '0.9rem',
       '&:hover': {
-        borderColor: state.isFocused ? 'rgb(59 130 246)' : isDark ? '#363843' : '#d2d6dc',
+        borderColor: state.isFocused ? 'rgb(var(--c-blue-500))' : isDark ? 'rgb(var(--c-strokedark))' : 'rgb(var(--c-gray-300))',
       },
     }),
     valueContainer: (base) => ({ ...base, height: '2.1rem', padding: '0 0.5rem' }),
     indicatorsContainer: (base) => ({ ...base, height: '2.1rem' }),
-    singleValue: (base) => ({ ...base, color: isDark ? '#fff' : '#000' }),
-    input: (base) => ({ ...base, color: isDark ? '#fff' : '#000', margin: 0, padding: 0 }),
-    placeholder: (base) => ({ ...base, color: isDark ? '#9ca3af' : '#9ca3af' }),
+    singleValue: (base) => ({ ...base, color: isDark ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))' }),
+    input: (base) => ({ ...base, color: isDark ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))', margin: 0, padding: 0 }),
+    placeholder: (base) => ({ ...base, color: isDark ? 'rgb(var(--c-gray-400))' : 'rgb(var(--c-gray-400))' }),
     menu: (base) => ({
       ...base,
       zIndex: 1000,
-      backgroundColor: isDark ? '#3b3e47' : '#fff',
-      borderColor: isDark ? '#808290' : '#000',
+      backgroundColor: isDark ? 'rgb(var(--c-graydark))' : 'rgb(var(--c-white))',
+      borderColor: isDark ? 'rgb(var(--c-bodydark2))' : 'rgb(var(--c-black-2))',
     }),
     menuPortal: (base) => ({ ...base, zIndex: 9999 }),
     option: (base, { isFocused, isSelected }) => ({
@@ -89,19 +89,19 @@ const TrackedProductField: React.FC<Props> = ({
       fontSize: '0.8rem',
       backgroundColor: isFocused
         ? isDark
-          ? '#3b3e47'
-          : '#E5E7EB'
+          ? 'rgb(var(--c-graydark))'
+          : 'rgb(var(--c-gray-200))'
         : isSelected
           ? isDark
-            ? '#50535e'
-            : '#d1d5db'
+            ? 'rgb(var(--c-gray-600))'
+            : 'rgb(var(--c-gray-300))'
           : isDark
-            ? '#1f212a'
-            : '#fff',
-      color: isDark ? '#fff' : '#000',
+            ? 'rgb(var(--c-form-input))'
+            : 'rgb(var(--c-white))',
+      color: isDark ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))',
       '&:hover': {
-        backgroundColor: isDark ? '#50535e' : '#d1d5db',
-        color: isDark ? '#fff' : '#000',
+        backgroundColor: isDark ? 'rgb(var(--c-gray-600))' : 'rgb(var(--c-gray-300))',
+        color: isDark ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))',
       },
     }),
   };

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { FIELD_CHECKBOX, FIELD_SELECT } from '../../../theme/fieldStyles';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FiCheck, FiClock, FiRefreshCcw, FiRotateCcw, FiTrash2, FiX } from 'react-icons/fi';
 import { toast } from 'react-toastify';
@@ -208,7 +209,7 @@ const ApprovalCenter = ({ user }: any) => {
         type="checkbox"
         checked={activeRows.length > 0 && activeSelection.length === activeRows.length}
         onChange={toggleAll}
-        className="h-4 w-4"
+        className={FIELD_CHECKBOX}
       />
     ),
     headerClass: 'text-center',
@@ -220,7 +221,7 @@ const ApprovalCenter = ({ user }: any) => {
           type="checkbox"
           checked={selected.includes(Number(row.id))}
           onChange={() => toggleSelected(type, Number(row.id))}
-          className="h-4 w-4"
+          className={FIELD_CHECKBOX}
         />
       );
     },
@@ -314,7 +315,7 @@ const ApprovalCenter = ({ user }: any) => {
               name="per_page"
               value={filters.per_page}
               onChange={handleChange}
-              className="block h-10 w-full rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+              className={`${FIELD_SELECT} block h-10 w-full p-2 text-sm`}
             >
               {[10, 25, 50, 100, 200].map((value) => (
                 <option key={value} value={value}>{value}</option>

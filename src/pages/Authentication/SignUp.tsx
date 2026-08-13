@@ -5,6 +5,7 @@ import LogoDark from '../../images/logo/logo-dark.svg';
 import Logo from '../../images/logo/logo.svg';
 // import ImportElement from '../../components/utils/fields/ImportElement';
 import InputElement from '../../components/utils/fields/InputElement';
+import { FIELD_BASE } from '../../theme/fieldStyles';
 
 const SignUp: React.FC = () => {
   return (
@@ -163,7 +164,7 @@ const SignUp: React.FC = () => {
                     <input
                       type="text"
                       placeholder="Enter your full name"
-                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      className={`${FIELD_BASE} w-full py-4 pl-6 pr-10`}
                     />
 
                     <span className="absolute right-4 top-4">
@@ -198,7 +199,7 @@ const SignUp: React.FC = () => {
                     <input
                       type="email"
                       placeholder="Enter your email"
-                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      className={`${FIELD_BASE} w-full py-4 pl-6 pr-10`}
                     />
 
                     <span className="absolute right-4 top-4">
@@ -229,7 +230,7 @@ const SignUp: React.FC = () => {
                     <input
                       type="password"
                       placeholder="Enter your password"
-                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      className={`${FIELD_BASE} w-full py-4 pl-6 pr-10`}
                     />
 
                     <span className="absolute right-4 top-4">
@@ -264,7 +265,7 @@ const SignUp: React.FC = () => {
                     <input
                       type="password"
                       placeholder="Re-enter your password"
-                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      className={`${FIELD_BASE} w-full py-4 pl-6 pr-10`}
                     />
 
                     <span className="absolute right-4 top-4">

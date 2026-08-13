@@ -11,18 +11,18 @@ const MapOne = () => {
 
       regionStyle: {
         initial: {
-          fill: '#C8D0D8',
+          fill: 'rgb(var(--c-gray-300))',
         },
         hover: {
           fillOpacity: 1,
-          fill: '#3056D3',
+          fill: 'rgb(var(--c-primary))',
         },
       },
       regionLabelStyle: {
         initial: {
           fontFamily: 'Satoshi',
           fontWeight: 'semibold',
-          fill: '#fff',
+          fill: 'rgb(var(--c-white))',
         },
         hover: {
           cursor: 'pointer',

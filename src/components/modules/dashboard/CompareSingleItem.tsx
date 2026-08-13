@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getCompare } from './chartSlice';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { readToken, chartSeries } from '../../../theme/themeColors';
 
 const CompareSingleItem = ({
   branchId,
@@ -18,7 +19,7 @@ const CompareSingleItem = ({
   const dispatch = useDispatch();
 
   const [colorMode] = useLocalStorage('color-theme', 'light');
-  const titleColor = colorMode === 'dark' ? '#fff' : '#666666';
+  const titleColor = readToken('chart-text');
 
   const [chartData, setChartData] = useState({
     labels: [],
@@ -128,7 +129,7 @@ const CompareSingleItem = ({
       },
     },
 
-    colors: ['#008FFB', '#FF4560'],
+    colors: chartSeries(2),
     legend: { show: true },
   };
 

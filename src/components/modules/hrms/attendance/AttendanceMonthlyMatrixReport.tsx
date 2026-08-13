@@ -682,7 +682,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
               align-items: center;
               justify-content: center;
               border-radius: 9999px;
-              color: #ffffff;
+              color: rgb(var(--c-white));
               font-size: 13px;
               font-weight: 800;
               line-height: 1;
@@ -694,46 +694,46 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
               transform: scale(1.12);
             }
 
-            .attendance-monthly-screen .status-present { background: #16a34a; color: #ffffff; }
-            .attendance-monthly-screen .status-late { background: #d97706; color: #ffffff; }
-            .attendance-monthly-screen .status-absent { background: #dc2626; color: #ffffff; }
+            .attendance-monthly-screen .status-present { background: rgb(var(--c-green-600)); color: rgb(var(--c-white)); }
+            .attendance-monthly-screen .status-late { background: rgb(var(--c-amber-600)); color: rgb(var(--c-white)); }
+            .attendance-monthly-screen .status-absent { background: rgb(var(--c-red-600)); color: rgb(var(--c-white)); }
             /* A weekly day off is routine, so it reads as quiet grey; a
                calendar holiday is an event, so it gets a colour of its own.
                Neither may borrow green, red or amber -- those already mean
                worked, absent and on leave. */
-            .attendance-monthly-screen .status-weekly { background: #64748b; color: #ffffff; }
-            .attendance-monthly-screen .status-holiday { background: #7c3aed; color: #ffffff; }
-            .attendance-monthly-screen .status-leave { background: #ca8a04; color: #ffffff; }
-            .attendance-monthly-screen .status-half-day { background: #7c3aed; color: #ffffff; }
+            .attendance-monthly-screen .status-weekly { background: rgb(var(--c-body)); color: rgb(var(--c-white)); }
+            .attendance-monthly-screen .status-holiday { background: rgb(var(--c-violet-600)); color: rgb(var(--c-white)); }
+            .attendance-monthly-screen .status-leave { background: rgb(var(--c-yellow-600)); color: rgb(var(--c-white)); }
+            .attendance-monthly-screen .status-half-day { background: rgb(var(--c-violet-600)); color: rgb(var(--c-white)); }
 
             /* Marked at another branch. The status colour still says what the
                day was; the ring says where it was given. */
             .attendance-monthly-screen .mark-other-branch {
-              box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #0ea5e9;
+              box-shadow: 0 0 0 2px rgb(var(--c-white)), 0 0 0 4px rgb(var(--c-sky-500));
             }
 
             .dark .attendance-monthly-screen .mark-other-branch {
-              box-shadow: 0 0 0 2px #1e293b, 0 0 0 4px #38bdf8;
+              box-shadow: 0 0 0 2px rgb(var(--c-slate-800)), 0 0 0 4px rgb(var(--c-sky-400));
             }
 
-            .dark .attendance-monthly-screen .status-present { background: #22c55e; }
-            .dark .attendance-monthly-screen .status-late { background: #f59e0b; }
-            .dark .attendance-monthly-screen .status-absent { background: #ef4444; }
-            .dark .attendance-monthly-screen .status-weekly { background: #94a3b8; color: #0f172a; }
-            .dark .attendance-monthly-screen .status-holiday { background: #a78bfa; color: #1e1b4b; }
-            .dark .attendance-monthly-screen .status-leave { background: #eab308; }
-            .dark .attendance-monthly-screen .status-half-day { background: #8b5cf6; }
+            .dark .attendance-monthly-screen .status-present { background: rgb(var(--c-green-500)); }
+            .dark .attendance-monthly-screen .status-late { background: rgb(var(--c-amber-500)); }
+            .dark .attendance-monthly-screen .status-absent { background: rgb(var(--c-red-500)); }
+            .dark .attendance-monthly-screen .status-weekly { background: rgb(var(--c-slate-400)); color: rgb(var(--c-slate-900)); }
+            .dark .attendance-monthly-screen .status-holiday { background: rgb(var(--c-violet-400)); color: rgb(var(--c-indigo-950)); }
+            .dark .attendance-monthly-screen .status-leave { background: rgb(var(--c-yellow-500)); }
+            .dark .attendance-monthly-screen .status-half-day { background: rgb(var(--c-violet-500)); }
 
             .attendance-monthly-screen .cell-tint {
               transition: filter 0.12s ease;
             }
-            .attendance-monthly-screen .cell-tint-present { background: #dcfce7; }
-            .attendance-monthly-screen .cell-tint-late { background: #fef3c7; }
-            .attendance-monthly-screen .cell-tint-absent { background: #fee2e2; }
-            .attendance-monthly-screen .cell-tint-weekly { background: #f1f5f9; }
-            .attendance-monthly-screen .cell-tint-holiday { background: #ede9fe; }
-            .attendance-monthly-screen .cell-tint-leave { background: #fef9c3; }
-            .attendance-monthly-screen .cell-tint-half { background: #f3e8ff; }
+            .attendance-monthly-screen .cell-tint-present { background: rgb(var(--c-green-100)); }
+            .attendance-monthly-screen .cell-tint-late { background: rgb(var(--c-amber-100)); }
+            .attendance-monthly-screen .cell-tint-absent { background: rgb(var(--c-red-100)); }
+            .attendance-monthly-screen .cell-tint-weekly { background: rgb(var(--c-whiten)); }
+            .attendance-monthly-screen .cell-tint-holiday { background: rgb(var(--c-violet-100)); }
+            .attendance-monthly-screen .cell-tint-leave { background: rgb(var(--c-yellow-100)); }
+            .attendance-monthly-screen .cell-tint-half { background: rgb(var(--c-purple-100)); }
 
             .dark .attendance-monthly-screen .cell-tint-present { background: rgba(34, 197, 94, 0.20); }
             .dark .attendance-monthly-screen .cell-tint-late { background: rgba(245, 158, 11, 0.20); }
@@ -758,19 +758,19 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
               align-items: center;
               justify-content: center;
               border-radius: 9999px;
-              color: #ffffff;
+              color: rgb(var(--c-white));
               font-size: 11px;
               font-weight: 800;
             }
 
             .attendance-monthly-screen .legend-total {
-              background: #64748b;
-              color: #ffffff;
+              background: rgb(var(--c-body));
+              color: rgb(var(--c-white));
             }
 
             .dark .attendance-monthly-screen .legend-total {
-              background: #94a3b8;
-              color: #0f172a;
+              background: rgb(var(--c-slate-400));
+              color: rgb(var(--c-slate-900));
             }
 
             @media print {
@@ -781,14 +781,14 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
 
               html,
               body {
-                background: #ffffff !important;
+                background: rgb(var(--c-white)) !important;
               }
 
               .attendance-monthly-print {
                 width: 100% !important;
                 overflow: visible !important;
-                color: #000000 !important;
-                background: #ffffff !important;
+                color: rgb(var(--c-black-2)) !important;
+                background: rgb(var(--c-white)) !important;
                 font-family: Arial, Helvetica, sans-serif !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -805,19 +805,19 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
                 border-collapse: collapse !important;
                 font-size: 8px !important;
                 line-height: 1.15 !important;
-                color: #000000 !important;
+                color: rgb(var(--c-black-2)) !important;
               }
 
               .attendance-monthly-print th,
               .attendance-monthly-print td {
-                border: 1px solid #000000 !important;
+                border: 1px solid rgb(var(--c-black-2)) !important;
                 padding: 2px 1px !important;
                 overflow: hidden !important;
               }
 
               .attendance-monthly-print .matrix-header-cell {
-                background: #e5e7eb !important;
-                color: #000000 !important;
+                background: rgb(var(--c-gray-200)) !important;
+                color: rgb(var(--c-black-2)) !important;
               }
 
               .attendance-monthly-print .serial-cell {
@@ -839,40 +839,40 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
                 width: 28px !important;
                 text-align: center !important;
                 font-weight: 700 !important;
-                background: #eeeeee !important;
-                color: #000000 !important;
+                background: rgb(var(--c-gray-100)) !important;
+                color: rgb(var(--c-black-2)) !important;
               }
 
               .attendance-monthly-print .status-present {
                 background: #eaf7ea !important;
-                color: #000000 !important;
+                color: rgb(var(--c-black-2)) !important;
               }
 
               .attendance-monthly-print .status-late {
                 background: #fff0bf !important;
-                color: #000000 !important;
-                box-shadow: inset 0 0 0 1px #000000 !important;
+                color: rgb(var(--c-black-2)) !important;
+                box-shadow: inset 0 0 0 1px rgb(var(--c-black-2)) !important;
               }
 
               .attendance-monthly-print .status-absent {
                 background: #ffdede !important;
-                color: #000000 !important;
-                box-shadow: inset 0 0 0 1px #000000 !important;
+                color: rgb(var(--c-black-2)) !important;
+                box-shadow: inset 0 0 0 1px rgb(var(--c-black-2)) !important;
               }
 
               .attendance-monthly-print .status-holiday {
                 background: #e8eef8 !important;
-                color: #000000 !important;
+                color: rgb(var(--c-black-2)) !important;
               }
 
               .attendance-monthly-print .status-leave {
                 background: #fff1c7 !important;
-                color: #000000 !important;
+                color: rgb(var(--c-black-2)) !important;
               }
 
               .attendance-monthly-print .status-half-day {
                 background: #eee3f8 !important;
-                color: #000000 !important;
+                color: rgb(var(--c-black-2)) !important;
               }
 
               .attendance-monthly-print .report-heading {
@@ -883,13 +883,13 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
                 font-size: 10px !important;
                 font-weight: 400 !important;
                 text-align: center !important;
-                color: #000000 !important;
+                color: rgb(var(--c-black-2)) !important;
               }
 
               .attendance-monthly-print .print-legend {
                 margin-top: 4px !important;
                 font-size: 8px !important;
-                color: #000000 !important;
+                color: rgb(var(--c-black-2)) !important;
               }
 
               .attendance-monthly-print .legend-mark {

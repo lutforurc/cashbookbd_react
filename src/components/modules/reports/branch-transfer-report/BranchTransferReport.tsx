@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -200,7 +201,7 @@ const BranchTransferReport = ({ user }: any) => {
             <select
               value={branchId}
               onChange={(event) => setBranchId(event.target.value)}
-              className="h-10 w-full rounded-xs border border-gray-300 bg-white px-2 text-sm font-medium text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+              className={`${FIELD_SELECT} h-10 w-full px-2 text-sm font-medium`}
             >
               <option value="">Select branch</option>
               {dropdownData.map((item: any) => (

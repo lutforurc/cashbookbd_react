@@ -16,6 +16,7 @@ import {
 import httpService from '../../components/services/httpService';
 import { storeToken } from '../../features/authReducer';
 import { ButtonLoading } from '../UiElements/CustomButtons';
+import { FIELD_BASE } from '../../theme/fieldStyles';
 
 type RegisterPayload = {
   company_name: string;
@@ -257,7 +258,7 @@ const PublicRegistrationOtp: React.FC = () => {
               renderInput={(props) => (
                 <input
                   {...props}
-                  className="!h-10 !w-10 rounded border border-slate-300 bg-white text-center text-xl font-semibold text-slate-700 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 mx-0 shadow-sm sm:!h-12 sm:!w-12 dark:border-slate-600 dark:bg-form-input dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-900/30"
+                  className={`${FIELD_BASE} !h-10 !w-10 text-center text-xl font-semibold transition-all duration-200 mx-0 shadow-sm sm:!h-12 sm:!w-12`}
                 />
               )}
             />

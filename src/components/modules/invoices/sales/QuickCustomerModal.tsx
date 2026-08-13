@@ -10,6 +10,7 @@ import { ClientType } from '../../../utils/fields/DataConstant';
 import InputElement from '../../../utils/fields/InputElement';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import DdlDynamicMultiline from '../../../utils/utils-functions/DdlDynamicMultiline';
+import { FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
 
 interface QuickCustomerFormData {
   name: string;
@@ -294,7 +295,7 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
               value={formData.manual_address}
               onChange={handleInputChange}
               placeholder="Enter customer address"
-              className="w-full rounded-xs border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-white"
+              className={`${FIELD_TEXTAREA} w-full px-3 py-2 text-sm`}
             />
             {errors.manual_address && (
               <p className="mt-1 text-xs text-red-500">{errors.manual_address}</p>

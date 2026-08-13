@@ -1,6 +1,8 @@
 import { ApexOptions } from 'apexcharts';
 import React, { useState } from 'react';
+import { FIELD_OPTION } from '../../theme/fieldStyles';
 import ReactApexChart from 'react-apexcharts';
+import { chartSeries } from '../../theme/themeColors';
 
 interface ChartThreeState {
   series: number[];
@@ -11,7 +13,7 @@ const options: ApexOptions = {
     fontFamily: 'Satoshi, sans-serif',
     type: 'donut',
   },
-  colors: ['#3C50E0', '#6577F3', '#8FD0EF', '#0FADCF'],
+  colors: chartSeries(4),
   labels: ['Desktop', 'Tablet', 'Mobile', 'Unknown'],
   legend: {
     show: false,
@@ -77,10 +79,10 @@ const ChartThree: React.FC = () => {
               id=""
               className="relative z-20 inline-flex appearance-none bg-transparent py-1 pl-3 pr-8 text-sm font-medium outline-none"
             >
-              <option value="" className="dark:bg-boxdark">
+              <option value="" className={FIELD_OPTION}>
                 Monthly
               </option>
-              <option value="" className="dark:bg-boxdark">
+              <option value="" className={FIELD_OPTION}>
                 Yearly
               </option>
             </select>
@@ -121,7 +123,7 @@ const ChartThree: React.FC = () => {
       <div className="-mx-8 flex flex-wrap items-center justify-center gap-y-3">
         <div className="sm:w-1/2 w-full px-8">
           <div className="flex w-full items-center">
-            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-primary"></span>
+            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[rgb(var(--c-chart-1))]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Desktop </span>
               <span> 65% </span>
@@ -130,7 +132,7 @@ const ChartThree: React.FC = () => {
         </div>
         <div className="sm:w-1/2 w-full px-8">
           <div className="flex w-full items-center">
-            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#6577F3]"></span>
+            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[rgb(var(--c-chart-2))]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Tablet </span>
               <span> 34% </span>
@@ -139,7 +141,7 @@ const ChartThree: React.FC = () => {
         </div>
         <div className="sm:w-1/2 w-full px-8">
           <div className="flex w-full items-center">
-            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#8FD0EF]"></span>
+            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[rgb(var(--c-chart-3))]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Mobile </span>
               <span> 45% </span>
@@ -148,7 +150,7 @@ const ChartThree: React.FC = () => {
         </div>
         <div className="sm:w-1/2 w-full px-8">
           <div className="flex w-full items-center">
-            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#0FADCF]"></span>
+            <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[rgb(var(--c-chart-4))]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
               <span> Unknown </span>
               <span> 12% </span>

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
@@ -314,7 +315,7 @@ const GroupPurchaseSales = () => {
             <select
               value={reportGroup}
               onChange={(event) => setReportGroup(event.target.value)}
-              className="h-10 w-full rounded-sm border border-stroke bg-transparent px-3 text-sm outline-none dark:border-strokedark dark:bg-form-input"
+              className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
             >
               {reportGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
             </select>

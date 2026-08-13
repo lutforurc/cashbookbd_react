@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { Link } from 'react-router-dom';
 import { FiArrowLeft, FiDownload, FiRefreshCcw } from 'react-icons/fi';
 import { useReactToPrint } from 'react-to-print';
@@ -230,7 +231,7 @@ const ApprovalAudit = ({ user }: any) => {
               name="action"
               value={filters.action}
               onChange={handleChange}
-              className="block h-10 w-full rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+              className={`${FIELD_SELECT} block h-10 w-full p-2 text-sm`}
             >
               <option value="">All Actions</option>
               <option value="approved">Approved</option>
@@ -256,7 +257,7 @@ const ApprovalAudit = ({ user }: any) => {
               name="per_page"
               value={filters.per_page}
               onChange={handleChange}
-              className="block h-10 w-full rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+              className={`${FIELD_SELECT} block h-10 w-full p-2 text-sm`}
             >
               {[10, 25, 50, 100, 200].map((value) => (
                 <option key={value} value={value}>{value}</option>
@@ -320,25 +321,25 @@ const ApprovalAudit = ({ user }: any) => {
             {filters.date_from || 'Beginning'} to {filters.date_to || 'Today'}
             {filters.action ? ` | Action: ${actionLabel(filters.action)}` : ''}
           </p>
-          <table className="w-full border-collapse text-xs" style={{ borderColor: '#cbd5e1' }}>
+          <table className="w-full border-collapse text-xs" style={{ borderColor: 'rgb(var(--c-slate-300))' }}>
             <thead>
               <tr>
                 {['Action At', 'Attendance Date', 'Employee', 'Serial', 'Branch/Project', 'Action', 'Action By', 'Remarks'].map((head) => (
-                  <th key={head} style={{ border: '1px solid #cbd5e1', padding: '4px', textAlign: 'left' }}>{head}</th>
+                  <th key={head} style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px', textAlign: 'left' }}>{head}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {rows.map((row: any) => (
                 <tr key={row.id}>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{dateTimeText(row.action_at)}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.attendance_date ? chartDate(row.attendance_date) : '-'}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.employee_name || '-'}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.employee_serial || '-'}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.branch_name || '-'}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{actionLabel(row.action)}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.action_by_name || '-'}</td>
-                  <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>{row.remarks || '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{dateTimeText(row.action_at)}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.attendance_date ? chartDate(row.attendance_date) : '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.employee_name || '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.employee_serial || '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.branch_name || '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{actionLabel(row.action)}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.action_by_name || '-'}</td>
+                  <td style={{ border: '1px solid rgb(var(--c-slate-300))', padding: '4px' }}>{row.remarks || '-'}</td>
                 </tr>
               ))}
             </tbody>

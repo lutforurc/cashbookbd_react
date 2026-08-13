@@ -456,7 +456,7 @@ const ConstructionDashboard = () => {
 
             {!dashboard.errors && isWidgetVisible('top-purchase') && dashboard?.data?.topProductsPurchase?.length > 0 && (
               <div
-                className="relative flex min-w-0 flex-col overflow-hidden border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-[#1f2937]"
+                className="relative flex min-w-0 flex-col overflow-hidden border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-[rgb(var(--c-gray-800))]"
                 style={{ order: widgetOrder('top-purchase') }}
               >
                 {/* Header */}

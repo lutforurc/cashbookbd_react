@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { FIELD_CHECKBOX } from '../../../../theme/fieldStyles';
 import {
   FiLock,
   FiEdit2,
@@ -918,7 +919,7 @@ export default function UnitSalePage() {
                             id={`nominee-${nominee.id}`}
                             checked={Boolean(pick?.checked)}
                             onChange={() => toggleNominee(nominee.id, nominee)}
-                            className="h-4 w-4 shrink-0"
+                            className={FIELD_CHECKBOX}
                           />
                           <label
                             htmlFor={`nominee-${nominee.id}`}

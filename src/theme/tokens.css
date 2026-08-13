@@ -1,0 +1,425 @@
+/* ===========================================================================
+ * The one place colour lives.
+ *
+ * Every colour the screen shows is a variable here. tailwind.config.cjs maps
+ * class names onto these and holds no values of its own, so `text-gray-500`,
+ * `dark:bg-boxdark` and `text-danger` all resolve through this file without a
+ * single component having to change.
+ *
+ * Values are RGB channels rather than hex ("60 80 224", not "#3C50E0"), which
+ * is what lets Tailwind's alpha shorthand keep working -- `bg-primary/10`
+ * becomes `rgb(60 80 224 / 0.1)`.
+ *
+ * These are exactly the values the app rendered before this file existed. A
+ * new theme is this same list with different numbers; a runtime theme is the
+ * same list written onto the root element from JavaScript.
+ *
+ * Adding a colour anywhere else defeats the point -- there is a CI check for
+ * that. Put it here and give it a name that says what it is for.
+ * ======================================================================== */
+
+:root {
+  /* Brand and interaction */
+  --c-primary: 43 95 217;            /* #2B5FD9 */
+  --c-secondary: 127 190 234;        /* #7FBEEA */
+
+  /* Meaning: money, state, alerts */
+  --c-success: 23 128 76;            /* #17804C */
+  --c-danger: 203 58 76;             /* #CB3A4C */
+  --c-warning: 240 160 0;            /* #F0A000 */
+  --c-meta-1: 203 58 76;             /* #CB3A4C */
+  --c-meta-2: 238 242 246;           /* #EEF2F6 */
+  --c-meta-3: 18 166 110;            /* #12A66E */
+  --c-meta-4: 42 50 60;              /* #2A323C */
+  --c-meta-5: 46 144 224;            /* #2E90E0 */
+  --c-meta-6: 240 180 41;            /* #F0B429 */
+  --c-meta-7: 228 103 106;           /* #E4676A */
+  --c-meta-8: 224 138 12;            /* #E08A0C */
+  --c-meta-9: 225 231 238;           /* #E1E7EE */
+  --c-meta-10: 18 162 196;           /* #12A2C4 */
+
+  /* Charts.
+   *
+   * A deliberate categorical set rather than whatever each chart reached for --
+   * the dashboard had ApexCharts' own defaults on one card, hand-picked hexes on
+   * the next, and the same series drawn in two different greens. Ordered so the
+   * first few are the furthest apart, which is what a two-series chart needs.
+   *
+   * Chrome (the axis text and grid lines) is the one part that has to differ
+   * per mode; it is overridden further down. */
+  --c-chart-1: 43 95 217;            /* #2B5FD9 */
+  --c-chart-2: 18 166 110;           /* #12A66E */
+  --c-chart-3: 224 138 12;           /* #E08A0C */
+  --c-chart-4: 203 58 76;            /* #CB3A4C */
+  --c-chart-5: 124 92 224;           /* #7C5CE0 */
+  --c-chart-6: 18 162 196;           /* #12A2C4 */
+  --c-chart-7: 217 82 126;           /* #D9527E */
+  --c-chart-8: 110 120 133;          /* #6E7885 */
+  --c-chart-text: 70 80 91;          /* #46505B */
+  --c-chart-grid: 225 231 238;       /* #E1E7EE */
+
+  /* Receivable ageing.
+   *
+   * A ramp for the four ageing buckets, and the reason it is not simply
+   * green/amber/orange/red: saturated amber on a dark card is the single most
+   * tiring thing a screen can do to someone reading it all day. Yellow carries
+   * more perceived brightness than any other hue at the same lightness, so a
+   * bar of it beside a dark surface glares even when the contrast figure looks
+   * reasonable.
+   *
+   * So chroma is spent where it earns something. The first three are muted --
+   * ordered enough to read as a scale, quiet enough to sit under the eye for
+   * hours -- and only "overdue" carries a real colour, which is the one thing
+   * on the card worth interrupting somebody for. */
+  --c-age-current: 154 166 180;      /* #9AA6B4 */
+  --c-age-watch: 184 160 106;        /* #B8A06A */
+  --c-age-chase: 192 132 87;         /* #C08457 */
+  --c-age-overdue: 203 58 76;        /* #CB3A4C */
+
+  /* Highlight rules.
+   *
+   * The one colour in the palette that is deliberately not tasteful: the
+   * report highlight rules want a border nobody can miss, and Tailwind's
+   * red-500 reads as a washed-out coral against a dark page. Kept as its own
+   * name so nothing else picks it up by accident. */
+  --c-highlight-red: 255 0 0;        /* #FF0000 */
+
+  /* Text */
+  --c-black: 26 32 41;               /* #1A2029 */
+  --c-black-2: 11 14 18;             /* #0B0E12 */
+  --c-body: 89 99 111;               /* #59636F */
+  --c-bodydark: 163 173 185;         /* #A3ADB9 */
+  --c-bodydark1: 216 222 231;        /* #D8DEE7 */
+  --c-bodydark2: 133 144 160;        /* #8590A0 */
+  --c-white: 255 255 255;             /* #FFFFFF */
+
+  /* Surfaces and lines */
+  --c-stroke: 225 231 238;           /* #E1E7EE */
+  --c-strokedark: 47 56 68;          /* #2F3844 */
+  --c-form-strokedark: 58 68 81;     /* #3A4451 */
+  --c-form-input: 28 35 44;          /* #1C232C */
+  --c-boxdark: 33 41 50;             /* #212932 */
+  --c-boxdark-2: 23 29 37;           /* #171D25 */
+  --c-graydark: 49 57 69;            /* #313945 */
+  --c-whiten: 244 247 250;           /* #F4F7FA */
+  --c-whiter: 246 248 251;           /* #F6F8FB */
+  --c-gray-DEFAULT: 238 242 246;     /* #EEF2F6 */
+  --c-gray-2: 247 249 251;           /* #F7F9FB */
+  --c-gray-3: 250 251 252;           /* #FAFBFC */
+  --c-red-DEFAULT: 228 103 106;      /* #E4676A */
+
+  /* ---------------------------------------------------------------------
+   * The palette ramps.
+   *
+   * Tailwind's own scales, restated here so they answer to this file too --
+   * gray and slate alone carry more than five thousand class uses across the
+   * app, and a theme that could not move them would only be repainting the
+   * trim.
+   * ------------------------------------------------------------------- */
+
+  /* gray */
+  --c-gray-50: 247 249 251;          /* #F7F9FB */
+  --c-gray-100: 238 242 246;         /* #EEF2F6 */
+  --c-gray-200: 225 231 238;         /* #E1E7EE */
+  --c-gray-300: 203 211 222;         /* #CBD3DE */
+  --c-gray-400: 105 115 128;         /* #697380 */
+  --c-gray-500: 89 99 111;           /* #59636F */
+  --c-gray-600: 70 80 91;            /* #46505B */
+  --c-gray-700: 47 56 68;            /* #2F3844 */
+  --c-gray-800: 33 41 50;            /* #212932 */
+  --c-gray-900: 23 29 37;            /* #171D25 */
+  --c-gray-950: 14 19 25;            /* #0E1319 */
+
+  /* slate */
+  --c-slate-50: 247 249 251;         /* #F7F9FB */
+  --c-slate-100: 238 242 246;        /* #EEF2F6 */
+  --c-slate-200: 225 231 238;        /* #E1E7EE */
+  --c-slate-300: 203 211 222;        /* #CBD3DE */
+  --c-slate-400: 105 115 128;        /* #697380 */
+  --c-slate-500: 89 99 111;          /* #59636F */
+  --c-slate-600: 70 80 91;           /* #46505B */
+  --c-slate-700: 47 56 68;           /* #2F3844 */
+  --c-slate-800: 33 41 50;           /* #212932 */
+  --c-slate-900: 23 29 37;           /* #171D25 */
+  --c-slate-950: 14 19 25;           /* #0E1319 */
+
+  /* blue */
+  --c-blue-50: 239 246 255;           /* #EFF6FF */
+  --c-blue-100: 219 234 254;          /* #DBEAFE */
+  --c-blue-200: 191 219 254;          /* #BFDBFE */
+  --c-blue-300: 147 197 253;          /* #93C5FD */
+  --c-blue-400: 96 165 250;           /* #60A5FA */
+  --c-blue-500: 59 130 246;           /* #3B82F6 */
+  --c-blue-600: 37 99 235;            /* #2563EB */
+  --c-blue-700: 29 78 216;            /* #1D4ED8 */
+  --c-blue-800: 30 64 175;            /* #1E40AF */
+  --c-blue-900: 30 58 138;            /* #1E3A8A */
+  --c-blue-950: 23 37 84;             /* #172554 */
+
+  /* red */
+  --c-red-50: 254 242 242;            /* #FEF2F2 */
+  --c-red-100: 254 226 226;           /* #FEE2E2 */
+  --c-red-200: 254 202 202;           /* #FECACA */
+  --c-red-300: 252 165 165;           /* #FCA5A5 */
+  --c-red-400: 248 113 113;           /* #F87171 */
+  --c-red-500: 239 68 68;             /* #EF4444 */
+  --c-red-600: 220 38 38;             /* #DC2626 */
+  --c-red-700: 185 28 28;             /* #B91C1C */
+  --c-red-800: 153 27 27;             /* #991B1B */
+  --c-red-900: 127 29 29;             /* #7F1D1D */
+  --c-red-950: 69 10 10;              /* #450A0A */
+
+  /* amber */
+  --c-amber-50: 255 251 235;          /* #FFFBEB */
+  --c-amber-100: 254 243 199;         /* #FEF3C7 */
+  --c-amber-200: 253 230 138;         /* #FDE68A */
+  --c-amber-300: 252 211 77;          /* #FCD34D */
+  --c-amber-400: 251 191 36;          /* #FBBF24 */
+  --c-amber-500: 245 158 11;          /* #F59E0B */
+  --c-amber-600: 217 119 6;           /* #D97706 */
+  --c-amber-700: 180 83 9;            /* #B45309 */
+  --c-amber-800: 146 64 14;           /* #92400E */
+  --c-amber-900: 120 53 15;           /* #78350F */
+  --c-amber-950: 69 26 3;             /* #451A03 */
+
+  /* emerald */
+  --c-emerald-50: 236 253 245;        /* #ECFDF5 */
+  --c-emerald-100: 209 250 229;       /* #D1FAE5 */
+  --c-emerald-200: 167 243 208;       /* #A7F3D0 */
+  --c-emerald-300: 110 231 183;       /* #6EE7B7 */
+  --c-emerald-400: 52 211 153;        /* #34D399 */
+  --c-emerald-500: 16 185 129;        /* #10B981 */
+  --c-emerald-600: 5 150 105;         /* #059669 */
+  --c-emerald-700: 4 120 87;          /* #047857 */
+  --c-emerald-800: 6 95 70;           /* #065F46 */
+  --c-emerald-900: 6 78 59;           /* #064E3B */
+  --c-emerald-950: 2 44 34;           /* #022C22 */
+
+  /* green */
+  --c-green-50: 240 253 244;          /* #F0FDF4 */
+  --c-green-100: 220 252 231;         /* #DCFCE7 */
+  --c-green-200: 187 247 208;         /* #BBF7D0 */
+  --c-green-300: 134 239 172;         /* #86EFAC */
+  --c-green-400: 74 222 128;          /* #4ADE80 */
+  --c-green-500: 34 197 94;           /* #22C55E */
+  --c-green-600: 22 163 74;           /* #16A34A */
+  --c-green-700: 21 128 61;           /* #15803D */
+  --c-green-800: 22 101 52;           /* #166534 */
+  --c-green-900: 20 83 45;            /* #14532D */
+  --c-green-950: 5 46 22;             /* #052E16 */
+
+  /* rose */
+  --c-rose-50: 255 241 242;           /* #FFF1F2 */
+  --c-rose-100: 255 228 230;          /* #FFE4E6 */
+  --c-rose-200: 254 205 211;          /* #FECDD3 */
+  --c-rose-300: 253 164 175;          /* #FDA4AF */
+  --c-rose-400: 251 113 133;          /* #FB7185 */
+  --c-rose-500: 244 63 94;            /* #F43F5E */
+  --c-rose-600: 225 29 72;            /* #E11D48 */
+  --c-rose-700: 190 18 60;            /* #BE123C */
+  --c-rose-800: 159 18 57;            /* #9F1239 */
+  --c-rose-900: 136 19 55;            /* #881337 */
+  --c-rose-950: 76 5 25;              /* #4C0519 */
+
+  /* sky */
+  --c-sky-50: 240 249 255;            /* #F0F9FF */
+  --c-sky-100: 224 242 254;           /* #E0F2FE */
+  --c-sky-200: 186 230 253;           /* #BAE6FD */
+  --c-sky-300: 125 211 252;           /* #7DD3FC */
+  --c-sky-400: 56 189 248;            /* #38BDF8 */
+  --c-sky-500: 14 165 233;            /* #0EA5E9 */
+  --c-sky-600: 2 132 199;             /* #0284C7 */
+  --c-sky-700: 3 105 161;             /* #0369A1 */
+  --c-sky-800: 7 89 133;              /* #075985 */
+  --c-sky-900: 12 74 110;             /* #0C4A6E */
+  --c-sky-950: 8 47 73;               /* #082F49 */
+
+  /* indigo */
+  --c-indigo-50: 238 242 255;         /* #EEF2FF */
+  --c-indigo-100: 224 231 255;        /* #E0E7FF */
+  --c-indigo-200: 199 210 254;        /* #C7D2FE */
+  --c-indigo-300: 165 180 252;        /* #A5B4FC */
+  --c-indigo-400: 129 140 248;        /* #818CF8 */
+  --c-indigo-500: 99 102 241;         /* #6366F1 */
+  --c-indigo-600: 79 70 229;          /* #4F46E5 */
+  --c-indigo-700: 67 56 202;          /* #4338CA */
+  --c-indigo-800: 55 48 163;          /* #3730A3 */
+  --c-indigo-900: 49 46 129;          /* #312E81 */
+  --c-indigo-950: 30 27 75;           /* #1E1B4B */
+
+  /* cyan */
+  --c-cyan-50: 236 254 255;           /* #ECFEFF */
+  --c-cyan-100: 207 250 254;          /* #CFFAFE */
+  --c-cyan-200: 165 243 252;          /* #A5F3FC */
+  --c-cyan-300: 103 232 249;          /* #67E8F9 */
+  --c-cyan-400: 34 211 238;           /* #22D3EE */
+  --c-cyan-500: 6 182 212;            /* #06B6D4 */
+  --c-cyan-600: 8 145 178;            /* #0891B2 */
+  --c-cyan-700: 14 116 144;           /* #0E7490 */
+  --c-cyan-800: 21 94 117;            /* #155E75 */
+  --c-cyan-900: 22 78 99;             /* #164E63 */
+  --c-cyan-950: 8 51 68;              /* #083344 */
+
+  /* orange */
+  --c-orange-50: 255 247 237;         /* #FFF7ED */
+  --c-orange-100: 255 237 213;        /* #FFEDD5 */
+  --c-orange-200: 254 215 170;        /* #FED7AA */
+  --c-orange-300: 253 186 116;        /* #FDBA74 */
+  --c-orange-400: 251 146 60;         /* #FB923C */
+  --c-orange-500: 249 115 22;         /* #F97316 */
+  --c-orange-600: 234 88 12;          /* #EA580C */
+  --c-orange-700: 194 65 12;          /* #C2410C */
+  --c-orange-800: 154 52 18;          /* #9A3412 */
+  --c-orange-900: 124 45 18;          /* #7C2D12 */
+  --c-orange-950: 67 20 7;            /* #431407 */
+
+  /* violet */
+  --c-violet-50: 245 243 255;         /* #F5F3FF */
+  --c-violet-100: 237 233 254;        /* #EDE9FE */
+  --c-violet-200: 221 214 254;        /* #DDD6FE */
+  --c-violet-300: 196 181 253;        /* #C4B5FD */
+  --c-violet-400: 167 139 250;        /* #A78BFA */
+  --c-violet-500: 139 92 246;         /* #8B5CF6 */
+  --c-violet-600: 124 58 237;         /* #7C3AED */
+  --c-violet-700: 109 40 217;         /* #6D28D9 */
+  --c-violet-800: 91 33 182;          /* #5B21B6 */
+  --c-violet-900: 76 29 149;          /* #4C1D95 */
+  --c-violet-950: 46 16 101;          /* #2E1065 */
+
+  /* yellow */
+  --c-yellow-50: 254 252 232;         /* #FEFCE8 */
+  --c-yellow-100: 254 249 195;        /* #FEF9C3 */
+  --c-yellow-200: 254 240 138;        /* #FEF08A */
+  --c-yellow-300: 253 224 71;         /* #FDE047 */
+  --c-yellow-400: 250 204 21;         /* #FACC15 */
+  --c-yellow-500: 234 179 8;          /* #EAB308 */
+  --c-yellow-600: 202 138 4;          /* #CA8A04 */
+  --c-yellow-700: 161 98 7;           /* #A16207 */
+  --c-yellow-800: 133 77 14;          /* #854D0E */
+  --c-yellow-900: 113 63 18;          /* #713F12 */
+  --c-yellow-950: 66 32 6;            /* #422006 */
+
+  /* teal */
+  --c-teal-50: 240 253 250;           /* #F0FDFA */
+  --c-teal-100: 204 251 241;          /* #CCFBF1 */
+  --c-teal-200: 153 246 228;          /* #99F6E4 */
+  --c-teal-300: 94 234 212;           /* #5EEAD4 */
+  --c-teal-400: 45 212 191;           /* #2DD4BF */
+  --c-teal-500: 20 184 166;           /* #14B8A6 */
+  --c-teal-600: 13 148 136;           /* #0D9488 */
+  --c-teal-700: 15 118 110;           /* #0F766E */
+  --c-teal-800: 17 94 89;             /* #115E59 */
+  --c-teal-900: 19 78 74;             /* #134E4A */
+  --c-teal-950: 4 47 46;              /* #042F2E */
+
+  /* purple */
+  --c-purple-50: 250 245 255;         /* #FAF5FF */
+  --c-purple-100: 243 232 255;        /* #F3E8FF */
+  --c-purple-200: 233 213 255;        /* #E9D5FF */
+  --c-purple-300: 216 180 254;        /* #D8B4FE */
+  --c-purple-400: 192 132 252;        /* #C084FC */
+  --c-purple-500: 168 85 247;         /* #A855F7 */
+  --c-purple-600: 147 51 234;         /* #9333EA */
+  --c-purple-700: 126 34 206;         /* #7E22CE */
+  --c-purple-800: 107 33 168;         /* #6B21A8 */
+  --c-purple-900: 88 28 135;          /* #581C87 */
+  --c-purple-950: 59 7 100;           /* #3B0764 */
+
+  /* pink */
+  --c-pink-50: 253 242 248;           /* #FDF2F8 */
+  --c-pink-100: 252 231 243;          /* #FCE7F3 */
+  --c-pink-200: 251 207 232;          /* #FBCFE8 */
+  --c-pink-300: 249 168 212;          /* #F9A8D4 */
+  --c-pink-400: 244 114 182;          /* #F472B6 */
+  --c-pink-500: 236 72 153;           /* #EC4899 */
+  --c-pink-600: 219 39 119;           /* #DB2777 */
+  --c-pink-700: 190 24 93;            /* #BE185D */
+  --c-pink-800: 157 23 77;            /* #9D174D */
+  --c-pink-900: 131 24 67;            /* #831843 */
+  --c-pink-950: 80 7 36;              /* #500724 */
+
+  /* lime */
+  --c-lime-50: 247 254 231;           /* #F7FEE7 */
+  --c-lime-100: 236 252 203;          /* #ECFCCB */
+  --c-lime-200: 217 249 157;          /* #D9F99D */
+  --c-lime-300: 190 242 100;          /* #BEF264 */
+  --c-lime-400: 163 230 53;           /* #A3E635 */
+  --c-lime-500: 132 204 22;           /* #84CC16 */
+  --c-lime-600: 101 163 13;           /* #65A30D */
+  --c-lime-700: 77 124 15;            /* #4D7C0F */
+  --c-lime-800: 63 98 18;             /* #3F6212 */
+  --c-lime-900: 54 83 20;             /* #365314 */
+  --c-lime-950: 26 46 5;              /* #1A2E05 */
+
+  /* fuchsia */
+  --c-fuchsia-50: 253 244 255;        /* #FDF4FF */
+  --c-fuchsia-100: 250 232 255;       /* #FAE8FF */
+  --c-fuchsia-200: 245 208 254;       /* #F5D0FE */
+  --c-fuchsia-300: 240 171 252;       /* #F0ABFC */
+  --c-fuchsia-400: 232 121 249;       /* #E879F9 */
+  --c-fuchsia-500: 217 70 239;        /* #D946EF */
+  --c-fuchsia-600: 192 38 211;        /* #C026D3 */
+  --c-fuchsia-700: 162 28 175;        /* #A21CAF */
+  --c-fuchsia-800: 134 25 143;        /* #86198F */
+  --c-fuchsia-900: 112 26 117;        /* #701A75 */
+  --c-fuchsia-950: 74 4 78;           /* #4A044E */
+}
+
+/* ---------------------------------------------------------------------------
+ * What differs between the two modes.
+ *
+ * Most colours are one value in both -- the markup already says which to use
+ * where (`bg-white dark:bg-boxdark`). These three cannot be said that way,
+ * because the same class name has to mean something different in each mode.
+ * ------------------------------------------------------------------------ */
+
+html.dark {
+  /* Pure white text on a dark page bleeds at the edges -- the effect people
+     describe as "my eyes hurt after a few hours". Softening it here reaches all
+     1,229 `dark:text-white` uses without touching one of them. Contrast drops
+     from roughly 15:1 to 11:1, still far above what is required. */
+  --c-white: 230 234 240;             /* #E6EAF0 */
+
+  /* The 400 step is muted text, and it is asked to work on both a white page
+     and a dark one. Above it is dark enough to read on white; here it is light
+     enough to read on a card -- 219 of its 301 text uses are dark-mode. */
+  --c-gray-400: 153 163 176;          /* #99A3B0 */
+  --c-slate-400: 153 163 176;         /* #99A3B0 */
+
+  /* Axis labels and grid lines. The series colours themselves hold in both
+     modes; only the chrome around them has to lighten. */
+  --c-chart-text: 163 173 185;        /* #A3ADB9 */
+  --c-chart-grid: 47 56 68;           /* #2F3844 */
+
+  /* The ageing ramp, dimmed further. A colour that reads as muted on white is
+     still bright against a dark card -- the surface behind it dropped by a
+     factor of thirty, and the bar did not. */
+  --c-age-current: 107 118 132;       /* #6B7684 */
+  --c-age-watch: 150 130 89;          /* #968259 */
+  --c-age-chase: 163 113 77;          /* #A3714D */
+  --c-age-overdue: 214 96 110;        /* #D6606E */
+}
+
+/* Paper is white whoever is printing.
+ *
+ * Print runs with whatever theme is on screen, so without this a report sent to
+ * the printer from dark mode would come out on a grey background. */
+@media print {
+  :root,
+  html.dark {
+    --c-white: 255 255 255;           /* #FFFFFF */
+  }
+}
+
+/* The page itself, painted before React runs.
+ *
+ * Without this the browser draws its own white canvas first and a dark-mode
+ * user sees a flash of it on every load. The class is set by the snippet in
+ * index.html, ahead of the first paint. */
+html {
+  background-color: rgb(var(--c-whiten));
+}
+
+html.dark {
+  background-color: rgb(var(--c-boxdark-2));
+}

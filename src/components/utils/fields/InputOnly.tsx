@@ -1,4 +1,5 @@
 import React from 'react';
+import { FIELD_TRANSPARENT, fieldClass } from '../../../theme/fieldStyles';
 
 interface InputElementProps {
   id: string;
@@ -32,9 +33,7 @@ const InputOnly: React.FC<InputElementProps> = ({
         value={value}
         type={type} // Use dynamic type
         placeholder={placeholder}
-        className={`form-input px-3 py-1 text-gray-600 outline-none  border rounded-xs bg-transparent dark:bg-gray-700 
-        dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none 
-        focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${className}`}
+        className={fieldClass(undefined, `${FIELD_TRANSPARENT} ${className}`)}
       />
     </div>
   );

@@ -17,6 +17,7 @@ import {
   uploadInAppMessageImage,
 } from './inAppMessageService';
 import { InAppMessage } from './types';
+import { FIELD_BASE, FIELD_CHECKBOX } from '../../../theme/fieldStyles';
 
 /**
  * The schedule fields are held as "YYYY-MM-DDTHH:mm" — what the API is sent
@@ -300,7 +301,7 @@ const AdminInAppMessageForm: React.FC = () => {
               <label className="block text-sm">Image</label>
               <div className="flex items-center gap-2">
                 <input
-                  className="h-8.5 w-full rounded-xs border border-gray-300 p-1 text-sm dark:border-gray-600 dark:bg-boxdark dark:text-white"
+                  className={`${FIELD_BASE} h-8.5 w-full p-1 text-sm`}
                   placeholder="Paste an image URL, or upload"
                   value={form.image_url}
                   onChange={(e) => set('image_url', e.target.value)}
@@ -351,7 +352,7 @@ const AdminInAppMessageForm: React.FC = () => {
               <label className="block text-sm">Background colour</label>
               <input
                 type="color"
-                value={form.bg_color || '#ffffff'}
+                value={form.bg_color || 'rgb(var(--c-white))'}
                 onChange={(e) => set('bg_color', e.target.value)}
                 className="h-8.5 w-full rounded-xs border border-gray-300 dark:border-gray-600"
               />
@@ -360,7 +361,7 @@ const AdminInAppMessageForm: React.FC = () => {
               <label className="block text-sm">Text colour</label>
               <input
                 type="color"
-                value={form.text_color || '#111827'}
+                value={form.text_color || 'rgb(var(--c-gray-900))'}
                 onChange={(e) => set('text_color', e.target.value)}
                 className="h-8.5 w-full rounded-xs border border-gray-300 dark:border-gray-600"
               />
@@ -369,7 +370,7 @@ const AdminInAppMessageForm: React.FC = () => {
               <label className="block text-sm">Button colour</label>
               <input
                 type="color"
-                value={form.button_color || '#3c50e0'}
+                value={form.button_color || 'rgb(var(--c-primary))'}
                 onChange={(e) => set('button_color', e.target.value)}
                 className="h-8.5 w-full rounded-xs border border-gray-300 dark:border-gray-600"
               />
@@ -484,6 +485,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 type="checkbox"
                 checked={form.require_ack}
                 onChange={(e) => set('require_ack', e.target.checked)}
+                className={FIELD_CHECKBOX}
               />
               Must acknowledge (no close button)
             </label>

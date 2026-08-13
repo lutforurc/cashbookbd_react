@@ -75,7 +75,7 @@ interface Product {
 type PurchaseSuggestionField = 'vehicle_no' | 'notes';
 
 const autofillHighlightClass =
-  'border-blue-500 ring-1 ring-blue-500 bg-[#243245] dark:bg-[#243245]';
+  'border-blue-500 ring-1 ring-blue-500 bg-[rgb(var(--c-strokedark))] dark:bg-[rgb(var(--c-strokedark))]';
 
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)

@@ -8,6 +8,7 @@ import { getVoucherEditTarget } from '../utils/utils-functions/voucherEditNaviga
 import { VoucherPrintRegistry } from '../modules/vouchers/VoucherPrintRegistry';
 import routes from '../services/appRoutes';
 import globalSearchItems, { GlobalSearchItem } from './globalSearchItems';
+import { FIELD_BASE } from '../../theme/fieldStyles';
 
 const RESULT_LIMIT = 10;
 const VOUCHER_NO_PATTERN = /^\d+-[\w-]+$/;
@@ -200,7 +201,7 @@ const GlobalSearch = () => {
             type="text"
             value={query}
             placeholder="Search or quick action..."
-            className="w-full bg-transparent pl-9 pr-16 text-black focus:outline-none dark:text-white xl:w-125"
+            className={`${FIELD_BASE} w-full pl-9 pr-16 xl:w-125`}
             onChange={(event) => {
               setQuery(event.target.value);
               setOpen(true);

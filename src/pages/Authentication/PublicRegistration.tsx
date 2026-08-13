@@ -12,6 +12,7 @@ import httpService from '../../components/services/httpService';
 import InputElement from '../../components/utils/fields/InputElement';
 import { ButtonLoading } from '../UiElements/CustomButtons';
 import HelmetTitle from '../../components/utils/others/HelmetTitle';
+import { FIELD_BASE, FIELD_TEXTAREA } from '../../theme/fieldStyles';
 
 type RegistrationForm = {
   company_name: string;
@@ -236,7 +237,7 @@ const PublicRegistration: React.FC = () => {
                   value={formData.company_name}
                   onChange={handleChange}
                   placeholder="ABC Traders Ltd"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className={`${FIELD_BASE} w-full px-4 py-2.5`}
                 />
               </div>
 
@@ -250,7 +251,7 @@ const PublicRegistration: React.FC = () => {
                   value={formData.branch_name}
                   onChange={handleChange}
                   placeholder="Belkuchi Branch"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className={`${FIELD_BASE} w-full px-4 py-2.5`}
                 />
               </div> */}
 
@@ -265,7 +266,7 @@ const PublicRegistration: React.FC = () => {
                   value={formData.user_name}
                   onChange={handleChange}
                   placeholder="John Doe"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className={`${FIELD_BASE} w-full px-4 py-2.5`}
                 />
               </div>
 
@@ -279,7 +280,7 @@ const PublicRegistration: React.FC = () => {
                   value={formData.contact_person}
                   onChange={handleChange}
                   placeholder="John Doe"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className={`${FIELD_BASE} w-full px-4 py-2.5`}
                 />
               </div>
 
@@ -293,7 +294,7 @@ const PublicRegistration: React.FC = () => {
                   value={formData.mobile}
                   onChange={handleChange}
                   placeholder="017********"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className={`${FIELD_BASE} w-full px-4 py-2.5`}
                 />
               </div>
 
@@ -307,7 +308,7 @@ const PublicRegistration: React.FC = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="abc@example.com"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className={`${FIELD_BASE} w-full px-4 py-2.5`}
                 />
               </div>
 
@@ -321,7 +322,7 @@ const PublicRegistration: React.FC = () => {
                   value={formData.address}
                   onChange={handleChange}
                   placeholder="H # 123, Road # 45, Gulshan, Dhaka."
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className={`${FIELD_BASE} w-full px-4 py-2.5`}
                 />
               </div>
 
@@ -336,7 +337,7 @@ const PublicRegistration: React.FC = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Enter password"
-                    className="w-full border border-stroke bg-transparent px-4 py-2.5 pr-12 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                    className={`${FIELD_BASE} w-full px-4 py-2.5 pr-12`}
                   />
                   <button
                     type="button"
@@ -360,7 +361,7 @@ const PublicRegistration: React.FC = () => {
                     value={formData.password_confirmation}
                     onChange={handleChange}
                     placeholder="Re-enter password"
-                    className="w-full border border-stroke bg-transparent px-4 py-2.5 pr-12 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                    className={`${FIELD_BASE} w-full px-4 py-2.5 pr-12`}
                   />
                   {/* className={`text-white bg-gray-700 hover:bg-blue-400 focus:outline-none font-medium text-sm px-5 text-center dark:hover:bg-blue-400 focus:bg-blue-400 inline-flex justify-center items-center ${className}`} */}
                   <button
@@ -384,7 +385,7 @@ const PublicRegistration: React.FC = () => {
                   value={formData.notes}
                   onChange={handleChange}
                   placeholder="New registration via mobile app"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className={`${FIELD_TEXTAREA} w-full px-4 py-2.5`}
                 />
               </div> */}
             </div>

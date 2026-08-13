@@ -78,11 +78,11 @@ const MultiSelectDropdown = ({
       height: '2.3rem',
       borderRadius: '0.125rem',
       borderColor: state.isFocused
-        ? 'rgb(59 130 246)'
+        ? 'rgb(var(--c-blue-500))'
         : darkMode
-        ? '#4b5563'
-        : '#d1d5db',
-      backgroundColor: darkMode ? '#1f2937' : '#fff',
+        ? 'rgb(var(--c-gray-600))'
+        : 'rgb(var(--c-gray-300))',
+      backgroundColor: darkMode ? 'rgb(var(--c-gray-800))' : 'rgb(var(--c-white))',
       boxShadow: 'none',
       fontSize: '0.875rem',
       cursor: 'pointer',
@@ -124,7 +124,7 @@ const MultiSelectDropdown = ({
 
     placeholder: (base) => ({
       ...base,
-      color: darkMode ? '#9ca3af' : '#6b7280',
+      color: darkMode ? 'rgb(var(--c-gray-400))' : 'rgb(var(--c-gray-500))',
       margin: 0,
     }),
 
@@ -132,13 +132,13 @@ const MultiSelectDropdown = ({
       ...base,
       margin: 0,
       padding: 0,
-      color: darkMode ? '#fff' : '#111827',
+      color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-gray-900))',
       cursor: 'pointer',
     }),
 
     menu: (base) => ({
       ...base,
-      backgroundColor: darkMode ? '#1f2937' : '#fff',
+      backgroundColor: darkMode ? 'rgb(var(--c-gray-800))' : 'rgb(var(--c-white))',
       zIndex: 50,
     }),
 
@@ -146,14 +146,14 @@ const MultiSelectDropdown = ({
       ...base,
       backgroundColor: isFocused
         ? darkMode
-          ? '#374151'
-          : '#e5e7eb'
+          ? 'rgb(var(--c-gray-700))'
+          : 'rgb(var(--c-gray-200))'
         : isSelected
         ? darkMode
-          ? '#4b5563'
-          : '#d1d5db'
+          ? 'rgb(var(--c-gray-600))'
+          : 'rgb(var(--c-gray-300))'
         : 'transparent',
-      color: darkMode ? '#e5e7eb' : '#111827',
+      color: darkMode ? 'rgb(var(--c-gray-200))' : 'rgb(var(--c-gray-900))',
       fontSize: '0.875rem',
 
       cursor: 'pointer',
