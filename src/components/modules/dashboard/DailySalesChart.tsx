@@ -15,8 +15,7 @@ const DailySalesChart = () => {
   // Taken from the document, so switching the theme redraws the chart.
   const isDark = useIsDark();
   const mode = isDark ? "dark" : "light";
-  const { 'chart-5': salesColor, 'chart-text': axisColor } =
-    useThemeTokens(['chart-5', 'chart-text']);
+  const { 'chart-5': salesColor } = useThemeTokens(['chart-5']);
 
   const [chartData, setChartData] = useState({
     labels: [],
@@ -38,32 +37,30 @@ const DailySalesChart = () => {
     }
   }, [purchaseSales]);
 
+  const theme = getApexTheme(mode);
+
+  // Every section spreads its counterpart from the theme, so the shared type
+  // sizes and colours survive. The y-axis title also read "Purchase" here,
+  // carried over from the chart this one was copied from.
   const options = {
-    ...getApexTheme(mode),
+    ...theme,
     colors: [salesColor],
-    title: {
-    //   text: "Daily Sales (Last 1 Month)",
-      align: "center",
-      style: { color: mode === "dark" ? "rgb(var(--c-white))" : "rgb(var(--c-gray-800))" },
-    },
     tooltip: {
+      ...theme.tooltip,
       y: { formatter: (v) => thousandSeparator(v) },
     },
     xaxis: {
-      ...getApexTheme(mode).xaxis,
+      ...theme.xaxis,
       categories: chartData.labels,
     },
-    // Spread, so the theme's label colour is not lost with it. The title also
-    // read "Purchase" on the sales chart, carried over from the chart this one
-    // was copied from.
     yaxis: {
-      ...getApexTheme(mode).yaxis,
+      ...theme.yaxis,
       title: {
+        ...theme.yaxis.title,
         text: 'Sales',
-        style: { color: axisColor },
       },
       labels: {
-        style: { colors: axisColor },
+        ...theme.yaxis.labels,
         formatter: function (value: number) {
           return thousandSeparator(value);
         }

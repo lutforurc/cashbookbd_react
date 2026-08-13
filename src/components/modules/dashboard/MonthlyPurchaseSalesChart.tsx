@@ -18,8 +18,8 @@ const MonthlyPurchaseSalesChart: React.FC = () => {
   const mode = isDark ? "dark" : "light";
 
   // Line Colors
-  const { 'chart-2': purchaseColor, 'chart-1': salesColor, 'chart-text': axisColor } =
-    useThemeTokens(['chart-2', 'chart-1', 'chart-text']);
+  const { 'chart-2': purchaseColor, 'chart-1': salesColor } =
+    useThemeTokens(['chart-2', 'chart-1']);
 
   const [chartData, setChartData] = useState({
     labels: [],
@@ -45,46 +45,39 @@ const MonthlyPurchaseSalesChart: React.FC = () => {
   }, [purchaseSales]);
 
   // Chart Options with Full Theme
+  const theme = getApexTheme(mode);
+
+  // Each section spreads its counterpart from the theme rather than standing in
+  // for it, so the shared type sizes and colours survive the addition of a
+  // formatter or a title. Writing them bare took the theme's own styling out
+  // with them and left Apex's defaults.
   const options = {
-    ...getApexTheme(mode),
+    ...theme,
 
     colors: [purchaseColor, salesColor],
 
-    title: {
-    //   text: "",
-      align: "center",
-      style: { color: mode === "dark" ? "rgb(var(--c-white))" : "rgb(var(--c-gray-800))", fontSize: "16px" },
-    },
-
     tooltip: {
-      theme: mode === "dark" ? "dark" : "light",
+      ...theme.tooltip,
       y: { formatter: (v: number) => thousandSeparator(v) },
     },
 
     xaxis: {
-      ...getApexTheme(mode).xaxis,
+      ...theme.xaxis,
       categories: chartData.labels,
     },
-    // Spread, not replaced: writing a bare yaxis here dropped the theme's
-    // label colour with it, and Apex's own default is a near-black that the
-    // dark card swallowed -- the figures up the side were being drawn, in a
-    // colour nobody could read.
+
     yaxis: {
-      ...getApexTheme(mode).yaxis,
+      ...theme.yaxis,
       title: {
+        ...theme.yaxis.title,
         text: 'Purchase & Sales',
-        style: { color: axisColor },
       },
       labels: {
-        style: { colors: axisColor },
+        ...theme.yaxis.labels,
         formatter: function (value: number) {
           return thousandSeparator(value);
         }
       }
-    },
-
-    legend: {
-      labels: { colors: getApexTheme(mode).legend.labels.colors },
     },
   };
 

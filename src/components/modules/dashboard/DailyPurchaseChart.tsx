@@ -15,8 +15,7 @@ const DailyPurchaseChart = () => {
   // Taken from the document, so switching the theme redraws the chart.
   const isDark = useIsDark();
   const mode = isDark ? "dark" : "light";
-  const { 'chart-2': purchaseColor, 'chart-text': axisColor } =
-    useThemeTokens(['chart-2', 'chart-text']);
+  const { 'chart-2': purchaseColor } = useThemeTokens(['chart-2']);
 
   const [chartData, setChartData] = useState({
     labels: [],
@@ -39,31 +38,29 @@ const DailyPurchaseChart = () => {
     }
   }, [purchaseSales]);
 
+  const theme = getApexTheme(mode);
+
+  // Every section spreads its counterpart from the theme, so the shared type
+  // sizes and colours survive -- see the note on the Purchase & Sales chart.
   const options = {
-    ...getApexTheme(mode), // include theme colors, grid, labels
+    ...theme, // include theme colors, grid, labels
     colors: [purchaseColor], // purchase line
-    title: {
-      // text: "Daily Purchase (Last 1 Month)",
-      align: "center",
-      style: { color: mode === "dark" ? "rgb(var(--c-white))" : "rgb(var(--c-gray-800))" },
-    },
     tooltip: {
+      ...theme.tooltip,
       y: { formatter: (v) => thousandSeparator(v) },
     },
     xaxis: {
-      ...getApexTheme(mode).xaxis,
+      ...theme.xaxis,
       categories: chartData.labels,
     },
-    // Spread, so the theme's label colour is not lost with it -- see the same
-    // note on the Purchase & Sales chart.
     yaxis: {
-      ...getApexTheme(mode).yaxis,
+      ...theme.yaxis,
       title: {
+        ...theme.yaxis.title,
         text: 'Purchase',
-        style: { color: axisColor },
       },
       labels: {
-        style: { colors: axisColor },
+        ...theme.yaxis.labels,
         formatter: function (value: number) {
           return thousandSeparator(value);
         }

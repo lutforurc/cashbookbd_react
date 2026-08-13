@@ -9,6 +9,21 @@ import { readToken } from '../../../theme/themeColors';
  * value for each, so this no longer has to know which mode it is in. `mode` is
  * still taken because Apex's own tooltip skin is named, not coloured.
  */
+/**
+ * Chart type sizes, in one place.
+ *
+ * Apex's own defaults are 11px for axis labels and titles and 12px for the
+ * legend -- sizes for a chart in a card the width of a phone, not one running
+ * the width of the dashboard. They were left at the default and read as fine
+ * print. Set here rather than per chart so the three do not drift apart.
+ */
+const FONT = {
+  label: '14px',
+  title: '15px',
+  legend: '14px',
+  tooltip: '14px',
+};
+
 export const getApexTheme = (mode: string) => {
   const textColor = readToken('chart-text');
   const gridColor = readToken('chart-grid');
@@ -35,27 +50,38 @@ export const getApexTheme = (mode: string) => {
     xaxis: {
       labels: {
         rotate: -45,
-        style: { fontSize: "12px", colors: textColor },
+        style: { fontSize: FONT.label, colors: textColor },
       },
       axisBorder: { show: false },
       axisTicks: { show: false },
+      title: {
+        style: { fontSize: FONT.title, fontWeight: 500, color: textColor },
+      },
     },
 
+    // Carries the title style as well as the labels, so a chart naming its
+    // y-axis can spread this and add only the text.
     yaxis: {
       labels: {
-        style: { colors: textColor },
+        style: { fontSize: FONT.label, colors: textColor },
+      },
+      title: {
+        style: { fontSize: FONT.title, fontWeight: 500, color: textColor },
       },
     },
 
     legend: {
       labels: { colors: textColor },
+      fontSize: FONT.legend,
+      markers: { width: 12, height: 12 },
+      itemMargin: { horizontal: 10 },
       position: "top",
       horizontalAlign: "center",
     },
 
     tooltip: {
       theme: mode === "dark" ? "dark" : "light",
-      style: { fontSize: "12px" },
+      style: { fontSize: FONT.tooltip },
     },
 
     // An area fill has to sit above the surface it is drawn on, and Apex's
