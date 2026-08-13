@@ -118,6 +118,38 @@ const formatPaymentMonth = (value: string) => {
 
 export { formatPaymentMonth };
 
+/**
+ * "2026-04" -> "April 2026", or "Apr 2026" in the short form.
+ *
+ * The twelve-month dashboard chart is keyed by the month the API returns, and
+ * that key was reaching the reader as it stood. Charts keep the raw key as
+ * their category -- the series are lined up by it -- so only the label and the
+ * tooltip title pass through here.
+ *
+ * formatPaymentMonth() next door reads MM-YYYY and "092025"; this is the other
+ * way round, hence a second function rather than another branch in that one.
+ */
+const CHART_MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+function chartMonth(value: string, short = false): string {
+  if (!value) return '';
+
+  // Anything not YYYY-MM is handed back untouched, so a formatter that is
+  // given an already-formatted title cannot mangle it.
+  const match = /^(\d{4})-(\d{2})$/.exec(String(value).trim());
+
+  if (!match) return String(value);
+
+  const name = CHART_MONTH_NAMES[Number(match[2]) - 1];
+
+  return name ? `${short ? name.slice(0, 3) : name} ${match[1]}` : String(value);
+}
+
+export { chartMonth };
+
 function chartDateTime(dateString: string) {
   if (!dateString) return "";
 

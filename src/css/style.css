@@ -419,6 +419,11 @@ html.dark .rich-text-editor .ql-editor td {
 .apexcharts-tooltip.apexcharts-theme-light {
   @apply dark:!border-strokedark dark:!bg-boxdark;
 }
+/* The month or date the hovered point belongs to. It heads the readings
+   underneath it, so it is set apart from them rather than matching. */
+.apexcharts-tooltip-title {
+  @apply !font-bold;
+}
 .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-title {
   @apply dark:!border-strokedark dark:!bg-meta-4;
 }

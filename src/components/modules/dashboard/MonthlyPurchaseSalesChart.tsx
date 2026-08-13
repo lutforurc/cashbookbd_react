@@ -5,6 +5,7 @@ import { getMonthlyPurchaseSales } from "./chartSlice";
 import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
 import ChartCard from "./ChartCard";
 import { getApexTheme } from "./chartTheme";
+import { chartMonth } from "../../utils/utils-functions/formatDate";
 import { useIsDark, useThemeTokens } from '../../../theme/themeColors';
 
 const MonthlyPurchaseSalesChart: React.FC = () => {
@@ -58,12 +59,25 @@ const MonthlyPurchaseSalesChart: React.FC = () => {
 
     tooltip: {
       ...theme.tooltip,
+      // Read off the raw categories by index rather than trusting whatever the
+      // axis formatter has already done to the value Apex hands over.
+      x: {
+        formatter: (value: string, opts?: any) =>
+          chartMonth(chartData.labels[opts?.dataPointIndex] ?? value),
+      },
       y: { formatter: (v: number) => thousandSeparator(v) },
     },
 
+    // The categories stay the API's own "2026-04" keys -- the two series are
+    // lined up by them -- and only what is shown is spelled out.
     xaxis: {
       ...theme.xaxis,
       categories: chartData.labels,
+      labels: {
+        ...theme.xaxis.labels,
+        // Short form on the axis: twelve "September 2025"s would not fit.
+        formatter: (value: string) => chartMonth(value, true),
+      },
     },
 
     yaxis: {
