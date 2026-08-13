@@ -11,6 +11,8 @@ import { FiEye, FiEyeOff, FiLogIn, FiBookOpen, FiShoppingCart, FiUsers, FiPieCha
 import { ButtonLoading } from '../UiElements/CustomButtons';
 import { getSignInTitleByHost } from '../../components/services/tenantTitles';
 import DeviceLimitNotice from '../../components/modules/devices/DeviceLimitNotice';
+import { FIELD_BASE } from '../../theme/fieldStyles';
+import ToggleSwitch from '../../components/utils/fields/ToggleSwitch';
 
 const SignIn: React.FC = () => {
   const { isLoading, errors, isLoggedIn, deviceLimit } = useSelector((state: any) => state.auth);
@@ -306,7 +308,7 @@ const SignIn: React.FC = () => {
                         onChange={handleChange}
                         placeholder="Enter email or phone number"
                         autoComplete="username"
-                        className="w-full rounded-lg border border-stroke bg-transparent py-2.5 pl-11 pr-4 text-black outline-none transition focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                        className={`${FIELD_BASE} w-full py-2.5 pl-11 pr-4`}
                       />
                     </div>
                   </div>
@@ -324,7 +326,7 @@ const SignIn: React.FC = () => {
                         value={formData.password}
                         onChange={handleChange}
                         placeholder="Enter your password"
-                        className="w-full rounded-lg border border-stroke bg-transparent py-2.5 pl-11 pr-14 text-black outline-none transition focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                        className={`${FIELD_BASE} w-full py-2.5 pl-11 pr-14`}
                       />
 
                       {/* ✅ Show/Hide Password */}
@@ -339,16 +341,13 @@ const SignIn: React.FC = () => {
                   </div>
 
                   <div className="mb-6 flex items-center justify-between">
-                    <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-black/70 dark:text-white/70">
-                      <input
-                        type="checkbox"
-                        name="remember"
-                        checked={formData.remember}
-                        onChange={handleChange}
-                        className="h-4 w-4 rounded border-stroke text-primary focus:ring-primary"
-                      />
-                      Remember me
-                    </label>
+                    <ToggleSwitch
+                      name="remember"
+                      checked={formData.remember}
+                      onChange={handleChange}
+                      label="Remember me"
+                      labelClassName="text-sm text-black/70 dark:text-white/70"
+                    />
                     <Link
                       to={ROUTES.forgot_password}
                       className="text-sm font-medium text-primary hover:underline"
@@ -371,14 +370,19 @@ const SignIn: React.FC = () => {
 
                   <div className="mb-2">
 
-                    {/* Override the shared button's grey base with the brand
-                        primary so it matches the links; !important because the
-                        base class order would otherwise win. */}
-                    <ButtonLoading icon={
-                      <div className='md:hidden'>
-                        <FiLogIn className="h-5 w-5" />
-                      </div>
-                    } type="submit" label='Sign In' className='p-3 w-full rounded-lg !bg-primary hover:!bg-primary/90 focus:!bg-primary/90 transition' />
+                    {/* The one action this screen exists for, so it asks for the
+                        primary variant rather than overriding the grey base. */}
+                    <ButtonLoading
+                      variant="primary"
+                      type="submit"
+                      label="Sign In"
+                      icon={
+                        <div className="md:hidden">
+                          <FiLogIn className="h-5 w-5" />
+                        </div>
+                      }
+                      className="w-full rounded-lg p-3"
+                    />
                   </div>
 
                     {shouldShowCompanyRegistration && (

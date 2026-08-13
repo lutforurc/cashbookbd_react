@@ -20,6 +20,7 @@ import {
   SmsTemplateFormValues,
   updateSmsTemplate,
 } from './smsSlice';
+import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
 
 interface SmsTemplateFormProps {
   mode: 'create' | 'edit';
@@ -202,7 +203,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
                 value={formValues.body}
                 onChange={handleChange}
                 placeholder="Dear {{customer_name}}, your payment of {{amount}} is due on {{due_date}}."
-                className="w-full rounded-xs border border-stroke bg-white px-3 py-2 text-gray-700 outline-none focus:border-blue-500 dark:border-strokedark dark:bg-transparent dark:text-white"
+                className={`${FIELD_TEXTAREA} w-full px-3 py-2`}
               />
               {(validationErrors.body || fieldError('body')) && (
                 <div className="mt-1 text-sm text-rose-500">
@@ -222,7 +223,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
                 value={formValues.description}
                 onChange={handleChange}
                 placeholder="Optional notes for admins."
-                className="w-full rounded-xs border border-stroke bg-white px-3 py-2 text-gray-700 outline-none focus:border-blue-500 dark:border-strokedark dark:bg-transparent dark:text-white"
+                className={`${FIELD_TEXTAREA} w-full px-3 py-2`}
               />
               {fieldError('description') && (
                 <div className="mt-1 text-sm text-rose-500">{fieldError('description')}</div>
@@ -259,7 +260,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
                 value={formValues.sample_data}
                 onChange={handleChange}
                 placeholder={`{\n  "customer_name": "Rahim",\n  "amount": "5000"\n}`}
-                className="w-full rounded-xs border border-stroke bg-white px-3 py-2 font-mono text-sm text-gray-700 outline-none focus:border-blue-500 dark:border-strokedark dark:bg-transparent dark:text-white"
+                className={`${FIELD_TEXTAREA} w-full px-3 py-2 font-mono text-sm`}
               />
               {(validationErrors.sample_data || fieldError('sample_data')) && (
                 <div className="mt-1 text-sm text-rose-500">

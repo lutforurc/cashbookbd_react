@@ -1,4 +1,5 @@
 import React from 'react';
+import { FIELD_HELP, FIELD_LABEL, fieldClass } from '../../../theme/fieldStyles';
 
 interface SelectOptionProps {
   id?: string;
@@ -33,7 +34,7 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
       {label && (
         <label
           htmlFor={id || name}
-          className="dark:text-white text-left text-sm text-gray-900"
+          className={`${FIELD_LABEL} text-left text-sm`}
         >
           {label}
         </label>
@@ -47,7 +48,7 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
         onChange={onChange}
         onBlur={onBlur}
         onKeyDown={onKeyDown}
-        className={`w-full block p-1 text-sm text-gray-900 border border-gray-300 rounded-xs bg-white outline-none dark:bg-boxdark dark:border-gray-600 dark:text-white ${className}`}
+        className={fieldClass(undefined, `w-full block text-sm ${className}`)}
       >
         {data.map((item) => (
           <option key={item.id} value={item.id}>
@@ -57,7 +58,7 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
       </select>
 
       {description ? (
-        <p className="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400">
+        <p className={FIELD_HELP}>
           {description}
         </p>
       ) : null}

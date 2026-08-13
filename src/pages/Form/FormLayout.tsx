@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SelectGroupOne from '../../components/Forms/SelectGroup/SelectGroupOne';
+import { FIELD_BASE, FIELD_TEXTAREA } from '../../theme/fieldStyles';
 
 const FormLayout = () => {
   return (
@@ -26,7 +27,7 @@ const FormLayout = () => {
                     <input
                       type="text"
                       placeholder="Enter your first name"
-                      className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      className={`${FIELD_BASE} w-full py-3 px-5`}
                     />
                   </div>
 
@@ -37,7 +38,7 @@ const FormLayout = () => {
                     <input
                       type="text"
                       placeholder="Enter your last name"
-                      className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      className={`${FIELD_BASE} w-full py-3 px-5`}
                     />
                   </div>
                 </div>
@@ -49,7 +50,7 @@ const FormLayout = () => {
                   <input
                     type="email"
                     placeholder="Enter your email address"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    className={`${FIELD_BASE} w-full py-3 px-5`}
                   />
                 </div>
 
@@ -60,7 +61,7 @@ const FormLayout = () => {
                   <input
                     type="text"
                     placeholder="Select subject"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    className={`${FIELD_BASE} w-full py-3 px-5`}
                   />
                 </div>
 
@@ -73,7 +74,7 @@ const FormLayout = () => {
                   <textarea
                     rows={6}
                     placeholder="Type your message"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    className={`${FIELD_TEXTAREA} w-full py-3 px-5`}
                   ></textarea>
                 </div>
 
@@ -102,7 +103,7 @@ const FormLayout = () => {
                   <input
                     type="email"
                     placeholder="Enter your email address"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    className={`${FIELD_BASE} w-full py-3 px-5`}
                   />
                 </div>
 
@@ -113,7 +114,7 @@ const FormLayout = () => {
                   <input
                     type="password"
                     placeholder="Enter password"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    className={`${FIELD_BASE} w-full py-3 px-5`}
                   />
                 </div>
 
@@ -176,7 +177,7 @@ const FormLayout = () => {
                   <input
                     type="text"
                     placeholder="Enter your full name"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    className={`${FIELD_BASE} w-full py-3 px-5`}
                   />
                 </div>
 
@@ -187,7 +188,7 @@ const FormLayout = () => {
                   <input
                     type="email"
                     placeholder="Enter your email address"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    className={`${FIELD_BASE} w-full py-3 px-5`}
                   />
                 </div>
 
@@ -198,7 +199,7 @@ const FormLayout = () => {
                   <input
                     type="password"
                     placeholder="Enter password"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    className={`${FIELD_BASE} w-full py-3 px-5`}
                   />
                 </div>
 
@@ -209,7 +210,7 @@ const FormLayout = () => {
                   <input
                     type="password"
                     placeholder="Re-enter password"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    className={`${FIELD_BASE} w-full py-3 px-5`}
                   />
                 </div>
 

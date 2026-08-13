@@ -18,6 +18,7 @@ import { fetchBrandDdl } from './brand/brandSlice';
 import { fetchStockAlertProducts, StockAlertType } from './stockAlertSlice';
 import { formatBdShortDate } from '../../utils/utils-functions/formatDate';
 import StockAlertPrint from './StockAlertPrint';
+import { FIELD_BASE } from '../../../theme/fieldStyles';
 
 type Props = {
   alertType: StockAlertType;
@@ -418,7 +419,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
             <input
               type="number"
               min="1"
-              className="form-input h-9 w-full rounded-xs border border-gray-300 bg-white px-3 text-sm text-gray-600 outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              className={`${FIELD_BASE} h-9 w-full px-3 text-sm`}
               value={days}
               onChange={(event) => {
                 setDays(Number(event.target.value) || 90);

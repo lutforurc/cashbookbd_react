@@ -1,5 +1,6 @@
 import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import userThree from '../images/user/user-03.png';
+import { FIELD_BASE, FIELD_TEXTAREA } from '../theme/fieldStyles';
 
 const Settings = () => {
   return (
@@ -52,7 +53,7 @@ const Settings = () => {
                           </svg>
                         </span>
                         <input
-                          className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                          className={`${FIELD_BASE} w-full py-3 pl-11.5 pr-4.5`}
                           type="text"
                           name="fullName"
                           id="fullName"
@@ -70,7 +71,7 @@ const Settings = () => {
                         Phone Number
                       </label>
                       <input
-                        className="w-full rounded border border-stroke bg-gray py-3 px-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                        className={`${FIELD_BASE} w-full py-3 px-4.5`}
                         type="text"
                         name="phoneNumber"
                         id="phoneNumber"
@@ -114,7 +115,7 @@ const Settings = () => {
                         </svg>
                       </span>
                       <input
-                        className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                        className={`${FIELD_BASE} w-full py-3 pl-11.5 pr-4.5`}
                         type="email"
                         name="emailAddress"
                         id="emailAddress"
@@ -132,7 +133,7 @@ const Settings = () => {
                       Username
                     </label>
                     <input
-                      className="w-full rounded border border-stroke bg-gray py-3 px-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                      className={`${FIELD_BASE} w-full py-3 px-4.5`}
                       type="text"
                       name="Username"
                       id="Username"
@@ -181,7 +182,7 @@ const Settings = () => {
                       </span>
 
                       <textarea
-                        className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                        className={`${FIELD_TEXTAREA} w-full py-3 pl-11.5 pr-4.5`}
                         name="bio"
                         id="bio"
                         rows={6}

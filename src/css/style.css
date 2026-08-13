@@ -171,9 +171,17 @@ html:not(.dark) .native-date-time-input::-webkit-calendar-picker-indicator {
 /* ---------------------------------------------------------------------------
    Rich text editor
 
-   Quill's snow theme, dressed to sit with the rest of the form. The sheet keeps
-   its own white in either theme, because what is written on it prints on paper;
-   only the frame around it follows the app.
+   Quill's snow theme, dressed to sit with the rest of the form.
+
+   It used to keep a white sheet in both themes, on the reasoning that what is
+   written here prints on paper and should be composed against paper. In
+   practice a bright white slab in the middle of a dark form is the thing people
+   notice, and every other editor they use writes light-on-dark and prints
+   dark-on-light without anyone minding. So it follows the theme now, like the
+   fields around it.
+
+   Every colour below is a token, which means this editor is themed by
+   tokens.css along with everything else.
    --------------------------------------------------------------------------- */
 .rich-text-editor {
   overflow: hidden;
@@ -181,8 +189,8 @@ html:not(.dark) .native-date-time-input::-webkit-calendar-picker-indicator {
 }
 
 .rich-text-editor:focus-within {
-  border-color: rgb(59 130 246);
-  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.12);
+  border-color: rgb(var(--c-blue-500));
+  box-shadow: 0 0 0 3px rgb(var(--c-blue-500) / 0.12);
 }
 
 .rich-text-editor .ql-toolbar.ql-snow {
@@ -192,9 +200,14 @@ html:not(.dark) .native-date-time-input::-webkit-calendar-picker-indicator {
   gap: 2px;
   padding: 6px 8px;
   border: 0;
-  border-bottom: 1px solid rgb(226 232 240);
-  background: rgb(248 250 252);
+  border-bottom: 1px solid rgb(var(--c-stroke));
+  background: rgb(var(--c-gray-50));
   font-family: inherit;
+}
+
+html.dark .rich-text-editor .ql-toolbar.ql-snow {
+  border-bottom-color: rgb(var(--c-strokedark));
+  background: rgb(var(--c-meta-4));
 }
 
 /* A hairline between groups reads better than the wide gaps snow ships with. */
@@ -203,7 +216,11 @@ html:not(.dark) .native-date-time-input::-webkit-calendar-picker-indicator {
   align-items: center;
   margin: 0 5px 0 0;
   padding-right: 7px;
-  border-right: 1px solid rgb(226 232 240);
+  border-right: 1px solid rgb(var(--c-stroke));
+}
+
+html.dark .rich-text-editor .ql-toolbar.ql-snow .ql-formats {
+  border-right-color: rgb(var(--c-strokedark));
 }
 
 .rich-text-editor .ql-toolbar.ql-snow .ql-formats:last-child {
@@ -221,19 +238,60 @@ html:not(.dark) .native-date-time-input::-webkit-calendar-picker-indicator {
 }
 
 .rich-text-editor .ql-toolbar.ql-snow button:hover {
-  background: rgb(226 232 240);
+  background: rgb(var(--c-gray-200));
 }
 
 .rich-text-editor .ql-toolbar.ql-snow button.ql-active {
-  background: rgb(219 234 254);
+  background: rgb(var(--c-blue-100));
 }
 
 .rich-text-editor .ql-toolbar.ql-snow button.ql-active .ql-stroke {
-  stroke: rgb(37 99 235);
+  stroke: rgb(var(--c-blue-600));
 }
 
 .rich-text-editor .ql-toolbar.ql-snow button.ql-active .ql-fill {
-  fill: rgb(37 99 235);
+  fill: rgb(var(--c-blue-600));
+}
+
+/* Snow draws its icons in a fixed near-black, which disappears on a dark
+   toolbar. They take the body colour instead, and the active one keeps the
+   accent so the state still reads. */
+html.dark .rich-text-editor .ql-toolbar.ql-snow .ql-stroke {
+  stroke: rgb(var(--c-bodydark));
+}
+
+html.dark .rich-text-editor .ql-toolbar.ql-snow .ql-fill,
+html.dark .rich-text-editor .ql-toolbar.ql-snow .ql-even {
+  fill: rgb(var(--c-bodydark));
+}
+
+html.dark .rich-text-editor .ql-toolbar.ql-snow .ql-picker,
+html.dark .rich-text-editor .ql-toolbar.ql-snow button {
+  color: rgb(var(--c-bodydark));
+}
+
+html.dark .rich-text-editor .ql-toolbar.ql-snow button:hover {
+  background: rgb(var(--c-strokedark));
+}
+
+html.dark .rich-text-editor .ql-toolbar.ql-snow button:hover .ql-stroke {
+  stroke: rgb(var(--c-white));
+}
+
+html.dark .rich-text-editor .ql-toolbar.ql-snow button:hover .ql-fill {
+  fill: rgb(var(--c-white));
+}
+
+html.dark .rich-text-editor .ql-toolbar.ql-snow button.ql-active {
+  background: rgb(var(--c-blue-600) / 0.25);
+}
+
+html.dark .rich-text-editor .ql-toolbar.ql-snow button.ql-active .ql-stroke {
+  stroke: rgb(var(--c-blue-300));
+}
+
+html.dark .rich-text-editor .ql-toolbar.ql-snow button.ql-active .ql-fill {
+  fill: rgb(var(--c-blue-300));
 }
 
 .rich-text-editor .ql-container.ql-snow {
@@ -248,6 +306,19 @@ html:not(.dark) .native-date-time-input::-webkit-calendar-picker-indicator {
   min-height: var(--rte-height, 140px);
   padding: 12px 14px;
   line-height: 1.6;
+  color: rgb(var(--c-gray-700));
+}
+
+html.dark .rich-text-editor .ql-editor {
+  color: rgb(var(--c-white));
+}
+
+/* Snow's placeholder is a fixed grey with a hard-coded opacity; on a dark sheet
+   it either vanishes or reads as real text. */
+.rich-text-editor .ql-editor.ql-blank::before {
+  color: rgb(var(--c-gray-400));
+  font-style: normal;
+  opacity: 1;
 }
 
 /* A table here is a layout -- signatories side by side -- so the guides are
@@ -261,8 +332,12 @@ html:not(.dark) .native-date-time-input::-webkit-calendar-picker-indicator {
 
 .rich-text-editor .ql-editor td {
   padding: 5px 7px;
-  border: 1px dashed rgb(203 213 225);
+  border: 1px dashed rgb(var(--c-gray-300));
   vertical-align: top;
+}
+
+html.dark .rich-text-editor .ql-editor td {
+  border-color: rgb(var(--c-strokedark));
 }
 
 @layer utilities {

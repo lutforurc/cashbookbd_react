@@ -1,6 +1,7 @@
 import React from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { FIELD_BASE, FIELD_LABEL } from '../../../theme/fieldStyles';
 
 interface DatePickerProps {
   id?: string; // ID for the date picker component
@@ -54,7 +55,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
 
   return (
     <div className='w-full'>
-      <label className='text-gray-900 dark:text-white text-sm' htmlFor="">{label}</label>
+      <label className={`${FIELD_LABEL} text-sm`} htmlFor="">{label}</label>
       <DatePicker
         ref={datePickerRef}
         id={id}
@@ -77,8 +78,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         onKeyDown={handleKeyDown}
         shouldCloseOnSelect
         disabled={disabled}
-        className={`dark:placeholder-gray-500 rounded-xs border pl-3 text-black outline-none  dark:border-form-strokedark bg-white dark:bg-transparent dark:text-white focus:outline-none 
-        focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${className}`}
+        className={`${FIELD_BASE} pl-3 ${className}`}
         showMonthYearPicker={month}
         showMonthDropdown={!month}
         showYearDropdown

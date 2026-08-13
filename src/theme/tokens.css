@@ -58,6 +58,24 @@
   --c-chart-text: 70 80 91;          /* #46505B */
   --c-chart-grid: 225 231 238;       /* #E1E7EE */
 
+  /* Receivable ageing.
+   *
+   * A ramp for the four ageing buckets, and the reason it is not simply
+   * green/amber/orange/red: saturated amber on a dark card is the single most
+   * tiring thing a screen can do to someone reading it all day. Yellow carries
+   * more perceived brightness than any other hue at the same lightness, so a
+   * bar of it beside a dark surface glares even when the contrast figure looks
+   * reasonable.
+   *
+   * So chroma is spent where it earns something. The first three are muted --
+   * ordered enough to read as a scale, quiet enough to sit under the eye for
+   * hours -- and only "overdue" carries a real colour, which is the one thing
+   * on the card worth interrupting somebody for. */
+  --c-age-current: 154 166 180;      /* #9AA6B4 */
+  --c-age-watch: 184 160 106;        /* #B8A06A */
+  --c-age-chase: 192 132 87;         /* #C08457 */
+  --c-age-overdue: 203 58 76;        /* #CB3A4C */
+
   /* Highlight rules.
    *
    * The one colour in the palette that is deliberately not tasteful: the
@@ -372,6 +390,14 @@ html.dark {
      modes; only the chrome around them has to lighten. */
   --c-chart-text: 163 173 185;        /* #A3ADB9 */
   --c-chart-grid: 47 56 68;           /* #2F3844 */
+
+  /* The ageing ramp, dimmed further. A colour that reads as muted on white is
+     still bright against a dark card -- the surface behind it dropped by a
+     factor of thirty, and the bar did not. */
+  --c-age-current: 107 118 132;       /* #6B7684 */
+  --c-age-watch: 150 130 89;          /* #968259 */
+  --c-age-chase: 163 113 77;          /* #A3714D */
+  --c-age-overdue: 214 96 110;        /* #D6606E */
 }
 
 /* Paper is white whoever is printing.

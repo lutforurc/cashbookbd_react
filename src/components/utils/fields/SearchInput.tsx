@@ -1,4 +1,5 @@
 import React from 'react';
+import { fieldClass } from '../../../theme/fieldStyles';
 
 interface SearchObject {
   search: string;
@@ -14,9 +15,7 @@ const SearchInput: React.FC<SearchObject> = ({
   return (
     <input
       type="text"
-      className={`form-input w-50 px-3 text-gray-600 outline-none form-input bg-white border border-gray-300 rounded-xs 
-        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 
-        focus:outline-none focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${className}`}
+      className={fieldClass(undefined, `w-50 ${className}`)}
       placeholder="Search..."
       value={search}
       onChange={(e) => setSearchValue(e.target.value)} // Call the passed function

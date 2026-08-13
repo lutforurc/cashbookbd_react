@@ -17,6 +17,7 @@ import {
   uploadInAppMessageImage,
 } from './inAppMessageService';
 import { InAppMessage } from './types';
+import { FIELD_BASE } from '../../../theme/fieldStyles';
 
 /**
  * The schedule fields are held as "YYYY-MM-DDTHH:mm" — what the API is sent
@@ -300,7 +301,7 @@ const AdminInAppMessageForm: React.FC = () => {
               <label className="block text-sm">Image</label>
               <div className="flex items-center gap-2">
                 <input
-                  className="h-8.5 w-full rounded-xs border border-gray-300 p-1 text-sm dark:border-gray-600 dark:bg-boxdark dark:text-white"
+                  className={`${FIELD_BASE} h-8.5 w-full p-1 text-sm`}
                   placeholder="Paste an image URL, or upload"
                   value={form.image_url}
                   onChange={(e) => set('image_url', e.target.value)}

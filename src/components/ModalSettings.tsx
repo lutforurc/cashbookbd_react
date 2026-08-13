@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import dataJSON from '../../public/data.json';
+import { FIELD_BASE } from '../theme/fieldStyles';
 
 
 
@@ -78,7 +79,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
               <div className="form-group w-full col-span-3">
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white"
                   htmlFor="id">Bond ID (Input "ALL" to track all bonds with paramaters below)</label>
-                <input className="w-full rounded border border-stroke bg-gray py-3 pl-3 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                <input className={`${FIELD_BASE} w-full py-3 pl-3 pr-4.5`}
                   name="id" onChange={handleChange} value={formState.id} />
               </div>
 
@@ -167,7 +168,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
               </div>
               <div className="form-group w-full">
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white" htmlFor="value">Value to give Alert</label>
-                <input className="w-full rounded border border-stroke bg-gray py-3 pl-3 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                <input className={`${FIELD_BASE} w-full py-3 pl-3 pr-4.5`}
                   name="value" onChange={handleChange} value={formState.value} />
               </div>
 

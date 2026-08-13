@@ -163,10 +163,11 @@ const RichTextEditor: React.FC<Props> = ({
   );
 
   return (
-    // Kept on a white sheet even in dark mode: what is being edited here is a
-    // block that prints on paper, so it should be composed against paper.
+    // The frame matches the fields around it; the sheet inside follows the
+    // theme too, and the colours for both come from tokens.css by way of the
+    // .rich-text-editor rules in style.css.
     <div
-      className="rich-text-editor rounded-lg border border-slate-300 bg-white dark:border-gray-600"
+      className="rich-text-editor rounded-lg border border-gray-300 bg-white dark:border-gray-600 dark:bg-boxdark"
       style={{ '--rte-height': `${height}px` } as React.CSSProperties}
     >
       <ReactQuill

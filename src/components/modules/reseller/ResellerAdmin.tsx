@@ -17,6 +17,7 @@ import {
   Reseller,
   saveReseller as saveResellerAction,
 } from './resellerSlice';
+import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
 
 const emptyForm = {
   id: '',
@@ -597,7 +598,7 @@ const TextareaField = ({ label, ...props }: any) => (
     <textarea
       {...props}
       rows={3}
-      className="w-full rounded-sm border border-stroke bg-white px-3 py-2 text-sm text-slate-600 outline-none focus:border-primary dark:border-strokedark dark:bg-transparent dark:text-white"
+      className={`${FIELD_TEXTAREA} w-full px-3 py-2 text-sm`}
     />
   </label>
 );

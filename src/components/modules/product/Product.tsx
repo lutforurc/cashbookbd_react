@@ -20,6 +20,7 @@ import { getCategoryDdl } from '../category/categorySlice';
 import { fetchBrandDdl } from './brand/brandSlice';
 import ProductPrint from './ProductPrint';
 import { useReactToPrint } from 'react-to-print';
+import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
 
 const isGroupRow = (row: any) => row?.__type === 'CAT_HEADER';
 
@@ -373,9 +374,7 @@ const Product = (user: any) => {
         if (isGroupRow(row)) return '';
         return (
           <textarea
-            className="w-full h-8 px-3 py-1 text-gray-600 bg-white border rounded-xs outline-none resize-none
-                      dark:bg-transparent dark:border-gray-600 dark:text-white dark:placeholder-gray-500
-                      focus:outline-none focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+            className={`${FIELD_TEXTAREA} w-full h-8 px-3 py-1 resize-none`}
             placeholder="IMEI Number"
             value={editedRows[row.product_id]?.serial_no ?? row.serial_no ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'serial_no', e.target.value)}

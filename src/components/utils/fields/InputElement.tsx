@@ -1,4 +1,11 @@
 import React from 'react';
+import {
+  FIELD_HELP,
+  FIELD_LABEL,
+  FIELD_TOOLTIP,
+  FieldSize,
+  fieldClass,
+} from '../../../theme/fieldStyles';
 
 interface InputElementProps {
   id?: string;
@@ -28,6 +35,11 @@ interface InputElementProps {
    * which is what a setting somebody meets once a year needs.
    */
   description?: React.ReactNode;
+  /**
+   * One of the four heights the app actually uses, instead of passing `h-9.5`
+   * through `className`. Left off, the field keeps the size it has always had.
+   */
+  size?: FieldSize;
 }
 
 const InputElement: React.FC<InputElementProps> = ({
@@ -53,6 +65,7 @@ const InputElement: React.FC<InputElementProps> = ({
   max,
   step,
   description,
+  size,
 }) => {
   const nativeDateTimeClass = ['date', 'time', 'datetime-local', 'month'].includes(type)
     ? 'native-date-time-input'
@@ -60,7 +73,7 @@ const InputElement: React.FC<InputElementProps> = ({
 
   return (
     <div className="text-left flex flex-col">
-      <label htmlFor={id || name} className="text-black dark:text-white">
+      <label htmlFor={id || name} className={FIELD_LABEL}>
         {label}
       </label>
 
@@ -84,9 +97,7 @@ const InputElement: React.FC<InputElementProps> = ({
           min={min}
           max={max}
           step={step}
-          className={`w-full form-input px-3 py-1 text-gray-700 outline-none border rounded-xs bg-white placeholder-gray-400 dark:bg-boxdark
-          dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none 
-          focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${nativeDateTimeClass} ${className}`}
+          className={fieldClass(size, `w-full ${nativeDateTimeClass} ${className}`)}
           style={{
             ...(type === 'number'
               ? {
@@ -100,7 +111,7 @@ const InputElement: React.FC<InputElementProps> = ({
         {title ? (
           <div
             role="tooltip"
-            className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max max-w-56 -translate-x-1/2 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 ${titleClassName}`}
+            className={`${FIELD_TOOLTIP} ${titleClassName}`}
           >
             {title}
           </div>
@@ -108,9 +119,7 @@ const InputElement: React.FC<InputElementProps> = ({
       </div>
 
       {description ? (
-        <p className="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400">
-          {description}
-        </p>
+        <p className={FIELD_HELP}>{description}</p>
       ) : null}
     </div>
   );
