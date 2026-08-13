@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FiPlus, FiEdit2, FiX, FiCheck } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiX, FiCheck, FiTrash2 } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -9,6 +9,7 @@ import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
+import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import {
   SettingPayload,
@@ -37,10 +38,13 @@ const emptyForm: SettingPayload = {
  * against a product nobody meant to track.
  *
  * Deactivating stops new mappings but leaves the figures and reports already
- * recorded untouched, which is why there is no Delete here.
+ * recorded untouched. Delete is for a row added by mistake and is refused by
+ * the server once anything has been recorded against it -- removing such a
+ * setting would drop the product out of the Product-wise Receivable / Payable
+ * list while its money stayed in the ledger.
  */
 const ProductTrackingSettings = () => {
-  const { settings, loading, saving, error, search, setSearch, create, update, toggle } =
+  const { settings, loading, saving, error, search, setSearch, create, update, toggle, remove } =
     useProductTrackingSettings();
 
   const dispatch = useDispatch();
@@ -49,6 +53,8 @@ const ProductTrackingSettings = () => {
   const [form, setForm] = useState<SettingPayload>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [partyName, setPartyName] = useState('');
+  // The row the Delete box is asking about; null while it is closed.
+  const [pendingDelete, setPendingDelete] = useState<TrackingSetting | null>(null);
   const { products: availableProducts } = useAvailableProducts(form.branch_id, form.coa4_id);
 
   useEffect(() => {
@@ -125,6 +131,33 @@ const ProductTrackingSettings = () => {
     const result = await toggle(row.id, !row.is_active);
     if (!result.ok) toast.error(result.message);
   };
+
+  const drop = async () => {
+    const row = pendingDelete;
+
+    if (!row) return;
+
+    const result = await remove(row.id);
+    setPendingDelete(null);
+
+    if (result.ok) {
+      toast.success(result.message || 'Deleted.');
+      // The form still holds the row that no longer exists; saving from it
+      // would ask the server to update a setting it has just dropped.
+      if (editingId === row.id) cancelEdit();
+    } else {
+      // Refused because transactions already sit behind this setting. The
+      // server's own words say what to do instead, so they are passed on.
+      toast.error(result.message);
+    }
+  };
+
+  /** Which party and branch the setting being deleted covers. */
+  const scopeOf = (row: TrackingSetting) =>
+    [
+      row.coa4_id === 0 ? 'All parties' : row.party_name ?? `Party ${row.coa4_id}`,
+      row.branch_id === 0 ? 'All Branch' : row.branch_name ?? `Branch ${row.branch_id}`,
+    ].join(' • ');
 
   const flag = (on: boolean) => (
     <span className={on ? 'text-green-600' : 'text-gray-400'}>{on ? 'Yes' : 'No'}</span>
@@ -277,9 +310,8 @@ const ProductTrackingSettings = () => {
               <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
                 <thead className="bg-gray-300 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
                   <tr>
-                    <th className="px-2 py-2">Product</th>
                     <th className="px-2 py-2">Customer / Supplier</th>
-                    <th className="px-2 py-2">Branch</th>
+                    <th className="px-2 py-2">Product</th>
                     <th className="px-2 py-2 text-center">Sales Bill</th>
                     <th className="px-2 py-2 text-center">Purchase Bill</th>
                     <th className="px-2 py-2 text-center">Received</th>
@@ -294,9 +326,6 @@ const ProductTrackingSettings = () => {
                       key={row.id}
                       className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
                     >
-                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
-                        {row.product_name}
-                      </td>
                       <td className="px-2 py-2">
                         {row.coa4_id === 0 ? (
                           <span className="text-gray-400">All parties</span>
@@ -304,8 +333,8 @@ const ProductTrackingSettings = () => {
                           row.party_name ?? row.coa4_id
                         )}
                       </td>
-                      <td className="px-2 py-2">
-                        {row.branch_id === 0 ? 'All Branch' : row.branch_name ?? row.branch_id}
+                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
+                        {row.product_name}
                       </td>
                       <td className="px-2 py-2 text-center">{flag(row.track_sales_bill)}</td>
                       <td className="px-2 py-2 text-center">{flag(row.track_purchase_bill)}</td>
@@ -322,10 +351,18 @@ const ProductTrackingSettings = () => {
                         </button>
                         <button
                           onClick={() => flip(row)}
-                          className={row.is_active ? 'text-red-500' : 'text-green-600'}
+                          className={row.is_active ? 'mr-2 text-red-500' : 'mr-2 text-green-600'}
                           title={row.is_active ? 'Deactivate' : 'Activate'}
                         >
                           {row.is_active ? <FiX /> : <FiCheck />}
+                        </button>
+                        <button
+                          onClick={() => setPendingDelete(row)}
+                          disabled={saving}
+                          className="text-red-600 disabled:opacity-40"
+                          title="Delete"
+                        >
+                          <FiTrash2 />
                         </button>
                       </td>
                     </tr>
@@ -336,6 +373,25 @@ const ProductTrackingSettings = () => {
           ) : null}
         </div>
       </div>
+
+      {/* ================= Confirmation Modal ================= */}
+      <ConfirmModal
+        show={pendingDelete !== null}
+        title="Confirm Deletion"
+        message={
+          <>
+            Are you sure you want to delete tracking for
+            <span className="block font-bold mt-1">{pendingDelete?.product_name} ?</span>
+            <span className="block text-sm mt-1 text-gray-500 dark:text-gray-400">
+              {pendingDelete ? scopeOf(pendingDelete) : ''}
+            </span>
+          </>
+        }
+        loading={saving}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={drop}
+        className="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 };

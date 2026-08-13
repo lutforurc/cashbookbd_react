@@ -129,7 +129,40 @@ export function useProductTrackingSettings() {
     [load],
   );
 
-  return { settings, loading, saving, error, search, setSearch, reload: load, create, update, toggle };
+  /**
+   * Only a setting nothing has been recorded against can go. The server is the
+   * one that decides that, so its refusal is passed straight back to the caller
+   * rather than guessed at here.
+   */
+  const remove = useCallback(
+    async (id: number) => {
+      setSaving(true);
+      try {
+        const response = await httpService.delete(`${API_PRODUCT_TRACKING_SETTINGS_URL}/${id}`);
+        load();
+        return { ok: response?.data?.success === true, message: response?.data?.message ?? '' };
+      } catch (e: any) {
+        return { ok: false, message: e?.response?.data?.message ?? 'Could not be deleted.' };
+      } finally {
+        setSaving(false);
+      }
+    },
+    [load],
+  );
+
+  return {
+    settings,
+    loading,
+    saving,
+    error,
+    search,
+    setSearch,
+    reload: load,
+    create,
+    update,
+    toggle,
+    remove,
+  };
 }
 
 /**

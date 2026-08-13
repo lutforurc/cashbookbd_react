@@ -32,13 +32,25 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-96 rounded-lg bg-white p-5 text-slate-800 shadow-lg dark:bg-gray-900 dark:text-white">
-        <h3 className="mb-4 text-lg font-semibold">{title}</h3>
+    // A dialog has to sit above the cards, not among them. Dark mode used to
+    // paint it gray-900 (#111827) on a page of boxdark-2 (#171D25) with no
+    // border -- the same colour, so the panel had no edge and its shadow was
+    // invisible against the dark behind it.
+    //
+    // The surfaces now climb: page #171D25, cards #212932, this #313945
+    // (graydark), so the dialog is the lightest thing on screen and reads as
+    // the nearest. form-strokedark (#3A4451) draws the edge, a heavier and
+    // blurred backdrop pushes the page away, and the divider under the title
+    // gives the box a structure to be seen by.
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+      <div className="w-full max-w-md overflow-hidden rounded-lg border border-stroke bg-white text-slate-800 shadow-2xl dark:border-form-strokedark dark:bg-graydark dark:text-white">
+        <h3 className="border-b border-stroke px-5 py-3 text-lg font-semibold text-black dark:border-form-strokedark dark:text-white">
+          {title}
+        </h3>
 
-        <div className="mb-4">{message}</div>
+        <div className="px-5 py-4">{message}</div>
 
-        <div className="flex justify-center gap-3">
+        <div className="flex justify-center gap-3 border-t border-stroke px-5 py-4 dark:border-form-strokedark">
           {showCancelButton ? (
             <ButtonLoading
               onClick={onCancel}
