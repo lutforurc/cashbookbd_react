@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { clearPrintBranch, setPrintBranchId } from './printBranchSlice';
+import { FIELD_SELECT } from '../../../theme/fieldStyles';
 
 interface SelectOptionProps {
   name?: string;
@@ -63,7 +64,7 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
       value={selectedValue} // Bind the value to state
       onChange={handleSelectChange}
       onKeyDown={onKeyDown}
-      className={`block w-full text-sm text-gray-900 border border-gray-300 rounded-xs bg-white outline-none dark:bg-boxdark dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}
+      className={`${FIELD_SELECT} block w-full text-sm ${className}`}
     >
       {branchDdl &&
         branchDdl.map((item: any, index: number) => (

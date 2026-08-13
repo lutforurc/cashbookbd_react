@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import Select from 'react-select';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -166,7 +167,7 @@ const GroupReportSetup = () => {
             <select
               value={groupId}
               onChange={(event) => setGroupId(event.target.value)}
-              className="h-10 w-full border border-stroke bg-transparent px-3 text-sm font-medium outline-none dark:border-strokedark dark:bg-form-input dark:text-white"
+              className={`${FIELD_SELECT} h-10 w-full px-3 text-sm font-medium`}
             >
               <option value="">Select your group</option>
               {reportGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}

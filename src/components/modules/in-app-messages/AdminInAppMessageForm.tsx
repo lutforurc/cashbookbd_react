@@ -17,7 +17,7 @@ import {
   uploadInAppMessageImage,
 } from './inAppMessageService';
 import { InAppMessage } from './types';
-import { FIELD_BASE } from '../../../theme/fieldStyles';
+import { FIELD_BASE, FIELD_CHECKBOX } from '../../../theme/fieldStyles';
 
 /**
  * The schedule fields are held as "YYYY-MM-DDTHH:mm" — what the API is sent
@@ -485,6 +485,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 type="checkbox"
                 checked={form.require_ack}
                 onChange={(e) => set('require_ack', e.target.checked)}
+                className={FIELD_CHECKBOX}
               />
               Must acknowledge (no close button)
             </label>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FIELD_FILE_BUTTON } from '../../../theme/fieldStyles';
 import { getVoucherForImage, uploadImage } from './imageUploadSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -344,7 +345,7 @@ export default function VoucherUpload(user: any): JSX.Element {
                 multiple
                 accept={`image/*,.pdf,${EXCEL_FILE_ACCEPT}`}
                 onChange={(e) => handleFileChange(voucherId, e.target.files)}
-                className="block w-full cursor-pointer text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-blue-700"
+                className={`block w-full text-sm text-slate-600 dark:text-white ${FIELD_FILE_BUTTON}`}
               />
             </div>
 

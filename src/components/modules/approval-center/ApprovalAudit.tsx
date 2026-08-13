@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { Link } from 'react-router-dom';
 import { FiArrowLeft, FiDownload, FiRefreshCcw } from 'react-icons/fi';
 import { useReactToPrint } from 'react-to-print';
@@ -230,7 +231,7 @@ const ApprovalAudit = ({ user }: any) => {
               name="action"
               value={filters.action}
               onChange={handleChange}
-              className="block h-10 w-full rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+              className={`${FIELD_SELECT} block h-10 w-full p-2 text-sm`}
             >
               <option value="">All Actions</option>
               <option value="approved">Approved</option>
@@ -256,7 +257,7 @@ const ApprovalAudit = ({ user }: any) => {
               name="per_page"
               value={filters.per_page}
               onChange={handleChange}
-              className="block h-10 w-full rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+              className={`${FIELD_SELECT} block h-10 w-full p-2 text-sm`}
             >
               {[10, 25, 50, 100, 200].map((value) => (
                 <option key={value} value={value}>{value}</option>

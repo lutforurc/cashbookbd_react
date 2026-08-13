@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FIELD_SELECT, FIELD_SIZE } from '../../../../theme/fieldStyles';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiEdit2, FiHome, FiPlus, FiRefreshCw, FiSave, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
@@ -44,10 +45,7 @@ const payloadOf = (response: any) => response?.data?.data?.data;
 const refusedWith = (response: any) =>
   response?.data?.success ? null : response?.data?.message || 'The server refused that.';
 
-const SELECT_CLASS =
-  'w-full form-input px-3 py-1 text-gray-700 outline-none border rounded-xs bg-white ' +
-  'dark:bg-boxdark dark:border-gray-600 dark:text-white focus:outline-none focus:border-blue-500 ' +
-  'dark:focus:border-blue-400 h-9.5';
+const SELECT_CLASS = `${FIELD_SELECT} ${FIELD_SIZE.md} w-full`;
 
 /**
  * Material bought for a project, and for the buildings within it.

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { FIELD_CHECKBOX } from '../../../../theme/fieldStyles';
 import { FiSave, FiX } from "react-icons/fi";
 import { toast } from "react-toastify";
 
@@ -282,7 +283,7 @@ const SaleNomineeModal: React.FC<Props> = ({ unit, onClose, onSaved }) => {
                         <input
                           type="checkbox"
                           id={`sale-nominee-${nominee.id}`}
-                          className="h-4 w-4"
+                          className={FIELD_CHECKBOX}
                           checked={Boolean(pick?.checked)}
                           onChange={() => toggle(nominee)}
                         />

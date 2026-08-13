@@ -1,4 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import { FIELD_FILE_BUTTON } from '../../../theme/fieldStyles';
 import { FiSave } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -16,9 +17,11 @@ import { editCompany, updateCompany } from './companySlice';
 const TEXTAREA_CLASS =
   'block w-full resize-y rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-boxdark dark:text-white dark:focus:border-blue-400';
 
-/** Matches PhotoInput, which is how every other upload in the app is drawn. */
-const FILE_INPUT_CLASS =
-  'w-full text-sm text-black file:mr-2 file:rounded-sm file:border-0 file:bg-primary file:px-3 file:py-1 file:text-white dark:text-white';
+/**
+ * Matches PhotoInput, which is how every other upload in the app is drawn --
+ * and now says so by sharing its button rather than by repeating the string.
+ */
+const FILE_INPUT_CLASS = `w-full text-sm text-black dark:text-white ${FIELD_FILE_BUTTON}`;
 
 const buildCompanyFormData = (data: any, logoFile: File | null, logoDarkFile: File | null) => {
   const payload = new FormData();

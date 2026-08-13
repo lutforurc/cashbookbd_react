@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
@@ -293,7 +294,7 @@ const MaterialIssue = () => {
             name="projectId"
             value={formData.projectId}
             onChange={handleProjectChange}
-            className="block w-full text-sm text-gray-900 border border-gray-300 rounded-xs outline-none dark:bg-boxdark dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 p-2"
+            className={`${FIELD_SELECT} block w-full p-2 text-sm`}
           >
             <option value="">Select a project</option>
             {projectOptions.map((p) => (

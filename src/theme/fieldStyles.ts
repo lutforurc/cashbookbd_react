@@ -22,7 +22,12 @@
  * live ones.
  */
 export const FIELD_BASE = [
-  'form-input rounded-xs border outline-none transition',
+  // `form-input rounded-xs` stood here and rendered nothing: the forms plugin is
+  // not installed (`plugins: []`), and `rounded-xs` is a Tailwind v4 name in a
+  // v3.4 project -- neither emits a single rule. Fields have therefore always
+  // been square, and `rounded-none` is that, said out loud. A caller asking for
+  // `rounded-sm` still wins, because tailwind emits the radii in that order.
+  'rounded-none border outline-none transition',
   'bg-white text-gray-700 placeholder-gray-400',
   'dark:bg-boxdark dark:border-gray-600 dark:text-white dark:placeholder-gray-500',
   'focus:outline-none focus:border-blue-500 dark:focus:border-blue-400',
@@ -90,10 +95,31 @@ export const FIELD_TRANSPARENT = 'bg-transparent dark:bg-transparent';
 export const FIELD_TEXTAREA = `${FIELD_BASE} leading-relaxed`;
 
 /**
- * A native select. Same box, plus room on the right for the arrow the browser
- * draws and the chevron some screens overlay on top of it.
+ * A native select.
+ *
+ * Padding is absent for the same reason it is absent from the textarea: the
+ * fifty-odd selects in the app each state their own, and one baked in here
+ * would quietly win. `appearance-none` is absent too -- it hides the arrow the
+ * browser draws, which is the right thing only for the handful of screens that
+ * draw their own. Those ask for FIELD_SELECT_ARROW.
+ *
+ * The dark background is worth more here than it looks. A select left on
+ * `dark:bg-transparent` -- which several were -- drops its option list back to
+ * the browser default, so the list opens white while the closed field is dark.
  */
-export const FIELD_SELECT = `${FIELD_BASE} px-3 py-1 pr-8 appearance-none`;
+export const FIELD_SELECT = `${FIELD_BASE} cursor-pointer`;
+
+/** A select whose native arrow is hidden because the screen overlays its own. */
+export const FIELD_SELECT_ARROW = `${FIELD_SELECT} appearance-none pr-8`;
+
+/**
+ * An option inside a select.
+ *
+ * The browser draws the open list itself and does not always inherit the
+ * select's background, so the dark colour has to be stated on the option too.
+ * Screens had been repeating `dark:bg-boxdark` by hand for exactly this.
+ */
+export const FIELD_OPTION = 'dark:bg-boxdark dark:text-white';
 
 /** A tick box. Sized to the text beside it rather than to a form row. */
 export const FIELD_CHECKBOX = [
@@ -129,14 +155,24 @@ export const SWITCH_KNOB = [
   'transition-transform duration-200',
 ].join(' ');
 
-/** A file picker, whose button the browser draws and `file:` restyles. */
-export const FIELD_FILE = [
-  FIELD_BASE,
-  'px-3 py-1.5 cursor-pointer',
-  'file:mr-3 file:rounded-xs file:border file:border-gray-300 file:bg-gray-100',
-  'file:px-2.5 file:py-1 file:text-sm file:text-gray-700 file:cursor-pointer',
-  'dark:file:border-gray-600 dark:file:bg-form-input dark:file:text-white',
+/**
+ * The button the browser draws inside a file input, which `file:` restyles.
+ *
+ * Separate from the box around it because the two are wanted apart: a picker
+ * sitting beside a photo preview wants the button and no box, while one on its
+ * own line wants both. PhotoInput already had this button in brand blue and it
+ * reads better than a grey one, so that is the version kept.
+ */
+export const FIELD_FILE_BUTTON = [
+  'cursor-pointer file:cursor-pointer',
+  'file:mr-3 file:rounded-xs file:border-0 file:bg-primary',
+  'file:px-3 file:py-1 file:text-sm file:text-white',
+  // `file:hover:`, not `hover:file:` -- the second order compiles to nothing.
+  'file:hover:bg-primary/90',
 ].join(' ');
+
+/** A file picker on its own line: the button, in the same box as a text field. */
+export const FIELD_FILE = `${FIELD_BASE} px-3 py-1.5 ${FIELD_FILE_BUTTON}`;
 
 /** The label above a field. */
 export const FIELD_LABEL = 'text-black dark:text-white';

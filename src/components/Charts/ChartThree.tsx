@@ -1,5 +1,6 @@
 import { ApexOptions } from 'apexcharts';
 import React, { useState } from 'react';
+import { FIELD_OPTION } from '../../theme/fieldStyles';
 import ReactApexChart from 'react-apexcharts';
 import { chartSeries } from '../../theme/themeColors';
 
@@ -78,10 +79,10 @@ const ChartThree: React.FC = () => {
               id=""
               className="relative z-20 inline-flex appearance-none bg-transparent py-1 pl-3 pr-8 text-sm font-medium outline-none"
             >
-              <option value="" className="dark:bg-boxdark">
+              <option value="" className={FIELD_OPTION}>
                 Monthly
               </option>
-              <option value="" className="dark:bg-boxdark">
+              <option value="" className={FIELD_OPTION}>
                 Yearly
               </option>
             </select>

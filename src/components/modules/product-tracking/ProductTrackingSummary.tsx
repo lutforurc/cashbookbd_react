@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { FIELD_CHECKBOX } from '../../../theme/fieldStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
@@ -216,6 +217,7 @@ const ProductTrackingSummary = () => {
           type="checkbox"
           checked={includeInactive}
           onChange={(e) => setIncludeInactive(e.target.checked)}
+          className={FIELD_CHECKBOX}
         />
         <span className="text-gray-600 dark:text-gray-300">
           Show deactivated products too (to reconcile older figures)

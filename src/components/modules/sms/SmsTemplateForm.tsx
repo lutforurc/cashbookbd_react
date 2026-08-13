@@ -20,7 +20,7 @@ import {
   SmsTemplateFormValues,
   updateSmsTemplate,
 } from './smsSlice';
-import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
+import { FIELD_SELECT, FIELD_TEXTAREA } from '../../../theme/fieldStyles';
 
 interface SmsTemplateFormProps {
   mode: 'create' | 'edit';
@@ -239,7 +239,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
                 name="status"
                 value={formValues.status}
                 onChange={handleChange}
-                className="w-full rounded-xs border border-stroke bg-white px-3 py-2 text-gray-700 outline-none focus:border-blue-500 dark:border-strokedark dark:bg-boxdark dark:text-white"
+                className={`${FIELD_SELECT} w-full px-3 py-2`}
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>

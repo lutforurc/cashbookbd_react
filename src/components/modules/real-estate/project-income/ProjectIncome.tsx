@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FIELD_SELECT, FIELD_SIZE } from '../../../../theme/fieldStyles';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiEdit2, FiHome, FiPlus, FiSave, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
@@ -74,10 +75,7 @@ const refusedWith = (response: any) =>
 /** Cash is an account like any other in this chart; 17 is the one. */
 const CASH_COA4_ID = 17;
 
-const SELECT_CLASS =
-  'w-full form-input px-3 py-1 text-gray-700 outline-none border rounded-xs bg-white ' +
-  'dark:bg-boxdark dark:border-gray-600 dark:text-white focus:outline-none focus:border-blue-500 ' +
-  'dark:focus:border-blue-400 h-9.5';
+const SELECT_CLASS = `${FIELD_SELECT} ${FIELD_SIZE.md} w-full`;
 
 /** The same 38px, for the text boxes that sit between the dropdowns. */
 const FIELD_HEIGHT = 'h-9.5';

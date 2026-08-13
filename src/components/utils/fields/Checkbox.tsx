@@ -1,4 +1,5 @@
 import React from 'react';
+import { FIELD_CHECKBOX } from '../../../theme/fieldStyles';
 
 const Checkbox = ({
   name,
@@ -8,7 +9,7 @@ const Checkbox = ({
   id,
   className = "",
   labelClassName = "",
-  inputClassName = "w-4 h-4 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400",
+  inputClassName = FIELD_CHECKBOX,
 }) => {
   return (
     <div className={className}>
