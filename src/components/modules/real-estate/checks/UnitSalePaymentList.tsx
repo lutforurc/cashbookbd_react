@@ -17,7 +17,7 @@ import Table from "../../../utils/others/Table";
 import Pagination from "../../../utils/utils-functions/Pagination";
 import SelectOption from "../../../utils/utils-functions/SelectOption";
 import { humanizeEnumText } from "../../../utils/hooks/humanizeEnumText";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ActionButtons from "../../../utils/fields/ActionButton";
 import { CHEQUE_STATUSES, PAYMENT_MODES } from "./checkContents";
 
@@ -73,7 +73,15 @@ export default function UnitSalePaymentList() {
   });
 
   // filters
-  const [q, setQ] = useState("");
+  //
+  // The search box opens on ?q= when there is one. ?customer_id= is the other
+  // way in -- the sales summary sends a buyer here by their account id, which
+  // gathers every receipt against them however many flats they hold. The name
+  // rides along only to be shown; nothing is filtered on it.
+  const [searchParams] = useSearchParams();
+  const [q, setQ] = useState(searchParams.get("q") ?? "");
+  const [customerId, setCustomerId] = useState(searchParams.get("customer_id") ?? "");
+  const customerName = searchParams.get("customer_name") ?? "";
   const [paymentMode, setPaymentMode] = useState<string>("");
   const [chequeStatus, setChequeStatus] = useState<string>(""); // UI only
   const [status, setStatus] = useState<string>("");
@@ -100,6 +108,7 @@ export default function UnitSalePaymentList() {
   const params = useMemo(() => {
     return {
       q: q || undefined,
+      customer_id: customerId ? Number(customerId) : undefined,
       payment_mode: paymentMode || undefined,
       status: status || undefined,
       date_from: dateFromStr || undefined,
@@ -108,9 +117,19 @@ export default function UnitSalePaymentList() {
       // âœ… add this
       cheque_collect_status: chequeStatus || undefined,
     };
-  }, [q, paymentMode, status, dateFromStr, dateToStr, chequeStatus]);
+  }, [q, customerId, paymentMode, status, dateFromStr, dateToStr, chequeStatus]);
 
-  const loadData = async (page = 1, perPageOverride?: number) => {
+  /**
+   * `overrides` is for the callers that change a filter and load in the same
+   * breath -- Reset, and dropping the buyer. `params` above is the value from
+   * the render they were called in, so a setState made a line earlier is not in
+   * it yet and the old filter would be sent one last time.
+   */
+  const loadData = async (
+    page = 1,
+    perPageOverride?: number,
+    overrides?: Record<string, any>
+  ) => {
     try {
       setIsLoading(true);
 
@@ -119,6 +138,7 @@ export default function UnitSalePaymentList() {
       const result = await dispatch(
         unitSalePaymentsList({
           ...params,
+          ...(overrides ?? {}),
           page,
           perPage: perPageNum,
         })
@@ -172,6 +192,7 @@ export default function UnitSalePaymentList() {
 
   const handleReset = () => {
     setQ("");
+    setCustomerId("");
     setPaymentMode("");
     setChequeStatus("");
     setStatus("");
@@ -179,7 +200,22 @@ export default function UnitSalePaymentList() {
     setDateTo(null);
     setPerPage("20");
     setPagination((p) => ({ ...p, current_page: 1 }));
-    loadData(1, 20);
+    loadData(1, 20, {
+      q: undefined,
+      customer_id: undefined,
+      payment_mode: undefined,
+      status: undefined,
+      date_from: undefined,
+      date_to: undefined,
+      cheque_collect_status: undefined,
+    });
+  };
+
+  /** Off the one buyer, back to the whole register, other filters left alone. */
+  const clearCustomer = () => {
+    setCustomerId("");
+    setPagination((p) => ({ ...p, current_page: 1 }));
+    loadData(1, undefined, { customer_id: undefined });
   };
 
   const goPage = (page: number) => {
@@ -467,6 +503,27 @@ export default function UnitSalePaymentList() {
           />
       
       </div>
+
+      {/* Whose register this is, when one buyer was asked for. Said out loud
+          because the filter is an id in the address bar and nothing else on
+          the page would show that the list has been narrowed. */}
+      {customerId ? (
+        <div className="mb-2 flex items-center gap-2 text-sm">
+          <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200">
+            Showing all transactions of
+            <strong>{customerName || `Customer #${customerId}`}</strong>
+            <button
+              type="button"
+              onClick={clearCustomer}
+              title="Show every customer"
+              aria-label="Show every customer"
+              className="font-bold"
+            >
+              ×
+            </button>
+          </span>
+        </div>
+      ) : null}
 
       {/* TABLE */}
       <div className="bg-white dark:bg-gray-800">

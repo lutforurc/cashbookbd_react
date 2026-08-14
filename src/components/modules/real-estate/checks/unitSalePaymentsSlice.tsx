@@ -72,6 +72,9 @@ export interface UnitSalePaymentsListRequest {
   page: number;
 
   booking_id?: number;
+  // The buyer's chart-of-account id: every payment against them, whichever
+  // booking it came in on. booking_id above narrows to one flat.
+  customer_id?: number;
   branch_id?: number;
 
   status?: UnitSalePaymentStatus;

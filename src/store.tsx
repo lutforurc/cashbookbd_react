@@ -75,6 +75,7 @@ import trialBalanceLevel3Slice from './components/modules/reports/trial-balance-
 import expenseReportSlice from './components/modules/reports/expense-report/expenseReportSlice';
 import trialBalanceLevel4Slice from './components/modules/reports/trial-balance-level4/trialBalanceLevel4Slice';
 import ledgerWithProductSlice from './components/modules/reports/ledger-with-product/ledgerWithProductSlice';
+import salesSummarySlice from './components/modules/reports/sales-summary/salesSummarySlice';
 import unitSalePaymentsSlice from './components/modules/real-estate/checks/unitSalePaymentsSlice';
 import branchTransferSlice from './components/modules/warehouse-transfer/warehouseTransferSlice';
 import materialIssueSlice from './components/modules/material-issue/materialIssueSlice';
@@ -165,6 +166,7 @@ const store = configureStore({
     brand: brandSlice,
     productUnit: productUnitSlice,
     unitSale: unitSaleSlice,
+    salesSummary: salesSummarySlice,
     unitPayments: unitSalePaymentsSlice,
     branchTransfer: branchTransferSlice,
     materialIssue: materialIssueSlice,

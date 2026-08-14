@@ -109,6 +109,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'real-estate/flat-layout', title: "Layout" },
     { id: 'real-estate/unit-sales', title: "Unit Sales" },
     { id: 'real_estate_sold_units', title: "Sold Units" },
+    { id: 'report_sales_summary', title: "Sales Summary" },
     { id: 'real_estate_installment_create', title: "Installment Create" },
     { id: 'real_estate_project_expense', title: "Project Expense" },
     { id: 'real_estate_project_income', title: "Project Income" },
@@ -1896,6 +1897,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       pathname === '/real-estate/flat-layout' ||
                       pathname === '/real-estate/unit-sales' ||
                       pathname === routes.real_estate_sold_units ||
+                      pathname === routes.report_sales_summary ||
                       pathname === routes.real_estate_installment_create ||
                       pathname === routes.real_estate_project_expense ||
                       pathname === routes.real_estate_project_purchase ||
@@ -1922,6 +1924,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               pathname === '/real-estate/add-unit' ||
                               pathname === '/real-estate/unit-sales' ||
                               pathname === routes.real_estate_sold_units ||
+                      pathname === routes.report_sales_summary ||
                               pathname === routes.real_estate_installment_create ||
                               pathname === routes.real_estate_project_expense ||
                               pathname === routes.real_estate_project_purchase ||
@@ -2088,6 +2091,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Sold Units
                               </NavLink>
                             </li>
+                            {hasPermission(permissions, 'real.estate.sales.summary') && (
+                              <li style={subSlot('real-estate', 'report_sales_summary')}>
+                                <NavLink
+                                  to={routes.report_sales_summary}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Sales Summary
+                                </NavLink>
+                              </li>
+                            )}
                             <li style={subSlot('real-estate', 'real_estate_installment_create')}>
                               <NavLink
                                 to={routes.real_estate_installment_create}

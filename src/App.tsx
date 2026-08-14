@@ -184,6 +184,7 @@ import TrialBalanceLevel3 from './components/modules/reports/trial-balance-level
 import TrialBalanceLevel4 from './components/modules/reports/trial-balance-level4/TrialBalanceLevel4';
 import ExpenseReport from './components/modules/reports/expense-report/ExpenseReport';
 import GodownStockReport from './components/modules/reports/godown-stock/GodownStockReport';
+import SalesSummaryReport from './components/modules/reports/sales-summary/SalesSummaryReport';
 import LedgerWithProduct from './components/modules/reports/ledger-with-product/LedgerWithProduct';
 import CollectionSheet from './components/modules/reports/somity/CollectionSheet';
 import MonthlyReport from './components/modules/reports/somity/MonthlyReport';
@@ -621,6 +622,12 @@ function App() {
                 already decided not to offer it to. */}
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['godown.stock']} loading={permissionsLoading} />}>
               <Route path={routes.report_godown_stock} element={<GodownStockReport user={me} />} />
+            </Route>
+            {/* The whole sales book of a project on one page -- its own
+                permission, not the module's: entering a sale and reading what
+                every other buyer paid are not the same trust. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.sales.summary']} loading={permissionsLoading} />}>
+              <Route path={routes.report_sales_summary} element={<SalesSummaryReport />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create', 'product.stock.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_branch_transfer} element={<BranchTransferReport user={me} />} />

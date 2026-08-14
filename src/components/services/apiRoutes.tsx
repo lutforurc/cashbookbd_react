@@ -786,6 +786,10 @@ export const API_UNIT_SALE_UPDATE_URL = `${API_BASE_URL}/real-estate/unit-sale/u
 // undone by restoring the voucher rather than by another call here.
 export const API_UNIT_SALE_CANCEL_URL = `${API_BASE_URL}/real-estate/unit-sale/cancel/`;
 export const API_UNIT_SALE_SOLD_UNITS_URL = `${API_BASE_URL}/real-estate/unit-sale/sold-units`;
+// The sales summary report. Its own endpoint rather than the sold-units list
+// above, because it answers to its own permission: reading what every buyer of
+// a project paid is not handed out with the right to enter a sale.
+export const API_REAL_ESTATE_SALES_SUMMARY_URL = `${API_BASE_URL}/real-estate/reports/sales-summary`;
 export const API_UNIT_SALE_ALLOTMENT_LETTER_URL = `${API_BASE_URL}/real-estate/unit-sale/allotment-letter/`;
 // One buyer's nominee list while the booking is still being typed — suffix the
 // customer's chart-of-account id, the same value the sale is saved with.

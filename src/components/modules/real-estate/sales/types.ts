@@ -105,6 +105,9 @@ export interface SoldUnitRow {
   sale_date: string | null;
   project_id: number | null;
   project_name: string | null;
+  /** The project's area — what the sales summary calls a location. */
+  area_id: number | null;
+  area_name: string | null;
   building_id: number | null;
   building_name: string | null;
   floor_no: number | null;
@@ -179,6 +182,7 @@ export interface SoldUnitsResult {
 
 export interface SoldUnitsFilters {
   branch_id?: number;
+  area_id?: number;
   project_id?: number;
   building_id?: number;
   customer_id?: number;
