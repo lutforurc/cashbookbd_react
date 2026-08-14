@@ -854,6 +854,12 @@ const AttendanceEntries = ({ user }: any) => {
             />
           </div>
           <DropdownCommon id="shift_id" name="shift_id" label="Shift" value={form.shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleShiftChange} className="h-9" />
+          {/* Attendance Type sits with Shift rather than down among the times:
+              the two decide each other -- picking a type reloads the shifts --
+              and both have to be settled before a time means anything. */}
+          <DropdownCommon id="employment_type" name="employment_type" label="Attendance Type" value={form.employment_type} data={employmentTypeOptions} onChange={handleEmploymentTypeChange} className="h-9" />
+
+          {/* Row two is when: the date, then the two clock fields. */}
           <InputDatePicker
             id="attendance_date"
             name="attendance_date"
@@ -863,12 +869,16 @@ const AttendanceEntries = ({ user }: any) => {
             setCurrentDate={(date) => setForm((prev: any) => ({ ...prev, attendance_date: dateToString(date) }))}
             className="h-9 w-full"
           />
+          {/* Holds the second column open so In and Out sit under Shift and
+              Attendance Type, where the eye is already looking. */}
+          <div className="hidden md:block" aria-hidden="true" />
           <InputElement name="in_time" label="In Time" type="time" value={form.in_time || ''} onChange={handleChange(setForm)} />
           <InputElement name="out_time" label="Out Time" type="time" value={form.out_time || ''} onChange={handleChange(setForm)} />
-          <DropdownCommon id="employment_type" name="employment_type" label="Attendance Type" value={form.employment_type} data={employmentTypeOptions} onChange={handleEmploymentTypeChange} className="h-9" />
-          <InputElement name="overtime_minutes" label="OT Hr." type="number" value={formatOtHours(overtimeMinutes)} onChange={() => {}} disabled />
+
+          {/* Row three is what came of it. */}
           <DropdownCommon id="status" name="status" label="Status" value={form.status} data={statusOptions} onChange={handleChange(setForm)} className="h-9" />
           <InputElement name="remarks" label="Remarks" value={form.remarks || ''} onChange={handleChange(setForm)} />
+          <InputElement name="overtime_minutes" label="OT Hr." type="number" value={formatOtHours(overtimeMinutes)} onChange={() => {}} disabled />
         </div>
         {rosterMessage && (
           <div className={`mt-2 text-sm ${rosterMessage.startsWith('Roster shift loaded') ? 'text-emerald-600' : 'text-amber-600'}`}>
