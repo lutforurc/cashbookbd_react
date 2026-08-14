@@ -426,6 +426,25 @@ html.dark {
   html.dark {
     --c-white: 255 255 255;           /* #FFFFFF */
   }
+
+  /* The canvas the reports sit on has nothing to say on paper.
+   *
+   * The rules just below paint the page `whiten` (#F4F7FA), and body carries
+   * the same through `bg-whiten` in style.css. A browser printing with
+   * background graphics on draws that behind every report in the project, so a
+   * salary sheet came off the printer on a pale blue-grey wash -- and the
+   * dark-mode rule meant the same page could come out near-black for anyone
+   * printing in the evening.
+   *
+   * Only the canvas is cleared. What a report paints for itself -- a white
+   * sheet, a shaded table head, the coloured marks on the attendance matrix --
+   * is its own business and still prints. */
+  html,
+  html.dark,
+  body,
+  html.dark body {
+    background: #fff !important;
+  }
 }
 
 /* The page itself, painted before React runs.
