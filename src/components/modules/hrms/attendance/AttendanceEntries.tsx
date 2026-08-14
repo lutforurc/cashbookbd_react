@@ -11,6 +11,7 @@ import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
+import InputTimePicker from '../../../utils/fields/InputTimePicker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
@@ -870,8 +871,8 @@ const AttendanceEntries = ({ user }: any) => {
             setCurrentDate={(date) => setForm((prev: any) => ({ ...prev, attendance_date: dateToString(date) }))}
             className="h-9 w-full"
           />
-          <InputElement name="in_time" label="In Time" type="time" value={form.in_time || ''} onChange={handleChange(setForm)} />
-          <InputElement name="out_time" label="Out Time" type="time" value={form.out_time || ''} onChange={handleChange(setForm)} />
+          <InputTimePicker name="in_time" label="In Time" value={form.in_time || ''} onChange={handleChange(setForm)} />
+          <InputTimePicker name="out_time" label="Out Time" value={form.out_time || ''} onChange={handleChange(setForm)} />
 
           {/* What came of it. */}
           <DropdownCommon id="status" name="status" label="Status" value={form.status} data={statusOptions} onChange={handleChange(setForm)} className="h-9" />

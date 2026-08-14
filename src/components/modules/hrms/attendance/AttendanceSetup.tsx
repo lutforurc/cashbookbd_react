@@ -10,6 +10,7 @@ import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
+import InputTimePicker from '../../../utils/fields/InputTimePicker';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
 import {
@@ -462,8 +463,8 @@ const AttendanceSetup = ({ user }: any) => {
           <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-4">
             <InputElement name="name" label="Shift Name" value={shiftForm.name} onChange={handleChange(setShiftForm)} />
             <InputElement name="code" label="Code" value={shiftForm.code} onChange={handleChange(setShiftForm)} />
-            <InputElement name="start_time" label="Start Time" type="time" value={shiftForm.start_time} onChange={handleChange(setShiftForm)} />
-            <InputElement name="end_time" label="End Time" type="time" value={shiftForm.end_time} onChange={handleChange(setShiftForm)} />
+            <InputTimePicker name="start_time" label="Start Time" value={shiftForm.start_time} onChange={handleChange(setShiftForm)} />
+            <InputTimePicker name="end_time" label="End Time" value={shiftForm.end_time} onChange={handleChange(setShiftForm)} />
             <InputElement name="grace_minutes" label="Grace Minutes" type="number" value={shiftForm.grace_minutes} onChange={handleChange(setShiftForm)} />
             <InputElement name="half_day_minutes" label="Half Day Minutes" type="number" value={shiftForm.half_day_minutes} onChange={handleChange(setShiftForm)} />
             <InputElement name="early_out_minutes" label="Early Out Minutes" type="number" value={shiftForm.early_out_minutes} onChange={handleChange(setShiftForm)} />
