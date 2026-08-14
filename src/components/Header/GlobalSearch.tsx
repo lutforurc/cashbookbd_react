@@ -8,7 +8,6 @@ import { getVoucherEditTarget } from '../utils/utils-functions/voucherEditNaviga
 import { VoucherPrintRegistry } from '../modules/vouchers/VoucherPrintRegistry';
 import routes from '../services/appRoutes';
 import globalSearchItems, { GlobalSearchItem } from './globalSearchItems';
-import { FIELD_BASE } from '../../theme/fieldStyles';
 
 const RESULT_LIMIT = 10;
 const VOUCHER_NO_PATTERN = /^\d+-[\w-]+$/;
@@ -201,7 +200,12 @@ const GlobalSearch = () => {
             type="text"
             value={query}
             placeholder="Search or quick action..."
-            className={`${FIELD_BASE} w-full pl-9 pr-16 xl:w-125`}
+            // Deliberately not FIELD_BASE. This is not a form field on a form
+            // -- it floats in the header with the magnifier and the Ctrl K chip
+            // positioned against its own edges, so a border and a solid fill
+            // put both of those on top of the frame and boxed in what used to
+            // read as part of the bar. Only the colours are shared.
+            className="w-full bg-transparent pl-9 pr-16 text-black placeholder-gray-400 outline-none transition focus:outline-none dark:text-white dark:placeholder-gray-500 xl:w-125"
             onChange={(event) => {
               setQuery(event.target.value);
               setOpen(true);
