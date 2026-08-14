@@ -11,8 +11,18 @@ import { FiEye, FiEyeOff, FiLogIn, FiBookOpen, FiShoppingCart, FiUsers, FiPieCha
 import { ButtonLoading } from '../UiElements/CustomButtons';
 import { getSignInTitleByHost } from '../../components/services/tenantTitles';
 import DeviceLimitNotice from '../../components/modules/devices/DeviceLimitNotice';
-import { FIELD_BASE } from '../../theme/fieldStyles';
+import { FIELD_BASE, FIELD_LABEL } from '../../theme/fieldStyles';
 import ToggleSwitch from '../../components/utils/fields/ToggleSwitch';
+
+/**
+ * Forgot password and Register: the quiet way out of this screen, so they are
+ * text links rather than buttons competing with Sign In.
+ *
+ * Same size, weight and colour as the Remember me label beside them -- one
+ * muted voice for everything on the card that is not the action. The underline
+ * on hover is what says they are clickable, not a brighter colour.
+ */
+const TEXT_LINK = 'text-sm font-medium text-body hover:underline dark:text-bodydark';
 
 const SignIn: React.FC = () => {
   const { isLoading, errors, isLoggedIn, deviceLimit } = useSelector((state: any) => state.auth);
@@ -267,7 +277,7 @@ const SignIn: React.FC = () => {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-meta-3 opacity-75" />
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-meta-3" />
                 </span>
-                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-black/70 dark:text-white/70">
+                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-black dark:text-white">
                   CashbookBD
                 </span>
               </div>
@@ -276,12 +286,17 @@ const SignIn: React.FC = () => {
                 <HelmetTitle title={getSignInTitleByHost(hostname)} />
               </h2>
 
-              <p className="mb-6 w-full text-center text-sm text-black/60 dark:text-white/60">
+              {/* `text-body` / `dark:text-bodydark`, not black-at-60% over
+                  white-at-60%: the two are not the same grey, so the line used
+                  to change weight as well as colour between the themes. */}
+              <p className="mb-6 w-full text-center text-sm text-body dark:text-bodydark">
                 Sign in to continue.
               </p>
 
               {process.env.NODE_ENV === 'development' ? (
                 <div className="w-full text-center">
+                  {/* Dev-only, and deliberately not on TEXT_LINK: this one
+                      should stand out from the card's muted links. */}
                   <button
                     className="text-sm font-medium text-primary hover:underline"
                     onClick={handleSetUser}
@@ -292,10 +307,13 @@ const SignIn: React.FC = () => {
                 </div>
               ) : null}
 
-              <div className="rounded-xl bg-white p-6 shadow-default dark:bg-boxdark">
+              {/* The card sits on a page painted the same white/boxdark, so
+                  without a stroke it had no edge at all -- the shadow alone
+                  disappears in dark mode. */}
+              <div className="rounded-xl border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark">
                 <form onSubmit={handleLogin}>
                   <div className="mb-4">
-                    <label className="mb-2.5 block font-medium text-black dark:text-white">
+                    <label className={`mb-2.5 block font-medium ${FIELD_LABEL}`}>
                       Email or Phone
                     </label>
                     <div className="relative">
@@ -314,7 +332,7 @@ const SignIn: React.FC = () => {
                   </div>
 
                   <div className="mb-3">
-                    <label className="mb-2.5 block font-medium text-black dark:text-white">
+                    <label className={`mb-2.5 block font-medium ${FIELD_LABEL}`}>
                       Password
                     </label>
                     <div className="relative">
@@ -333,7 +351,8 @@ const SignIn: React.FC = () => {
                       <button
                         type="button"
                         onClick={handleCheckPassword}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-primary hover:opacity-80"
+                        title={checkPassword ? 'Show password' : 'Hide password'}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-body transition-colors hover:text-primary dark:text-bodydark2 dark:hover:text-primary"
                       >
                         {checkPassword ? <FiEye className="h-5 w-5" /> : <FiEyeOff className="h-5 w-5" />}
                       </button>
@@ -346,12 +365,9 @@ const SignIn: React.FC = () => {
                       checked={formData.remember}
                       onChange={handleChange}
                       label="Remember me"
-                      labelClassName="text-sm text-black/70 dark:text-white/70"
+                      labelClassName="text-sm text-body dark:text-bodydark"
                     />
-                    <Link
-                      to={ROUTES.forgot_password}
-                      className="text-sm font-medium text-primary hover:underline"
-                    >
+                    <Link to={ROUTES.forgot_password} className={TEXT_LINK}>
                       Forgot password?
                     </Link>
                   </div>
@@ -370,26 +386,26 @@ const SignIn: React.FC = () => {
 
                   <div className="mb-2">
 
-                    {/* The one action this screen exists for, so it asks for the
-                        primary variant rather than overriding the grey base. */}
+                    {/* The app's own button, unmodified: the `default` variant
+                        that Add New, Save and Home already wear, at the h-10
+                        those call sites use. It carried `primary` and a
+                        `rounded-lg` of its own before, which made Sign In the
+                        one button in the app that looked like nothing else.
+                        Full width is the only thing this screen asks for. */}
                     <ButtonLoading
-                      variant="primary"
                       type="submit"
                       label="Sign In"
-                      icon={
-                        <div className="md:hidden">
-                          <FiLogIn className="h-5 w-5" />
-                        </div>
-                      }
-                      className="w-full rounded-lg p-3"
+                      buttonLoading={isLoading}
+                      icon={<FiLogIn className="h-5 w-5" />}
+                      className="h-10 w-full"
                     />
                   </div>
 
                     {shouldShowCompanyRegistration && (
-                      <div className=''>
-                        <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
+                      <div>
+                        <p className="mt-4 text-center text-sm text-body dark:text-bodydark">
                           New here?{' '}
-                          <Link to={ROUTES.public_register} className="text-primary hover:underline">
+                          <Link to={ROUTES.public_register} className={TEXT_LINK}>
                             Register your company
                           </Link>
                         </p>
@@ -399,7 +415,9 @@ const SignIn: React.FC = () => {
                 </form>
               </div>
 
-              <p className="mt-6 text-center text-xs text-black/80 dark:text-white/20">
+              {/* Was black-at-80% in light and white-at-20% in dark -- the same
+                  line, near-solid on one theme and almost gone on the other. */}
+              <p className="mt-6 text-center text-xs text-body dark:text-bodydark2">
                 © {new Date().getFullYear()} CashbookBD - All rights reserved.
               </p>
             </div>
