@@ -74,7 +74,7 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
               <PadPrinting />
 
               <div className="mb-2">
-                <h1 className="text-2xl font-bold text-center">Bank Information</h1>
+                <h1 className="text-xl font-bold text-center">Bank Information</h1>
                 <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
                   <div>
                     <span className="font-semibold">Report Type:</span> {reportType || '-'}
