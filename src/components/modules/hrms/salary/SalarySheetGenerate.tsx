@@ -238,6 +238,37 @@ const buildAttendanceSummaryMapFromMonthlyRows = (rows: any[], monthInfo: NonNul
  */
 const READONLY_FIGURE = "text-right disabled:!text-black dark:disabled:!text-white";
 
+/**
+ * A money box you can still type in.
+ *
+ * `type="number"` cannot show 5,000 — the browser refuses the comma — so this
+ * is a text box that groups the digits while you are out of it and hands you
+ * the bare number the moment you are in it. Anything that is not a figure is
+ * dropped as it arrives, so a pasted "Tk 5,500" still lands as 5500.
+ *
+ * Zero reads as 0 rather than the dash thousandSeparator prints: a dash is
+ * right for a total nobody can edit and wrong for a box waiting for a number.
+ */
+const AmountInput: React.FC<{
+  value: number | string;
+  onChange: (value: string) => void;
+  className?: string;
+}> = ({ value, onChange, className = "" }) => {
+  const [editing, setEditing] = useState(false);
+
+  return (
+    <InputElement
+      type="text"
+      inputMode="numeric"
+      value={editing ? String(value ?? "") : (Number(value) || 0).toLocaleString("en-IN")}
+      className={className}
+      onFocus={() => setEditing(true)}
+      onBlur={() => setEditing(false)}
+      onChange={(event) => onChange(event.target.value.replace(/[^\d.]/g, ""))}
+    />
+  );
+};
+
 const isDailyLabour = (employmentType?: string) =>
   String(employmentType || "").toLowerCase().includes("daily");
 
@@ -774,11 +805,10 @@ const SalarySheetGenerate = ({ user }: any) => {
       headerClass: "text-right w-30",
       cellClass: "text-right",
       render: (row: SalaryRow) => (
-        <InputElement
-          type="number"
+        <AmountInput
           value={row.loan_balance}
           className="text-right w-30 !md:w-30 font-semibold text-red-600 dark:text-red-400"
-          onChange={(e) => handleInputChange(row.id, "loan_balance", e.target.value)}
+          onChange={(value) => handleInputChange(row.id, "loan_balance", value)}
         />
       ),
     },

@@ -18,6 +18,8 @@ interface InputElementProps {
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  /** Paired with onBlur by fields that show one thing at rest and another while edited. */
+  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
   className?: string;
   type?: string;
   disabled?: boolean;
@@ -53,6 +55,7 @@ const InputElement: React.FC<InputElementProps> = ({
   onChange,
   onKeyDown,
   onBlur,
+  onFocus,
   className = '',
   type = 'text',
   disabled = false,
@@ -86,6 +89,7 @@ const InputElement: React.FC<InputElementProps> = ({
           onChange={onChange}
           onKeyDown={onKeyDown}
           onBlur={onBlur}
+          onFocus={onFocus}
           type={type}
           placeholder={placeholder}
           disabled={disabled}
