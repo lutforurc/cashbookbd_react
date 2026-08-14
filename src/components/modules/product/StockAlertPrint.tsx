@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import ReportFooter from '../../utils/utils-functions/ReportFooter';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
+import { formatDayMonthYear, formatDaySpan } from '../../utils/utils-functions/formatDate';
 
 type StockAlertPrintType = 'lowStock' | 'negative' | 'slowMoving';
 
@@ -178,10 +179,10 @@ const StockAlertPrint = React.forwardRef<HTMLDivElement, Props>(
                       {isSlowMoving ? (
                         <>
                           <td className="border border-gray-900 px-1.5 py-1 text-center">
-                            {formatDate(row?.last_movement_date)}
+                            {formatDayMonthYear(row?.last_movement_date)}
                           </td>
                           <td className="border border-gray-900 px-1.5 py-1 text-right">
-                            {formatQuantity(row?.days_without_movement ?? 0)}
+                            {formatDaySpan(row?.days_without_movement)}
                           </td>
                         </>
                       ) : null}

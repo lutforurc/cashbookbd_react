@@ -16,7 +16,7 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getCategoryDdl } from '../category/categorySlice';
 import { fetchBrandDdl } from './brand/brandSlice';
 import { fetchStockAlertProducts, StockAlertType } from './stockAlertSlice';
-import { formatBdShortDate } from '../../utils/utils-functions/formatDate';
+import { formatDayMonthYear, formatDaySpan } from '../../utils/utils-functions/formatDate';
 import StockAlertPrint from './StockAlertPrint';
 import { FIELD_BASE } from '../../../theme/fieldStyles';
 
@@ -306,14 +306,15 @@ const StockAlertProducts = ({ alertType }: Props) => {
         {
           key: 'last_movement_date',
           header: 'Last Movement',
-          render: (row: any) => formatBdShortDate(row?.last_movement_date),
+          cellClass: 'whitespace-nowrap',
+          render: (row: any) => formatDayMonthYear(row?.last_movement_date),
         },
         {
           key: 'days_without_movement',
           header: 'Days Idle',
           headerClass: 'text-right',
-          cellClass: 'text-right',
-          render: (row: any) => thousandSeparator(row?.days_without_movement ?? 0),
+          cellClass: 'text-right whitespace-nowrap',
+          render: (row: any) => formatDaySpan(row?.days_without_movement),
         },
         {
           key: 'status',
@@ -572,11 +573,11 @@ const StockAlertProducts = ({ alertType }: Props) => {
                         <>
                           <div>
                             <span className="text-gray-500">Last Movement</span>
-                            <div>{formatDate(row?.last_movement_date)}</div>
+                            <div>{formatDayMonthYear(row?.last_movement_date)}</div>
                           </div>
                           <div>
                             <span className="text-gray-500">Days Idle</span>
-                            <div>{thousandSeparator(row?.days_without_movement ?? 0)}</div>
+                            <div>{formatDaySpan(row?.days_without_movement)}</div>
                           </div>
                         </>
                       ) : null}

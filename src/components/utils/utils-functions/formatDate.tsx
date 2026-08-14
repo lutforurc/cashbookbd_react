@@ -150,6 +150,79 @@ function chartMonth(value: string, short = false): string {
 
 export { chartMonth };
 
+/**
+ * dd/mm/yyyy, whichever way round the date arrives.
+ *
+ * formatBdShortDate() next door splits on "/" and hands back anything else
+ * untouched, so an API returning "2023-02-18" printed exactly that in the
+ * middle of a report where every other date was day-first. This reads both
+ * shapes and always answers in one.
+ *
+ * The year stays four digits: on a row saying a product has not moved in three
+ * years, "18/02/23" invites the reader to wonder which century.
+ */
+function formatDayMonthYear(value?: string | null): string {
+  if (!value) return '-';
+
+  // Trims a timestamp down to its date before matching.
+  const text = String(value).trim().slice(0, 10);
+
+  const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(text);
+  if (iso) {
+    return `${iso[3].padStart(2, '0')}/${iso[2].padStart(2, '0')}/${iso[1]}`;
+  }
+
+  const dayFirst = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(text);
+  if (dayFirst) {
+    const year = dayFirst[3].length === 2 ? `20${dayFirst[3]}` : dayFirst[3];
+    return `${dayFirst[1].padStart(2, '0')}/${dayFirst[2].padStart(2, '0')}/${year}`;
+  }
+
+  return text;
+}
+
+export { formatDayMonthYear };
+
+/**
+ * A span of days said the way people say it: "3 Year 5 Month 29 Day".
+ *
+ * A stock report that has sat still since 2023 reads 1,274 in the Days Idle
+ * column, and nobody converts that in their head -- the number is precise and
+ * tells you nothing. Years and months do.
+ *
+ * The count is converted rather than the two dates being subtracted, so this
+ * always agrees with the figure the report worked out; a 365/30 year and month
+ * are what "so many days" means when nobody has said which months.
+ *
+ * Empty parts are dropped -- 45 days is "1 Month 15 Day", not "0 Year 1 Month
+ * 15 Day" -- and a span under a month keeps its days alone.
+ */
+function formatDaySpan(totalDays?: number | string | null): string {
+  // Nothing recorded is a dash, not "0 Day" -- Number(null) is 0, and a
+  // product with no movement date at all has not been idle for no days.
+  if (totalDays === null || totalDays === undefined || totalDays === '') return '-';
+
+  const days = Math.floor(Number(totalDays));
+
+  if (!Number.isFinite(days) || days < 0) return '-';
+  if (days === 0) return '0 Day';
+
+  const years = Math.floor(days / 365);
+  const afterYears = days % 365;
+  const months = Math.floor(afterYears / 30);
+  const remainingDays = afterYears % 30;
+
+  const parts: string[] = [];
+
+  if (years) parts.push(`${years} Year`);
+  if (months) parts.push(`${months} Month`);
+  if (remainingDays) parts.push(`${remainingDays} Day`);
+
+  return parts.join(' ');
+}
+
+export { formatDaySpan };
+
 function chartDateTime(dateString: string) {
   if (!dateString) return "";
 
