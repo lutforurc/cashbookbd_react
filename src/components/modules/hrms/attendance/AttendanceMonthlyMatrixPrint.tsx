@@ -105,10 +105,13 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
             color: #137333;
           }
 
+          /* Pink rather than amber. Leave below is #fff6db, and amber beside it
+             was the same chip twice -- see the screen palette in
+             AttendanceMonthlyMatrixReport for why pink is what was left. */
           .attendance-monthly-print .status-late {
-            background: #fff3d6;
-            color: #b45309;
-            box-shadow: inset 0 0 0 1px #f59e0b;
+            background: #fce7f3;
+            color: #9d174d;
+            box-shadow: inset 0 0 0 1px #ec4899;
           }
 
           .attendance-monthly-print .status-absent {
@@ -246,7 +249,7 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
             }
 
             .attendance-monthly-print .status-late {
-              background: #fff0bf !important;
+              background: #fbd5e6 !important;
               color: #000000 !important;
               box-shadow: inset 0 0 0 1px #000000 !important;
             }

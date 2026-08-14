@@ -520,10 +520,37 @@ const SalarySheetGenerate = ({ user }: any) => {
   const includeOvertime = salarySheetType === "overtime";
   const includeMobileBill = salarySheetType === "monthly";
 
+  /** Basic plus allowance, before overtime — what a day of pay is measured against. */
+  const baseGrossSalary = (emp: SalaryRow) =>
+    proratedBasicSalary(emp) + (includeMobileBill ? proratedOtherAllowance(emp) : 0);
+
   const totalSalary = (emp: SalaryRow) =>
-    proratedBasicSalary(emp)
-    + (includeMobileBill ? proratedOtherAllowance(emp) : 0)
-    + (includeOvertime ? Number(emp.overtime_amount || 0) : 0);
+    baseGrossSalary(emp) + (includeOvertime ? Number(emp.overtime_amount || 0) : 0);
+
+  /**
+   * The attendance penalty, worked out here rather than read from the API.
+   *
+   * The monthly-summary endpoint returns the deduction *days* but no amount —
+   * it has no salary to price them against — so the column sat at zero however
+   * many lates an employee collected. The amount only appeared after Generate,
+   * where apiMakeSalary() prices the same days. This mirrors that formula
+   * exactly (days x prorated gross / 30) so the preview and the saved sheet
+   * agree, and so the figure moves when the working days are edited.
+   *
+   * Absent and half days are deliberately not charged here: they already lower
+   * the working days, which lowers the prorated basic. Charging them again
+   * would deduct them twice.
+   */
+  const attendanceDeduction = (emp: SalaryRow) => {
+    if (isDailyLabour(emp.employment_type)) return 0;
+
+    const days = (Number(emp.attendance_late_deduction_days) || 0)
+      + (Number(emp.attendance_early_out_deduction_days) || 0);
+
+    if (days <= 0) return 0;
+
+    return Math.round(days * (baseGrossSalary(emp) / 30) * 100) / 100;
+  };
 
   const netSalary = (emp: SalaryRow) => {
     const days = Number(emp.working_days) || 0;
@@ -531,8 +558,7 @@ const SalarySheetGenerate = ({ user }: any) => {
     if (days <= 0 || monthDays <= 0) return 0;
     const roundedGross = totalSalary(emp);
     const loanDed = Number(emp.loan_balance) || 0;
-    const attendanceDed = isDailyLabour(emp.employment_type) ? 0 : Number(emp.attendance_deduction_amount) || 0;
-    return Math.max(0, roundedGross - loanDed - attendanceDed);
+    return Math.max(0, roundedGross - loanDed - attendanceDeduction(emp));
   };
 
   const grandTotals = useMemo(() => {
@@ -543,7 +569,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         acc.total_salary += totalSalary(emp);
         acc.overtime_amount += includeOvertime ? Number(emp.overtime_amount) || 0 : 0;
         acc.loan_deduction += Number(emp.loan_balance) || 0; // ✅ total loan ded = sum loan_balance
-        acc.attendance_deduction += isDailyLabour(emp.employment_type) ? 0 : Number(emp.attendance_deduction_amount) || 0;
+        acc.attendance_deduction += attendanceDeduction(emp);
         acc.net_deduction += Number(emp.net_deduction) || 0;
         acc.net_salary += netSalary(emp);
         return acc;
@@ -726,8 +752,8 @@ const SalarySheetGenerate = ({ user }: any) => {
       headerClass: "text-right w-30",
       cellClass: "text-right font-semibold text-red-700 dark:text-red-400",
       render: (row: SalaryRow) => (
-        <span title={`Absent: ${row.attendance_absent_days || 0}, Unpaid: ${row.attendance_unpaid_leave_days || 0}, Half: ${row.attendance_half_days || 0}, Late: ${row.attendance_late_deduction_days || 0}, Early: ${row.attendance_early_out_deduction_days || 0}`}>
-          {isDailyLabour(row.employment_type) ? "-" : thousandSeparator(Number(row.attendance_deduction_amount || 0))}
+        <span title={`Absent: ${row.attendance_absent_days || 0}, Unpaid: ${row.attendance_unpaid_leave_days || 0}, Half: ${row.attendance_half_days || 0}, Late: ${row.attendance_late_count || 0} (${row.attendance_late_deduction_days || 0} day), Early: ${row.attendance_early_out_count || 0} (${row.attendance_early_out_deduction_days || 0} day)`}>
+          {isDailyLabour(row.employment_type) ? "-" : thousandSeparator(attendanceDeduction(row))}
         </span>
       ),
     },
@@ -779,7 +805,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         // ✅ IMPORTANT: save loan_deduction = loan_balance
         loan_deduction: Number(e.loan_balance) || 0,
 
-        attendance_deduction_amount: isDailyLabour(e.employment_type) ? 0 : Number(e.attendance_deduction_amount) || 0,
+        attendance_deduction_amount: attendanceDeduction(e),
         attendance_absent_days: Number(e.attendance_absent_days) || 0,
         attendance_unpaid_leave_days: Number(e.attendance_unpaid_leave_days) || 0,
         attendance_half_days: Number(e.attendance_half_days) || 0,

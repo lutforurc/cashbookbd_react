@@ -695,7 +695,12 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             }
 
             .attendance-monthly-screen .status-present { background: rgb(var(--c-green-600)); color: rgb(var(--c-white)); }
-            .attendance-monthly-screen .status-late { background: rgb(var(--c-amber-600)); color: rgb(var(--c-white)); }
+            /* Pink, not amber: amber and the yellow below are the same colour at
+               the size these marks are drawn, so a late day and a leave day were
+               telling the reader apart by their glyph alone. Pink is the one
+               hue this legend has not already spent -- green, red, grey, violet
+               and yellow are all taken, and sky is the other-branch ring. */
+            .attendance-monthly-screen .status-late { background: rgb(var(--c-pink-600)); color: rgb(var(--c-white)); }
             .attendance-monthly-screen .status-absent { background: rgb(var(--c-red-600)); color: rgb(var(--c-white)); }
             /* A weekly day off is routine, so it reads as quiet grey; a
                calendar holiday is an event, so it gets a colour of its own.
@@ -717,7 +722,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             }
 
             .dark .attendance-monthly-screen .status-present { background: rgb(var(--c-green-500)); }
-            .dark .attendance-monthly-screen .status-late { background: rgb(var(--c-amber-500)); }
+            .dark .attendance-monthly-screen .status-late { background: rgb(var(--c-pink-500)); }
             .dark .attendance-monthly-screen .status-absent { background: rgb(var(--c-red-500)); }
             .dark .attendance-monthly-screen .status-weekly { background: rgb(var(--c-slate-400)); color: rgb(var(--c-slate-900)); }
             .dark .attendance-monthly-screen .status-holiday { background: rgb(var(--c-violet-400)); color: rgb(var(--c-indigo-950)); }
@@ -728,7 +733,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
               transition: filter 0.12s ease;
             }
             .attendance-monthly-screen .cell-tint-present { background: rgb(var(--c-green-100)); }
-            .attendance-monthly-screen .cell-tint-late { background: rgb(var(--c-amber-100)); }
+            .attendance-monthly-screen .cell-tint-late { background: rgb(var(--c-pink-100)); }
             .attendance-monthly-screen .cell-tint-absent { background: rgb(var(--c-red-100)); }
             .attendance-monthly-screen .cell-tint-weekly { background: rgb(var(--c-whiten)); }
             .attendance-monthly-screen .cell-tint-holiday { background: rgb(var(--c-violet-100)); }
@@ -736,7 +741,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             .attendance-monthly-screen .cell-tint-half { background: rgb(var(--c-purple-100)); }
 
             .dark .attendance-monthly-screen .cell-tint-present { background: rgba(34, 197, 94, 0.20); }
-            .dark .attendance-monthly-screen .cell-tint-late { background: rgba(245, 158, 11, 0.20); }
+            .dark .attendance-monthly-screen .cell-tint-late { background: rgba(236, 72, 153, 0.20); }
             .dark .attendance-monthly-screen .cell-tint-absent { background: rgba(239, 68, 68, 0.22); }
             .dark .attendance-monthly-screen .cell-tint-weekly { background: rgba(148, 163, 184, 0.16); }
             .dark .attendance-monthly-screen .cell-tint-holiday { background: rgba(167, 139, 250, 0.20); }
@@ -848,8 +853,10 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
                 color: rgb(var(--c-black-2)) !important;
               }
 
+              /* On paper the two were worse than on screen: #fff0bf against the
+                 leave chip's #fff1c7 is a difference of six in one channel. */
               .attendance-monthly-print .status-late {
-                background: #fff0bf !important;
+                background: #fbd5e6 !important;
                 color: rgb(var(--c-black-2)) !important;
                 box-shadow: inset 0 0 0 1px rgb(var(--c-black-2)) !important;
               }
