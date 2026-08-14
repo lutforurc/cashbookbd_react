@@ -289,9 +289,19 @@ const SalarySheetGenerate = ({ user }: any) => {
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
+  /**
+   * The row the trash button is asking about.
+   *
+   * The row itself, not just its id, so the dialog can name the employee after
+   * the list has been filtered — and so a click on a stale row cannot take a
+   * different one with it.
+   */
+  const [rowToRemove, setRowToRemove] = useState<SalaryRow | null>(null);
   const [designationLevels, setDesignationLevels] = useState<any[]>([]);
   const [draggingRowId, setDraggingRowId] = useState<number | null>(null);
   const roundUpToNearestTen = (value: number) => Math.ceil(value / 10) * 10;
+  /** Nearest, not up: 947 becomes 950 and 944 becomes 940. */
+  const roundToNearestTen = (value: number) => Math.round(value / 10) * 10;
   const updateContext = location.state as
     | {
         fromSalarySheet?: boolean;
@@ -503,6 +513,15 @@ const SalarySheetGenerate = ({ user }: any) => {
     );
   };
 
+  const handleRemoveRow = () => {
+    if (!rowToRemove) return;
+
+    const removed = rowToRemove;
+    setEmployees((prev) => withSequence(prev.filter((emp) => emp.id !== removed.id)));
+    setRowToRemove(null);
+    toast.info(`${removed.name} removed from this sheet`);
+  };
+
   /* ================= CALCULATIONS ================= */
   const proratedAmount = (amount: number, days: number) => {
     const monthDays = selectedMonthDays > 0 ? selectedMonthDays : 30;
@@ -534,8 +553,9 @@ const SalarySheetGenerate = ({ user }: any) => {
    * it has no salary to price them against — so the column sat at zero however
    * many lates an employee collected. The amount only appeared after Generate,
    * where apiMakeSalary() prices the same days. This mirrors that formula
-   * exactly (days x prorated gross / 30) so the preview and the saved sheet
-   * agree, and so the figure moves when the working days are edited.
+   * exactly — days x prorated gross / 30, to the nearest ten — so the preview
+   * and the saved sheet agree, and so the figure moves when the working days
+   * are edited.
    *
    * Absent and half days are deliberately not charged here: they already lower
    * the working days, which lowers the prorated basic. Charging them again
@@ -549,7 +569,9 @@ const SalarySheetGenerate = ({ user }: any) => {
 
     if (days <= 0) return 0;
 
-    return Math.round(days * (baseGrossSalary(emp) / 30) * 100) / 100;
+    const perDaySalary = Math.round((baseGrossSalary(emp) / 30) * 100) / 100;
+
+    return roundToNearestTen(days * perDaySalary);
   };
 
   const netSalary = (emp: SalaryRow) => {
@@ -773,7 +795,9 @@ const SalarySheetGenerate = ({ user }: any) => {
       cellClass: "text-center",
       render: (row: SalaryRow) => (
         <button
-          onClick={() => setEmployees((prev) => withSequence(prev.filter((emp) => emp.id !== row.id)))}
+          type="button"
+          title={`Remove ${row.name} from this sheet`}
+          onClick={() => setRowToRemove(row)}
           className="text-red-600 hover:text-red-800"
         >
           <FiTrash2 className="block w-4 h-4" />
@@ -1065,6 +1089,27 @@ const SalarySheetGenerate = ({ user }: any) => {
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleSalaryGenerate}
         className="bg-blue-400 hover:bg-blue-500"
+      />
+
+      {/* The trash button used to drop the row on the first click, with a whole
+          salary sheet's worth of edits behind it and no way back. Same dialog
+          the voucher delete uses. */}
+      <ConfirmModal
+        show={rowToRemove !== null}
+        title="Confirm Deletion"
+        message={
+          <>
+            Are you sure you want to remove
+            <span className="mt-1 block font-bold">{rowToRemove?.name} ?</span>
+            <span className="mt-2 block text-sm text-body dark:text-bodydark">
+              This only takes the employee off this sheet. Nothing is deleted
+              until the sheet is generated.
+            </span>
+          </>
+        }
+        onCancel={() => setRowToRemove(null)}
+        onConfirm={handleRemoveRow}
+        className="bg-red-600 hover:bg-red-700"
       />
     </div>
   );
