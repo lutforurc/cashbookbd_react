@@ -225,6 +225,19 @@ const buildAttendanceSummaryMapFromMonthlyRows = (rows: any[], monthInfo: NonNul
   return summaries;
 };
 
+/**
+ * A disabled field that exists only to show a figure.
+ *
+ * Half this sheet's columns are read-only: month days, working days and the
+ * three money columns are worked out, not typed. They are drawn as disabled
+ * inputs, and FIELD_BASE greys disabled text -- right for a field you cannot
+ * type in yet, wrong for one that is simply a number, which left the sheet's
+ * own figures the palest thing on the row and the totals beside them dark.
+ * They read black on white and white on dark now, like every other number
+ * here.
+ */
+const READONLY_FIGURE = "text-right disabled:!text-black dark:disabled:!text-white";
+
 const isDailyLabour = (employmentType?: string) =>
   String(employmentType || "").toLowerCase().includes("daily");
 
@@ -645,8 +658,8 @@ const SalarySheetGenerate = ({ user }: any) => {
         <InputElement
           type="text"
           value={String(Number(row.month_days) || selectedMonthDays)}
-          className="text-right w-24 !md:w-20"
-          disabled={true} 
+          className={`${READONLY_FIGURE} w-24 !md:w-20`}
+          disabled={true}
         />
       ),
     },
@@ -659,7 +672,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         <InputElement
           type="text"
           value={String(Math.max(0, Number(row.working_days) || 0))}
-          className="text-right w-40"
+          className={`${READONLY_FIGURE} w-40`}
           onChange={() => undefined}
           disabled={true}
         />
@@ -671,11 +684,13 @@ const SalarySheetGenerate = ({ user }: any) => {
       headerClass: "text-right w-35",
       cellClass: "text-right",
       render: (row: SalaryRow) => (
+        // `text`, not `number`: a number input cannot show a grouped figure,
+        // and this one is disabled anyway, so nothing is typed into it.
         <InputElement
-          type="number"
-          value={row.monthly_basic_salary}
-          className="text-right w-24 !md:w-20"
-          onChange={(e) => handleInputChange(row.id, "monthly_basic_salary", e.target.value)}
+          type="text"
+          value={thousandSeparator(Number(row.monthly_basic_salary) || 0)}
+          className={`${READONLY_FIGURE} w-24 !md:w-20`}
+          onChange={() => undefined}
           disabled={true}
         />
       ),
@@ -687,11 +702,11 @@ const SalarySheetGenerate = ({ user }: any) => {
       cellClass: "text-right",
       render: (row: SalaryRow) => (
         <InputElement
-          type="number"
-          value={proratedBasicSalary(row)}
-          className="text-right w-24 !md:w-20"
-          onChange={(e) => handleInputChange(row.id, "basic_salary", e.target.value)}
-          disabled={true} 
+          type="text"
+          value={thousandSeparator(proratedBasicSalary(row))}
+          className={`${READONLY_FIGURE} w-24 !md:w-20`}
+          onChange={() => undefined}
+          disabled={true}
         />
       ),
     },
@@ -704,10 +719,10 @@ const SalarySheetGenerate = ({ user }: any) => {
           cellClass: "text-right",
           render: (row: SalaryRow) => (
             <InputElement
-              type="number"
-              value={proratedOtherAllowance(row)}
-              className="text-right w-24 !md:w-20"
-              onChange={(e) => handleInputChange(row.id, "others_allowance", e.target.value)}
+              type="text"
+              value={thousandSeparator(proratedOtherAllowance(row))}
+              className={`${READONLY_FIGURE} w-24 !md:w-20`}
+              onChange={() => undefined}
               disabled={true}
             />
           ),
@@ -723,8 +738,8 @@ const SalarySheetGenerate = ({ user }: any) => {
           render: (row: SalaryRow) => (
             <InputElement
               type="text"
-              value={String(Number(row.ot_rate || 0))}
-              className="text-right w-24 !md:w-20"
+              value={thousandSeparator(Number(row.ot_rate || 0))}
+              className={`${READONLY_FIGURE} w-24 !md:w-20`}
               onChange={() => undefined}
               disabled={true}
             />
