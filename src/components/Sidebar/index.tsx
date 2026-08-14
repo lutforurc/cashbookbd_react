@@ -1593,7 +1593,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {/* Godown Stock */}
-                          {hasPermission(permissions, 'product.stock.view') && (
+                          {hasPermission(permissions, 'godown.stock') && (
                             <li style={subSlot('reports', 'report_godown_stock')}>
                               <NavLink
                                 to={routes.report_godown_stock}

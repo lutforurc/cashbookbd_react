@@ -616,7 +616,10 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view', 'imei.stock']} loading={permissionsLoading} />}>
               <Route path={routes.report_imei_stock} element={<ImeiStock />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view']} loading={permissionsLoading} />}>
+            {/* Its own permission, not product.stock.view -- that one is held by
+                almost everybody, so the report opened for people the menu had
+                already decided not to offer it to. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['godown.stock']} loading={permissionsLoading} />}>
               <Route path={routes.report_godown_stock} element={<GodownStockReport user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create', 'product.stock.view']} loading={permissionsLoading} />}>
