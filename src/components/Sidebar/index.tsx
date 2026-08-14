@@ -1748,7 +1748,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Product Tracking
+                                Tracking
                               </NavLink>
                             </li>
                           )}
@@ -1761,7 +1761,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Product Statement
+                                Statement
                               </NavLink>
                             </li>
                           )}
@@ -1774,7 +1774,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Product Receivable / Payable
+                                Receivable & Payable
                               </NavLink>
                             </li>
                           )}
