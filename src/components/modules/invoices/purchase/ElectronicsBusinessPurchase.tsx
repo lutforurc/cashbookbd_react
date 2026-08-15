@@ -609,7 +609,7 @@ const ElectronicsBusinessPurchase = () => {
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Electronics Purchase Invoice" screen="purchase.electronics" />
+        <HelmetTitle title="Purchase Invoice" screen="purchase.electronics" />
       </div>
       <div className="text-center font-bold">
         {/* <span className="block text-red-500">(Not Ready)</span> */}
