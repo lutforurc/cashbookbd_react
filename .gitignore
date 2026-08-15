@@ -27,3 +27,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Word writes an owner file beside any document it has open, and deletes it on
+# close. It is a lock, not content -- committing one leaves a stale lock in the
+# repository for everyone who checks it out.
+~$*
