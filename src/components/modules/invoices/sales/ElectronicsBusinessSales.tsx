@@ -881,7 +881,7 @@ const ElectronicsBusinessSales = () => {
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Installment Sales Invoice" screen="sales.electronics" />
+        <HelmetTitle title="Sales Invoice" screen="sales.electronics" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         {sales.isLoading ? <Loader /> : null}
@@ -1084,8 +1084,10 @@ const ElectronicsBusinessSales = () => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     setTimeout(() => {
+                      // `#products` -- the box is `product`, so this has been
+                      // finding nothing and leaving the cursor in Notes.
                       const input = document.querySelector(
-                        '#products',
+                        '#product',
                       ) as HTMLInputElement | null;
                       if (input) input.focus();
                       if (input) input.select();
@@ -1190,8 +1192,10 @@ const ElectronicsBusinessSales = () => {
               <div>
                 <label htmlFor="">Select Product</label>
                 <ProductDropdown
+                  id="product"
+                  name="product"
                   onSelect={productSelectHandler}
-                  onKeyDown={(e) => handleInputKeyDown(e, 'bag')}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'warehouse')}
                   defaultValue={
                     productData.product_name && productData.product
                       ? {
@@ -1215,6 +1219,7 @@ const ElectronicsBusinessSales = () => {
                 <label htmlFor="">Select Warehouse</label>
                 {warehouse.isLoading === true ? <Loader /> : ''}
                 <WarehouseDropdown
+                  id="warehouse"
                   onChange={handleWarehouseChange}
                   className="w-60 font-medium text-sm p-2 h-9"
                   warehouseDdl={warehouseDdlData}
@@ -1268,7 +1273,7 @@ const ElectronicsBusinessSales = () => {
                   label="Enter Price"
                   className="py-1 w-full"
                   onChange={handleProductChange}
-                // onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
                 />
                 <span className="absolute top-8 right-3 z-50">{lineTotal}</span>
               </div>

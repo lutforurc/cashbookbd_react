@@ -50,8 +50,10 @@ const ProductDropdown: React.FC<DropdownProps> = ({
   onKeyDown,
   className,
 }) => {
-  const selectRef = useRef(null); 
+  const selectRef = useRef(null);
   const [isSelected, setIsSelected] = React.useState(false);
+  // Read inside a key handler, where a state value would be a render behind.
+  const isMenuOpenRef = useRef(false);
   const [isControlFocused, setIsControlFocused] = React.useState(false);
   const [internalSelectedOption, setInternalSelectedOption] = React.useState<OptionType | null>(
     value ?? defaultValue ?? null,
@@ -70,6 +72,31 @@ const ProductDropdown: React.FC<DropdownProps> = ({
   React.useEffect(() => {
     setInternalSelectedOption(value ?? defaultValue ?? null);
   }, [value, defaultValue]);
+
+  /**
+   * Enter belongs to the open list, not to the field after it.
+   *
+   * react-select calls this handler first and then checks the event: the
+   * moment it sees defaultPrevented it drops its own Enter handling and never
+   * selects the highlighted product. Every caller here passes
+   * handleInputKeyDown, whose first act on Enter is preventDefault() so it can
+   * move focus on -- so typing a name, arrowing to the product and pressing
+   * Enter closed the list with nothing chosen.
+   *
+   * With the list open the caller's handler is held back a tick, which lets
+   * react-select commit the selection on this same event before focus leaves.
+   * Its own move is already deferred, so nothing about the jump changes. With
+   * the list closed there is nothing to select and Enter passes straight
+   * through, as it always did.
+   */
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && isMenuOpenRef.current) {
+      window.setTimeout(() => onKeyDown?.(event), 0);
+      return;
+    }
+
+    onKeyDown?.(event);
+  };
 
   const loadOptions = async (inputValue: string, callback: (options: OptionType[]) => void) => {
     if (inputValue.length >= 3) {
@@ -216,11 +243,17 @@ const ProductDropdown: React.FC<DropdownProps> = ({
           setInternalSelectedOption(selected || null);
           onSelect(selected || null);
         }}
-        onMenuOpen={() => setIsSelected(true)}
-        onMenuClose={() => setIsSelected(false)}
+        onMenuOpen={() => {
+          isMenuOpenRef.current = true;
+          setIsSelected(true);
+        }}
+        onMenuClose={() => {
+          isMenuOpenRef.current = false;
+          setIsSelected(false);
+        }}
         onFocus={() => setIsControlFocused(true)}
         onBlur={() => setIsControlFocused(false)}
-        onKeyDown={onKeyDown}
+        onKeyDown={handleKeyDown}
         getOptionLabel={(option) => option.label}
         formatOptionLabel={(option) => (
           <div>
