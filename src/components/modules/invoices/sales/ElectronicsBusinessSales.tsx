@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FIELD_CHECKBOX } from '../../../../theme/fieldStyles';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
+import ToggleSwitch from '../../../utils/utils-functions/ToggleSwitch';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
@@ -706,8 +706,7 @@ const ElectronicsBusinessSales = () => {
     setUpdateId(productIndex);
   };
 
-  const handleEarlyPayment = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
+  const handleEarlyPayment = (checked: boolean) => {
     setIsEarlyPayment(checked);
 
     if (checked) {
@@ -732,9 +731,8 @@ const ElectronicsBusinessSales = () => {
     }
   };
 
-  // Handle installment checkbox change
-  const handleInstallmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
+  // Handle installment toggle change
+  const handleInstallmentChange = (checked: boolean) => {
     setIsInstallment(checked);
 
     if (checked) {
@@ -913,40 +911,16 @@ const ElectronicsBusinessSales = () => {
                 </div>
               </div>
               <div>
+                {/* The switch the branch settings use, rather than the
+                    hand-drawn tick box this screen carried -- a box with its
+                    own blues, its own hover ring and an inline SVG check,
+                    which matched nothing else in the app. */}
                 <div className="mt-8 ml-0 flex">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isInstallment}
-                      onChange={handleInstallmentChange}
-                      className="hidden"
-                      aria-label="Enable installment sale"
-                    />
-                    <span
-                      className={`relative inline-block w-6 h-6 mr-2 rounded border-2 transition-all duration-200
-                                                ${isInstallment ? 'bg-blue-500 border-blue-500 dark:bg-blue-600 dark:border-blue-600' : 'bg-white border-gray-300 dark:bg-gray-700 dark:border-gray-600'}
-                                                hover:border-blue-400 dark:hover:border-blue-500 focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-600`}
-                    >
-                      {isInstallment && (
-                        <svg
-                          className="absolute w-5 h-5 text-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          strokeWidth="2"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      )}
-                    </span>
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">
-                      Installment Sale
-                    </span>
-                  </label>
+                  <ToggleSwitch
+                    label="Installment Sale"
+                    checked={isInstallment}
+                    onChange={handleInstallmentChange}
+                  />
                 </div>
                 {showInstallmentPopup && (
                   <div className="fixed inset-0 bg-opacity-50 flex mt-50 items-start justify-center z-50">
@@ -989,18 +963,11 @@ const ElectronicsBusinessSales = () => {
                           className="py-1 w-full"
                           onChange={handleInstallmentDataChange}
                         />
-                        {/* isEarlyPayment, setIsEarlyPayment */}
-                        <div className="grid grid-cols-1 gap-1">
-                          <label className="dark:text-white">
-                            {' '}
-                            Early Payment{' '}
-                          </label>
-                          <input
-                            type="checkbox"
+                        <div className="flex items-end pb-1">
+                          <ToggleSwitch
+                            label="Early Payment"
                             checked={isEarlyPayment}
                             onChange={handleEarlyPayment}
-                            className={FIELD_CHECKBOX}
-                            aria-label="Enable installment sale"
                           />
                         </div>
                         {isEarlyPayment && (
