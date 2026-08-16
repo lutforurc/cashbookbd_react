@@ -25,9 +25,11 @@ import {
  * reworded, and what a saved arrangement refers to.
  */
 export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> = {
+  // My Tasks is not here: it lives in the user dropdown beside My Profile, and
+  // this list must name exactly what the sidebar renders or the arrange panel
+  // offers a row that cannot be moved.
   'dashboard': [
     { id: 'dashboard', title: "Dashboard" },
-    { id: 'my_tasks', title: "My Tasks" },
   ],
   'transaction': [
     { id: 'cash_receive', title: "Cash Received" },
@@ -636,17 +638,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             }
                           >
                             Dashboard
-                          </NavLink>
-                        </li>
-                        <li style={subSlot('dashboard', 'my_tasks')}>
-                          <NavLink
-                            to={routes.my_tasks}
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            My Tasks
                           </NavLink>
                         </li>
                       </ul>

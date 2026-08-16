@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
 import UserOne from '../../images/user/user-demo.png';
 import { useDispatch, useSelector } from 'react-redux';
@@ -7,8 +7,9 @@ import { logout } from '../../features/authReducer';
 import DarkModeSwitcher from './DarkModeSwitcher';
 import useColorMode from '../../hooks/useColorMode';
 import routes from '../services/appRoutes';
+import httpService from '../services/httpService';
 import { hasPermission } from '../utils/permissionChecker';
-import { FiGrid } from 'react-icons/fi';
+import { FiGrid, FiCheckSquare } from 'react-icons/fi';
 
 
 const DropdownUser = () => {
@@ -20,6 +21,34 @@ const DropdownUser = () => {
   const dayclose = useSelector((s: any) => s.dayclose);
   const [colorMode] = useColorMode();
   const permissions = settings?.data?.permissions ?? [];
+  const { pathname } = useLocation();
+  /**
+   * Tasks somebody else put on this user's board that they have not opened yet.
+   *
+   * Followed My Tasks here out of the sidebar. Re-asked on every navigation
+   * rather than on a timer -- moving around the app is when the count could have
+   * changed, and it costs one small query.
+   */
+  const [newAssignedCount, setNewAssignedCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    httpService
+      .get('/user-todos/summary')
+      .then((res) => {
+        if (cancelled) return;
+        const payload = res.data?.data?.data ?? res.data?.data;
+        setNewAssignedCount(Number(payload?.assigned_new ?? 0));
+      })
+      // A badge is not worth a toast, and the endpoint is missing on any
+      // deployment where the API has not been updated yet.
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname]);
 
 
   useEffect(() => {
@@ -52,12 +81,27 @@ const DropdownUser = () => {
           </span>
           <span className="block text-xs text-black dark:text-white">Trx. Dt. {settings?.data?.trx_dt}</span>
         </span>
-        <span className="h-9 w-9 overflow-hidden rounded-full">
-          <img
-            src={me.profile_photo || UserOne}
-            alt="User"
-            className="h-full w-full object-cover"
-          />
+        {/* The count rides on the avatar, not only on the menu row inside.
+            My Tasks now lives behind a closed dropdown, and a badge nobody can
+            see until they open the thing it is telling them to open says
+            nothing at all. */}
+        <span className="relative h-9 w-9 shrink-0">
+          <span className="block h-9 w-9 overflow-hidden rounded-full">
+            <img
+              src={me.profile_photo || UserOne}
+              alt="User"
+              className="h-full w-full object-cover"
+            />
+          </span>
+
+          {newAssignedCount > 0 ? (
+            <span
+              className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full border border-white bg-danger px-1 text-[10px] font-bold leading-none text-white dark:border-boxdark"
+              title={`${newAssignedCount} new task${newAssignedCount > 1 ? 's' : ''} assigned to you`}
+            >
+              {newAssignedCount}
+            </span>
+          ) : null}
         </span>
 
         <svg
@@ -90,6 +134,26 @@ const DropdownUser = () => {
               >
                 <FiGrid size={22} />
                 Dashboard
+              </Link>
+            </li>
+            {/* Above My Profile: it is the one row here somebody opens several
+                times a day, and everything under it is settings. */}
+            <li>
+              <Link
+                to={routes.my_tasks}
+                onClick={() => setDropdownOpen(false)}
+                className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+              >
+                <FiCheckSquare size={22} />
+                My Tasks
+                {newAssignedCount > 0 ? (
+                  <span
+                    className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1.5 text-[11px] font-bold text-white"
+                    title={`${newAssignedCount} new task${newAssignedCount > 1 ? 's' : ''} assigned to you`}
+                  >
+                    {newAssignedCount}
+                  </span>
+                ) : null}
               </Link>
             </li>
             <li>

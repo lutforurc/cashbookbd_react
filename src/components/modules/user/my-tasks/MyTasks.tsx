@@ -1,25 +1,50 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
-import { FiPlus, FiTrash2, FiBookmark, FiCheck, FiClock, FiEdit2, FiSave, FiX } from 'react-icons/fi';
+import {
+  FiPlus,
+  FiTrash2,
+  FiBookmark,
+  FiCheck,
+  FiClock,
+  FiEdit2,
+  FiSave,
+  FiX,
+  FiPlay,
+} from 'react-icons/fi';
 import Loader from '../../../../common/Loader';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
 import InputDatePicker from '../../../utils/fields/DatePicker';
+import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
 import httpService from '../../../services/httpService';
 
+interface Person {
+  id: number;
+  name: string;
+}
+
+type TodoStatus = 'pending' | 'in_progress' | 'done';
+
 interface Todo {
   id: number;
+  user_id: number;
   title: string;
   description?: string;
   due_date: string;
   color: string;
   is_pinned: boolean;
   is_completed: boolean;
+  status: TodoStatus;
   reminder_time?: string;
+  assigned_to?: number | null;
+  is_assigned?: boolean;
+  assignee?: Person | null;
+  assigner?: Person | null;
 }
 
 interface TodoBuckets {
@@ -31,6 +56,35 @@ interface TodoBuckets {
 const EMPTY_BUCKETS: TodoBuckets = { overdue: [], today: [], upcoming: [] };
 
 const COLORS = ['#FFE5B4', '#B4E5FF', '#FFB4E5', '#E5FFB4', '#FFE5D9', '#D9E5FF'];
+
+/**
+ * Which slice of the board is on show.
+ *
+ * A private scratchpad and a queue of work other people put there are two
+ * different things to look at, even though they share a screen.
+ */
+const FILTERS: { key: string; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'mine', label: 'My own' },
+  { key: 'to_me', label: 'Assigned to me' },
+  { key: 'by_me', label: 'I assigned' },
+];
+
+/** What each state looks like, and what the button that leaves it says. */
+const STATUS_STEPS: Record<TodoStatus, { label: string; next: TodoStatus; nextLabel: string }> = {
+  pending: { label: 'Pending', next: 'in_progress', nextLabel: 'Start working' },
+  in_progress: { label: 'In Progress', next: 'done', nextLabel: 'Mark done' },
+  done: { label: 'Done', next: 'pending', nextLabel: 'Reopen' },
+};
+
+/** Two letters standing in for a face the app does not have. */
+const initials = (name?: string): string =>
+  (name ?? '')
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('') || '?';
 
 /**
  * The date the picker holds, in the `Y-m-d` the API stores.
@@ -174,16 +228,83 @@ const NOTE_3D_CSS = `
   }
 `;
 
+/**
+ * A button on a note.
+ *
+ * The four of them used to be one grey on a 4%-black wash, which over a pastel
+ * card is grey on pastel: fine in a mockup, invisible on a board. Two things
+ * fix it. Each button sits on its own near-white chip with an edge, so it reads
+ * as a control whatever colour the paper under it is; and each carries its
+ * action's colour instead of the same grey, so the row is four different things
+ * before a single icon has been recognised.
+ *
+ * Only the layout and the border *width* live here. Every colour -- background,
+ * text, border -- comes from the tone below, because a base `bg-white` and a
+ * tone's `bg-emerald-600` are both unprefixed utilities and which one wins would
+ * be down to the order Tailwind happens to emit them in.
+ */
 const NOTE_ACTION = [
-  'flex h-6 w-6 items-center justify-center rounded-sm text-gray-600',
-  'bg-black/[0.04] transition-colors hover:bg-black/10 hover:text-gray-900',
+  'flex h-7 w-7 items-center justify-center rounded-md border',
+  'shadow-[0_1px_1px_rgba(0,0,0,0.10)] transition-colors',
   'disabled:cursor-wait disabled:opacity-50',
 ].join(' ');
+
+/**
+ * What each button is made of.
+ *
+ * A resting button is the near-white chip with a coloured icon; hover fills the
+ * chip with that colour. A button standing for a state the note is *already* in
+ * -- started, finished, pinned -- is filled from the start, so the note says how
+ * far along it is without the footer chips being read.
+ *
+ * Fixed scale colours (emerald / amber / sky / rose), not the theme's `primary`
+ * and `success`: the paper is pastel in both themes, so a token that darkens for
+ * the dark board would go muddy here.
+ */
+const NOTE_ACTION_TONE = {
+  /** Pending: nothing has happened yet, and the button starts it. */
+  start:
+    'border-emerald-600/30 bg-white/85 text-emerald-700 hover:border-emerald-600 hover:bg-emerald-600 hover:text-white',
+  /** Under way -- filled blue. The button finishes it. */
+  running: 'border-sky-700/40 bg-sky-600 text-white hover:bg-sky-700',
+  /** Done -- filled green. The button reopens it. */
+  finished: 'border-emerald-700/40 bg-emerald-600 text-white hover:bg-emerald-700',
+  pin: 'border-amber-600/30 bg-white/85 text-amber-700 hover:border-amber-600 hover:bg-amber-500 hover:text-white',
+  pinned: 'border-amber-600/50 bg-amber-500 text-white hover:bg-amber-600',
+  edit: 'border-sky-600/30 bg-white/85 text-sky-700 hover:border-sky-600 hover:bg-sky-600 hover:text-white',
+  remove:
+    'border-rose-600/30 bg-white/85 text-rose-600 hover:border-rose-600 hover:bg-rose-600 hover:text-white',
+} as const;
+
+/**
+ * 14px, not 12px, and drawn heavier.
+ *
+ * Feather's default 2px stroke at 12px square is a few hairlines -- at a glance
+ * the tick, the pencil and the bin are the same grey smudge. The extra 2px and
+ * the heavier stroke are what make them different shapes.
+ */
+const NOTE_ICON = 'h-3.5 w-3.5';
+const NOTE_ICON_STROKE = 2.4;
+
+/** A person's name on a card: initials in a disc, the name beside it. */
+const PersonChip = ({ person, prefix }: { person: Person; prefix: string }) => (
+  <span
+    className="flex max-w-full items-center gap-1 rounded-full bg-black/10 py-0.5 pl-0.5 pr-2 text-[10px] font-semibold text-gray-800"
+    title={`${prefix} ${person.name}`}
+  >
+    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-black/20 text-[8px] font-bold text-gray-800">
+      {initials(person.name)}
+    </span>
+    <span className="truncate">{person.name}</span>
+  </span>
+);
 
 interface TodoCardProps {
   todo: Todo;
   busy: boolean;
-  onToggleComplete: (todo: Todo) => void;
+  /** Whether this user wrote the task, which decides what they may change. */
+  isAuthor: boolean;
+  onAdvanceStatus: (todo: Todo) => void;
   onTogglePin: (todo: Todo) => void;
   onEdit: (todo: Todo) => void;
   onDelete: (todo: Todo) => void;
@@ -217,35 +338,50 @@ interface TodoCardProps {
 const TodoCard = memo(({
   todo,
   busy,
-  onToggleComplete,
+  isAuthor,
+  onAdvanceStatus,
   onTogglePin,
   onEdit,
   onDelete,
 }: TodoCardProps) => {
-  const isOverdue = !todo.is_completed && dayjs(todo.due_date).isBefore(dayjs().startOf('day'));
+  const status = todo.status ?? (todo.is_completed ? 'done' : 'pending');
+  const isDone = status === 'done';
+  const isOverdue = !isDone && dayjs(todo.due_date).isBefore(dayjs().startOf('day'));
+  const step = STATUS_STEPS[status] ?? STATUS_STEPS.pending;
+
+  // Whose card this is, said once: work you gave away names the person who has
+  // it, work given to you names the person who asked.
+  const person = isAuthor ? todo.assignee : todo.assigner;
+  const personPrefix = isAuthor ? 'Assigned to' : 'From';
 
   return (
     <article
       className={`task-note group relative flex h-full min-h-[5.5rem] flex-col overflow-hidden rounded-sm px-3.5 pb-2.5 pt-4 ${
-        todo.is_completed ? 'saturate-50' : ''
+        isDone ? 'saturate-50' : ''
       }`}
       style={notePaper(todo.color)}
     >
-      {/* The note's own colour, deepened -- one rule for all six swatches. */}
-      <span className="absolute inset-x-0 top-0 h-1 bg-black/15" />
+      {/* The note's own colour, deepened -- one rule for all six swatches.
+          A task somebody else is involved in wears the brand blue instead, so
+          shared work is told apart from a private note at a glance. */}
+      <span
+        className={`absolute inset-x-0 top-0 h-1 ${todo.is_assigned ? 'bg-primary' : 'bg-black/15'}`}
+      />
 
+      {/* Amber, the same as the pin button below, so the badge and the button
+          that set it are visibly the same thing. */}
       {todo.is_pinned ? (
         <span
-          className="absolute right-3 top-3.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/15 text-gray-800"
+          className="absolute right-3 top-3.5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-white shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
           title="Pinned"
         >
-          <FiBookmark className="h-3 w-3" />
+          <FiBookmark className="h-3 w-3" strokeWidth={NOTE_ICON_STROKE} fill="currentColor" />
         </span>
       ) : null}
 
       <h3
         className={`line-clamp-2 pr-6 text-sm font-semibold leading-snug ${
-          todo.is_completed ? 'text-gray-500 line-through decoration-gray-500/60' : 'text-gray-900'
+          isDone ? 'text-gray-500 line-through decoration-gray-500/60' : 'text-gray-900'
         }`}
         title={todo.title}
       >
@@ -258,66 +394,138 @@ const TodoCard = memo(({
         </p>
       ) : null}
 
-      <div className="mt-auto flex items-center justify-between gap-2 pt-2.5">
-        <div className="flex items-center gap-1 text-[10px] font-medium">
+      {person ? (
+        <div className="mt-1.5 flex">
+          <PersonChip person={person} prefix={personPrefix} />
+        </div>
+      ) : null}
+
+      {/* Two weights of chip, and the difference is the point. The day and the
+          hour are the quiet ones: a 10%-black wash under near-black type. The
+          state is the loud one -- solid colour, white type -- because a tint at
+          15% over pastel paper lands within a shade or two of the paper itself,
+          which is what made "Done" and "In Progress" hard to pick out. It wears
+          the same colour as the button that set it. */}
+      {/* `whitespace-nowrap` on every chip, and the wrapping done by the rows
+          instead. Without it a narrow card breaks the text *inside* a chip --
+          "16 Aug / 2026", "IN / PROGRESS" -- which is two lines of nonsense
+          where the honest answer is to move a whole chip down. The footer wraps
+          the same way: chips first, buttons under them, once there is no room
+          for both side by side. */}
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-1 text-[10px] font-semibold">
           <span
-            className={`rounded-sm px-1.5 py-0.5 ${
-              isOverdue ? 'bg-danger/15 text-danger' : 'bg-black/[0.07] text-gray-700'
+            className={`whitespace-nowrap rounded-sm px-1.5 py-0.5 ${
+              isOverdue
+                ? 'bg-danger text-white shadow-[0_1px_1px_rgba(0,0,0,0.2)]'
+                : 'bg-black/10 text-gray-800'
             }`}
           >
             {dayjs(todo.due_date).format('DD MMM YYYY')}
           </span>
 
           {todo.reminder_time ? (
-            <span className="flex items-center gap-1 rounded-sm bg-black/[0.07] px-1.5 py-0.5 text-gray-700">
-              <FiClock className="h-3 w-3" />
+            <span className="flex items-center gap-1 whitespace-nowrap rounded-sm bg-black/10 px-1.5 py-0.5 text-gray-800">
+              <FiClock className="h-3 w-3" strokeWidth={NOTE_ICON_STROKE} />
               {dayjs(todo.reminder_time).format('hh:mm A')}
+            </span>
+          ) : null}
+
+          {/* Pending is the resting state and says nothing worth the room.
+              Sentence case, not uppercase: "IN PROGRESS" with letter-spacing is
+              half again as wide as "In Progress", and on a half-width card that
+              width is what pushed the footer onto a second line. */}
+          {status !== 'pending' ? (
+            <span
+              className={`flex items-center gap-1 whitespace-nowrap rounded-sm px-1.5 py-0.5 text-white shadow-[0_1px_1px_rgba(0,0,0,0.2)] ${
+                isDone ? 'bg-emerald-600' : 'bg-sky-600'
+              }`}
+            >
+              {/* A filled disc for work under way, a tick for work finished --
+                  so the two chips differ in shape as well as in hue, for
+                  anyone who does not separate green from blue. */}
+              {isDone ? (
+                <FiCheck className="h-2.5 w-2.5" strokeWidth={3.5} />
+              ) : (
+                <span className="h-1.5 w-1.5 rounded-full bg-white/90" />
+              )}
+              {step.label}
             </span>
           ) : null}
         </div>
 
-        {/* Quiet until the note is pointed at, so a wall of them reads as
-            writing rather than as rows of buttons. */}
-        <div className="flex gap-1 opacity-60 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+        {/* No longer dimmed at rest. The dimming was there to keep a wall of
+            notes reading as writing, but a 60%-opacity grey icon on pastel paper
+            is not quiet, it is unreadable. The chips are near-white and only
+            their icon is coloured, which is quiet enough; the colour floods in
+            on hover. */}
+        <div className="flex shrink-0 gap-1.5">
+          {/* One button walks the task forward: start it, finish it, reopen
+              it. Three states need no more than that. */}
           <button
             type="button"
-            onClick={() => onToggleComplete(todo)}
+            onClick={() => onAdvanceStatus(todo)}
             disabled={busy}
-            className={`${NOTE_ACTION} ${todo.is_completed ? 'bg-success/20 text-success' : ''}`}
-            title={todo.is_completed ? 'Mark incomplete' : 'Mark complete'}
+            className={`${NOTE_ACTION} ${
+              isDone
+                ? NOTE_ACTION_TONE.finished
+                : status === 'in_progress'
+                  ? NOTE_ACTION_TONE.running
+                  : NOTE_ACTION_TONE.start
+            }`}
+            title={step.nextLabel}
           >
-            <FiCheck className="h-3 w-3" />
+            {status === 'pending' ? (
+              <FiPlay className={NOTE_ICON} strokeWidth={NOTE_ICON_STROKE} />
+            ) : (
+              <FiCheck className={NOTE_ICON} strokeWidth={3} />
+            )}
           </button>
 
           <button
             type="button"
             onClick={() => onTogglePin(todo)}
             disabled={busy}
-            className={`${NOTE_ACTION} ${todo.is_pinned ? 'bg-black/15 text-gray-900' : ''}`}
+            className={`${NOTE_ACTION} ${
+              todo.is_pinned ? NOTE_ACTION_TONE.pinned : NOTE_ACTION_TONE.pin
+            }`}
             title={todo.is_pinned ? 'Unpin' : 'Pin'}
           >
-            <FiBookmark className="h-3 w-3" />
+            {/* Filled once pinned: a hollow outline and a filled one are told
+                apart at this size, two shades of the same outline are not. */}
+            <FiBookmark
+              className={NOTE_ICON}
+              strokeWidth={NOTE_ICON_STROKE}
+              fill={todo.is_pinned ? 'currentColor' : 'none'}
+            />
           </button>
 
-          <button
-            type="button"
-            onClick={() => onEdit(todo)}
-            disabled={busy}
-            className={NOTE_ACTION}
-            title="Edit"
-          >
-            <FiEdit2 className="h-3 w-3" />
-          </button>
+          {/* What the task *says* belongs to whoever wrote it. The person it
+              was handed to moves it along and pins it, and that is all -- a
+              button that 403s on click is worse than no button. */}
+          {isAuthor ? (
+            <>
+              <button
+                type="button"
+                onClick={() => onEdit(todo)}
+                disabled={busy}
+                className={`${NOTE_ACTION} ${NOTE_ACTION_TONE.edit}`}
+                title="Edit"
+              >
+                <FiEdit2 className={NOTE_ICON} strokeWidth={NOTE_ICON_STROKE} />
+              </button>
 
-          <button
-            type="button"
-            onClick={() => onDelete(todo)}
-            disabled={busy}
-            className={`${NOTE_ACTION} hover:bg-danger hover:text-white`}
-            title="Delete"
-          >
-            <FiTrash2 className="h-3 w-3" />
-          </button>
+              <button
+                type="button"
+                onClick={() => onDelete(todo)}
+                disabled={busy}
+                className={`${NOTE_ACTION} ${NOTE_ACTION_TONE.remove}`}
+                title="Delete"
+              >
+                <FiTrash2 className={NOTE_ICON} strokeWidth={NOTE_ICON_STROKE} />
+              </button>
+            </>
+          ) : null}
         </div>
       </div>
     </article>
@@ -327,6 +535,7 @@ const TodoCard = memo(({
 interface EditTodoModalProps {
   todo: Todo;
   saving: boolean;
+  people: Person[];
   onCancel: () => void;
   onSave: (todo: Todo, changes: Record<string, any>) => void;
 }
@@ -342,10 +551,11 @@ interface EditTodoModalProps {
  * Mounted fresh per note (the caller keys it by id), so the fields simply seed
  * from the row and there is no stale state to reconcile.
  */
-const EditTodoModal = ({ todo, saving, onCancel, onSave }: EditTodoModalProps) => {
+const EditTodoModal = ({ todo, saving, people, onCancel, onSave }: EditTodoModalProps) => {
   const [title, setTitle] = useState(todo.title);
   const [description, setDescription] = useState(todo.description ?? '');
   const [color, setColor] = useState(todo.color);
+  const [assignedTo, setAssignedTo] = useState(String(todo.assigned_to ?? ''));
   // One field again: the day, carrying the reminder's hour when there is one.
   const [dueMoment, setDueMoment] = useState<Date | null>(
     todo.reminder_time
@@ -367,6 +577,7 @@ const EditTodoModal = ({ todo, saving, onCancel, onSave }: EditTodoModalProps) =
       due_date: dueDate,
       color,
       reminder_time: dueTime ? `${dueDate} ${dueTime}:00` : null,
+      assigned_to: assignedTo ? Number(assignedTo) : null,
     });
   };
 
@@ -415,6 +626,17 @@ const EditTodoModal = ({ todo, saving, onCancel, onSave }: EditTodoModalProps) =
             className="h-9 w-full"
           />
 
+          <DropdownCommon
+            id="edit_assigned_to"
+            name="edit_assigned_to"
+            label="Assign to"
+            value={assignedTo}
+            data={[{ id: '', name: 'Myself (personal note)' }, ...people]}
+            onChange={(e) => setAssignedTo(e.target.value)}
+            className="h-9"
+            description="Handing this to somebody else puts it on their board too."
+          />
+
           <div className="flex flex-col text-left">
             <label className={`${FIELD_LABEL} text-sm`}>Colour</label>
             <div className="flex h-9 items-center gap-1.5">
@@ -459,10 +681,12 @@ const EditTodoModal = ({ todo, saving, onCancel, onSave }: EditTodoModalProps) =
   );
 };
 
-interface SectionProps extends Omit<TodoCardProps, 'todo' | 'busy'> {
+interface SectionProps extends Omit<TodoCardProps, 'todo' | 'busy' | 'isAuthor'> {
   title: string;
   items: Todo[];
   busyId: number | null;
+  /** Who is looking, so each card knows whether they wrote it. */
+  meId: number;
   /** Overdue counts in red; everything else in the brand blue. */
   tone?: 'default' | 'danger';
 }
@@ -471,7 +695,7 @@ interface SectionProps extends Omit<TodoCardProps, 'todo' | 'busy'> {
  * Notes are short, so a single column down the middle of a wide screen wasted
  * most of it. Two across from `sm`, three from `xl`.
  */
-const Section = ({ title, items, busyId, tone = 'default', ...handlers }: SectionProps) =>
+const Section = ({ title, items, busyId, meId, tone = 'default', ...handlers }: SectionProps) =>
   items.length === 0 ? null : (
     <div className="mb-9">
       {/* A rule running out from the heading ties the row of notes under it
@@ -494,14 +718,25 @@ const Section = ({ title, items, busyId, tone = 'default', ...handlers }: Sectio
           columns cut each one to a third and they read as table cells. */}
       <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2">
         {items.map((todo) => (
-          <TodoCard key={todo.id} todo={todo} busy={busyId === todo.id} {...handlers} />
+          <TodoCard
+            key={todo.id}
+            todo={todo}
+            busy={busyId === todo.id}
+            isAuthor={Number(todo.user_id) === meId}
+            {...handlers}
+          />
         ))}
       </div>
     </div>
   );
 
 export default function MyTasks() {
+  const meId = Number(useSelector((state: any) => state.auth?.me?.id) || 0);
+
   const [todos, setTodos] = useState<TodoBuckets>(EMPTY_BUCKETS);
+  /** Everyone in the company a task can be handed to. */
+  const [people, setPeople] = useState<Person[]>([]);
+  const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   /** The one note a request is in flight for -- only its buttons go quiet. */
@@ -514,12 +749,25 @@ export default function MyTasks() {
   const [savingEdit, setSavingEdit] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
+  const [newAssignee, setNewAssignee] = useState('');
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
   // Opens on today at midnight -- the day filled in, the reminder left off.
   const [selectedDate, setSelectedDate] = useState<Date | null>(dayjs().startOf('day').toDate());
 
+  // Refetched on a filter change: which rows qualify is the server's answer,
+  // not something to work out again on this side from a list it did not send.
   useEffect(() => {
     fetchTodos();
+  }, [filter]);
+
+  useEffect(() => {
+    httpService
+      .get('/user-todos/assignees')
+      .then((res) => {
+        const payload = res.data?.data;
+        setPeople(Array.isArray(payload) ? payload : (payload?.data ?? []));
+      })
+      .catch(() => setPeople([]));
   }, []);
 
   /**
@@ -530,7 +778,7 @@ export default function MyTasks() {
   const fetchTodos = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const res = await httpService.get('/user-todos');
+      const res = await httpService.get('/user-todos', { params: { filter } });
       // The API envelope nests the payload one level deeper
       // ({ data: { data: {...}, transaction_date } }); tolerate a flat shape
       // too so either form renders.
@@ -550,7 +798,7 @@ export default function MyTasks() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filter]);
 
   const addTodo = async () => {
     const dueDate = dateToString(selectedDate);
@@ -568,9 +816,17 @@ export default function MyTasks() {
         // The two halves of the one field: the day is the note's date, and the
         // hour -- if the picker was left off midnight -- is when it nudges.
         reminder_time: dueTime ? `${dueDate} ${dueTime}:00` : null,
+        assigned_to: newAssignee ? Number(newAssignee) : null,
       });
+
+      if (newAssignee) {
+        const person = people.find((p) => String(p.id) === newAssignee);
+        toast.success(`Task assigned to ${person?.name ?? 'them'}.`);
+      }
+
       setNewTitle('');
       setNewDescription('');
+      setNewAssignee('');
       setSelectedColor(COLORS[0]);
       setSelectedDate(dayjs().startOf('day').toDate());
       await fetchTodos({ silent: true });
@@ -630,8 +886,20 @@ export default function MyTasks() {
     [patchTodo],
   );
 
-  const toggleComplete = useCallback(
-    (todo: Todo) => patchTodo(todo, { is_completed: !todo.is_completed }),
+  /**
+   * Pending → In Progress → Done → Pending.
+   *
+   * One button rather than three: a task only ever moves to the next thing, and
+   * the one case for going backwards -- reopening something finished -- is the
+   * step after Done.
+   */
+  const advanceStatus = useCallback(
+    (todo: Todo) => {
+      const status = todo.status ?? (todo.is_completed ? 'done' : 'pending');
+      const next = (STATUS_STEPS[status] ?? STATUS_STEPS.pending).next;
+
+      return patchTodo(todo, { status: next, is_completed: next === 'done' });
+    },
     [patchTodo],
   );
 
@@ -684,12 +952,12 @@ export default function MyTasks() {
   // One stable object, so a card's props only change when the card does.
   const cardHandlers = useMemo(
     () => ({
-      onToggleComplete: toggleComplete,
+      onAdvanceStatus: advanceStatus,
       onTogglePin: togglePin,
       onEdit: openEditor,
       onDelete: askDelete,
     }),
-    [toggleComplete, togglePin, openEditor, askDelete],
+    [advanceStatus, togglePin, openEditor, askDelete],
   );
 
   return (
@@ -738,7 +1006,7 @@ export default function MyTasks() {
               />
             </div>
 
-            <div className="flex flex-col text-left md:col-span-8">
+            <div className="flex flex-col text-left md:col-span-5">
               <label className={`${FIELD_LABEL} text-sm`} htmlFor="description">
                 Description
               </label>
@@ -750,6 +1018,18 @@ export default function MyTasks() {
                 onChange={(e) => setNewDescription(e.target.value)}
                 placeholder="Anything worth remembering about it (optional)"
                 className={`${FIELD_TEXTAREA} w-full resize-y px-3 py-2 text-sm`}
+              />
+            </div>
+
+            <div className="md:col-span-3">
+              <DropdownCommon
+                id="assigned_to"
+                name="assigned_to"
+                label="Assign to"
+                value={newAssignee}
+                data={[{ id: '', name: 'Myself (personal note)' }, ...people]}
+                onChange={(e) => setNewAssignee(e.target.value)}
+                className="h-9"
               />
             </div>
 
@@ -786,6 +1066,25 @@ export default function MyTasks() {
           </div>
         </div>
 
+        {/* A private scratchpad and a queue of work other people put there are
+            two different things to look at. */}
+        <div className="mb-5 flex flex-wrap gap-2">
+          {FILTERS.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              onClick={() => setFilter(option.key)}
+              className={`rounded-sm border px-3 py-1 text-xs font-medium transition-colors ${
+                filter === option.key
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-stroke bg-white text-body hover:border-primary hover:text-primary dark:border-strokedark dark:bg-boxdark dark:text-bodydark'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
         {loading ? (
           <Loader />
         ) : (
@@ -795,16 +1094,31 @@ export default function MyTasks() {
               title="Overdue"
               items={todos.overdue}
               busyId={busyId}
+              meId={meId}
               tone="danger"
               {...cardHandlers}
             />
-            <Section title="Today" items={todos.today} busyId={busyId} {...cardHandlers} />
-            <Section title="Upcoming" items={todos.upcoming} busyId={busyId} {...cardHandlers} />
+            <Section
+              title="Today"
+              items={todos.today}
+              busyId={busyId}
+              meId={meId}
+              {...cardHandlers}
+            />
+            <Section
+              title="Upcoming"
+              items={todos.upcoming}
+              busyId={busyId}
+              meId={meId}
+              {...cardHandlers}
+            />
 
             {isEmpty && (
               <div className="rounded-sm border border-dashed border-stroke py-14 text-center dark:border-strokedark">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  No tasks yet. Add one above to get started.
+                  {filter === 'all'
+                    ? 'No tasks yet. Add one above to get started.'
+                    : 'Nothing here under this filter.'}
                 </p>
               </div>
             )}
@@ -818,6 +1132,7 @@ export default function MyTasks() {
           key={todoToEdit.id}
           todo={todoToEdit}
           saving={savingEdit}
+          people={people}
           onCancel={() => setTodoToEdit(null)}
           onSave={saveEdit}
         />
