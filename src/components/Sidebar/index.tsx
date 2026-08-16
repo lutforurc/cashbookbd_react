@@ -213,6 +213,7 @@ export const SIDEBAR_MENUS = [
   { id: 'reseller', title: 'Reseller Dashboard' },
   { id: 'transaction', title: 'Transaction' },
   { id: 'invoice', title: 'Invoice' },
+  { id: 'labour_items', title: 'Labour Items' },
   { id: 'branch-transfer', title: 'Branch Transfer' },
   { id: 'reports', title: 'Reports' },
   { id: 'product_tracking', title: 'Product Tracking' },
