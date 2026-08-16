@@ -14,6 +14,7 @@ export const MENU_PERMISSIONS = {
     'product.received.create',
   ],
   invoice: ['purchase.create', 'sales.create', 'labour.invoice.create'],
+  labour_items: ['labour.category.view', 'labour.item.view'],
   reports: [
     'cashbook.view',
     'installment.create',

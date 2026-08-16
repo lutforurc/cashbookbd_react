@@ -126,6 +126,10 @@ import FestivalBonusGenerate from './components/modules/hrms/bonus/FestivalBonus
 import FestivalBonus from './components/modules/hrms/bonus/FestivalBonus';
 import FestivalBonusUpdate from './components/modules/hrms/bonus/FestivalBonusUpdate';
 import EmployeeLoan from './components/modules/hrms/loan/EmployeeLoan';
+import LabourCategoryList from './components/modules/labour/LabourCategoryList';
+import LabourCategoryAdd from './components/modules/labour/LabourCategoryAdd';
+import LabourItemList from './components/modules/labour/LabourItemList';
+import LabourItemAdd from './components/modules/labour/LabourItemAdd';
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
@@ -475,6 +479,16 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['employee.loan.ledger.view', 'hrm.loan.create']} loading={permissionsLoading} />}>
               <Route path={routes.employee_loan_balance} element={<LoanBalance user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['labour.category.view']} loading={permissionsLoading} />}>
+              <Route path={routes.labour_category} element={<LabourCategoryList />} />
+              <Route path={routes.labour_category_create} element={<LabourCategoryAdd />} />
+              <Route path={`${routes.labour_category_edit}/:id`} element={<LabourCategoryAdd />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['labour.item.view']} loading={permissionsLoading} />}>
+              <Route path={routes.labour_item} element={<LabourItemList />} />
+              <Route path={routes.labour_item_create} element={<LabourItemAdd />} />
+              <Route path={`${routes.labour_item_edit}/:id`} element={<LabourItemAdd />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
               <Route path={routes.journal} element={<Journal />} />

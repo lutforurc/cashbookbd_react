@@ -86,10 +86,12 @@ import subscriptionSlice from './components/modules/subscription/subscriptionSli
 import companySlice from './components/modules/company/companySlice';
 import resellerSlice from './components/modules/reseller/resellerSlice';
 import attendanceSlice from './components/modules/hrms/attendance/attendanceSlice';
+import labourSetupSlice from './components/modules/labour/labourSetupSlice';
 
 
 const store = configureStore({
   reducer: {
+    labourSetup: labourSetupSlice,
     auth: authReducer,
     customerAuth: customerAuthReducer,
     users: userReducer,

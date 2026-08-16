@@ -815,3 +815,16 @@ export const API_UNIT_SALE_INSTALLMENT_UPDATE_URL = `${API_BASE_URL}/real-estate
 
 
 
+
+// Labour setup — the categories and items a labour bill is built from.
+export const API_LABOUR_CATEGORY_LIST_URL = `${API_BASE_URL}/labour-setup/categories`;
+export const API_LABOUR_CATEGORY_DDL_URL = `${API_BASE_URL}/labour-setup/categories/ddl`;
+export const API_LABOUR_CATEGORY_STORE_URL = `${API_BASE_URL}/labour-setup/categories/store`;
+export const API_LABOUR_CATEGORY_UPDATE_URL = `${API_BASE_URL}/labour-setup/categories/update`;
+export const API_LABOUR_CATEGORY_DELETE_URL = `${API_BASE_URL}/labour-setup/categories/delete`;
+export const API_LABOUR_CATEGORY_STATUS_URL = `${API_BASE_URL}/labour-setup/categories/status`;
+export const API_LABOUR_ITEM_LIST_URL = `${API_BASE_URL}/labour-setup/items`;
+export const API_LABOUR_ITEM_STORE_URL = `${API_BASE_URL}/labour-setup/items/store`;
+export const API_LABOUR_ITEM_UPDATE_URL = `${API_BASE_URL}/labour-setup/items/update`;
+export const API_LABOUR_ITEM_DELETE_URL = `${API_BASE_URL}/labour-setup/items/delete`;
+export const API_LABOUR_ITEM_STATUS_URL = `${API_BASE_URL}/labour-setup/items/status`;
