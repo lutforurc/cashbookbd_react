@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
@@ -12,6 +12,7 @@ import {
   FiSave,
   FiX,
   FiPlay,
+  FiSearch,
 } from 'react-icons/fi';
 import Loader from '../../../../common/Loader';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -48,12 +49,13 @@ interface Todo {
 }
 
 interface TodoBuckets {
-  overdue: Todo[];
   today: Todo[];
   upcoming: Todo[];
+  /** Filled only by a date-range search; the board is empty while it is not. */
+  results: Todo[];
 }
 
-const EMPTY_BUCKETS: TodoBuckets = { overdue: [], today: [], upcoming: [] };
+const EMPTY_BUCKETS: TodoBuckets = { today: [], upcoming: [], results: [] };
 
 const COLORS = ['#FFE5B4', '#B4E5FF', '#FFB4E5', '#E5FFB4', '#FFE5D9', '#D9E5FF'];
 
@@ -124,15 +126,15 @@ const timeToString = (date: Date | null): string => {
 
 /** Walk every bucket, leaving each note where it sits. */
 const mapBuckets = (buckets: TodoBuckets, fn: (todo: Todo) => Todo): TodoBuckets => ({
-  overdue: buckets.overdue.map(fn),
   today: buckets.today.map(fn),
   upcoming: buckets.upcoming.map(fn),
+  results: buckets.results.map(fn),
 });
 
 const filterBuckets = (buckets: TodoBuckets, keep: (todo: Todo) => boolean): TodoBuckets => ({
-  overdue: buckets.overdue.filter(keep),
   today: buckets.today.filter(keep),
   upcoming: buckets.upcoming.filter(keep),
+  results: buckets.results.filter(keep),
 });
 
 /**
@@ -687,15 +689,13 @@ interface SectionProps extends Omit<TodoCardProps, 'todo' | 'busy' | 'isAuthor'>
   busyId: number | null;
   /** Who is looking, so each card knows whether they wrote it. */
   meId: number;
-  /** Overdue counts in red; everything else in the brand blue. */
-  tone?: 'default' | 'danger';
 }
 
 /**
  * Notes are short, so a single column down the middle of a wide screen wasted
  * most of it. Two across from `sm`, three from `xl`.
  */
-const Section = ({ title, items, busyId, meId, tone = 'default', ...handlers }: SectionProps) =>
+const Section = ({ title, items, busyId, meId, ...handlers }: SectionProps) =>
   items.length === 0 ? null : (
     <div className="mb-9">
       {/* A rule running out from the heading ties the row of notes under it
@@ -704,11 +704,7 @@ const Section = ({ title, items, busyId, meId, tone = 'default', ...handlers }: 
         <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-body dark:text-bodydark">
           {title}
         </h2>
-        <span
-          className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-            tone === 'danger' ? 'bg-danger/15 text-danger' : 'bg-primary/10 text-primary'
-          }`}
-        >
+        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
           {items.length}
         </span>
         <span className="h-px flex-1 bg-stroke dark:bg-strokedark" />
@@ -734,10 +730,32 @@ export default function MyTasks() {
   const meId = Number(useSelector((state: any) => state.auth?.me?.id) || 0);
 
   const [todos, setTodos] = useState<TodoBuckets>(EMPTY_BUCKETS);
+  /**
+   * Whether the very first load has happened.
+   *
+   * Only that one gets the full-screen loader. Every load after it -- a filter,
+   * a search -- keeps what is on screen and swaps it when the answer arrives,
+   * because `Loader` is a fixed overlay: reaching for it mid-session blanks the
+   * whole page, form and all, and then paints it back.
+   */
+  const loadedOnce = useRef(false);
   /** Everyone in the company a task can be handed to. */
   const [people, setPeople] = useState<Person[]>([]);
   const [filter, setFilter] = useState('all');
+  /**
+   * The range being searched, or nulls for the ordinary board.
+   *
+   * `range` is what the last search actually asked for; the two pickers hold
+   * what is being typed. Keeping them apart means editing a date does not
+   * re-run the query until the button is pressed, and clearing the pickers does
+   * not silently drop the results already on screen.
+   */
+  const [fromDate, setFromDate] = useState<Date | null>(null);
+  const [toDate, setToDate] = useState<Date | null>(null);
+  const [range, setRange] = useState<{ from: string; to: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  /** A quieter load: the cards stay put and the Search button spins. */
+  const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   /** The one note a request is in flight for -- only its buttons go quiet. */
   const [busyId, setBusyId] = useState<number | null>(null);
@@ -754,11 +772,13 @@ export default function MyTasks() {
   // Opens on today at midnight -- the day filled in, the reminder left off.
   const [selectedDate, setSelectedDate] = useState<Date | null>(dayjs().startOf('day').toDate());
 
-  // Refetched on a filter change: which rows qualify is the server's answer,
-  // not something to work out again on this side from a list it did not send.
+  // Refetched on a filter or range change: which rows qualify is the server's
+  // answer, not something to work out again on this side from a list it did not
+  // send.
   useEffect(() => {
-    fetchTodos();
-  }, [filter]);
+    fetchTodos({ silent: loadedOnce.current });
+    loadedOnce.current = true;
+  }, [filter, range]);
 
   useEffect(() => {
     httpService
@@ -776,9 +796,17 @@ export default function MyTasks() {
    * board for a spinner after every tick made every card blink away and back.
    */
   const fetchTodos = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
-    if (!silent) setLoading(true);
+    if (silent) setRefreshing(true);
+    else setLoading(true);
+
     try {
-      const res = await httpService.get('/user-todos', { params: { filter } });
+      const res = await httpService.get('/user-todos', {
+        params: {
+          filter,
+          date_from: range?.from || undefined,
+          date_to: range?.to || undefined,
+        },
+      });
       // The API envelope nests the payload one level deeper
       // ({ data: { data: {...}, transaction_date } }); tolerate a flat shape
       // too so either form renders.
@@ -786,9 +814,9 @@ export default function MyTasks() {
       const data = payload?.today || payload?.upcoming ? payload : payload?.data;
 
       setTodos({
-        overdue: data?.overdue ?? [],
         today: data?.today ?? [],
         upcoming: data?.upcoming ?? [],
+        results: data?.results ?? [],
       });
     } catch (err: any) {
       if (!silent) setTodos(EMPTY_BUCKETS);
@@ -797,8 +825,39 @@ export default function MyTasks() {
       }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [filter]);
+  }, [filter, range]);
+
+  /**
+   * Run the search.
+   *
+   * Either end on its own is a sensible question -- everything since a date,
+   * everything up to one -- so only both being empty means "no search". Dates
+   * the wrong way round are swapped rather than refused; it is obvious what was
+   * meant, and an error message here would only be pedantry.
+   */
+  const runSearch = () => {
+    if (!fromDate && !toDate) {
+      setRange(null);
+      return;
+    }
+
+    const from = dateToString(fromDate);
+    const to = dateToString(toDate);
+    const flipped = from && to && from > to;
+
+    setRange({
+      from: flipped ? to : from,
+      to: flipped ? from : to,
+    });
+  };
+
+  const clearSearch = () => {
+    setFromDate(null);
+    setToDate(null);
+    setRange(null);
+  };
 
   const addTodo = async () => {
     const dueDate = dateToString(selectedDate);
@@ -946,8 +1005,19 @@ export default function MyTasks() {
     }
   }, [todoToDelete]);
 
-  const isEmpty =
-    todos.overdue.length === 0 && todos.today.length === 0 && todos.upcoming.length === 0;
+  const searching = range !== null;
+  const isEmpty = searching
+    ? todos.results.length === 0
+    : todos.today.length === 0 && todos.upcoming.length === 0;
+
+  // Says which dates the list on screen answers to, since one end may be open.
+  const rangeLabel = !range
+    ? ''
+    : range.from && range.to
+      ? `${dayjs(range.from).format('DD MMM YYYY')} — ${dayjs(range.to).format('DD MMM YYYY')}`
+      : range.from
+        ? `from ${dayjs(range.from).format('DD MMM YYYY')}`
+        : `up to ${dayjs(range.to).format('DD MMM YYYY')}`;
 
   // One stable object, so a card's props only change when the card does.
   const cardHandlers = useMemo(
@@ -1066,59 +1136,121 @@ export default function MyTasks() {
           </div>
         </div>
 
-        {/* A private scratchpad and a queue of work other people put there are
-            two different things to look at. */}
-        <div className="mb-5 flex flex-wrap gap-2">
-          {FILTERS.map((option) => (
-            <button
-              key={option.key}
-              type="button"
-              onClick={() => setFilter(option.key)}
-              className={`rounded-sm border px-3 py-1 text-xs font-medium transition-colors ${
-                filter === option.key
-                  ? 'border-primary bg-primary text-white'
-                  : 'border-stroke bg-white text-body hover:border-primary hover:text-primary dark:border-strokedark dark:bg-boxdark dark:text-bodydark'
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
+        {/* Whose work is whose on the left, and on the right the way back to
+            anything the board no longer shows. The board is today and ahead
+            only -- a past task is found by asking for its dates. */}
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          {/* `h-9` is the app's field height, which is what the pickers and
+              buttons opposite stand at -- and `items-end` on the row then lines
+              all of them up on one baseline, under the pickers' labels. */}
+          <div className="flex flex-wrap items-center gap-2">
+            {FILTERS.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => setFilter(option.key)}
+                className={`flex h-9 items-center rounded-sm border px-3 text-xs font-medium transition-colors ${
+                  filter === option.key
+                    ? 'border-primary bg-primary text-white'
+                    : 'border-stroke bg-white text-body hover:border-primary hover:text-primary dark:border-strokedark dark:bg-boxdark dark:text-bodydark'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-end gap-2">
+            <div className="w-36">
+              <InputDatePicker
+                id="search_from"
+                name="search_from"
+                label="From"
+                placeholder="From date"
+                selectedDate={fromDate}
+                setSelectedDate={setFromDate}
+                setCurrentDate={setFromDate}
+                className="h-9 w-full text-sm"
+              />
+            </div>
+
+            <div className="w-36">
+              <InputDatePicker
+                id="search_to"
+                name="search_to"
+                label="To"
+                placeholder="To date"
+                selectedDate={toDate}
+                setSelectedDate={setToDate}
+                setCurrentDate={setToDate}
+                className="h-9 w-full text-sm"
+              />
+            </div>
+
+            {/* Full size, not `sm`: the small variant's `px-2` left the label
+                almost against the right edge once an icon had pushed it over. */}
+            <ButtonLoading
+              onClick={runSearch}
+              label="Search"
+              buttonLoading={refreshing}
+              className="h-9 whitespace-nowrap"
+              icon={<FiSearch className="mr-2 text-base text-white" />}
+            />
+
+            {/* Only worth the room once there is something to come back from. */}
+            {searching ? (
+              <ButtonLoading
+                onClick={clearSearch}
+                label="Clear"
+                variant="ghost"
+                className="h-9 whitespace-nowrap border border-stroke dark:border-strokedark"
+                icon={<FiX className="mr-2 text-base" />}
+              />
+            ) : null}
+          </div>
         </div>
 
         {loading ? (
           <Loader />
         ) : (
           <>
-            {/* Anything left unfinished from an earlier day comes first. */}
-            <Section
-              title="Overdue"
-              items={todos.overdue}
-              busyId={busyId}
-              meId={meId}
-              tone="danger"
-              {...cardHandlers}
-            />
-            <Section
-              title="Today"
-              items={todos.today}
-              busyId={busyId}
-              meId={meId}
-              {...cardHandlers}
-            />
-            <Section
-              title="Upcoming"
-              items={todos.upcoming}
-              busyId={busyId}
-              meId={meId}
-              {...cardHandlers}
-            />
+            {searching ? (
+              // A range is one list, not a day-by-day board: the sections it
+              // would split into stop meaning anything once the dates are named.
+              <Section
+                title={`Found ${rangeLabel}`}
+                items={todos.results}
+                busyId={busyId}
+                meId={meId}
+                {...cardHandlers}
+              />
+            ) : (
+              <>
+                <Section
+                  title="Today"
+                  items={todos.today}
+                  busyId={busyId}
+                  meId={meId}
+                  {...cardHandlers}
+                />
+                <Section
+                  title="Upcoming"
+                  items={todos.upcoming}
+                  busyId={busyId}
+                  meId={meId}
+                  {...cardHandlers}
+                />
+              </>
+            )}
 
             {isEmpty && (
               <div className="rounded-sm border border-dashed border-stroke py-14 text-center dark:border-strokedark">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {filter === 'all'
-                    ? 'No tasks yet. Add one above to get started.'
-                    : 'Nothing here under this filter.'}
+                  {searching
+                    ? `No data found ${rangeLabel ? `for ${rangeLabel}` : 'for those dates'}.`
+                    : filter === 'all'
+                      ? 'Nothing due today or ahead. Add a task above, or search a date range for older ones.'
+                      : 'Nothing here under this filter.'}
                 </p>
               </div>
             )}
