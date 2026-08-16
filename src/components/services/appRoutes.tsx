@@ -45,6 +45,7 @@ const ROUTES = {
   profile: '/profile',
   menu_arrangement: '/settings/menu-arrangement',
   my_devices: '/my-devices',
+  my_tasks: '/my-tasks',
   formElements: '/forms/form-elements',
   formLayout: '/forms/form-layout',
   ecommers: '/ecommers',

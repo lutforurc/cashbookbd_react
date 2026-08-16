@@ -165,6 +165,7 @@ import ProjectLabour from './components/modules/real-estate/project-labour/Proje
 import ProjectCostReport from './components/modules/reports/project-cost/ProjectCostReport';
 import ProjectIncomeReport from './components/modules/reports/project-income/ProjectIncomeReport';
 import ProjectSummaryReport from './components/modules/reports/project-summary/ProjectSummaryReport';
+import MyTasks from './components/modules/user/my-tasks/MyTasks';
 import SoldUnitList from './components/modules/real-estate/sales/SoldUnitList';
 import RequirePermission from "./components/auth/RequirePermission";
 import NoAccess from './components/modules/pages/NoAccess';
@@ -298,6 +299,7 @@ function App() {
               <Route path={routes.dashboard} element={<DashboardIndex />} />
               <Route path={routes.profile} element={<Profile />} />
               <Route path={routes.my_devices} element={<MyDevices />} />
+              <Route path={routes.my_tasks} element={<MyTasks />} />
               {/* Arranging one's own sidebar is a personal setting, like the
                   profile above it -- there is nothing here another user could
                   see or change, so it carries no permission. */}

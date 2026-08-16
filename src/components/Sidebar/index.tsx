@@ -27,6 +27,7 @@ import {
 export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> = {
   'dashboard': [
     { id: 'dashboard', title: "Dashboard" },
+    { id: 'my_tasks', title: "My Tasks" },
   ],
   'transaction': [
     { id: 'cash_receive', title: "Cash Received" },
