@@ -608,7 +608,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         <FiGrid />
                         Dashboard
                       </NavLink>
-                      {/* <div
+                      <div
                       className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                         }`}
                     >
@@ -638,8 +638,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             Dashboard
                           </NavLink>
                         </li>
+                        <li style={subSlot('dashboard', 'my_tasks')}>
+                          <NavLink
+                            to={routes.my_tasks}
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
+                            }
+                          >
+                            My Tasks
+                          </NavLink>
+                        </li>
                       </ul>
-                    </div> */}
+                    </div>
                     </React.Fragment>
                   )}
                 </SidebarLinkGroup>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
-import { FiPlus, FiTrash2, FiPin, FiCheck } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiBookmark, FiCheck } from 'react-icons/fi';
 import Loader from '../../../../common/Loader';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import httpService from '../../../services/httpService';
@@ -35,9 +35,15 @@ export default function MyTasks() {
     setLoading(true);
     try {
       const res = await httpService.get('/user-todos');
-      setTodos(res.data?.data || { today: [], upcoming: [] });
+      const data = res.data?.data;
+      if (data && typeof data === 'object' && (data.today || data.upcoming)) {
+        setTodos(data);
+      } else {
+        setTodos({ today: [], upcoming: [] });
+      }
     } catch (err) {
       console.error('Failed to load todos', err);
+      setTodos({ today: [], upcoming: [] });
     } finally {
       setLoading(false);
     }
@@ -130,7 +136,7 @@ export default function MyTasks() {
             className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
             title={todo.is_pinned ? 'Unpin' : 'Pin'}
           >
-            <FiPin className={todo.is_pinned ? 'text-amber-600' : 'text-gray-400'} />
+            <FiBookmark className={todo.is_pinned ? 'text-amber-600' : 'text-gray-400'} />
           </button>
 
           <button
