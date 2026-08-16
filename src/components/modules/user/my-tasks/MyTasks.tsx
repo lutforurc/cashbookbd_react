@@ -36,8 +36,18 @@ export default function MyTasks() {
     try {
       const res = await httpService.get('/user-todos');
       const data = res.data?.data;
-      if (data && typeof data === 'object' && (data.today || data.upcoming)) {
-        setTodos(data);
+      if (data && typeof data === 'object') {
+        // Parse due_date to ensure it's a Date object
+        const parseTodos = (todos: any[]) =>
+          todos.map(t => ({
+            ...t,
+            due_date: new Date(t.due_date)
+          }));
+
+        setTodos({
+          today: parseTodos(data.today || []),
+          upcoming: parseTodos(data.upcoming || [])
+        });
       } else {
         setTodos({ today: [], upcoming: [] });
       }
@@ -98,7 +108,10 @@ export default function MyTasks() {
     }
   };
 
-  const TodoCard = ({ todo }: { todo: Todo }) => (
+  const TodoCard = ({ todo }: { todo: Todo }) => {
+    const dueDate = typeof todo.due_date === 'string' ? new Date(todo.due_date) : todo.due_date;
+
+    return (
     <div
       className="p-4 rounded-lg shadow-sm border-l-4 cursor-move hover:shadow-md transition-shadow"
       style={{ backgroundColor: todo.color, borderLeftColor: '#333' }}
@@ -150,6 +163,7 @@ export default function MyTasks() {
       </div>
     </div>
   );
+  };
 
   return (
     <div>
