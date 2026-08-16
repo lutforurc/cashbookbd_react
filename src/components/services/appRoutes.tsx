@@ -301,6 +301,7 @@ const ROUTES = {
   real_estate_project_labour: '/real-estate/project-labour',
   real_estate_project_cost_report: '/real-estate/project-cost-report',
   real_estate_project_income_report: '/real-estate/project-income-report',
+  real_estate_project_summary_report: '/real-estate/project-summary-report',
   
   // HRM
   hrms_employee_list: '/hrms/employees',

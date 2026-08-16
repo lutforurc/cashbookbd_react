@@ -164,6 +164,7 @@ import ProjectPurchase from './components/modules/real-estate/project-purchase/P
 import ProjectLabour from './components/modules/real-estate/project-labour/ProjectLabour';
 import ProjectCostReport from './components/modules/reports/project-cost/ProjectCostReport';
 import ProjectIncomeReport from './components/modules/reports/project-income/ProjectIncomeReport';
+import ProjectSummaryReport from './components/modules/reports/project-summary/ProjectSummaryReport';
 import SoldUnitList from './components/modules/real-estate/sales/SoldUnitList';
 import RequirePermission from "./components/auth/RequirePermission";
 import NoAccess from './components/modules/pages/NoAccess';
@@ -807,6 +808,7 @@ function App() {
               <Route path={routes.real_estate_project_labour} element={<ProjectLabour />} />
               <Route path={routes.real_estate_project_cost_report} element={<ProjectCostReport user={me} />} />
               <Route path={routes.real_estate_project_income_report} element={<ProjectIncomeReport user={me} />} />
+              <Route path={routes.real_estate_project_summary_report} element={<ProjectSummaryReport user={me} />} />
             </Route>
 
 
