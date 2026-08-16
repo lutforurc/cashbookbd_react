@@ -201,16 +201,27 @@ const AddOrder = (user: any) => {
         }
     }, [branchDdlData?.protectedData?.data]);
 
-    const applyMatchedOrderSuggestion = (
-        field: 'order_number' | 'delivery_location' | 'notes',
-        value: string | null,
-        rows: any[],
-    ) => {
+    /**
+     * Fill the rest of the form from the order the typed order number names.
+     *
+     * Only ever driven by the order number, and that is the whole point: an
+     * order number identifies one order, so copying its delivery location and
+     * note across is answering a question the user asked.
+     *
+     * This used to run for the delivery location and the note as well, and both
+     * of those match many orders at once. The search returns them newest first,
+     * so the note was quietly overwritten with whichever order at that delivery
+     * point happened to be the most recent -- "...-AF Trading" one moment and
+     * "...-Eqra Traders" the next, changing again as new orders were entered.
+     * Worse, writing the note re-triggered the note's own search, so it could
+     * keep flipping without anybody touching the form.
+     */
+    const applyMatchedOrderSuggestion = (value: string | null, rows: any[]) => {
         const normalizedValue = String(value ?? '').trim().toLowerCase();
         if (!normalizedValue) return;
 
         const matchedRow = rows.find((row) =>
-            String(getOrderSuggestionValue(row, field)).trim().toLowerCase() === normalizedValue,
+            String(getOrderSuggestionValue(row, 'order_number')).trim().toLowerCase() === normalizedValue,
         );
 
         if (!matchedRow) return;
@@ -221,10 +232,7 @@ const AddOrder = (user: any) => {
         setFormData((prev) => ({
             ...prev,
             notes: matchedNote || prev.notes,
-            delivery_location:
-                field === 'order_number' && matchedDeliveryLocation
-                    ? matchedDeliveryLocation
-                    : prev.delivery_location,
+            delivery_location: matchedDeliveryLocation || prev.delivery_location,
         }));
     };
 
@@ -240,6 +248,10 @@ const AddOrder = (user: any) => {
             const response = await httpService.get(API_ORDERS_DDL_URL, {
                 params: {
                     q: query,
+                    // Orders from another branch are not suggestions, they are
+                    // noise -- and it was one of them that kept overwriting the
+                    // note.
+                    branch_id: formData.branch_id || undefined,
                 },
             });
             const rows = Array.isArray(response?.data?.data?.data)
@@ -255,7 +267,14 @@ const AddOrder = (user: any) => {
                 ...prev,
                 [field]: rows,
             }));
-            applyMatchedOrderSuggestion(field, query, rows);
+
+            // The delivery location and the note only ever offer a datalist;
+            // they never write back. And an order being edited already has its
+            // own values -- re-deriving them from some other order is how a
+            // saved note got lost without anybody typing.
+            if (field === 'order_number' && !isEditMode) {
+                applyMatchedOrderSuggestion(query, rows);
+            }
         } catch (error) {
             setOrderFieldSuggestions((prev) => ({ ...prev, [field]: [] }));
             setOrderSuggestionRows((prev) => ({ ...prev, [field]: [] }));
@@ -416,8 +435,11 @@ const AddOrder = (user: any) => {
             [name]: value,
         }));
 
-        if (name === 'order_number' || name === 'delivery_location' || name === 'notes') {
-            applyMatchedOrderSuggestion(name, value, orderSuggestionRows[name] || []);
+        // Picking an order number out of its datalist fills the rest in from
+        // that order. Typing in the delivery location or the note fills nothing
+        // -- neither of them names one order, so there is nothing to copy.
+        if (name === 'order_number' && !isEditMode) {
+            applyMatchedOrderSuggestion(value, orderSuggestionRows.order_number || []);
         }
     };
 
