@@ -534,36 +534,44 @@ const TodoCard = memo(({
   );
 });
 
-interface EditTodoModalProps {
-  todo: Todo;
+interface TodoFormModalProps {
+  /** The note being changed, or null to write a new one. */
+  todo: Todo | null;
   saving: boolean;
   people: Person[];
   onCancel: () => void;
-  onSave: (todo: Todo, changes: Record<string, any>) => void;
+  onSave: (todo: Todo | null, values: Record<string, any>) => void;
 }
 
 /**
- * The note, opened up.
+ * The form, for both writing a note and changing one.
  *
- * A sticky note is a small thing to edit in place -- four fields would double
- * the height of every card on the board for the sake of the one being changed
- * -- so it opens in the same dialog shape ConfirmModal uses, and the board
- * behind it does not move at all.
+ * One dialog rather than two forms. New and Edit ask for exactly the same five
+ * things, and the panel that used to sit across the top of the board asked for
+ * them a second time in its own markup -- so a field added to one had to be
+ * remembered into the other, and the board opened on a form instead of on the
+ * work. The board is the screen now; writing is a click away.
  *
- * Mounted fresh per note (the caller keys it by id), so the fields simply seed
- * from the row and there is no stale state to reconcile.
+ * Mounted fresh each time (the caller keys it), so the fields seed from the row
+ * -- or from today, in brand colour, unassigned -- and there is no stale state
+ * to reconcile.
  */
-const EditTodoModal = ({ todo, saving, people, onCancel, onSave }: EditTodoModalProps) => {
-  const [title, setTitle] = useState(todo.title);
-  const [description, setDescription] = useState(todo.description ?? '');
-  const [color, setColor] = useState(todo.color);
-  const [assignedTo, setAssignedTo] = useState(String(todo.assigned_to ?? ''));
+const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModalProps) => {
+  const isNew = todo === null;
+
+  const [title, setTitle] = useState(todo?.title ?? '');
+  const [description, setDescription] = useState(todo?.description ?? '');
+  const [color, setColor] = useState(todo?.color ?? COLORS[0]);
+  const [assignedTo, setAssignedTo] = useState(String(todo?.assigned_to ?? ''));
   // One field again: the day, carrying the reminder's hour when there is one.
-  const [dueMoment, setDueMoment] = useState<Date | null>(
-    todo.reminder_time
+  // A new note opens on today at midnight -- the day filled in, no reminder.
+  const [dueMoment, setDueMoment] = useState<Date | null>(() => {
+    if (!todo) return dayjs().startOf('day').toDate();
+
+    return todo.reminder_time
       ? new Date(todo.reminder_time)
-      : dayjs(todo.due_date).startOf('day').toDate(),
-  );
+      : dayjs(todo.due_date).startOf('day').toDate();
+  });
 
   const dueDate = dateToString(dueMoment);
   const canSave = Boolean(title.trim()) && Boolean(dueDate) && !saving;
@@ -587,13 +595,13 @@ const EditTodoModal = ({ todo, saving, people, onCancel, onSave }: EditTodoModal
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
       <div className="w-full max-w-lg overflow-hidden rounded-lg border border-stroke bg-white text-slate-800 shadow-2xl dark:border-form-strokedark dark:bg-graydark dark:text-white">
         <h3 className="border-b border-stroke px-5 py-3 text-lg font-semibold text-black dark:border-form-strokedark dark:text-white">
-          Edit Task
+          {isNew ? 'New Task' : 'Edit Task'}
         </h3>
 
         <div className="grid gap-3 px-5 py-4">
           <InputElement
-            id="edit_title"
-            name="edit_title"
+            id="todo_title"
+            name="todo_title"
             label="Task"
             placeholder="What do you want to do?"
             value={title}
@@ -603,12 +611,12 @@ const EditTodoModal = ({ todo, saving, people, onCancel, onSave }: EditTodoModal
           />
 
           <div className="flex flex-col text-left">
-            <label className={`${FIELD_LABEL} text-sm`} htmlFor="edit_description">
+            <label className={`${FIELD_LABEL} text-sm`} htmlFor="todo_description">
               Description
             </label>
             <textarea
-              id="edit_description"
-              name="edit_description"
+              id="todo_description"
+              name="todo_description"
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -618,8 +626,8 @@ const EditTodoModal = ({ todo, saving, people, onCancel, onSave }: EditTodoModal
           </div>
 
           <InputDatePicker
-            id="edit_due_date"
-            name="edit_due_date"
+            id="todo_due_date"
+            name="todo_due_date"
             label="Due Date & Reminder"
             showTime
             selectedDate={dueMoment}
@@ -629,8 +637,8 @@ const EditTodoModal = ({ todo, saving, people, onCancel, onSave }: EditTodoModal
           />
 
           <DropdownCommon
-            id="edit_assigned_to"
-            name="edit_assigned_to"
+            id="todo_assigned_to"
+            name="todo_assigned_to"
             label="Assign to"
             value={assignedTo}
             data={[{ id: '', name: 'Myself (personal note)' }, ...people]}
@@ -670,12 +678,18 @@ const EditTodoModal = ({ todo, saving, people, onCancel, onSave }: EditTodoModal
           />
           <ButtonLoading
             onClick={submit}
-            label="Save"
+            label={isNew ? 'Add Task' : 'Save'}
             variant="primary"
             buttonLoading={saving}
             disabled={!canSave}
             className="h-9 whitespace-nowrap"
-            icon={<FiSave className="mr-2 text-lg text-white" />}
+            icon={
+              isNew ? (
+                <FiPlus className="mr-2 text-lg text-white" />
+              ) : (
+                <FiSave className="mr-2 text-lg text-white" />
+              )
+            }
           />
         </div>
       </div>
@@ -756,21 +770,20 @@ export default function MyTasks() {
   const [loading, setLoading] = useState(false);
   /** A quieter load: the cards stay put and the Search button spins. */
   const [refreshing, setRefreshing] = useState(false);
-  const [saving, setSaving] = useState(false);
   /** The one note a request is in flight for -- only its buttons go quiet. */
   const [busyId, setBusyId] = useState<number | null>(null);
   /** The note the delete dialog is asking about, or null when it is closed. */
   const [todoToDelete, setTodoToDelete] = useState<Todo | null>(null);
   const [deleting, setDeleting] = useState(false);
-  /** The note open in the edit dialog, or null when it is closed. */
-  const [todoToEdit, setTodoToEdit] = useState<Todo | null>(null);
-  const [savingEdit, setSavingEdit] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newDescription, setNewDescription] = useState('');
-  const [newAssignee, setNewAssignee] = useState('');
-  const [selectedColor, setSelectedColor] = useState(COLORS[0]);
-  // Opens on today at midnight -- the day filled in, the reminder left off.
-  const [selectedDate, setSelectedDate] = useState<Date | null>(dayjs().startOf('day').toDate());
+  /**
+   * The form dialog: closed, open on a note, or open on nothing at all.
+   *
+   * `undefined` is closed and `null` is a new note, which is the one honest way
+   * to say "open, editing nothing" without a second boolean that could disagree
+   * with this one.
+   */
+  const [formFor, setFormFor] = useState<Todo | null | undefined>(undefined);
+  const [savingForm, setSavingForm] = useState(false);
 
   // Refetched on a filter or range change: which rows qualify is the server's
   // answer, not something to work out again on this side from a list it did not
@@ -859,42 +872,30 @@ export default function MyTasks() {
     setRange(null);
   };
 
-  const addTodo = async () => {
-    const dueDate = dateToString(selectedDate);
-    const dueTime = timeToString(selectedDate);
-
-    if (!newTitle.trim() || !dueDate || saving) return;
-
-    setSaving(true);
+  /**
+   * Write a new note.
+   *
+   * The dialog stays open and keeps the typing if the save fails -- the one
+   * thing a form owes somebody who has just written something.
+   */
+  const createTodo = async (values: Record<string, any>) => {
+    setSavingForm(true);
     try {
-      await httpService.post('/user-todos', {
-        title: newTitle.trim(),
-        description: newDescription.trim() || null,
-        due_date: dueDate,
-        color: selectedColor,
-        // The two halves of the one field: the day is the note's date, and the
-        // hour -- if the picker was left off midnight -- is when it nudges.
-        reminder_time: dueTime ? `${dueDate} ${dueTime}:00` : null,
-        assigned_to: newAssignee ? Number(newAssignee) : null,
-      });
+      await httpService.post('/user-todos', values);
 
-      if (newAssignee) {
-        const person = people.find((p) => String(p.id) === newAssignee);
+      if (values.assigned_to) {
+        const person = people.find((p) => p.id === Number(values.assigned_to));
         toast.success(`Task assigned to ${person?.name ?? 'them'}.`);
       }
 
-      setNewTitle('');
-      setNewDescription('');
-      setNewAssignee('');
-      setSelectedColor(COLORS[0]);
-      setSelectedDate(dayjs().startOf('day').toDate());
+      setFormFor(undefined);
       await fetchTodos({ silent: true });
     } catch (err: any) {
       if (!err?.toastReported) {
         toast.error(err?.response?.data?.message || 'Failed to add task.');
       }
     } finally {
-      setSaving(false);
+      setSavingForm(false);
     }
   };
 
@@ -962,22 +963,25 @@ export default function MyTasks() {
     [patchTodo],
   );
 
-  const openEditor = useCallback((todo: Todo) => setTodoToEdit(todo), []);
+  const openEditor = useCallback((todo: Todo) => setFormFor(todo), []);
 
   /**
-   * The dialog closes only once the row is saved. A failure leaves it open with
-   * the typing still in it, which is the one thing a form owes somebody who has
-   * just written something.
+   * The dialog's one save, whichever it was opened for.
+   *
+   * It closes only once the row is written. A failure leaves it open with the
+   * typing still in it.
    */
-  const saveEdit = useCallback(
-    async (todo: Todo, changes: Record<string, any>) => {
-      setSavingEdit(true);
-      const saved = await patchTodo(todo, changes);
-      setSavingEdit(false);
+  const submitForm = useCallback(
+    async (todo: Todo | null, values: Record<string, any>) => {
+      if (!todo) return createTodo(values);
 
-      if (saved) setTodoToEdit(null);
+      setSavingForm(true);
+      const saved = await patchTodo(todo, values);
+      setSavingForm(false);
+
+      if (saved) setFormFor(undefined);
     },
-    [patchTodo],
+    [patchTodo, createTodo],
   );
 
   /** Asking is the app's own dialog, not the browser's grey alert box. */
@@ -1036,114 +1040,25 @@ export default function MyTasks() {
       <style>{NOTE_3D_CSS}</style>
 
       <div className="mx-auto w-full max-w-6xl px-4 py-6">
-        {/* Add New Todo. The card, the fields and the button are the app's own
-            -- InputElement and ButtonLoading carry the shared border, height and
-            square corners, so this screen states none of them itself. */}
-        <div className="mb-8 rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark">
-          <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">Add New Task</h2>
+        {/* New Task first, then whose work is whose, and on the right the way
+            back to anything the board no longer shows. The board is today and
+            ahead only -- a past task is found by asking for its dates.
 
-          {/* Two rows on a monitor, stacking to a column once there is no room:
-              what the task is on top, the detail of it underneath, and the
-              button last so the eye finishes where the click goes.
-
-              Day and hour are one field, not two: the app's own picker opens
-              the calendar with the clock beside it, and a note is one moment
-              rather than a date and a separate time to keep in step. */}
-          <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-12">
-            <div className="md:col-span-7">
-              <InputElement
-                id="title"
-                name="title"
-                label="Task"
-                placeholder="What do you want to do?"
-                value={newTitle}
-                className="mb-0 h-9"
-                onChange={(e) => setNewTitle(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addTodo()}
-              />
-            </div>
-
-            <div className="md:col-span-5">
-              <InputDatePicker
-                id="due_date"
-                name="due_date"
-                label="Due Date & Reminder"
-                showTime
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                setCurrentDate={setSelectedDate}
-                className="h-9 w-full"
-              />
-            </div>
-
-            <div className="flex flex-col text-left md:col-span-5">
-              <label className={`${FIELD_LABEL} text-sm`} htmlFor="description">
-                Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                rows={2}
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                placeholder="Anything worth remembering about it (optional)"
-                className={`${FIELD_TEXTAREA} w-full resize-y px-3 py-2 text-sm`}
-              />
-            </div>
-
-            <div className="md:col-span-3">
-              <DropdownCommon
-                id="assigned_to"
-                name="assigned_to"
-                label="Assign to"
-                value={newAssignee}
-                data={[{ id: '', name: 'Myself (personal note)' }, ...people]}
-                onChange={(e) => setNewAssignee(e.target.value)}
-                className="h-9"
-              />
-            </div>
-
-            <div className="flex flex-col text-left md:col-span-2">
-              <label className={`${FIELD_LABEL} text-sm`}>Colour</label>
-              <div className="flex h-9 items-center gap-1.5">
-                {COLORS.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setSelectedColor(color)}
-                    title="Use this colour"
-                    className={`h-6 w-6 rounded-sm border transition-colors ${
-                      selectedColor === color
-                        ? 'border-primary ring-1 ring-primary'
-                        : 'border-stroke dark:border-strokedark'
-                    }`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="md:col-span-2">
-              <ButtonLoading
-                onClick={addTodo}
-                buttonLoading={saving}
-                disabled={!newTitle.trim() || !selectedDate || saving}
-                label="Add Task"
-                className="h-9 w-full whitespace-nowrap text-center"
-                icon={<FiPlus className="mr-2 text-lg text-white" />}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Whose work is whose on the left, and on the right the way back to
-            anything the board no longer shows. The board is today and ahead
-            only -- a past task is found by asking for its dates. */}
+            The form used to sit across the top of this page, so the screen
+            opened on a form rather than on the work. It is a dialog now. */}
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
           {/* `h-9` is the app's field height, which is what the pickers and
               buttons opposite stand at -- and `items-end` on the row then lines
               all of them up on one baseline, under the pickers' labels. */}
           <div className="flex flex-wrap items-center gap-2">
+            <ButtonLoading
+              onClick={() => setFormFor(null)}
+              label="New Task"
+              variant="primary"
+              className="mr-1 h-9 whitespace-nowrap"
+              icon={<FiPlus className="mr-2 text-lg text-white" />}
+            />
+
             {FILTERS.map((option) => (
               <button
                 key={option.key}
@@ -1249,7 +1164,7 @@ export default function MyTasks() {
                   {searching
                     ? `No data found ${rangeLabel ? `for ${rangeLabel}` : 'for those dates'}.`
                     : filter === 'all'
-                      ? 'Nothing due today or ahead. Add a task above, or search a date range for older ones.'
+                      ? 'Nothing due today or ahead. Write one with New Task, or search a date range for older ones.'
                       : 'Nothing here under this filter.'}
                 </p>
               </div>
@@ -1258,15 +1173,16 @@ export default function MyTasks() {
         )}
       </div>
 
-      {/* Keyed by id so each note opens the dialog with its own values. */}
-      {todoToEdit ? (
-        <EditTodoModal
-          key={todoToEdit.id}
-          todo={todoToEdit}
-          saving={savingEdit}
+      {/* Keyed so each note -- and each blank one -- opens the dialog with its
+          own values rather than the last one's. */}
+      {formFor !== undefined ? (
+        <TodoFormModal
+          key={formFor?.id ?? 'new'}
+          todo={formFor}
+          saving={savingForm}
           people={people}
-          onCancel={() => setTodoToEdit(null)}
-          onSave={saveEdit}
+          onCancel={() => setFormFor(undefined)}
+          onSave={submitForm}
         />
       ) : null}
 
