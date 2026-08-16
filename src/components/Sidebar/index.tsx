@@ -213,13 +213,13 @@ export const SIDEBAR_MENUS = [
   { id: 'reseller', title: 'Reseller Dashboard' },
   { id: 'transaction', title: 'Transaction' },
   { id: 'invoice', title: 'Invoice' },
-  { id: 'labour_items', title: 'Labour Items' },
   { id: 'branch-transfer', title: 'Branch Transfer' },
   { id: 'reports', title: 'Reports' },
   { id: 'product_tracking', title: 'Product Tracking' },
   { id: 'requisition', title: 'Requisition' },
   { id: 'real-estate', title: 'Real Estate' },
   { id: 'products', title: 'Products' },
+  { id: 'labour_items', title: 'Labour Items' },
   { id: 'admin', title: 'Admin' },
   { id: 'vr_settings', title: 'VR Settings' },
   { id: 'hrm', title: 'HRM' },
@@ -991,85 +991,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {/* Branch Issue and Branch Receive moved to the
                               Branch Transfer menu, next to the reports that
                               read them back. */}
-                        </ul>
-                      </div>
-                    </React.Fragment>
-                  )}
-                </SidebarLinkGroup>
-              )}
-
-              {/* Labour Items — the category and item lists a labour bill is
-                  built from. Their own menu rather than a corner of Invoice:
-                  they are master data, set up once and rarely touched, while
-                  everything under Invoice is a daily entry. */}
-              {hasMenuPermission(permissions, 'labour_items') && (
-                <SidebarLinkGroup
-                  activeCondition={pathname.includes('/labour-items')}
-                  menuId="labour_items"
-                  style={menuSlot('labour_items')}
-                  open={openMenu === 'labour_items'}
-                  handleClick={() => handleMenuClick('labour_items')}
-                >
-                  {(handleClick, open) => (
-                    <React.Fragment>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${pathname.includes('/labour-items') && 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
-                        }}
-                      >
-                        <FiUsers />
-                        Labour Items
-                      </NavLink>
-
-                      <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'}`}
-                      >
-                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          {subDividers('labour_items').map((entry) => (
-                            <li
-                              key={entry.id}
-                              style={entry.style}
-                              className="mt-2 flex items-center gap-2 first:mt-0"
-                            >
-                              {entry.title ? (
-                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
-                                  {entry.title}
-                                </span>
-                              ) : null}
-                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
-                            </li>
-                          ))}
-
-                          {hasPermission(permissions, 'labour.category.view') && (
-                            <li style={subSlot('labour_items', 'labour_category')}>
-                              <NavLink
-                                to={routes.labour_category}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Category
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'labour.item.view') && (
-                            <li style={subSlot('labour_items', 'labour_item')}>
-                              <NavLink
-                                to={routes.labour_item}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Item
-                              </NavLink>
-                            </li>
-                          )}
                         </ul>
                       </div>
                     </React.Fragment>
@@ -2446,6 +2367,86 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Product Unit
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
+
+              {/* Labour Items — the category and item lists a labour bill is
+                  built from. Down here with Products rather than up among the
+                  daily entries: it is master data, set up once and opened
+                  rarely, and the menus near the top should be the ones reached
+                  every day. */}
+              {hasMenuPermission(permissions, 'labour_items') && (
+                <SidebarLinkGroup
+                  activeCondition={pathname.includes('/labour-items')}
+                  menuId="labour_items"
+                  style={menuSlot('labour_items')}
+                  open={openMenu === 'labour_items'}
+                  handleClick={() => handleMenuClick('labour_items')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${pathname.includes('/labour-items') && 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiUsers />
+                        Labour Items
+                      </NavLink>
+
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'}`}
+                      >
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('labour_items').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
+
+                          {hasPermission(permissions, 'labour.category.view') && (
+                            <li style={subSlot('labour_items', 'labour_category')}>
+                              <NavLink
+                                to={routes.labour_category}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Category
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'labour.item.view') && (
+                            <li style={subSlot('labour_items', 'labour_item')}>
+                              <NavLink
+                                to={routes.labour_item}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Item
                               </NavLink>
                             </li>
                           )}
