@@ -894,6 +894,12 @@ const AddBranch = () => {
 
               {currentStep === stepIndex('Basic Info') && (
                 <>
+                  {/* One grid for the whole step, not one per group of fields.
+                      A grid each starts its own rows, so a group that did not
+                      divide by three left its last field stranded beside two
+                      empty cells and pushed the next group down -- the four
+                      identity fields did exactly that to Inventory System.
+                      Flowing them together fills every row until the last. */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <InputElement
                       id="name"
@@ -935,8 +941,6 @@ const AddBranch = () => {
                       className="h-[2.1rem] bg-transparent"
                       data={settings?.branchSettings?.inventorySystem}
                     />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <InputElement
                       id="email"
                       value={formData.email || ''}
@@ -967,8 +971,6 @@ const AddBranch = () => {
                       className={''}
                       onChange={handleOnChange}
                     />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <InputElement
                       id="address"
                       value={formData.address || ''}
