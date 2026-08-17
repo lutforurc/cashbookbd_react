@@ -21,6 +21,7 @@ import {
   updateSmsTemplate,
 } from './smsSlice';
 import { FIELD_SELECT, FIELD_TEXTAREA } from '../../../theme/fieldStyles';
+import { hasPermission } from '../../utils/permissionChecker';
 
 interface SmsTemplateFormProps {
   mode: 'create' | 'edit';
@@ -31,6 +32,11 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
   const navigate = useNavigate();
   const { id: templateId = '' } = useParams();
   const smsState = useSelector((state: any) => state.sms);
+  const settings = useSelector((state: any) => state.settings);
+  // Reading a template and rewriting one are separate permissions. Somebody
+  // sent this URL directly still sees what the message says -- the fields are
+  // read-only and there is nothing to save.
+  const canEditTemplate = hasPermission(settings?.data?.permissions, 'sms.template.edit');
   const [formValues, setFormValues] = useState<SmsTemplateFormValues>(initialTemplateFormValues);
   const [previewOpen, setPreviewOpen] = useState(false);
 
@@ -282,14 +288,16 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
             icon={<FiEye className="text-white text-lg" />}
           />
 
-          <ButtonLoading
-            type="submit"
-            buttonLoading={smsState?.saveLoading}
-            disabled={smsState?.saveLoading}
-            label={mode === 'edit' ? 'Update' : 'Save'}
-            className="h-10 w-30 whitespace-nowrap"
-            icon={<FiSave className="text-white text-lg" />}
-          />
+          {canEditTemplate ? (
+            <ButtonLoading
+              type="submit"
+              buttonLoading={smsState?.saveLoading}
+              disabled={smsState?.saveLoading}
+              label={mode === 'edit' ? 'Update' : 'Save'}
+              className="h-10 w-30 whitespace-nowrap"
+              icon={<FiSave className="text-white text-lg" />}
+            />
+          ) : null}
 
           <Link to={ROUTES.sms_template_list} className="h-10 whitespace-nowrap">
             <FiHome className="mr-2 text-white text-lg" />

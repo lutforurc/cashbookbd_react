@@ -13,6 +13,7 @@ import Table from '../../utils/others/Table';
 import Pagination from '../../utils/utils-functions/Pagination';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { chartDateTime } from '../../utils/utils-functions/formatDate';
+import { hasPermission } from '../../utils/permissionChecker';
 import SmsTemplatePreviewModal from './SmsTemplatePreviewModal';
 import {
   clearSmsTemplatePreview,
@@ -24,6 +25,11 @@ const SmsTemplateList = () => {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
   const smsState = useSelector((state: any) => state.sms);
+  const settings = useSelector((state: any) => state.settings);
+  // Reaching this screen answers to sms.templates; changing what is on it
+  // answers to its own permission, because the body saved here goes out to
+  // customers over the branch's name without anybody reading it first.
+  const canEditTemplate = hasPermission(settings?.data?.permissions, 'sms.template.edit');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -181,15 +187,17 @@ const SmsTemplateList = () => {
           >
             <FiEye className="h-4 w-4" />
           </button>
-          <button
-            type="button"
-            onClick={() =>
-              navigate(ROUTES.sms_template_edit.replace(':id', String(row.id)))
-            }
-            className="text-slate-500 transition hover:text-emerald-500"
-          >
-            <FiEdit2 className="h-4 w-4" />
-          </button>
+          {canEditTemplate ? (
+            <button
+              type="button"
+              onClick={() =>
+                navigate(ROUTES.sms_template_edit.replace(':id', String(row.id)))
+              }
+              className="text-slate-500 transition hover:text-emerald-500"
+            >
+              <FiEdit2 className="h-4 w-4" />
+            </button>
+          ) : null}
         </div>
       ),
     },
@@ -217,10 +225,12 @@ const SmsTemplateList = () => {
           </div>
         </div>
 
-        <Link to={ROUTES.sms_template_create} className="h-9 whitespace-nowrap">
-          <FiPlus className="mr-2 text-white text-lg" />
-          New Template
-        </Link>
+        {canEditTemplate ? (
+          <Link to={ROUTES.sms_template_create} className="h-9 whitespace-nowrap">
+            <FiPlus className="mr-2 text-white text-lg" />
+            New Template
+          </Link>
+        ) : null}
       </div>
 
       <div className="relative overflow-x-auto">
