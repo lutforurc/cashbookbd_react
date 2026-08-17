@@ -50,6 +50,8 @@ import {
 } from "./soldUnitReport";
 import SoldUnitListPrint from "./SoldUnitListPrint";
 import SaleNomineeModal from "./SaleNomineeModal";
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+
 
 const cellBase = "border border-stroke px-2 py-1.5 dark:border-strokedark";
 
@@ -64,6 +66,7 @@ const SoldUnitList: React.FC = () => {
     (state: any) => state.unitSale
   );
   const projectDdl = useSelector((state: any) => state.realEstateProjects?.projectDdl);
+  const mobileFormat = useMobileFormat();
   const buildingDdl = useSelector((state: any) => state.buildings?.buildingDdl);
   // The branch's own numbering, e.g. 'BST/ALLOT'. Unset, this screen suggests
   // nothing and the server falls back to the project's initials.
@@ -800,7 +803,7 @@ const SoldUnitList: React.FC = () => {
                                   <div>{customer.customer_address}</div>
                                 ) : null}
                                 {customer.customer_mobile ? (
-                                  <div>Cell: {customer.customer_mobile}</div>
+                                  <div>Cell: {formatMobile(customer.customer_mobile, mobileFormat)}</div>
                                 ) : null}
                               </td>
                             </>

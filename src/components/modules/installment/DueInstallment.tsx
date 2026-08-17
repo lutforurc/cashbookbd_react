@@ -26,10 +26,13 @@ import { useReactToPrint } from 'react-to-print';
 import DueInstallmentsPrint, { InstallmentRow } from './DueInstallmentsPrint';
 import { set } from 'react-datepicker/dist/date_utils';
 import { FiFileText } from 'react-icons/fi';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
+
 
 const DueInstallment = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const mobileFormat = useMobileFormat();
   const installment = useSelector((state: any) => state.installment);
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -215,7 +218,7 @@ const DueInstallment = (user: any) => {
           <span className="block">{row?.customer_name}</span>
           {row?.father && <span className="block">{row?.father}</span>}
           <span className="block">{row?.customer_address}</span>
-          <span className="block">{row?.customer_mobile}</span>
+          <span className="block">{formatMobile(row?.customer_mobile, mobileFormat)}</span>
           <span className="block text-red-500">{row?.employee}</span>
         </div>
       ),

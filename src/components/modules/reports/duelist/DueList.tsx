@@ -16,11 +16,14 @@ import DueListPrint from './DueListPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { useReactToPrint } from 'react-to-print';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+
 
 
 const DueList = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
+  const mobileFormat = useMobileFormat();
   const branchList = useSelector((state) => state.branchList);
   const dueList = useSelector((state) => state.dueList);
   const settings = useSelector((state: any) => state.settings);
@@ -105,7 +108,7 @@ const DueList = (user: any) => {
           <p>{row.coa4_name}</p>
           {settings?.data?.branch?.due_list_with_address && (
             <>
-              <p className="text-sm text-gray-500">{(row.mobile?.length ?? 0) > 10 && <div className="text-xs">{row.mobile}</div>}</p>
+              <p className="text-sm text-gray-500">{(row.mobile?.length ?? 0) > 10 && <div className="text-xs">{formatMobile(row.mobile, mobileFormat)}</div>}</p>
               <p className="text-sm text-gray-500">{row.manual_address}</p>
             </>
           )}

@@ -18,10 +18,12 @@ import { hasPermission } from "../../utils/permissionChecker";
 import httpService from "../../services/httpService";
 import { API_CUSTOMER_PROFILE_PDF_URL } from "../../services/apiRoutes";
 import routes from "../../services/appRoutes";
+import { formatMobile, useMobileFormat } from "../../utils/utils-functions/mobileFormat";
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
   const settings = useSelector((state: any) => state.settings);
+  const mobileFormat = useMobileFormat();
   const dispatch = useDispatch();
 
   const [search, setSearchValue] = useState("");
@@ -473,6 +475,9 @@ const CustomerSupplier = () => {
       header: 'Mobile',
       headerClass: 'text-center',
       cellClass: 'text-center',
+      // Grouped the way this branch asked for in its Customer Setup. What is
+      // stored is untouched -- this is only how the column reads.
+      render: (row: any) => formatMobile(row?.mobile, mobileFormat),
     },
     {
       key: "action",
@@ -737,7 +742,7 @@ const CustomerSupplier = () => {
                       >
                         <td className="px-3 py-2 truncate">{g.name}</td>
                         <td className="px-3 py-2 truncate">{g.father_name}</td>
-                        <td className="px-3 py-2 text-center">{g.mobile}</td>
+                        <td className="px-3 py-2 text-center">{formatMobile(g.mobile, mobileFormat)}</td>
                         <td className="px-3 py-2 truncate">{g.address}</td>
                         <td className="px-3 py-2 text-center">{g.national_id == 0 ? '' : g.national_id}</td>
                       </tr>

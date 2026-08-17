@@ -23,11 +23,14 @@ import 'antd/dist/reset.css';
 import PaymentDetailsModal from './PaymentDetailsModal';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getEmployeesDDL } from '../hrms/employee/employeeSlice';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
+
 
 
 const StaffWiseDueInstallment = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const mobileFormat = useMobileFormat();
   const installment = useSelector((state: any) => state.installment);
   const employees = useSelector((state: any) => state.employees);
 
@@ -182,7 +185,7 @@ const StaffWiseDueInstallment = (user: any) => {
           <span className="block">{row?.customer_name}</span>
           {row?.father && <span className="block">{row?.father}</span>}
           <span className="block">{row?.customer_address}</span>
-          <span className="block">{row?.customer_mobile}</span>
+          <span className="block">{formatMobile(row?.customer_mobile, mobileFormat)}</span>
           { row?.employee && <span className="block border-t border-red-500">{row?.employee}</span> }
         </div>
       ),

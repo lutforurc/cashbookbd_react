@@ -4,6 +4,8 @@ import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import ReportFooter from "../../../utils/utils-functions/ReportFooter";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { useSelector } from "react-redux";
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+
 
 type DueRow = {
   sl_number?: number | string;
@@ -37,6 +39,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
     const pages = chunkRows(rowsArr, rowsPerPage);
     const fs = fontSize;
     const settings = useSelector((state: any) => state.settings);
+    const mobileFormat = useMobileFormat();
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
@@ -82,7 +85,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                         <div className={settings?.data?.branch?.due_list_with_address ? `font-semibold` : ``}>{row.coa4_name}</div>
                         {settings?.data?.branch?.due_list_with_address && (row.mobile?.length ?? 0) > 10 && (
                           <>
-                            <div className="text-xs">{row.mobile}</div>
+                            <div className="text-xs">{formatMobile(row.mobile, mobileFormat)}</div>
                             <div className="text-xs">{row.manual_address}</div>
                             {/* <div className="text-xs">{row.ledger_page}</div> */}
                           </>

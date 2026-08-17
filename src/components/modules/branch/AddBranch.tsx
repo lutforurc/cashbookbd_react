@@ -28,6 +28,7 @@ import {
   API_REMOTE_URL,
 } from '../../services/apiRoutes';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
+import { formatMobile } from '../../utils/utils-functions/mobileFormat';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import httpService from '../../services/httpService';
 import { hasPermission } from '../../utils/permissionChecker';
@@ -66,6 +67,7 @@ interface branchItem {
   sales_note: string;
   combined_invoice_note: boolean;
   money_format: string;
+  mobile_number_format: string;
   phone: string;
   notes: string;
   invoice_label: string;
@@ -321,6 +323,7 @@ const AddBranch = () => {
     sales_note: '',
     combined_invoice_note: false,
     money_format: '',
+    mobile_number_format: '',
     phone: '',
     notes: '',
     invoice_label: '',
@@ -595,6 +598,9 @@ const AddBranch = () => {
         need_demo_tutorial: toBooleanFlag(b.need_demo_tutorial),
         need_customer_contact_person: toBooleanFlag(b.need_customer_contact_person),
         due_list_with_address: toBooleanFlag(b.due_list_with_address),
+        // A pattern, not a flag: `false` is what an unset meta reads as, and
+        // that would put the word "false" in the box.
+        mobile_number_format: b.mobile_number_format ? String(b.mobile_number_format) : '',
         need_relation_info: toBooleanFlag(b.need_relation_info),
         need_customer_mother_name: toBooleanFlag(b.need_customer_mother_name),
         need_customer_sex: toBooleanFlag(b.need_customer_sex),
@@ -1415,6 +1421,39 @@ const AddBranch = () => {
                         handleToggleFieldChange('due_list_with_address', checked)
                       }
                     />
+
+                    {/* Not a switch, so it says what it does by showing it: the
+                        line underneath is the pattern applied to a real number,
+                        which is quicker to judge than any wording of the rule.
+
+                        Only how the number is *shown* -- what is stored stays
+                        the digits as typed, because that is what a phone dials
+                        and what the duplicate check compares. */}
+                    <div>
+                      <InputElement
+                        id="mobile_number_format"
+                        name="mobile_number_format"
+                        label="Mobile Number Format"
+                        placeholder="#####-######"
+                        value={formData.mobile_number_format || ''}
+                        onChange={handleOnChange}
+                        description={
+                          <>
+                            Groups every mobile number on screen. Write{' '}
+                            <span className="font-semibold">#</span> for a digit; anything else is
+                            printed as it stands. Leave empty to show numbers exactly as entered.
+                            {formData.mobile_number_format ? (
+                              <span className="mt-0.5 block">
+                                01973190490 →{' '}
+                                <span className="font-semibold text-primary">
+                                  {formatMobile('01973190490', formData.mobile_number_format)}
+                                </span>
+                              </span>
+                            ) : null}
+                          </>
+                        }
+                      />
+                    </div>
                   </div>
 
                   {/* ---------- Nominee & Guarantor ---------- */}

@@ -8,6 +8,7 @@ import BuildingDropdown from "../../../utils/utils-functions/BuildingDropdown";
 import { flatLayout } from "./flatSlice";
 import routes from "../../../services/appRoutes";
 import httpService from "../../../services/httpService";
+import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
 import {
   FiCheckCircle,
   FiChevronLeft,
@@ -137,6 +138,7 @@ const FlatLayout = () => {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
   const storeLayout = useSelector((state: any) => state.flat?.flatLayout);
+  const mobileFormat = useMobileFormat();
 
   const [buildingId, setBuildingId] = useState<number | null>(null);
   const [activeFloor, setActiveFloor] = useState<number | null>(null);
@@ -578,7 +580,7 @@ const FlatLayout = () => {
         )}
         {unit?.customer?.mobile && (
           <span>
-            <span className="font-semibold">Mobile:</span> {unit.customer.mobile}
+            <span className="font-semibold">Mobile:</span> {formatMobile(unit.customer.mobile, mobileFormat)}
           </span>
         )}
         {STATUS_LABELS[Number(unit.status)] && (
