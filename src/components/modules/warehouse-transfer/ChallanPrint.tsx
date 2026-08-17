@@ -37,6 +37,13 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
     const totalQty = rows.reduce((sum, d) => sum + lineQty(d), 0);
     const totalDamaged = rows.reduce((sum, d) => sum + Number(d?.damaged_qty ?? 0), 0);
     const totalShort = rows.reduce((sum, d) => sum + Number(d?.short_qty ?? 0), 0);
+    const totalAmount = rows.reduce((sum, d) => sum + Number(d?.amount ?? 0), 0);
+
+    // Challans raised before transfers carried their cost have nothing to price,
+    // and two empty columns on a signed document invite somebody to fill them in.
+    const hasCost = rows.some((d) => Number(d?.amount ?? 0) > 0);
+
+    const layersOf = (d: any): any[] => (Array.isArray(d?.cost_layers) ? d.cost_layers : []);
 
     // Fixed label width, so every value starts on the same vertical line instead
     // of wherever its own label happened to end. In em, not px, so it still holds
@@ -107,28 +114,76 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
               <th className="border border-black px-2 py-1 text-right w-24">Qty</th>
               <th className="border border-black px-2 py-1 text-right w-28">Damaged</th>
               <th className="border border-black px-2 py-1 text-right w-24">Short</th>
+              {hasCost && <th className="border border-black px-2 py-1 text-right w-24">Rate</th>}
+              {hasCost && <th className="border border-black px-2 py-1 text-right w-28">Amount</th>}
             </tr>
           </thead>
           <tbody>
             {rows.length ? (
-              rows.map((d, i) => (
-                <tr key={d?.id ?? i}>
-                  <td className="border border-black px-2 py-1 text-center">{i + 1}</td>
-                  <td className="border border-black px-2 py-1 text-left">{d?.product_name || '-'}</td>
-                  <td className="border border-black px-2 py-1 text-right">
-                    {thousandSeparator(lineQty(d))}
-                  </td>
-                  <td className="border border-black px-2 py-1 text-right">
-                    {thousandSeparator(Number(d?.damaged_qty ?? 0))}
-                  </td>
-                  <td className="border border-black px-2 py-1 text-right">
-                    {thousandSeparator(Number(d?.short_qty ?? 0))}
-                  </td>
-                </tr>
-              ))
+              rows.map((d, i) => {
+                const layers = layersOf(d);
+                // Every rate is printed. One price sits on the product line;
+                // several are broken out beneath it, because the challan has to
+                // say which of the nine came in at which price -- an average
+                // would be a figure nothing was bought at.
+                const breakOut = hasCost && layers.length > 1;
+
+                return (
+                  <React.Fragment key={d?.id ?? i}>
+                    <tr>
+                      <td className="border border-black px-2 py-1 text-center">{i + 1}</td>
+                      <td className="border border-black px-2 py-1 text-left">
+                        {d?.product_name || '-'}
+                      </td>
+                      <td className="border border-black px-2 py-1 text-right">
+                        {thousandSeparator(lineQty(d))}
+                      </td>
+                      <td className="border border-black px-2 py-1 text-right">
+                        {thousandSeparator(Number(d?.damaged_qty ?? 0))}
+                      </td>
+                      <td className="border border-black px-2 py-1 text-right">
+                        {thousandSeparator(Number(d?.short_qty ?? 0))}
+                      </td>
+                      {hasCost && (
+                        <td className="border border-black px-2 py-1 text-right">
+                          {breakOut || d?.rate === null || d?.rate === undefined
+                            ? ''
+                            : thousandSeparator(Number(d.rate))}
+                        </td>
+                      )}
+                      {hasCost && (
+                        <td className="border border-black px-2 py-1 text-right">
+                          {thousandSeparator(Number(d?.amount ?? 0))}
+                        </td>
+                      )}
+                    </tr>
+
+                    {breakOut &&
+                      layers.map((layer: any, index: number) => (
+                        <tr key={`${d?.id ?? i}-${index}`}>
+                          <td className="border border-black px-2 py-1"></td>
+                          <td className="border border-black px-2 py-1 pl-6 text-left">
+                            at {thousandSeparator(Number(layer?.rate ?? 0))}
+                          </td>
+                          <td className="border border-black px-2 py-1 text-right">
+                            {thousandSeparator(Number(layer?.qty ?? 0))}
+                          </td>
+                          <td className="border border-black px-2 py-1"></td>
+                          <td className="border border-black px-2 py-1"></td>
+                          <td className="border border-black px-2 py-1 text-right">
+                            {thousandSeparator(Number(layer?.rate ?? 0))}
+                          </td>
+                          <td className="border border-black px-2 py-1 text-right">
+                            {thousandSeparator(Number(layer?.amount ?? 0))}
+                          </td>
+                        </tr>
+                      ))}
+                  </React.Fragment>
+                );
+              })
             ) : (
               <tr>
-                <td className="border border-black px-2 py-3 text-center" colSpan={5}>
+                <td className="border border-black px-2 py-3 text-center" colSpan={hasCost ? 7 : 5}>
                   No product on this challan.
                 </td>
               </tr>
@@ -142,6 +197,12 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
               <td className="border border-black px-2 py-1 text-right">{thousandSeparator(totalQty)}</td>
               <td className="border border-black px-2 py-1 text-right">{thousandSeparator(totalDamaged)}</td>
               <td className="border border-black px-2 py-1 text-right">{thousandSeparator(totalShort)}</td>
+              {hasCost && <td className="border border-black px-2 py-1"></td>}
+              {hasCost && (
+                <td className="border border-black px-2 py-1 text-right">
+                  {thousandSeparator(totalAmount)}
+                </td>
+              )}
             </tr>
           </tfoot>
         </table>
