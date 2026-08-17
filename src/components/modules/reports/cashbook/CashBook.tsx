@@ -9,7 +9,7 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
-import { getCashBook } from './cashBookSlice';
+import { clearCashBook, getCashBook } from './cashBookSlice';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import Table from '../../../utils/others/Table';
 import { useHighlightRules } from '../../../utils/highlight/useHighlightRules';
@@ -41,42 +41,14 @@ import {
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import routes from '../../../services/appRoutes';
 
-const CASHBOOK_FILTER_STORAGE_KEY = 'cashbook-filter-state';
-
-type CashBookSavedFilters = {
-  branchId?: number | string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  perPage?: number | string | null;
-  fontSize?: number | string | null;
-};
-
-const toNullableNumber = (value: unknown) => {
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) ? numberValue : null;
-};
-
-const parseStoredDate = (value?: string | null) => {
-  if (!value) return null;
-
-  const [year, month, day] = value.split('-').map(Number);
-  if (!year || !month || !day) return null;
-
-  return new Date(year, month - 1, day);
-};
-
-const readSavedCashBookFilters = (): CashBookSavedFilters | null => {
-  if (typeof window === 'undefined') return null;
-
-  try {
-    const raw = window.sessionStorage.getItem(CASHBOOK_FILTER_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-
-
+// The cash book keeps nothing between visits.
+//
+// The filters used to be written to sessionStorage and read back on every
+// entry, so the report opened on whatever branch and date range it was last
+// asked for -- a week ago, by whoever last used the browser -- and the rows of
+// that run came back with them from the store. Both are gone: the report opens
+// on this branch's current transaction date with an empty table, and shows
+// figures only for the question actually asked.
 const CashBook = (user: any) => {
   const dispatch = useDispatch();
   const highlightRules = useHighlightRules();
@@ -101,7 +73,6 @@ const CashBook = (user: any) => {
   const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
   const printRef = useRef<HTMLDivElement>(null); 
   const voucherRegistryRef = useRef<any>(null);
-  const restoredFilterRef = useRef(false);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
   const settings = useSelector((state: any) => state.settings);
@@ -129,44 +100,17 @@ const CashBook = (user: any) => {
     const endD = dayjs(endDate).format('YYYY-MM-DD');
 
     dispatch(getCashBook({ branchId, startDate: startD, endDate: endD }));
-    saveCashBookFilters();
     setFilterOpen(false);
   };
 
   useEffect(() => {
+    // Whatever the last run left in the store goes first, before anything can
+    // be drawn from it.
+    dispatch(clearCashBook());
     dispatch(getDdlProtectedBranch());
     setIsSelected(user.user.branch_id);
     setBranchId(user.user.branch_id);
     setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
-  }, []);
-
-  const saveCashBookFilters = () => {
-    if (typeof window === 'undefined') return;
-
-    const filters: CashBookSavedFilters = {
-      branchId,
-      startDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : null,
-      endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : null,
-      perPage,
-      fontSize,
-    };
-
-    window.sessionStorage.setItem(
-      CASHBOOK_FILTER_STORAGE_KEY,
-      JSON.stringify(filters),
-    );
-  };
-
-  useEffect(() => {
-    const savedFilters = readSavedCashBookFilters();
-    if (!savedFilters) return;
-
-    restoredFilterRef.current = true;
-    setBranchId(toNullableNumber(savedFilters.branchId) ?? user.user.branch_id);
-    setStartDate(parseStoredDate(savedFilters.startDate));
-    setEndDate(parseStoredDate(savedFilters.endDate));
-    setPerPage(toNullableNumber(savedFilters.perPage) ?? 12);
-    setFontSize(toNullableNumber(savedFilters.fontSize) ?? 12);
   }, []);
 
   useEffect(() => {
@@ -199,11 +143,9 @@ const CashBook = (user: any) => {
       const [day, month, year] =
         branchDdlData?.protectedData?.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-      if (!restoredFilterRef.current) {
-        setStartDate(parsedDate);
-        setEndDate(parsedDate);
-        setBranchId(user.user.branch_id);
-      }
+      setStartDate(parsedDate);
+      setEndDate(parsedDate);
+      setBranchId(user.user.branch_id);
     } else {
     }
   }, [branchDdlData?.protectedData?.data]);
@@ -254,8 +196,6 @@ const CashBook = (user: any) => {
   };
 
   const handleEditVoucher = (row: any) => {
-    saveCashBookFilters();
-
     const combinedNumber = String(row?.combined_number || '').trim();
     if (combinedNumber) {
       const combinedOpenState = getCombinedVoucherOpenState(row);

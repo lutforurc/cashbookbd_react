@@ -267,6 +267,9 @@ export const PRODUCT_DELETE_ERROR = 'PRODUCT/delete/error';
 export const CASHBOOK_DATA_LIST_PENDING = 'CASHBOOK/DATA/list/pending';
 export const CASHBOOK_DATA_LIST_SUCCESS = 'CASHBOOK/DATA/list/success';
 export const CASHBOOK_DATA_LIST_ERROR = 'CASHBOOK/DATA/list/error';
+// Throws away the last run's rows, so leaving the report and coming back to it
+// shows nothing until it is asked again rather than yesterday's cash book.
+export const CASHBOOK_DATA_LIST_RESET = 'CASHBOOK/DATA/list/reset';
 
 // Bank Book Data
 export const BANKBOOK_DATA_LIST_PENDING = 'BANKBOOK/DATA/list/pending';
