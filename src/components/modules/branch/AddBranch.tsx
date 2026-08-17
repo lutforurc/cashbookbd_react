@@ -1776,9 +1776,20 @@ const AddBranch = () => {
                       different question from the operational switches above. */}
                   {settings?.data?.user?.id === 1 && (
                     <>
-                      <h4 className="mb-2 mt-4 border-t border-gray-200 pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:border-strokedark dark:text-gray-400">
-                        SMS
-                      </h4>
+                      {/* Headed like the step above it: a name on its own says
+                          what the group is called, not what it decides. Where
+                          the wording of these messages is set is worth saying
+                          here, because nothing on this screen shows it and a
+                          branch looking for it would search this panel first. */}
+                      <div className="mb-2 mt-4 border-t border-gray-200 pt-4 dark:border-strokedark">
+                        <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          SMS Services
+                        </h4>
+                        <p className="mt-0.5 text-xs leading-snug text-gray-500">
+                          Which events text the party, and who they go to. What each message
+                          says is set on the SMS Template screen, not here.
+                        </p>
+                      </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                         <FormToggleField
                           label="SMS Service"
@@ -1786,11 +1797,21 @@ const AddBranch = () => {
                           checked={Boolean(formData.sms_service)}
                           onChange={(checked) => handleToggleFieldChange('sms_service', checked)}
                         />
+                        {/* Money first, both directions, then the two invoice
+                            ones. Received and Payment are the same question
+                            asked of cash in and cash out, so they read as a
+                            pair; Sales and Purchase likewise. */}
                         <FormToggleField
                           label="Received SMS"
                           description="Texts the party when money received from them is posted."
                           checked={Boolean(formData.received_sms)}
                           onChange={(checked) => handleToggleFieldChange('received_sms', checked)}
+                        />
+                        <FormToggleField
+                          label="Payment SMS"
+                          description="Texts the party when money paid to them is posted."
+                          checked={Boolean(formData.payment_sms)}
+                          onChange={(checked) => handleToggleFieldChange('payment_sms', checked)}
                         />
                         <FormToggleField
                           label="Sales SMS"
@@ -1803,12 +1824,6 @@ const AddBranch = () => {
                           description="Texts the supplier when a purchase is posted against them."
                           checked={Boolean(formData.purchase_sms)}
                           onChange={(checked) => handleToggleFieldChange('purchase_sms', checked)}
-                        />
-                        <FormToggleField
-                          label="Payment SMS"
-                          description="Texts the party when money paid to them is posted."
-                          checked={Boolean(formData.payment_sms)}
-                          onChange={(checked) => handleToggleFieldChange('payment_sms', checked)}
                         />
                       </div>
                     </>
