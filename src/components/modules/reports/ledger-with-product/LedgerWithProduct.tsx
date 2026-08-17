@@ -256,7 +256,16 @@ const LedgerWithProduct = (user: any) => {
       : transactionType === '1'
         ? 'Sales'
         : 'All';
-  const effectiveRowsPerPage = Math.max(Number(rowsPerPage) || 1, 1);
+  /**
+   * How many rows a printed page carries, or 0 for "do not split at all".
+   *
+   * Left empty, the statement prints as one continuous run and the browser
+   * breaks it across sheets wherever it lands -- which is what somebody wants
+   * when they are reading the whole ledger rather than filing a fixed-size
+   * page. The print component already treats a size of 0 as one page of
+   * everything, so nothing downstream needed teaching.
+   */
+  const effectiveRowsPerPage = Math.max(Number(rowsPerPage.trim() || 0) || 0, 0);
   const effectiveFontSize = Math.max(Number(fontSize) || 10, 1);
 
   const handleRun = async () => {
@@ -979,18 +988,17 @@ const LedgerWithProduct = (user: any) => {
                     </span>
                   </div>
                 ) : null}
+                {/* No onBlur clamp: it used to rewrite an emptied box back to
+                    1, so there was no way to ask for an unbroken statement. */}
                 <InputElement
                   type="number"
                   id="cs-statement-rows"
                   label=""
-                  title="Rows per print page"
-                  placeholder="Rows"
+                  title="Rows per print page — leave empty to print every row in one run"
+                  placeholder="All"
                   value={rowsPerPage}
                   onChange={(e: any) => setRowsPerPage(e.target.value)}
-                  onBlur={() =>
-                    setRowsPerPage(String(Math.max(Number(rowsPerPage) || 1, 1)))
-                  }
-                  min={1}
+                  min={0}
                   className={numberControlClass}
                 />
                 <InputElement
@@ -1042,18 +1050,16 @@ const LedgerWithProduct = (user: any) => {
                   />
                 </div>
                 <div className="flex flex-wrap items-end gap-2">
+                  {/* The narrow-screen copy of the same control. */}
                   <InputElement
                     type="number"
                     id="cs-statement-rows"
                     label=""
-                    title="Rows per print page"
-                    placeholder="Rows"
+                    title="Rows per print page — leave empty to print every row in one run"
+                    placeholder="All"
                     value={rowsPerPage}
                     onChange={(e: any) => setRowsPerPage(e.target.value)}
-                    onBlur={() =>
-                      setRowsPerPage(String(Math.max(Number(rowsPerPage) || 1, 1)))
-                    }
-                    min={1}
+                    min={0}
                     className={numberControlClass}
                   />
                   <InputElement
