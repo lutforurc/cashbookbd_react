@@ -16,6 +16,7 @@ import { chartDateTime } from '../../utils/utils-functions/formatDate';
 import { hasPermission } from '../../utils/permissionChecker';
 import SmsTemplatePreviewModal from './SmsTemplatePreviewModal';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
+import httpService from '../../services/httpService';
 import {
   clearSmsTemplatePreview,
   fetchSmsTemplates,
@@ -105,13 +106,18 @@ const SmsTemplateList = () => {
 
     setDeleteLoading(true);
     try {
-      // TODO: Add API call to delete template
-      // await httpService.delete(`/sms-templates/${template.id}`);
+      // The server checks sms.template.delete again and scopes to the
+      // company; a refusal comes back with its own reason.
+      const response = await httpService.post(`/admin/sms/templates/delete/${template.id}`);
+      if (response?.data?.success === false) {
+        toast.error(response?.data?.message || 'Failed to delete template');
+        return;
+      }
       toast.success('Template deleted successfully');
       setDeleteModal({ show: false });
       dispatch(fetchSmsTemplates({ page, per_page: perPage, search }));
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to delete template');
+      toast.error(error?.response?.data?.message || error?.message || 'Failed to delete template');
     } finally {
       setDeleteLoading(false);
     }
