@@ -242,9 +242,17 @@ const ProfitLoss = (user: any) => {
       salesCredit - salesDiscountDebit - salesReturnDebit
     );
 
+    // Goods moved between branches. A transfer is neither a sale nor a
+    // purchase, but it takes stock with it -- so without these two lines the
+    // branch that sent the goods shows a loss the size of the consignment, and
+    // the branch that received them shows a matching profit. Valued at cost by
+    // the API, from the same stock ledger closing stock is read from.
+    const goodsIssued = toNum(apiData?.branch_transfer?.issued);
+    const goodsReceived = toNum(apiData?.branch_transfer?.received);
+
     // Trading base
-    const debitBase = opening + netPurchase;
-    const creditBase = closing + netSalesCredit;
+    const debitBase = opening + netPurchase + goodsReceived;
+    const creditBase = closing + netSalesCredit + goodsIssued;
 
     // Blade balancing
     const grossProfit = creditBase > debitBase ? creditBase - debitBase : 0;
@@ -283,6 +291,9 @@ const ProfitLoss = (user: any) => {
         salesDiscountDebit,
         salesReturnDebit,
         netSalesCredit,
+
+        goodsIssued,
+        goodsReceived,
 
         grossProfit,
         grossLoss,

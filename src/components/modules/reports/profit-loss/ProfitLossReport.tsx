@@ -20,6 +20,8 @@ type ProfitLossReportData = {
     salesDiscountDebit: number;
     salesReturnDebit: number;
     netSalesCredit: number;
+    goodsIssued: number;
+    goodsReceived: number;
     grossProfit: number;
     grossLoss: number;
     totalDebit: number;
@@ -184,6 +186,30 @@ const ProfitLossReport = ({
             <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
             <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.netSalesCredit)}</td>
           </tr>
+
+          {/* Only shown when goods actually crossed a branch line -- on the
+              many branches that never transfer, the report reads as before. */}
+          {report.trading.goodsReceived > 0 ? (
+            <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
+              <td className="text-black dark:text-white p-2">Goods Received from Branch</td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(report.trading.goodsReceived)}
+              </td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
+            </tr>
+          ) : null}
+
+          {report.trading.goodsIssued > 0 ? (
+            <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
+              <td className="text-black dark:text-white p-2">Goods Issued to Branch</td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(report.trading.goodsIssued)}
+              </td>
+            </tr>
+          ) : null}
 
           <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
             <td className="text-black dark:text-white p-2">

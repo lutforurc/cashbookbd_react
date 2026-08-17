@@ -311,6 +311,38 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                     </td>
                   </tr>
 
+                  {/* Goods that crossed a branch line. Printed only when there
+                      were any, so an ordinary branch's sheet is unchanged. */}
+                  {Number(report?.trading?.goodsReceived || 0) > 0 ? (
+                    <tr className="avoid-break font-bold">
+                      <td style={{ fontSize: fs }} className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}>
+                        Goods Received from Branch
+                      </td>
+                      <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 ${cellPy} text-right`}></td>
+                      <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 ${cellPy} text-right`}>
+                        {fmtZero(report?.trading?.goodsReceived)}
+                      </td>
+                      <td style={{ fontSize: fs }} className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}>
+                        {fmtZero(0)}
+                      </td>
+                    </tr>
+                  ) : null}
+
+                  {Number(report?.trading?.goodsIssued || 0) > 0 ? (
+                    <tr className="avoid-break font-bold">
+                      <td style={{ fontSize: fs }} className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}>
+                        Goods Issued to Branch
+                      </td>
+                      <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 ${cellPy} text-right`}></td>
+                      <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 ${cellPy} text-right`}>
+                        {fmtZero(0)}
+                      </td>
+                      <td style={{ fontSize: fs }} className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}>
+                        {fmtZero(report?.trading?.goodsIssued)}
+                      </td>
+                    </tr>
+                  ) : null}
+
                   <tr className="avoid-break font-bold">
                     <td
                       style={{ fontSize: fs }}
