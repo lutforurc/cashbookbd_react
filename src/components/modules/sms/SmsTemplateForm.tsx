@@ -216,6 +216,12 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
                   {validationErrors.body || fieldError('body')}
                 </div>
               )}
+              <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Write a variable as <code>{'{{name}}'}</code>. Wrap a part in{' '}
+                <code>{'[[ ]]'}</code> to have it dropped whole when its variable is empty &mdash;{' '}
+                <code>{'[[Truck# {{truck_no}} ]]'}</code> leaves no bare &ldquo;Truck#&rdquo; behind
+                on a delivery that has no truck, and keeps the message inside one SMS.
+              </div>
             </div>
 
             <div className="md:col-span-2">
