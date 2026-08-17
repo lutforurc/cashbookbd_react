@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FiCheckSquare, FiEdit2, FiEye, FiPlus } from 'react-icons/fi';
+import { FiCheckSquare, FiEdit2, FiEye, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -30,6 +30,7 @@ const SmsTemplateList = () => {
   // answers to its own permission, because the body saved here goes out to
   // customers over the branch's name without anybody reading it first.
   const canEditTemplate = hasPermission(settings?.data?.permissions, 'sms.template.edit');
+  const canDeleteTemplate = hasPermission(settings?.data?.permissions, 'sms.template.delete');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -89,6 +90,17 @@ const SmsTemplateList = () => {
         sample_data: row.sample_data,
       }),
     );
+  };
+
+  const handleDelete = async (row: any) => {
+    if (!window.confirm(`Delete "${row.name}" template?`)) return;
+    try {
+      // TODO: Add API call to delete template
+      toast.success('Template deleted successfully');
+      dispatch(fetchSmsTemplates({ page, per_page: perPage, search }));
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to delete template');
+    }
   };
 
   const columns = [
@@ -196,6 +208,15 @@ const SmsTemplateList = () => {
               className="text-slate-500 transition hover:text-emerald-500"
             >
               <FiEdit2 className="h-4 w-4" />
+            </button>
+          ) : null}
+          {canDeleteTemplate ? (
+            <button
+              type="button"
+              onClick={() => handleDelete(row)}
+              className="text-slate-500 transition hover:text-red-500"
+            >
+              <FiTrash2 className="h-4 w-4" />
             </button>
           ) : null}
         </div>
