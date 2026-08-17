@@ -7,18 +7,29 @@ type Props = {
   master: any;
   details: any[];
   fontSize?: number;
-  // The same layout prints both sides of a transfer, so the heading is passed
-  // in: a challan when goods leave, a receive note when they arrive.
+  // Only for a caller that wants to say something the voucher itself does not.
+  // Left alone, the heading comes off transfer_type below, so no screen has to
+  // remember which of the two papers it is printing.
   title?: string;
 };
 
 // The transport column stores the transport input as `reference` and the note
 // as `notes` (see WarehouseTransferController::apiTransferDetails).
 const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ master, details, fontSize = 11, title = 'Delivery Challan' }, ref) => {
+  ({ master, details, fontSize = 11, title }, ref) => {
     if (!master) {
       return <div ref={ref}>No challan data.</div>;
     }
+
+    // transfer_type: 1 = issue, 2 = receive.
+    const isReceive = Number(master?.transfer_type) === 2;
+
+    // Delivery against Received, the pair the godown already reads that way.
+    // Decided from the voucher rather than from the screen, because the same
+    // component prints from the Transfer List, the Receive List, and wherever
+    // it is reached from next -- and a heading that depends on the route it
+    // was reached by will eventually be reached by the wrong one.
+    const heading = title || (isReceive ? 'Received Challan' : 'Delivery Challan');
 
     const rawDate = master?.challan_date || master?.vr_date;
     const challanDate = rawDate ? dayjs(rawDate).format('DD/MM/YYYY') : '';
@@ -74,13 +85,27 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
           }
         `}</style>
 
-        <PadPrinting />
+        {/* Headed with the branch whose voucher this is -- the sender on a
+            delivery challan, the receiver on a received one -- and not with
+            whoever happens to be printing it. The two papers record one
+            movement, so they share their From and To; what separates them is
+            which end raised the voucher, and the pad is where a reader looks
+            for that. Both used to come out on the sender's pad, which put the
+            receiving branch's own file copy under someone else's name. The
+            Cash Book's pad works the same way: company at the top, then the
+            branch the paper is actually about. */}
+        <PadPrinting
+          branch={{
+            name: isReceive ? master?.to_branch_name : master?.from_branch_name,
+            address: isReceive ? master?.to_branch_address : master?.from_branch_address,
+          }}
+        />
 
         <h1
           className="text-center font-bold uppercase mt-3 mb-4"
           style={{ fontSize: fontSize + 6 }}
         >
-          {title}
+          {heading}
         </h1>
 
         {/* Meta: challan/voucher/date on one side, branches on the other. */}

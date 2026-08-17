@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
-import { FiMinus, FiPlus, FiPrinter } from 'react-icons/fi';
+import { FiMinus, FiPlus, FiPrinter, FiSearch } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import httpService from '../../services/httpService';
 import { API_BRANCH_TRANSFER_COMPARISON_URL } from '../../services/apiRoutes';
@@ -16,6 +16,7 @@ import ChallanPrint from '../warehouse-transfer/ChallanPrint';
 import ComparisonPanel from '../warehouse-transfer/ComparisonPanel';
 import { getBranchTransferDetails } from '../warehouse-transfer/warehouseTransferSlice';
 import { getBranchReceived } from './warehouseReceivedSlice';
+import dayjs from 'dayjs';
 
 interface ReceiveListProps {
   refreshKey?: number;
@@ -29,6 +30,16 @@ const pickFirst = (row: any, keys: string[]) => {
   }
   return '';
 };
+
+/**
+ * The date as the rest of the app writes it: 15/08/2026, not 2026-08-15.
+ *
+ * Through dayjs rather than by splitting on the dashes, because the API sends
+ * the day on its own in some rows and with a time attached in others, and a
+ * split would hand back "15 00:00:00" for the second kind.
+ */
+const asDate = (value: any) =>
+  value && dayjs(value).isValid() ? dayjs(value).format('DD/MM/YYYY') : '-';
 
 const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
   const dispatch = useDispatch<any>();
@@ -81,7 +92,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
   const printRef = useRef<HTMLDivElement>(null);
   const printReceiveNote = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: 'Goods Receive Note',
+    documentTitle: 'Received Challan',
     removeAfterPrint: true,
   });
 
@@ -177,7 +188,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
       headerClass: 'w-36',
       cellClass: 'w-36',
       render: (row: any) => (
-        <span>{pickFirst(row, ['receive_date', 'transfer_date', 'date', 'vr_date']) || '-'}</span>
+        <span>{asDate(pickFirst(row, ['receive_date', 'transfer_date', 'date', 'vr_date']))}</span>
       ),
     },
     {
@@ -265,6 +276,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
             onClick={handleSearch}
             buttonLoading={searchLoading}
             label="Search"
+            icon={<FiSearch className="mr-2 h-4 w-4" />}
             className="whitespace-nowrap"
           />
         </div>
@@ -302,7 +314,6 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
           ref={printRef}
           master={transferDetails?.master}
           details={transferDetails?.details || []}
-          title="Goods Receive Note"
         />
       </div>
     </div>

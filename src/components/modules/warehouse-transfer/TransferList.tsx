@@ -17,9 +17,16 @@ import { getBranchTransfers, getBranchTransferDetails } from './warehouseTransfe
 import ChallanPrint from './ChallanPrint';
 import ComparisonPanel from './ComparisonPanel';
 import ROUTES from '../../services/appRoutes';
+import dayjs from 'dayjs';
 
 // transfer_status: 1 = issued/in transit (still receivable), 3 = fully received.
 const STATUS_IN_TRANSIT = 1;
+
+// transfer_type: 1 = issue, 2 = receive. Asked for explicitly, because the
+// endpoint hands back both kinds otherwise -- and a receive carries the same
+// from/to branches as the issue behind it, so the challan would appear twice
+// on this list, the second time under the receive voucher's number.
+const TRANSFER_TYPE_ISSUE = 1;
 
 interface TransferListProps {
   refreshKey?: number;
@@ -33,6 +40,16 @@ const pickFirst = (row: any, keys: string[]) => {
   }
   return '';
 };
+
+/**
+ * The date as the rest of the app writes it: 15/08/2026, not 2026-08-15.
+ *
+ * Through dayjs rather than by splitting on the dashes, because the API sends
+ * the day on its own in some rows and with a time attached in others, and a
+ * split would hand back "15 00:00:00" for the second kind.
+ */
+const asDate = (value: any) =>
+  value && dayjs(value).isValid() ? dayjs(value).format('DD/MM/YYYY') : '-';
 
 // transfer_status: 1 = issued (still in transit), 2 = partially received,
 // 3 = fully received. Shows at a glance which stock hasn't arrived yet.
@@ -104,14 +121,18 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
   };
 
   useEffect(() => {
-    dispatch(getBranchTransfers({ page, perPage, search }));
+    dispatch(
+      getBranchTransfers({ page, perPage, search, transfer_type: TRANSFER_TYPE_ISSUE }),
+    );
   }, [dispatch, page, perPage, refreshKey]);
 
   const handleSearch = () => {
     setSearchLoading(true);
     setCurrentPage(1);
     setPage(1);
-    dispatch(getBranchTransfers({ page: 1, perPage, search }));
+    dispatch(
+      getBranchTransfers({ page: 1, perPage, search, transfer_type: TRANSFER_TYPE_ISSUE }),
+    );
     setTimeout(() => setSearchLoading(false), 150);
   };
 
@@ -186,7 +207,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
       header: 'Date',
       headerClass: 'w-36',
       cellClass: 'w-36',
-      render: (row: any) => <span>{pickFirst(row, ['transfer_date', 'date', 'vr_date']) || '-'}</span>,
+      render: (row: any) => <span>{asDate(pickFirst(row, ['transfer_date', 'date', 'vr_date']))}</span>,
     },
     {
       key: 'from_branch',
