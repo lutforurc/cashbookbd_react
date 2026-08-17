@@ -15,6 +15,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { chartDateTime } from '../../utils/utils-functions/formatDate';
 import { hasPermission } from '../../utils/permissionChecker';
 import SmsTemplatePreviewModal from './SmsTemplatePreviewModal';
+import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import {
   clearSmsTemplatePreview,
   fetchSmsTemplates,
@@ -37,6 +38,8 @@ const SmsTemplateList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{ show: boolean; template?: any }>({ show: false });
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     dispatch(fetchSmsTemplates({ page, per_page: perPage, search }));
@@ -92,14 +95,25 @@ const SmsTemplateList = () => {
     );
   };
 
-  const handleDelete = async (row: any) => {
-    if (!window.confirm(`Delete "${row.name}" template?`)) return;
+  const handleDeleteClick = (row: any) => {
+    setDeleteModal({ show: true, template: row });
+  };
+
+  const handleDeleteConfirm = async () => {
+    const template = deleteModal.template;
+    if (!template) return;
+
+    setDeleteLoading(true);
     try {
       // TODO: Add API call to delete template
+      // await httpService.delete(`/sms-templates/${template.id}`);
       toast.success('Template deleted successfully');
+      setDeleteModal({ show: false });
       dispatch(fetchSmsTemplates({ page, per_page: perPage, search }));
     } catch (error: any) {
       toast.error(error?.message || 'Failed to delete template');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -213,7 +227,7 @@ const SmsTemplateList = () => {
           {canDeleteTemplate ? (
             <button
               type="button"
-              onClick={() => handleDelete(row)}
+              onClick={() => handleDeleteClick(row)}
               className="text-slate-500 transition hover:text-red-500"
             >
               <FiTrash2 className="h-4 w-4" />
@@ -266,6 +280,18 @@ const SmsTemplateList = () => {
           handlePageChange={handlePageChange}
         />
       ) : null}
+
+      <ConfirmModal
+        show={deleteModal.show}
+        title="Delete Template"
+        message={`Are you sure you want to delete "${deleteModal.template?.name}" template?`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        loading={deleteLoading}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteModal({ show: false })}
+        className="bg-red-600 hover:bg-red-700"
+      />
 
       <SmsTemplatePreviewModal
         open={previewOpen}
