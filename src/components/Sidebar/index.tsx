@@ -58,8 +58,10 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'branch_transfer', title: "Branch Issue" },
     { id: 'branch_received', title: "Branch Receive" },
     { id: 'material_issue', title: "Material Issue" },
-    { id: 'report_branch_transfer', title: "Branch Transfer Report" },
-    { id: 'report_branch_receive', title: "Branch Receive Report" },
+    { id: 'report_branch_transfer_list', title: "Transfer List" },
+    { id: 'report_branch_receive_list', title: "Receive List" },
+    { id: 'report_branch_transfer', title: "Issue Report" },
+    { id: 'report_branch_receive', title: "Receive Report" },
     { id: 'report_branch_stock', title: "Branch Stock" },
   ],
   'reports': [
@@ -1098,19 +1100,38 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                          {hasPermission(permissions, 'material.issue.create') && (
-                            <li style={subSlot('branch-transfer', 'material_issue')}>
+                          
+                          {/* The voucher lists, ahead of the product-wise
+                              reports: "which challans" is asked far oftener
+                              than "how much of each product". */}
+                          {hasPermission(permissions, 'branch.issue.create') && (
+                            <li style={subSlot('branch-transfer', 'report_branch_transfer_list')}>
                               <NavLink
-                                to={routes.material_issue}
+                                to={routes.report_branch_transfer_list}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Material Issue
+                                Transfer List
                               </NavLink>
                             </li>
                           )}
+                          {(hasPermission(permissions, 'branch.received.create') ||
+                            hasPermission(permissions, 'inventory.received.create') ||
+                            hasPermission(permissions, 'product.received.create')) && (
+                              <li style={subSlot('branch-transfer', 'report_branch_receive_list')}>
+                                <NavLink
+                                  to={routes.report_branch_receive_list}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Receive List
+                                </NavLink>
+                              </li>
+                            )}
                           {hasPermission(permissions, 'branch.transfer.create') && (
                             <li style={subSlot('branch-transfer', 'report_branch_transfer')}>
                               <NavLink
@@ -1120,7 +1141,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Branch Transfer Report
+                                Issue Report
                               </NavLink>
                             </li>
                           )}
@@ -1133,7 +1154,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Branch Receive Report
+                                Receive Report
                               </NavLink>
                             </li>
                           )}
@@ -1147,6 +1168,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Branch Stock
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'material.issue.create') && (
+                            <li style={subSlot('branch-transfer', 'material_issue')}>
+                              <NavLink
+                                to={routes.material_issue}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Material Issue
                               </NavLink>
                             </li>
                           )}

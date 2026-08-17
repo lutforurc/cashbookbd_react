@@ -13,7 +13,6 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDdlAllBranch, getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { storeBranchReceived } from './warehouseReceivedSlice';
 import { getBranchTransferDetails } from '../warehouse-transfer/warehouseTransferSlice';
-import ReceiveList from './ReceiveList';
 import InputDatePicker from '../../utils/fields/DatePicker';
 
 type ProductOption = {
@@ -45,7 +44,6 @@ const WarehouseReceived = () => {
   const branchDdl = useSelector((s: any) => s.branchDdl);
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
-  const [listRefreshKey, setListRefreshKey] = useState(0);
   // Set when arriving from the Transfer List "Receive" button: the receive is
   // posted against this issue transfer so the backend can link and close it.
   const [sourceTransferId, setSourceTransferId] = useState<number | null>(null);
@@ -434,7 +432,6 @@ const WarehouseReceived = () => {
         if (response?.success) {
           toast.success(response?.message || 'Branch receive saved');
           resetForm();
-          setListRefreshKey((prev) => prev + 1);
         } else {
           toast.error(response?.message || 'Failed to save branch receive');
         }
@@ -723,7 +720,6 @@ const WarehouseReceived = () => {
         </table>
       </div>
 
-      <ReceiveList refreshKey={listRefreshKey} />
     </div>
   );
 };

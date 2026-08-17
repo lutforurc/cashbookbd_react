@@ -31,6 +31,20 @@ const globalSearchItems: GlobalSearchItem[] = [
     group: 'Inventory',
     permissions: ['branch.received.create', 'inventory.received.create', 'product.received.create'],
   },
+  {
+    title: 'Transfer List',
+    path: routes.report_branch_transfer_list,
+    group: 'Report',
+    permissions: ['branch.issue.create', 'branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create'],
+    keywords: ['challan list', 'issued challans', 'branch transfer list'],
+  },
+  {
+    title: 'Receive List',
+    path: routes.report_branch_receive_list,
+    group: 'Report',
+    permissions: ['branch.received.create', 'inventory.received.create', 'product.received.create'],
+    keywords: ['received challans', 'branch receive list'],
+  },
 
   { title: 'Trading Combined', path: routes.inv_trading_combined, group: 'Invoice', permissions: ['purchase.create', 'sales.create'] },
   { title: 'Purchase Invoice', path: routes.inv_purchase, group: 'Invoice', permissions: ['purchase.create'], keywords: ['new purchase', 'buy', 'purchase entry'] },

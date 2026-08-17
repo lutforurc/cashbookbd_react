@@ -102,7 +102,7 @@ const BranchReceiveReport = ({ user }: any) => {
       }
     } catch (err: any) {
       setRows([]);
-      setError(err?.response?.data?.message || err?.message || 'Branch receive report load failed.');
+      setError(err?.response?.data?.message || err?.message || 'Receive report load failed.');
     } finally {
       setButtonLoading(false);
     }
@@ -110,7 +110,7 @@ const BranchReceiveReport = ({ user }: any) => {
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: 'Branch Receive Report',
+    documentTitle: 'Receive Report',
     removeAfterPrint: true,
   });
 
@@ -217,7 +217,7 @@ const BranchReceiveReport = ({ user }: any) => {
 
   return (
     <div>
-      <HelmetTitle title="Branch Receive Report" />
+      <HelmetTitle title="Receive Report" />
 
       <div className="px-0 py-3">
         <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-5">
@@ -308,7 +308,7 @@ const BranchReceiveReport = ({ user }: any) => {
         <div ref={printRef} className="print-root p-6 text-gray-900">
           <style>{`@media print { @page { size: A4 landscape; margin: 8mm; } .print-root { padding: 0 !important; } }`}</style>
           <PadPrinting />
-          <h1 className="mt-3 text-center text-xl font-bold uppercase">Branch Receive Report</h1>
+          <h1 className="mt-3 text-center text-xl font-bold uppercase">Receive Report</h1>
           <div className="mb-3 mt-1 text-center text-sm">
             {branchName ? <span>Branch: <b>{branchName}</b></span> : null}
             {rangeLabel ? <span> &nbsp;|&nbsp; {rangeLabel}</span> : null}

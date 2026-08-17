@@ -11,7 +11,6 @@ import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDdlAllBranch, getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { storeBranchTransfer } from './warehouseTransferSlice';
-import TransferList from './TransferList';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { trxDateToDate, trxDateToIso } from '../../utils/utils-functions/transactionDate';
 import httpService from '../../services/httpService';
@@ -48,7 +47,6 @@ const BranchTransfer = () => {
   const defaultTransferDate = trxDateToDate(trxDt) ?? dayjs().toDate();
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
-  const [listRefreshKey, setListRefreshKey] = useState(0);
   const [duplicateWarning, setDuplicateWarning] = useState<{
     mobile: string;
     items: any[];
@@ -355,7 +353,6 @@ const BranchTransfer = () => {
         if (response?.success) {
           toast.success(response?.message || 'Branch transfer saved');
           resetForm();
-          setListRefreshKey((prev) => prev + 1);
           return;
         }
         // A shortage is a warning the operator can override, not a hard error.
@@ -459,7 +456,7 @@ const BranchTransfer = () => {
   };
   return (
     <div>
-      <HelmetTitle title="Branch Transfer" />
+      <HelmetTitle title="Branch Issue" />
 
       {/* Rows sit closer than they did: at gap-4 the eight fields read as eight
           separate things rather than one form. */}
@@ -742,8 +739,6 @@ const BranchTransfer = () => {
           </tbody>
         </table>
       </div>
-
-      <TransferList refreshKey={listRefreshKey} />
 
       {duplicateWarning ? (
         <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/50 px-3 py-6">

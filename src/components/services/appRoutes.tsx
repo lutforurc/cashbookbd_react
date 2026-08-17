@@ -149,6 +149,10 @@ const ROUTES = {
   report_product_stock: '/reports/product/stock',
   report_branch_transfer: '/reports/branch-transfer',
   report_branch_receive: '/reports/branch-receive',
+  // The voucher lists. The two above are product-wise stock reports and answer
+  // a different question, so these carry their own paths rather than replacing.
+  report_branch_transfer_list: '/reports/branch-transfer-list',
+  report_branch_receive_list: '/reports/branch-receive-list',
   report_branch_stock: '/reports/branch-stock',
   report_closing_stock: '/reports/closing-stock',
   somity_stock_details: '/somity-report/stock-details',

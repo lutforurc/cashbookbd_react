@@ -198,6 +198,8 @@ import BranchTransfer from './components/modules/warehouse-transfer/WarehouseTra
 import WarehouseReceived from './components/modules/warehouse-received/WarehouseReceived';
 import BranchTransferReport from './components/modules/reports/branch-transfer-report/BranchTransferReport';
 import BranchReceiveReport from './components/modules/reports/branch-receive-report/BranchReceiveReport';
+import BranchTransferListReport from './components/modules/reports/branch-transfer-list/BranchTransferListReport';
+import BranchReceiveListReport from './components/modules/reports/branch-receive-list/BranchReceiveListReport';
 import BranchStockReport from './components/modules/reports/branch-stock-report/BranchStockReport';
 import MaterialIssue from './components/modules/material-issue/MaterialIssue';
 import SendSms from './components/modules/sms/SendSms';
@@ -651,6 +653,14 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.create', 'inventory.received.create', 'product.received.create', 'product.stock.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_branch_receive} element={<BranchReceiveReport user={me} />} />
+            </Route>
+            {/* The voucher lists, guarded as their entry forms are: whoever may
+                raise a challan may read back the ones already raised. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.issue.create', 'branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create', 'product.stock.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_branch_transfer_list} element={<BranchTransferListReport />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.create', 'inventory.received.create', 'product.received.create', 'product.stock.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_branch_receive_list} element={<BranchReceiveListReport />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view', 'branch.transfer.create', 'branch.received.create']} loading={permissionsLoading} />}>
               <Route path={routes.report_branch_stock} element={<BranchStockReport user={me} />} />
