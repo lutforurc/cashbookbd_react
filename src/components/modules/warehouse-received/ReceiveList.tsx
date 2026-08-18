@@ -8,6 +8,7 @@ import { API_BRANCH_TRANSFER_COMPARISON_URL } from '../../services/apiRoutes';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
+import InputElement from '../../utils/fields/InputElement';
 import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
@@ -52,6 +53,19 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number | string>(10);
+  // How the printed challan is set out, as on the Transfer List.
+  const [printRows, setPrintRows] = useState<number>(0);
+  const [printFont, setPrintFont] = useState<number>(11);
+
+  const handlePrintRowsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintRows(Number.isFinite(value) && value > 0 ? value : 0);
+  };
+
+  const handlePrintFontChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintFont(Number.isFinite(value) && value > 0 ? value : 11);
+  };
   const [searchLoading, setSearchLoading] = useState(false);
   const [printingId, setPrintingId] = useState<number | string | null>(null);
   // One receive compared at a time, as on the Transfer List.
@@ -280,6 +294,46 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
             className="whitespace-nowrap"
           />
         </div>
+
+        {/* Both belong to the printed challan, not to the list, and are set
+            out as the Transfer List sets them out. */}
+        <div className="flex items-end gap-2">
+          <div>
+            <label
+              htmlFor="receiveChallanRows"
+              className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1"
+            >
+              Rows
+            </label>
+            <InputElement
+              id="receiveChallanRows"
+              name="receiveChallanRows"
+              label=""
+              value={String(printRows)}
+              onChange={handlePrintRowsChange}
+              type="text"
+              className="h-10 !w-20 text-center text-sm font-medium"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="receiveChallanFont"
+              className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1"
+            >
+              Font
+            </label>
+            <InputElement
+              id="receiveChallanFont"
+              name="receiveChallanFont"
+              label=""
+              value={String(printFont)}
+              onChange={handlePrintFontChange}
+              type="text"
+              className="h-10 !w-20 text-center text-sm font-medium"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="relative overflow-x-auto">
@@ -314,6 +368,8 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
           ref={printRef}
           master={transferDetails?.master}
           details={transferDetails?.details || []}
+          rowsPerPage={printRows}
+          fontSize={printFont}
         />
       </div>
     </div>

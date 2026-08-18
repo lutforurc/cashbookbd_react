@@ -7,16 +7,36 @@ type Props = {
   master: any;
   details: any[];
   fontSize?: number;
+  /**
+   * How many product lines go on a printed page. 0 -- the default -- keeps the
+   * whole challan on one, which is what a challan of half a dozen lines wants
+   * and what every caller got before this existed.
+   */
+  rowsPerPage?: number;
   // Only for a caller that wants to say something the voucher itself does not.
   // Left alone, the heading comes off transfer_type below, so no screen has to
   // remember which of the two papers it is printing.
   title?: string;
 };
 
+/**
+ * Product lines split into pages.
+ *
+ * Split by product, never inside one: a line's cost layers are printed beneath
+ * it, and a product parted from its own rates on a signed document is worse
+ * than a page that runs a little long.
+ */
+const chunkRows = <T,>(data: T[], size: number): T[][] => {
+  if (size <= 0) return [data];
+  const out: T[][] = [];
+  for (let i = 0; i < data.length; i += size) out.push(data.slice(i, i + size));
+  return out;
+};
+
 // The transport column stores the transport input as `reference` and the note
 // as `notes` (see WarehouseTransferController::apiTransferDetails).
 const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ master, details, fontSize = 11, title }, ref) => {
+  ({ master, details, fontSize = 11, rowsPerPage = 0, title }, ref) => {
     if (!master) {
       return <div ref={ref}>No challan data.</div>;
     }
@@ -64,12 +84,21 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
         <span className="font-semibold whitespace-nowrap shrink-0" style={{ width: '9.5em' }}>
           {label}:
         </span>
-        <span>
+        {/* Tight leading on the pair: an address belongs to the branch named
+            above it, and a full line's gap between them reads as two separate
+            entries rather than one. In em so it holds at any printed size. */}
+        <span className="leading-tight">
           {value || '-'}
-          {sub ? <span className="block">{sub}</span> : null}
+          {sub ? (
+            <span className="block" style={{ marginTop: '.2em' }}>
+              {sub}
+            </span>
+          ) : null}
         </span>
       </div>
     );
+
+    const pages = chunkRows(rows, rowsPerPage);
 
     return (
       <div ref={ref} className="print-root text-gray-900" style={{ fontSize }}>
@@ -82,8 +111,26 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
             .print-root {
               padding: 0 !important;
             }
+            .challan-page {
+              break-after: page;
+              page-break-after: always;
+            }
+            .challan-page:last-child {
+              break-after: auto;
+              page-break-after: auto;
+            }
           }
         `}</style>
+
+        {pages.map((pageRows, pageIndex) => {
+          const isLastPage = pageIndex === pages.length - 1;
+          // Where this page's lines sit in the challan as a whole, so the
+          // serial numbers run 1..n across the document rather than restarting
+          // at every page break.
+          const offset = pageIndex * (rowsPerPage > 0 ? rowsPerPage : 0);
+
+          return (
+            <div key={pageIndex} className="challan-page">
 
         {/* Headed with the branch whose voucher this is -- the sender on a
             delivery challan, the receiver on a received one -- and not with
@@ -108,27 +155,35 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
           {heading}
         </h1>
 
-        {/* Meta: challan/voucher/date on one side, branches on the other. */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1 mb-3">
-          <Meta label="Challan No" value={master?.challan_number} />
-          <Meta
-            label="From Branch"
-            value={master?.from_branch_name}
-            sub={master?.from_branch_address}
-          />
-          <Meta label="Voucher No" value={master?.vr_no} />
-          <Meta
-            label="To Branch"
-            value={master?.to_branch_name}
-            sub={master?.to_branch_address}
-          />
-          <Meta label="Date" value={challanDate} />
-          {/* Falls back to the old single Transport box, which is all an entry
-              made before the split has. */}
-          <Meta label="Driver" value={master?.driver_name || master?.reference} />
-          <Meta label="Receiver" value={master?.receiver_name} />
-          <Meta label="Driver Mobile" value={master?.driver_mobile} />
-          <Meta label="Receiver Mobile" value={master?.receiver_mobile_number} />
+        {/* Meta: challan/voucher/date on one side, branches on the other.
+            Each side is its own stack rather than cells of a shared grid: a
+            branch address runs to two lines, and in a row-flowing grid that
+            second line pushed the whole left column down with it, leaving
+            Voucher No adrift beside an address it has nothing to do with. */}
+        <div className="grid grid-cols-2 gap-x-8 mb-3 items-start">
+          <div className="space-y-1">
+            <Meta label="Challan No" value={master?.challan_number} />
+            <Meta label="Voucher No" value={master?.vr_no} />
+            <Meta label="Date" value={challanDate} />
+            <Meta label="Receiver" value={master?.receiver_name} />
+            <Meta label="Receiver Mobile" value={master?.receiver_mobile_number} />
+          </div>
+          <div className="space-y-1">
+            <Meta
+              label="From Branch"
+              value={master?.from_branch_name}
+              sub={master?.from_branch_address}
+            />
+            <Meta
+              label="To Branch"
+              value={master?.to_branch_name}
+              sub={master?.to_branch_address}
+            />
+            {/* Falls back to the old single Transport box, which is all an
+                entry made before the split has. */}
+            <Meta label="Driver" value={master?.driver_name || master?.reference} />
+            <Meta label="Driver Mobile" value={master?.driver_mobile} />
+          </div>
         </div>
 
         <table className="w-full border-collapse">
@@ -144,8 +199,9 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
             </tr>
           </thead>
           <tbody>
-            {rows.length ? (
-              rows.map((d, i) => {
+            {pageRows.length ? (
+              pageRows.map((d, index) => {
+                const i = offset + index;
                 const layers = layersOf(d);
                 // Every rate is printed. One price sits on the product line;
                 // several are broken out beneath it, because the challan has to
@@ -214,7 +270,10 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
               </tr>
             )}
           </tbody>
-          <tfoot>
+          {/* The totals close the document, so they belong under the last of
+              its lines -- a Total halfway through reads as the end of the
+              challan, and whoever signs it may never turn the page. */}
+          <tfoot className={isLastPage ? '' : 'hidden'}>
             <tr className="font-semibold">
               <td className="border border-black px-2 py-1 text-right" colSpan={2}>
                 Total
@@ -232,24 +291,36 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
           </tfoot>
         </table>
 
-        {master?.notes ? (
+        {/* The note and the signatures close the document too, for the same
+            reason: a line to sign halfway through invites a signature on a
+            challan whose remaining pages nobody has read. */}
+        {isLastPage && master?.notes ? (
           <div className="mt-3">
             <span className="font-semibold">Note: </span>
             {master.notes}
           </div>
         ) : null}
 
-        <div className="mt-12 grid grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="border-t border-black pt-1">Delivered By</div>
+        {isLastPage ? (
+          <div className="mt-12 grid grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="border-t border-black pt-1">Delivered By</div>
+            </div>
+            <div className="text-center">
+              <div className="border-t border-black pt-1">Driver</div>
+            </div>
+            <div className="text-center">
+              <div className="border-t border-black pt-1">Received By</div>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="border-t border-black pt-1">Driver</div>
+        ) : (
+          <div className="mt-3 text-right text-xs">
+            Page {pageIndex + 1} of {pages.length} — continued
           </div>
-          <div className="text-center">
-            <div className="border-t border-black pt-1">Received By</div>
-          </div>
-        </div>
+        )}
+            </div>
+          );
+        })}
       </div>
     );
   },

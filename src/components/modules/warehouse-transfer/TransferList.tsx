@@ -15,6 +15,7 @@ import InlineConfirm, {
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
+import InputElement from '../../utils/fields/InputElement';
 import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
@@ -88,6 +89,22 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
     { id: number; vrNo: string; at: InlineConfirmPosition } | null
   >(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  // How the printed challan is set out. 0 rows means "all on one page", which
+  // is what a challan of a few lines wants; a long one can be split.
+  const [printRows, setPrintRows] = useState<number>(0);
+  const [printFont, setPrintFont] = useState<number>(11);
+
+  // Empty is kept as 0 rather than snapping back to a number, so the box can be
+  // cleared and retyped instead of fighting the operator mid-edit.
+  const handlePrintRowsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintRows(Number.isFinite(value) && value > 0 ? value : 0);
+  };
+
+  const handlePrintFontChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintFont(Number.isFinite(value) && value > 0 ? value : 11);
+  };
 
   /** Sends the voucher to the recycle bin, where it can be restored. */
   const deleteTransfer = async (transferId: number) => {
@@ -389,8 +406,6 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
 
   return (
     <div className="mt-6">
-      <h3 className="text-lg font-semibold text-black dark:text-white mb-2">Transfer List</h3>
-
       <div className="flex overflow-x-auto justify-between mb-2">
         <div className="flex">
           <SelectOption onChange={handleSelectChange} className="mr-1 md:mr-2" />
@@ -402,6 +417,24 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
             icon={<FiSearch className="mr-2 h-4 w-4" />}
             className="whitespace-nowrap"
           />
+        </div>
+
+        {/* Both belong to the printed challan, not to the list: the challan is
+            what gets read on paper, and how much fits on a page depends on the
+            printer and the eyes in front of it. Laid out as the Cash Book lays
+            them out, so anyone who has set them once knows these. */}
+        <div className="flex items-end gap-2">
+          <div>
+            <InputElement
+              id="challanFont"
+              name="challanFont"
+              label=""
+              value={String(printFont)}
+              onChange={handlePrintFontChange}
+              type="text"
+              className="h-10 !w-20 text-center text-sm font-medium"
+            />
+          </div>
         </div>
       </div>
 
@@ -453,6 +486,8 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
           ref={printRef}
           master={transfer?.details?.master}
           details={transfer?.details?.details || []}
+          rowsPerPage={printRows}
+          fontSize={printFont}
         />
       </div>
     </div>
