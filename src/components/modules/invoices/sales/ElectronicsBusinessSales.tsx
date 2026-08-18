@@ -37,6 +37,9 @@ import QuickCustomerModal from './QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import StockShortageModal, {
+  StockShortage,
+} from '../../../utils/components/StockShortageModal';
 
 interface Product {
   id: number;
@@ -110,6 +113,9 @@ const ElectronicsBusinessSales = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [updateButtonLoading, setUpdateButtonLoading] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  // The invoice waiting on an answer, held with the question so Continue can
+  // send exactly what was refused rather than whatever the form holds by then.
+  const [stockWarning, setStockWarning] = useState<(StockShortage & { payload: any }) | null>(null);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [earlyPaymentDate, setEarlyPaymentDate] = useState<Date | null>(null);
@@ -619,20 +625,51 @@ const ElectronicsBusinessSales = () => {
       installmentData: formattedInstallmentData,
     };
 
+    sendInvoice(payload);
+  };
+
+  /**
+   * The save itself, kept apart from the validation so the shortage question
+   * can send the very same invoice a second time -- with allow_negative -- once
+   * the operator has said to go on.
+   */
+  const sendInvoice = (payload: any, allowNegative = false) => {
+    setSaveButtonLoading(true);
+    const finalPayload = allowNegative ? { ...payload, allow_negative: true } : payload;
+
     try {
       dispatch(
-        electronicsSalesStore(
-          payload,
-          // (message) => message && toast.success(message),
-        ),
+        electronicsSalesStore(finalPayload, (message: string, response?: any) => {
+          // Not enough stock: nothing saved, nothing wrong. Hold the invoice
+          // and put the question.
+          if (response?.stock_shortage) {
+            setStockWarning({
+              rows: Array.isArray(response?.shortage_rows) ? response.shortage_rows : [],
+              shortages: Array.isArray(response?.shortages) ? response.shortages : [],
+              message: response?.message || 'Not enough stock.',
+              blocked: Boolean(response?.stock_blocked),
+              payload,
+            });
+            setSaveButtonLoading(false);
+            return;
+          }
+
+          // Only a real failure is worth a toast; a saved invoice announces
+          // itself through the voucher number.
+          if (message && !(response?.success ?? false)) {
+            toast.error(message);
+          }
+
+          setTimeout(() => {
+            setSaveButtonLoading(false);
+            resetProducts();
+            setIsEarlyPayment(false);
+          }, 2000);
+        }),
       );
-      setTimeout(() => {
-        setSaveButtonLoading(false);
-        resetProducts();
-        setIsEarlyPayment(false);
-      }, 2000);
     } catch (error) {
       toast.error('Failed to save invoice!');
+      setSaveButtonLoading(false);
     }
   };
 
@@ -1579,6 +1616,21 @@ const ElectronicsBusinessSales = () => {
             }));
           }}
         />
+
+      <StockShortageModal
+        warning={stockWarning}
+        action="sell"
+        saving={saveButtonLoading}
+        onCancel={() => {
+          setStockWarning(null);
+          setSaveButtonLoading(false);
+        }}
+        onContinue={() => {
+          const pending = stockWarning;
+          setStockWarning(null);
+          if (pending) sendInvoice(pending.payload, true);
+        }}
+      />
     </>
   );
 };

@@ -86,6 +86,8 @@ interface branchItem {
   is_opening: boolean;
   use_bangla: boolean;
   report_zero_bal: boolean;
+  warn_negative_stock_sale: boolean;
+  block_negative_stock_sale: boolean;
   manufactur_control: boolean;
   sms_service: boolean;
   received_sms: boolean;
@@ -342,6 +344,8 @@ const AddBranch = () => {
     is_opening: false,
     use_bangla: false,
     report_zero_bal: false,
+    warn_negative_stock_sale: false,
+    block_negative_stock_sale: false,
     manufactur_control: false,
     sms_service: false,
     received_sms: false,
@@ -585,6 +589,8 @@ const AddBranch = () => {
         have_is_guaranter: toBooleanFlag(b.have_is_guaranter),
         have_customer_nominee: toBooleanFlag(b.have_customer_nominee),
         report_zero_bal: toBooleanFlag(b.report_zero_bal),
+        warn_negative_stock_sale: toBooleanFlag(b.warn_negative_stock_sale),
+        block_negative_stock_sale: toBooleanFlag(b.block_negative_stock_sale),
         manufactur_control: toBooleanFlag(b.manufactur_control),
         warranty_controll: toBooleanFlag(b.warranty_controll),
         have_warehouse: toBooleanFlag(b.have_warehouse),
@@ -1313,6 +1319,29 @@ const AddBranch = () => {
                       checked={Boolean(formData.combined_invoice_note)}
                       onChange={(checked) =>
                         handleToggleFieldChange('combined_invoice_note', checked)
+                      }
+                    />
+                  </div>
+
+                  {/* ---------- Stock ---------- */}
+                  <h4 className="mb-2 mt-4 border-t border-gray-200 pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:border-strokedark dark:text-gray-400">
+                    Stock
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <FormToggleField
+                      label="Warn On Negative Stock Sale?"
+                      description="Asks before an invoice sells more than the branch holds. Goods often arrive before the supplier's bill does, so the sale still goes through once confirmed -- this only makes sure a wrong line is noticed at the time, rather than in a stock report weeks later."
+                      checked={Boolean(formData.warn_negative_stock_sale)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('warn_negative_stock_sale', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Block Negative Stock Sale?"
+                      description="Refuses the invoice outright instead of asking, and nobody can override it. For a branch that only ever sells what it has already entered -- turn it off where goods are sold before the supplier's bill arrives, or the sale cannot be made at all."
+                      checked={Boolean(formData.block_negative_stock_sale)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('block_negative_stock_sale', checked)
                       }
                     />
                   </div>

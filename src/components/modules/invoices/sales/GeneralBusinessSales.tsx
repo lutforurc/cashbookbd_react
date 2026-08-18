@@ -41,6 +41,9 @@ import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
+import StockShortageModal, {
+  StockShortage,
+} from '../../../utils/components/StockShortageModal';
 
 interface Product {
   id: number;
@@ -73,6 +76,9 @@ const GeneralBusinessSales = () => {
   const settings = useSelector((s: any) => s.settings);
   const dispatch = useDispatch();
   const [buttonLoading, setButtonLoading] = useState(false);
+  // The invoice waiting on an answer, held with the question so Continue can
+  // send exactly what was refused rather than whatever the form holds by then.
+  const [stockWarning, setStockWarning] = useState<(StockShortage & { payload: any }) | null>(null);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(null); // Define state with type
   const [unit, setUnit] = useState<string | null>(null); // Define state with type
@@ -420,9 +426,33 @@ const GeneralBusinessSales = () => {
       return;
     }
 
+    sendInvoice(formData);
+  };
+
+  /**
+   * The save itself, kept apart from the validation so the shortage question
+   * can send the very same invoice a second time -- with allow_negative -- once
+   * the operator has said to go on.
+   */
+  const sendInvoice = (payload: any, allowNegative = false) => {
+    const finalPayload = allowNegative ? { ...payload, allow_negative: true } : payload;
+
     try {
       dispatch(
-        generalSalesStore(formData, function (message, success) {
+        generalSalesStore(finalPayload, function (message: string, success: boolean, response?: any) {
+          // Not enough stock: nothing saved, nothing wrong. Hold the invoice
+          // and put the question.
+          if (response?.stock_shortage) {
+            setStockWarning({
+              rows: Array.isArray(response?.shortage_rows) ? response.shortage_rows : [],
+              shortages: Array.isArray(response?.shortages) ? response.shortages : [],
+              message: response?.message || 'Not enough stock.',
+              blocked: Boolean(response?.stock_blocked),
+              payload,
+            });
+            return;
+          }
+
           // A saved invoice announces itself through the voucher number effect
           // below, so only a real failure is worth a toast here.
           if (message && !success) {
@@ -991,6 +1021,17 @@ const GeneralBusinessSales = () => {
             accountName: name,
             receivedAmt: isCashCustomer ? prev.receivedAmt : '0',
           }));
+        }}
+      />
+
+      <StockShortageModal
+        warning={stockWarning}
+        action="sell"
+        onCancel={() => setStockWarning(null)}
+        onContinue={() => {
+          const pending = stockWarning;
+          setStockWarning(null);
+          if (pending) sendInvoice(pending.payload, true);
         }}
       />
     </>

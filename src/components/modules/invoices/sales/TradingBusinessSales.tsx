@@ -58,6 +58,9 @@ import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import TrackedProductField from '../../product-tracking/TrackedProductField';
 import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
+import StockShortageModal, {
+  StockShortage,
+} from '../../../utils/components/StockShortageModal';
 
 interface Product {
   id: number;
@@ -137,6 +140,9 @@ const TradingBusinessSales = () => {
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  // The invoice waiting on an answer, held with the question so Continue can
+  // send exactly what was refused rather than whatever the form holds by then.
+  const [stockWarning, setStockWarning] = useState<(StockShortage & { payload: any }) | null>(null);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
@@ -603,9 +609,35 @@ const TradingBusinessSales = () => {
       discountAmt: formData.discountAmt === '' ? 0 : Number(formData.discountAmt) || 0,
     };
 
+    sendInvoice(payload);
+  };
+
+  /**
+   * The save itself, kept apart from the validation so the shortage question
+   * can send the very same invoice a second time -- with allow_negative -- once
+   * the operator has said to go on.
+   */
+  const sendInvoice = (payload: any, allowNegative = false) => {
+    setSaveButtonLoading(true);
+    const finalPayload = allowNegative ? { ...payload, allow_negative: true } : payload;
+
     try {
       dispatch(
-        tradingSalesStore(payload, function (message) {
+        tradingSalesStore(finalPayload, function (message: string, response?: any) {
+          // Not enough stock: nothing saved, nothing wrong. Hold the invoice
+          // and put the question.
+          if (response?.stock_shortage) {
+            setStockWarning({
+              rows: Array.isArray(response?.shortage_rows) ? response.shortage_rows : [],
+              shortages: Array.isArray(response?.shortages) ? response.shortages : [],
+              message: response?.message || 'Not enough stock.',
+              blocked: Boolean(response?.stock_blocked),
+              payload,
+            });
+            setSaveButtonLoading(false);
+            return;
+          }
+
           if (message) {
             toast.success(message);
             setTimeout(() => {
@@ -1721,6 +1753,21 @@ const TradingBusinessSales = () => {
             accountName: name,
             receivedAmt: isCashCustomer ? prev.receivedAmt : '',
           }));
+        }}
+      />
+
+      <StockShortageModal
+        warning={stockWarning}
+        action="sell"
+        saving={saveButtonLoading}
+        onCancel={() => {
+          setStockWarning(null);
+          setSaveButtonLoading(false);
+        }}
+        onContinue={() => {
+          const pending = stockWarning;
+          setStockWarning(null);
+          if (pending) sendInvoice(pending.payload, true);
         }}
       />
     </>

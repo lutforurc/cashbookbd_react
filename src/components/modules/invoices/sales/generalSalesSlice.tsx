@@ -31,7 +31,11 @@ interface formData {
 // The callback is told whether the save worked, because a successful save
 // answers with a message of its own ("Vr. No. ...") and the caller would
 // otherwise have no way to tell it apart from a failure.
-export const generalSalesStore = (data: formData, callback?: (message: string, success: boolean) => void) => (dispatch: any) => {
+// The callback is handed the whole answer as well as the message and the
+// verdict, because not every unsuccessful save is a failure: a stock shortage
+// comes back with success false and a question to put to the operator, and the
+// screen can only tell that from the body.
+export const generalSalesStore = (data: formData, callback?: (message: string, success: boolean, response?: any) => void) => (dispatch: any) => {
   dispatch({ type: SALES_TRADING_STORE_PENDING });
   httpService.post(API_TRADING_SALES_STORE_URL, data)
     .then((res) => {
@@ -42,15 +46,28 @@ export const generalSalesStore = (data: formData, callback?: (message: string, s
           payload: _data.data.data,
         });
         if ('function' == typeof callback) {
-          callback(_data.message, true);
+          callback(_data.message, true, _data);
+        }
+      } else if (_data.stock_shortage) {
+        // Nothing has gone wrong and nothing was saved -- the screen is about
+        // to ask. The pending state still has to be brought down, or the
+        // spinner turns for ever behind the question and Cancel leaves it
+        // turning; the empty payload is what keeps a red banner from appearing
+        // behind a question that has not been answered yet.
+        dispatch({
+          type: SALES_TRADING_STORE_ERROR,
+          payload: '',
+        });
+        if ('function' == typeof callback) {
+          callback('', false, _data);
         }
       } else {
         dispatch({
           type: SALES_TRADING_STORE_ERROR,
-          payload: _data.error.message,
+          payload: _data?.error?.message ?? _data?.message ?? 'Something went wrong.',
         });
         if ('function' == typeof callback) {
-          callback(_data.message, false);
+          callback(_data.message, false, _data);
         }
       }
     })

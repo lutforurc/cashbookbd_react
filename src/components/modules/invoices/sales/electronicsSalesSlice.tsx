@@ -27,7 +27,11 @@ interface formData {
 
 
 // Ready for electronics sales store action
-export const electronicsSalesStore = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
+// The callback is handed the whole answer as well as the message, because not
+// every unsuccessful save is a failure: a stock shortage comes back with
+// success false and a question to put to the operator, and the screen can only
+// tell that from the body.
+export const electronicsSalesStore = (data: formData, callback?: (message: string, response?: any) => void) => (dispatch: any) => {
   dispatch({ type: SALES_ELECTRONICS_STORE_PENDING });
   httpService.post(API_ELECTRONICS_SALES_STORE_URL, data)
     .then((res) => {
@@ -38,15 +42,28 @@ export const electronicsSalesStore = (data: formData, callback?: (message: strin
           payload: _data.data.data,
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(_data.message, _data);
+        }
+      } else if (_data.stock_shortage) {
+        // Nothing has gone wrong and nothing was saved -- the screen is about
+        // to ask. The pending state still has to be brought down, or the
+        // spinner turns for ever behind the question and Cancel leaves it
+        // turning; the empty payload is what keeps a red banner from appearing
+        // behind a question that has not been answered yet.
+        dispatch({
+          type: SALES_ELECTRONICS_STORE_ERROR,
+          payload: '',
+        });
+        if ('function' == typeof callback) {
+          callback('', _data);
         }
       } else {
         dispatch({
           type: SALES_ELECTRONICS_STORE_ERROR,
-          payload: _data.error.message,
+          payload: _data?.error?.message ?? _data?.message ?? 'Something went wrong.',
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(_data.message, _data);
         }
       }
     })
