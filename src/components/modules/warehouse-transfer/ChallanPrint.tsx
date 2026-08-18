@@ -80,7 +80,11 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
     // of wherever its own label happened to end. In em, not px, so it still holds
     // when the challan is printed at a larger fontSize.
     const Meta = ({ label, value, sub }: { label: string; value: any; sub?: any }) => (
-      <div className="flex gap-1">
+      // A field carrying an address is two lines tall, so it needs a little
+      // more air beneath it than a one-line field does -- otherwise the
+      // address sits as close to the next label as it does to its own branch
+      // name, and the eye cannot tell which of the two it belongs to.
+      <div className="flex gap-1" style={sub ? { marginBottom: '.8em' } : undefined}>
         <span className="font-semibold whitespace-nowrap shrink-0" style={{ width: '9.5em' }}>
           {label}:
         </span>
