@@ -12,7 +12,8 @@ import InputDatePicker from "../../../utils/fields/DatePicker";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
-import InputElement from "../../../utils/fields/InputElement";
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import FilterMenuShell from "../../../utils/components/FilterMenuShell";
 
@@ -431,7 +432,7 @@ const BalanceSheet = (user: any) => {
 
             {useFilterMenuEnabled ? (
               <div className="ml-auto flex items-end gap-2">
-                <InputElement
+                <PrintRowsInput
                   type="number"
                   id="bs-per-page"
                   label=""
@@ -439,7 +440,7 @@ const BalanceSheet = (user: any) => {
                   onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
                   className="h-10 !w-20 text-center"
                 />
-                <InputElement
+                <PrintFontInput
                   type="number"
                   id="bs-font-size"
                   label=""
@@ -474,7 +475,7 @@ const BalanceSheet = (user: any) => {
 
                 </div>
                 <div className="flex flex-nowrap items-end justify-start gap-2">
-                  <InputElement
+                  <PrintRowsInput
                     type="number"
                     id="bs-per-page"
                     label=""
@@ -482,7 +483,7 @@ const BalanceSheet = (user: any) => {
                     onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
                     className="h-10 !w-20 text-center"
                   />
-                  <InputElement
+                  <PrintFontInput
                     type="number"
                     id="bs-font-size"
                     label=""

@@ -13,7 +13,8 @@ import Table from '../../../utils/others/Table';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import CashBookPrint from '../cashbook/CashBookPrint';
 import DueListPrint from './DueListPrint';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { useReactToPrint } from 'react-to-print';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
@@ -304,7 +305,7 @@ const DueList = (user: any) => {
                 />
               </>
             )}
-            <InputElement
+            <PrintRowsInput
               id="perPage"
               name="perPage"
               label="Rows"
@@ -313,7 +314,7 @@ const DueList = (user: any) => {
               type='text'
               className="font-medium text-sm h-10 !w-20 text-center"
             />
-            <InputElement
+            <PrintFontInput
               id="fontSize"
               name="fontSize"
               label="Font"

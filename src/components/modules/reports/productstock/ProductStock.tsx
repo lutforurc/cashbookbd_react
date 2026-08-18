@@ -14,7 +14,8 @@ import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import dayjs from 'dayjs';
 import StockBookPrint from './StockBookPrint';
 import { useReactToPrint } from 'react-to-print';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { FiArrowRight, FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { fetchBrandDdl } from '../../product/brand/brandSlice'; 
@@ -439,7 +440,7 @@ const ProductStock = ({ user }: any) => {
                   {useFilterMenuEnabled && (
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Show Rows</label>
-                      <InputElement
+                      <PrintRowsInput
                         label=""
                         value={perPage.toString()}
                         onChange={handlePerPageChange}
@@ -543,14 +544,14 @@ const ProductStock = ({ user }: any) => {
 
                   {!useFilterMenuEnabled && (
                     <div className="hidden items-end justify-end gap-2 xl:max-[1880px]:flex">
-                      <InputElement
+                      <PrintRowsInput
                         label="Rows"
                         value={perPage.toString()}
                         onChange={handlePerPageChange}
                         type="text"
                         className="!w-16 text-sm h-10 text-center sm:!w-20"
                       />
-                      <InputElement
+                      <PrintFontInput
                         label="Font"
                         value={fontSize.toString()}
                         onChange={handleFontSizeChange}
@@ -593,14 +594,14 @@ const ProductStock = ({ user }: any) => {
           )}
 
           <div className={`ml-auto flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:justify-end ${useFilterMenuEnabled ? '' : 'xl:max-[1880px]:hidden'}`}>
-            <InputElement
+            <PrintRowsInput
               label="Rows"
               value={perPage.toString()}
               onChange={handlePerPageChange}
               type="text"
               className="!w-16 text-sm h-10 text-center sm:!w-20"
             />
-            <InputElement
+            <PrintFontInput
               label="Font"
               value={fontSize.toString()}
               onChange={handleFontSizeChange}

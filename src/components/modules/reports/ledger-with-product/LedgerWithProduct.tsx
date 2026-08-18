@@ -8,7 +8,8 @@ import {
 } from '../../../../pages/UiElements/CustomButtons';
 import Loader from '../../../../common/Loader';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
@@ -990,7 +991,7 @@ const LedgerWithProduct = (user: any) => {
                 ) : null}
                 {/* No onBlur clamp: it used to rewrite an emptied box back to
                     1, so there was no way to ask for an unbroken statement. */}
-                <InputElement
+                <PrintRowsInput
                   type="number"
                   id="cs-statement-rows"
                   label=""
@@ -1001,7 +1002,7 @@ const LedgerWithProduct = (user: any) => {
                   min={0}
                   className={numberControlClass}
                 />
-                <InputElement
+                <PrintFontInput
                   type="number"
                   id="cs-statement-font"
                   label=""
@@ -1051,7 +1052,7 @@ const LedgerWithProduct = (user: any) => {
                 </div>
                 <div className="flex flex-wrap items-end gap-2">
                   {/* The narrow-screen copy of the same control. */}
-                  <InputElement
+                  <PrintRowsInput
                     type="number"
                     id="cs-statement-rows"
                     label=""
@@ -1062,7 +1063,7 @@ const LedgerWithProduct = (user: any) => {
                     min={0}
                     className={numberControlClass}
                   />
-                  <InputElement
+                  <PrintFontInput
                     type="number"
                     id="cs-statement-font"
                     label=""

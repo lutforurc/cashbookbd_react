@@ -11,7 +11,8 @@ import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
@@ -478,7 +479,7 @@ const ProjectCostReport = ({ user }: any) => {
               className="h-10 px-4"
               icon={<FiRotateCcw />}
             />
-            <InputElement
+            <PrintRowsInput
               type="number"
               label=""
               placeholder="Rows"
@@ -486,7 +487,7 @@ const ProjectCostReport = ({ user }: any) => {
               value={perPage}
               onChange={(e) => setPerPage(Number(e.target.value) || 12)}
             />
-            <InputElement
+            <PrintFontInput
               type="number"
               label=""
               placeholder="Font"

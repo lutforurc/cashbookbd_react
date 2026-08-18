@@ -10,7 +10,8 @@ import InputDatePicker from "../../../utils/fields/DatePicker";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import CategoryDropdown from "../../../utils/utils-functions/CategoryDropdown";
 import Table from "../../../utils/others/Table";
-import InputElement from "../../../utils/fields/InputElement";
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { getCategoryDdl } from "../../category/categorySlice";
@@ -369,7 +370,7 @@ const CatWiseInOut = (user: any) => {
                           icon={<FiRotateCcw />}
                           className="h-10 px-4"
                         />
-                        <InputElement
+                        <PrintRowsInput
                           id="perPageInline"
                           label="Rows"
                           name="perPageInline"
@@ -377,7 +378,7 @@ const CatWiseInOut = (user: any) => {
                           onChange={(e) => setPerPage(Number(e.target.value))}
                           className="h-10 !w-16 md:!w-18 text-sm"
                         />
-                        <InputElement
+                        <PrintFontInput
                           id="fontSizeInline"
                           name="fontSizeInline"
                           label="Font"
@@ -459,7 +460,7 @@ const CatWiseInOut = (user: any) => {
                 />
               </>
             )}
-            <InputElement
+            <PrintRowsInput
               id="perPage"
               label={useFilterMenuEnabled ? "Rows" : "Rows"}
               name="perPage"
@@ -467,7 +468,7 @@ const CatWiseInOut = (user: any) => {
               onChange={(e) => setPerPage(Number(e.target.value))}
               className="h-10 !w-16 md:!w-18 text-sm"
             />
-            <InputElement
+            <PrintFontInput
               id="fontSize"
               name="fontSize"
               label={useFilterMenuEnabled ? "Font" : "Font"}

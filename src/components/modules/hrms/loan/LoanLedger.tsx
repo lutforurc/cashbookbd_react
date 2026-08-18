@@ -10,13 +10,14 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';   
 import { useReactToPrint } from 'react-to-print';
-import InputElement from '../../../utils/fields/InputElement';   
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch'; 
 import { employeeLoanLedger } from './employeeLoanSlice'; 
 import LoanLedgerPrint from './LoanLedgerPrint';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { FiSearch } from 'react-icons/fi';
 import ImagePopup from '../../../utils/others/ImagePopup';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 
 const LoanLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -286,7 +287,7 @@ const LoanLedger = (user: any) => {
 
           <div className="flex shrink-0 items-end gap-2">
             <div>
-              <InputElement
+              <PrintRowsInput
                 id="perPage"
                 name="perPage"
                 label="Rows"
@@ -297,7 +298,7 @@ const LoanLedger = (user: any) => {
               />
             </div>
             <div>
-              <InputElement
+              <PrintFontInput
                 id="fontSize"
                 name="fontSize"
                 label="Font"

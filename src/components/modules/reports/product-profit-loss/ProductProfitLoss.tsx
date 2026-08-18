@@ -7,7 +7,8 @@ import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import InputDatePicker from "../../../utils/fields/DatePicker";
-import InputElement from "../../../utils/fields/InputElement";
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import httpService from "../../../services/httpService";
@@ -632,7 +633,7 @@ const ProductProfitLoss = (user: any) => {
 
             {useFilterMenuEnabled ? (
               <div className="ml-auto flex items-end gap-2">
-                <InputElement
+                <PrintRowsInput
                   id="rowsPerPage"
                   name="rowsPerPage"
                   label=""
@@ -642,7 +643,7 @@ const ProductProfitLoss = (user: any) => {
                   className="h-10 !w-20 text-center"
                 />
 
-                <InputElement
+                <PrintFontInput
                   id="fontSize"
                   name="fontSize"
                   label=""
@@ -679,7 +680,7 @@ const ProductProfitLoss = (user: any) => {
                 </div>
 
                 <div className="flex flex-nowrap items-end gap-2">
-                  <InputElement
+                  <PrintRowsInput
                     id="rowsPerPage"
                     name="rowsPerPage"
                     label=""
@@ -689,7 +690,7 @@ const ProductProfitLoss = (user: any) => {
                     className="h-10 !w-20 text-center"
                   />
 
-                  <InputElement
+                  <PrintFontInput
                     id="fontSize"
                     name="fontSize"
                     label=""

@@ -19,7 +19,8 @@ import dayjs from 'dayjs';
 import ImagePopup from '../../../utils/others/ImagePopup';
 import thousandSeparator from './../../../utils/utils-functions/thousandSeparator';
 import { useReactToPrint } from 'react-to-print';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import CashBookPrint from './CashBookPrint';
 import {
   useRemoveVoucherApproval,
@@ -520,7 +521,7 @@ const CashBook = (user: any) => {
                   <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
                     Rows
                   </label>
-                  <InputElement
+                  <PrintRowsInput
                     id="perPage"
                     name="perPage"
                     label=""
@@ -535,7 +536,7 @@ const CashBook = (user: any) => {
                   <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
                     Font
                   </label>
-                  <InputElement
+                  <PrintFontInput
                     id="fontSize"
                     name="fontSize"
                     label=""
@@ -570,7 +571,7 @@ const CashBook = (user: any) => {
               />
               <div>
                     
-                    <InputElement
+                    <PrintRowsInput
                       id="perPage"
                       name="perPage"
                       label=""
@@ -583,7 +584,7 @@ const CashBook = (user: any) => {
 
               <div>
                     
-                    <InputElement
+                    <PrintFontInput
                       id="fontSize"
                       name="fontSize"
                       label=""

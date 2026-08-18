@@ -15,7 +15,7 @@ import InlineConfirm, {
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
-import InputElement from '../../utils/fields/InputElement';
+import PrintFontInput from '../../utils/fields/PrintFontInput';
 import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
@@ -456,7 +456,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
             them out, so anyone who has set them once knows these. */}
         <div className="flex items-end gap-2">
           <div>
-            <InputElement
+            <PrintFontInput
               id="challanFont"
               name="challanFont"
               label=""

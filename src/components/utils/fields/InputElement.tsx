@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   FIELD_HELP,
   FIELD_LABEL,
   FIELD_TOOLTIP,
-  FIELD_TOOLTIP_LEFT,
+  FIELD_TOOLTIP_CARET_RIGHT,
+  FIELD_TOOLTIP_CARET_UP,
   FieldSize,
   fieldClass,
 } from '../../../theme/fieldStyles';
@@ -82,13 +84,52 @@ const InputElement: React.FC<InputElementProps> = ({
     ? 'native-date-time-input'
     : '';
 
+  // Where the bubble is on screen, or null when it is not shown. Measured from
+  // the field at the moment of hover rather than laid out beside it: drawn into
+  // the body, the bubble is no longer inside whatever the field is inside, so a
+  // toolbar that scrolls cannot be made to scroll further by it, and a panel
+  // that clips cannot cut it in half.
+  const anchor = useRef<HTMLDivElement>(null);
+  const [bubble, setBubble] = useState<{ top: number; left: number } | null>(null);
+
+  const showTooltip = () => {
+    const box = anchor.current?.getBoundingClientRect();
+    if (!box || !title) return;
+    setBubble(
+      titlePlacement === 'left'
+        ? { top: box.top + box.height / 2, left: box.left - 10 }
+        : { top: box.bottom + 10, left: box.left + box.width / 2 },
+    );
+  };
+  const hideTooltip = () => setBubble(null);
+
+  // Fixed to the viewport, so anything that moves the field underneath it
+  // leaves the bubble pointing at empty air. Cheaper to take it away than to
+  // follow the field around.
+  useEffect(() => {
+    if (!bubble) return undefined;
+    window.addEventListener('scroll', hideTooltip, true);
+    window.addEventListener('resize', hideTooltip);
+    return () => {
+      window.removeEventListener('scroll', hideTooltip, true);
+      window.removeEventListener('resize', hideTooltip);
+    };
+  }, [bubble]);
+
   return (
     <div className="text-left flex flex-col">
       <label htmlFor={id || name} className={FIELD_LABEL}>
         {label}
       </label>
 
-      <div className="group relative">
+      <div
+        ref={anchor}
+        className="relative"
+        onMouseEnter={showTooltip}
+        onMouseLeave={hideTooltip}
+        onFocusCapture={showTooltip}
+        onBlurCapture={hideTooltip}
+      >
         <input
           id={id}
           name={name}
@@ -120,17 +161,37 @@ const InputElement: React.FC<InputElementProps> = ({
           }}
         />
 
-        {title ? (
-          <div
-            role="tooltip"
-            className={`${
-              titlePlacement === 'left' ? FIELD_TOOLTIP_LEFT : FIELD_TOOLTIP
-            } ${titleClassName}`}
-          >
-            {title}
-          </div>
-        ) : null}
       </div>
+
+      {title && bubble
+        ? createPortal(
+            <div
+              role="tooltip"
+              style={{
+                position: 'fixed',
+                top: bubble.top,
+                left: bubble.left,
+                // Centred under the field, or ended at its left edge.
+                transform:
+                  titlePlacement === 'left'
+                    ? 'translate(-100%, -50%)'
+                    : 'translateX(-50%)',
+                zIndex: 9999,
+              }}
+              className={`${FIELD_TOOLTIP} ${titleClassName}`}
+            >
+              <span
+                className={
+                  titlePlacement === 'left'
+                    ? FIELD_TOOLTIP_CARET_RIGHT
+                    : FIELD_TOOLTIP_CARET_UP
+                }
+              />
+              {title}
+            </div>,
+            document.body,
+          )
+        : null}
 
       {description ? (
         <p className={FIELD_HELP}>{description}</p>

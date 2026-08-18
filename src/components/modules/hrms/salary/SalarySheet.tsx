@@ -5,7 +5,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { employeeSalaryPaymentFull, fetchSalarySheet } from "../employee/employeeSlice";
 import { toast } from "react-toastify";
-import InputElement from "../../../utils/fields/InputElement";
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { useReactToPrint } from "react-to-print";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
@@ -453,7 +454,7 @@ const SalarySheet = ({ user }: any) => {
 
         <div className="flex">
           <div className="mr-2">
-            <InputElement
+            <PrintRowsInput
               id="perPage"
               name="perPage"
               value={perPage.toString()}
@@ -463,7 +464,7 @@ const SalarySheet = ({ user }: any) => {
             />
           </div>
           <div className="mr-2">
-            <InputElement
+            <PrintFontInput
               id="fontSize"
               name="fontSize"
               value={fontSize.toString()}

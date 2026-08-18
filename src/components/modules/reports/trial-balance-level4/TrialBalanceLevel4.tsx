@@ -12,7 +12,8 @@ import InputDatePicker from "../../../utils/fields/DatePicker";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
-import InputElement from "../../../utils/fields/InputElement";
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import Table from "../../../utils/others/Table";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
@@ -482,7 +483,7 @@ const TrialBalanceLevel4 = (user: any) => {
 
             {useFilterMenuEnabled ? (
               <div className="ml-auto flex items-end gap-2">
-                <InputElement
+                <PrintRowsInput
                   type="number"
                   id="tbl4-rows-per-page"
                   label=""
@@ -490,7 +491,7 @@ const TrialBalanceLevel4 = (user: any) => {
                   onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 20)}
                   className="h-10 !w-20 text-center"
                 />
-                <InputElement
+                <PrintFontInput
                   type="number"
                   id="tbl4-font-size"
                   label=""
@@ -525,7 +526,7 @@ const TrialBalanceLevel4 = (user: any) => {
                   />
                 </div>
                 <div className="flex flex-nowrap items-end gap-2">
-                  <InputElement
+                  <PrintRowsInput
                     type="number"
                     id="tbl4-rows-per-page"
                     label=""
@@ -533,7 +534,7 @@ const TrialBalanceLevel4 = (user: any) => {
                     onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 20)}
                     className="h-10 !w-20 text-center"
                   />
-                  <InputElement
+                  <PrintFontInput
                     type="number"
                     id="tbl4-font-size"
                     label=""

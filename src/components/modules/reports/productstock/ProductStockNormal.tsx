@@ -17,7 +17,8 @@ import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import dayjs from 'dayjs';
 import StockBookPrint from './StockBookPrint';
 import { useReactToPrint } from 'react-to-print';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { fetchBrandDdl } from '../../product/brand/brandSlice';
@@ -452,7 +453,7 @@ const ProductStockNormal = ({ user }: any) => {
                   {useFilterMenuEnabled && (
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Show Rows</label>
-                      <InputElement
+                      <PrintRowsInput
                         id="perPage"
                         name="perPage"
                         label=""
@@ -553,7 +554,7 @@ const ProductStockNormal = ({ user }: any) => {
 
                   {!useFilterMenuEnabled && (
                     <div className="hidden items-end justify-end gap-2 xl:max-[1880px]:flex">
-                      <InputElement
+                      <PrintRowsInput
                         id="perPageToolbar"
                         name="perPageToolbar"
                         label="Rows"
@@ -562,7 +563,7 @@ const ProductStockNormal = ({ user }: any) => {
                         type="text"
                         className="font-medium text-sm h-10 !w-16 sm:!w-20"
                       />
-                      <InputElement
+                      <PrintFontInput
                         id="fontSizeToolbar"
                         name="fontSizeToolbar"
                         label="Font"
@@ -610,7 +611,7 @@ const ProductStockNormal = ({ user }: any) => {
           )}
 
           <div className={`ml-auto flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:justify-end ${useFilterMenuEnabled ? '' : 'xl:max-[1880px]:hidden'}`}>
-            <InputElement
+            <PrintRowsInput
               id="perPage"
               name="perPage"
               label="Rows"
@@ -619,7 +620,7 @@ const ProductStockNormal = ({ user }: any) => {
               type="text"
               className="font-medium text-sm h-10 !w-16 sm:!w-20"
             />
-            <InputElement
+            <PrintFontInput
               id="fontSize"
               name="fontSize"
               label="Font"

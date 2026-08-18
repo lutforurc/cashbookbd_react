@@ -9,7 +9,8 @@ import Loader from '../../../../common/Loader';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
@@ -153,7 +154,7 @@ const MonthlyReport = (user: any) => {
           <ButtonLoading onClick={handleReset} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="h-9 w-full px-2" />
           <div>
             <label htmlFor="monthly-report-rows" className={labelClass}>Rows</label>
-            <InputElement
+            <PrintRowsInput
               id="monthly-report-rows"
               name="monthly-report-rows"
               label=""
@@ -165,7 +166,7 @@ const MonthlyReport = (user: any) => {
           </div>
           <div>
             <label htmlFor="monthly-report-font" className={labelClass}>Font</label>
-            <InputElement
+            <PrintFontInput
               id="monthly-report-font"
               name="monthly-report-font"
               label=""

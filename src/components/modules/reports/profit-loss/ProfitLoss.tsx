@@ -12,7 +12,8 @@ import InputDatePicker from "../../../utils/fields/DatePicker";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
-import InputElement from "../../../utils/fields/InputElement";
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
@@ -552,7 +553,7 @@ const ProfitLoss = (user: any) => {
 
           {useFilterMenuEnabled ? (
             <div className="ml-auto flex flex-wrap items-end gap-2">
-              <InputElement
+              <PrintRowsInput
                 id="perPage"
                 name="perPage"
                 label=""
@@ -562,7 +563,7 @@ const ProfitLoss = (user: any) => {
                 className="font-medium text-sm h-10 !w-20 text-center"
               />
 
-              <InputElement
+              <PrintFontInput
                 id="fontSize"
                 name="fontSize"
                 label=""
@@ -606,7 +607,7 @@ const ProfitLoss = (user: any) => {
               </div>
 
               <div className="flex flex-nowrap items-end gap-2">
-                <InputElement
+                <PrintRowsInput
                   id="perPage"
                   name="perPage"
                   label=""
@@ -616,7 +617,7 @@ const ProfitLoss = (user: any) => {
                   className="font-medium text-sm h-10 !w-20 text-center"
                 />
 
-                <InputElement
+                <PrintFontInput
                   id="fontSize"
                   name="fontSize"
                   label=""

@@ -11,7 +11,8 @@ import HelmetTitle from "../../../utils/others/HelmetTitle";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import YearDropdown from "../../../utils/components/YearDropdown";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
-import InputElement from "../../../utils/fields/InputElement";
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import Table from "../../../utils/others/Table";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
@@ -381,7 +382,7 @@ const FestivalBonus = ({ user }: any) => {
             <div className="ml-auto flex items-end gap-2">
               <div>
                   
-                  <InputElement
+                  <PrintRowsInput
                     id="perPage"
                     name="perPage"
                     label=""
@@ -395,7 +396,7 @@ const FestivalBonus = ({ user }: any) => {
 
               
               <div className="">
-                <InputElement
+                <PrintFontInput
                   id="print_font_size_inline"
                   value={String(fontSize)}
                   name="print_font_size_inline"

@@ -12,7 +12,8 @@ import {
 } from '../../../../pages/UiElements/CustomButtons';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
@@ -196,7 +197,7 @@ const BankInformation = () => {
           />
           <div>
             <label htmlFor="bank-info-rows" className={labelClass}>Rows</label>
-            <InputElement
+            <PrintRowsInput
               id="bank-info-rows"
               name="bank-info-rows"
               label=""
@@ -208,7 +209,7 @@ const BankInformation = () => {
           </div>
           <div>
             <label htmlFor="bank-info-font" className={labelClass}>Font</label>
-            <InputElement
+            <PrintFontInput
               id="bank-info-font"
               name="bank-info-font"
               label=""

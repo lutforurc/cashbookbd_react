@@ -7,7 +7,8 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import Pagination from '../../utils/utils-functions/Pagination';
 import SearchInput from '../../utils/fields/SearchInput';
-import InputElement from '../../utils/fields/InputElement';
+import PrintFontInput from '../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import Loader from '../../../common/Loader';
@@ -461,7 +462,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
             />
             {canPrint ? (
               <>
-                <InputElement
+                <PrintRowsInput
                   id={`${alertType}-print-rows`}
                   name={`${alertType}-print-rows`}
                   label=""
@@ -471,7 +472,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
                   type="number"
                   className="h-9 !w-16 text-center"
                 />
-                <InputElement
+                <PrintFontInput
                   id={`${alertType}-print-font`}
                   name={`${alertType}-print-font`}
                   label=""

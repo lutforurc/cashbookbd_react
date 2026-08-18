@@ -13,7 +13,8 @@ import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import Table from "../../../utils/others/Table";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
-import InputElement from "../../../utils/fields/InputElement";
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { useReactToPrint } from "react-to-print";
 import dayjs from "dayjs";
 import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
@@ -387,7 +388,7 @@ const DateWiseData = (user: any) => {
           )}
 
           <div className="ml-auto flex shrink-0 flex-nowrap items-end gap-2">
-            <InputElement
+            <PrintRowsInput
               id="perPage"
               name="perPage"
               label="Rows"
@@ -396,7 +397,7 @@ const DateWiseData = (user: any) => {
               type="text"
               className="!w-20 text-sm h-10 text-center"
             />
-            <InputElement
+            <PrintFontInput
               id="fontSize"
               name="fontSize"
               label="Font"

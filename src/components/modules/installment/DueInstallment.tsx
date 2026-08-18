@@ -15,6 +15,8 @@ import { InstallmentStatus } from '../../utils/fields/DataConstant';
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import StatusIcon from '../../utils/utils-functions/StatusIcon';
 import InputElement from '../../utils/fields/InputElement';
+import PrintFontInput from '../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import InstallmentModal from './InstallmentModal';
 import 'antd/dist/reset.css';
 import { Tooltip } from 'antd';
@@ -382,7 +384,7 @@ const DueInstallment = (user: any) => {
               className="h-8 w-full bg-transparent"
               onChange={handleUpcomingChange}
             />
-            <InputElement
+            <PrintRowsInput
               id="page_size"
               value={pageSize?.toString() || ''}  // ensure string
               name="page_size"
@@ -391,7 +393,7 @@ const DueInstallment = (user: any) => {
               className="h-8 bg-transparent w-full"
               onChange={handlePageSizeChange}
             />
-            <InputElement
+            <PrintFontInput
               id="fontSize"
               name="fontSize"
               label="Font"

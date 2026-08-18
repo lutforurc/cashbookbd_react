@@ -13,6 +13,8 @@ import { employeeStatus, fetchEmployees, fetchEmployeeSettings, updateEmployeeFr
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { useReactToPrint } from 'react-to-print';
 import EmployeePrint from './EmployeePrint';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
@@ -431,10 +433,15 @@ const Employees = ({ user }: any) => {
         </div>
         <div className='flex ml-1'>
           <div className="mr-1">
-            <InputElement
+            <PrintRowsInput
               id="perPage"
               name="perPage"
               // label="Rows"
+              // Its own wording: on every other screen this box only lays out
+              // the printed page, but here the same number is what the list
+              // asks the API for, so the shared `for print` would be a half
+              // truth.
+              title="Rows per page"
               value={perPage.toString()}
               onChange={handlePerPageChange}
               type='text'
@@ -442,7 +449,7 @@ const Employees = ({ user }: any) => {
             />
           </div>
           <div className="">
-            <InputElement
+            <PrintFontInput
               id="fontSize"
               name="fontSize"
               // label="Font"

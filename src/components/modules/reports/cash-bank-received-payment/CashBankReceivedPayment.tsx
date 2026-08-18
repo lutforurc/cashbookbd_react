@@ -10,7 +10,8 @@ import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomB
 import { API_REPORT_CASH_BANK_RECEIVED_PAYMENT_URL } from '../../../services/apiRoutes';
 import httpService from '../../../services/httpService';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
@@ -170,8 +171,8 @@ const CashBankReceivedPayment = ({ user }: { user: any }) => {
         <div className="grid min-w-max grid-cols-[auto_auto_88px_88px_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
           <ButtonLoading onClick={loadReport} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="h-10 px-5" />
           <ButtonLoading onClick={() => { setRows([]); setBankDetails([]); }} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="h-10 px-5" />
-          <InputElement id="cash-bank-rows" name="cash-bank-rows" label="" value={String(rowsPerPage)} onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 12)} type="text" className="h-10 !w-full text-center text-sm font-medium" />
-          <InputElement id="cash-bank-font" name="cash-bank-font" label="" value={String(fontSize)} onChange={(event: any) => setFontSize(Number(event.target.value) || 12)} type="text" className="h-10 !w-full text-center text-sm font-medium" />
+          <PrintRowsInput id="cash-bank-rows" name="cash-bank-rows" label="" value={String(rowsPerPage)} onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 12)} type="text" className="h-10 !w-full text-center text-sm font-medium" />
+          <PrintFontInput id="cash-bank-font" name="cash-bank-font" label="" value={String(fontSize)} onChange={(event: any) => setFontSize(Number(event.target.value) || 12)} type="text" className="h-10 !w-full text-center text-sm font-medium" />
           <PrintButton onClick={print} label="Print" className="h-10 px-5" disabled={!rows.length} />
         </div>
       </div>

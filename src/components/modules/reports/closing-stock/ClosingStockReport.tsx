@@ -9,7 +9,8 @@ import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomB
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
-import InputElement from "../../../utils/fields/InputElement";
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { API_REPORT_CLOSING_STOCK_URL } from "../../../services/apiRoutes";
@@ -239,7 +240,7 @@ const ClosingStockReport = ({ user }: any) => {
               icon={<FiRotateCcw />}
               className="h-10 px-4"
             />
-            <InputElement
+            <PrintRowsInput
               id="stockDetailsRows"
               name="stockDetailsRows"
               label=""
@@ -248,7 +249,7 @@ const ClosingStockReport = ({ user }: any) => {
               type="text"
               className="font-medium text-sm h-10 !w-full text-center"
             />
-            <InputElement
+            <PrintFontInput
               id="stockDetailsFont"
               name="stockDetailsFont"
               label=""

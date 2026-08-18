@@ -90,6 +90,12 @@ const CollectionSheet = (user: any) => {
   const [rows, setRows] = useState<CollectionSheetRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(16);
+  // What is actually in the two print boxes while they are being typed in. The
+  // numbers beside them fall back to a default the moment they read 0, so
+  // without this the last digit cannot be deleted -- it is replaced by the
+  // default instead. See PrintNumberInput, which does the same for the boxes
+  // built on InputElement.
+  const [draft, setDraft] = useState<{ rows?: string; font?: string }>({});
   const [fontSize, setFontSize] = useState(11);
   const themeMode = useLocalStorage('color-theme', 'light');
   const darkMode = themeMode[0] === 'dark';
@@ -402,8 +408,19 @@ const CollectionSheet = (user: any) => {
               <input
                 type="number"
                 min={1}
-                value={rowsPerPage}
-                onChange={(event) => setRowsPerPage(Number(event.target.value) || 16)}
+                value={draft.rows ?? rowsPerPage}
+                onChange={(event) => {
+                  setDraft((current) => ({ ...current, rows: event.target.value }));
+                  setRowsPerPage(Number(event.target.value) || 16);
+                }}
+                onBlur={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    // Emptiness is kept, so a cleared box stays cleared.
+                    rows: current.rows?.trim() === '' ? current.rows : undefined,
+                  }))
+                }
+                title="Rows per page for print"
                 className={`${controlClass} text-center`}
               />
             </label>
@@ -412,8 +429,18 @@ const CollectionSheet = (user: any) => {
               <input
                 type="number"
                 min={8}
-                value={fontSize}
-                onChange={(event) => setFontSize(Number(event.target.value) || 11)}
+                value={draft.font ?? fontSize}
+                onChange={(event) => {
+                  setDraft((current) => ({ ...current, font: event.target.value }));
+                  setFontSize(Number(event.target.value) || 11);
+                }}
+                onBlur={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    font: current.font?.trim() === '' ? current.font : undefined,
+                  }))
+                }
+                title="Font Size for print"
                 className={`${controlClass} text-center`}
               />
             </label>

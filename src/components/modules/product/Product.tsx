@@ -13,6 +13,8 @@ import Table from '../../utils/others/Table';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { useNavigate } from 'react-router-dom';
 import InputElement from '../../utils/fields/InputElement';
+import PrintFontInput from '../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import { toast } from 'react-toastify';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import { hasPermission } from '../../utils/permissionChecker';
@@ -638,7 +640,7 @@ const Product = (user: any) => {
 
           <div className="flex w-full">
             <div className="mr-2">
-              <InputElement
+              <PrintRowsInput
                 id="perPage"
                 name="perPage"
                 label=""
@@ -650,7 +652,7 @@ const Product = (user: any) => {
             </div>
 
             <div className="mr-2">
-              <InputElement
+              <PrintFontInput
                 id="fontSize"
                 name="fontSize"
                 label=""

@@ -491,7 +491,7 @@ const AttendanceReport = ({
                 if (/^\d*$/.test(e.target.value)) setOvertimeRowsPerPage(e.target.value);
               }}
               onBlur={() => setOvertimeRowsPerPage(String(Math.max(1, Number(overtimeRowsPerPage) || 12)))}
-              title="Rows per page"
+              title="Rows per page for print"
               className="h-10 w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
             />
             <input
@@ -502,7 +502,7 @@ const AttendanceReport = ({
                 if (/^\d*$/.test(e.target.value)) setOvertimePrintFontSize(e.target.value);
               }}
               onBlur={() => setOvertimePrintFontSize(String(Math.max(6, Number(overtimePrintFontSize) || 12)))}
-              title="Print font size"
+              title="Font Size for print"
               className="h-10 w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
             />
             <PrintButton

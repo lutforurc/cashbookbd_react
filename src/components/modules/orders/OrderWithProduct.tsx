@@ -11,6 +11,8 @@ import { API_ADMIN_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
+import PrintFontInput from '../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import OrderDropdown from '../../utils/utils-functions/OrderDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import Table from '../../utils/others/Table';
@@ -833,7 +835,7 @@ const OrderWithProduct = ({
                   <label htmlFor="rows" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
                     Rows
                   </label>
-                  <InputElement
+                  <PrintRowsInput
                     id="rows"
                     name="rows"
                     type="number"
@@ -849,7 +851,7 @@ const OrderWithProduct = ({
                   <label htmlFor="font_size" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
                     Font
                   </label>
-                  <InputElement
+                  <PrintFontInput
                     id="font_size"
                     name="font_size"
                     type="number"

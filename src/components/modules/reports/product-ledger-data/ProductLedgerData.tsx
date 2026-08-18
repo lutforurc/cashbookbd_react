@@ -10,7 +10,8 @@ import httpService from '../../../services/httpService';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import Table from '../../../utils/others/Table';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
@@ -517,7 +518,7 @@ const ProductLedgerData = (user: any) => {
                     <span className="truncate" title={selectedProductName}>{selectedProductName}</span>
                   </div>
                 ) : null}
-                <InputElement
+                <PrintRowsInput
                   id="rowsPerPage"
                   name="rowsPerPage"
                   label=""
@@ -527,7 +528,7 @@ const ProductLedgerData = (user: any) => {
                   className="font-medium text-sm h-10 !w-20 text-center"
                 />
 
-                <InputElement
+                <PrintFontInput
                   id="fontSize"
                   name="fontSize"
                   label=""
@@ -564,7 +565,7 @@ const ProductLedgerData = (user: any) => {
                 </div>
 
                 <div className="flex flex-nowrap items-end gap-2">
-                  <InputElement
+                  <PrintRowsInput
                     id="rowsPerPage"
                     name="rowsPerPage"
                     label=""
@@ -574,7 +575,7 @@ const ProductLedgerData = (user: any) => {
                     className="font-medium text-sm h-10 !w-20 text-center"
                   />
 
-                  <InputElement
+                  <PrintFontInput
                     id="fontSize"
                     name="fontSize"
                     label=""

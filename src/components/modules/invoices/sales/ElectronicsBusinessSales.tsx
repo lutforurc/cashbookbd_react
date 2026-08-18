@@ -3,6 +3,8 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import ToggleSwitch from '../../../utils/utils-functions/ToggleSwitch';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import { toast } from 'react-toastify';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
@@ -1340,7 +1342,7 @@ const ElectronicsBusinessSales = () => {
               />
               <div className="flex w-full">
                 <div className="mr-2">
-                  <InputElement
+                  <PrintRowsInput
                     id="perPage"
                     name="perPage"
                     // label="Rows"
@@ -1352,7 +1354,7 @@ const ElectronicsBusinessSales = () => {
                   />
                 </div>
                 <div className="mr-2">
-                  <InputElement
+                  <PrintFontInput
                     id="fontSize"
                     name="fontSize"
                     // label="Font"

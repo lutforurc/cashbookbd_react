@@ -15,7 +15,8 @@ import {
 import httpService from '../../../services/httpService';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import Table from '../../../utils/others/Table';
 import { DateWiseInOutDetailPrint, DateWiseInOutPrint } from './DateWiseInOutPrint';
@@ -447,7 +448,7 @@ const DateWiseInOut = ({ user }: any) => {
               icon={<FiCheckSquare />}
               className="h-10 px-6"
             />
-            <InputElement
+            <PrintRowsInput
               id="dateWiseInOutRowsPerPage"
               name="rowsPerPage"
               label="Rows"
@@ -456,7 +457,7 @@ const DateWiseInOut = ({ user }: any) => {
               type="text"
               className="h-10 !w-22 text-center text-sm font-medium"
             />
-            <InputElement
+            <PrintFontInput
               id="dateWiseInOutFontSize"
               name="fontSize"
               label="Font"

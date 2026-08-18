@@ -13,7 +13,8 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import httpService from '../../../services/httpService';
 import { API_REPORT_GROUP_DATA_URL } from '../../../services/apiRoutes';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
@@ -350,7 +351,7 @@ const GroupPurchaseSales = () => {
             icon={<FiCheckSquare />}
             className="h-10 w-full px-6 sm:w-auto"
           />
-          <InputElement
+          <PrintRowsInput
             id="groupReportRowsPerPage"
             name="groupReportRowsPerPage"
             label=""
@@ -359,7 +360,7 @@ const GroupPurchaseSales = () => {
             type="text"
             className="h-10 !w-full text-center text-sm font-medium sm:!w-20"
           />
-          <InputElement
+          <PrintFontInput
             id="groupReportFontSize"
             name="groupReportFontSize"
             label=""

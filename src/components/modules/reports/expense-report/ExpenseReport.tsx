@@ -13,7 +13,8 @@ import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
-import InputElement from "../../../utils/fields/InputElement";
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import Table from "../../../utils/others/Table";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import httpService from "../../../services/httpService";
@@ -814,7 +815,7 @@ const ExpenseReport = (user: any) => {
 
             {useFilterMenuEnabled ? (
               <div className="ml-auto flex items-end gap-2">
-                <InputElement
+                <PrintRowsInput
                   type="number"
                   id="exp-per-page"
                   label=""
@@ -822,7 +823,7 @@ const ExpenseReport = (user: any) => {
                   onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
                   className="h-10 !w-20 text-center"
                 />
-                <InputElement
+                <PrintFontInput
                   type="number"
                   id="exp-font-size"
                   label=""
@@ -857,7 +858,7 @@ const ExpenseReport = (user: any) => {
                   />
                 </div>
                 <div className="flex flex-nowrap items-end gap-2">
-                  <InputElement
+                  <PrintRowsInput
                     type="number"
                     id="exp-per-page"
                     label=""
@@ -865,7 +866,7 @@ const ExpenseReport = (user: any) => {
                     onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
                     className="h-10 !w-20 text-center"
                   />
-                  <InputElement
+                  <PrintFontInput
                     type="number"
                     id="exp-font-size"
                     label=""

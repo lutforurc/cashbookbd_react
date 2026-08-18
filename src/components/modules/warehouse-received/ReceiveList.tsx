@@ -8,7 +8,7 @@ import { API_BRANCH_TRANSFER_COMPARISON_URL } from '../../services/apiRoutes';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
-import InputElement from '../../utils/fields/InputElement';
+import PrintFontInput from '../../utils/fields/PrintFontInput';
 import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
@@ -299,7 +299,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
         <div className="flex items-end gap-2">
           <div>
             
-            <InputElement
+            <PrintFontInput
               id="receiveChallanFont"
               name="receiveChallanFont"
               label=""

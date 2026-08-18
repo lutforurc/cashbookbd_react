@@ -20,7 +20,8 @@ import { generateTableData } from '../../../utils/utils-functions/generateTableD
 import { formatDate } from '../../../utils/utils-functions/formatDate';
 import { useReactToPrint } from 'react-to-print';
 import LedgerPrint from './LedgerPrint';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { getCoal4ById } from '../../chartofaccounts/levelfour/coal4Sliders';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import {
@@ -697,7 +698,7 @@ const Ledger = (user: any) => {
                   icon={<FiRotateCcw />}
                   className="h-10 px-4"
                 />
-                <InputElement
+                <PrintRowsInput
                   id="perPageInline"
                   name="perPageInline"
                   label="Rows"
@@ -706,7 +707,7 @@ const Ledger = (user: any) => {
                   type='text'
                   className="font-medium text-sm h-10 !w-20 text-center"
                 />
-                <InputElement
+                <PrintFontInput
                   id="fontSizeInline"
                   name="fontSizeInline"
                   label="Font"
@@ -732,7 +733,7 @@ const Ledger = (user: any) => {
                   <span className="truncate" title={selectedLedgerName}>{selectedLedgerName}</span>
                 </div>
               ) : null}
-              <InputElement
+              <PrintRowsInput
                 id="perPage"
                 name="perPage"
                 label=""
@@ -741,7 +742,7 @@ const Ledger = (user: any) => {
                 type='text'
                 className="font-medium text-sm h-10 !w-20 text-center"
               />
-              <InputElement
+              <PrintFontInput
                 id="fontSize"
                 name="fontSize"
                 label=""
@@ -776,7 +777,7 @@ const Ledger = (user: any) => {
                 />
               </div>
               <div className="flex flex-nowrap items-end gap-2">
-                <InputElement
+                <PrintRowsInput
                   id="perPage"
                   name="perPage"
                   label="Rows"
@@ -785,7 +786,7 @@ const Ledger = (user: any) => {
                   type='text'
                   className="font-medium text-sm h-10 !w-20 text-center"
                 />
-                <InputElement
+                <PrintFontInput
                   id="fontSize"
                   name="fontSize"
                   label="Font"

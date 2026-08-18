@@ -180,31 +180,41 @@ export const FIELD_LABEL = 'text-black dark:text-white';
 /** The line under a field explaining what it is for. */
 export const FIELD_HELP = 'mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400';
 
-/** Everything a tooltip bubble is, apart from where it sits. */
-const FIELD_TOOLTIP_BUBBLE = [
-  'pointer-events-none absolute z-20 w-max max-w-56',
-  'rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700',
-  'opacity-0 shadow-lg transition-opacity duration-150',
-  'group-hover:opacity-100 group-focus-within:opacity-100',
-  'dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100',
-].join(' ');
-
 /**
  * The tooltip a field can carry.
+ *
+ * Look only -- no position. The bubble is drawn into the body and placed by
+ * InputElement from the field's measured position on screen, so that a field
+ * inside a strip that scrolls (a toolbar, say) does not earn the strip a
+ * scrollbar the moment the bubble hangs past its edge.
  *
  * Only InputElement offers one today, but it is described here so a second
  * component adding one does not invent a different bubble.
  */
-export const FIELD_TOOLTIP = `${FIELD_TOOLTIP_BUBBLE} left-1/2 top-full mt-2 -translate-x-1/2`;
+export const FIELD_TOOLTIP = [
+  'pointer-events-none w-max max-w-xs rounded-lg border bg-white',
+  // Deep enough to read as a drawn edge rather than the ghost of one, and the
+  // same weight in both themes -- a hairline that shows on white disappears on
+  // a dark panel, which is how a bubble ends up looking borderless there.
+  'border-slate-400 dark:border-slate-500',
+  'px-3.5 py-2.5 text-sm font-medium leading-snug text-slate-700 shadow-lg',
+  'dark:bg-slate-900 dark:text-slate-100',
+].join(' ');
 
 /**
- * The same bubble, to the left of the field instead of beneath it.
+ * The little arrow tying the bubble to the field it explains.
  *
- * For a field inside a strip that scrolls -- a toolbar, say. A bubble hanging
- * below such a strip is content overflowing it, and the browser answers that
- * with a scrollbar on the strip. To the left it does not: it stays within the
- * row's own height, and overflow past the left edge is clipped rather than
- * scrolled to. Worth knowing before reaching for it: where there is no room,
- * the bubble is cut off rather than moved.
+ * A square turned on its corner, with the two edges that show given the
+ * bubble's own border -- so it reads as one shape with the bubble rather than
+ * a diamond parked beside it.
  */
-export const FIELD_TOOLTIP_LEFT = `${FIELD_TOOLTIP_BUBBLE} right-full top-1/2 mr-2 -translate-y-1/2`;
+const FIELD_TOOLTIP_CARET = [
+  'absolute h-2.5 w-2.5 rotate-45 bg-white border-slate-400',
+  'dark:bg-slate-900 dark:border-slate-500',
+].join(' ');
+
+/** Pointing up, for a bubble beneath the field. */
+export const FIELD_TOOLTIP_CARET_UP = `${FIELD_TOOLTIP_CARET} -top-[6px] left-1/2 -ml-[5px] border-l border-t`;
+
+/** Pointing right, for a bubble to the left of the field. */
+export const FIELD_TOOLTIP_CARET_RIGHT = `${FIELD_TOOLTIP_CARET} -right-[6px] top-1/2 -mt-[5px] border-r border-t`;

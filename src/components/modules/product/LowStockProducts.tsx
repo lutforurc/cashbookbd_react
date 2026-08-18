@@ -7,7 +7,8 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import Pagination from '../../utils/utils-functions/Pagination';
 import SearchInput from '../../utils/fields/SearchInput';
-import InputElement from '../../utils/fields/InputElement';
+import PrintFontInput from '../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import Loader from '../../../common/Loader';
@@ -322,7 +323,7 @@ const LowStockProducts = () => {
               onClick={handleReset}
               className="h-9 flex-1"
             />
-            <InputElement
+            <PrintRowsInput
               id="low-stock-print-rows"
               name="low-stock-print-rows"
               label=""
@@ -332,7 +333,7 @@ const LowStockProducts = () => {
               type="number"
               className="h-9 !w-16 text-center"
             />
-            <InputElement
+            <PrintFontInput
               id="low-stock-print-font"
               name="low-stock-print-font"
               label=""

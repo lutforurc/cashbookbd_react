@@ -20,7 +20,8 @@ import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerC
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
 import PurchaseLedgerPrint from './PurchaseLedgerPrint';
 import { useReactToPrint } from 'react-to-print';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import {
   useRemoveVoucherApproval,
@@ -901,7 +902,7 @@ const PurchaseLedger = (user: any) => {
                           className="h-9 px-4"
                           icon ={<FiRotateCcw />}
                         />
-                        <InputElement
+                        <PrintRowsInput
                           id="perPageInline"
                           name="perPageInline"
                           label=""
@@ -910,7 +911,7 @@ const PurchaseLedger = (user: any) => {
                           type="text"
                           className="font-medium text-sm h-9 !w-20 min-w-[80px] text-center"
                         />
-                        <InputElement
+                        <PrintFontInput
                           id="fontSizeInline"
                           name="fontSizeInline"
                           label=""
@@ -951,7 +952,7 @@ const PurchaseLedger = (user: any) => {
                     />
                     {!useFilterMenuEnabled && (
                       <>
-                        <InputElement
+                        <PrintRowsInput
                           id="perPageInlineLg"
                           name="perPageInlineLg"
                           label=""
@@ -960,7 +961,7 @@ const PurchaseLedger = (user: any) => {
                           type="text"
                           className="font-medium text-sm h-9 !w-14 text-center"
                         />
-                        <InputElement
+                        <PrintFontInput
                           id="fontSizeInlineLg"
                           name="fontSizeInlineLg"
                           label=""
@@ -1022,7 +1023,7 @@ const PurchaseLedger = (user: any) => {
                       </div>
 
                       <div className="ml-auto flex items-end gap-2 pt-6">
-                        <InputElement
+                        <PrintRowsInput
                           id="perPageInlineLg"
                           name="perPageInlineLg"
                           label=""
@@ -1031,7 +1032,7 @@ const PurchaseLedger = (user: any) => {
                           type="text"
                           className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
                         />
-                        <InputElement
+                        <PrintFontInput
                           id="fontSizeInlineLg"
                           name="fontSizeInlineLg"
                           label=""
@@ -1070,7 +1071,7 @@ const PurchaseLedger = (user: any) => {
                   <span className="truncate" title={selectedProductOption.label}>{selectedProductOption.label}</span>
                 </div>
               ) : null}
-              <InputElement
+              <PrintRowsInput
                 id="perPage"
                 name="perPage"
                 label=""
@@ -1079,7 +1080,7 @@ const PurchaseLedger = (user: any) => {
                 type="text"
                 className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
               />
-              <InputElement
+              <PrintFontInput
                 id="fontSize"
                 name="fontSize"
                 label=""

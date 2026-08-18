@@ -9,7 +9,8 @@ import Loader from '../../../../common/Loader';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import InputElement from '../../../utils/fields/InputElement';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
@@ -189,7 +190,7 @@ const ConnectedMember = (user: any) => {
           <ButtonLoading onClick={handleReset} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="h-9 px-4" />
           <div>
             <label htmlFor="connected-member-rows" className={labelClass}>Rows</label>
-            <InputElement
+            <PrintRowsInput
               id="connected-member-rows"
               name="connected-member-rows"
               label=""
@@ -201,7 +202,7 @@ const ConnectedMember = (user: any) => {
           </div>
           <div>
             <label htmlFor="connected-member-font" className={labelClass}>Font</label>
-            <InputElement
+            <PrintFontInput
               id="connected-member-font"
               name="connected-member-font"
               label=""

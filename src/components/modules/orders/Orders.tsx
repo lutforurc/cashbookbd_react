@@ -17,7 +17,8 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import OrdersPrint from './OrdersPrint';
 import OrderTransactionPrint from './OrderTransactionPrint';
 import { useReactToPrint } from 'react-to-print';
-import InputElement from '../../utils/fields/InputElement';
+import PrintFontInput from '../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import { API_ORDERS_LIST_URL, API_ORDERS_STATUS_URL, API_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
@@ -1264,7 +1265,7 @@ const Orders = () => {
                 <SelectOption onChange={handleSelectChange} value={String(perPage)} className="h-9 !w-24" />
               </div>
               <div className="shrink-0">
-                <InputElement
+                <PrintRowsInput
                   id="printRowsPerPage"
                   name="printRowsPerPage"
                   label=""
@@ -1275,7 +1276,7 @@ const Orders = () => {
                 />
               </div>
               <div className="shrink-0">
-                <InputElement
+                <PrintFontInput
                   id="printFontSize"
                   name="printFontSize"
                   label=""
@@ -1305,7 +1306,7 @@ const Orders = () => {
                   <SelectOption onChange={handleSelectChange} value={String(perPage)} className="h-9 !w-24" />
                 </div>
                 <div className="shrink-0">
-                  <InputElement
+                  <PrintRowsInput
                     id="printRowsPerPage"
                     name="printRowsPerPage"
                     label=""
@@ -1316,7 +1317,7 @@ const Orders = () => {
                   />
                 </div>
                 <div className="shrink-0">
-                  <InputElement
+                  <PrintFontInput
                     id="printFontSize"
                     name="printFontSize"
                     label=""
