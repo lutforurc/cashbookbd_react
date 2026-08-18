@@ -382,16 +382,45 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
           </div>
         ) : null}
 
+        {/* The rules come first in all three columns, so they line up across
+            the page on their own -- the name hangs below its rule rather than
+            pushing it about. */}
         {isLastPage ? (
           <div className="mt-12 grid grid-cols-3 gap-6">
+            {/* Beneath the line, above the words: the space above the rule is
+                where the pen goes, so a name printed there would be sitting in
+                the signature itself. Tight leading, so a name and the words
+                under it read as one caption to the rule rather than as two
+                things that happen to share a column.
+
+                These are the users who entered the two vouchers, not the
+                receiver_name in the meta above -- that is whoever carried the
+                goods away, while these are the people who moved the stock on
+                their branch's books and are answerable for the figures here. */}
             <div className="text-center">
-              <div className="border-t border-black pt-1">Delivered By</div>
+              <div className="border-t border-black pt-1">
+                {/* Not on a received challan: that paper is the receiving
+                    branch's own, and the sender signs nothing on it. */}
+                {!isReceive && master?.issued_by_name ? (
+                  <div className="font-semibold leading-tight">{master.issued_by_name}</div>
+                ) : null}
+                <div>Delivered By</div>
+              </div>
             </div>
             <div className="text-center">
               <div className="border-t border-black pt-1">Driver</div>
             </div>
             <div className="text-center">
-              <div className="border-t border-black pt-1">Received By</div>
+              <div className="border-t border-black pt-1">
+                {/* Blank until somebody has actually received: on a delivery
+                    challan printed while the goods are still on the road there
+                    is no receive yet, and a name there would say the stock had
+                    arrived before it had. */}
+                {master?.received_by_name ? (
+                  <div className="font-semibold leading-tight">{master.received_by_name}</div>
+                ) : null}
+                <div>Received By</div>
+              </div>
             </div>
           </div>
         ) : null}
