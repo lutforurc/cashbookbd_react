@@ -2,10 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
-import { FiInbox, FiMinus, FiPlus, FiPrinter, FiSearch } from 'react-icons/fi';
+import { FiInbox, FiMinus, FiPlus, FiPrinter, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import httpService from '../../services/httpService';
-import { API_BRANCH_TRANSFER_COMPARISON_URL } from '../../services/apiRoutes';
+import {
+  API_BRANCH_TRANSFER_COMPARISON_URL,
+  API_BRANCH_TRANSFER_DESTROY_URL,
+} from '../../services/apiRoutes';
+import InlineConfirm, {
+  InlineConfirmPosition,
+} from '../../utils/components/InlineConfirm';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -76,6 +82,49 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
   const [comparedTransferId, setComparedTransferId] = useState<number | null>(null);
   const [comparison, setComparison] = useState<any | null>(null);
   const [comparingId, setComparingId] = useState<number | null>(null);
+  // Which row is being asked about, and where its button is, so the confirm
+  // opens against that row rather than in the middle of a list of twenty.
+  const [pendingDelete, setPendingDelete] = useState<
+    { id: number; vrNo: string; at: InlineConfirmPosition } | null
+  >(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  /** Sends the voucher to the recycle bin, where it can be restored. */
+  const deleteTransfer = async (transferId: number) => {
+    setDeletingId(transferId);
+
+    try {
+      const response = await httpService.post(
+        `${API_BRANCH_TRANSFER_DESTROY_URL}${transferId}`,
+      );
+
+      if (response?.data?.success) {
+        toast.success(response?.data?.message || 'Transfer deleted.');
+        // Anything opened against the row that has just gone would be reading
+        // figures for a voucher no longer there.
+        setComparedTransferId(null);
+        setComparison(null);
+        dispatch(
+          getBranchTransfers({ page, perPage, search, transfer_type: TRANSFER_TYPE_ISSUE }),
+        );
+        return;
+      }
+
+      // A refusal -- already received, or another branch's voucher -- carries
+      // the reason, and the reason is the whole point of showing it.
+      toast.error(
+        response?.data?.message ||
+          response?.data?.error?.message ||
+          'Could not delete this transfer.',
+      );
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || error?.message || 'Could not delete this transfer.',
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   /** Opens what was sent against what arrived, for one challan. */
   const toggleComparison = async (transferId: number) => {
@@ -297,6 +346,22 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
           <div className="flex items-center justify-center gap-3">
             <button
               type="button"
+              title="Delete this transfer"
+              disabled={deletingId === row.id}
+              onClick={(event) => {
+                const rect = event.currentTarget.getBoundingClientRect();
+                setPendingDelete({
+                  id: Number(row.id),
+                  vrNo: String(pickFirst(row, ['vr_no', 'transfer_no', 'voucher_no']) || ''),
+                  at: { top: rect.bottom + 10, left: rect.left + rect.width / 2 },
+                });
+              }}
+              className="text-danger hover:opacity-80 disabled:opacity-40"
+            >
+              <FiTrash2 className="inline h-4 w-4" />
+            </button>
+            <button
+              type="button"
               title="Print challan"
               disabled={printingId === row.id}
               onClick={() => handlePrint(row.id)}
@@ -365,6 +430,22 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
           ''
         )}
       </div>
+
+      <InlineConfirm
+        position={pendingDelete?.at ?? null}
+        question={
+          pendingDelete?.vrNo
+            ? `Delete ${pendingDelete.vrNo}?`
+            : 'Delete this transfer?'
+        }
+        tone="danger"
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          const pending = pendingDelete;
+          setPendingDelete(null);
+          if (pending) deleteTransfer(pending.id);
+        }}
+      />
 
       {/* Hidden — react-to-print pulls from this ref on demand. */}
       <div className="hidden">
