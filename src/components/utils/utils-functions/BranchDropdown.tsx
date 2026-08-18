@@ -12,6 +12,9 @@ interface SelectOptionProps {
   id?: string | undefined;
   defaultValue?: string | undefined; // New prop for default value
   value?: string | undefined;
+  // For a field that is fixed by what is being edited rather than by choice --
+  // shown, so the reader can see which branch it is, but not offered.
+  disabled?: boolean;
 }
 
 const BranchDropdown: React.FC<SelectOptionProps> = ({
@@ -23,6 +26,7 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
   id,
   defaultValue,
   value,
+  disabled,
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>(defaultValue || '');
   const dispatch = useDispatch();
@@ -64,7 +68,10 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
       value={selectedValue} // Bind the value to state
       onChange={handleSelectChange}
       onKeyDown={onKeyDown}
-      className={`${FIELD_SELECT} block w-full text-sm ${className}`}
+      disabled={disabled}
+      className={`${FIELD_SELECT} block w-full text-sm ${className} ${
+        disabled ? 'cursor-not-allowed opacity-70' : ''
+      }`}
     >
       {branchDdl &&
         branchDdl.map((item: any, index: number) => (

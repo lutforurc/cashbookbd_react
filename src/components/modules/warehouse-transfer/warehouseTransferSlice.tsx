@@ -3,6 +3,7 @@ import {
   API_BRANCH_TRANSFER_DETAILS_URL,
   API_BRANCH_TRANSFER_LIST_URL,
   API_BRANCH_TRANSFER_STORE_URL,
+  API_BRANCH_TRANSFER_UPDATE_URL,
 } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
 
@@ -31,6 +32,10 @@ interface BranchTransferListPayload {
 interface BranchTransferStorePayload {
   data: any;
   callback?: (response: any) => void;
+  // An id means the voucher already exists and is being corrected; without one
+  // a new voucher is raised. The same payload serves both, so the entry form
+  // does not have to keep two shapes of the same challan.
+  id?: number | string | null;
 }
 
 const initialState: BranchTransferState = {
@@ -127,9 +132,12 @@ const storeBranchTransferThunk = createAsyncThunk<
   any,
   BranchTransferStorePayload,
   { rejectValue: string }
->('branchTransfer/storeBranchTransfer', async ({ data, callback }, thunkAPI) => {
+>('branchTransfer/storeBranchTransfer', async ({ data, callback, id }, thunkAPI) => {
   try {
-    const res = await httpService.post(API_BRANCH_TRANSFER_STORE_URL, data);
+    const url = id
+      ? `${API_BRANCH_TRANSFER_UPDATE_URL}${id}`
+      : API_BRANCH_TRANSFER_STORE_URL;
+    const res = await httpService.post(url, data);
     const responseData = res.data;
 
     if (typeof callback === 'function') {
@@ -160,6 +168,12 @@ const storeBranchTransferThunk = createAsyncThunk<
 export const storeBranchTransfer =
   (data: any, callback?: (response: any) => void) => (dispatch: any) =>
     dispatch(storeBranchTransferThunk({ data, callback }));
+
+/** The same save, aimed at a voucher that already exists. */
+export const updateBranchTransfer =
+  (id: number | string, data: any, callback?: (response: any) => void) =>
+  (dispatch: any) =>
+    dispatch(storeBranchTransferThunk({ data, callback, id }));
 
 const branchTransferSlice = createSlice({
   name: 'branchTransfer',

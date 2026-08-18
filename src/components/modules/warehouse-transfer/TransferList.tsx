@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
-import { FiInbox, FiMinus, FiPlus, FiPrinter, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiInbox, FiMinus, FiPlus, FiPrinter, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import httpService from '../../services/httpService';
 import {
@@ -347,8 +347,10 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
     {
       key: 'action',
       header: 'Action',
-      headerClass: 'text-center w-24',
-      cellClass: 'text-center w-24',
+      // Room for four icons: an in-transit row the destination branch is
+      // looking at carries edit, delete, print and receive at once.
+      headerClass: 'text-center w-32',
+      cellClass: 'text-center w-32',
       render: (row: any) => {
         const toBranch = Number(pickFirst(row, ['to_branch', 'to_branch_id']) || 0);
         const status = Number(pickFirst(row, ['transfer_status', 'status']) || 0);
@@ -359,8 +361,26 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
           toBranch === Number(myBranchId) &&
           status === STATUS_IN_TRANSIT;
 
+        // Only while nothing has been received against it. Once the other end
+        // has taken the goods in, the receive was priced from these lines, and
+        // changing them underneath it would leave the two ends disagreeing
+        // about what travelled -- which is what the API refuses anyway.
+        const canEdit = status === STATUS_IN_TRANSIT;
+
         return (
           <div className="flex items-center justify-center gap-3">
+            {canEdit ? (
+              <button
+                type="button"
+                title="Edit this transfer"
+                onClick={() =>
+                  navigate(ROUTES.branch_transfer, { state: { editTransferId: row.id } })
+                }
+                className="text-warning hover:opacity-80"
+              >
+                <FiEdit2 className="inline h-4 w-4" />
+              </button>
+            ) : null}
             <button
               type="button"
               title="Delete this transfer"

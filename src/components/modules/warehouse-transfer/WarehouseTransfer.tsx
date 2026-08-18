@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiAlertCircle, FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FiAlertCircle, FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import HelmetTitle from '../../utils/others/HelmetTitle'; 
@@ -10,7 +11,12 @@ import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionIte
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown'; 
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDdlAllBranch, getDdlProtectedBranch } from '../branch/ddlBranchSlider';
-import { storeBranchTransfer } from './warehouseTransferSlice';
+import {
+  getBranchTransferDetails,
+  storeBranchTransfer,
+  updateBranchTransfer,
+} from './warehouseTransferSlice';
+import ROUTES from '../../services/appRoutes';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { trxDateToDate, trxDateToIso } from '../../utils/utils-functions/transactionDate';
 import httpService from '../../services/httpService';
@@ -36,8 +42,14 @@ type TransferItem = {
 
 const BranchTransfer = () => {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
+  const location = useLocation();
   const branchDdl = useSelector((s: any) => s.branchDdl);
   const settings = useSelector((s: any) => s.settings);
+  // The Transfer List sends the voucher here to be corrected. Read once into
+  // state: the screen has to keep knowing which voucher it is holding after
+  // navigation state has served its purpose.
+  const editTransferId = (location.state as any)?.editTransferId ?? null;
 
   // The challan must post on the branch's open transaction date, not today:
   // the books stay on trx_dt until day close advances it. Fall back to today
@@ -47,6 +59,12 @@ const BranchTransfer = () => {
   const defaultTransferDate = trxDateToDate(trxDt) ?? dayjs().toDate();
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  // Which voucher is being corrected, and what it is called -- the number is
+  // shown, because an operator who has walked away from the screen has to be
+  // able to tell an edit of 14-260800001 from a blank challan at a glance.
+  const [editingId, setEditingId] = useState<number | string | null>(null);
+  const [editingVrNo, setEditingVrNo] = useState<string>('');
+  const [loadingVoucher, setLoadingVoucher] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState<{
     mobile: string;
     items: any[];
@@ -151,6 +169,73 @@ const BranchTransfer = () => {
     }));
   }, [toBranchOptions, formData.fromBranch]);
 
+  // The voucher the Transfer List sent here, read back into the form.
+  //
+  // Everything the challan holds comes off its own details -- the rate
+  // included, which this form asks for but the save has never sent: what the
+  // goods cost is read from the stock they left on, not from what is typed
+  // here. It is loaded so the line reads as it will print.
+  useEffect(() => {
+    if (!editTransferId) return;
+
+    setLoadingVoucher(true);
+    dispatch(getBranchTransferDetails(editTransferId))
+      .unwrap()
+      .then((payload: any) => {
+        const master = payload?.master;
+        if (!master) return;
+
+        // A receive is corrected from its own screen; this one raises issues.
+        if (Number(master?.transfer_type) !== 1) {
+          toast.error('Only an issue can be edited on this screen.');
+          navigate(ROUTES.report_branch_transfer_list);
+          return;
+        }
+
+        const challanIso = master?.challan_date
+          ? dayjs(master.challan_date).format('YYYY-MM-DD')
+          : '';
+
+        setFormData({
+          transferDate: challanIso || defaultTransferIso,
+          fromBranch: String(master?.from_branch || ''),
+          toBranch: String(master?.to_branch || ''),
+          challanNumber: master?.challan_number || '',
+          receiverName: master?.receiver_name || '',
+          receiverMobileNumber: master?.receiver_mobile_number || '',
+          // Falls back to the old single Transport box, which is where a
+          // voucher raised before the split kept its driver.
+          driverName: master?.driver_name || master?.reference || '',
+          driverMobile: master?.driver_mobile || '',
+          note: master?.notes || '',
+          products: (Array.isArray(payload?.details) ? payload.details : []).map(
+            (row: any, index: number) => ({
+              id: index + 1,
+              productId: String(row?.product_id || ''),
+              productName: row?.product_name || '',
+              // The details carry no unit; it only ever labelled the Quantity
+              // box, and the figure means the same without it.
+              unit: '',
+              quantity: String(Number(row?.issued_qty ?? row?.stock_out ?? 0)),
+              damagedQty: String(Number(row?.damaged_qty ?? 0)),
+              shortQty: String(Number(row?.short_qty ?? 0)),
+              rate: String(Number(row?.rate ?? 0)),
+            }),
+          ),
+        });
+
+        // The challan brought its own date, so stop the branch's transaction
+        // date from writing over it when settings next refreshes.
+        setTransferDateTouched(true);
+        setTransferDate(challanIso ? dayjs(challanIso).toDate() : defaultTransferDate);
+        setEditingId(editTransferId);
+        setEditingVrNo(master?.vr_no || '');
+      })
+      .catch(() => toast.error('Could not load this transfer.'))
+      .finally(() => setLoadingVoucher(false));
+    // Loaded once, for the voucher the list named.
+  }, [dispatch, editTransferId]);
+
   const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -235,6 +320,11 @@ const BranchTransfer = () => {
     });
     setTransferDate(defaultTransferDate);
     setTransferDateTouched(false);
+    // An emptied form is a fresh challan, not a correction of the voucher that
+    // was on it a moment ago -- otherwise Save would rewrite that voucher with
+    // whatever gets typed next.
+    setEditingId(null);
+    setEditingVrNo('');
     clearLineForm();
   };
 
@@ -347,26 +437,39 @@ const BranchTransfer = () => {
   const performSave = (payload: any, allowNegative = false) => {
     setSaveButtonLoading(true);
     const finalPayload = allowNegative ? { ...payload, allow_negative: true } : payload;
+    const editing = editingId;
+
+    const handleResponse = (response: any) => {
+      setSaveButtonLoading(false);
+      if (response?.success) {
+        toast.success(
+          response?.message || (editing ? 'Branch transfer updated' : 'Branch transfer saved'),
+        );
+        resetForm();
+        // A corrected voucher is read back where it was opened from: the
+        // operator came here to fix one row, not to raise the next challan.
+        if (editing) navigate(ROUTES.report_branch_transfer_list);
+        return;
+      }
+      // A shortage is a warning the operator can override, not a hard error.
+      if (response?.stock_shortage) {
+        setStockWarning({
+          rows: Array.isArray(response?.shortage_rows) ? response.shortage_rows : [],
+          shortages: Array.isArray(response?.shortages) ? response.shortages : [],
+          message: response?.message || 'Not enough stock at the source branch.',
+          payload,
+        });
+        return;
+      }
+      toast.error(
+        response?.message || (editing ? 'Failed to update branch transfer' : 'Failed to save branch transfer'),
+      );
+    };
+
     dispatch(
-      storeBranchTransfer(finalPayload, (response: any) => {
-        setSaveButtonLoading(false);
-        if (response?.success) {
-          toast.success(response?.message || 'Branch transfer saved');
-          resetForm();
-          return;
-        }
-        // A shortage is a warning the operator can override, not a hard error.
-        if (response?.stock_shortage) {
-          setStockWarning({
-            rows: Array.isArray(response?.shortage_rows) ? response.shortage_rows : [],
-            shortages: Array.isArray(response?.shortages) ? response.shortages : [],
-            message: response?.message || 'Not enough stock at the source branch.',
-            payload,
-          });
-          return;
-        }
-        toast.error(response?.message || 'Failed to save branch transfer');
-      }),
+      editing
+        ? updateBranchTransfer(editing, finalPayload, handleResponse)
+        : storeBranchTransfer(finalPayload, handleResponse),
     );
   };
 
@@ -456,7 +559,27 @@ const BranchTransfer = () => {
   };
   return (
     <div>
-      <HelmetTitle title="Branch Issue" />
+      <HelmetTitle title={editingId ? 'Edit Branch Issue' : 'Branch Issue'} />
+
+      {/* Says which voucher is on the screen, and offers the way out of it. A
+          form that looks exactly like a blank one but saves over an existing
+          challan is how the wrong voucher gets rewritten. */}
+      {editingId ? (
+        <div className="mb-3 flex items-center justify-between gap-3 rounded-sm border border-amber-300 bg-amber-50 px-3 py-2 dark:border-amber-900/50 dark:bg-amber-900/20">
+          <span className="text-sm font-medium text-amber-800 dark:text-amber-100">
+            Editing issue {editingVrNo || `#${editingId}`}
+            {loadingVoucher ? ' — loading…' : ''}
+          </span>
+          <button
+            type="button"
+            onClick={() => navigate(ROUTES.report_branch_transfer_list)}
+            className="inline-flex items-center gap-1 rounded-sm border border-amber-400 px-2 py-1 text-xs font-medium text-amber-800 transition hover:bg-amber-100 dark:text-amber-100 dark:hover:bg-amber-900/40"
+          >
+            <FiX className="h-3.5 w-3.5" />
+            Cancel
+          </button>
+        </div>
+      ) : null}
 
       {/* Rows sit closer than they did: at gap-4 the eight fields read as eight
           separate things rather than one form. */}
@@ -466,6 +589,9 @@ const BranchTransfer = () => {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="text-black dark:text-white">From Branch</label>
+            {/* Fixed once the voucher exists: the issue lives in the sending
+                branch's book and carries that branch's number, so moving it
+                elsewhere is a different voucher, not an edit of this one. */}
             <BranchDropdown
               id="fromBranch"
               name="fromBranch"
@@ -473,6 +599,8 @@ const BranchTransfer = () => {
               branchDdl={fromBranchOptions}
               onChange={handleBranchChange}
               defaultValue={formData.fromBranch}
+              value={editingId ? formData.fromBranch : undefined}
+              disabled={Boolean(editingId)}
             />
           </div>
           <div>
@@ -666,7 +794,15 @@ const BranchTransfer = () => {
         <ButtonLoading
           onClick={handleSave}
           buttonLoading={saveButtonLoading}
-          label={saveButtonLoading ? 'Saving...' : 'Save'}
+          label={
+            saveButtonLoading
+              ? editingId
+                ? 'Updating...'
+                : 'Saving...'
+              : editingId
+                ? 'Update'
+                : 'Save'
+          }
           className="whitespace-nowrap text-center mr-0 py-2"
           icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
         />

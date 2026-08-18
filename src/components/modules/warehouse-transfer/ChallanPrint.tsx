@@ -79,28 +79,68 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
     // Fixed label width, so every value starts on the same vertical line instead
     // of wherever its own label happened to end. In em, not px, so it still holds
     // when the challan is printed at a larger fontSize.
-    const Meta = ({ label, value, sub }: { label: string; value: any; sub?: any }) => (
-      // A field carrying an address is two lines tall, so it needs a little
-      // more air beneath it than a one-line field does -- otherwise the
-      // address sits as close to the next label as it does to its own branch
-      // name, and the eye cannot tell which of the two it belongs to.
-      <div className="flex gap-1" style={sub ? { marginBottom: '.8em' } : undefined}>
-        <span className="font-semibold whitespace-nowrap shrink-0" style={{ width: '9.5em' }}>
-          {label}:
-        </span>
-        {/* Tight leading on the pair: an address belongs to the branch named
-            above it, and a full line's gap between them reads as two separate
-            entries rather than one. In em so it holds at any printed size. */}
-        <span className="leading-tight">
-          {value || '-'}
-          {sub ? (
-            <span className="block" style={{ marginTop: '.2em' }}>
-              {sub}
-            </span>
-          ) : null}
-        </span>
-      </div>
-    );
+    // A field nobody filled in prints as a dash, which is a line left for the
+    // godown to write on by hand -- right for a driver or a receiver named at
+    // the gate. `hideIfEmpty` is for the fields that are not like that: an
+    // empty one there is a number the system never issued, and a blank line
+    // against it invites somebody to write one in.
+    //
+    // `groupEnd` closes a group of fields that belong together -- the voucher
+    // and its date, the receiver and the number to reach them on. A little air
+    // beneath the last of each is what tells a reader they are reading two or
+    // three short lists rather than one column of seven unrelated lines. It
+    // rides on the field rather than on a wrapper so that a hidden field takes
+    // its spacing away with it, instead of leaving a gap around nothing.
+    const Meta = ({
+      label,
+      value,
+      sub,
+      hideIfEmpty,
+      groupEnd,
+    }: {
+      label: string;
+      value: any;
+      sub?: any;
+      hideIfEmpty?: boolean;
+      groupEnd?: boolean;
+    }) => {
+      const blank = value === null || value === undefined || String(value).trim() === '';
+      if (hideIfEmpty && blank) return null;
+
+      // An address is two lines tall and needs the wider gap; a group of
+      // one-line fields needs less.
+      const spacing = sub ? '.8em' : groupEnd ? '.75em' : undefined;
+
+      return (
+        // Baselines, not box tops, and one line height for both halves: the
+        // label and its value are a single line of reading. The tight leading
+        // used to sit on the value alone, which lifted every value a little
+        // above the label beside it -- a drift of half a line on a document
+        // that is nothing but labelled figures. The same leading holds an
+        // address close to the branch name above it.
+        //
+        // A field carrying an address is two lines tall, so it needs a little
+        // more air beneath it than a one-line field does -- otherwise the
+        // address sits as close to the next label as it does to its own branch
+        // name, and the eye cannot tell which of the two it belongs to.
+        <div
+          className="flex gap-1 items-baseline leading-tight"
+          style={spacing ? { marginBottom: spacing } : undefined}
+        >
+          <span className="font-semibold whitespace-nowrap shrink-0" style={{ width: '9.5em' }}>
+            {label}:
+          </span>
+          <span>
+            {value || '-'}
+            {sub ? (
+              <span className="block" style={{ marginTop: '.2em' }}>
+                {sub}
+              </span>
+            ) : null}
+          </span>
+        </div>
+      );
+    };
 
     const pages = chunkRows(rows, rowsPerPage);
 
@@ -108,9 +148,13 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
       <div ref={ref} className="print-root text-gray-900" style={{ fontSize }}>
         <style>{`
           @media print {
+            /* Wider at the sides than top and bottom: a challan is filed in a
+               folder and read at arm's length, and text that runs to the edge
+               of the sheet is the first thing a punch hole or a photocopier
+               takes off. */
             @page {
               size: A4 portrait;
-              margin: 8mm 8mm 10mm 8mm;
+              margin: 8mm 16mm 10mm 16mm;
             }
             .print-root {
               padding: 0 !important;
@@ -165,13 +209,19 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
             second line pushed the whole left column down with it, leaving
             Voucher No adrift beside an address it has nothing to do with. */}
         <div className="grid grid-cols-2 gap-x-8 mb-3 items-start">
+          {/* Three groups: the challan's own number, then the voucher it was
+              raised on and its date, then the person the goods were handed to
+              and the number to reach them on. */}
           <div className="space-y-1">
-            <Meta label="Challan No" value={master?.challan_number} />
+            <Meta label="Challan No" value={master?.challan_number} hideIfEmpty groupEnd />
             <Meta label="Voucher No" value={master?.vr_no} />
-            <Meta label="Date" value={challanDate} />
+            <Meta label="Date" value={challanDate} groupEnd />
             <Meta label="Receiver" value={master?.receiver_name} />
             <Meta label="Receiver Mobile" value={master?.receiver_mobile_number} />
           </div>
+          {/* And three on this side: where the goods left, where they are
+              going, and who is carrying them. The two branches close
+              themselves -- an address already carries the wider gap. */}
           <div className="space-y-1">
             <Meta
               label="From Branch"
