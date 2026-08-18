@@ -14,6 +14,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
+import type { PrintBranch } from '../../../utils/utils-functions/printBranch';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import CashBankReceivedPaymentPrint from './CashBankReceivedPaymentPrint';
 
@@ -128,7 +129,21 @@ const CashBankReceivedPayment = ({ user }: { user: any }) => {
     }
   }, [branches]);
 
-  const selectedBranch = branches.find((branch: any) => String(branch.id) === branchId)?.name || '';
+  const selectedBranchRow = branches.find((branch: any) => String(branch.id) === branchId);
+  const selectedBranch = selectedBranchRow?.name || '';
+
+  // The pad is headed with the branch the report is about. Address and phone
+  // travel with the name -- one branch's name standing over another's address
+  // is worse than no override at all. The user's own branch is left alone: the
+  // session copy of it carries more than this list does (see usePrintBranch).
+  const printBranch: PrintBranch | undefined =
+    selectedBranchRow && branchId !== defaultBranch
+      ? {
+          name: selectedBranchRow.name,
+          address: selectedBranchRow.address,
+          phone: selectedBranchRow.phone,
+        }
+      : undefined;
   const labelClass = 'mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200';
   const amounts = [totals.cashReceived, totals.cashPayment, totals.bankReceived, totals.bankPayment];
   const balances = [balance.cashReceived, balance.cashPayment, balance.bankReceived, balance.bankPayment];
@@ -181,7 +196,7 @@ const CashBankReceivedPayment = ({ user }: { user: any }) => {
           <tfoot className="bg-slate-100 font-bold text-slate-950 dark:bg-[rgb(var(--c-meta-4))] dark:text-white"><tr><td colSpan={2} className="px-3 py-3 text-right">Total</td><td className="px-3 py-3 text-right">{thousandSeparator(bankDetails.reduce((sum, bank) => sum + numberValue(bank.received), 0))}</td><td className="px-3 py-3 text-right">{thousandSeparator(bankDetails.reduce((sum, bank) => sum + numberValue(bank.payment), 0))}</td><td className="px-3 py-3 text-right">{thousandSeparator(bankDetails.reduce((sum, bank) => sum + numberValue(bank.received) - numberValue(bank.payment), 0))}</td></tr></tfoot>
         </table>
       </div>}
-      <div className="hidden"><CashBankReceivedPaymentPrint ref={printRef} rows={rows} bankDetails={bankDetails} projectName={selectedBranch} startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : '-'} endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : '-'} rowsPerPage={rowsPerPage} fontSize={fontSize} /></div>
+      <div className="hidden"><CashBankReceivedPaymentPrint ref={printRef} rows={rows} bankDetails={bankDetails} projectName={selectedBranch} startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : '-'} endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : '-'} rowsPerPage={rowsPerPage} fontSize={fontSize} branch={printBranch} /></div>
     </div>
   );
 };

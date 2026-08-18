@@ -1,6 +1,7 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
+import ReportFooter from '../../utils/utils-functions/ReportFooter';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 
 type Props = {
@@ -152,14 +153,29 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
                folder and read at arm's length, and text that runs to the edge
                of the sheet is the first thing a punch hole or a photocopier
                takes off. */
+            /* The foot is the one edge that gives its margin back: nothing is
+               punched or stapled there, and the footer is the line a reader
+               can most afford to lose a millimetre of. Held at the same 5mm
+               the Cash Book prints at, so a challan and a report filed
+               together have their last line at the same height. */
             @page {
               size: A4 portrait;
-              margin: 8mm 16mm 10mm 16mm;
+              margin: 8mm 16mm 5mm 16mm;
             }
             .print-root {
               padding: 0 !important;
             }
+            /* A page tall enough to reach the foot of the paper, so the
+               footer's mt-auto has somewhere to push to. Without the height a
+               short challan leaves its footer floating under the signatures
+               instead of at the bottom of the sheet, which is where a reader
+               looks for the page count. 297mm less the two @page margins,
+               less a millimetre so a rounding overflow does not spill a blank
+               second sheet. */
             .challan-page {
+              display: flex;
+              flex-direction: column;
+              min-height: calc(297mm - 8mm - 5mm - 1mm);
               break-after: page;
               page-break-after: always;
             }
@@ -189,12 +205,23 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
             receiving branch's own file copy under someone else's name. The
             Cash Book's pad works the same way: company at the top, then the
             branch the paper is actually about. */}
-        <PadPrinting
-          branch={{
-            name: isReceive ? master?.to_branch_name : master?.from_branch_name,
-            address: isReceive ? master?.to_branch_address : master?.from_branch_address,
-          }}
-        />
+        {/* Outside the fontSize the challan's own body is set in. The pad is
+            stationery -- the same three lines at the same size on every paper
+            the branch prints -- and shrinking it with the product table made
+            the challan's letterhead a size nothing else in the system uses. */}
+        <div style={{ fontSize: '1rem' }}>
+          <PadPrinting
+            branch={{
+              name: isReceive ? master?.to_branch_name : master?.from_branch_name,
+              address: isReceive ? master?.to_branch_address : master?.from_branch_address,
+              // Without this the pad prints a branch with no telephone on it:
+              // an explicit branch is taken whole, so a phone left out here is
+              // not filled in from the session branch's -- and rightly, since
+              // that is a different branch's number.
+              phone: isReceive ? master?.to_branch_phone : master?.from_branch_phone,
+            }}
+          />
+        </div>
 
         <h1
           className="text-center font-bold uppercase mt-3 mb-4"
@@ -367,11 +394,21 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
               <div className="border-t border-black pt-1">Received By</div>
             </div>
           </div>
-        ) : (
-          <div className="mt-3 text-right text-xs">
-            Page {pageIndex + 1} of {pages.length} — continued
-          </div>
-        )}
+        ) : null}
+
+        {/* The same foot every other printed page in the system carries: who
+            wrote the software on the left, where the reader is on the right.
+            `continued` stays on it, because a challan is signed, and a signer
+            has to know the goods go on past the sheet in their hand. */}
+        <div className="mt-auto flex shrink-0 items-end justify-between gap-4 border-t border-gray-400 pt-1 text-gray-600">
+          <span className="text-left">
+            <ReportFooter inline />
+          </span>
+          <span className="whitespace-nowrap text-right">
+            Page {pageIndex + 1} of {pages.length}
+            {isLastPage ? '' : ' — continued'}
+          </span>
+        </div>
             </div>
           );
         })}
