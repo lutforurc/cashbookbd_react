@@ -3,6 +3,7 @@ import {
   FIELD_HELP,
   FIELD_LABEL,
   FIELD_TOOLTIP,
+  FIELD_TOOLTIP_LEFT,
   FieldSize,
   fieldClass,
 } from '../../../theme/fieldStyles';
@@ -14,6 +15,12 @@ interface InputElementProps {
   value?: string | number;
   title?: React.ReactNode;
   titleClassName?: string;
+  /**
+   * Which side the tooltip sits on. Beneath the field by default. `left` is for
+   * a field in a strip that scrolls, where a bubble hanging below would earn
+   * the strip a scrollbar -- see FIELD_TOOLTIP_LEFT.
+   */
+  titlePlacement?: 'bottom' | 'left';
   placeholder?: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
@@ -51,6 +58,7 @@ const InputElement: React.FC<InputElementProps> = ({
   value = '',
   title = '',
   titleClassName = '',
+  titlePlacement = 'bottom',
   placeholder = 'Enter Text',
   onChange,
   onKeyDown,
@@ -115,7 +123,9 @@ const InputElement: React.FC<InputElementProps> = ({
         {title ? (
           <div
             role="tooltip"
-            className={`${FIELD_TOOLTIP} ${titleClassName}`}
+            className={`${
+              titlePlacement === 'left' ? FIELD_TOOLTIP_LEFT : FIELD_TOOLTIP
+            } ${titleClassName}`}
           >
             {title}
           </div>

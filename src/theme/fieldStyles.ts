@@ -180,16 +180,31 @@ export const FIELD_LABEL = 'text-black dark:text-white';
 /** The line under a field explaining what it is for. */
 export const FIELD_HELP = 'mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400';
 
+/** Everything a tooltip bubble is, apart from where it sits. */
+const FIELD_TOOLTIP_BUBBLE = [
+  'pointer-events-none absolute z-20 w-max max-w-56',
+  'rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700',
+  'opacity-0 shadow-lg transition-opacity duration-150',
+  'group-hover:opacity-100 group-focus-within:opacity-100',
+  'dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100',
+].join(' ');
+
 /**
  * The tooltip a field can carry.
  *
  * Only InputElement offers one today, but it is described here so a second
  * component adding one does not invent a different bubble.
  */
-export const FIELD_TOOLTIP = [
-  'pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max max-w-56 -translate-x-1/2',
-  'rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700',
-  'opacity-0 shadow-lg transition-opacity duration-150',
-  'group-hover:opacity-100 group-focus-within:opacity-100',
-  'dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100',
-].join(' ');
+export const FIELD_TOOLTIP = `${FIELD_TOOLTIP_BUBBLE} left-1/2 top-full mt-2 -translate-x-1/2`;
+
+/**
+ * The same bubble, to the left of the field instead of beneath it.
+ *
+ * For a field inside a strip that scrolls -- a toolbar, say. A bubble hanging
+ * below such a strip is content overflowing it, and the browser answers that
+ * with a scrollbar on the strip. To the left it does not: it stays within the
+ * row's own height, and overflow past the left edge is clipped rather than
+ * scrolled to. Worth knowing before reaching for it: where there is no room,
+ * the bubble is cut off rather than moved.
+ */
+export const FIELD_TOOLTIP_LEFT = `${FIELD_TOOLTIP_BUBBLE} right-full top-1/2 mr-2 -translate-y-1/2`;

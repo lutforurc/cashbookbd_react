@@ -280,8 +280,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
 
   return (
     <div className="mt-6">
-      <h3 className="text-lg font-semibold text-black dark:text-white mb-2">Receive List</h3>
-
+   
       <div className="flex overflow-x-auto justify-between mb-2">
         <div className="flex">
           <SelectOption onChange={handleSelectChange} className="mr-1 md:mr-2" />
@@ -299,30 +298,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
             out as the Transfer List sets them out. */}
         <div className="flex items-end gap-2">
           <div>
-            <label
-              htmlFor="receiveChallanRows"
-              className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1"
-            >
-              Rows
-            </label>
-            <InputElement
-              id="receiveChallanRows"
-              name="receiveChallanRows"
-              label=""
-              value={String(printRows)}
-              onChange={handlePrintRowsChange}
-              type="text"
-              className="h-10 !w-20 text-center text-sm font-medium"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="receiveChallanFont"
-              className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1"
-            >
-              Font
-            </label>
+            
             <InputElement
               id="receiveChallanFont"
               name="receiveChallanFont"

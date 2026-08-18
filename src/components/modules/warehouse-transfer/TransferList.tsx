@@ -347,11 +347,13 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
     {
       key: 'action',
       header: 'Action',
-      // Room for four icons: an in-transit row the destination branch is
-      // looking at carries edit, delete, print and receive at once.
+      // Room for three icons, which is the most either end sees: the sending
+      // branch gets edit, delete and print; the destination gets print and
+      // receive.
       headerClass: 'text-center w-32',
       cellClass: 'text-center w-32',
       render: (row: any) => {
+        const fromBranch = Number(pickFirst(row, ['from_branch', 'from_branch_id']) || 0);
         const toBranch = Number(pickFirst(row, ['to_branch', 'to_branch_id']) || 0);
         const status = Number(pickFirst(row, ['transfer_status', 'status']) || 0);
         // Only the destination branch's user can receive, and only while the
@@ -361,11 +363,18 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
           toBranch === Number(myBranchId) &&
           status === STATUS_IN_TRANSIT;
 
-        // Only while nothing has been received against it. Once the other end
-        // has taken the goods in, the receive was priced from these lines, and
-        // changing them underneath it would leave the two ends disagreeing
+        // The voucher belongs to the branch that raised it -- this list is
+        // issues only, so that is the sending branch. The destination sees the
+        // row because the goods are coming to it, but the paper is not its to
+        // change: the API refuses an edit or a delete from anybody else, so
+        // offering the buttons here only ever bought a refusal.
+        const isOwnVoucher = Boolean(myBranchId) && fromBranch === Number(myBranchId);
+
+        // And only while nothing has been received against it. Once the other
+        // end has taken the goods in, the receive was priced from these lines,
+        // and changing them underneath it would leave the two ends disagreeing
         // about what travelled -- which is what the API refuses anyway.
-        const canEdit = status === STATUS_IN_TRANSIT;
+        const canEdit = isOwnVoucher && status === STATUS_IN_TRANSIT;
 
         return (
           <div className="flex items-center justify-center gap-3">
@@ -381,22 +390,24 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
                 <FiEdit2 className="inline h-4 w-4" />
               </button>
             ) : null}
-            <button
-              type="button"
-              title="Delete this transfer"
-              disabled={deletingId === row.id}
-              onClick={(event) => {
-                const rect = event.currentTarget.getBoundingClientRect();
-                setPendingDelete({
-                  id: Number(row.id),
-                  vrNo: String(pickFirst(row, ['vr_no', 'transfer_no', 'voucher_no']) || ''),
-                  at: { top: rect.bottom + 10, left: rect.left + rect.width / 2 },
-                });
-              }}
-              className="text-danger hover:opacity-80 disabled:opacity-40"
-            >
-              <FiTrash2 className="inline h-4 w-4" />
-            </button>
+            {isOwnVoucher ? (
+              <button
+                type="button"
+                title="Delete this transfer"
+                disabled={deletingId === row.id}
+                onClick={(event) => {
+                  const rect = event.currentTarget.getBoundingClientRect();
+                  setPendingDelete({
+                    id: Number(row.id),
+                    vrNo: String(pickFirst(row, ['vr_no', 'transfer_no', 'voucher_no']) || ''),
+                    at: { top: rect.bottom + 10, left: rect.left + rect.width / 2 },
+                  });
+                }}
+                className="text-danger hover:opacity-80 disabled:opacity-40"
+              >
+                <FiTrash2 className="inline h-4 w-4" />
+              </button>
+            ) : null}
             <button
               type="button"
               title="Print challan"
@@ -449,6 +460,13 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
               id="challanFont"
               name="challanFont"
               label=""
+              // A box of bare digits says nothing about what it governs. The
+              // bubble goes to the left because this row scrolls: hung beneath
+              // the box it would overflow the row's height and earn it a
+              // scrollbar, where to the left it sits in the gap the toolbar
+              // already leaves between the search button and this box.
+              title="Font Size for print"
+              titlePlacement="left"
               value={String(printFont)}
               onChange={handlePrintFontChange}
               type="text"
