@@ -16,6 +16,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
 import { API_DDL_AREA_LIST_URL, API_SOMITY_COLLECTION_SHEET_URL } from '../../../services/apiRoutes';
 import CollectionSheetPrint, { CollectionSheetRow } from './CollectionSheetPrint';
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 
 const statusOptions = [
   { id: '1', name: 'Opening' },
@@ -77,6 +78,7 @@ const getSomityListFromResponse = (response: any) => {
 const CollectionSheet = (user: any) => {
   const dispatch = useDispatch();
   const printRef = useRef<HTMLDivElement>(null);
+  const mobileFormat = useMobileFormat();
 
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const areaState = useSelector((state: any) => state.area);
@@ -490,7 +492,7 @@ const CollectionSheet = (user: any) => {
                           পি:/স্বা: <span className={hasBanglaText(guardianName) ? '' : 'sutonny-text text-[20px] leading-6'}>{guardianName}</span>
                         </div>
                       ) : null}
-                      {row.mobile ? <div>{row.mobile}</div> : null}
+                      {row.mobile ? <div>{formatMobile(row.mobile, mobileFormat)}</div> : null}
                     </td>
                     <td className="px-3 py-4 text-right align-middle">{thousandSeparator(toNumber(row.sales))}</td>
                     <td className="px-3 py-4 text-right align-middle">{thousandSeparator(toNumber(row.down_payment))}</td>

@@ -5,6 +5,7 @@ import Loader from '../../../common/Loader';
 import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { chartDateTime } from '../../utils/utils-functions/formatDate';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 import { getSmsLogs } from './smsSlice';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
@@ -14,6 +15,7 @@ import Pagination from '../../utils/utils-functions/Pagination';
 import { FiCheckSquare } from 'react-icons/fi';
 
 const SendSms = (user: any) => {
+  const mobileFormat = useMobileFormat();
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const smsState = useSelector((state: any) => state.sms);
@@ -67,7 +69,13 @@ const SendSms = (user: any) => {
 
   const columns = [
     { key: 'serial_no', header: 'Sl.', headerClass: 'text-center', cellClass: 'text-center' },
-    { key: 'mobile', header: 'Mobile' },
+    {
+      key: 'mobile',
+      header: 'Mobile',
+      // The log is read, not dialled -- the number the gateway was given is
+      // stored as it was sent and only its reading changes here.
+      render: (row: any) => <div>{formatMobile(row?.mobile, mobileFormat) || '-'}</div>,
+    },
     { key: 'message', header: 'Message' },
     { key: 'provider', header: 'Provider', headerClass: 'text-center', cellClass: 'text-center' },
     { key: 'status', header: 'Status', headerClass: 'text-center', cellClass: 'text-center' },

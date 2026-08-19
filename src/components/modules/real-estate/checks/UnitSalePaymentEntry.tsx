@@ -17,6 +17,7 @@ import httpService from "../../../services/httpService";
 import { toast } from "react-toastify";
 import { unitSalePaymentCreate, unitSalePaymentsDdl } from "./unitSalePaymentsSlice";
 import { trxDateToDate, trxDateToIso } from "../../../utils/utils-functions/transactionDate";
+import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
 
 const LIST_PATH = "/admin/unit-payment-list";
 
@@ -60,6 +61,7 @@ const initialForm: FormState = {
 
 export default function UnitSalePaymentEntry() {
   const coal3 = useSelector((s: any) => s.coal3);
+  const mobileFormat = useMobileFormat();
   const unitSalePayments = useSelector((s: any) => s.unitPayments);
   const settings = useSelector((s: any) => s.settings);
   const dispatch = useDispatch<any>();
@@ -621,7 +623,7 @@ export default function UnitSalePaymentEntry() {
                 {summaryLoading ? "Loading..." : saleSummary?.customer?.name || "-"}
               </div>
               <div className="text-xs text-gray-500">
-                {summaryLoading ? "..." : saleSummary?.customer?.mobile || "-"}
+                {summaryLoading ? "..." : formatMobile(saleSummary?.customer?.mobile, mobileFormat) || "-"}
               </div>
             </div>
             <div className="rounded border border-gray-200 dark:border-gray-700 p-2">

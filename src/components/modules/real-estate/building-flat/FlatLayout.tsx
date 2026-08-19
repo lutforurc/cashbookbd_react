@@ -1056,7 +1056,7 @@ const FlatLayout = () => {
                     <div className="flex justify-between gap-3">
                       <span>Mobile</span>
                       <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {selectedUnit?.customer?.mobile ?? "-"}
+                        {formatMobile(selectedUnit?.customer?.mobile, mobileFormat) || "-"}
                       </span>
                     </div>
                   </div>

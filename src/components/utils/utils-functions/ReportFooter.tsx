@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { formatMobile, useMobileFormat } from './mobileFormat';
 
 interface ReportFooterProps {
   /** Optional font size (px) to match the surrounding report text. */
@@ -22,6 +23,7 @@ interface ReportFooterProps {
  */
 const ReportFooter: React.FC<ReportFooterProps> = ({ fontSize, className, inline }) => {
   const software = useSelector((state: any) => state.settings?.data?.software);
+  const mobileFormat = useMobileFormat();
 
   const name = software?.name?.trim();
   const mobile = software?.mobile?.trim();
@@ -38,7 +40,7 @@ const ReportFooter: React.FC<ReportFooterProps> = ({ fontSize, className, inline
       <span>Software Developed by: </span>
       {name && <span className="font-semibold">{name}</span>}
       {name && mobile && <span> | </span>}
-      {mobile && <span>Mobile: {mobile}</span>}
+      {mobile && <span>Mobile: {formatMobile(mobile, mobileFormat)}</span>}
     </>
   );
 

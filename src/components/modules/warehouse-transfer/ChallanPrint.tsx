@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import ReportFooter from '../../utils/utils-functions/ReportFooter';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 
 type Props = {
   master: any;
@@ -38,6 +39,9 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
 // as `notes` (see WarehouseTransferController::apiTransferDetails).
 const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
   ({ master, details, fontSize = 11, rowsPerPage = 0, title }, ref) => {
+    // Read before the guard below returns, so the hook runs on every render.
+    const mobileFormat = useMobileFormat();
+
     if (!master) {
       return <div ref={ref}>No challan data.</div>;
     }
@@ -244,7 +248,7 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
             <Meta label="Voucher No" value={master?.vr_no} />
             <Meta label="Date" value={challanDate} groupEnd />
             <Meta label="Receiver" value={master?.receiver_name} />
-            <Meta label="Receiver Mobile" value={master?.receiver_mobile_number} />
+            <Meta label="Receiver Mobile" value={formatMobile(master?.receiver_mobile_number, mobileFormat)} />
           </div>
           {/* And three on this side: where the goods left, where they are
               going, and who is carrying them. The two branches close
@@ -263,7 +267,7 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
             {/* Falls back to the old single Transport box, which is all an
                 entry made before the split has. */}
             <Meta label="Driver" value={master?.driver_name || master?.reference} />
-            <Meta label="Driver Mobile" value={master?.driver_mobile} />
+            <Meta label="Driver Mobile" value={formatMobile(master?.driver_mobile, mobileFormat)} />
           </div>
         </div>
 

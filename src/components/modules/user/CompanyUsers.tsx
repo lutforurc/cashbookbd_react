@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 import { generateUserTemporaryPassword, getUser } from './userSlice';
 import Loader from '../../../common/Loader';
 import { FiCheckSquare, FiEdit2, FiKey, FiMinus, FiPlus } from 'react-icons/fi';
@@ -19,6 +20,7 @@ import { API_USER_LIST_URL } from '../../services/apiRoutes';
 
 const UserList = () => {
   const userList = useSelector((state) => state.users);
+  const mobileFormat = useMobileFormat();
   const settings = useSelector((state: any) => state.settings);
   const subscription = useSelector((state: any) => state.subscription);
   const auth = useSelector((state: any) => state.auth);
@@ -125,7 +127,7 @@ const UserList = () => {
     {
       key: 'phone',
       header: 'Mobile / Phone',
-      render: (row: any) => row?.phone || '-',
+      render: (row: any) => formatMobile(row?.phone, mobileFormat) || '-',
     },
     {
       key: 'role',
@@ -434,7 +436,7 @@ const UserList = () => {
         return (
           <div className="flex flex-col">
             {row?.email && <span>{row.email}</span>}
-            {row?.phone && <span>{row.phone}</span>}
+            {row?.phone && <span>{formatMobile(row.phone, mobileFormat)}</span>}
           </div>
         );
       },

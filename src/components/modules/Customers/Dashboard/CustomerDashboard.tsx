@@ -27,6 +27,7 @@ import customerHttpService from '../../../services/customerHttpService';
 import { API_CUSTOMER_SUMMARY_URL } from '../../../services/apiRoutes';
 import CustomerStatement from './CustomerStatement';
 import CustomerDue from './CustomerDue';
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 
 interface CustomerProfile {
   id: number;
@@ -61,6 +62,7 @@ interface Payment {
 const CustomerDashboard: React.FC = () => {
   const dispatch = useDispatch();
   const customer = useSelector((state: any) => state.customerAuth);
+  const mobileFormat = useMobileFormat();
   // Theme state: true = dark, false = light.
   //
   // Read through the app's own hook rather than a local useState. This screen
@@ -324,7 +326,7 @@ const allPayments = paymentList.map((pay: any) => ({
                   {profile.phone && (
                     <span className="flex items-center gap-1.5">
                       <FiPhone className="h-3.5 w-3.5 shrink-0" />
-                      {profile.phone}
+                      {formatMobile(profile.phone, mobileFormat)}
                     </span>
                   )}
                   {profile.address && (

@@ -15,6 +15,7 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import Table from '../../../utils/others/Table';
 import { useHighlightRules } from '../../../utils/highlight/useHighlightRules';
@@ -97,6 +98,7 @@ const LedgerWithProduct = (user: any) => {
     (state: any) => state.customerSupplierStatement,
   );
   const settings = useSelector((state: any) => state.settings);
+  const mobileFormat = useMobileFormat();
   const useFilterMenuEnabled = isUserFeatureEnabled(
     settings,
     'use_filter_parameter',
@@ -439,7 +441,7 @@ const LedgerWithProduct = (user: any) => {
               ${excelCell('Ledger Page', 'th')}
               ${excelCell(party?.ledger_page || '-')}
               ${excelCell('Mobile', 'th')}
-              ${excelCell(party?.mobile || '-')}
+              ${excelCell(formatMobile(party?.mobile, mobileFormat) || '-')}
             </tr>
             <tr>
               ${excelCell('Product', 'th')}

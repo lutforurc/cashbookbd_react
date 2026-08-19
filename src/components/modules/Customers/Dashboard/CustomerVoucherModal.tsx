@@ -6,6 +6,7 @@ import { API_CUSTOMER_VOUCHER_URL } from '../../../services/apiRoutes';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PurchaseInvoicePrint from '../../vouchers/print_items/PurchaseInvoicePrint';
 import ElectronicsSalesInvoicePrint from '../../invoices/sales/ElectronicsSalesInvoicePrint';
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 
 type Props = {
   mtmId: number | string;
@@ -49,6 +50,7 @@ const fmtDateTime = (iso?: string) => {
 };
 
 const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
+  const mobileFormat = useMobileFormat();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -141,7 +143,7 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
               <div className="text-center">
                 <h1 className="text-2xl font-bold uppercase">{company?.name}</h1>
                 {company?.address && <div>{company.address}</div>}
-                {company?.phone && <div>{company.phone}</div>}
+                {company?.phone && <div>{formatMobile(company.phone, mobileFormat)}</div>}
               </div>
               <div className="mt-2 border-t-2 border-gray-900" />
 
@@ -179,7 +181,7 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
                         {(head?.party_manual_address || head?.party_address) && (
                           <div>{head.party_manual_address || head.party_address}</div>
                         )}
-                        {String(head?.party_mobile || '').length > 5 && <div>{head.party_mobile}</div>}
+                        {String(head?.party_mobile || '').length > 5 && <div>{formatMobile(head.party_mobile, mobileFormat)}</div>}
                         {head?.remarks && <div>{head.remarks}</div>}
                       </div>
                     </td>

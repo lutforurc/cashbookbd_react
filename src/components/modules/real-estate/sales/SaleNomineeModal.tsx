@@ -8,6 +8,7 @@ import InputElement from "../../../utils/fields/InputElement";
 import httpService from "../../../services/httpService";
 import { API_UNIT_SALE_DOCUMENTS_URL } from "../../../services/apiRoutes";
 import { SoldUnitRow } from "./types";
+import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
 
 /** One person on the buyer's nominee list, as the customer screen saved them. */
 type CustomerNominee = {
@@ -62,6 +63,7 @@ const titleCase = (value?: string | null) =>
  * customer.
  */
 const SaleNomineeModal: React.FC<Props> = ({ unit, onClose, onSaved }) => {
+  const mobileFormat = useMobileFormat();
   const [available, setAvailable] = useState<CustomerNominee[]>([]);
   const [picks, setPicks] = useState<Record<number, Pick>>({});
   const [loading, setLoading] = useState(false);
@@ -296,7 +298,7 @@ const SaleNomineeModal: React.FC<Props> = ({ unit, onClose, onSaved }) => {
                           {nominee.name}
                           {nominee.mobile ? (
                             <span className="block text-xs text-gray-500 dark:text-gray-400">
-                              {nominee.mobile}
+                              {formatMobile(nominee.mobile, mobileFormat)}
                             </span>
                           ) : null}
                         </label>

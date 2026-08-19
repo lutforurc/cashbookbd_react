@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FiEdit2, FiSearch } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -14,6 +15,7 @@ import { getCompanies } from './companySlice';
 
 const CompanyList = () => {
   const company = useSelector((state: any) => state.company);
+  const mobileFormat = useMobileFormat();
   const environment = useSelector((state: any) => state.settings?.data?.env);
   const settings = useSelector((state: any) => state.settings);  const dispatch = useDispatch<any>();
   const navigate = useNavigate();
@@ -138,7 +140,7 @@ const CompanyList = () => {
     {
       key: 'phone',
       header: 'Phone/Mobile',
-      render: (row: any) => row?.phone || row?.mobile || '-',
+      render: (row: any) => formatMobile(row?.phone || row?.mobile, mobileFormat) || '-',
     },
     {
       key: 'action',

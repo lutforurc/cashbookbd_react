@@ -4,6 +4,7 @@ import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import dayjs from 'dayjs';
 import formatDate, { formatDateUsdToBd } from '../../../utils/utils-functions/formatDate';
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 
 export type LedgerRow = {
   sl_number?: string | number;
@@ -114,6 +115,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
       coal4?.address ||
       '';
     const ledgerMobile = partyInfo?.mobile || coal4?.mobile || '';
+    const mobileFormat = useMobileFormat();
 
     // Grand totals (for all rows)
     const grandDebit = sum(rowsArr.map((r) => Number(r.debit || 0)));
@@ -170,7 +172,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                     )}
                     {ledgerMobile && ledgerMobile.length >= 5 && (
                       <span className='block'>
-                        Mobile: {ledgerMobile}
+                        Mobile: {formatMobile(ledgerMobile, mobileFormat)}
                       </span>
                     )}
                   </div>

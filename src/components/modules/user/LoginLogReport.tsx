@@ -4,6 +4,7 @@ import { FiRefreshCcw, FiSearch } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 import Loader from '../../../common/Loader';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import httpService from '../../services/httpService';
 import { API_USER_LOGIN_LOG_URL } from '../../services/apiRoutes';
@@ -35,6 +36,7 @@ const duration = (minutes?: number | null) => {
 };
 
 const LoginLogReport: React.FC = () => {
+  const mobileFormat = useMobileFormat();
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -122,7 +124,7 @@ const LoginLogReport: React.FC = () => {
           <div>
             <div className="font-medium">{row.user_name || '-'}</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              {row.email || row.phone || ''}
+              {row.email || formatMobile(row.phone, mobileFormat) || ''}
             </div>
           </div>
         ),

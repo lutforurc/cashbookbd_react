@@ -3,6 +3,7 @@ import { FiCreditCard, FiRefreshCw, FiSave, FiUserX, FiUsers } from 'react-icons
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../utils/others/HelmetTitle';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import InputElement from '../../utils/fields/InputElement';
@@ -57,6 +58,8 @@ const ResellerAdmin: React.FC = () => {
   const [paymentForm, setPaymentForm] = useState(emptyPaymentForm);
   const [selectedResellerId, setSelectedResellerId] = useState('');
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const mobileFormat = useMobileFormat();
+
   const resellerColumns = [
     {
       key: 'name',
@@ -73,7 +76,7 @@ const ResellerAdmin: React.FC = () => {
       header: 'Contact',
       render: (reseller: Reseller) => (
         <>
-          <p>{reseller.phone || '-'}</p>
+          <p>{formatMobile(reseller.phone, mobileFormat) || '-'}</p>
           <p className="text-xs">{reseller.email || '-'}</p>
         </>
       ),

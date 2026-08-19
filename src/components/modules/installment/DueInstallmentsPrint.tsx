@@ -3,6 +3,7 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { formatBdShortDate } from '../../utils/utils-functions/formatDate';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import ReportFooter from '../../utils/utils-functions/ReportFooter';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 
 export type InstallmentRow = {
   sl_number?: string | number;
@@ -61,6 +62,8 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
     },
     ref,
   ) => {
+    const mobileFormat = useMobileFormat();
+
     // Split into pages
     const pages = chunkRows(rows || [], rowsPerPage);
     const fs = Number.isFinite(fontSize) ? fontSize! : 9;
@@ -190,7 +193,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                               </div>
                               {row?.father && <div>{row.father}</div>}
                               <div>{row?.customer_address ?? ''}</div>
-                              <div>{row?.customer_mobile ?? ''}</div>
+                              <div>{formatMobile(row?.customer_mobile, mobileFormat)}</div>
                               {row?.employee && (
                                 <div className="">{row.employee}</div>
                               )}

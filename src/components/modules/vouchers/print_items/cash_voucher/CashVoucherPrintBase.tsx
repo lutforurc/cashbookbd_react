@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import PadPrinting from '../../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../../utils/utils-functions/thousandSeparator';
 import { chartDateTime } from '../../../../utils/utils-functions/formatDate';
+import { formatMobile, useMobileFormat } from '../../../../utils/utils-functions/mobileFormat';
 
 type CashVoucherMode = 'payment' | 'received';
 type CashVoucherVariant = 'a4-portrait' | 'a4-landscape' | 'half-portrait' | 'half-landscape';
@@ -157,6 +158,8 @@ const variantConfig = {
 
 const CashVoucherPrintBase = React.forwardRef<HTMLDivElement, Props>(
   ({ data, fontSize = 10, mode, variant }, ref) => {
+    // Read before the guard below returns, so the hook runs on every render.
+    const mobileFormat = useMobileFormat();
     const printData = getCashVoucherData(data, mode);
 
     if ('error' in printData) {
@@ -213,7 +216,7 @@ const CashVoucherPrintBase = React.forwardRef<HTMLDivElement, Props>(
                   <div className={variant.startsWith('half') ? 'pt-1' : 'ml-3'}>
                     {printData.headOfAccount}
                     {printData.address && <><br />{variant.startsWith('half') ? printData.address : <span className="">{printData.address}</span>}</>}
-                    {String(printData.mobile).length > 5 && <><br />{variant.startsWith('half') ? printData.mobile : <span className="">{printData.mobile}</span>}</>}
+                    {String(printData.mobile).length > 5 && <><br />{variant.startsWith('half') ? formatMobile(printData.mobile, mobileFormat) : <span className="">{formatMobile(printData.mobile, mobileFormat)}</span>}</>}
                     {printData.remarks && <><br />{variant.startsWith('half') ? printData.remarks : <span className="">{printData.remarks}</span>}</>}
                     {printData.orderNumber && (
                       <>

@@ -4,6 +4,7 @@ import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import type {
   LedgerWithProductRow,
   LedgerWithProductSummary,
@@ -104,6 +105,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
     const printablePartyName = partyName || '-';
     const printableMobile = mobile || '';
+    const mobileFormat = useMobileFormat();
     const printableAddress = address || '-';
     const footerItems = [
       ['Opening', summary.opening_balance],
@@ -180,7 +182,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                   ) : null}
                   {printableMobile.length >= 5 && (
                     <div>
-                      <span className="font-semibold">Mobile:</span> {printableMobile}
+                      <span className="font-semibold">Mobile:</span> {formatMobile(printableMobile, mobileFormat)}
                     </div>
                   )}
                   <div>

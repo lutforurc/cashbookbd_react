@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { chartDateTime } from './formatDate';
 import { PrintBranch, hasPrintBranch, usePrintBranch } from './printBranch';
+import { formatMobile, useMobileFormat } from './mobileFormat';
 
 type Props = {
   /** The branch the report is about; falls back to the logged-in user's. */
@@ -10,6 +11,7 @@ type Props = {
 
 const CompanyPad: React.FC<Props> = ({ branch }) => {
   const settings = useSelector((state: any) => state.settings.data);
+  const mobileFormat = useMobileFormat();
 
   // The report's own branch wins outright: the address must not fall back to the
   // session's, which belongs to a different branch.
@@ -29,7 +31,7 @@ const CompanyPad: React.FC<Props> = ({ branch }) => {
             <span className="-mt-1"> {settings?.company?.address}</span>
           </div>
           <div>
-            <span className="-mb-1"> {settings?.company?.phone}</span>
+            <span className="-mb-1"> {formatMobile(settings?.company?.phone, mobileFormat)}</span>
           </div>
           { settings?.company?.notes && (
             <div>

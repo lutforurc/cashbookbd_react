@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
 import { chartDateTime } from './formatDate';
 import { PrintBranch, hasPrintBranch, usePrintBranch } from './printBranch';
+import { formatMobile, useMobileFormat } from './mobileFormat';
 
 const loadedImageUrls = new Set<string>();
 const imageLoadPromises = new Map<string, Promise<string>>();
@@ -95,9 +96,10 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
   // session branch's would put one branch's name over another's address.
   const resolvedBranch = usePrintBranch(printBranch);
   const overridden = hasPrintBranch(resolvedBranch);
+  const mobileFormat = useMobileFormat();
   const headingName = overridden ? resolvedBranch?.name : branch?.name;
   const headingAddress = overridden ? resolvedBranch?.address : branch?.address;
-  const headingPhone = overridden ? resolvedBranch?.phone : branch?.phone;
+  const headingPhone = formatMobile(overridden ? resolvedBranch?.phone : branch?.phone, mobileFormat);
 
 
   const imagePath =

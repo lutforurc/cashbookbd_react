@@ -3,6 +3,7 @@ import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import { employeeGroup } from '../../../utils/fields/DataConstant';
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import { FaKipSign } from 'react-icons/fa6';
 
 type EmployeeRow = {
@@ -50,6 +51,7 @@ const EmployeePrint = React.forwardRef<HTMLDivElement, Props>(
     ref,
   ) => {
     const pages = chunkRows(rows || [], rowsPerPage);
+    const mobileFormat = useMobileFormat();
     const fs = fontSize;
 
     return (
@@ -99,7 +101,7 @@ const EmployeePrint = React.forwardRef<HTMLDivElement, Props>(
                         {row.designation_name || '-'}
                       </td>
                       <td className="border border-gray-900 p-1 text-center" style={{ fontSize: fs }}>
-                        {row.mobile || '-'}
+                        {formatMobile(row.mobile, mobileFormat) || '-'}
                       </td>
                       <td className="border border-gray-900 p-1" style={{ fontSize: fs }}>
                         {row.branch_name || '-'}

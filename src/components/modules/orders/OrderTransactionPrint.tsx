@@ -5,6 +5,7 @@ import ReportFooter from '../../utils/utils-functions/ReportFooter';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { formatTransportationNumber } from '../../utils/utils-functions/formatRoleName';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 
 type OrderRow = {
   id?: number | string;
@@ -154,6 +155,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
     const fs = Number.isFinite(fontSize) ? fontSize : 11;
     // Name of the logged-in user who prints the report → shown under "Prepared by".
     const preparedByName = useSelector((state: any) => state.settings?.data?.user?.name) || '';
+    const mobileFormat = useMobileFormat();
     const orderTypeLabel = getOrderTypeLabel(order?.order_type);
     const partyLabel = orderTypeLabel === 'Purchase' ? 'Supplier Name' : 'Customer Name';
     const transactionRows = Array.isArray(order?.transaction_rows) && order.transaction_rows.length > 0
@@ -207,7 +209,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                 { order?.mobile && order?.mobile.length >= 5 && (
                 <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Mobile:</span>
-                  <span className="">{order?.mobile || '-'}</span>
+                  <span className="">{formatMobile(order?.mobile, mobileFormat) || '-'}</span>
                 </div>
                 )}
                 <div className="flex flex-wrap leading-4">

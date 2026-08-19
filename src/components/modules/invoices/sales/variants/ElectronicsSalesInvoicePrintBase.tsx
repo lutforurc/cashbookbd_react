@@ -4,6 +4,7 @@ import PadPrinting from '../../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../../utils/utils-functions/thousandSeparator';
 import { chartDateTime } from '../../../../utils/utils-functions/formatDate';
 import { formatTransportationNumber } from '../../../../utils/utils-functions/formatRoleName';
+import { formatMobile, useMobileFormat } from '../../../../utils/utils-functions/mobileFormat';
 
 type Variant = 'a4-portrait' | 'a4-landscape' | 'half-portrait' | 'half-landscape';
 
@@ -156,6 +157,8 @@ const getSalesMeta = (data: any) => {
 
 const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>(
   ({ data, rowsPerPage = 10, fontSize = 10, settings, variant }, ref) => {
+    // Read before the guards below return, so the hook runs on every render.
+    const mobileFormat = useMobileFormat();
     const meta = getSalesMeta(data);
 
     if (!meta.salesMaster) {
@@ -223,7 +226,7 @@ const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>
                 <div className={`space-y-1 ${isHalf ? 'col-span-1' : 'col-span-2'}`}>
                   <div><span className="font-semibold">Name:</span> {meta.customerName}</div>
                   {meta.customerMobile.length > 5 && !isHalf && (
-                    <div>Mobile: {String(meta.customerMobile).replace(/^(\d{5})(\d+)/, '$1-$2')}</div>
+                    <div>Mobile: {formatMobile(meta.customerMobile, mobileFormat)}</div>
                   )}
                   {meta.customerAddress && <div>Address: {meta.customerAddress}</div>}
                   {data?.sales_master?.sales_order?.order_number && <div>Order Number: {data.sales_master.sales_order.order_number}</div>}

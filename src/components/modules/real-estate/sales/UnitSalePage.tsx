@@ -35,6 +35,7 @@ import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { UNIT_SALE_PAYMENT_MODES } from "../../../constant/constant/variables";
 import httpService from "../../../services/httpService";
 import { API_UNIT_SALE_CUSTOMER_NOMINEES_URL } from "../../../services/apiRoutes";
+import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
 
 /* ================= TYPES ================= */
 
@@ -153,6 +154,7 @@ const parseDate = (value?: string | null) => {
  */
 export default function UnitSalePage() {
   const { loading } = useSelector((state: any) => state.unitSale ?? { loading: false });
+  const mobileFormat = useMobileFormat();
 
   // A sale id in the path is what puts this screen into edit mode. Reached from
   // the sold-units report, which is where a wrong figure is noticed.
@@ -924,7 +926,7 @@ export default function UnitSalePage() {
                           <label
                             htmlFor={`nominee-${nominee.id}`}
                             className="flex-1 cursor-pointer truncate"
-                            title={[nominee.name, nominee.relation, nominee.mobile]
+                            title={[nominee.name, nominee.relation, formatMobile(nominee.mobile, mobileFormat)]
                               .filter(Boolean)
                               .join(" · ")}
                           >

@@ -5,6 +5,7 @@ import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import ReportFooter from "../../../utils/utils-functions/ReportFooter";
 import { SoldUnitCustomer, SoldUnitTotals } from "./types";
+import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
 import {
   customerColor,
   edgeStyle,
@@ -46,6 +47,7 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
     ref
   ) => {
     const rows = Array.isArray(customers) ? customers : [];
+    const mobileFormat = useMobileFormat();
     const fs = fontSize;
     const cell = "border border-gray-900 px-2 py-1";
 
@@ -166,7 +168,7 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
                                       <div>{customer.customer_address}</div>
                                     ) : null}
                                     {customer.customer_mobile ? (
-                                      <div>Cell: {customer.customer_mobile}</div>
+                                      <div>Cell: {formatMobile(customer.customer_mobile, mobileFormat)}</div>
                                     ) : null}
                                   </td>
                                 </>

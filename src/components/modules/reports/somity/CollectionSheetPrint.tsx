@@ -3,6 +3,7 @@ import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 
 export type CollectionSheetRow = {
   bangla?: string | null;
@@ -81,6 +82,7 @@ const CollectionSheetPrint = React.forwardRef<HTMLDivElement, Props>(
     ref,
   ) => {
     const rowsArr = Array.isArray(rows) ? rows : [];
+    const mobileFormat = useMobileFormat();
     const pages = chunkRows(rowsArr, rowsPerPage);
     const printedAt = new Date().toLocaleString('en-GB', {
       day: '2-digit',
@@ -173,7 +175,7 @@ const CollectionSheetPrint = React.forwardRef<HTMLDivElement, Props>(
                             পি:/স্বা: <span className={hasBanglaText(guardianName) ? '' : 'sutonny-text text-[20px] leading-6'}>{guardianName}</span>
                           </div>
                         ) : null}
-                        {row.mobile ? <div>{row.mobile}</div> : null}
+                        {row.mobile ? <div>{formatMobile(row.mobile, mobileFormat)}</div> : null}
                       </td>
                       <td style={{ fontSize }} className="border border-gray-900 px-2 py-2 text-right align-middle">{thousandSeparator(toNumber(row.sales))}</td>
                       <td style={{ fontSize }} className="border border-gray-900 px-2 py-2 text-right align-middle">{thousandSeparator(toNumber(row.down_payment))}</td>

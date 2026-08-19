@@ -16,6 +16,7 @@ import { fetchBuildingDdl } from "../../real-estate/buildings/buildingsSlice";
 // The house money format, shared on purpose: a figure here and the same figure
 // on the allotment letter must be written the same way.
 import { money } from "../../real-estate/sales/soldUnitReport";
+import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
 import {
   fetchSalesSummary,
   SalesSummaryCustomer,
@@ -44,11 +45,14 @@ const unitOf = (unit: SalesSummaryUnit) =>
  * buyer with two flats gets two pairs rather than a second row, so the amount
  * columns beside them stay one figure per customer.
  */
-const CustomerCell: React.FC<{ customer: SalesSummaryCustomer }> = ({ customer }) => (
+const CustomerCell: React.FC<{ customer: SalesSummaryCustomer }> = ({ customer }) => {
+  const mobileFormat = useMobileFormat();
+
+  return (
   <>
     <div className="font-medium">{customer.customer_name || "-"}</div>
     {customer.customer_mobile ? (
-      <div className="text-xs text-gray-500 dark:text-gray-400">{customer.customer_mobile}</div>
+      <div className="text-xs text-gray-500 dark:text-gray-400">{formatMobile(customer.customer_mobile, mobileFormat)}</div>
     ) : null}
     {customer.units.map((unit) => (
       <div key={unit.sale_id} className="mt-1 text-xs text-gray-600 dark:text-gray-400">
@@ -57,7 +61,8 @@ const CustomerCell: React.FC<{ customer: SalesSummaryCustomer }> = ({ customer }
       </div>
     ))}
   </>
-);
+  );
+};
 
 /**
  * Sales summary: one line per buyer, and what they still owe.

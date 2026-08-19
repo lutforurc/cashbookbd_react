@@ -21,6 +21,7 @@ import InputDatePicker from '../../utils/fields/DatePicker';
 import { trxDateToDate, trxDateToIso } from '../../utils/utils-functions/transactionDate';
 import httpService from '../../services/httpService';
 import { API_CUSTOMER_MOBILE_CHECK_URL } from '../../services/apiRoutes';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 
 type ProductOption = {
   value: string;
@@ -41,6 +42,7 @@ type TransferItem = {
 };
 
 const BranchTransfer = () => {
+  const mobileFormat = useMobileFormat();
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -904,7 +906,7 @@ const BranchTransfer = () => {
                         {item?.name || '-'}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {item?.mobile || '-'}
+                        {formatMobile(item?.mobile, mobileFormat) || '-'}
                         {item?.manual_address ? ` | ${item.manual_address}` : ''}
                       </div>
                     </div>

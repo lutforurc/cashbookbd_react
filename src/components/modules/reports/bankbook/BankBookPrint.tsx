@@ -3,6 +3,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 
 type Somity = {
   idfr_code?: string;
@@ -57,6 +58,7 @@ const BankBookPrint = React.forwardRef<HTMLDivElement, Props>(
   ) => {
     // SAFETY: ensure array to avoid reduce/map errors
     const rowsArr: BankRow[] = Array.isArray(rows) ? rows : [];
+    const mobileFormat = useMobileFormat();
 
     const pages = chunkRows(rowsArr, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? fontSize! : 9;
@@ -172,7 +174,7 @@ const BankBookPrint = React.forwardRef<HTMLDivElement, Props>(
                                     </div>
                                   )}
                                 {row.somity.mobile && (
-                                  <div>{row.somity.mobile}</div>
+                                  <div>{formatMobile(row.somity.mobile, mobileFormat)}</div>
                                 )}
                               </div>
                             )}
