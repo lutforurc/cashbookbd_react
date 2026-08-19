@@ -77,7 +77,27 @@ const parse = (value: string): Parsed => {
   const body = doc.body;
   const tables = body.querySelectorAll('table');
 
-  if (tables.length !== 1) return { kind: 'custom' };
+  if (tables.length > 1) return { kind: 'custom' };
+
+  // No table is not the same as unreadable. A block that is only paragraphs --
+  // which is what the old editor left when nobody added signature columns -- is
+  // a lead with no signatories, and this form writes exactly that shape.
+  if (tables.length === 0) {
+    const lines: string[] = [];
+    for (let node = body.firstChild; node; node = node.nextSibling) {
+      if (node.nodeType === Node.TEXT_NODE && !node.textContent?.trim()) continue;
+      if (node.nodeType !== Node.ELEMENT_NODE) return { kind: 'custom' };
+      const element = node as Element;
+      if (element.tagName !== 'P') return { kind: 'custom' };
+      if (element.querySelector(':scope :not(br):not(strong):not(b):not(em):not(i):not(u)')) {
+        return { kind: 'custom' };
+      }
+      lines.push(element.innerHTML.trim());
+    }
+    if (!lines.length) return { kind: 'custom' };
+    return { kind: 'structured', lead: lines.join('\n'), signatories: [] };
+  }
+
   const table = tables[0];
 
   // Only paragraphs may stand before the table, and nothing after it.
@@ -93,7 +113,7 @@ const parse = (value: string): Parsed => {
     if (node.nodeType !== Node.ELEMENT_NODE || (node as Element).tagName !== 'P') {
       return { kind: 'custom' };
     }
-    lead += (lead ? '\n' : '') + (node.textContent || '').trim();
+    lead += (lead ? '\n' : '') + (node as Element).innerHTML.trim();
   }
 
   const rows = Array.from(table.querySelectorAll('tr'));
@@ -125,6 +145,25 @@ const parse = (value: string): Parsed => {
   return { kind: 'structured', lead, signatories };
 };
 
+/**
+ * Keeps bold and italic, escapes the rest.
+ *
+ * The lead is edited as text, so whatever is typed there ends up in a printed
+ * letter. Six tags are let through because the letters already carry them;
+ * anything else -- a stray angle bracket, something pasted -- is shown as the
+ * characters it is rather than acted on.
+ */
+const inlineOnly = (line: string): string => {
+  const guarded = line.replace(
+    /<(\/?)(strong|b|em|i|u|br)\s*\/?>/gi,
+    (_match, slash, tag) => `\u0000${slash}${tag.toLowerCase()}\u0000`,
+  );
+  return encode(guarded).replace(
+    /\u0000(\/?)(strong|b|em|i|u|br)\u0000/g,
+    '<$1$2>',
+  );
+};
+
 /** Writes the block in the exact shape the old editor's tables took. */
 const serialize = (lead: string, signatories: Signatory[]): string => {
   const named = signatories.filter((s) => s.label.trim() || s.sub.trim());
@@ -135,7 +174,7 @@ const serialize = (lead: string, signatories: Signatory[]): string => {
 
   if (named.length === 0 && leadLines.length === 0) return '';
 
-  const paragraphs = leadLines.map((line) => `<p>${encode(line)}</p>`).join('');
+  const paragraphs = leadLines.map((line) => `<p>${inlineOnly(line)}</p>`).join('');
   if (named.length === 0) return paragraphs;
 
   const signCells = named
