@@ -21,10 +21,11 @@ type Props = {
  *   padding     8mm around a page's content, and nothing at the bottom -- the
  *               5mm page margin is the gap under the footer, which is where the
  *               old fixed-position footer sat.
- *   min-height  the sheet less those margins and the top padding, less 1mm.
- *               The page fills the printable area, so a footer with `mt-auto`
- *               falls to the bottom of it; the millimetre keeps a rounding
- *               overflow from spilling onto a page of its own.
+ *   min-height  the sheet less the two margins, less 1mm. The padding is NOT
+ *               subtracted: everything is border-box, so a page's padding is
+ *               inside its height already, and taking it off again left the
+ *               page 8mm short and the footer 8mm up the sheet. The millimetre
+ *               keeps a rounding overflow from spilling onto a page of its own.
  */
 const PrintStyles: React.FC<Props> = ({ orientation = 'portrait' }) => {
   const sheet = orientation === 'landscape' ? '210mm' : '297mm';
@@ -51,7 +52,7 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait' }) => {
              page, a landscape cash-and-bank page -- can stand exactly as tall
              without doing the arithmetic again. */
           :root {
-            --print-page-height: calc(${sheet} - 6mm - 5mm - 8mm - 1mm);
+            --print-page-height: calc(${sheet} - 6mm - 5mm - 1mm);
           }
 
           .print-page {
