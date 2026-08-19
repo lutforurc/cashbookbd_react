@@ -2,6 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+// Not `__dirname`: this package is "type": "module", and from Vite 5 the
+// config is loaded as real ESM, where `__dirname` does not exist. Vite 4 only
+// tolerated it by bundling the config to CJS first. `import.meta.dirname`
+// needs Node 20.11+, which Vite 8 requires anyway.
+const projectRoot = import.meta.dirname;
+
 export default defineConfig({
     plugins: [react()],
     optimizeDeps: {
@@ -9,7 +15,7 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            'jsvectormap': path.resolve(__dirname, 'node_modules/jsvectormap'),
+            'jsvectormap': path.resolve(projectRoot, 'node_modules/jsvectormap'),
         },
     },
     server: {
