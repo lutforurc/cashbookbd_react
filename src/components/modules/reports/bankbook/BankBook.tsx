@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ButtonLoading,
@@ -296,14 +296,8 @@ const BankBook = (user: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => {
-      if (!printRef.current) {
-        return null;
-      }
-      return printRef.current;
-    },
+    contentRef: printRef,
     documentTitle: 'Bank Book',
-    removeAfterPrint: true,
   });
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

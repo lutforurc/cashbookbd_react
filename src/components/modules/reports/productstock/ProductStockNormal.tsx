@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ButtonLoading,
   PrintButton,
@@ -26,7 +26,7 @@ import StockBookPrintNormal from './StockBookPrintNormal';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 // ======================
-// âœ… Category-wise helper
+// Ã¢Å“â€¦ Category-wise helper
 // ======================
 const isGroupRow = (row: any) => row?.__type === 'GROUP';
 const isGrandTotalRow = (row: any) => row?.__type === 'GRAND_TOTAL';
@@ -156,15 +156,11 @@ const ProductStockNormal = ({ user }: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => {
-      if (!printRef.current) return null;
-      return printRef.current;
-    },
+    contentRef: printRef,
     documentTitle: 'Product Stock',
-    removeAfterPrint: true,
   });
 
-  // âœ… stock data -> convert to category-wise rows
+  // Ã¢Å“â€¦ stock data -> convert to category-wise rows
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {
       const grouped = buildCategoryWiseRows(stock.data);
@@ -647,7 +643,7 @@ const ProductStockNormal = ({ user }: any) => {
         <div className="hidden">
           <StockBookPrintNormal
             ref={printRef}
-            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // âœ… group row print à¦ à¦¯à¦¾à¦¬à§‡ à¦¨à¦¾
+            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // Ã¢Å“â€¦ group row print Ã Â¦Â Ã Â¦Â¯Ã Â¦Â¾Ã Â¦Â¬Ã Â§â€¡ Ã Â¦Â¨Ã Â¦Â¾
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Product Stock"

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import { FiCheckSquare, FiRefreshCcw } from 'react-icons/fi';
@@ -135,9 +135,8 @@ const ConnectedMember = (user: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Connected Member',
-    removeAfterPrint: true,
   });
 
   const toggleGroup = (employeeName: string) => {

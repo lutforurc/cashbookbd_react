@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import dayjs from 'dayjs';
@@ -62,16 +62,9 @@ const DueInstallment = (user: any) => {
   }, []);
 
   const handlePrint = useReactToPrint({
-    content: () => {
-      if (!printRef.current) {
-        // alert("Nothing to print: Ref not ready");
-        return null;
-      }
-      return printRef.current;
-    },
+    contentRef: printRef,
     documentTitle: 'Due Report',
     // onAfterPrint: () => alert('Printed successfully!'),
-    removeAfterPrint: true,
   });
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
@@ -578,14 +578,8 @@ const Ledger = (user: any) => {
 
 
   const handlePrint = useReactToPrint({
-    content: () => {
-      if (!printRef.current) {
-        return null;
-      }
-      return printRef.current;
-    },
+    contentRef: printRef,
     documentTitle: 'Due Report',
-    removeAfterPrint: true,
   });
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

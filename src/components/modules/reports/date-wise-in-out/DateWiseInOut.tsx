@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
@@ -205,9 +205,8 @@ const DateWiseInOut = ({ user }: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Date Wise In Out',
-    removeAfterPrint: true,
   });
 
   const handleMainPrint = () => {
@@ -220,9 +219,8 @@ const DateWiseInOut = ({ user }: any) => {
   };
 
   const handleDetailPrint = useReactToPrint({
-    content: () => detailPrintRef.current,
+    contentRef: detailPrintRef,
     documentTitle: `Date Wise In Out ${detailDate || ''}`.trim(),
-    removeAfterPrint: true,
   });
 
   useEffect(() => {

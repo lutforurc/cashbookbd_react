@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
@@ -39,13 +39,13 @@ const SECTIONS: { key: Section; title: string; blurb: string }[] = [
     key: 'detail',
     title: 'Income Detail',
     blurb:
-      'Every earning by project, building and head. Project-wide income is left where it is rather than split across buildings by area — rent on a hoarding is not owed to a flat in proportion to its floor space.',
+      'Every earning by project, building and head. Project-wide income is left where it is rather than split across buildings by area â€” rent on a hoarding is not owed to a flat in proportion to its floor space.',
   },
   {
     key: 'untagged',
     title: 'Income Without a Project',
     blurb:
-      'Income lines carrying no project. Branch income that never had one belongs here; a unit sale does not — it tags itself, so one showing up is a sale whose unit could not be traced to a live building.',
+      'Income lines carrying no project. Branch income that never had one belongs here; a unit sale does not â€” it tags itself, so one showing up is a sale whose unit could not be traced to a live building.',
   },
 ];
 
@@ -125,7 +125,7 @@ const ProjectIncomeReport = ({ user }: any) => {
     }
 
     // The branch list carries the branch's working date, which is the sensible
-    // end of the range — the books do not run past it.
+    // end of the range â€” the books do not run past it.
     if (protectedData?.transactionDate && !endDate) {
       const parsed = dayjs(protectedData.transactionDate, 'DD/MM/YYYY');
 
@@ -214,9 +214,8 @@ const ProjectIncomeReport = ({ user }: any) => {
   const handleReset = () => setFilterOpen(false);
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Project Income Report',
-    removeAfterPrint: true,
   });
 
   const current = rows[section];

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
@@ -144,9 +144,8 @@ const BranchStockReport = ({ user }: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Branch Stock Report',
-    removeAfterPrint: true,
   });
 
   const onPrint = () => {
@@ -254,7 +253,7 @@ const BranchStockReport = ({ user }: any) => {
 
   const rangeLabel =
     startDate && endDate
-      ? `${dayjs(startDate).format('DD/MM/YYYY')} — ${dayjs(endDate).format('DD/MM/YYYY')}`
+      ? `${dayjs(startDate).format('DD/MM/YYYY')} â€” ${dayjs(endDate).format('DD/MM/YYYY')}`
       : '';
 
   return (

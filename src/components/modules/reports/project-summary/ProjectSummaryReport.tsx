@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import { useReactToPrint } from 'react-to-print';
@@ -102,7 +102,7 @@ const ProjectSummaryReport = ({ user }: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: `Project Summary - ${dayjs(endDate).format("DD-MM-YYYY")}`,
   });
 

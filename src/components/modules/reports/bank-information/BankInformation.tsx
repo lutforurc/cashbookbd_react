@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import { FiCheckSquare, FiRefreshCcw } from 'react-icons/fi';
@@ -132,9 +132,8 @@ const BankInformation = () => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Bank Information',
-    removeAfterPrint: true,
   });
 
   const controlClass =

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
@@ -592,7 +592,7 @@ const PurchaseLedger = (user: any) => {
           (detail: any) => detail?.coa4_id === 40,
         )?.credit;
 
-        // value format Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦ÂÃ Â¦Â¬Ã Â¦â€š default
+        // value format ÃƒÂ Ã‚Â¦Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¦Ã‚Â°ÃƒÂ Ã‚Â¦Ã‚Â¾ ÃƒÂ Ã‚Â¦Ã‚ÂÃƒÂ Ã‚Â¦Ã‚Â¬ÃƒÂ Ã‚Â¦Ã¢â‚¬Å¡ default
         // Show the discount only when there is one; otherwise leave the cell blank.
         const displayValue = creditValue ? thousandSeparator(creditValue) : '';
 
@@ -615,7 +615,7 @@ const PurchaseLedger = (user: any) => {
           (detail: any) => detail?.coa4_id === 17,
         )?.credit;
 
-        // value format Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦ÂÃ Â¦Â¬Ã Â¦â€š default
+        // value format ÃƒÂ Ã‚Â¦Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¦Ã‚Â°ÃƒÂ Ã‚Â¦Ã‚Â¾ ÃƒÂ Ã‚Â¦Ã‚ÂÃƒÂ Ã‚Â¦Ã‚Â¬ÃƒÂ Ã‚Â¦Ã¢â‚¬Å¡ default
         const displayValue = creditValue
           ? thousandSeparator(creditValue)
           : '-';
@@ -639,7 +639,7 @@ const PurchaseLedger = (user: any) => {
           return Number.isFinite(n) ? n : 0;
         };
 
-        // Purchase total = sum of (rate × qty) across details (matches Total column).
+        // Purchase total = sum of (rate Ã— qty) across details (matches Total column).
         const total = Array.isArray(row?.purchase_master?.details)
           ? row.purchase_master.details.reduce(
               (s: number, d: any) => s + parseNumber(d?.purchase_price) * parseNumber(d?.quantity),
@@ -733,16 +733,9 @@ const PurchaseLedger = (user: any) => {
   ];
 
   const handlePrint = useReactToPrint({
-    content: () => {
-      if (!printRef.current) {
-        // alert("Nothing to print: Ref not ready");
-        return null;
-      }
-      return printRef.current;
-    },
+    contentRef: printRef,
     documentTitle: 'Purchase Ledger',
     // onAfterPrint: () => alert('Printed successfully!'),
-    removeAfterPrint: true,
   });
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

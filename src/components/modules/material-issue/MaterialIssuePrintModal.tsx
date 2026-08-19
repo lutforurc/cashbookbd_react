@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { FiPrinter, FiX } from 'react-icons/fi';
@@ -33,9 +33,8 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
 
   const printRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: master?.issue_no ? `MaterialIssue-${master.issue_no}` : 'MaterialIssue',
-    removeAfterPrint: true,
   });
 
   useEffect(() => {
@@ -86,7 +85,7 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
         </div>
 
         <div className="max-h-[80vh] overflow-y-auto p-3">
-          {loading && <p className="py-8 text-center text-gray-500">Loading…</p>}
+          {loading && <p className="py-8 text-center text-gray-500">Loadingâ€¦</p>}
           {error && <p className="py-8 text-center text-red-600">{error}</p>}
 
           {!loading && !error && master && (

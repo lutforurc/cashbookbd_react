@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
@@ -664,9 +664,8 @@ const OrderWithProduct = ({
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: payload?.order_number ? `Order-${payload.order_number}` : 'Order With Transaction',
-    removeAfterPrint: true,
   });
 
   const showSelector = orderId === undefined || orderId === null;

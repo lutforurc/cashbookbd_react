@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
@@ -72,7 +72,7 @@ const DateWiseData = (user: any) => {
   }, [branchDdlData?.protectedData?.data]);
 
   // -----------------------------------------------------
-  // Run Button â†’ Load Table Data
+  // Run Button Ã¢â€ â€™ Load Table Data
   // -----------------------------------------------------
   const handleRun = () => {
     if (!branchId || !startDate || !endDate) return;
@@ -255,9 +255,8 @@ const DateWiseData = (user: any) => {
   // Print Function
   // -----------------------------------------------------
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: "Datewise Total",
-    removeAfterPrint: true,
   });
 
   return (

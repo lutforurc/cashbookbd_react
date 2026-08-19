@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import HelmetTitle from "../../../utils/others/HelmetTitle";
@@ -137,7 +137,7 @@ const CatWiseInOut = (user: any) => {
 
   // Print handler
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: "Category Wise In Out",
   });
 
@@ -223,7 +223,7 @@ const CatWiseInOut = (user: any) => {
     if (selectedOption) {
       setCategoryId(selectedOption.value);
     } else {
-      setCategoryId(null); // à¦…à¦¥à¦¬à¦¾ default value
+      setCategoryId(null); // Ã Â¦â€¦Ã Â¦Â¥Ã Â¦Â¬Ã Â¦Â¾ default value
     }
   };
 

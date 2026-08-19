@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   useRef,
   useImperativeHandle,
   forwardRef,
@@ -100,14 +100,13 @@ export const VoucherPrintRegistry = forwardRef(
     const cashReceivedRef = useRef<HTMLDivElement | null>(null);
     const purchaseRef = useRef<HTMLDivElement | null>(null);
 
-    /* 👉 ACTIVE REF (KEY FIX) */
+    /* ðŸ‘‰ ACTIVE REF (KEY FIX) */
     const activePrintRef = useRef<HTMLDivElement | null>(null);
 
     /* ================= PRINT HANDLER ================= */
     const printVoucherDoc = useReactToPrint({
-      content: () => activePrintRef.current,
+      contentRef: activePrintRef,
       documentTitle: 'Voucher Print',
-      removeAfterPrint: true,
     });
 
     /* ================= PUBLIC METHOD ================= */

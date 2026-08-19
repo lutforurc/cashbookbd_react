@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
@@ -53,7 +53,7 @@ const toIsoDate = (value: any): string => {
 /**
  * Product Financial Statement.
  *
- * ⚠ This is a memo statement -- it will not agree with the General Ledger,
+ * âš  This is a memo statement -- it will not agree with the General Ledger,
  *   because which money went against which product is chosen by the user
  *   (opt-in). Entries left without a product never reach this page, so that
  *   gap is reported separately rather than quietly left out.
@@ -75,9 +75,8 @@ const ProductFinancialStatement = () => {
 
   const printRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Product Financial Statement',
-    removeAfterPrint: true,
   });
 
   useEffect(() => {
@@ -238,10 +237,10 @@ const ProductFinancialStatement = () => {
               {data.product.barcode ? ` (${data.product.barcode})` : ''}
             </p>
             <p className="text-sm">
-              {data.party.name} · {data.branch.name}
+              {data.party.name} Â· {data.branch.name}
             </p>
             <p className="text-sm">
-              {data.start_date} — {data.end_date}
+              {data.start_date} â€” {data.end_date}
             </p>
           </div>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
@@ -134,18 +134,18 @@ const SalesLedger = (user: any) => {
     'cash.payment.edit',
   ]);
 
-  // Ã¢Å“â€¦ Rows + Font controls (like your screenshot)
+  // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Rows + Font controls (like your screenshot)
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(10);
 
-  // Ã¢Å“â€¦ Print
+  // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Print
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
   const restoredFilterRef = useRef(false);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Sales Ledger',
   });
 
@@ -194,7 +194,7 @@ const SalesLedger = (user: any) => {
       if (Array.isArray(ledgerData?.data)) {
         setTableData(ledgerData.data);
       } else {
-        setTableData([]); // Ã°Å¸â€Â¥ CLEAR OLD DATA
+        setTableData([]); // ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¥ CLEAR OLD DATA
       }
     }
   }, [ledgerData.isLoading, ledgerData.data]);
@@ -941,7 +941,7 @@ const SalesLedger = (user: any) => {
                     </div>
                   )}
 
-                  {/* Ã¢Å“â€¦ Rows + Font + Run + Print (like your screenshot) */}
+                  {/* ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Rows + Font + Run + Print (like your screenshot) */}
                   <div
                     className={`${useFilterMenuEnabled
                       ? 'flex flex-wrap justify-end gap-2'

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FIELD_CHECKBOX } from '../../../../theme/fieldStyles';
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -86,8 +86,8 @@ const SoldUnitList: React.FC = () => {
   // Rewriting what a flat was sold for is not the same trust as selling one, so
   // it has a permission of its own and the row offers nothing without it.
   const canEditSale = hasPermission(permissions, "unit.sale.edit");
-  // Withdrawing a sale is heavier again — it puts a flat somebody may already
-  // hold the keys to back on the market — so it is granted separately.
+  // Withdrawing a sale is heavier again â€” it puts a flat somebody may already
+  // hold the keys to back on the market â€” so it is granted separately.
   const canCancelSale = hasPermission(permissions, "unit.sale.cancel");
 
   const [projectId, setProjectId] = useState<string>("");
@@ -96,9 +96,9 @@ const SoldUnitList: React.FC = () => {
   const [dateTo, setDateTo] = useState<Date | null>(null);
   const [q, setQ] = useState("");
   const [dueOnly, setDueOnly] = useState(false);
-  // The sale whose letter is being issued or printed — one at a time.
+  // The sale whose letter is being issued or printed â€” one at a time.
   const [busySaleId, setBusySaleId] = useState<number | null>(null);
-  // The sale waiting on the confirmation. Issuing a letter is not undoable —
+  // The sale waiting on the confirmation. Issuing a letter is not undoable â€”
   // every click adds a version that stays on the record for good.
   const [confirmUnit, setConfirmUnit] = useState<SoldUnitRow | null>(null);
   // Which paper that confirmation is about. The two are issued the same way and
@@ -205,16 +205,15 @@ const SoldUnitList: React.FC = () => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: "Customer Wise Sold Unit List",
-    removeAfterPrint: true,
   });
 
   /**
    * The allotment letter is built server side, so it is fetched with the auth
    * header rather than linked to and comes back as a blob. The tab is opened on
-   * the click itself — opening it after the request returns gets caught by the
-   * popup blocker — and falls back to a plain download when it is blocked anyway.
+   * the click itself â€” opening it after the request returns gets caught by the
+   * popup blocker â€” and falls back to a plain download when it is blocked anyway.
    */
   const handleAllotmentLetter = (saleId: number) =>
     openSalePdf(
@@ -236,7 +235,7 @@ const SoldUnitList: React.FC = () => {
    *
    * The reference offered is the branch's own, exactly as it was written; the
    * clerk finishes it against the paper register. Blank when the branch has set
-   * none — the server then derives one, and blank says so honestly rather than
+   * none â€” the server then derives one, and blank says so honestly rather than
    * guessing at the rule in a second place.
    *
    * The branch's date is used when it has set one, and today's when it has not.
@@ -373,8 +372,8 @@ const SoldUnitList: React.FC = () => {
   /**
    * Withdraws the sale itself.
    *
-   * The server does the refusing — an approved voucher, papers already issued,
-   * a live installment schedule, receipts taken after the booking — and each
+   * The server does the refusing â€” an approved voucher, papers already issued,
+   * a live installment schedule, receipts taken after the booking â€” and each
    * refusal names what has to be dealt with first, so its sentence is shown
    * rather than a general "could not cancel".
    */
@@ -438,7 +437,7 @@ const SoldUnitList: React.FC = () => {
     try {
       const response = await httpService.get(url, { responseType: "blob" });
 
-      // A refusal comes back as JSON on a 2xx, so it never reaches the catch —
+      // A refusal comes back as JSON on a 2xx, so it never reaches the catch â€”
       // it has to be spotted by the blob's own type before it is shown as a PDF.
       if (response.data?.type?.includes("json")) {
         const message = JSON.parse(await response.data.text())?.message;
@@ -498,7 +497,7 @@ const SoldUnitList: React.FC = () => {
     // before it is uploaded, rather than after the wait.
     if (file.size > MAX_DOCUMENT_BYTES) {
       toast.error(
-        `The document must be 1.5 MB or smaller — this one is ${(
+        `The document must be 1.5 MB or smaller â€” this one is ${(
           file.size /
           (1024 * 1024)
         ).toFixed(1)} MB.`,
@@ -898,8 +897,8 @@ const SoldUnitList: React.FC = () => {
                                   {/* The sale itself, before the papers that
                                       print it. Correcting the figure and
                                       withdrawing the sale sit together because
-                                      they answer the same question — something
-                                      about this sale is wrong — and which one
+                                      they answer the same question â€” something
+                                      about this sale is wrong â€” and which one
                                       applies depends on what is wrong. */}
                                   {(canEditSale || canCancelSale) && (
                                     <div className="flex w-full items-center justify-center gap-3 border-b border-stroke pb-1 dark:border-strokedark">
@@ -950,7 +949,7 @@ const SoldUnitList: React.FC = () => {
                                       stored copy, not a fresh calculation. Each
                                       carries its own surface, so the chips read as
                                       buttons on the white card and on the dark one.
-                                      The × beside it withdraws that copy, and
+                                      The Ã— beside it withdraws that copy, and
                                       only shows for whoever may do that. */}
                                   <div className="flex flex-wrap justify-center gap-1">
                                     {issuedVersions(unit.letter_versions, unit.letter_count).map(
@@ -988,7 +987,7 @@ const SoldUnitList: React.FC = () => {
 
                                   <button
                                     type="button"
-                                    title="Preview only — built from today's data, not saved"
+                                    title="Preview only â€” built from today's data, not saved"
                                     disabled={busySaleId === unit.sale_id}
                                     onClick={() => handleAllotmentLetter(unit.sale_id)}
                                     className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
@@ -1012,7 +1011,7 @@ const SoldUnitList: React.FC = () => {
                                         unit.nominee_count
                                           ? `${unit.nominee_count} nominee${
                                               unit.nominee_count > 1 ? "s" : ""
-                                            } named — change them`
+                                            } named â€” change them`
                                           : "Name who this property is left to"
                                       }
                                       disabled={busySaleId === unit.sale_id}
@@ -1034,7 +1033,7 @@ const SoldUnitList: React.FC = () => {
                                           ? `Issue a booking form (${unit.nominee_count} nominee${
                                               unit.nominee_count > 1 ? "s" : ""
                                             })`
-                                          : "Issue a booking form — no nominee named yet"
+                                          : "Issue a booking form â€” no nominee named yet"
                                       }
                                       disabled={busySaleId === unit.sale_id}
                                       onClick={() => askToGenerate(unit, "BOOKING")}
@@ -1080,7 +1079,7 @@ const SoldUnitList: React.FC = () => {
 
                                     <button
                                       type="button"
-                                      title="Preview the booking form — built from today's data, not saved"
+                                      title="Preview the booking form â€” built from today's data, not saved"
                                       disabled={busySaleId === unit.sale_id}
                                       onClick={() => handleBookingFormDemo(unit.sale_id)}
                                       className="text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
@@ -1178,8 +1177,8 @@ const SoldUnitList: React.FC = () => {
         />
       </div>
 
-      {/* Issuing a letter cannot be taken back — the version stays on the sale
-          for good — so the unit and the version about to be created are named
+      {/* Issuing a letter cannot be taken back â€” the version stays on the sale
+          for good â€” so the unit and the version about to be created are named
           before it happens. */}
       <ConfirmModal
         show={Boolean(confirmUnit)}
@@ -1218,7 +1217,7 @@ const SoldUnitList: React.FC = () => {
                 whether this is one of those. */}
             {confirmKind === "BOOKING" && !confirmUnit?.nominee_count ? (
               <span className="mt-2 block text-xs font-medium text-danger">
-                No nominee is named against this property yet — the form will
+                No nominee is named against this property yet â€” the form will
                 print with the nominee section empty.
               </span>
             ) : null}
@@ -1300,7 +1299,7 @@ const SoldUnitList: React.FC = () => {
             </span>
             <span className="mt-2 block text-xs text-body dark:text-bodydark">
               The stored copy goes with it and cannot be printed again. The
-              number is not reused — the next one issued carries the next number
+              number is not reused â€” the next one issued carries the next number
               up, so nothing else is renamed.
             </span>
           </>
@@ -1338,8 +1337,8 @@ const SoldUnitList: React.FC = () => {
       />
 
       {/* Withdrawing the sale itself. Unlike the two above this one is not
-          final — the voucher goes to the recycle bin and restoring it brings
-          the sale, the flat and the receipts back — and the dialog says so,
+          final â€” the voucher goes to the recycle bin and restoring it brings
+          the sale, the flat and the receipts back â€” and the dialog says so,
           because a clerk who believes it is final will avoid it and leave a
           wrong sale standing instead. */}
       <ConfirmModal
@@ -1369,7 +1368,7 @@ const SoldUnitList: React.FC = () => {
               name="cancel_reason"
               type="text"
               label=""
-              placeholder="Wrong unit, buyer withdrew, duplicate entry…"
+              placeholder="Wrong unit, buyer withdrew, duplicate entryâ€¦"
               className="text-sm"
               value={cancelReason}
               onChange={(e: any) => setCancelReason(e.target.value)}

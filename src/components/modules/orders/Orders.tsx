@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getOrders } from './ordersSlice';
 import { useNavigate } from 'react-router-dom';
@@ -704,9 +704,8 @@ const Orders = () => {
   }, [orderType]);
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Order List',
-    removeAfterPrint: true,
     onAfterPrint: () => {
       clearPendingListPrint();
       setPrintRows([]);
@@ -714,11 +713,10 @@ const Orders = () => {
   });
 
   const handleTransactionPrint = useReactToPrint({
-    content: () => transactionPrintRef.current,
+    contentRef: transactionPrintRef,
     documentTitle: selectedPrintOrder?.order_number
       ? `Order-${selectedPrintOrder.order_number}`
       : 'Order Details Print',
-    removeAfterPrint: true,
     onAfterPrint: () => setSelectedPrintOrder(null),
   });
 
@@ -750,7 +748,7 @@ const Orders = () => {
       setSelectedPrintOrder(normalizeOrderPrintPayload(order, payload));
     } catch (error) {
       console.error(error);
-      toast.error('Order print data load Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦Â¯Ã Â¦Â¾Ã Â§Å¸Ã Â¦Â¨Ã Â¦Â¿Ã Â¥Â¤');
+      toast.error('Order print data load ÃƒÂ Ã‚Â¦Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¦Ã‚Â°ÃƒÂ Ã‚Â¦Ã‚Â¾ ÃƒÂ Ã‚Â¦Ã‚Â¯ÃƒÂ Ã‚Â¦Ã‚Â¾ÃƒÂ Ã‚Â§Ã…Â¸ÃƒÂ Ã‚Â¦Ã‚Â¨ÃƒÂ Ã‚Â¦Ã‚Â¿ÃƒÂ Ã‚Â¥Ã‚Â¤');
     } finally {
       setPrintingOrderId(null);
     }

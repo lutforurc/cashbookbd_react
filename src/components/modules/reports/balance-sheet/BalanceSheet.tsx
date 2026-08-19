@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
@@ -325,8 +325,8 @@ const BalanceSheet = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select করুন");
-    if (!startDate || !endDate) return alert("Start/End Date দিন");
+    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
+    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
 
     setButtonLoading(true);
 
@@ -349,9 +349,8 @@ const BalanceSheet = (user: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: "Balance Sheet",
-    removeAfterPrint: true,
   });
 
   const handleResetFilters = () => {

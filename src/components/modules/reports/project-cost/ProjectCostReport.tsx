@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
@@ -113,7 +113,7 @@ const ProjectCostReport = ({ user }: any) => {
     }
 
     // The branch list carries the branch's working date, which is the sensible
-    // end of the range — the books do not run past it.
+    // end of the range â€” the books do not run past it.
     if (protectedData?.transactionDate && !endDate) {
       const parsed = dayjs(protectedData.transactionDate, 'DD/MM/YYYY');
 
@@ -186,9 +186,8 @@ const ProjectCostReport = ({ user }: any) => {
   const handleReset = () => setFilterOpen(false);
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Project Cost Report',
-    removeAfterPrint: true,
   });
 
   const current = rows[section];
@@ -284,7 +283,7 @@ const ProjectCostReport = ({ user }: any) => {
           {row.building_name}
           {Number(row.building_sqft) > 0 ? (
             <span className="block text-xs text-gray-500 dark:text-gray-400">
-              {amount(row.building_sqft)} sqft · {row.sqft_pct}%
+              {amount(row.building_sqft)} sqft Â· {row.sqft_pct}%
             </span>
           ) : null}
         </div>
@@ -367,7 +366,7 @@ const ProjectCostReport = ({ user }: any) => {
             className="cursor-help text-amber-600 dark:text-amber-400"
           >
             <FiLock className="mx-auto" />
-            <span className="sr-only">Approved — locked for editing</span>
+            <span className="sr-only">Approved â€” locked for editing</span>
           </span>
         ) : (
           <button
@@ -541,7 +540,7 @@ const ProjectCostReport = ({ user }: any) => {
             <ul className="mt-2 space-y-1 text-sm text-amber-900 dark:text-amber-100">
               {integrity.map((p: any) => (
                 <li key={p.detail_id}>
-                  {p.vr_no} · {p.head} · {amount(p.amount)} — {p.problem}
+                  {p.vr_no} Â· {p.head} Â· {amount(p.amount)} â€” {p.problem}
                 </li>
               ))}
             </ul>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FiCalendar, FiCheck, FiCheckSquare, FiClock, FiGrid, FiSun, FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -51,16 +51,16 @@ const parseTimeMinutes = (value?: string | null) => {
 };
 
 const statusCode = (status?: string, approvalStatus?: string) => {
-  if (approvalStatus === 'rejected' || status === 'rejected') return '✕';
+  if (approvalStatus === 'rejected' || status === 'rejected') return 'âœ•';
 
   switch (status) {
     case 'present':
     case 'early_out':
-      return '✓';
+      return 'âœ“';
     case 'late':
       return '!';
     case 'absent':
-      return '✕';
+      return 'âœ•';
     case 'leave':
       return 'L';
     case 'holiday':
@@ -68,9 +68,9 @@ const statusCode = (status?: string, approvalStatus?: string) => {
     case 'weekly_holiday':
       return 'W';
     case 'half_day':
-      return '½';
+      return 'Â½';
     case 'pending':
-      return '✓';
+      return 'âœ“';
     default:
       return '';
   }
@@ -106,8 +106,8 @@ const attendanceStatusCode = (row: any) => {
  * and days on leave.
  */
 const statusTotalValue = (code?: string) => {
-  if (code === '✓' || code === '!' || code === 'L') return 1;
-  if (code === '½') return 0.5;
+  if (code === 'âœ“' || code === '!' || code === 'L') return 1;
+  if (code === 'Â½') return 0.5;
   return 0;
 };
 
@@ -131,20 +131,20 @@ const summaryNumber = (value: any) => {
 
 const statusClassName = (code?: string) => {
   switch (code) {
-    case '✓':
+    case 'âœ“':
       return 'status-cell status-present';
     case '!':
       return 'status-cell status-late';
-    case '✕':
+    case 'âœ•':
       return 'status-cell status-absent';
     case 'W':
       return 'status-cell status-weekly';
     case 'H':
-    case '○':
+    case 'â—‹':
       return 'status-cell status-holiday';
     case 'L':
       return 'status-cell status-leave';
-    case '½':
+    case 'Â½':
       return 'status-cell status-half-day';
     default:
       return 'status-cell status-empty';
@@ -153,7 +153,7 @@ const statusClassName = (code?: string) => {
 
 /**
  * The branch a day was marked at, when that is not the branch reading the
- * sheet — otherwise nothing. Staff lent to another site keep drawing their pay
+ * sheet â€” otherwise nothing. Staff lent to another site keep drawing their pay
  * here, so their days there belong on this sheet; naming the site is what
  * stops the reader taking them for days worked at home.
  */
@@ -164,13 +164,13 @@ const elsewhereBranchName = (entry?: any): string => {
 
 const statusGlyph = (code?: string): React.ReactNode => {
   switch (code) {
-    case '✓':
+    case 'âœ“':
       return <FiCheck className="h-3.5 w-3.5" strokeWidth={3} />;
-    case '✕':
+    case 'âœ•':
       return <FiX className="h-3.5 w-3.5" strokeWidth={3} />;
     case '!':
       return <FiClock className="h-3.5 w-3.5" strokeWidth={2.5} />;
-    case '○':
+    case 'â—‹':
       return <FiSun className="h-3.5 w-3.5" strokeWidth={2.5} />;
     default:
       return code || null;
@@ -179,20 +179,20 @@ const statusGlyph = (code?: string): React.ReactNode => {
 
 const cellTintClass = (code?: string) => {
   switch (code) {
-    case '✓':
+    case 'âœ“':
       return 'cell-tint cell-tint-present';
     case '!':
       return 'cell-tint cell-tint-late';
-    case '✕':
+    case 'âœ•':
       return 'cell-tint cell-tint-absent';
     case 'W':
       return 'cell-tint cell-tint-weekly';
     case 'H':
-    case '○':
+    case 'â—‹':
       return 'cell-tint cell-tint-holiday';
     case 'L':
       return 'cell-tint cell-tint-leave';
-    case '½':
+    case 'Â½':
       return 'cell-tint cell-tint-half';
     default:
       return '';
@@ -430,8 +430,8 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         const code = employee.dates[dateKey] || '';
         const entry = employee.dateRows?.[dateKey];
         const isEditable = !!entry && entry.approval_status !== 'approved';
-        // Marked at another site. The day counts here all the same — this
-        // branch pays for it — so it is flagged rather than hidden.
+        // Marked at another site. The day counts here all the same â€” this
+        // branch pays for it â€” so it is flagged rather than hidden.
         const elsewhere = elsewhereBranchName(entry);
 
         // A holiday nobody worked has no attendance behind it, so there is
@@ -555,9 +555,8 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: `Monthly Attendance ${monthNames[monthIndex]} ${year}`,
-    removeAfterPrint: true,
   });
 
   const openManualAttendance = (employee: any, dateKey: string, code: string) => {
@@ -921,17 +920,17 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         />
 
         <div className="print-legend flex flex-wrap items-center border-t border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
-          <span className="legend-chip"><span className="legend-mark status-present">{statusGlyph('✓')}</span> Present</span>
+          <span className="legend-chip"><span className="legend-mark status-present">{statusGlyph('âœ“')}</span> Present</span>
           <span className="legend-chip"><span className="legend-mark status-late">{statusGlyph('!')}</span> Late</span>
           <span className="legend-chip"><span className="legend-mark status-weekly">W</span> Weekly holiday</span>
           <span className="legend-chip"><span className="legend-mark status-holiday">H</span> Holiday</span>
-          <span className="legend-chip"><span className="legend-mark status-absent">{statusGlyph('✕')}</span> Absent</span>
+          <span className="legend-chip"><span className="legend-mark status-absent">{statusGlyph('âœ•')}</span> Absent</span>
           <span className="legend-chip"><span className="legend-mark status-leave">L</span> Leave</span>
-          <span className="legend-chip"><span className="legend-mark status-half-day">½</span> Half Day</span>
+          <span className="legend-chip"><span className="legend-mark status-half-day">Â½</span> Half Day</span>
           <span className="legend-chip"><span className="legend-mark legend-total">T</span> Present days</span>
           <span className="legend-chip">
-            <span className="legend-mark status-present mark-other-branch">{statusGlyph('✓')}</span>
-            Another branch — hover to see which
+            <span className="legend-mark status-present mark-other-branch">{statusGlyph('âœ“')}</span>
+            Another branch â€” hover to see which
           </span>
         </div>
       </div>

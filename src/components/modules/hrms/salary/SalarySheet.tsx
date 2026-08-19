@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -71,7 +71,7 @@ const SalarySheet = ({ user }: any) => {
 
   const printRef = useRef<HTMLDivElement>(null);
 
-  // ✅ Confirm Modal state
+  // âœ… Confirm Modal state
   const [loading, setLoading] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedSheetRow, setSelectedSheetRow] = useState<any>(null);
@@ -360,9 +360,8 @@ const SalarySheet = ({ user }: any) => {
   };
 
   const handlePrintAction = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: "Salary Sheet Print",
-    removeAfterPrint: true,
   });
 
   const handleOnYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

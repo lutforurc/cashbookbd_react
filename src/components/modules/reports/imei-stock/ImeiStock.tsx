@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FiCheckSquare, FiHome, FiPrinter, FiRefreshCcw } from 'react-icons/fi';
@@ -88,9 +88,8 @@ const ImeiStock = () => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'IMEI Stock',
-    removeAfterPrint: true,
   });
 
   const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-white';

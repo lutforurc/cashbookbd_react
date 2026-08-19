@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiAlertTriangle, FiRefreshCcw, FiSearch } from 'react-icons/fi';
@@ -165,12 +165,8 @@ const LowStockProducts = () => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => {
-      if (!printRef.current) return null;
-      return printRef.current;
-    },
+    contentRef: printRef,
     documentTitle: 'Low Stock Products',
-    removeAfterPrint: true,
   });
 
   const handlePrintRowsPerPageChange = (event: ChangeEvent<HTMLInputElement>) => {

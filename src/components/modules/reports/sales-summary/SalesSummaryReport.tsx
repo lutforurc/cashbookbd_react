@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
@@ -25,21 +25,21 @@ import {
 
 const cell = "border border-stroke px-3 py-2 dark:border-strokedark";
 
-/** "Sherpur, Bogura › Baganbari › Shantipark Tower" */
+/** "Sherpur, Bogura â€º Baganbari â€º Shantipark Tower" */
 const placeOf = (unit: SalesSummaryUnit) =>
-  [unit.area_name, unit.project_name, unit.building_name].filter(Boolean).join(" › ");
+  [unit.area_name, unit.project_name, unit.building_name].filter(Boolean).join(" â€º ");
 
 /**
- * "4th Floor · Unit# 4/A"
+ * "4th Floor Â· Unit# 4/A"
  *
  * The unit and parking numbers are printed as they are stored -- they already
  * read "Unit# 4/A", and labelling them again gave "Unit# Unit# 4/A".
  */
 const unitOf = (unit: SalesSummaryUnit) =>
-  [unit.floor_name, unit.unit_no, unit.parking_no].filter(Boolean).join(" · ");
+  [unit.floor_name, unit.unit_no, unit.parking_no].filter(Boolean).join(" Â· ");
 
 /**
- * The buyer, and under them what they bought — all in the one cell.
+ * The buyer, and under them what they bought â€” all in the one cell.
  *
  * Name, phone, then two lines per sale: where it is, and which one it is. A
  * buyer with two flats gets two pairs rather than a second row, so the amount
@@ -142,9 +142,8 @@ const SalesSummaryReport: React.FC = () => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: "Sales Summary Report",
-    removeAfterPrint: true,
   });
 
   /**
@@ -292,8 +291,8 @@ const SalesSummaryReport: React.FC = () => {
       <div ref={printRef} className="hidden bg-white p-6 text-black">
         <h2 className="mb-1 text-center text-lg font-bold">Sales Summary Report</h2>
         <p className="mb-4 text-center text-xs">
-          Location: {nameOf(areaId, areaOptions) || "All Locations"} · Project:{" "}
-          {nameOf(projectId, projectOptions) || "All Projects"} · Building:{" "}
+          Location: {nameOf(areaId, areaOptions) || "All Locations"} Â· Project:{" "}
+          {nameOf(projectId, projectOptions) || "All Projects"} Â· Building:{" "}
           {nameOf(buildingId, buildingOptions) || "All Buildings"}
         </p>
 

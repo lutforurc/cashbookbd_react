@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -126,9 +126,8 @@ const FestivalBonus = ({ user }: any) => {
   }, [shouldPrint, bonusPrintSheet]);
 
   const handlePrintAction = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: "Bonus Sheet",
-    removeAfterPrint: true,
   });
 
   const handleHeaderPrint = () => {
@@ -137,7 +136,7 @@ const FestivalBonus = ({ user }: any) => {
       return;
     }
 
-    toast.info("Print করতে আগে নিচের Bonus Title থেকে detail sheet open করুন।");
+    toast.info("Print à¦•à¦°à¦¤à§‡ à¦†à¦—à§‡ à¦¨à¦¿à¦šà§‡à¦° Bonus Title à¦¥à§‡à¦•à§‡ detail sheet open à¦•à¦°à§à¦¨à¥¤");
   };
 
   const handleOpenDetails = async (row: any, mode: "print" | "payment") => {

@@ -1,20 +1,13 @@
-import React, { useRef } from 'react';
+﻿import React, { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
 const ReportComponent: React.FC = () => {
   const componentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
-    content: () => {
-      if (!componentRef.current) {
-        // alert("Nothing to print: Ref not ready");
-        return null;
-      }
-      return componentRef.current;
-    },
+    contentRef: componentRef,
     documentTitle: 'Due Report',
     // onAfterPrint: () => alert('Printed successfully!'),
-    removeAfterPrint: true,
   });
 
   return (
@@ -23,7 +16,7 @@ const ReportComponent: React.FC = () => {
         onClick={handlePrint}
         className="bg-blue-600 text-white px-4 py-2 rounded mb-4"
       >
-        🖨️ Print Report
+        ðŸ–¨ï¸ Print Report
       </button>
       <div ref={componentRef}>
         <div className='flex justify-center mt-10'>NIBIR NIRMAN</div>
@@ -40,47 +33,47 @@ const ReportComponent: React.FC = () => {
             <tbody>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">৳1500</td>
+                <td className="border px-4 py-2">à§³1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">৳1500</td>
+                <td className="border px-4 py-2">à§³1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">৳1500</td>
+                <td className="border px-4 py-2">à§³1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">৳1500</td>
+                <td className="border px-4 py-2">à§³1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">৳1500</td>
+                <td className="border px-4 py-2">à§³1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">৳1500</td>
+                <td className="border px-4 py-2">à§³1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">৳1500</td>
+                <td className="border px-4 py-2">à§³1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">৳1500</td>
+                <td className="border px-4 py-2">à§³1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">৳1500</td>
+                <td className="border px-4 py-2">à§³1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
             </tbody>

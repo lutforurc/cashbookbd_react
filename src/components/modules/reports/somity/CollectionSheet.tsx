@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { FiCheckSquare, FiPrinter, FiRefreshCcw } from 'react-icons/fi';
@@ -232,9 +232,8 @@ const CollectionSheet = (user: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Collection Sheet',
-    removeAfterPrint: true,
   });
 
   const handleEndDate = (date: Date | null) => {
@@ -489,7 +488,7 @@ const CollectionSheet = (user: any) => {
                       <div className="text-slate-950 dark:text-white">{withCode(row.name || '-', row.idfr_code)}</div>
                       {guardianName ? (
                         <div className="text-slate-600 dark:text-[rgb(var(--c-gray-300))]">
-                          পি:/স্বা: <span className={hasBanglaText(guardianName) ? '' : 'sutonny-text text-[20px] leading-6'}>{guardianName}</span>
+                          à¦ªà¦¿:/à¦¸à§à¦¬à¦¾: <span className={hasBanglaText(guardianName) ? '' : 'sutonny-text text-[20px] leading-6'}>{guardianName}</span>
                         </div>
                       ) : null}
                       {row.mobile ? <div>{formatMobile(row.mobile, mobileFormat)}</div> : null}

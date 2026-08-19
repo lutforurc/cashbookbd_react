@@ -269,9 +269,8 @@ const GroupPurchaseSales = () => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Group Report',
-    removeAfterPrint: true,
   });
 
   const handleActionButtonClick = () => {

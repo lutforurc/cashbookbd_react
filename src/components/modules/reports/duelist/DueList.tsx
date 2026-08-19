@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
@@ -176,16 +176,9 @@ const DueList = (user: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => {
-      if (!printRef.current) {
-        // alert("Nothing to print: Ref not ready");
-        return null;
-      }
-      return printRef.current;
-    },
+    contentRef: printRef,
     documentTitle: 'Due Report',
     // onAfterPrint: () => alert('Printed successfully!'),
-    removeAfterPrint: true,
   });
 
   return (

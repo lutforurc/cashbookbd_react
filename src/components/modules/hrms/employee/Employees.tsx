@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -65,7 +65,7 @@ const Employees = ({ user }: any) => {
   const list = employees?.employeeSettings?.data?.data || [];
 
   setDesignation(list?.designation || []);
-  setDesignationLevel(list?.designationLevels || []); // ✅ THIS LINE
+  setDesignationLevel(list?.designationLevels || []); // âœ… THIS LINE
   setDdlDesignation(list?.designation || []);
   setDdlDesignationLevel(list?.designationLevels || []);
 }, [employees?.employeeSettings]);
@@ -169,7 +169,7 @@ const Employees = ({ user }: any) => {
       .unwrap()
       .then((res) => {
         if (res?.message) {
-          toast.success(res.message); // ✅ SUCCESS MESSAGE
+          toast.success(res.message); // âœ… SUCCESS MESSAGE
         }
       })
       .catch((err) => {
@@ -209,7 +209,7 @@ const Employees = ({ user }: any) => {
           }
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              e.currentTarget.blur(); // 🔥 Enter = Save
+              e.currentTarget.blur(); // ðŸ”¥ Enter = Save
             }
           }}
         />
@@ -282,7 +282,7 @@ const Employees = ({ user }: any) => {
             }
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                e.currentTarget.blur(); // 🔥 Enter = Save
+                e.currentTarget.blur(); // ðŸ”¥ Enter = Save
               }
             }}
           />
@@ -360,16 +360,9 @@ const Employees = ({ user }: any) => {
 
   const handlePrint = useReactToPrint({
 
-    content: () => {
-      if (!printRef.current) {
-        // alert("Nothing to print: Ref not ready");
-        return null;
-      }
-      return printRef.current;
-    },
+    contentRef: printRef,
     documentTitle: 'Due Report',
     // onAfterPrint: () => alert('Printed successfully!'),
-    removeAfterPrint: true,
   });
 
   const designationLevelAll = [

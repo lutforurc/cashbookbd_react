@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
@@ -337,9 +337,8 @@ const LedgerWithProduct = (user: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Customer Supplier Statement',
-    removeAfterPrint: true,
   });
 
   const handleExcelExport = () => {
@@ -997,7 +996,7 @@ const LedgerWithProduct = (user: any) => {
                   type="number"
                   id="cs-statement-rows"
                   label=""
-                  title="Rows per print page — leave empty to print every row in one run"
+                  title="Rows per print page â€” leave empty to print every row in one run"
                   placeholder="All"
                   value={rowsPerPage}
                   onChange={(e: any) => setRowsPerPage(e.target.value)}
@@ -1058,7 +1057,7 @@ const LedgerWithProduct = (user: any) => {
                     type="number"
                     id="cs-statement-rows"
                     label=""
-                    title="Rows per print page — leave empty to print every row in one run"
+                    title="Rows per print page â€” leave empty to print every row in one run"
                     placeholder="All"
                     value={rowsPerPage}
                     onChange={(e: any) => setRowsPerPage(e.target.value)}

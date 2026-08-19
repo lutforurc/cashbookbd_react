@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
@@ -38,7 +38,7 @@ type ExpenseRow = {
 };
 
 /**
- * `coa3Id` is the only link a detail row keeps back to its group — every
+ * `coa3Id` is the only link a detail row keeps back to its group â€” every
  * group's accounts arrive in one flat array and are sorted into place here.
  */
 type ExpenseDetailRow = ExpenseRow & {
@@ -108,7 +108,7 @@ const findArrayCollection = (raw: any): any[] => {
  * The server already drops any head whose six figures are all zero, so nothing
  * is filtered out here. The trial balance screen suppresses on the closing
  * figure alone, which would hide an expense head that was spent on and then
- * reversed inside the period — exactly the row an expense report exists to show.
+ * reversed inside the period â€” exactly the row an expense report exists to show.
  */
 const normalizeRows = (items: any[]): ExpenseRow[] => {
   return items.map((item: any, index: number) => ({
@@ -427,16 +427,15 @@ const ExpenseReport = (user: any) => {
 
     setExpandedL3Id(coa3Id);
 
-    // Already loaded, or on its way in from Apply — nothing to ask for.
+    // Already loaded, or on its way in from Apply â€” nothing to ask for.
     if (detailLoading || detailRows.length > 0) return;
 
     await loadDetailRows(Number(branchId), startDate, endDate);
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: "Expense Report",
-    removeAfterPrint: true,
   });
 
   const handleResetFilters = () => {
@@ -616,7 +615,7 @@ const ExpenseReport = (user: any) => {
       <div className="border-t border-slate-200 bg-slate-50 px-4 py-4 dark:border-slate-700 dark:bg-slate-900/30">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h4 className="font-semibold text-slate-900 dark:text-white">
-            {row.name} — Level 4 Details
+            {row.name} â€” Level 4 Details
           </h4>
           <div className="rounded-sm bg-white px-3 py-2 text-sm font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
             Accounts: {detailLoading ? "Loading..." : selectedDetailRows.length}
@@ -906,8 +905,8 @@ const ExpenseReport = (user: any) => {
         {!expenseReportState?.loading && hasReportData && (
           <>
             {/* An expense report only ever runs one way, so the three cards read
-                as a story — what was carried in, what was spent, what stands now
-                — rather than the trial balance's Dr against Cr. */}
+                as a story â€” what was carried in, what was spent, what stands now
+                â€” rather than the trial balance's Dr against Cr. */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <SummaryCard
                 title="Opening Expense"

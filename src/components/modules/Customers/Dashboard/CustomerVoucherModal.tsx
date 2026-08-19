@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { FiPrinter, FiX } from 'react-icons/fi';
 import customerHttpService from '../../../services/customerHttpService';
@@ -13,7 +13,7 @@ type Props = {
   onClose: () => void;
 };
 
-// Amount → English words (mirrors the admin cash-voucher print).
+// Amount â†’ English words (mirrors the admin cash-voucher print).
 const numberToWords = (num: number): string => {
   if (!num || num === 0) return 'Zero Taka Only';
   const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
@@ -62,13 +62,12 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
   );
   const invoiceTitle = invoice?.type === 'purchase' ? 'Purchase Invoice' : 'Sales Invoice';
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: isInvoice
       ? `${invoiceTitle}-${data?.voucher?.vr_no || mtmId}`
       : data?.voucher?.vr_no
         ? `Voucher-${data.voucher.vr_no}`
         : 'Voucher',
-    removeAfterPrint: true,
   });
 
   useEffect(() => {
@@ -113,7 +112,7 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
         </div>
 
         <div className="max-h-[80vh] overflow-y-auto p-3">
-          {loading && <p className="py-8 text-center text-gray-500">Loading…</p>}
+          {loading && <p className="py-8 text-center text-gray-500">Loadingâ€¦</p>}
           {error && <p className="py-8 text-center text-red-600">{error}</p>}
 
           {!loading && !error && isInvoice && (

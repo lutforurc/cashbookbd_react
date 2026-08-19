@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
@@ -132,7 +132,7 @@ const ProductStock = ({ user }: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
-  const [brandId, setBrandId] = useState<string | null>(''); // null à¦¹à¦¤à§‡ à¦ªà¦¾à¦°à¦¬à§‡
+  const [brandId, setBrandId] = useState<string | null>(''); // null Ã Â¦Â¹Ã Â¦Â¤Ã Â§â€¡ Ã Â¦ÂªÃ Â¦Â¾Ã Â¦Â°Ã Â¦Â¬Ã Â§â€¡
 
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(35);
@@ -192,7 +192,7 @@ const ProductStock = ({ user }: any) => {
   };
 
   const handleBrandChange = (selectedOption: any) => {
-    setBrandId(selectedOption?.value ?? null); // "" à¦à¦° à¦¬à¦¦à¦²à§‡ null
+    setBrandId(selectedOption?.value ?? null); // "" Ã Â¦ÂÃ Â¦Â° Ã Â¦Â¬Ã Â¦Â¦Ã Â¦Â²Ã Â§â€¡ null
   };
 
   const handleCategoryChange = (selectedOption: any) => {
@@ -213,9 +213,8 @@ const ProductStock = ({ user }: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Product Stock',
-    removeAfterPrint: true,
   });
 
   const handleActionButtonClick = () => {
@@ -227,10 +226,10 @@ const ProductStock = ({ user }: any) => {
     const startD = dayjs(startDate).format('YYYY-MM-DD');
     const endD = dayjs(endDate).format('YYYY-MM-DD');
 
-    // à¦¡à¦¿à¦¬à¦¾à¦—à§‡à¦° à¦œà¦¨à§à¦¯ à¦¦à§‡à¦–à¦¤à§‡ à¦ªà¦¾à¦°à§‡à¦¨
+    // Ã Â¦Â¡Ã Â¦Â¿Ã Â¦Â¬Ã Â¦Â¾Ã Â¦â€”Ã Â§â€¡Ã Â¦Â° Ã Â¦Å“Ã Â¦Â¨Ã Â§ÂÃ Â¦Â¯ Ã Â¦Â¦Ã Â§â€¡Ã Â¦â€“Ã Â¦Â¤Ã Â§â€¡ Ã Â¦ÂªÃ Â¦Â¾Ã Â¦Â°Ã Â§â€¡Ã Â¦Â¨
     console.log('Sending payload:', {
       branchId,
-      brandId,           // à¦à¦–à¦¨ null à¦¹à¦²à§‡ null-à¦‡ à¦¯à¦¾à¦¬à§‡
+      brandId,           // Ã Â¦ÂÃ Â¦â€“Ã Â¦Â¨ null Ã Â¦Â¹Ã Â¦Â²Ã Â§â€¡ null-Ã Â¦â€¡ Ã Â¦Â¯Ã Â¦Â¾Ã Â¦Â¬Ã Â§â€¡
       categoryId,
       search,
       startDate: startD,
@@ -240,7 +239,7 @@ const ProductStock = ({ user }: any) => {
     dispatch(
       getProductStock({
         branchId: branchId || null,
-        brandId: brandId,           // null à¦ªà¦¾à¦ à¦¾à¦²à§‡ à¦¬à§à¦¯à¦¾à¦•à¦à¦¨à§à¦¡à§‡ à¦¸à¦¬ à¦¬à§à¦°à§à¦¯à¦¾à¦¨à§à¦¡ à¦†à¦¸à¦¬à§‡ (à¦†à¦¶à¦¾ à¦•à¦°à¦¾ à¦¯à¦¾à¦¯à¦¼)
+        brandId: brandId,           // null Ã Â¦ÂªÃ Â¦Â¾Ã Â¦Â Ã Â¦Â¾Ã Â¦Â²Ã Â§â€¡ Ã Â¦Â¬Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â¦â€¢Ã Â¦ÂÃ Â¦Â¨Ã Â§ÂÃ Â¦Â¡Ã Â§â€¡ Ã Â¦Â¸Ã Â¦Â¬ Ã Â¦Â¬Ã Â§ÂÃ Â¦Â°Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â¦Â¨Ã Â§ÂÃ Â¦Â¡ Ã Â¦â€ Ã Â¦Â¸Ã Â¦Â¬Ã Â§â€¡ (Ã Â¦â€ Ã Â¦Â¶Ã Â¦Â¾ Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦Â¯Ã Â¦Â¾Ã Â¦Â¯Ã Â¦Â¼)
         categoryId,
         search: search || undefined,
         startDate: startD,

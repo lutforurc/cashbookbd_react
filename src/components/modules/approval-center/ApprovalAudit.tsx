@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { Link } from 'react-router-dom';
 import { FiArrowLeft, FiDownload, FiRefreshCcw } from 'react-icons/fi';
@@ -157,9 +157,8 @@ const ApprovalAudit = ({ user }: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Approval Audit',
-    removeAfterPrint: true,
   });
 
   const columns = [

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { FiMinus, FiPlus, FiPrinter, FiSearch } from 'react-icons/fi';
@@ -105,9 +105,8 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
 
   const printRef = useRef<HTMLDivElement>(null);
   const printReceiveNote = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Received Challan',
-    removeAfterPrint: true,
   });
 
   // Fetch the receive's lines by id, then print once the hidden component has
@@ -338,7 +337,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
         )}
       </div>
 
-      {/* Hidden — react-to-print pulls from this ref on demand. */}
+      {/* Hidden â€” react-to-print pulls from this ref on demand. */}
       <div className="hidden">
         <ChallanPrint
           ref={printRef}

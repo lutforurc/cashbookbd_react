@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import { FiCheckSquare, FiRefreshCcw } from 'react-icons/fi';
@@ -106,9 +106,8 @@ const MonthlyReport = (user: any) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: 'Monthly Report',
-    removeAfterPrint: true,
   });
 
   const controlClass =
@@ -187,14 +186,14 @@ const MonthlyReport = (user: any) => {
           <table className="w-full min-w-[1080px] table-fixed border-collapse text-sm" style={{ fontSize }}>
             <thead>
               <tr className="bg-slate-300 text-xs font-bold text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-white">
-                <th className="w-20 px-3 py-4 text-center">ক্রমিক</th>
-                <th className="w-40 px-3 py-4 text-center">তারিখ</th>
-                <th className="px-3 py-4 text-right">বিতরণ</th>
-                <th className="px-3 py-4 text-right">ডাউন পেমেন্ট</th>
-                <th className="px-3 py-4 text-right">কিস্তি আদায়</th>
-                <th className="px-3 py-4 text-right">নগদ বিক্রয়</th>
-                <th className="px-3 py-4 text-right">খরচ</th>
-                <th className="w-36 px-3 py-4 text-left">মন্তব্য</th>
+                <th className="w-20 px-3 py-4 text-center">à¦•à§à¦°à¦®à¦¿à¦•</th>
+                <th className="w-40 px-3 py-4 text-center">à¦¤à¦¾à¦°à¦¿à¦–</th>
+                <th className="px-3 py-4 text-right">à¦¬à¦¿à¦¤à¦°à¦£</th>
+                <th className="px-3 py-4 text-right">à¦¡à¦¾à¦‰à¦¨ à¦ªà§‡à¦®à§‡à¦¨à§à¦Ÿ</th>
+                <th className="px-3 py-4 text-right">à¦•à¦¿à¦¸à§à¦¤à¦¿ à¦†à¦¦à¦¾à§Ÿ</th>
+                <th className="px-3 py-4 text-right">à¦¨à¦—à¦¦ à¦¬à¦¿à¦•à§à¦°à§Ÿ</th>
+                <th className="px-3 py-4 text-right">à¦–à¦°à¦š</th>
+                <th className="w-36 px-3 py-4 text-left">à¦®à¦¨à§à¦¤à¦¬à§à¦¯</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-900 dark:divide-[rgb(var(--c-strokedark))] dark:text-[rgb(var(--c-bodydark1))]">

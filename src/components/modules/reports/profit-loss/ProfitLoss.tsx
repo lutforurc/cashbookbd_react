@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
@@ -157,8 +157,8 @@ const ProfitLoss = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select করুন");
-    if (!startDate || !endDate) return alert("Start/End Date দিন");
+    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
+    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
 
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
@@ -317,22 +317,20 @@ const ProfitLoss = (user: any) => {
   }, [apiData]);
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: "Profit Loss",
-    removeAfterPrint: true,
   });
 
   // Print handler for closing stock item details.
   const handleItemPrint = useReactToPrint({
-    content: () => itemPrintRef.current,
+    contentRef: itemPrintRef,
     documentTitle: "Stock Details with rate",
-    removeAfterPrint: true,
   });
 
   // Load closing stock item details before printing.
   const handleItemPrintButtonClick = async () => {
-    if (!branchId) return alert("Branch select করুন");
-    if (!startDate || !endDate) return alert("Start/End Date দিন");
+    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
+    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
 
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");

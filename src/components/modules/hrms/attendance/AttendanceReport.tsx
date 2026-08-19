@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FiRefreshCcw } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
@@ -363,9 +363,8 @@ const AttendanceReport = ({
   }, [filters.date_from, filters.date_to]);
 
   const handleOvertimePrint = useReactToPrint({
-    content: () => overtimePrintRef.current,
+    contentRef: overtimePrintRef,
     documentTitle: overtimeMatrixTitle,
-    removeAfterPrint: true,
   });
 
   const cards = [

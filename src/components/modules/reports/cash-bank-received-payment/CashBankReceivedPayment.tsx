@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
@@ -121,7 +121,7 @@ const CashBankReceivedPayment = ({ user }: { user: any }) => {
     }
   };
 
-  const print = useReactToPrint({ content: () => printRef.current, documentTitle: 'Cash & Bank Received & Payment', removeAfterPrint: true });
+  const print = useReactToPrint({ contentRef: printRef, documentTitle: 'Cash & Bank Received & Payment' });
   const branches = branchData?.protectedData?.data || [];
 
   useEffect(() => {

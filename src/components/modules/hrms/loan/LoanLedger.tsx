@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
@@ -194,14 +194,8 @@ const LoanLedger = (user: any) => {
  
 
   const handlePrint = useReactToPrint({
-    content: () => {
-      if (!printRef.current) {
-        return null;
-      }
-      return printRef.current;
-    },
+    contentRef: printRef,
     documentTitle: 'Due Report',
-    removeAfterPrint: true,
   });
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
