@@ -45,13 +45,23 @@ export const FIELD_HEIGHT = 'h-10';
  */
 export const FIELD_HEIGHT_REM = '2.5rem';
 
+/**
+ * How square a field's corners are.
+ *
+ * Fields have always been square here, but the screens said so -- or failed to
+ * -- one at a time: rounded-sm in twelve places, rounded-none in five,
+ * rounded-lg, rounded-md and a bare rounded in the rest. Two boxes in the same
+ * filter row could differ. Said here, they cannot.
+ */
+export const FIELD_RADIUS = 'rounded-none';
+
 const FIELD_SURFACE = [
   // `form-input rounded-xs` stood here and rendered nothing: the forms plugin is
   // not installed (`plugins: []`), and `rounded-xs` is a Tailwind v4 name in a
   // v3.4 project -- neither emits a single rule. Fields have therefore always
   // been square, and `rounded-none` is that, said out loud. A caller asking for
   // `rounded-sm` still wins, because tailwind emits the radii in that order.
-  'rounded-none border outline-none transition',
+  `${FIELD_RADIUS} border outline-none transition`,
   'bg-white text-gray-700 placeholder-gray-400',
   'dark:bg-boxdark dark:border-gray-600 dark:text-white dark:placeholder-gray-500',
   'focus:outline-none focus:border-blue-500 dark:focus:border-blue-400',

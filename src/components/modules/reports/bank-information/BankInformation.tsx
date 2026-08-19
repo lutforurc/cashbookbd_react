@@ -175,7 +175,7 @@ const BankInformation = () => {
  selectedDate={endDate}
  setSelectedDate={setEndDate}
  setCurrentDate={setEndDate}
- className="rounded-none border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
+ className="border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
             />
           </div>
         </div>

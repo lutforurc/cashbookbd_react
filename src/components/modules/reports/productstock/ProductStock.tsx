@@ -455,11 +455,11 @@ const ProductStock = ({ user }: any) => {
                       <Loader />
                     ) : (
                       <BranchDropdown
-                        defaultValue={authUser?.branch_id}
-                        value={String(branchId)}
-                        onChange={handleBranchChange}
-                        className="w-full text-sm p-2 border h-9.5"
-                        branchDdl={dropdownData}
+ defaultValue={authUser?.branch_id}
+ value={String(branchId)}
+ onChange={handleBranchChange}
+ className="w-full text-sm p-2 border "
+ branchDdl={dropdownData}
                       />
                     )}
                   </div>
@@ -467,10 +467,10 @@ const ProductStock = ({ user }: any) => {
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
                     <CategoryDropdown
-                      onChange={handleBrandChange}
-                      className="w-full text-sm h-9.5"
-                      categoryDdl={brandOptions}
-                      value={brandId}
+ onChange={handleBrandChange}
+ className="w-full text-sm "
+ categoryDdl={brandOptions}
+ value={brandId}
                     />
                   </div>
 

@@ -167,12 +167,12 @@ const GodownStockReport = ({ user }: any) => {
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Warehouse</label>
             {warehouseDdlData.isLoading ? <Loader /> : null}
             <WarehouseDropdown
-              id="warehouse"
-              onChange={handleWarehouseChange}
-              emptyLabel="All Warehouse"
-              className="w-full font-medium text-sm p-2 h-10 min-w-[260px]"
-              warehouseDdl={warehouseOptions}
-              defaultValue={godownId == null ? "" : String(godownId)}
+ id="warehouse"
+ onChange={handleWarehouseChange}
+ emptyLabel="All Warehouse"
+ className="w-full font-medium text-sm p-2 min-w-[260px]"
+ warehouseDdl={warehouseOptions}
+ defaultValue={godownId == null ? "" : String(godownId)}
             />
           </div>
 

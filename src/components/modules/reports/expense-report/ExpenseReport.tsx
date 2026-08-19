@@ -725,11 +725,11 @@ const ExpenseReport = (user: any) => {
                         Select Branch
                       </label>
                       <BranchDropdown
-                        branchDdl={dropdownData}
-                        onChange={handleBranchChange}
-                        defaultValue={branchId ? String(branchId) : ""}
-                        value={branchId ? String(branchId) : ""}
-                        className="h-10 rounded-sm px-3"
+ branchDdl={dropdownData}
+ onChange={handleBranchChange}
+ defaultValue={branchId ? String(branchId) : ""}
+ value={branchId ? String(branchId) : ""}
+ className="px-3"
                       />
                     </div>
 
@@ -741,7 +741,7 @@ const ExpenseReport = (user: any) => {
  selectedDate={startDate}
  setSelectedDate={setStartDate}
  setCurrentDate={setStartDate}
- className="w-full rounded-sm"
+ className="w-full "
                       />
                     </div>
 
@@ -753,7 +753,7 @@ const ExpenseReport = (user: any) => {
  selectedDate={endDate}
  setSelectedDate={setEndDate}
  setCurrentDate={setEndDate}
- className="w-full rounded-sm"
+ className="w-full "
                       />
                     </div>
 

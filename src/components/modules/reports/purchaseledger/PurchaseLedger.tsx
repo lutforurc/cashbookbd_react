@@ -802,20 +802,20 @@ const PurchaseLedger = (user: any) => {
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
                     {branchDdlData.isLoading == true ? <Loader /> : ''}
                     <BranchDropdown
-                      onChange={handleBranchChange}
-                      value={branchId == null ? '' : String(branchId)}
-                      className="w-full font-medium text-sm p-2 h-10"
-                      branchDdl={dropdownData}
+ onChange={handleBranchChange}
+ value={branchId == null ? '' : String(branchId)}
+ className="w-full font-medium text-sm p-2 "
+ branchDdl={dropdownData}
                     />
                   </div>
 
                   <div className={useFilterMenuEnabled ? '' : 'order-2 min-w-0 min-[1180px]:col-span-1'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Account</label>
                     <DdlMultiline
-                      acType={''}
-                      onSelect={selectedLedgerOptionHandler}
-                      value={selectedLedgerOption}
-                      className="h-10"
+ acType={''}
+ onSelect={selectedLedgerOptionHandler}
+ value={selectedLedgerOption}
+ className=""
                     />
                   </div>
 
@@ -829,9 +829,9 @@ const PurchaseLedger = (user: any) => {
                       {/* <FaRotateRight size={16} className="dark:text-white" /> */}
                     </div>
                     <ProductDropdown
-                      onSelect={selectedProduct}
-                      className="appearance-none h-9.5"
-                      value={selectedProductOption}
+ onSelect={selectedProduct}
+ className="appearance-none "
+ value={selectedProductOption}
                     />
                   </div>
 

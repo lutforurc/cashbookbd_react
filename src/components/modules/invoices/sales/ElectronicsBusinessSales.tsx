@@ -1226,11 +1226,11 @@ const ElectronicsBusinessSales = () => {
                 <label htmlFor="">Select Warehouse</label>
                 {warehouse.isLoading === true ? <Loader /> : ''}
                 <WarehouseDropdown
-                  id="warehouse"
-                  onChange={handleWarehouseChange}
-                  className="w-60 font-medium text-sm p-2 h-9"
-                  warehouseDdl={warehouseDdlData}
-                  defaultValue={productData?.warehouse || ''}
+ id="warehouse"
+ onChange={handleWarehouseChange}
+ className="w-60 font-medium text-sm p-2 "
+ warehouseDdl={warehouseDdlData}
+ defaultValue={productData?.warehouse || ''}
                 />
               </div>
             </div>
@@ -1243,16 +1243,16 @@ const ElectronicsBusinessSales = () => {
                   Enter Serial Number
                 </label>
                 <Textarea
-                  id="serial_no"
-                  name="serial_no"
-                  placeholder="Enter Serial Number"
-                  className={`w-full px-3 py-1 text-gray-600 bg-white border rounded-xs 
-                                            outline-none dark:bg-transparent dark:border-gray-600 dark:text-white 
-                                            dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 
-                                            dark:focus:ring-blue-400 dark:focus:border-blue-400`}
-                  value={productData.serial_no}
-                  onChange={handleProductSerialNumberChange}
-                  rows={1}
+ id="serial_no"
+ name="serial_no"
+ placeholder="Enter Serial Number"
+ className={`w-full px-3 py-1 text-gray-600 bg-white border  
+ outline-none dark:bg-transparent dark:border-gray-600 dark:text-white 
+ dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 
+ dark:focus:ring-blue-400 dark:focus:border-blue-400`}
+ value={productData.serial_no}
+ onChange={handleProductSerialNumberChange}
+ rows={1}
                 />
               </div>
             </div>

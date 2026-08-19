@@ -498,10 +498,10 @@ export default function VoucherUpload(user: any): JSX.Element {
             <div className="w-full">
               {branchDdlData.isLoading === true ? <Loader /> : ''}
               <BranchDropdown
-                defaultValue={user?.user?.branch_id}
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1 h-8"
-                branchDdl={dropdownData}
+ defaultValue={user?.user?.branch_id}
+ onChange={handleBranchChange}
+ className="w-full font-medium text-sm p-1 "
+ branchDdl={dropdownData}
               />
             </div>
           </div>

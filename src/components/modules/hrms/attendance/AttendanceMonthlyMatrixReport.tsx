@@ -596,12 +596,12 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
           <BranchDropdown
-            name="branch_id"
-            defaultValue={userBranchId}
-            branchDdl={branches}
-            value={filters.branch_id?.toString() ?? ''}
-            onChange={handleChange}
-            className="h-10 min-w-60 font-medium text-sm p-2"
+ name="branch_id"
+ defaultValue={userBranchId}
+ branchDdl={branches}
+ value={filters.branch_id?.toString() ?? ''}
+ onChange={handleChange}
+ className="min-w-60 font-medium text-sm p-2"
           />
         </div>
         <div className="min-w-60">

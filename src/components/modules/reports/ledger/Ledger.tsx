@@ -621,21 +621,21 @@ const Ledger = (user: any) => {
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
-                defaultValue={user?.user?.branch_id}
-                value={branchId == null ? '' : String(branchId)}
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-2 h-10"
-                branchDdl={branchOptions}
+ defaultValue={user?.user?.branch_id}
+ value={branchId == null ? '' : String(branchId)}
+ onChange={handleBranchChange}
+ className="w-full font-medium text-sm p-2 "
+ branchDdl={branchOptions}
               />
             </div>
 
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Ledger</label>
               <DdlMultiline
-                onSelect={selectedLedgerOptionHandler}
-                value={selectedLedgerOption}
-                acType={''}
-                className="h-10"
+ onSelect={selectedLedgerOptionHandler}
+ value={selectedLedgerOption}
+ acType={''}
+ className=""
               />
             </div>
 

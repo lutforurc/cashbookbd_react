@@ -198,10 +198,10 @@ const AddEditProject = (user: any) => {
                     <div className="w-full">
                         {branchDdlData.isLoading == true ? <Loader /> : ''}
                         <BranchDropdown
-                            defaultValue={user?.user?.branch_id}
-                            onChange={handleBranchChange}
-                            className="w-60 font-medium text-sm h-[2.45rem] "
-                            branchDdl={dropdownData}
+ defaultValue={user?.user?.branch_id}
+ onChange={handleBranchChange}
+ className="w-60 font-medium text-sm  "
+ branchDdl={dropdownData}
                         />
                     </div>
                 </div>
@@ -211,7 +211,7 @@ const AddEditProject = (user: any) => {
                 </div>
                 <div className="">
                     <label htmlFor="">Select Land Owner</label>
-                    <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} className='h-9.5' value={landOwnerOption} />
+                    <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} className='' value={landOwnerOption} />
                 </div>
                 <InputElement
                     id="name"

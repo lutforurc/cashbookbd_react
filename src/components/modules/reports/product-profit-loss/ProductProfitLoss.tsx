@@ -563,10 +563,10 @@ const ProductProfitLoss = (user: any) => {
                         Select Branch
                       </label>
                       <BranchDropdown
-                        branchDdl={dropdownData}
-                        onChange={handleBranchChange}
-                        value={branchId ? String(branchId) : undefined}
-                        className="h-10 w-full pl-2"
+ branchDdl={dropdownData}
+ onChange={handleBranchChange}
+ value={branchId ? String(branchId) : undefined}
+ className="w-full pl-2"
                       />
                     </div>
 

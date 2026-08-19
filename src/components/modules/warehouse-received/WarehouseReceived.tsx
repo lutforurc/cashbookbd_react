@@ -550,17 +550,17 @@ const WarehouseReceived = () => {
             <div className="md:col-span-4">
               <label className="text-black dark:text-white">Select Product</label>
               <RequisitionItemsDropdown
-                id="receiveProduct"
-                name="receiveProduct"
-                // className='h-8'
-                onSelect={handleProductSelect}
-                defaultValue={
-                  lineItem.productId
+ id="receiveProduct"
+ name="receiveProduct"
+                // className=''
+ onSelect={handleProductSelect}
+ defaultValue={
+ lineItem.productId
                     ? { value: lineItem.productId, label: lineItem.productName }
                     : null
                 }
-                value={
-                  lineItem.productId
+ value={
+ lineItem.productId
                     ? { value: lineItem.productId, label: lineItem.productName }
                     : null
                 }

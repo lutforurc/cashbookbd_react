@@ -178,10 +178,10 @@ const LabourLedger = (user: any) => {
                     </label>
                     {branchDdlData.isLoading === true ? <Loader /> : ''}
                     <BranchDropdown
-                      onChange={handleBranchChange}
-                      value={branchId == null ? '' : String(branchId)}
-                      className="w-full font-medium text-sm p-2 h-10"
-                      branchDdl={dropdownData}
+ onChange={handleBranchChange}
+ value={branchId == null ? '' : String(branchId)}
+ className="w-full font-medium text-sm p-2 "
+ branchDdl={dropdownData}
                     />
                   </div>
 
@@ -190,9 +190,9 @@ const LabourLedger = (user: any) => {
                       Select Account
                     </label>
                     <DdlMultiline
-                      onSelect={selectedLedgerOptionHandler}
-                      className="w-full font-medium text-sm h-10"
-                      acType={''}
+ onSelect={selectedLedgerOptionHandler}
+ className="w-full font-medium text-sm "
+ acType={''}
                     />
                   </div>
 
@@ -201,9 +201,9 @@ const LabourLedger = (user: any) => {
                       Select Labour
                     </label>
                     <LabourDropdown
-                      value={selectedLabourOption}
-                      onSelect={selectedLabourOptionHandler}
-                      className="w-full font-medium text-sm h-10"
+ value={selectedLabourOption}
+ onSelect={selectedLabourOptionHandler}
+ className="w-full font-medium text-sm "
                     />
                   </div>
 

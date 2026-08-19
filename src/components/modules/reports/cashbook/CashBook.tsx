@@ -452,11 +452,11 @@ const CashBook = (user: any) => {
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
-                defaultValue={user?.user?.branch_id}
-                value={branchId == null ? '' : String(branchId)}
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-2 h-10"
-                branchDdl={dropdownData}
+ defaultValue={user?.user?.branch_id}
+ value={branchId == null ? '' : String(branchId)}
+ onChange={handleBranchChange}
+ className="w-full font-medium text-sm p-2 "
+ branchDdl={dropdownData}
               />
             </div>
 

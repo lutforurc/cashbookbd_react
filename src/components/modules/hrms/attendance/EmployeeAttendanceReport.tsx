@@ -273,12 +273,12 @@ const EmployeeAttendanceReport = ({ user }: any) => {
         <div>
           <label className="text-black dark:text-white">Branch</label>
           <BranchDropdown
-            name="branch_id"
-            defaultValue={userBranchId}
-            branchDdl={branches}
-            value={filters.branch_id?.toString() ?? ''}
-            onChange={handleChange(setFilters)}
-            className="h-9 w-full font-medium text-sm p-1.5"
+ name="branch_id"
+ defaultValue={userBranchId}
+ branchDdl={branches}
+ value={filters.branch_id?.toString() ?? ''}
+ onChange={handleChange(setFilters)}
+ className="w-full font-medium text-sm p-1.5"
           />
         </div>
         <DropdownCommon id="status" name="status" label="Status" value={filters.status} data={statusOptions} onChange={handleChange(setFilters)} className="" />

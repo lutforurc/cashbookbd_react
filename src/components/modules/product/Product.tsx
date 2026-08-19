@@ -377,10 +377,10 @@ const Product = (user: any) => {
         if (isGroupRow(row)) return '';
         return (
           <Textarea
-            className={`${FIELD_TEXTAREA} w-full h-8 px-3 py-1 resize-none`}
-            placeholder="IMEI Number"
-            value={editedRows[row.product_id]?.serial_no ?? row.serial_no ?? ''}
-            onChange={(e) => handleProductInputChange(row.product_id, 'serial_no', e.target.value)}
+ className={`${FIELD_TEXTAREA} w-full px-3 py-1 resize-none`}
+ placeholder="IMEI Number"
+ value={editedRows[row.product_id]?.serial_no ?? row.serial_no ?? ''}
+ onChange={(e) => handleProductInputChange(row.product_id, 'serial_no', e.target.value)}
             onBlur={() => handleSerialBlur(row)}
           />
         );
@@ -598,9 +598,9 @@ const Product = (user: any) => {
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap lg:items-center">
           <div className="w-full ">
             <CategoryDropdown
-              onChange={handleBrandChange}
-              className="w-full text-sm h-9!"
-              categoryDdl={brandOptions}
+ onChange={handleBrandChange}
+ className="w-full text-sm !"
+ categoryDdl={brandOptions}
             />
           </div>
 
@@ -609,9 +609,9 @@ const Product = (user: any) => {
               <Loader />
             ) : (
               <CategoryDropdown
-                onChange={handleCategoryChange}
-                className="w-full text-sm h-9!"
-                categoryDdl={optionsWithAll}
+ onChange={handleCategoryChange}
+ className="w-full text-sm !"
+ categoryDdl={optionsWithAll}
               />
             )}
           </div>

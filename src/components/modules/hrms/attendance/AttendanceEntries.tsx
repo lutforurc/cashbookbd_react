@@ -846,12 +846,12 @@ const AttendanceEntries = ({ user }: any) => {
           <div>
             <label className={sectionLabelClass}>Branch</label>
             <BranchDropdown
-              name="branch_id"
-              defaultValue={userBranchId}
-              branchDdl={branches}
-              value={form.branch_id?.toString() ?? ''}
-              onChange={handleChange(setForm)}
-              className="h-9 w-full font-medium text-sm p-1.5"
+ name="branch_id"
+ defaultValue={userBranchId}
+ branchDdl={branches}
+ value={form.branch_id?.toString() ?? ''}
+ onChange={handleChange(setForm)}
+ className="w-full font-medium text-sm p-1.5"
             />
           </div>
           <DropdownCommon id="shift_id" name="shift_id" label="Shift" value={form.shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleShiftChange} className="" />
@@ -954,12 +954,12 @@ const AttendanceEntries = ({ user }: any) => {
         <div>
           <label className={sectionLabelClass}>Branch</label>
           <BranchDropdown
-            name="branch_id"
-            defaultValue={userBranchId}
-            branchDdl={branches}
-            value={filters.branch_id?.toString() ?? ''}
-            onChange={handleChange(setFilters)}
-            className="h-9 w-full font-medium text-sm p-1.5"
+ name="branch_id"
+ defaultValue={userBranchId}
+ branchDdl={branches}
+ value={filters.branch_id?.toString() ?? ''}
+ onChange={handleChange(setFilters)}
+ className="w-full font-medium text-sm p-1.5"
           />
         </div>
         <div className="flex flex-wrap items-end gap-2 xl:flex-nowrap">

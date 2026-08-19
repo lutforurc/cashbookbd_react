@@ -700,17 +700,17 @@ const BranchTransfer = () => {
             <div className="md:col-span-4">
               <label className="text-black dark:text-white">Select Product</label>
               <RequisitionItemsDropdown
-                id="transferProduct"
-                name="transferProduct"
-                // className='h-8'
-                onSelect={handleProductSelect}
-                defaultValue={
-                  lineItem.productId
+ id="transferProduct"
+ name="transferProduct"
+                // className=''
+ onSelect={handleProductSelect}
+ defaultValue={
+ lineItem.productId
                     ? { value: lineItem.productId, label: lineItem.productName }
                     : null
                 }
-                value={
-                  lineItem.productId
+ value={
+ lineItem.productId
                     ? { value: lineItem.productId, label: lineItem.productName }
                     : null
                 }

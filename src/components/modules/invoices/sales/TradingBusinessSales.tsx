@@ -1440,11 +1440,11 @@ const TradingBusinessSales = () => {
               <div>
                 <label htmlFor="">Select Product</label>
                 <ProductDropdown
-                  id="products"
-                  name="products"
-                  className={`h-9 ${autofillHighlights.product ? autofillHighlightClass : ''}`}
-                  onSelect={productSelectHandler}
-                  onKeyDown={(e) => {
+ id="products"
+ name="products"
+ className={`${autofillHighlights.product ? autofillHighlightClass : ''}`}
+ onSelect={productSelectHandler}
+ onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       // Delay to allow react-select to complete selection
                       setTimeout(() => {

@@ -120,9 +120,9 @@ const AveragePrice = (user: any) => {
                         <div className='w-full'>
                             {branchDdlData.isLoading == true ? <Loader /> : ''}
                             <BranchDropdown
-                                onChange={handleBranchChange}
-                                className="w-60 font-medium text-sm h-8"
-                                branchDdl={dropdownData}
+ onChange={handleBranchChange}
+ className="w-60 font-medium text-sm "
+ branchDdl={dropdownData}
                             />
                         </div>
                     </div>

@@ -133,12 +133,12 @@ const ProductFinancialStatement = () => {
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch</label>
           <BranchDropdown
-            id="branch_id"
-            name="branch_id"
-            className="w-full p-1 text-sm h-10"
-            branchDdl={branchOptions}
-            value={String(branchId)}
-            onChange={(e) => setBranchId(Number(e.target.value))}
+ id="branch_id"
+ name="branch_id"
+ className="w-full p-1 text-sm "
+ branchDdl={branchOptions}
+ value={String(branchId)}
+ onChange={(e) => setBranchId(Number(e.target.value))}
           />
         </div>
 
@@ -147,12 +147,12 @@ const ProductFinancialStatement = () => {
             Customer / Supplier
           </label>
           <DdlMultiline
-            id="coa4_id"
-            name="coa4_id"
-            className="h-10"
-            placeholder="All parties"
-            value={coa4Id ? { value: String(coa4Id), label: partyName } : null}
-            onSelect={(selected) => {
+ id="coa4_id"
+ name="coa4_id"
+ className=""
+ placeholder="All parties"
+ value={coa4Id ? { value: String(coa4Id), label: partyName } : null}
+ onSelect={(selected) => {
               setCoa4Id(selected ? Number(selected.value) : 0);
               setPartyName(selected?.label ?? '');
             }}

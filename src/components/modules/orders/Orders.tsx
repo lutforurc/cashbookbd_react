@@ -1140,10 +1140,10 @@ const Orders = () => {
                       Account
                     </label>
                     <DdlMultiline
-                      onSelect={handleLedgerSelect}
-                      acType={''}
-                      value={selectedLedger}
-                      className="h-9"
+ onSelect={handleLedgerSelect}
+ acType={''}
+ value={selectedLedger}
+ className=""
                     />
                   </div>
 
@@ -1152,9 +1152,9 @@ const Orders = () => {
                       Product
                     </label>
                     <ProductDropdown
-                      onSelect={selectedProduct}
-                      className="appearance-none h-9"
-                      value={selectedProductOption}
+ onSelect={selectedProduct}
+ className="appearance-none "
+ value={selectedProductOption}
                     />
                   </div>
 

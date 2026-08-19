@@ -333,10 +333,10 @@ console.log('====================================');
         <div>
           <label htmlFor="" className='text-sm'>Select Brand</label>
           <CategoryDropdown
-            onChange={handleBrandChange}
-            className="w-full text-sm h-7!"
-            categoryDdl={brandOptions}
-            value={formData.manufacture_id}
+ onChange={handleBrandChange}
+ className="w-full text-sm !"
+ categoryDdl={brandOptions}
+ value={formData.manufacture_id}
           />
         </div>
         {categoryData.isLoading ? (
@@ -345,10 +345,10 @@ console.log('====================================');
           <div>
             <label htmlFor="" className='text-sm'>Select Category</label>
             <CategoryDropdown
-              onChange={handleCategoryChange}
-              className="w-full text-sm h-7!"
-              categoryDdl={optionsWithAll}
-              value={formData.category_id}
+ onChange={handleCategoryChange}
+ className="w-full text-sm !"
+ categoryDdl={optionsWithAll}
+ value={formData.category_id}
             />
           </div>
         )}

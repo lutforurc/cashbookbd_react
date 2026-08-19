@@ -635,12 +635,12 @@ const AddOrder = (user: any) => {
                     <div className='w-full'>
                         {branchDdlData.isLoading == true ? <Loader /> : ''}
                         <BranchDropdown
-                            id="branch_id"
-                            onChange={handleBranchChange}
-                            className="w-full font-medium text-sm px-2 h-10"
-                            branchDdl={dropdownData}
-                            value={formData.branch_id}
-                            onKeyDown={(e) => {
+ id="branch_id"
+ onChange={handleBranchChange}
+ className="w-full font-medium text-sm px-2 "
+ branchDdl={dropdownData}
+ value={formData.branch_id}
+ onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     e.preventDefault();
                                     focusNextField('order_for');
@@ -652,9 +652,9 @@ const AddOrder = (user: any) => {
                 <div className='md:col-span-2'>
                     <label htmlFor="">Order For</label>
                     <DdlMultiline id="order_for" onSelect={selectedLedgerOptionHandler} acType={''} value={selectedOrderFor}
-                        className='h-10'
+ className=''
 
-                        onKeyDown={(e) => {
+ onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 focusNextField('product_id');
                             }

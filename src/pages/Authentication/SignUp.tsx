@@ -296,9 +296,9 @@ const SignUp: React.FC = () => {
 
                 <div className="mb-5">
                   <Input
-                    type="submit"
-                    value="Create account"
-                    className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-primary/90"
+ type="submit"
+ value="Create account"
+ className="w-full cursor-pointer border border-primary bg-primary p-4 text-white transition hover:bg-primary/90"
                   />
                 </div>
 

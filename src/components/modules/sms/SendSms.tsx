@@ -134,10 +134,10 @@ const SendSms = (user: any) => {
             <div className="ml-auto">
               <div className="w-full">
                 <BranchDropdown
-                  defaultValue={user?.user?.branch_id}
-                  onChange={handleBranchChange}
-                  className="w-60! font-medium text-sm p-1.5 h-9"
-                  branchDdl={dropdownData}
+ defaultValue={user?.user?.branch_id}
+ onChange={handleBranchChange}
+ className="w-60! font-medium text-sm p-1.5 "
+ branchDdl={dropdownData}
                 />
               </div>
             </div>

@@ -417,9 +417,9 @@ const DateWiseInOut = ({ user }: any) => {
               </Button>
             </div>
             <ProductDropdown
-              onSelect={selectedProduct}
-              value={selectedProductOption}
-              className="appearance-none h-10"
+ onSelect={selectedProduct}
+ value={selectedProductOption}
+ className="appearance-none "
             />
           </div>
 

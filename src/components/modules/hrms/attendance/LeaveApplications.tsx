@@ -185,11 +185,11 @@ const LeaveApplications = ({ user }: any) => {
           <div>
             <label className="text-black dark:text-white">Branch</label>
             <BranchDropdown
-              name="branch_id"
-              branchDdl={[{ id: '', name: 'Select Branch' }, ...branches]}
-              value={form.branch_id?.toString() ?? ''}
-              onChange={handleChange(setForm)}
-              className="h-9 w-full font-medium text-sm p-1.5"
+ name="branch_id"
+ branchDdl={[{ id: '', name: 'Select Branch' }, ...branches]}
+ value={form.branch_id?.toString() ?? ''}
+ onChange={handleChange(setForm)}
+ className="w-full font-medium text-sm p-1.5"
             />
           </div>
           <DropdownCommon id="leave_type_id" name="leave_type_id" label="Leave Type" value={form.leave_type_id?.toString()} data={[{ id: '', name: 'Select Leave Type' }, ...leaveTypes]} onChange={handleChange(setForm)} className="" />
@@ -244,11 +244,11 @@ const LeaveApplications = ({ user }: any) => {
         <div>
           <label className="text-black dark:text-white">Branch</label>
           <BranchDropdown
-            name="branch_id"
-            branchDdl={[{ id: '', name: 'All Branches' }, ...branches]}
-            value={filters.branch_id?.toString() ?? ''}
-            onChange={handleChange(setFilters)}
-            className="h-9 w-full font-medium text-sm p-1.5"
+ name="branch_id"
+ branchDdl={[{ id: '', name: 'All Branches' }, ...branches]}
+ value={filters.branch_id?.toString() ?? ''}
+ onChange={handleChange(setFilters)}
+ className="w-full font-medium text-sm p-1.5"
           />
         </div>
         <div className="flex items-end">

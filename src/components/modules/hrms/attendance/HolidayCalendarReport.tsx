@@ -245,12 +245,12 @@ const HolidayCalendarReport = ({ user }: any) => {
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch/Project</label>
           <BranchDropdown
-            name="branch_id"
-            defaultValue={userBranchId}
-            branchDdl={[{ id: '', name: 'All Branches' }, ...branches]}
-            value={filters.branch_id?.toString() ?? ''}
-            onChange={handleChange}
-            className="h-9 w-full font-medium text-sm p-1.5"
+ name="branch_id"
+ defaultValue={userBranchId}
+ branchDdl={[{ id: '', name: 'All Branches' }, ...branches]}
+ value={filters.branch_id?.toString() ?? ''}
+ onChange={handleChange}
+ className="w-full font-medium text-sm p-1.5"
           />
         </div>
         <DropdownCommon id="type" name="type" label="Type" value={filters.type} data={typeOptions} onChange={handleChange} className="" />

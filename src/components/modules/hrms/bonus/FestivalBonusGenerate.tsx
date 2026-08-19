@@ -389,11 +389,11 @@ const FestivalBonusGenerate = ({ user }: any) => {
             <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Designation Level</label>
               <MultiSelectDropdown
-                options={designationLevelOptions}
-                value={selectedLevels}
-                onChange={setSelectedLevels}
-                placeholder="All levels"
-                className="h-9"
+ options={designationLevelOptions}
+ value={selectedLevels}
+ onChange={setSelectedLevels}
+ placeholder="All levels"
+ className=""
               />
             </div>
 

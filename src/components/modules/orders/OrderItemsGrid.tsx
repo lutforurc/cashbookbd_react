@@ -137,15 +137,15 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
 
                 <td className={cell}>
                   <ProductDropdown
-                    id={`item_product_${index}`}
-                    name={`item_product_${index}`}
-                    className="h-9"
-                    value={
-                      line.product_id
+ id={`item_product_${index}`}
+ name={`item_product_${index}`}
+ className=""
+ value={
+ line.product_id
                         ? { value: line.product_id, label: line.product_name || line.product_id }
                         : null
                     }
-                    onSelect={(option: any) =>
+ onSelect={(option: any) =>
                       update(line.key, {
                         product_id: option?.value?.toString?.() || '',
                         product_name: option?.label || '',

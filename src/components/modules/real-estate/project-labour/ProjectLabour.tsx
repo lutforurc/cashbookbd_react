@@ -455,12 +455,12 @@ const ProjectLabour = () => {
           <div className="sm:col-span-2">
             <label htmlFor="supplier">Select Supplier</label>
             <DdlMultiline
-              id="supplier"
-              name="supplier"
-              acType="3"
-              className="h-9.5"
-              value={supplier.id ? { value: supplier.id, label: supplier.name } : null}
-              onSelect={(option: any) =>
+ id="supplier"
+ name="supplier"
+ acType="3"
+ className=""
+ value={supplier.id ? { value: supplier.id, label: supplier.name } : null}
+ onSelect={(option: any) =>
                 setSupplier({ id: Number(option?.value) || '', name: option?.label || '' })
               }
             />
@@ -623,11 +623,11 @@ const ProjectLabour = () => {
           <div className="sm:col-span-2">
             <label htmlFor="product">Select Labour Item</label>
             <LabourDropdown
-              id="product"
-              name="product"
-              className="h-9.5"
-              value={draft.product ? { value: draft.product, label: draft.productName } : null}
-              onSelect={(option: any) =>
+ id="product"
+ name="product"
+ className=""
+ value={draft.product ? { value: draft.product, label: draft.productName } : null}
+ onSelect={(option: any) =>
                 setDraft((prev) => ({
                   ...prev,
                   product: Number(option?.value) || '',

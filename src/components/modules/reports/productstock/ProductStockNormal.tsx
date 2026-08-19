@@ -462,10 +462,10 @@ const ProductStockNormal = ({ user }: any) => {
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch</label>
                     {branchDdlData.isLoading == true ? <Loader /> : ''}
                     <BranchDropdown
-                      onChange={handleBranchChange}
-                      value={branchId == null ? '' : String(branchId)}
-                      className="w-full font-medium text-sm pl-1.5 pt-2 pb-2 h-9.5"
-                      branchDdl={dropdownData}
+ onChange={handleBranchChange}
+ value={branchId == null ? '' : String(branchId)}
+ className="w-full font-medium text-sm pl-1.5 pt-2 pb-2 "
+ branchDdl={dropdownData}
                     />
                   </div>
 

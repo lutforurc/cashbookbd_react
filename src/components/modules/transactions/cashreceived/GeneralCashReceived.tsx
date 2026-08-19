@@ -410,17 +410,17 @@ const GeneralCashReceived = () => {
             <div className="">
               <label htmlFor="">Select cash received account</label>
               <DdlMultiline
-                id="account"
-                name="account"
-                className="h-9.5"
-                placeholder="Select cash received account"
-                onSelect={selectedLedgerOptionHandler}
-                value={
-                  formData.account
+ id="account"
+ name="account"
+ className=""
+ placeholder="Select cash received account"
+ onSelect={selectedLedgerOptionHandler}
+ value={
+ formData.account
                     ? { value: formData.account, label: formData.accountName }
                     : null
                 }
-                onKeyDown={(e) => {
+ onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     const nextElement = document.getElementById('remarks');
                     if (nextElement) {

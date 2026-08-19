@@ -900,11 +900,11 @@ const LedgerWithProduct = (user: any) => {
                         title="Clear selected product"
                       ></div>
                       <ProductDropdown
-                        id="product"
-                        name="product"
-                        onSelect={selectedProduct}
-                        value={selectedProductOption}
-                        className="appearance-none h-10"
+ id="product"
+ name="product"
+ onSelect={selectedProduct}
+ value={selectedProductOption}
+ className="appearance-none "
                       />
                     </div>
 

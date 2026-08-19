@@ -488,16 +488,16 @@ function ConstructionLabourInvoice(): JSX.Element {
               <div>
                 <label className="text-black dark:text-white">Select Supplier</label>
                 <DdlMultiline
-                  id="account"
-                  name="account"
-                  onSelect={supplierAccountHandler}
-                  value={
-                    state.account
+ id="account"
+ name="account"
+ onSelect={supplierAccountHandler}
+ value={
+ state.account
                       ? { value: state.account, label: state.accountName }
                       : null
                   }
-                  acType={"3"}
-                  className="h-9"
+ acType={"3"}
+ className=""
                 />
               </div>
 

@@ -248,12 +248,12 @@ const LoanLedger = (user: any) => {
           <div className="min-w-[180px] flex-1">
             <label className="text-black dark:text-white">Select Employee</label>
             <EmployeeDropdownSearch
-              id="account"
-              name="account"
-              placeholder="Select Employee"
-              onSelect={transactionAccountHandler} 
-              className="w-full font-medium text-sm h-9"
-              onKeyDown={(e: any) => {
+ id="account"
+ name="account"
+ placeholder="Select Employee"
+ onSelect={transactionAccountHandler} 
+ className="w-full font-medium text-sm "
+ onKeyDown={(e: any) => {
                 if (e.key === 'Enter') document.getElementById('remarks')?.focus();
               }}
             />

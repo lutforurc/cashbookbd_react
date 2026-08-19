@@ -92,10 +92,10 @@ const ItemChart = (user) => {
             <div className="w-full">
               {branchDdlData?.isLoading === true && <Loader />}
               <BranchDropdown
-                defaultValue={user?.user?.branch_id}
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm h-9.5"
-                branchDdl={dropdownData}
+ defaultValue={user?.user?.branch_id}
+ onChange={handleBranchChange}
+ className="w-full font-medium text-sm "
+ branchDdl={dropdownData}
               />
             </div>
           </div>

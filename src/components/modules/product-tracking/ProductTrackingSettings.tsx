@@ -200,12 +200,12 @@ const ProductTrackingSettings = () => {
                   there), and the ! is what beats the library's own colour, so
                   all three boxes on this form read as one set. */}
               <DdlMultiline
-                id="coa4_id"
-                name="coa4_id"
-                className="h-9 bg-white! dark:bg-boxdark! border-gray-300! dark:border-gray-600!"
-                placeholder="For all parties"
-                value={form.coa4_id ? { value: String(form.coa4_id), label: partyName } : null}
-                onSelect={(selected) => {
+ id="coa4_id"
+ name="coa4_id"
+ className="bg-white! dark:bg-boxdark! border-gray-300! dark:border-gray-600!"
+ placeholder="For all parties"
+ value={form.coa4_id ? { value: String(form.coa4_id), label: partyName } : null}
+ onSelect={(selected) => {
                   setForm({ ...form, coa4_id: selected ? Number(selected.value) : 0 });
                   setPartyName(selected?.label ?? '');
                 }}
@@ -221,12 +221,12 @@ const ProductTrackingSettings = () => {
                 Branch
               </label>
               <BranchDropdown
-                id="branch_id"
-                name="branch_id"
-                className="w-full p-1 text-sm h-9"
-                branchDdl={branchOptions}
-                value={String(form.branch_id)}
-                onChange={(e) => setForm({ ...form, branch_id: Number(e.target.value) })}
+ id="branch_id"
+ name="branch_id"
+ className="w-full p-1 text-sm "
+ branchDdl={branchOptions}
+ value={String(form.branch_id)}
+ onChange={(e) => setForm({ ...form, branch_id: Number(e.target.value) })}
               />
               <p className="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400">
                 All Branch applies this to every branch of the company. A setting made for one

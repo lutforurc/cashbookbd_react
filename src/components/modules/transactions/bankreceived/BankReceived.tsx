@@ -546,21 +546,21 @@ const BankReceived = () => {
               <div>
                 <label htmlFor="">Select Transaction Account</label>
                 <DdlMultiline
-                  id="account"
-                  name="account"
-                  className="h-9.5"
-                  placeholder="Select Transaction Account"
-                  onSelect={transactionAccountHandler} // âœ… à¦ªà§à¦°à§‹à¦¨à§‹ handler à¦¬à¦¾à¦¦
-                  value={
-                    formData.transactionList &&
-                      formData.transactionList[0]?.account
+ id="account"
+ name="account"
+ className=""
+ placeholder="Select Transaction Account"
+ onSelect={transactionAccountHandler} // âœ… à¦ªà§à¦°à§‹à¦¨à§‹ handler à¦¬à¦¾à¦¦
+ value={
+ formData.transactionList &&
+ formData.transactionList[0]?.account
                       ? {
-                        value: formData.transactionList[0].account,
-                        label: formData.transactionList[0].accountName,
+ value: formData.transactionList[0].account,
+ label: formData.transactionList[0].accountName,
                       }
                       : null
                   }
-                  onKeyDown={(e) => {
+ onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       const nextElement = document.getElementById('remarks');
                       if (nextElement) {

@@ -241,10 +241,10 @@ const LoanBalance = (user: any) => {
           <div className="flex items-center gap-2 text-sm text-black dark:text-white">
             <SelectOption onChange={(e) => setPerPage(Number(e.target.value))} />
             <BranchDropdown
-              defaultValue={(branchId ?? '').toString()}
-              onChange={handleBranchChange}
-              className="w-64! font-medium text-sm h-9 p-2"
-              branchDdl={branchOptions}
+ defaultValue={(branchId ?? '').toString()}
+ onChange={handleBranchChange}
+ className="w-64! font-medium text-sm p-2"
+ branchDdl={branchOptions}
             />
           </div>
           <div className="flex items-center md:justify-end">

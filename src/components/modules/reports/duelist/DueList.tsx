@@ -227,10 +227,10 @@ const DueList = (user: any) => {
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
                     {branchDdlData.isLoading == true ? <Loader /> : ''}
                     <BranchDropdown
-                      onChange={handleBranchChange}
-                      value={branchId == null ? '' : String(branchId)}
-                      className="w-full font-medium text-sm p-1.5 h-10"
-                      branchDdl={dropdownData}
+ onChange={handleBranchChange}
+ value={branchId == null ? '' : String(branchId)}
+ className="w-full font-medium text-sm p-1.5 "
+ branchDdl={dropdownData}
                     />
                   </div>
 

@@ -197,12 +197,12 @@ const BranchAttendanceSummaryReport = ({ user }: any) => {
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch/Project</label>
           <BranchDropdown
-            name="branch_id"
-            defaultValue={userBranchId}
-            branchDdl={[{ id: '', name: 'All Branches' }, ...branches]}
-            value={filters.branch_id?.toString() ?? ''}
-            onChange={handleChange}
-            className="h-10 w-full font-medium text-sm p-2"
+ name="branch_id"
+ defaultValue={userBranchId}
+ branchDdl={[{ id: '', name: 'All Branches' }, ...branches]}
+ value={filters.branch_id?.toString() ?? ''}
+ onChange={handleChange}
+ className="w-full font-medium text-sm p-2"
           />
         </div>
         <DropdownCommon id="month" name="month" label="Month" value={filters.month} data={monthOptions} onChange={handleChange} className="font-medium" />

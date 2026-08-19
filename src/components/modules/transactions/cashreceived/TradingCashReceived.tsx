@@ -453,16 +453,16 @@ const TradingCashReceived = () => {
             <div className="">
               <label htmlFor="">Select Account</label>
               <DdlMultiline
-                id="account"
-                name="account"
-                className="h-9.5"
-                onSelect={selectedLedgerOptionHandler}
-                value={
-                  formData.account
+ id="account"
+ name="account"
+ className=""
+ onSelect={selectedLedgerOptionHandler}
+ value={
+ formData.account
                     ? { value: formData.account, label: formData.accountName }
                     : null
                 }
-                onKeyDown={(e) => {
+ onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     const nextElement = document.getElementById('remarks');
                     if (nextElement) {

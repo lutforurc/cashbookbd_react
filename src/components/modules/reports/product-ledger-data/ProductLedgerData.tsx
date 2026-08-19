@@ -445,9 +445,9 @@ const ProductLedgerData = (user: any) => {
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Item / Product</label>
                       <ProductDropdown
-                        onSelect={selectedProduct}
-                        className="appearance-none h-10"
-                        value={selectedLedgerOption}
+ onSelect={selectedProduct}
+ className="appearance-none "
+ value={selectedLedgerOption}
                       />
                     </div>
 
