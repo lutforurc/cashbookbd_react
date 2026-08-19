@@ -323,7 +323,7 @@ const Ledger = (user: any) => {
 
     try {
       setApprovingId(voucherId);
-      const response = await httpService.get(`${API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL}/${voucherId}`);
+      const response = await httpService.post(`${API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL}/${voucherId}`, {});
       const result = response?.data;
 
       if (result === '1' || result?.success) {
