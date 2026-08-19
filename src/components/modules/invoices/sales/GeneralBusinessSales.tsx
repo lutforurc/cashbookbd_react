@@ -844,7 +844,7 @@ const GeneralBusinessSales = () => {
                   label="Update"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5 h-8"
-                  icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -854,7 +854,7 @@ const GeneralBusinessSales = () => {
                   label="Add New"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0 h-8"
-                  icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -875,7 +875,7 @@ const GeneralBusinessSales = () => {
                   label="Update"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-white text-lg ml-2 mr-2  h-8" />}
+                  icon={<FiEdit className="text-lg ml-2 mr-2 h-8" />}
                 />
               ) : (
                 <ButtonLoading
@@ -884,7 +884,7 @@ const GeneralBusinessSales = () => {
                   label="Save"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0 h-8"
-                  icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg ml-2 mr-2" />}
                 />
               )}
 
@@ -905,7 +905,7 @@ const GeneralBusinessSales = () => {
                 label="Print"
                 responsiveLabel
                 className="whitespace-nowrap text-center mr-0 h-8"
-                icon={<FiPrinter className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiPrinter className="text-lg ml-2 mr-2" />}
               />
 
               <Link to="/dashboard" className="text-nowrap justify-center mr-0  h-8">

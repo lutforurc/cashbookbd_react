@@ -498,7 +498,7 @@ const GeneralBusinessSalesReturn = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0 py-1.5 h-8"
-                  icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -507,7 +507,7 @@ const GeneralBusinessSalesReturn = () => {
                   buttonLoading={buttonLoading}
                   label="Add New"
                   className="whitespace-nowrap text-center mr-0 h-8"
-                  icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
                 />
               )}
               <ButtonLoading
@@ -515,14 +515,14 @@ const GeneralBusinessSalesReturn = () => {
                 buttonLoading={buttonLoading}
                 label="Save"
                 className="whitespace-nowrap text-center mr-0 h-8"
-                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg ml-2 mr-2" />}
               />
               <ButtonLoading
                 onClick={resetForm}
                 buttonLoading={buttonLoading}
                 label="Reset"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiRefreshCcw className="text-white text-lg ml-2  mr-2  h-8" />}
+                icon={<FiRefreshCcw className="text-lg ml-2 mr-2 h-8" />}
               />
               <Link to="/dashboard" className="text-nowrap justify-center mr-0  h-8">
                 <FiHome className="text-white text-lg ml-2  mr-2" />

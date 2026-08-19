@@ -596,7 +596,7 @@ export default function UnitSalePaymentEntry() {
                 buttonLoading={saleOptionsLoading}
                 label="Load Sale Info"
                 className="h-8.5 w-full"
-                icon={<FiSearch className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiSearch className="text-lg ml-2 mr-2" />}
               />
             </div>
           </div>
@@ -882,7 +882,7 @@ export default function UnitSalePaymentEntry() {
               buttonLoading={isSubmitting}
               label="Save"
               className="h-9"
-              icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+              icon={<FiSave className="text-lg ml-2 mr-2" />}
             />
 
             <Link to={LIST_PATH} className="h-9 p-2">

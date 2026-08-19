@@ -315,7 +315,7 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
             buttonLoading={buttonLoading}
             label={buttonLoading ? 'Saving...' : `Save ${entityLabel}`}
             className="whitespace-nowrap text-center"
-            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg ml-2 mr-2" />}
             disabled={buttonLoading}
           />
         </div>

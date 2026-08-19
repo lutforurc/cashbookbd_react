@@ -422,7 +422,7 @@ const ChequeUpdate = () => {
                         buttonLoading={buttonLoading}
                         label="Update"
                         className="whitespace-nowrap text-center mr-0 p-2"
-                        icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                        icon={<FiSave className="text-lg ml-2 mr-2" />}
                     />
 
                     <ButtonLoading
@@ -430,7 +430,7 @@ const ChequeUpdate = () => {
                         buttonLoading={false}
                         label="Reset"
                         className="whitespace-nowrap text-center mr-0 p-2"
-                        icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
+                        icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
                     />
 
                     <Link to="/real-estate/cheque-register" className="text-nowrap justify-center mr-0 P-2">

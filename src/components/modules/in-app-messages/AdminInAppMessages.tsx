@@ -197,14 +197,14 @@ const AdminInAppMessages: React.FC = () => {
           buttonLoading={false}
           label="New Campaign"
           className="mr-0 h-8.5 whitespace-nowrap text-center"
-          icon={<FiPlus className="ml-2 mr-2 text-lg text-white" />}
+          icon={<FiPlus className="ml-2 mr-2 text-lg" />}
         />
         <ButtonLoading
           onClick={load}
           buttonLoading={false}
           label="Refresh"
           className="mr-0 h-8.5 whitespace-nowrap text-center"
-          icon={<FiRefreshCcw className="ml-2 mr-2 text-lg text-white" />}
+          icon={<FiRefreshCcw className="ml-2 mr-2 text-lg" />}
         />
       </div>
 

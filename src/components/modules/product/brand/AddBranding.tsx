@@ -203,7 +203,7 @@ const AddBranding = () => {
             buttonLoading={buttonLoading}
             label="Save"
             className="whitespace-nowrap text-center mr-2 p-1.5"
-            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
         )}
 

@@ -1291,7 +1291,7 @@ const ElectronicsBusinessSales = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-white text-lg ml-2 mr-2" />}
+                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -1300,7 +1300,7 @@ const ElectronicsBusinessSales = () => {
                   buttonLoading={buttonLoading}
                   label="Add New"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
+                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -1319,7 +1319,7 @@ const ElectronicsBusinessSales = () => {
                   buttonLoading={updateButtonLoading}
                   label={updateButtonLoading ? 'Updating...' : 'Update'}
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-white text-lg ml-2 mr-2" />}
+                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
                   disabled={updateButtonLoading}
                 />
               ) : (
@@ -1328,7 +1328,7 @@ const ElectronicsBusinessSales = () => {
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg ml-2 mr-2" />}
                   disabled={saveButtonLoading}
                 />
               )}
@@ -1338,7 +1338,7 @@ const ElectronicsBusinessSales = () => {
                 buttonLoading={buttonLoading}
                 label="Reset"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
               />
               <div className="flex w-full">
                 <div className="mr-2">
@@ -1499,7 +1499,7 @@ const ElectronicsBusinessSales = () => {
                 buttonLoading={buttonLoading}
                 label="Add"
                 className="whitespace-nowrap text-center pt-1.5 pb-1.5 pr-4 ml-6 pl-3!"
-                icon={<FiPlus className="text-white text-lg mr-2" />}
+                icon={<FiPlus className="text-lg mr-2" />}
               />
             </div>
           )}

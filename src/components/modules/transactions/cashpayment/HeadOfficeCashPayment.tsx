@@ -545,7 +545,7 @@ const HeadOfficeCashPayment = () => {
                   buttonLoading={buttonLoading}
                   label=" "
                   className="-ml-px h-8.5 w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                  icon={<FiSearch className="text-white text-lg ml-2" />}
+                  icon={<FiSearch className="text-lg ml-2" />}
                 />
               </div>
             </div>
@@ -656,7 +656,7 @@ const HeadOfficeCashPayment = () => {
                   buttonLoading={buttonLoading}
                   label="Add New"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiPlus className="text-white text-lg ml-2 mr-2 h-5" />}
+                  icon={<FiPlus className="text-lg ml-2 mr-2 h-5" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -675,7 +675,7 @@ const HeadOfficeCashPayment = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -684,7 +684,7 @@ const HeadOfficeCashPayment = () => {
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiSave className="text-lg ml-2 mr-2" />}
                 />
               )}
               <ButtonLoading

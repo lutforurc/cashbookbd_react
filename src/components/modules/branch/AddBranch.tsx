@@ -1954,7 +1954,7 @@ const AddBranch = () => {
                       buttonLoading={buttonLoading}
                       label="Reset"
                       className="whitespace-nowrap rounded px-4 py-1.5"
-                      icon={<FiRefreshCcw className="text-white text-base mr-2" />}
+                      icon={<FiRefreshCcw className="text-base mr-2" />}
                     />
                   </div>
 
@@ -1965,7 +1965,7 @@ const AddBranch = () => {
                       disabled={currentStep === 0}
                       label="Previous"
                       className="whitespace-nowrap rounded px-4 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
-                      icon={<FiArrowLeft className="text-white text-base mr-2" />}
+                      icon={<FiArrowLeft className="text-base mr-2" />}
                     />
                     {currentStep < steps.length - 1 ? (
                       <ButtonLoading
@@ -1973,7 +1973,7 @@ const AddBranch = () => {
                         buttonLoading={false}
                         label="Next"
                         className="whitespace-nowrap rounded bg-blue-600! px-6 py-1.5 hover:bg-blue-700!"
-                        icon={<FiArrowRight className="text-white text-base mr-2" />}
+                        icon={<FiArrowRight className="text-base mr-2" />}
                       />
                     ) : branchEditData.editData?.branch ? (
                       <ButtonLoading
@@ -1981,7 +1981,7 @@ const AddBranch = () => {
                         buttonLoading={buttonLoading}
                         label="Update"
                         className="whitespace-nowrap rounded bg-blue-600! px-6 py-1.5 hover:bg-blue-700!"
-                        icon={<FiSave className="text-white text-base mr-2" />}
+                        icon={<FiSave className="text-base mr-2" />}
                       />
                     ) : (
                       <ButtonLoading
@@ -1989,7 +1989,7 @@ const AddBranch = () => {
                         buttonLoading={buttonLoading}
                         label="Save"
                         className="whitespace-nowrap rounded bg-blue-600! px-6 py-1.5 hover:bg-blue-700!"
-                        icon={<FiSave className="text-white text-base mr-2" />}
+                        icon={<FiSave className="text-base mr-2" />}
                       />
                     )}
                   </div>

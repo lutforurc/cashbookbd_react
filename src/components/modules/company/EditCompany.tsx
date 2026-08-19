@@ -284,7 +284,7 @@ const EditCompany = () => {
           <ButtonLoading
             buttonLoading={company?.isSaving}
             label="Update"
-            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg ml-2 mr-2" />}
             type="submit"
             className="whitespace-nowrap mr-2 py-1.5"
           />

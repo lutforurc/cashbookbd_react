@@ -136,7 +136,7 @@ const VoucherApproval = () => {
             buttonLoading={saveButtonLoading}
             label="Approved"
             className="whitespace-nowrap text-center mr-0 h-8"
-            icon={<FiCheckSquare className="text-white text-lg ml-2  mr-2" />}
+            icon={<FiCheckSquare className="text-lg ml-2 mr-2" />}
           />
           <Link
             to="/admin/remove-approval"

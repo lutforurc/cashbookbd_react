@@ -763,7 +763,7 @@ export default function UnitSalePaymentEdit() {
               buttonLoading={isSubmitting}
               label="Update"
               className="h-9"
-              icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+              icon={<FiSave className="text-lg ml-2 mr-2" />}
             />
 
             <Link to={LIST_PATH} className="h-9 p-2">

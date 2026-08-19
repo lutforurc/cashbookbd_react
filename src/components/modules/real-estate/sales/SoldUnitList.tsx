@@ -670,7 +670,7 @@ const SoldUnitList: React.FC = () => {
           buttonLoading={false}
           label="Search"
           className="mr-0 h-8.5 whitespace-nowrap text-center"
-          icon={<FiSearch className="ml-2 mr-2 text-lg text-white" />}
+          icon={<FiSearch className="ml-2 mr-2 text-lg" />}
         />
 
         <ButtonLoading
@@ -678,7 +678,7 @@ const SoldUnitList: React.FC = () => {
           buttonLoading={false}
           label="Reset"
           className="mr-0 h-8.5 whitespace-nowrap text-center"
-          icon={<FiRefreshCcw className="ml-2 mr-2 text-lg text-white" />}
+          icon={<FiRefreshCcw className="ml-2 mr-2 text-lg" />}
         />
 
         <ButtonLoading
@@ -686,7 +686,7 @@ const SoldUnitList: React.FC = () => {
           buttonLoading={false}
           label="Print"
           className="mr-0 h-8.5 whitespace-nowrap text-center"
-          icon={<FiPrinter className="ml-2 mr-2 text-lg text-white" />}
+          icon={<FiPrinter className="ml-2 mr-2 text-lg" />}
         />
       </div>
 

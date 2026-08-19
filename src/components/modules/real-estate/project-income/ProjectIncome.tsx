@@ -540,7 +540,7 @@ const ProjectIncome = () => {
                   buttonLoading={searching}
                   label=" "
                   className={`-ml-px w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20 ${FIELD_HEIGHT}`}
-                  icon={<FiSearch className="ml-2 text-lg text-white" />}
+                  icon={<FiSearch className="ml-2 text-lg" />}
                 />
               </div>
             </div>
@@ -679,7 +679,7 @@ const ProjectIncome = () => {
                   onClick={handleCancelRowEdit}
                   label="Cancel"
                   className="mr-0 whitespace-nowrap text-center"
-                  icon={<FiX className="ml-2 mr-2 h-6 text-lg text-white" />}
+                  icon={<FiX className="ml-2 mr-2 h-6 text-lg" />}
                 />
               ) : (
                 <ButtonLoading
@@ -688,14 +688,14 @@ const ProjectIncome = () => {
                   buttonLoading={saving}
                   label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
                   className="mr-0 whitespace-nowrap text-center"
-                  icon={<FiSave className="ml-2 mr-2 h-6 text-lg text-white" />}
+                  icon={<FiSave className="ml-2 mr-2 h-6 text-lg" />}
                 />
               )}
               <ButtonLoading
                 onClick={() => navigate('/dashboard')}
                 label="Home"
                 className="mr-0 whitespace-nowrap p-2 text-center"
-                icon={<FiHome className="ml-2 mr-2 text-lg text-white h-6" />}
+                icon={<FiHome className="ml-2 mr-2 text-lg h-6" />}
               />
             </div>
           </div>

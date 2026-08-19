@@ -577,7 +577,7 @@ const ProjectPurchase = () => {
                 label=" "
                 title="Search invoice"
                 className="-ml-px h-9.5 w-12 shrink-0 border border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                icon={<FiSearch className="ml-2 text-lg text-white" />}
+                icon={<FiSearch className="ml-2 text-lg" />}
               />
             </div>
           </div>
@@ -707,7 +707,7 @@ const ProjectPurchase = () => {
                 onClick={handleCancelRowEdit}
                 label="Cancel"
                 className="mr-0 whitespace-nowrap text-center"
-                icon={<FiX className="ml-2 mr-2 h-6 text-lg text-white" />}
+                icon={<FiX className="ml-2 mr-2 h-6 text-lg" />}
               />
             ) : (
               <ButtonLoading
@@ -716,20 +716,20 @@ const ProjectPurchase = () => {
                 buttonLoading={saving}
                 label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
                 className="mr-0 whitespace-nowrap text-center"
-                icon={<FiSave className="ml-2 mr-2 h-6 text-lg text-white" />}
+                icon={<FiSave className="ml-2 mr-2 h-6 text-lg" />}
               />
             )}
             <ButtonLoading
               onClick={resetAll}
               label="Reset"
               className="mr-0 whitespace-nowrap p-2 text-center"
-              icon={<FiRefreshCw className="ml-2 mr-2 h-6 text-lg text-white" />}
+              icon={<FiRefreshCw className="ml-2 mr-2 h-6 text-lg" />}
             />
             <ButtonLoading
               onClick={() => navigate('/dashboard')}
               label="Home"
               className="mr-0 whitespace-nowrap p-2 text-center"
-              icon={<FiHome className="ml-2 mr-2 h-6 text-lg text-white" />}
+              icon={<FiHome className="ml-2 mr-2 h-6 text-lg" />}
             />
           </div>
         </div>

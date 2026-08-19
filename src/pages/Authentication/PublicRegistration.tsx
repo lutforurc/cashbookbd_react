@@ -397,7 +397,7 @@ const PublicRegistration: React.FC = () => {
               label={submitting ? 'Requesting OTP...' : 'Request OTP'}
               disabled={submitting}
               className="whitespace-nowrap text-center mr-0 p-2 w-full mt-6 flex items-center justify-center"
-              icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
+              icon={<FiSave className="text-lg ml-2 mr-2" />}
             />
 
             {/* <button

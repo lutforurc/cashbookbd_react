@@ -480,7 +480,7 @@ const TradingSalesImport = () => {
                   buttonLoading={false}
                   label="Download Format"
                   className="px-4 py-2"
-                  icon={<FiDownload className="text-white" />}
+                  icon={<FiDownload className="" />}
                 />
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded bg-primary px-3 py-2 text-sm font-medium text-white">
                   <FiUpload />
@@ -497,7 +497,7 @@ const TradingSalesImport = () => {
                   buttonLoading={false}
                   label={showPasteBox ? 'Hide Paste Box' : 'Paste Rows'}
                   className="px-4 py-2"
-                  icon={<FiEdit2 className="text-white" />}
+                  icon={<FiEdit2 className="" />}
                 />
               </div>
               <div className="mb-3 overflow-x-auto rounded border border-stroke dark:border-form-strokedark">
@@ -556,7 +556,7 @@ const TradingSalesImport = () => {
                   buttonLoading={isPreviewLoading}
                   label={isPreviewLoading ? 'Checking...' : 'Check with Software'}
                   className="py-2"
-                  icon={<FiSearch className="text-white" />}
+                  icon={<FiSearch className="" />}
                 />
                 <ButtonLoading
                   onClick={() => {
@@ -566,7 +566,7 @@ const TradingSalesImport = () => {
                   buttonLoading={false}
                   label="Reset"
                   className="py-2"
-                  icon={<FiRefreshCcw className="text-white" />}
+                  icon={<FiRefreshCcw className="" />}
                 />
               </div>
             </div>
@@ -671,7 +671,7 @@ const TradingSalesImport = () => {
                     buttonLoading={false}
                     label="Back"
                     className="px-5 py-2"
-                    icon={<FiArrowLeft className="text-white" />}
+                    icon={<FiArrowLeft className="" />}
                   />
                 )}
                 <ButtonLoading
@@ -679,7 +679,7 @@ const TradingSalesImport = () => {
                   buttonLoading={isSaveLoading}
                   label={isSaveLoading ? 'Saving...' : 'Save Invoices'}
                   className="px-5 py-2"
-                  icon={<FiCheck className="text-white" />}
+                  icon={<FiCheck className="" />}
                   disabled={!preview || isSaveLoading}
                 />
               </div>

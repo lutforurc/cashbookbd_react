@@ -812,7 +812,7 @@ const OrderWithProduct = ({
                         buttonLoading={buttonLoading}
                         label="Apply"
                         className="h-10 min-w-[92px] bg-meta-4 px-4 hover:bg-graydark focus:bg-graydark"
-                        icon={<FiCheckSquare className="text-white text-base ml-0 mr-0" />}
+                        icon={<FiCheckSquare className="text-base ml-0 mr-0" />}
                       />
                       <button
                         type="button"

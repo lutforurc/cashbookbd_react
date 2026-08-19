@@ -674,7 +674,7 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
             label="Cancel"
             disabled={saving}
             className="h-9 whitespace-nowrap bg-slate-500 hover:bg-slate-600 dark:bg-gray-500 dark:hover:bg-gray-600"
-            icon={<FiX className="mr-2 text-lg text-white" />}
+            icon={<FiX className="mr-2 text-lg" />}
           />
           <ButtonLoading
             onClick={submit}
@@ -1056,7 +1056,7 @@ export default function MyTasks() {
               label="New Task"
               variant="primary"
               className="mr-1 h-9 whitespace-nowrap"
-              icon={<FiPlus className="mr-2 text-lg text-white" />}
+              icon={<FiPlus className="mr-2 text-lg" />}
             />
 
             {FILTERS.map((option) => (
@@ -1109,7 +1109,7 @@ export default function MyTasks() {
               label="Search"
               buttonLoading={refreshing}
               className="h-9 whitespace-nowrap"
-              icon={<FiSearch className="mr-2 text-base text-white" />}
+              icon={<FiSearch className="mr-2 text-base" />}
             />
 
             {/* Only worth the room once there is something to come back from. */}

@@ -560,7 +560,7 @@ console.log('====================================');
             buttonLoading={buttonLoading}
             label="Save"
             className="whitespace-nowrap mr-2 py-1.5"
-            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
         )}
         <Link to="/product/product-list" className="text-nowrap py-1.5">

@@ -615,7 +615,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                     buttonLoading={false}
                     label=""
                     className="whitespace-nowrap bg-transparent! text-center mr-0 py-2 absolute -right-5 top-6"
-                    icon={<FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />}
+                    icon={<FiSearch className="text-black-2 text-lg ml-2 mr-2" />}
                   />
                 </div>
               )}
@@ -679,7 +679,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   buttonLoading={false}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -688,7 +688,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   buttonLoading={false}
                   label="Add New"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -708,7 +708,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   buttonLoading={false}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -716,7 +716,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? "Saving..." : "Save"}
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg ml-2 mr-2" />}
                 />
               )}
 
@@ -725,7 +725,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                 buttonLoading={false}
                 label="Reset"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiRefreshCcw className="text-white text-lg ml-2  mr-2" />}
+                icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
               />
 
               <Link to="/dashboard" className="text-nowrap justify-center mr-0">

@@ -102,7 +102,7 @@ const ResellerDashboard: React.FC = () => {
             onClick={() => dispatch(fetchResellerDashboardData())}
             buttonLoading={loading}
             disabled={loading}
-            icon={<FiRefreshCw className="text-white" />}
+            icon={<FiRefreshCw className="" />}
             label={loading ? 'Refreshing...' : 'Refresh'}
             className="h-10 w-34 p-2"
           />

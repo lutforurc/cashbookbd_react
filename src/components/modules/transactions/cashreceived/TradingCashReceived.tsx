@@ -419,7 +419,7 @@ const TradingCashReceived = () => {
                         buttonLoading={buttonLoading}
                         label=" "
                         className="-ml-px h-8.5 w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                        icon={<FiSearch className="text-white text-lg ml-2" />}
+                        icon={<FiSearch className="text-lg ml-2" />}
                       />
                     </>
                   )}
@@ -517,7 +517,7 @@ const TradingCashReceived = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -537,7 +537,7 @@ const TradingCashReceived = () => {
                   buttonLoading={buttonLoading}
                   label="Add New"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
                 />
               )}
 
@@ -547,7 +547,7 @@ const TradingCashReceived = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -555,7 +555,7 @@ const TradingCashReceived = () => {
                   buttonLoading={buttonLoading}
                   label="Save"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiSave className="text-lg ml-2 mr-2" />}
                 />
               )}
               <ButtonLoading

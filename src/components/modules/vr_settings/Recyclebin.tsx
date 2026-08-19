@@ -280,7 +280,7 @@ const Recyclebin = () => {
             buttonLoading={buttonLoading}
             label="Search"
             className="whitespace-nowrap"
-            icon={<FiSearch className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiSearch className="text-lg ml-2 mr-2" />}
           />
         </div>
       </div>

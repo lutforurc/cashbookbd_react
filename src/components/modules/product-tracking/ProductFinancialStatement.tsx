@@ -199,7 +199,7 @@ const ProductFinancialStatement = () => {
             buttonLoading={loading}
             label="Apply"
             className="h-10 whitespace-nowrap"
-            icon={<FiSearch className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiSearch className="text-lg ml-2 mr-2" />}
           />
           {data ? (
             <ButtonLoading
@@ -207,7 +207,7 @@ const ProductFinancialStatement = () => {
               buttonLoading={false}
               label="Print"
               className="h-10 whitespace-nowrap"
-              icon={<FiPrinter className="text-white text-lg ml-2 mr-2" />}
+              icon={<FiPrinter className="text-lg ml-2 mr-2" />}
             />
           ) : null}
         </div>

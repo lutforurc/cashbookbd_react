@@ -944,7 +944,7 @@ const SalarySheetUpdate = (user: any) => {
             buttonLoading={addEmployeeLoading}
             disabled={addEmployeeLoading || !selectedEmployeeId}
             label="Add Employee"
-            icon={<FiPlus className="mr-1 dark:text-white font-bold" />}
+            icon={<FiPlus className="mr-1 font-bold" />}
             className="whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 px-5 py-1 h-9"
           />
           <ButtonLoading

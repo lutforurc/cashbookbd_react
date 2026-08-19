@@ -473,7 +473,7 @@ export default function UnitSalePaymentList() {
           buttonLoading={false}
           label="Search"
           className="whitespace-nowrap text-center mr-0  h-8.5"
-          icon={<FiSearch className="text-white text-lg ml-2 mr-2" />}
+          icon={<FiSearch className="text-lg ml-2 mr-2" />}
         />
 
         <ButtonLoading
@@ -481,7 +481,7 @@ export default function UnitSalePaymentList() {
           buttonLoading={false}
           label="Reset"
           className="whitespace-nowrap text-center mr-0  h-8.5"
-          icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
+          icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
         />
 
 
@@ -491,7 +491,7 @@ export default function UnitSalePaymentList() {
             buttonLoading={false}
             label="Add New"
             className="whitespace-nowrap text-center mr-0  h-8.5 w-full"
-            icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiPlus className="text-lg ml-2 mr-2" />}
           />
 
           <ButtonLoading
@@ -499,7 +499,7 @@ export default function UnitSalePaymentList() {
             buttonLoading={false}
             label="Home"
             className="whitespace-nowrap text-center mr-0  h-8.5 w-full"
-            icon={<FiArrowLeft className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
           />
       
       </div>

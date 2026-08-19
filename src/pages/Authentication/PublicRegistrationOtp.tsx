@@ -270,7 +270,7 @@ const PublicRegistrationOtp: React.FC = () => {
               label={submitting ? 'Verifying...' : 'Verify OTP'}
               disabled={submitting}
               className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center bg-primary hover:bg-primary focus:bg-primary disabled:cursor-not-allowed disabled:opacity-60"
-              icon={<FiSend className="text-white text-lg ml-2 mr-2" />}
+              icon={<FiSend className="text-lg ml-2 mr-2" />}
             />
           </form>
 

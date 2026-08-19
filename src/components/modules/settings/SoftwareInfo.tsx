@@ -162,7 +162,7 @@ const SoftwareInfo = () => {
           <ButtonLoading
             buttonLoading={saving}
             label="Update"
-            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg ml-2 mr-2" />}
             type="submit"
             className="whitespace-nowrap py-1.5"
           />

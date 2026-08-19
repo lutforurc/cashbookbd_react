@@ -155,7 +155,7 @@ const ChangeVoucherType = () => {
             disabled={saveButtonLoading}
             label="Change"
             className="whitespace-nowrap text-center mr-0 h-8"
-            icon={<FaArrowsTurnToDots className="text-white text-lg ml-2 mr-2" />}
+            icon={<FaArrowsTurnToDots className="text-lg ml-2 mr-2" />}
           />
           <Link to="/admin/dayclose" className="text-nowrap justify-center mr-0 h-8">
             <FaArrowLeft className="text-white text-lg ml-2 mr-2" />

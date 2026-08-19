@@ -394,7 +394,7 @@ const PaymentSubmit: React.FC = () => {
             title={canSubmit ? undefined : 'Select a paid plan to submit a payment'}
             label="Submit"
             className="w-full whitespace-nowrap p-2 text-center disabled:cursor-not-allowed disabled:opacity-50"
-            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
           <ButtonLoading
             type="button"
@@ -402,7 +402,7 @@ const PaymentSubmit: React.FC = () => {
             buttonLoading={false}
             label="Plans"
             className="w-full whitespace-nowrap p-2 text-center"
-            icon={<FiList className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiList className="text-lg ml-2 mr-2" />}
           />
           <ButtonLoading
             type="button"
@@ -410,7 +410,7 @@ const PaymentSubmit: React.FC = () => {
             buttonLoading={false}
             label="History"
             className="w-full whitespace-nowrap p-2 text-center"
-            icon={<FiClock className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiClock className="text-lg ml-2 mr-2" />}
           />
           <button
             type="button"

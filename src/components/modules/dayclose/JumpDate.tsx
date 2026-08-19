@@ -124,7 +124,7 @@ const JumpDate = () => {
                         buttonLoading={saveButtonLoading}
                         label="Update"
                         className="whitespace-nowrap text-center mr-0 h-8"
-                        icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
+                        icon={<FiSave className="text-lg ml-2 mr-2" />}
                         disabled={saveButtonLoading}
                     />
                    

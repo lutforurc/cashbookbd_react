@@ -1266,7 +1266,7 @@ const TradingCombinedEntry = () => {
                 buttonLoading={saveButtonLoading}
                 label={saveButtonLoading ? 'Saving...' : editingCombinedNumber ? 'Update' : 'Save'}
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg ml-2 mr-2" />}
                 disabled={saveButtonLoading}
               />
               <ButtonLoading
@@ -1274,7 +1274,7 @@ const TradingCombinedEntry = () => {
                 buttonLoading={buttonLoading}
                 label="Reset"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
               />
               <Link to="/dashboard" className="text-nowrap justify-center mr-0">
                 <FiHome className="text-white text-lg ml-2 mr-2" />

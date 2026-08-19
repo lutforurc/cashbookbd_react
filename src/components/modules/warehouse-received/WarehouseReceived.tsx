@@ -625,7 +625,7 @@ const WarehouseReceived = () => {
             buttonLoading={false}
             label="Update Item"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FiEdit2 className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
           />
         ) : (
           <ButtonLoading
@@ -633,7 +633,7 @@ const WarehouseReceived = () => {
             buttonLoading={false}
             label="Add Item"
             className="whitespace-nowrap text-center mr-0 py-2"
-            icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiPlus className="text-lg ml-2 mr-2" />}
           />
         )}
         <ButtonLoading
@@ -641,21 +641,21 @@ const WarehouseReceived = () => {
           buttonLoading={false}
           label="Clear Item"
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
+          icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
         />
         <ButtonLoading
           onClick={handleSave}
           buttonLoading={saveButtonLoading}
           label={saveButtonLoading ? 'Saving...' : 'Save'}
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+          icon={<FiSave className="text-lg ml-2 mr-2" />}
         />
         <ButtonLoading
           onClick={resetForm}
           buttonLoading={false}
           label="Reset All"
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
+          icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
         />
       </div>
 

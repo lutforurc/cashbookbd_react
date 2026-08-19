@@ -201,7 +201,7 @@ const AreaAdd = (user: any) => {
             buttonLoading={buttonLoading}
             label="Update"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
+            icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
         ) : (
           <ButtonLoading
@@ -209,7 +209,7 @@ const AreaAdd = (user: any) => {
             buttonLoading={buttonLoading}
             label="Save"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
         )}
         <ButtonLoading
@@ -217,14 +217,14 @@ const AreaAdd = (user: any) => {
           buttonLoading={false}
           label="Reset"
           className="whitespace-nowrap text-center mr-0 p-2"
-          icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
+          icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
         />
         <ButtonLoading
           onClick={handleBack}
           buttonLoading={false}
           label="Back"
           className="whitespace-nowrap text-center mr-0 p-2"
-          icon={<FaArrowLeft className="text-white text-lg ml-2 mr-2" />}
+          icon={<FaArrowLeft className="text-lg ml-2 mr-2" />}
         />
       </div>
     </div>

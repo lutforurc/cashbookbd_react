@@ -278,7 +278,7 @@ const Category = () => {
                 disabled={editLoading}
                 label="Update"
                 className="h-9 px-6"
-                icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
               />
             </div>
           </div>

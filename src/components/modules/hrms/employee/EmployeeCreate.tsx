@@ -509,7 +509,7 @@ const EmployeeCreate = ({ user }: any) => {
             disabled={saveLoading}
             label="Save"
             className="whitespace-nowrap text-center mr-0 h-8"
-            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
           <Link to="/dashboard" className="h-8">
             <FiHome className="mr-2" /> Home

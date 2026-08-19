@@ -130,7 +130,7 @@ const InstallmentDelete = () => {
                 onClick={() => setShowConfirm(false)}
                 label="Cancel"
                 className="whitespace-nowrap h-8 bg-gray-600 hover:bg-gray-700"
-                icon={<FiX className="text-white text-lg mr-2" />}
+                icon={<FiX className="text-lg mr-2" />}
                 disabled={saveButtonLoading} // Cancel button disabled while loading
               />
 

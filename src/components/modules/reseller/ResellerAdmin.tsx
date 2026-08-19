@@ -332,7 +332,7 @@ const ResellerAdmin: React.FC = () => {
             onClick={() => dispatch(fetchResellerAdminData())}
             buttonLoading={loading}
             disabled={loading}
-            icon={<FiRefreshCw className="text-white" />}
+            icon={<FiRefreshCw className="" />}
             label={loading ? 'Refreshing...' : 'Refresh'}
             className="h-10 w-34 p-2"
           />
@@ -405,7 +405,7 @@ const ResellerAdmin: React.FC = () => {
                 type="submit"
                 buttonLoading={saving}
                 disabled={saving}
-                icon={<FiSave className="text-white" />}
+                icon={<FiSave className="" />}
                 label={saving ? 'Saving...' : 'Save'}
                 className="h-10 w-28 p-2"
               />
@@ -462,7 +462,7 @@ const ResellerAdmin: React.FC = () => {
               onClick={assignCompany}
               buttonLoading={saving}
               disabled={saving}
-              icon={<FiUsers className="text-white" />}
+              icon={<FiUsers className="" />}
               label="Assign"
               className="h-10 w-30 p-2"
             />
@@ -511,7 +511,7 @@ const ResellerAdmin: React.FC = () => {
               type="submit"
               buttonLoading={saving}
               disabled={saving}
-              icon={<FiCreditCard className="text-white" />}
+              icon={<FiCreditCard className="" />}
               label={saving ? 'Paying...' : 'Pay'}
               className="h-10 w-28 p-2"
             />

@@ -982,7 +982,7 @@ const ConstructionBusinessPurchase = () => {
                   label="Update"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -992,7 +992,7 @@ const ConstructionBusinessPurchase = () => {
                   label="Add New"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -1012,7 +1012,7 @@ const ConstructionBusinessPurchase = () => {
                   label="Update"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -1021,7 +1021,7 @@ const ConstructionBusinessPurchase = () => {
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg ml-2 mr-2" />}
                   disabled={saveButtonLoading}
                 />
               )} */}
@@ -1033,7 +1033,7 @@ const ConstructionBusinessPurchase = () => {
                   label="Update"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -1042,7 +1042,7 @@ const ConstructionBusinessPurchase = () => {
                   label="Save"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg ml-2 mr-2" />}
                 />
               )}
 
@@ -1063,7 +1063,7 @@ const ConstructionBusinessPurchase = () => {
                 label="Print"
                 responsiveLabel
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiPrinter className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiPrinter className="text-lg ml-2 mr-2" />}
               />
 
               <Link to="/dashboard" className="text-nowrap justify-center mr-0">

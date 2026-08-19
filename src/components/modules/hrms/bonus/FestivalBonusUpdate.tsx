@@ -503,7 +503,7 @@ const FestivalBonusUpdate = ({ user }: any) => {
             buttonLoading={addEmployeeLoading}
             disabled={addEmployeeLoading || !selectedEmployeeId}
             label="Add Employee"
-            icon={<FiPlus className="mr-1 font-bold dark:text-white" />}
+            icon={<FiPlus className="mr-1 font-bold" />}
             className="h-9 whitespace-nowrap bg-emerald-600 px-5 py-1 hover:bg-emerald-700"
           />
           <ButtonLoading

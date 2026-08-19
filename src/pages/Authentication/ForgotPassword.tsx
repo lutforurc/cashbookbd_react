@@ -296,7 +296,7 @@ const ForgotPassword: React.FC = () => {
                 label={requestingOtp ? 'Sending OTP...' : 'Send OTP'}
                 disabled={requestingOtp}
                 className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center bg-primary hover:bg-primary focus:bg-primary disabled:cursor-not-allowed disabled:opacity-60"
-                icon={<FiSend className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiSend className="text-lg ml-2 mr-2" />}
               />
             </form>
           )}
@@ -324,7 +324,7 @@ const ForgotPassword: React.FC = () => {
                 label={verifyingOtp ? 'Verifying...' : 'Verify OTP'}
                 disabled={verifyingOtp}
                 className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center bg-primary hover:bg-primary focus:bg-primary disabled:cursor-not-allowed disabled:opacity-60"
-                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg ml-2 mr-2" />}
               />
 
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -402,7 +402,7 @@ const ForgotPassword: React.FC = () => {
                 label={resettingPassword ? 'Updating Password...' : 'Update Password'}
                 disabled={resettingPassword}
                 className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center bg-primary hover:bg-primary focus:bg-primary disabled:cursor-not-allowed disabled:opacity-60"
-                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg ml-2 mr-2" />}
               />
             </form>
           )}

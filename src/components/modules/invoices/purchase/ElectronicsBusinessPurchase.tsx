@@ -896,7 +896,7 @@ const ElectronicsBusinessPurchase = () => {
                 buttonLoading={buttonLoading}
                 label="Update"
                 className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
-                icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
+                icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
               />
             ) : (
               <ButtonLoading
@@ -905,7 +905,7 @@ const ElectronicsBusinessPurchase = () => {
                 buttonLoading={buttonLoading}
                 label="Add New"
                 className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
-                icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
+                icon={<FiPlus className="text-lg ml-2 mr-2" />}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -924,7 +924,7 @@ const ElectronicsBusinessPurchase = () => {
                 buttonLoading={buttonLoading}
                 label="Update"
                 className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
-                icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
+                icon={<FiEdit className="text-lg ml-2 mr-2" />}
               />
             ) : (
               <ButtonLoading
@@ -932,7 +932,7 @@ const ElectronicsBusinessPurchase = () => {
                 buttonLoading={saveButtonLoading}
                 label="Save"
                 className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
-                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg ml-2 mr-2" />}
                 disabled={saveButtonLoading}
               />
             )}
@@ -942,7 +942,7 @@ const ElectronicsBusinessPurchase = () => {
               buttonLoading={buttonLoading}
               label="Reset"
               className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
-              icon={<FiRefreshCcw className="text-white text-lg ml-2  mr-2" />}
+              icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
             />
             <Link to="/dashboard" className="text-nowrap justify-center mr-0 h-9 py-1.5">
               <FiHome className="text-white text-lg ml-2  mr-2" />

@@ -302,7 +302,7 @@ const SubscriptionAdmin: React.FC = () => {
               type="submit"
               buttonLoading={updatingAdminPayment}
               disabled={updatingAdminPayment}
-              icon={<FiCheckSquare className="text-white" />}
+              icon={<FiCheckSquare className="" />}
               label={updatingAdminPayment ? 'Saving...' : 'Assign Subscription'}
               className="w-50 p-2 h-10"
             />
@@ -399,7 +399,7 @@ const SubscriptionAdmin: React.FC = () => {
                       buttonLoading={false}
                       label="Approve"
                       className="w-30 p-2"
-                      icon={<FiCheck className="mr-2 text-white" />}
+                      icon={<FiCheck className="mr-2" />}
                     />
 
                     <button

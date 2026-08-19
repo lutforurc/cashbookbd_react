@@ -591,7 +591,7 @@ const RequisitionForm = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -600,7 +600,7 @@ const RequisitionForm = () => {
                   buttonLoading={buttonLoading}
                   label="Add New"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -619,7 +619,7 @@ const RequisitionForm = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -627,7 +627,7 @@ const RequisitionForm = () => {
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg ml-2 mr-2" />}
                   disabled={saveButtonLoading}
                 />
               )}

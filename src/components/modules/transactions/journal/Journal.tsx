@@ -263,7 +263,7 @@ const Journal = () => {
                                         buttonLoading={journal?.loading}
                                         label={journal?.loading ? 'Saving...' : 'Save'}
                                         className="whitespace-nowrap text-center mr-0 h-9 w-full"
-                                        icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                                        icon={<FiSave className="text-lg ml-2 mr-2" />}
                                     />                                    
                                     <Link to="/dashboard" className="text-nowrap justify-center mr-0 h-9 w-full">
                                         <FiHome className="text-white text-lg ml-2  mr-2" />

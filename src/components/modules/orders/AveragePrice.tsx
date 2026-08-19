@@ -147,7 +147,7 @@ const AveragePrice = (user: any) => {
                             buttonLoading={buttonLoading}
                             label="Run"
                             className="mt-0 md:mt-2 w-full h-10"
-                            icon={<FiCheckSquare className="text-white text-lg ml-2" />}
+                            icon={<FiCheckSquare className="text-lg ml-2" />}
                         />
                     </div>
                 </div>
