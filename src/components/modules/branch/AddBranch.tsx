@@ -14,6 +14,7 @@ import {
   status,
 } from '../../utils/fields/DataConstant';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import StepRail from '../../utils/others/StepRail';
 import { FiArrowLeft, FiArrowRight, FiCheck, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
@@ -837,44 +838,7 @@ const AddBranch = () => {
 
         <>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
-            {/* Step rail: a scrollable strip on phones, a sticky column from md up. */}
-            <nav className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 md:mx-0 md:sticky md:top-24 md:flex-col md:self-start md:overflow-visible md:px-0 md:pb-0">
-              {steps.map((step, index) => {
-                const isActive = index === currentStep;
-                const isCompleted = index < currentStep;
-
-                return (
-                  <Button
-                    key={step}
-                    type="button"
-                    onClick={() => setCurrentStep(index)}
-                    className={`flex w-52 shrink-0 items-center gap-3 rounded border px-3 py-2.5 text-left transition md:w-full ${isActive
-                      ? 'border-blue-600 bg-blue-50 text-gray-900 dark:bg-blue-500/10 dark:text-white'
-                      : isCompleted
-                        ? 'border-green-500 text-green-700 dark:text-green-400'
-                        : 'border-gray-300 text-gray-600 hover:border-gray-400 dark:border-gray-700 dark:bg-transparent dark:text-gray-300'
-                      }`}
-                  >
-                    <span
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${isActive
-                        ? 'border-blue-600 bg-blue-600 text-white'
-                        : isCompleted
-                          ? 'border-green-500 text-green-600 dark:text-green-400'
-                          : 'border-gray-300 text-gray-500 dark:border-gray-600 dark:text-gray-400'
-                        }`}
-                    >
-                      {isCompleted ? <FiCheck /> : index + 1}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-[11px] font-semibold uppercase tracking-wide opacity-70">
-                        Step {index + 1}
-                      </span>
-                      <span className="block text-sm font-medium leading-tight">{step}</span>
-                    </span>
-                  </Button>
-                );
-              })}
-            </nav>
+            <StepRail steps={steps} current={currentStep} onSelect={setCurrentStep} />
 
             {/* Viewport-tall column so the action bar lands in the same spot on
                 every step, however short that step's content is. */}
