@@ -469,7 +469,7 @@ const SalesLedger = (user: any) => {
         const detailText = notes || remarks;
 
         return (
-          <div className="min-w-52 break-words align-top">
+          <div className="min-w-52 wrap-break-word align-top">
             {coaName && (
               <div className="text-sm mt-1 font-semibold">{coaName}</div>
             )}
@@ -807,7 +807,7 @@ const SalesLedger = (user: any) => {
               <div
                 className={
                   useFilterMenuEnabled
-                    ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,360px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                    ? 'absolute left-0 top-full z-1000 mt-2 w-[min(92vw,360px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
                     : 'w-full'
                 }
               >
@@ -920,7 +920,7 @@ const SalesLedger = (user: any) => {
                           value={rowsPerPage.toString()}
                           onChange={handleRowsPerPageChange}
                           type="text"
-                          className="font-medium text-sm h-9 !w-20 text-center"
+                          className="font-medium text-sm h-9 w-20! text-center"
                         />
                         <PrintFontInput
                           id="fontSizeInlineMd"
@@ -929,7 +929,7 @@ const SalesLedger = (user: any) => {
                           value={fontSize.toString()}
                           onChange={handleFontSizeChange}
                           type="text"
-                          className="font-medium text-sm h-9 !w-20 text-center"
+                          className="font-medium text-sm h-9 w-20! text-center"
                         />
                         <PrintButton
                           onClick={handlePrint}
@@ -971,7 +971,7 @@ const SalesLedger = (user: any) => {
                           value={rowsPerPage.toString()}
                           onChange={handleRowsPerPageChange}
                           type="text"
-                          className="font-medium text-sm h-9 !w-14 text-center"
+                          className="font-medium text-sm h-9 w-14! text-center"
                         />
                         <PrintFontInput
                           id="fontSizeInline"
@@ -980,7 +980,7 @@ const SalesLedger = (user: any) => {
                           value={fontSize.toString()}
                           onChange={handleFontSizeChange}
                           type="text"
-                          className="font-medium text-sm h-9 !w-14 text-center"
+                          className="font-medium text-sm h-9 w-14! text-center"
                         />
                         {/* Icon only, for want of room beside Apply and Reset --
                             hence the tooltip, which is all the name it has. */}
@@ -1042,7 +1042,7 @@ const SalesLedger = (user: any) => {
                           value={rowsPerPage.toString()}
                           onChange={handleRowsPerPageChange}
                           type="text"
-                          className="font-medium text-sm h-10 !w-20 text-center"
+                          className="font-medium text-sm h-10 w-20! text-center"
                         />
 
                         <PrintFontInput
@@ -1052,7 +1052,7 @@ const SalesLedger = (user: any) => {
                           value={fontSize.toString()}
                           onChange={handleFontSizeChange}
                           type="text"
-                          className="font-medium text-sm h-10 !w-20 text-center"
+                          className="font-medium text-sm h-10 w-20! text-center"
                         />
 
                         <PrintButton
@@ -1092,7 +1092,7 @@ const SalesLedger = (user: any) => {
                 value={rowsPerPage.toString()}
                 onChange={handleRowsPerPageChange}
                 type="text"
-                className="font-medium text-sm h-10 !w-20 text-center"
+                className="font-medium text-sm h-10 w-20! text-center"
               />
 
               <PrintFontInput
@@ -1102,7 +1102,7 @@ const SalesLedger = (user: any) => {
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
                 type="text"
-                className="font-medium text-sm h-10 !w-20 text-center"
+                className="font-medium text-sm h-10 w-20! text-center"
               />
 
               <PrintButton

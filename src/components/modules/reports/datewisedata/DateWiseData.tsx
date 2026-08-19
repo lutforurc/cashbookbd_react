@@ -286,7 +286,7 @@ const DateWiseData = (user: any) => {
               <div
                 className={
                   useFilterMenuEnabled
-                    ? "absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800"
+                    ? "absolute left-0 top-full z-1000 mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800"
                     : "w-full"
                 }
               >
@@ -394,7 +394,7 @@ const DateWiseData = (user: any) => {
               value={perPage.toString()}
               onChange={(e) => setPerPage(Number(e.target.value))}
               type="text"
-              className="!w-20 text-sm h-10 text-center"
+              className="w-20! text-sm h-10 text-center"
             />
             <PrintFontInput
               id="fontSize"
@@ -403,7 +403,7 @@ const DateWiseData = (user: any) => {
               value={fontSize.toString()}
               onChange={(e) => setFontSize(Number(e.target.value))}
               type="text"
-              className="!w-20 text-sm h-10 text-center"
+              className="w-20! text-sm h-10 text-center"
             />
             <PrintButton
               onClick={handlePrint}

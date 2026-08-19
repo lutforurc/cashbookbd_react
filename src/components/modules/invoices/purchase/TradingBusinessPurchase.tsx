@@ -1228,7 +1228,7 @@ const TradingBusinessPurchase = () => {
                         onClick={searchInvoice}
                         buttonLoading={buttonLoading}
                         label=""
-                        className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 -mt-6 absolute -right-2 top-6 background-red-500 !pr-2 !pl-2"
+                        className="whitespace-nowrap bg-transparent! text-center mr-0 py-2 -mt-6 absolute -right-2 top-6 background-red-500 pr-2! pl-2!"
                         icon={
                           <FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />
                         }

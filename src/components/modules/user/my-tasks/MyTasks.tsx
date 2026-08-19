@@ -358,7 +358,7 @@ const TodoCard = memo(({
 
   return (
     <article
-      className={`task-note group relative flex h-full min-h-[5.5rem] flex-col overflow-hidden rounded-sm px-3.5 pb-2.5 pt-4 ${
+      className={`task-note group relative flex h-full min-h-22 flex-col overflow-hidden rounded-sm px-3.5 pb-2.5 pt-4 ${
         isDone ? 'saturate-50' : ''
       }`}
       style={notePaper(todo.color)}

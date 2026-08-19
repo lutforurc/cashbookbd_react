@@ -186,7 +186,7 @@ const ProjectsList = ({ user }: any) => {
               const value = e.target.value;
               setBranchId(value === "" ? "" : Number(value));
             }}
-            className="!w-64 font-medium text-sm p-2 mr-2 "
+            className="w-64! font-medium text-sm p-2 mr-2 "
             branchDdl={dropdownData}
           />
         </div>

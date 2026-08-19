@@ -258,7 +258,7 @@ const PublicRegistrationOtp: React.FC = () => {
               renderInput={(props) => (
                 <input
                   {...props}
-                  className={`${FIELD_BASE} !h-10 !w-10 text-center text-xl font-semibold transition-all duration-200 mx-0 shadow-sm sm:!h-12 sm:!w-12`}
+                  className={`${FIELD_BASE} h-10! w-10! text-center text-xl font-semibold transition-all duration-200 mx-0 shadow-sm sm:h-12! sm:w-12!`}
                 />
               )}
             />

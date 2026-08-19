@@ -170,7 +170,7 @@ const SmsTemplateList = () => {
       key: 'body',
       header: 'Message',
       render: (row: any) => (
-        <div className="max-w-xl whitespace-pre-wrap break-words text-sm leading-6">
+        <div className="max-w-xl whitespace-pre-wrap wrap-break-word text-sm leading-6">
           {row.body || '-'}
         </div>
       ),

@@ -555,14 +555,14 @@ const FlatLayout = () => {
     const statusClass = STATUS_MAP[Number(unit.status)] ?? FALLBACK_STATUS_CLASS;
     const typeClass = isParkingUnit(unit)
       ? "before:absolute before:inset-0 before:bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.16)_0,rgba(255,255,255,0.16)_5px,transparent_5px,transparent_16px)] before:opacity-25 after:absolute after:inset-x-0 after:bottom-0 after:h-1 after:bg-white/35"
-      : "before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:bg-gradient-to-b before:from-white/20 before:to-transparent";
+      : "before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:bg-linear-to-b before:from-white/20 before:to-transparent";
 
     return `${statusClass} ${typeClass}`;
   };
 
   const renderUnitTooltip = (unit: UnitItem) => (
     <div
-      className="pointer-events-none absolute z-[9999] hidden group-hover:block
+      className="pointer-events-none absolute z-9999 hidden group-hover:block
       bottom-full left-1/2 -translate-x-1/2 mb-2
       bg-gray-950 text-gray-100 dark:bg-gray-100 dark:text-gray-900
       text-xs rounded-md px-3 py-2 shadow-xl ring-1 ring-black/10 min-w-max text-left"
@@ -657,7 +657,7 @@ const FlatLayout = () => {
                         type="button"
                         key={unit.id ?? `${floor.floor_no}-${flat.flat_name}-${unit.unit_no}`}
                         onClick={(e) => handleUnitClick(unit, e)}
-                        className={`relative group isolate min-h-[3.25rem] overflow-hidden rounded-md border px-3 py-2.5 text-center text-sm font-semibold text-white shadow-lg ring-1 transition-all hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 ${
+                        className={`relative group isolate min-h-13 overflow-hidden rounded-md border px-3 py-2.5 text-center text-sm font-semibold text-white shadow-lg ring-1 transition-all hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 ${
                           getUnitButtonClass(unit)
                         }`}
                       >
@@ -732,7 +732,7 @@ const FlatLayout = () => {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-wrap content-center gap-2.5 bg-gradient-to-b from-slate-300 to-slate-200 px-4 py-4 shadow-inner dark:from-slate-800/50 dark:to-slate-800/10">
+        <div className="flex flex-1 flex-wrap content-center gap-2.5 bg-linear-to-b from-slate-300 to-slate-200 px-4 py-4 shadow-inner dark:from-slate-800/50 dark:to-slate-800/10">
           {units.length ? (
             units.map((unit: UnitItem) => (
               <button
@@ -745,8 +745,8 @@ const FlatLayout = () => {
                 )}`}
               >
                 {/* window panes */}
-                <span className="pointer-events-none absolute left-1/2 top-1 bottom-1 z-[5] w-px -translate-x-1/2 bg-white/30" />
-                <span className="pointer-events-none absolute left-1.5 right-1.5 top-1/2 z-[5] h-px -translate-y-1/2 bg-white/30" />
+                <span className="pointer-events-none absolute left-1/2 top-1 bottom-1 z-5 w-px -translate-x-1/2 bg-white/30" />
+                <span className="pointer-events-none absolute left-1.5 right-1.5 top-1/2 z-5 h-px -translate-y-1/2 bg-white/30" />
                 <span className="relative z-10 block w-full truncate drop-shadow">
                   {unit.unit_no}
                 </span>
@@ -772,7 +772,7 @@ const FlatLayout = () => {
     const stackedFloors = [...floorsToShow].reverse();
 
     return (
-      <div className="overflow-x-auto rounded-xl bg-gradient-to-b from-sky-300 via-sky-100 to-emerald-100/80 p-4 sm:p-8 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+      <div className="overflow-x-auto rounded-xl bg-linear-to-b from-sky-300 via-sky-100 to-emerald-100/80 p-4 sm:p-8 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
         <div className="mx-auto w-full max-w-4xl">
           {/* Rooftop nameplate */}
           <div className="mx-auto mb-1 w-fit rounded-md bg-slate-800 px-4 py-1 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300 shadow-lg ring-1 ring-white/10">
@@ -780,7 +780,7 @@ const FlatLayout = () => {
           </div>
 
           {/* Roof */}
-          <div className="mx-auto h-4 w-[78%] rounded-t-2xl bg-gradient-to-b from-slate-500 to-slate-700 shadow-md dark:from-slate-600 dark:to-slate-800" />
+          <div className="mx-auto h-4 w-[78%] rounded-t-2xl bg-linear-to-b from-slate-500 to-slate-700 shadow-md dark:from-slate-600 dark:to-slate-800" />
           <div className="mx-auto mb-px h-3 w-[92%] rounded-t-sm bg-slate-600 shadow dark:bg-slate-800" />
 
           {/* Tower body */}
@@ -999,7 +999,7 @@ const FlatLayout = () => {
 
       {selectedUnit && (
         <div
-          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/45 px-4 py-6"
+          className="fixed inset-0 z-9998 flex items-center justify-center bg-black/45 px-4 py-6"
           role="dialog"
           aria-modal="true"
         >

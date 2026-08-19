@@ -275,7 +275,7 @@ const LowStockProducts = () => {
               setPage(1);
             }}
             value={categoryId}
-            className="w-full text-sm !h-9"
+            className="w-full text-sm h-9!"
             categoryDdl={categoryOptions}
           />
 
@@ -286,13 +286,13 @@ const LowStockProducts = () => {
               setPage(1);
             }}
             value={brandId}
-            className="w-full text-sm !h-9"
+            className="w-full text-sm h-9!"
             categoryDdl={brandOptions}
           />
 
           <SelectOption
             key={`per-page-${perPage}`}
-            className="!w-full h-9"
+            className="w-full! h-9"
             onChange={(e: any) => {
               const value = e.target.value === '' ? 0 : Number(e.target.value) || 10;
               setPerPage(value);
@@ -301,7 +301,7 @@ const LowStockProducts = () => {
           />
 
           <SearchInput
-            className="!w-full h-9"
+            className="w-full! h-9"
             search={search}
             setSearchValue={setSearchValue}
           />
@@ -327,7 +327,7 @@ const LowStockProducts = () => {
               value={printRowsPerPage}
               onChange={handlePrintRowsPerPageChange}
               type="number"
-              className="h-9 !w-16 text-center"
+              className="h-9 w-16! text-center"
             />
             <PrintFontInput
               id="low-stock-print-font"
@@ -337,7 +337,7 @@ const LowStockProducts = () => {
               value={printFontSize}
               onChange={handlePrintFontSizeChange}
               type="number"
-              className="h-9 !w-16 text-center"
+              className="h-9 w-16! text-center"
             />
             <PrintButton
               label="Print"

@@ -255,20 +255,20 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                             className="border border-gray-900 px-2 py-1 align-middle"
                           >
 	                            <div className="w-full max-w-4xl leading-normal">
-	                              <div className="leading-normal break-words whitespace-normal">
+	                              <div className="leading-normal wrap-break-word whitespace-normal">
 	                                <span className={`text-[${fs}px]`}>
 	                                  {getLedgerRowName(row)}
 	                                </span>
 	                              </div>
                               {row?.remarks != "-" && (
                                 <div
-                                  className={`text-[${fs}px] break-words whitespace-normal text-gray-700`}
+                                  className={`text-[${fs}px] wrap-break-word whitespace-normal text-gray-700`}
                                 >
                                   {row.remarks}
                                 </div>
                               )}
                               {showBranchName && row?.branch_name && (
-                                <div className={`text-[${fs}px] break-words whitespace-normal font-semibold`}>
+                                <div className={`text-[${fs}px] wrap-break-word whitespace-normal font-semibold`}>
                                   {row.branch_name}
                                 </div>
                               )}

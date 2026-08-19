@@ -453,7 +453,7 @@ const DateWiseInOut = ({ user }: any) => {
               value={String(rowsPerPage)}
               onChange={(event) => setRowsPerPage(Number(event.target.value) || 12)}
               type="text"
-              className="h-10 !w-22 text-center text-sm font-medium"
+              className="h-10 w-22! text-center text-sm font-medium"
             />
             <PrintFontInput
               id="dateWiseInOutFontSize"
@@ -462,7 +462,7 @@ const DateWiseInOut = ({ user }: any) => {
               value={String(fontSize)}
               onChange={(event) => setFontSize(Number(event.target.value) || 12)}
               type="text"
-              className="h-10 !w-22 text-center text-sm font-medium"
+              className="h-10 w-22! text-center text-sm font-medium"
             />
             <PrintButton
               onClick={handleMainPrint}

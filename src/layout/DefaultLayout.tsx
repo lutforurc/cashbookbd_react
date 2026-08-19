@@ -57,7 +57,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, us
 
           {/* <!-- ===== Main Content Start ===== --> */}
           <main>
-            {/* <div className="mx-auto max-w-screen-2xl p-4 2xl:p-6">  */}
+            {/* <div className="mx-auto max-w-(--breakpoint-2xl) p-4 2xl:p-6">  */}
             <div className="mx-auto max-w-screen-max-w-4xl p-4 2xl:p-6">
               <SubscriptionStatusBanner subscription={subscription.current} />
               <Outlet />

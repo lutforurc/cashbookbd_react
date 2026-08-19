@@ -174,7 +174,7 @@ const BankInformation = () => {
               selectedDate={endDate}
               setSelectedDate={setEndDate}
               setCurrentDate={setEndDate}
-              className="h-10 rounded-none !border !border-slate-600 bg-transparent px-3 text-sm font-bold dark:!border-[rgb(var(--c-gray-600))] dark:!bg-[rgb(var(--c-boxdark))]"
+              className="h-10 rounded-none border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
             />
           </div>
         </div>
@@ -203,7 +203,7 @@ const BankInformation = () => {
               value={String(rowsPerPage)}
               onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 12)}
               type="text"
-              className="h-10 !w-full rounded-none text-center text-sm font-bold"
+              className="h-10 w-full! rounded-none text-center text-sm font-bold"
             />
           </div>
           <div>
@@ -215,7 +215,7 @@ const BankInformation = () => {
               value={String(fontSize)}
               onChange={(event: any) => setFontSize(Number(event.target.value) || 12)}
               type="text"
-              className="h-10 !w-full rounded-none text-center text-sm font-bold"
+              className="h-10 w-full! rounded-none text-center text-sm font-bold"
             />
           </div>
           <PrintButton

@@ -445,7 +445,7 @@ const Ledger = (user: any) => {
       render: (row: any) => (
         <>
           <p>{getLedgerRowName(row)}</p>
-          <div className="text-sm text-gray-500 lg:max-w-150 break-words whitespace-normal block">
+          <div className="text-sm text-gray-500 lg:max-w-150 wrap-break-word whitespace-normal block">
             <span
               className={highlightLineClass(
                 matchHighlightRule(row.remarks === '-' ? '' : row.remarks, highlightRules),
@@ -456,13 +456,13 @@ const Ledger = (user: any) => {
           </div>
           {branchId === null && (
             <div
-              className={`text-sm font-bold lg:max-w-150 break-words whitespace-normal ${branchColorClass(row.branch_name)}`}
+              className={`text-sm font-bold lg:max-w-150 wrap-break-word whitespace-normal ${branchColorClass(row.branch_name)}`}
             >
               {row.branch_name}
             </div>
           )}
           {/* {branchId === null && (
-            <div className="text-sm dark:text-green-500 text-gray-950 font-bold lg:max-w-150 break-words whitespace-normal">
+            <div className="text-sm dark:text-green-500 text-gray-950 font-bold lg:max-w-150 wrap-break-word whitespace-normal">
               {row.branch_name}
             </div>
           )} */}
@@ -699,7 +699,7 @@ const Ledger = (user: any) => {
                   value={perPage.toString()}
                   onChange={handlePerPageChange}
                   type='text'
-                  className="font-medium text-sm h-10 !w-20 text-center"
+                  className="font-medium text-sm h-10 w-20! text-center"
                 />
                 <PrintFontInput
                   id="fontSizeInline"
@@ -708,7 +708,7 @@ const Ledger = (user: any) => {
                   value={fontSize.toString()}
                   onChange={handleFontSizeChange}
                   type='text'
-                  className="font-medium text-sm h-10 !w-20 text-center"
+                  className="font-medium text-sm h-10 w-20! text-center"
                 />
                 <PrintButton
                   onClick={handlePrint}
@@ -734,7 +734,7 @@ const Ledger = (user: any) => {
                 value={perPage.toString()}
                 onChange={handlePerPageChange}
                 type='text'
-                className="font-medium text-sm h-10 !w-20 text-center"
+                className="font-medium text-sm h-10 w-20! text-center"
               />
               <PrintFontInput
                 id="fontSize"
@@ -743,7 +743,7 @@ const Ledger = (user: any) => {
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
                 type='text'
-                className="font-medium text-sm h-10 !w-20 text-center"
+                className="font-medium text-sm h-10 w-20! text-center"
               />
               <PrintButton
                 onClick={handlePrint}
@@ -778,7 +778,7 @@ const Ledger = (user: any) => {
                   value={perPage.toString()}
                   onChange={handlePerPageChange}
                   type='text'
-                  className="font-medium text-sm h-10 !w-20 text-center"
+                  className="font-medium text-sm h-10 w-20! text-center"
                 />
                 <PrintFontInput
                   id="fontSize"
@@ -787,7 +787,7 @@ const Ledger = (user: any) => {
                   value={fontSize.toString()}
                   onChange={handleFontSizeChange}
                   type='text'
-                  className="font-medium text-sm h-10 !w-20 text-center"
+                  className="font-medium text-sm h-10 w-20! text-center"
                 />
                 <PrintButton
                   onClick={handlePrint}

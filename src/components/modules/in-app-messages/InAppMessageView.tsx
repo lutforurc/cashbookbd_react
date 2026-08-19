@@ -93,13 +93,13 @@ const InAppMessageView: React.FC<Props> = ({
   if (layout === 'BANNER_TOP' || layout === 'BANNER_BOTTOM') {
     const position = preview
       ? 'relative'
-      : `fixed left-0 right-0 z-[9999] ${layout === 'BANNER_TOP' ? 'top-0' : 'bottom-0'}`;
+      : `fixed left-0 right-0 z-9999 ${layout === 'BANNER_TOP' ? 'top-0' : 'bottom-0'}`;
 
     return (
       <div className={position}>
         <div
           style={surfaceStyle(message)}
-          className="mx-auto flex max-w-screen-xl items-center gap-3 border border-stroke bg-white px-4 py-3 shadow-lg dark:border-strokedark dark:bg-boxdark"
+          className="mx-auto flex max-w-(--breakpoint-xl) items-center gap-3 border border-stroke bg-white px-4 py-3 shadow-lg dark:border-strokedark dark:bg-boxdark"
         >
           {message.image_url ? (
             <img
@@ -120,7 +120,7 @@ const InAppMessageView: React.FC<Props> = ({
             onSecondary={onSecondary}
             compact
           />
-          {closable ? <CloseButton onClose={onClose} className="bg-black/10 !text-current" /> : null}
+          {closable ? <CloseButton onClose={onClose} className="bg-black/10 text-current!" /> : null}
         </div>
       </div>
     );
@@ -128,7 +128,7 @@ const InAppMessageView: React.FC<Props> = ({
 
   const overlay = preview
     ? 'relative flex justify-center'
-    : 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4';
+    : 'fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4';
 
   if (layout === 'IMAGE_ONLY') {
     return (
@@ -161,7 +161,7 @@ const InAppMessageView: React.FC<Props> = ({
           className="relative flex w-full max-w-xl gap-4 rounded-lg border border-stroke bg-white p-4 shadow-2xl dark:border-strokedark dark:bg-boxdark"
         >
           {closable ? (
-            <CloseButton onClose={onClose} className="absolute right-2 top-2 bg-black/10 !text-current" />
+            <CloseButton onClose={onClose} className="absolute right-2 top-2 bg-black/10 text-current!" />
           ) : null}
           {message.image_url ? (
             <img

@@ -157,7 +157,7 @@ const FestivalBonusPaymentSelectionModal = ({
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/55 px-4 py-6 backdrop-blur-[2px] md:px-6 md:py-8">
       <div className="h-full w-full max-w-6xl overflow-y-auto border border-amber-200 bg-slate-50 p-5 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-        <div className="mb-4 flex items-start justify-between gap-4 border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-emerald-50 px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/95">
+        <div className="mb-4 flex items-start justify-between gap-4 border border-amber-200 bg-linear-to-r from-amber-50 via-white to-emerald-50 px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/95">
           <div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
               Festival Bonus Payment

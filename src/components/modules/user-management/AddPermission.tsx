@@ -238,13 +238,13 @@ const AddPermission: React.FC = () => {
                   className="text-left text-sm"
                   classNames={{
                     control: (state) =>
-                      `!min-h-[38px] !bg-white !border-gray-300 !rounded-xs dark:!bg-boxdark dark:!border-gray-600 ${
-                        state.isFocused ? "!border-blue-500 dark:!border-blue-400" : ""
+                      `min-h-[38px]! bg-white! border-gray-300! rounded-xs! dark:bg-boxdark! dark:border-gray-600! ${
+                        state.isFocused ? "border-blue-500! dark:border-blue-400!" : ""
                       }`,
                     placeholder: () => `text-gray-400 dark:text-gray-500 text-sm`,
                     input: () => `text-gray-900 dark:text-white text-sm`,
                     menu: () =>
-                      `!rounded-xs border border-gray-300 bg-white dark:bg-boxdark dark:border-gray-600 z-20`,
+                      `rounded-xs! border border-gray-300 bg-white dark:bg-boxdark dark:border-gray-600 z-20`,
                     option: (state) =>
                       `cursor-pointer text-sm ${
                         state.isFocused

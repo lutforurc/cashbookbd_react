@@ -236,7 +236,7 @@ const buildAttendanceSummaryMapFromMonthlyRows = (rows: any[], monthInfo: NonNul
  * They read black on white and white on dark now, like every other number
  * here.
  */
-const READONLY_FIGURE = "text-right disabled:!text-black dark:disabled:!text-white";
+const READONLY_FIGURE = "text-right disabled:text-black! dark:disabled:text-white!";
 
 /**
  * A money box you can still type in.

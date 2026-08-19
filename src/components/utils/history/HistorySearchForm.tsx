@@ -38,7 +38,7 @@ const HistorySearchForm = ({
   return (
     <div className="grid grid-cols-1 gap-2 w-full md:w-1/2 2xl:1/4 mx-auto">
       <div>
-        <label className="text-gray-900 dark:text-gray-100 !mb-0">Select Branch</label>
+        <label className="text-gray-900 dark:text-gray-100 mb-0!">Select Branch</label>
       </div>
 
       <div className="w-full">

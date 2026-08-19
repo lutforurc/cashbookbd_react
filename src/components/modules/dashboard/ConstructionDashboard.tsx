@@ -128,7 +128,7 @@ const ConstructionDashboard = () => {
   const summaryRowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
   const listRowClass = isCompact ? 'px-4 py-2.5' : 'px-4 py-3';
   const receiveDetailsRowClass = isCompact ? 'px-4 py-0.5' : 'px-4 py-1';
-  const dashboardCardHeightClass = isCompact ? 'h-[20.75rem]' : 'h-[21.75rem]';
+  const dashboardCardHeightClass = isCompact ? 'h-83' : 'h-87';
   const getReceiveDetailStatusKey = (item: any) =>
     String(item?.mtm_id ?? item?.vr_no ?? item?.id ?? '');
 

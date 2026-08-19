@@ -140,7 +140,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           <div
             className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
               row.status === 1 || enabled
-                ? 'translate-x-5 duration-300 !bg-blue-600'
+                ? 'translate-x-5 duration-300 bg-blue-600!'
                 : 'translate-x-0'
             }`}
           ></div>

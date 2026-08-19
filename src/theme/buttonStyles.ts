@@ -7,7 +7,7 @@
  * passing one, which is why a confirm button once shipped colourless.
  *
  * Screens that wanted something else reached for `!important` to beat the base
- * class. The Sign In button did exactly that: `!bg-primary hover:!bg-primary/90`
+ * class. The Sign In button did exactly that: `bg-primary! hover:bg-primary/90!`
  * bolted onto a grey button. A named variant is what it actually wanted.
  *
  * Colour comes from tokens.css underneath -- these are class names, and every

@@ -183,14 +183,14 @@ const BankBookPrint = React.forwardRef<HTMLDivElement, Props>(
                             )}
                             {row?.remarks && (
                               <div
-                                className={`break-words whitespace-normal`}
+                                className={`wrap-break-word whitespace-normal`}
                               >
                                 {row.remarks}
                               </div>
                             )}
                             {row?.order_number && (
                               <div
-                                className={`break-words whitespace-normal`}
+                                className={`wrap-break-word whitespace-normal`}
                               >
                                 {row.order_number}
                               </div>
@@ -199,7 +199,7 @@ const BankBookPrint = React.forwardRef<HTMLDivElement, Props>(
                         </td>
                         <td
                           style={{ fontSize: fs }}
-                          className={`border border-gray-900 px-2 py-1 break-words whitespace-normal`}
+                          className={`border border-gray-900 px-2 py-1 wrap-break-word whitespace-normal`}
                         >
                           {row?.from_bank || ''}
                         </td>

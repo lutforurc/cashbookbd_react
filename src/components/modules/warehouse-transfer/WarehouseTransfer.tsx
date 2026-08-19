@@ -879,7 +879,7 @@ const BranchTransfer = () => {
       </div>
 
       {duplicateWarning ? (
-        <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/50 px-3 py-6">
+        <div className="fixed inset-0 z-1001 flex items-center justify-center bg-black/50 px-3 py-6">
           <div className="w-full max-w-lg rounded-sm bg-white shadow-xl dark:bg-gray-800">
             <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-900/20">
               <h3 className="text-base font-semibold text-amber-800 dark:text-amber-100">
@@ -938,7 +938,7 @@ const BranchTransfer = () => {
       ) : null}
 
       {stockWarning ? (
-        <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/50 px-3 py-6">
+        <div className="fixed inset-0 z-1001 flex items-center justify-center bg-black/50 px-3 py-6">
           <div className="w-full max-w-lg rounded-sm bg-white shadow-xl dark:bg-gray-800">
             <div className="flex items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-900/20">
               <FiAlertCircle className="h-5 w-5 shrink-0 text-amber-500" />

@@ -239,7 +239,7 @@ const AdminNotifications = () => {
               label=""
               value={title}
               placeholder="Short headline (max 200 characters)"
-              className="h-10 !w-full"
+              className="h-10 w-full!"
               onChange={(e: any) => setTitle(e.target.value.slice(0, 200))}
             />
           </div>

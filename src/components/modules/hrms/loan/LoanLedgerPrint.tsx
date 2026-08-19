@@ -161,12 +161,12 @@ const LoanLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                             </td>
 
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 align-middle">
-                              <div className="leading-normal break-words whitespace-normal">
+                              <div className="leading-normal wrap-break-word whitespace-normal">
                                 {row?.remarks ?? ''}
                               </div>
 
                               {showBranchName && row?.branch_name ? (
-                                <div className="font-semibold break-words whitespace-normal">{row.branch_name}</div>
+                                <div className="font-semibold wrap-break-word whitespace-normal">{row.branch_name}</div>
                               ) : null}
                             </td>
 

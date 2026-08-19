@@ -1972,7 +1972,7 @@ const AddBranch = () => {
                         onClick={goToNextStep}
                         buttonLoading={false}
                         label="Next"
-                        className="whitespace-nowrap rounded !bg-blue-600 px-6 py-1.5 hover:!bg-blue-700"
+                        className="whitespace-nowrap rounded bg-blue-600! px-6 py-1.5 hover:bg-blue-700!"
                         icon={<FiArrowRight className="text-white text-base mr-2" />}
                       />
                     ) : branchEditData.editData?.branch ? (
@@ -1980,7 +1980,7 @@ const AddBranch = () => {
                         onClick={handleBranchUpdate}
                         buttonLoading={buttonLoading}
                         label="Update"
-                        className="whitespace-nowrap rounded !bg-blue-600 px-6 py-1.5 hover:!bg-blue-700"
+                        className="whitespace-nowrap rounded bg-blue-600! px-6 py-1.5 hover:bg-blue-700!"
                         icon={<FiSave className="text-white text-base mr-2" />}
                       />
                     ) : (
@@ -1988,7 +1988,7 @@ const AddBranch = () => {
                         onClick={handleBranchSave}
                         buttonLoading={buttonLoading}
                         label="Save"
-                        className="whitespace-nowrap rounded !bg-blue-600 px-6 py-1.5 hover:!bg-blue-700"
+                        className="whitespace-nowrap rounded bg-blue-600! px-6 py-1.5 hover:bg-blue-700!"
                         icon={<FiSave className="text-white text-base mr-2" />}
                       />
                     )}

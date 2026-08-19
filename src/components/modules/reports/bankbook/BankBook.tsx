@@ -334,14 +334,14 @@ const BankBook = (user: any) => {
       header: 'Vr Date',
       width: '90px',
       headerClass: 'text-center',
-      cellClass: 'text-center !px-1',
+      cellClass: 'text-center px-1!',
     },
     {
       key: 'vr_no',
       header: 'Vr No',
       width: '80px',
       headerClass: 'text-center',
-      cellClass: 'text-center !px-2',
+      cellClass: 'text-center px-2!',
       render: (row: any) => (
         <div
           className="cursor-pointer hover:underline"
@@ -393,7 +393,7 @@ const BankBook = (user: any) => {
 
             </a>
           </div>
-          <div className="text-sm text-gray-500 break-words whitespace-normal">
+          <div className="text-sm text-gray-500 wrap-break-word whitespace-normal">
             {row?.remarks}
 
               {row?.order_number ? (
@@ -412,7 +412,7 @@ const BankBook = (user: any) => {
       header: 'Transaction Bank',
       width: '160px',
       render: (row: any) => (
-        <div className="break-words whitespace-normal">
+        <div className="wrap-break-word whitespace-normal">
           {row?.from_bank ? row.from_bank : '-'}
         </div>
       ),
@@ -582,7 +582,7 @@ const BankBook = (user: any) => {
                     value={perPage.toString()}
                     onChange={handlePerPageChange}
                     type='text'
-                    className="font-medium text-sm h-10 !w-full text-center"
+                    className="font-medium text-sm h-10 w-full! text-center"
                   />
               </div>
 
@@ -597,7 +597,7 @@ const BankBook = (user: any) => {
                     value={fontSize.toString()}
                     onChange={handleFontSizeChange}
                     type='text'
-                    className="font-medium text-sm h-10 !w-full text-center"
+                    className="font-medium text-sm h-10 w-full! text-center"
                   />
               </div>
               <PrintButton
@@ -632,7 +632,7 @@ const BankBook = (user: any) => {
                       value={perPage.toString()}
                       onChange={handlePerPageChange}
                       type='text'
-                      className="font-medium text-sm h-10 !w-20 text-center"
+                      className="font-medium text-sm h-10 w-20! text-center"
                     />
               </div>
 
@@ -645,7 +645,7 @@ const BankBook = (user: any) => {
                       value={fontSize.toString()}
                       onChange={handleFontSizeChange}
                       type='text'
-                      className="font-medium text-sm h-10 !w-20 text-center"
+                      className="font-medium text-sm h-10 w-20! text-center"
                     />
               </div>
               <PrintButton

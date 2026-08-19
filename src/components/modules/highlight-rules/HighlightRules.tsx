@@ -163,7 +163,7 @@ const HighlightRules = () => {
               label=""
               value={form.phrase}
               placeholder="e.g. Not Yet Reports"
-              className="h-10 !w-full"
+              className="h-10 w-full!"
               onChange={(e: any) =>
                 setForm((f) => ({ ...f, phrase: e.target.value.slice(0, 255) }))
               }
@@ -197,7 +197,7 @@ const HighlightRules = () => {
               label=""
               value={form.priority}
               placeholder="0"
-              className="h-10 !w-full"
+              className="h-10 w-full!"
               onChange={(e: any) =>
                 setForm((f) => ({ ...f, priority: Number(e.target.value) || 0 }))
               }

@@ -176,14 +176,14 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
                             )}
                             {row?.remarks && (
                               <div
-                                className={`break-words whitespace-normal`}
+                                className={`wrap-break-word whitespace-normal`}
                               >
                                 {row.remarks}
                               </div>
                             )}
                             {row?.order_number && (
                               <div
-                                className={`break-words whitespace-normal`}
+                                className={`wrap-break-word whitespace-normal`}
                               >
                                 {row.order_number}
                               </div>

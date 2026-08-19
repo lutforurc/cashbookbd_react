@@ -482,7 +482,7 @@ const ProjectCostReport = ({ user }: any) => {
               type="number"
               label=""
               placeholder="Rows"
-              className="h-10 !w-20 text-center"
+              className="h-10 w-20! text-center"
               value={perPage}
               onChange={(e) => setPerPage(Number(e.target.value) || 12)}
             />
@@ -490,7 +490,7 @@ const ProjectCostReport = ({ user }: any) => {
               type="number"
               label=""
               placeholder="Font"
-              className="h-10 !w-20 text-center"
+              className="h-10 w-20! text-center"
               value={fontSize}
               onChange={(e) => setFontSize(Number(e.target.value) || 12)}
             />

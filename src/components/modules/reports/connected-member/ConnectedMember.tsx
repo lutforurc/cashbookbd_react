@@ -170,7 +170,7 @@ const ConnectedMember = (user: any) => {
               selectedDate={startDate}
               setSelectedDate={setStartDate}
               setCurrentDate={setStartDate}
-              className="h-9 rounded-none !border !border-slate-600 bg-transparent px-3 text-sm font-bold dark:!border-[rgb(var(--c-gray-600))] dark:!bg-[rgb(var(--c-boxdark))]"
+              className="h-9 rounded-none border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
             />
           </div>
 
@@ -180,7 +180,7 @@ const ConnectedMember = (user: any) => {
               selectedDate={endDate}
               setSelectedDate={setEndDate}
               setCurrentDate={setEndDate}
-              className="h-9 rounded-none !border !border-slate-600 bg-transparent px-3 text-sm font-bold dark:!border-[rgb(var(--c-gray-600))] dark:!bg-[rgb(var(--c-boxdark))]"
+              className="h-9 rounded-none border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
             />
           </div>
 
@@ -196,7 +196,7 @@ const ConnectedMember = (user: any) => {
               value={String(rowsPerPage)}
               onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 20)}
               type="text"
-              className="h-9 !w-full rounded-none text-center text-sm font-bold"
+              className="h-9 w-full! rounded-none text-center text-sm font-bold"
             />
           </div>
           <div>
@@ -208,7 +208,7 @@ const ConnectedMember = (user: any) => {
               value={String(fontSize)}
               onChange={(event: any) => setFontSize(Number(event.target.value) || 12)}
               type="text"
-              className="h-9 !w-full rounded-none text-center text-sm font-bold"
+              className="h-9 w-full! rounded-none text-center text-sm font-bold"
             />
           </div>
           <PrintButton onClick={handlePrint} label="Print" className="h-9 px-6" disabled={groups.length === 0} />

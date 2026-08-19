@@ -204,7 +204,7 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/50 px-3 py-6">
+    <div className="fixed inset-0 z-1001 flex items-center justify-center bg-black/50 px-3 py-6">
       <div className="w-full max-w-2xl rounded-sm bg-white shadow-xl dark:bg-gray-800">
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
           <div>

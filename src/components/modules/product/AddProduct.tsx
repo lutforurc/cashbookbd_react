@@ -333,7 +333,7 @@ console.log('====================================');
           <label htmlFor="" className='text-sm'>Select Brand</label>
           <CategoryDropdown
             onChange={handleBrandChange}
-            className="w-full text-sm !h-7"
+            className="w-full text-sm h-7!"
             categoryDdl={brandOptions}
             value={formData.manufacture_id}
           />
@@ -345,7 +345,7 @@ console.log('====================================');
             <label htmlFor="" className='text-sm'>Select Category</label>
             <CategoryDropdown
               onChange={handleCategoryChange}
-              className="w-full text-sm !h-7"
+              className="w-full text-sm h-7!"
               categoryDdl={optionsWithAll}
               value={formData.category_id}
             />

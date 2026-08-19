@@ -598,7 +598,7 @@ const Product = (user: any) => {
           <div className="w-full ">
             <CategoryDropdown
               onChange={handleBrandChange}
-              className="w-full text-sm !h-9"
+              className="w-full text-sm h-9!"
               categoryDdl={brandOptions}
             />
           </div>
@@ -609,7 +609,7 @@ const Product = (user: any) => {
             ) : (
               <CategoryDropdown
                 onChange={handleCategoryChange}
-                className="w-full text-sm !h-9"
+                className="w-full text-sm h-9!"
                 categoryDdl={optionsWithAll}
               />
             )}
@@ -618,7 +618,7 @@ const Product = (user: any) => {
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <div className="w-full">
               <SelectOption
-                className="!w-full h-9"
+                className="w-full! h-9"
                 onChange={(e: any) => {
                   const v = Number(e.target.value); // Ã¢Å“â€¦ string -> number
                   const next = Number.isFinite(v) ? v : 10;
@@ -629,7 +629,7 @@ const Product = (user: any) => {
               />
             </div>
             <div className="w-full sm:w-64">
-              <SearchInput className="!w-full h-9" search={search} setSearchValue={setSearchValue} />
+              <SearchInput className="w-full! h-9" search={search} setSearchValue={setSearchValue} />
             </div>
             <ButtonLoading label="Search" icon={<FiSearch className="text-gray-500" />}  onClick={handleSearchButton} className="h-9 w-full sm:w-auto" />
           </div>
@@ -655,7 +655,7 @@ const Product = (user: any) => {
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
                 type="text"
-                className="font-medium text-sm h-9 !w-12"
+                className="font-medium text-sm h-9 w-12!"
               />
             </div>
             <PrintButton onClick={handlePrint} label="Print" className="ml-2 pt-[0.45rem] pb-[0.45rem] h-9" />

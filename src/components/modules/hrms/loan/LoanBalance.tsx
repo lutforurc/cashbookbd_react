@@ -243,7 +243,7 @@ const LoanBalance = (user: any) => {
             <BranchDropdown
               defaultValue={(branchId ?? '').toString()}
               onChange={handleBranchChange}
-              className="!w-64 font-medium text-sm h-9 p-2"
+              className="w-64! font-medium text-sm h-9 p-2"
               branchDdl={branchOptions}
             />
           </div>

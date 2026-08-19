@@ -201,7 +201,7 @@ const ProductTrackingSettings = () => {
               <DdlMultiline
                 id="coa4_id"
                 name="coa4_id"
-                className="h-9 !bg-white dark:!bg-boxdark !border-gray-300 dark:!border-gray-600"
+                className="h-9 bg-white! dark:bg-boxdark! border-gray-300! dark:border-gray-600!"
                 placeholder="For all parties"
                 value={form.coa4_id ? { value: String(form.coa4_id), label: partyName } : null}
                 onSelect={(selected) => {

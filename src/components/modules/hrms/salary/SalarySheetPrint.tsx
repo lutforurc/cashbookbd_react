@@ -270,7 +270,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                 </div> */}
               <div className="grid grid-cols-3 items-center w-full"> 
                 <span className="justify-self-start text-sm ">
-                  <span className='font-semibold !text-xs'>Vr. No. & Date:</span> <span className='!text-xs'> {vr_no}, { formatDate(vr_date)}</span>
+                  <span className='font-semibold text-xs!'>Vr. No. & Date:</span> <span className='text-xs!'> {vr_no}, { formatDate(vr_date)}</span>
                 </span>
 
                 <h1 className="justify-self-center text-xl font-bold text-center">

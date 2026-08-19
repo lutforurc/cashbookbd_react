@@ -223,11 +223,11 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
       // of it.
       key: 'compare',
       header: '',
-      headerClass: 'text-center !pl-0',
+      headerClass: 'text-center pl-0!',
       // Table writes px-3 on every cell and appends cellClass after it; the
       // later stylesheet rule wins rather than the later name, so the padding
       // has to be marked important to take effect.
-      cellClass: 'text-center w-8 !px-1',
+      cellClass: 'text-center w-8 px-1!',
       render: (row: any) => {
         const id = Number(row?.id || 0);
         if (!id) return null;
@@ -254,8 +254,8 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
     {
       key: 'sl',
       header: 'Sl',
-      headerClass: 'text-center !pl-0',
-      cellClass: 'text-center w-16 !pl-0',
+      headerClass: 'text-center pl-0!',
+      cellClass: 'text-center w-16 pl-0!',
       render: (_row: any, index: number) => <span>{index + 1}</span>,
     },
     {
@@ -469,7 +469,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
               value={String(printFont)}
               onChange={handlePrintFontChange}
               type="text"
-              className="h-10 !w-20 text-center text-sm font-medium"
+              className="h-10 w-20! text-center text-sm font-medium"
             />
           </div>
         </div>

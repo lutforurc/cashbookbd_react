@@ -527,7 +527,7 @@ const BankReceived = () => {
                         onClick={searchTransaction}
                         buttonLoading={buttonLoading}
                         label=" "
-                        className="-ml-px h-8.5 w-12 shrink-0 whitespace-nowrap border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
+                        className="-ml-px h-8.5 w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
                         icon={<FiSearch className="text-white text-lg ml-2" />}
                       />
                     </>
@@ -538,7 +538,7 @@ const BankReceived = () => {
                 <label htmlFor="">Bank Received Account</label>
                 <CategoryDropdown
                   onChange={bankReceivedAccountHandler}
-                  className={`w-full font-medium text-sm ${formData.mtmId && '!border !border-red-800'}`}
+                  className={`w-full font-medium text-sm ${formData.mtmId && 'border! border-red-800!'}`}
                   categoryDdl={optionsWithAll}
                   value={selectedReceiver}
                 />

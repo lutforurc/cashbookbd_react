@@ -161,7 +161,7 @@ const LabourLedger = (user: any) => {
               <div
                 className={
                   useFilterMenuEnabled
-                    ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                    ? 'absolute left-0 top-full z-1000 mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
                     : 'w-full'
                 }
               >
@@ -302,7 +302,7 @@ const LabourLedger = (user: any) => {
                   </label>
                   <InputDatePicker
                     setCurrentDate={handleStartDate}
-                    className="w-full xl:!w-30 font-medium text-sm h-10"
+                    className="w-full xl:w-30! font-medium text-sm h-10"
                     selectedDate={startDate}
                     setSelectedDate={setStartDate}
                   />
@@ -313,7 +313,7 @@ const LabourLedger = (user: any) => {
                   </label>
                   <InputDatePicker
                     setCurrentDate={handleEndDate}
-                    className="w-full xl:!w-30 font-medium text-sm h-10"
+                    className="w-full xl:w-30! font-medium text-sm h-10"
                     selectedDate={endDate}
                     setSelectedDate={setEndDate}
                   />
@@ -404,7 +404,7 @@ const LabourLedger = (user: any) => {
                                   <span className="block text-xs font-bold text-gray-500 dark:text-gray-400">
                                     {item.coa4_name}
                                   </span>
-                                  <span className="break-words whitespace-normal text-xs text-gray-500 dark:text-gray-400">
+                                  <span className="wrap-break-word whitespace-normal text-xs text-gray-500 dark:text-gray-400">
                                     {item.note}
                                   </span>
                                 </div>

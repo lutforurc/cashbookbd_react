@@ -435,7 +435,7 @@ const ProductStockNormal = ({ user }: any) => {
               <div
                 className={
                   useFilterMenuEnabled
-                    ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                    ? 'absolute left-0 top-full z-1000 mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
                     : 'w-full'
                 }
               >
@@ -456,7 +456,7 @@ const ProductStockNormal = ({ user }: any) => {
                         value={perPage.toString()}
                         onChange={handlePerPageChange}
                         type="text"
-                        className="text-sm h-10 !w-20"
+                        className="text-sm h-10 w-20!"
                       />
                     </div>
                   )}
@@ -557,7 +557,7 @@ const ProductStockNormal = ({ user }: any) => {
                         value={perPage.toString()}
                         onChange={handlePerPageChange}
                         type="text"
-                        className="font-medium text-sm h-10 !w-16 sm:!w-20"
+                        className="font-medium text-sm h-10 w-16! sm:w-20!"
                       />
                       <PrintFontInput
                         id="fontSizeToolbar"
@@ -566,7 +566,7 @@ const ProductStockNormal = ({ user }: any) => {
                         value={fontSize.toString()}
                         onChange={handleFontSizeChange}
                         type="text"
-                        className="font-medium text-sm h-10 !w-16 sm:!w-20"
+                        className="font-medium text-sm h-10 w-16! sm:w-20!"
                       />
 
                       <PrintButton
@@ -614,7 +614,7 @@ const ProductStockNormal = ({ user }: any) => {
               value={perPage.toString()}
               onChange={handlePerPageChange}
               type="text"
-              className="font-medium text-sm h-10 !w-16 sm:!w-20"
+              className="font-medium text-sm h-10 w-16! sm:w-20!"
             />
             <PrintFontInput
               id="fontSize"
@@ -623,7 +623,7 @@ const ProductStockNormal = ({ user }: any) => {
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type="text"
-              className="font-medium text-sm h-10 !w-16 sm:!w-20"
+              className="font-medium text-sm h-10 w-16! sm:w-20!"
             />
 
             <PrintButton

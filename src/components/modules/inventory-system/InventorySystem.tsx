@@ -142,7 +142,7 @@ const InventorySystem = () => {
               label=""
               value={form.name}
               placeholder="e.g. Trading Inventory"
-              className="h-10 !w-full"
+              className="h-10 w-full!"
               onChange={(e: any) =>
                 setForm((f) => ({ ...f, name: e.target.value.slice(0, 128) }))
               }
@@ -157,7 +157,7 @@ const InventorySystem = () => {
               label=""
               value={form.slug}
               placeholder={form.name ? slugify(form.name) : 'auto from name'}
-              className="h-10 !w-full"
+              className="h-10 w-full!"
               disabled={form.isCore}
               onChange={(e: any) =>
                 setForm((f) => ({ ...f, slug: e.target.value.slice(0, 64) }))

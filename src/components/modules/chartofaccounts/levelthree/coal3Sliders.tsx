@@ -1,4 +1,4 @@
-import { Dispatch } from 'react';
+﻿import { Dispatch } from 'react';
 import {
   COAL3_BY_COAL4_LIST_ERROR,
   COAL3_BY_COAL4_LIST_PENDING,
@@ -7,7 +7,6 @@ import {
 } from '../../../constant/constant/constant';
 import { API_CHART_OF_ACCOUNTS_L3_URL, API_COAL3_ID_BY_L4_URL } from '../../../services/apiRoutes';
 import httpService from '../../../services/httpService';
-import { data } from 'jquery';
 
 interface coal3Param {
   page: number;

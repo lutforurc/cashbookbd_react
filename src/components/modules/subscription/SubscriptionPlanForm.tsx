@@ -444,7 +444,7 @@ const SubscriptionPlanForm: React.FC = () => {
                     <span
                       className={`h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-300 ${
                         selectedFeatures[feature.feature_key]
-                          ? 'translate-x-5 !bg-blue-600'
+                          ? 'translate-x-5 bg-blue-600!'
                           : 'translate-x-0'
                       }`}
                     />

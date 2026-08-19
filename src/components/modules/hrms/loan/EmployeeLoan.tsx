@@ -232,7 +232,7 @@ const EmployeeLoan = () => {
                         onClick={searchTransaction}
                         buttonLoading={searchLoading}
                         label=" "
-                        className="-ml-px mb-4 h-8.5 w-12 shrink-0 whitespace-nowrap border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
+                        className="-ml-px mb-4 h-8.5 w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
                         icon={<FiSearch className="text-white text-lg ml-2" />}
                       />
                     </>

@@ -425,7 +425,7 @@ const ProductStock = ({ user }: any) => {
               <div
                 className={
                   useFilterMenuEnabled
-                    ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                    ? 'absolute left-0 top-full z-1000 mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
                     : 'w-full'
                 }
               >
@@ -444,7 +444,7 @@ const ProductStock = ({ user }: any) => {
                         value={perPage.toString()}
                         onChange={handlePerPageChange}
                         type="text"
-                        className="!w-20 text-sm h-10"
+                        className="w-20! text-sm h-10"
                       />
                     </div>
                   )}
@@ -548,14 +548,14 @@ const ProductStock = ({ user }: any) => {
                         value={perPage.toString()}
                         onChange={handlePerPageChange}
                         type="text"
-                        className="!w-16 text-sm h-10 text-center sm:!w-20"
+                        className="w-16! text-sm h-10 text-center sm:w-20!"
                       />
                       <PrintFontInput
                         label="Font"
                         value={fontSize.toString()}
                         onChange={handleFontSizeChange}
                         type="text"
-                        className="!w-16 text-sm h-10 text-center sm:!w-20"
+                        className="w-16! text-sm h-10 text-center sm:w-20!"
                       />
                       <PrintButton onClick={handlePrint} label="" className="h-10 px-4 sm:px-6" />
                     </div>
@@ -598,14 +598,14 @@ const ProductStock = ({ user }: any) => {
               value={perPage.toString()}
               onChange={handlePerPageChange}
               type="text"
-              className="!w-16 text-sm h-10 text-center sm:!w-20"
+              className="w-16! text-sm h-10 text-center sm:w-20!"
             />
             <PrintFontInput
               label="Font"
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type="text"
-              className="!w-16 text-sm h-10 text-center sm:!w-20"
+              className="w-16! text-sm h-10 text-center sm:w-20!"
             />
             <PrintButton onClick={handlePrint} label="" className="h-10 px-4 sm:px-6" />
           </div>

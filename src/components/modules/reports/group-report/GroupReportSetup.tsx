@@ -191,18 +191,18 @@ const GroupReportSetup = () => {
               classNamePrefix="cash-react-select"
               classNames={{
                 control: (state) =>
-                  `!min-h-10 !rounded-none !border-stroke !bg-transparent !text-sm !shadow-none dark:!border-strokedark dark:!bg-form-input ${
-                    state.isFocused ? '!border-blue-500 dark:!border-blue-400' : ''
+                  `min-h-10! rounded-none! border-stroke! bg-transparent! text-sm! shadow-none! dark:border-strokedark! dark:bg-form-input! ${
+                    state.isFocused ? 'border-blue-500! dark:border-blue-400!' : ''
                   }`,
-                valueContainer: () => '!px-3 !py-0',
-                input: () => '!text-slate-900 dark:!text-white',
-                singleValue: () => '!text-slate-900 dark:!text-white',
-                placeholder: () => '!text-slate-500 dark:!text-slate-300',
-                menu: () => '!z-50 !rounded-none !border !border-stroke !bg-white dark:!border-strokedark dark:!bg-boxdark',
+                valueContainer: () => 'px-3! py-0!',
+                input: () => 'text-slate-900! dark:text-white!',
+                singleValue: () => 'text-slate-900! dark:text-white!',
+                placeholder: () => 'text-slate-500! dark:text-slate-300!',
+                menu: () => 'z-50! rounded-none! border! border-stroke! bg-white! dark:border-strokedark! dark:bg-boxdark!',
                 option: (state) =>
-                  `!cursor-pointer !text-sm ${
-                    state.isFocused ? '!bg-slate-100 dark:!bg-slate-700' : '!bg-white dark:!bg-boxdark'
-                  } ${state.isSelected ? '!bg-slate-200 dark:!bg-slate-600' : ''} !text-slate-900 dark:!text-white`,
+                  `cursor-pointer! text-sm! ${
+                    state.isFocused ? 'bg-slate-100! dark:bg-slate-700!' : 'bg-white! dark:bg-boxdark!'
+                  } ${state.isSelected ? 'bg-slate-200! dark:bg-slate-600!' : ''} text-slate-900! dark:text-white!`,
               }}
             />
           </div>

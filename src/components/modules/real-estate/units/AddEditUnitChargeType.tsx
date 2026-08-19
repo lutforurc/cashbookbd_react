@@ -163,14 +163,14 @@ const AddEditUnitChargeType = () => {
           buttonLoading={buttonLoading}
           label={isEdit ? "Update" : "Save"}
           className="p-2"
-          icon={isEdit ? <FiEdit2 className="!mr-2 text-lg" /> : <FiSave className="!mr-2 text-lg" />}
+          icon={isEdit ? <FiEdit2 className="mr-2! text-lg" /> : <FiSave className="mr-2! text-lg" />}
         />
 
         <ButtonLoading
           onClick={handleReset}
           buttonLoading={false}
           label="Reset"
-          icon={<FiRefreshCcw className="!mr-2 text-lg" />}
+          icon={<FiRefreshCcw className="mr-2! text-lg" />}
           className="p-2"
         />
 
@@ -178,7 +178,7 @@ const AddEditUnitChargeType = () => {
           to={(routes as any).real_estate_unit_types_list} 
           className="flex items-center justify-center"
         >
-          <FiArrowLeft className="!mr-2" /> Back
+          <FiArrowLeft className="mr-2!" /> Back
         </Link>
       </div>
     </>

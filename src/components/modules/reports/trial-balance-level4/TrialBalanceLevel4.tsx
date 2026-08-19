@@ -395,7 +395,7 @@ const TrialBalanceLevel4 = (user: any) => {
                 <div
                   className={
                     useFilterMenuEnabled
-                      ? "absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800"
+                      ? "absolute left-0 top-full z-1000 mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800"
                       : "w-full"
                   }
                 >
@@ -488,7 +488,7 @@ const TrialBalanceLevel4 = (user: any) => {
                   label=""
                   value={rowsPerPage}
                   onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 20)}
-                  className="h-10 !w-20 text-center"
+                  className="h-10 w-20! text-center"
                 />
                 <PrintFontInput
                   type="number"
@@ -496,7 +496,7 @@ const TrialBalanceLevel4 = (user: any) => {
                   label=""
                   value={fontSize}
                   onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                  className="h-10 !w-20 text-center"
+                  className="h-10 w-20! text-center"
                 />
                 <PrintButton
                   label="Print"
@@ -531,7 +531,7 @@ const TrialBalanceLevel4 = (user: any) => {
                     label=""
                     value={rowsPerPage}
                     onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 20)}
-                    className="h-10 !w-20 text-center"
+                    className="h-10 w-20! text-center"
                   />
                   <PrintFontInput
                     type="number"
@@ -539,7 +539,7 @@ const TrialBalanceLevel4 = (user: any) => {
                     label=""
                     value={fontSize}
                     onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                    className="h-10 !w-20 text-center"
+                    className="h-10 w-20! text-center"
                   />
                   <PrintButton
                     label="Print"

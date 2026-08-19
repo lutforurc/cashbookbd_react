@@ -389,7 +389,7 @@ const FestivalBonus = ({ user }: any) => {
                     // onChange={handlePerPageChange}
                     onChange={(e) => setRowsPerPage(Number(e.target.value) || 18)}
                     type='text'
-                    className="mt-0 h-10 !w-20 text-center "
+                    className="mt-0 h-10 w-20! text-center "
                   />
               </div>
 
@@ -401,7 +401,7 @@ const FestivalBonus = ({ user }: any) => {
                   name="print_font_size_inline"
                   placeholder="Font Size"
                   label=""
-                  className="mt-0 h-10 !w-20 text-center"
+                  className="mt-0 h-10 w-20! text-center"
                   type="number"
                   onChange={(e) => setFontSize(Number(e.target.value) || 11)}
                 />

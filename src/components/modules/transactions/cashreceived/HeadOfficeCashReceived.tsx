@@ -550,7 +550,7 @@ const HeadOfficeCashReceived = () => {
                   onClick={searchTransaction}
                   buttonLoading={buttonLoading}
                   label=" "
-                  className="-ml-px h-8.5 w-12 shrink-0 whitespace-nowrap border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
+                  className="-ml-px h-8.5 w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
                   icon={<FiSearch className="text-white text-lg ml-2" />}
                 />
               </div>

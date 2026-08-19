@@ -57,7 +57,7 @@ const joinedZeroMarkClass =
   'block -mx-3 border-red-600 px-3 leading-5 text-red-600';
 
 const numberControlClass =
-  'font-medium text-sm h-10 !w-20 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
+  'font-medium text-sm h-10 w-20! text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
 
 const escapeExcelHtml = (value: unknown) =>
   String(value ?? '')
@@ -830,7 +830,7 @@ const LedgerWithProduct = (user: any) => {
                 <div
                   className={
                     useFilterMenuEnabled
-                      ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                      ? 'absolute left-0 top-full z-1000 mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
                       : 'w-full'
                   }
                 >

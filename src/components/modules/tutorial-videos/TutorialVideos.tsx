@@ -469,7 +469,7 @@ const TutorialVideos = () => {
       {!loading && rows.length ? (
         <div className="overflow-hidden border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-gray-800">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[72rem] table-fixed text-sm">
+            <table className="w-full min-w-6xl table-fixed text-sm">
               <colgroup>
                 <col className="w-14" />
                 <col className="w-72" />
@@ -528,7 +528,7 @@ const TutorialVideos = () => {
                         <td className="px-4 py-2">
                           {/* The column is a fixed width now, so anything long
                               has to wrap rather than push the layout out. */}
-                          <div className="break-words font-semibold text-slate-700 dark:text-slate-100">
+                          <div className="wrap-break-word font-semibold text-slate-700 dark:text-slate-100">
                             {row.title}
                           </div>
                           {/* The key is what the source is pinned to, so it is

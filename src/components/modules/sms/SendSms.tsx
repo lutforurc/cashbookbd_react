@@ -136,7 +136,7 @@ const SendSms = (user: any) => {
                 <BranchDropdown
                   defaultValue={user?.user?.branch_id}
                   onChange={handleBranchChange}
-                  className="!w-60 font-medium text-sm p-1.5 h-9"
+                  className="w-60! font-medium text-sm p-1.5 h-9"
                   branchDdl={dropdownData}
                 />
               </div>

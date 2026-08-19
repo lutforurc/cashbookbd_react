@@ -22,7 +22,7 @@ const SmsTemplatePreviewModal: React.FC<SmsTemplatePreviewModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/60 px-4 py-6"
+      className="fixed inset-0 z-1000 flex items-center justify-center bg-slate-900/60 px-4 py-6"
       onClick={onClose}
     >
       <div
@@ -55,7 +55,7 @@ const SmsTemplatePreviewModal: React.FC<SmsTemplatePreviewModalProps> = ({
                 <div className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                   Rendered Message
                 </div>
-                <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-6 text-slate-700 dark:text-slate-100">
+                <pre className="whitespace-pre-wrap wrap-break-word font-sans text-sm leading-6 text-slate-700 dark:text-slate-100">
                   {content || 'No preview content returned from API.'}
                 </pre>
               </div>

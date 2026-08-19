@@ -1089,7 +1089,7 @@ const Orders = () => {
               <div
                 className={
                   useFilterMenuEnabled
-                    ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,360px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                    ? 'absolute left-0 top-full z-1000 mt-2 w-[min(92vw,360px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
                     : 'w-full'
                 }
               >
@@ -1260,7 +1260,7 @@ const Orders = () => {
             </div>
             <div className="flex flex-wrap items-end gap-2">
               <div className="shrink-0">
-                <SelectOption onChange={handleSelectChange} value={String(perPage)} className="h-9 !w-24" />
+                <SelectOption onChange={handleSelectChange} value={String(perPage)} className="h-9 w-24!" />
               </div>
               <div className="shrink-0">
                 <PrintRowsInput
@@ -1270,7 +1270,7 @@ const Orders = () => {
                   value={String(printRowsPerPage)}
                   onChange={handlePrintRowsChange}
                   type="text"
-                  className="h-9 !w-20 px-1 text-center"
+                  className="h-9 w-20! px-1 text-center"
                 />
               </div>
               <div className="shrink-0">
@@ -1281,7 +1281,7 @@ const Orders = () => {
                   value={String(printFontSize)}
                   onChange={handlePrintFontSizeChange}
                   type="text"
-                  className="h-9 !w-20 px-1 text-center"
+                  className="h-9 w-20! px-1 text-center"
                 />
               </div>
               <PrintButton
@@ -1301,7 +1301,7 @@ const Orders = () => {
             <>
               <div className="flex shrink-0 items-end gap-2">
                 <div className="shrink-0">
-                  <SelectOption onChange={handleSelectChange} value={String(perPage)} className="h-9 !w-24" />
+                  <SelectOption onChange={handleSelectChange} value={String(perPage)} className="h-9 w-24!" />
                 </div>
                 <div className="shrink-0">
                   <PrintRowsInput
@@ -1311,7 +1311,7 @@ const Orders = () => {
                     value={String(printRowsPerPage)}
                     onChange={handlePrintRowsChange}
                     type="text"
-                    className="h-9 !w-20 px-1 text-center"
+                    className="h-9 w-20! px-1 text-center"
                   />
                 </div>
                 <div className="shrink-0">
@@ -1322,7 +1322,7 @@ const Orders = () => {
                     value={String(printFontSize)}
                     onChange={handlePrintFontSizeChange}
                     type="text"
-                    className="h-9 !w-20 px-1 text-center"
+                    className="h-9 w-20! px-1 text-center"
                   />
                 </div>
                 <PrintButton
@@ -1386,7 +1386,7 @@ const Orders = () => {
 
       {selectedLinkedOrder && (
         <div
-          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-3"
+          className="fixed inset-0 z-1000 flex items-center justify-center bg-black/50 px-3"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               closeLinkedOrdersModal();

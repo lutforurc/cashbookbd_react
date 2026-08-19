@@ -842,7 +842,7 @@ const OrderWithProduct = ({
                     onChange={(e) => setPerPage(Number(e.target.value) || 12)}
                     placeholder="Rows"
                     label=""
-                    className="h-10 !w-full border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
+                    className="h-10 w-full! border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
                   />
                 </div>
 
@@ -858,7 +858,7 @@ const OrderWithProduct = ({
                     onChange={(e) => setFontSize(Number(e.target.value) || 12)}
                     placeholder="Font"
                     label=""
-                    className="h-10 !w-full border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
+                    className="h-10 w-full! border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
                   />
                 </div>
               </div>

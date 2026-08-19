@@ -418,7 +418,7 @@ const ProductLedgerData = (user: any) => {
                 <div
                   className={
                     useFilterMenuEnabled
-                      ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                      ? 'absolute left-0 top-full z-1000 mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
                       : 'w-full'
                   }
                 >
@@ -524,7 +524,7 @@ const ProductLedgerData = (user: any) => {
                   value={rowsPerPage.toString()}
                   onChange={(e) => setRowsPerPage(Number(e.target.value) || 12)}
                   type="text"
-                  className="font-medium text-sm h-10 !w-20 text-center"
+                  className="font-medium text-sm h-10 w-20! text-center"
                 />
 
                 <PrintFontInput
@@ -534,7 +534,7 @@ const ProductLedgerData = (user: any) => {
                   value={fontSize.toString()}
                   onChange={(e) => setFontSize(Number(e.target.value) || 12)}
                   type="text"
-                  className="font-medium text-sm h-10 !w-20 text-center"
+                  className="font-medium text-sm h-10 w-20! text-center"
                 />
 
                 <PrintButton
@@ -571,7 +571,7 @@ const ProductLedgerData = (user: any) => {
                     value={rowsPerPage.toString()}
                     onChange={(e) => setRowsPerPage(Number(e.target.value) || 12)}
                     type="text"
-                    className="font-medium text-sm h-10 !w-20 text-center"
+                    className="font-medium text-sm h-10 w-20! text-center"
                   />
 
                   <PrintFontInput
@@ -581,7 +581,7 @@ const ProductLedgerData = (user: any) => {
                     value={fontSize.toString()}
                     onChange={(e) => setFontSize(Number(e.target.value) || 12)}
                     type="text"
-                    className="font-medium text-sm h-10 !w-20 text-center"
+                    className="font-medium text-sm h-10 w-20! text-center"
                   />
 
                   <PrintButton

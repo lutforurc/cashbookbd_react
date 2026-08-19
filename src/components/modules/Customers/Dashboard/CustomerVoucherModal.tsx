@@ -87,7 +87,7 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
   const amount = Number(head?.amount || 0);
 
   return (
-    <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/50 px-3 py-6" onClick={onClose}>
+    <div className="fixed inset-0 z-1001 flex items-center justify-center bg-black/50 px-3 py-6" onClick={onClose}>
       <div className="w-full max-w-3xl rounded-xl bg-white shadow-xl dark:bg-boxdark" onClick={(e) => e.stopPropagation()}>
         {/* Toolbar (not printed) */}
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-strokedark">

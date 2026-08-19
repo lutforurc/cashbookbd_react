@@ -364,7 +364,7 @@ const UserList = () => {
             // does not win, the later rule in the stylesheet does, and Tailwind
             // emits px-3 after px-1. Without the !, this column keeps a 24px
             // gutter that pushes the + away from the serial beside it.
-            cellClass: 'text-center w-8 !px-1',
+            cellClass: 'text-center w-8 px-1!',
             render: (row: any) => {
               if (row?.__isExpandedChild) return null;
 
@@ -404,12 +404,12 @@ const UserList = () => {
       // "Sl." made a two-line header out of a two-word one. The <th> carries its
       // own px-3, so the left gutter is dropped here as well as on the cells.
       headerClass: isSaasOwnerList && !showAllUsers
-        ? 'text-center whitespace-nowrap !pl-0'
+        ? 'text-center whitespace-nowrap pl-0!'
         : 'text-center whitespace-nowrap',
       // Its left gutter dropped so the serial sits beside the expander rather
       // than across a gap, but wide enough that the heading still fits.
       cellClass: isSaasOwnerList && !showAllUsers
-        ? 'text-center w-24 !pl-0'
+        ? 'text-center w-24 pl-0!'
         : 'text-center',
     },
     {

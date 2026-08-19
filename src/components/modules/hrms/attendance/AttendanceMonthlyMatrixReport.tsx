@@ -424,7 +424,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       key: `day_${day}`,
       header: day,
       headerClass: 'day-cell w-8 text-center',
-      cellClass: 'day-cell w-8 !px-0 !py-0 text-center',
+      cellClass: 'day-cell w-8 px-0! py-0! text-center',
       render: (employee: any) => {
         const dateKey = toDateString(year, monthIndex, day);
         const code = employee.dates[dateKey] || '';

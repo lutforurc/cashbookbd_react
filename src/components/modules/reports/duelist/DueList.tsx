@@ -212,7 +212,7 @@ const DueList = (user: any) => {
               <div
                 className={
                   useFilterMenuEnabled
-                    ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                    ? 'absolute left-0 top-full z-1000 mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
                     : 'w-full'
                 }
               >
@@ -305,7 +305,7 @@ const DueList = (user: any) => {
               value={perPage.toString()}
               onChange={handlePerPageChange}
               type='text'
-              className="font-medium text-sm h-10 !w-20 text-center"
+              className="font-medium text-sm h-10 w-20! text-center"
             />
             <PrintFontInput
               id="fontSize"
@@ -314,7 +314,7 @@ const DueList = (user: any) => {
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type='text'
-              className="font-medium text-sm h-10 !w-20 text-center"
+              className="font-medium text-sm h-10 w-20! text-center"
             />
             <PrintButton
               onClick={handlePrint}

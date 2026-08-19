@@ -1181,7 +1181,7 @@ const ElectronicsBusinessSales = () => {
                       onClick={searchInvoice}
                       buttonLoading={buttonLoading}
                       label=""
-                      className="whitespace-nowrap !bg-transparent text-center -mr-2 py-2 absolute right-0 top-2 !pr-2 !pl-2"
+                      className="whitespace-nowrap bg-transparent! text-center -mr-2 py-2 absolute right-0 top-2 pr-2! pl-2!"
                       icon={
                         <FiSearch className="dark:text-white text-black-2 text-lg ml-2 mr-2" />
                       }
@@ -1498,7 +1498,7 @@ const ElectronicsBusinessSales = () => {
                 }}
                 buttonLoading={buttonLoading}
                 label="Add"
-                className="whitespace-nowrap text-center pt-1.5 pb-1.5 pr-4 ml-6 !pl-3"
+                className="whitespace-nowrap text-center pt-1.5 pb-1.5 pr-4 ml-6 pl-3!"
                 icon={<FiPlus className="text-white text-lg mr-2" />}
               />
             </div>

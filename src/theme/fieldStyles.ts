@@ -214,7 +214,7 @@ const FIELD_TOOLTIP_CARET = [
 ].join(' ');
 
 /** Pointing up, for a bubble beneath the field. */
-export const FIELD_TOOLTIP_CARET_UP = `${FIELD_TOOLTIP_CARET} -top-[6px] left-1/2 -ml-[5px] border-l border-t`;
+export const FIELD_TOOLTIP_CARET_UP = `${FIELD_TOOLTIP_CARET} top-[-6px] left-1/2 ml-[-5px] border-l border-t`;
 
 /** Pointing right, for a bubble to the left of the field. */
-export const FIELD_TOOLTIP_CARET_RIGHT = `${FIELD_TOOLTIP_CARET} -right-[6px] top-1/2 -mt-[5px] border-r border-t`;
+export const FIELD_TOOLTIP_CARET_RIGHT = `${FIELD_TOOLTIP_CARET} right-[-6px] top-1/2 mt-[-5px] border-r border-t`;

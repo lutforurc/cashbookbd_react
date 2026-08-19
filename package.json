@@ -47,19 +47,17 @@
     "yup": "^1.6.1"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@types/jquery": "^3.5.32",
     "@types/moment": "^2.11.29",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@types/yup": "^0.29.14",
     "@vitejs/plugin-react": "^6.0.5",
-    "autoprefixer": "^10.4.14",
     "dotenv": "^17.4.2",
-    "postcss": "^8.4.27",
-    "postcss-discard-comments": "^8.0.4",
     "prettier": "^3.0.0",
-    "prettier-plugin-tailwindcss": "^0.4.1",
-    "tailwindcss": "^3.4.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tailwindcss": "^4.3.3",
     "vite": "^8.2.1",
     "yaml": "^2.8.1"
   }

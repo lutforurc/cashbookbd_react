@@ -1,5 +1,6 @@
-import { defineConfig } from 'vite';
+﻿import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 // Not `__dirname`: this package is "type": "module", and from Vite 5 the
@@ -9,7 +10,7 @@ import path from 'path';
 const projectRoot = import.meta.dirname;
 
 export default defineConfig({
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
     optimizeDeps: {
         include: ['jquery'], // Ensure jQuery is pre-bundled
     },

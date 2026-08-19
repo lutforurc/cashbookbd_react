@@ -68,14 +68,14 @@ useEffect(() => {
       className={`block text-sm bg-transparent outline-none dark:bg-boxdark dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}
       classNames={{
         control: (state) =>
-          `!bg-transparent !border-gray-300 !rounded-none dark:!bg-boxdark dark:!border-gray-600 ${
+          `bg-transparent! border-gray-300! rounded-none! dark:bg-boxdark! dark:border-gray-600! ${
             state.isFocused
-              ? "dark:!border-blue-500 dark:!ring-blue-500"
-              : "dark:!border-gray-600"
+              ? "dark:border-blue-500! dark:ring-blue-500!"
+              : "dark:border-gray-600!"
           }`,
         placeholder: () => `dark:text-gray-400 text-gray-500 text-sm`,
         input: () => `dark:text-white text-gray-900 text-sm`,
-        menu: () => `dark:bg-boxdark bg-white border border-gray-300 !rounded-none`,
+        menu: () => `dark:bg-boxdark bg-white border border-gray-300 rounded-none!`,
         option: (state) =>
           `cursor-pointer text-sm ${
             state.isFocused

@@ -160,7 +160,7 @@ const AveragePrice = (user: any) => {
                             <div className="grid items-center justify-center uppercase text-black dark:text-white font-bold decoration-double underline">
                                 {orderData?.data?.total_purchase_product} Purchase Cost
                             </div>
-                            <div className="grid grid-cols-2 gap-2 border-b-[1px] border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
+                            <div className="grid grid-cols-2 gap-2 border-b border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
                                 <div className="">
                                     {orderData?.data?.order_number ? (
                                         <a
@@ -181,14 +181,14 @@ const AveragePrice = (user: any) => {
                                     {orderData?.data?.product_unit}
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-2 border-b-[1px] border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
+                            <div className="grid grid-cols-2 gap-2 border-b border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
                                 <div className="">Total Cost</div>
                                 <div className="text-right">
                                     {thousandSeparator(
                                         orderData?.data?.total_purchase_cost)}
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-2 border-b-[1px] border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
+                            <div className="grid grid-cols-2 gap-2 border-b border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
                                 <div className="">Average Per Unit</div>
                                 <div className="text-right">
                                     {thousandSeparator(
@@ -202,7 +202,7 @@ const AveragePrice = (user: any) => {
                                 {orderData?.data?.total_purchase_product} Increase / Decrease
                             </div>
                             <div className="">
-                                <div className="grid grid-cols-2 gap-2 border-b-[1px] border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
+                                <div className="grid grid-cols-2 gap-2 border-b border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
                                     <div className="">
                                         Total increase quantity
                                     </div>
@@ -213,7 +213,7 @@ const AveragePrice = (user: any) => {
                                 </div>
                             </div>
                             <div className="">
-                                <div className="grid grid-cols-2 gap-2 border-b-[1px] border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
+                                <div className="grid grid-cols-2 gap-2 border-b border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
                                     <div className="">Total decrease quantity</div>
                                     <div className="text-right">
                                         {orderData?.data?.total_decrease_qty ? thousandSeparator(orderData?.data?.total_decrease_qty) : '-'}
@@ -232,7 +232,7 @@ const AveragePrice = (user: any) => {
                                 {orderData?.data?.others_expense && (
                                     orderData?.data?.others_expense.map((item: any) => (
                                         <>
-                                            <div className="grid grid-cols-2 gap-2 border-b-[1px] border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
+                                            <div className="grid grid-cols-2 gap-2 border-b border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
                                                 <div className="">{item.name}</div>
                                                 <div className="text-right">
                                                     {thousandSeparator(item.debit)}{" "}
@@ -241,7 +241,7 @@ const AveragePrice = (user: any) => {
                                         </>
                                     ))
                                 )}
-                                <div className="grid grid-cols-2 gap-2 border-b-[1px] border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
+                                <div className="grid grid-cols-2 gap-2 border-b border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
                                     <div className="">Grand Total Cost</div>
                                     <div className="text-right">
                                         {thousandSeparator(
@@ -249,7 +249,7 @@ const AveragePrice = (user: any) => {
                                         )}
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 border-b-[1px] border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
+                                <div className="grid grid-cols-2 gap-2 border-b border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
                                     <div className="">Net per unit</div>
                                     <div className="text-right">
                                         {thousandSeparator(

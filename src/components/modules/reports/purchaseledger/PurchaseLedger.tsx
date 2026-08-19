@@ -455,7 +455,7 @@ const PurchaseLedger = (user: any) => {
       render: (row: any) => {
         const coaName = getRelevantCoaName(row);
         return (
-          <div className="min-w-52 break-words align-top">
+          <div className="min-w-52 wrap-break-word align-top">
             {coaName && (
               <div className="text-sm font-semibold">
                 {coaName}
@@ -787,7 +787,7 @@ const PurchaseLedger = (user: any) => {
               <div
                 className={
                   useFilterMenuEnabled
-                    ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,360px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                    ? 'absolute left-0 top-full z-1000 mt-2 w-[min(92vw,360px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
                     : 'w-full'
                 }
               >
@@ -902,7 +902,7 @@ const PurchaseLedger = (user: any) => {
                           value={perPage.toString()}
                           onChange={handlePerPageChange}
                           type="text"
-                          className="font-medium text-sm h-9 !w-20 min-w-[80px] text-center"
+                          className="font-medium text-sm h-9 w-20! min-w-[80px] text-center"
                         />
                         <PrintFontInput
                           id="fontSizeInline"
@@ -911,12 +911,12 @@ const PurchaseLedger = (user: any) => {
                           value={fontSize.toString()}
                           onChange={handleFontSizeChange}
                           type="text"
-                          className="font-medium text-sm h-9 !w-20 min-w-[80px] text-center"
+                          className="font-medium text-sm h-9 w-20! min-w-[80px] text-center"
                         />
                         <PrintButton
                           onClick={handlePrint}
                           label="Print"
-                          className="h-9 !min-w-[80px] px-6"
+                          className="h-9 min-w-[80px]! px-6"
                           disabled={!Array.isArray(tableData) || tableData.length === 0}
                         />
                       </div>
@@ -952,7 +952,7 @@ const PurchaseLedger = (user: any) => {
                           value={perPage.toString()}
                           onChange={handlePerPageChange}
                           type="text"
-                          className="font-medium text-sm h-9 !w-14 text-center"
+                          className="font-medium text-sm h-9 w-14! text-center"
                         />
                         <PrintFontInput
                           id="fontSizeInlineLg"
@@ -961,7 +961,7 @@ const PurchaseLedger = (user: any) => {
                           value={fontSize.toString()}
                           onChange={handleFontSizeChange}
                           type="text"
-                          className="font-medium text-sm h-9 !w-14 text-center"
+                          className="font-medium text-sm h-9 w-14! text-center"
                         />
                         {/* Icon only, for want of room beside Apply and Reset --
                             hence the tooltip, which is all the name it has. */}
@@ -1023,7 +1023,7 @@ const PurchaseLedger = (user: any) => {
                           value={perPage.toString()}
                           onChange={handlePerPageChange}
                           type="text"
-                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                          className="font-medium text-sm h-10 w-20! min-w-[80px] text-center"
                         />
                         <PrintFontInput
                           id="fontSizeInlineLg"
@@ -1032,7 +1032,7 @@ const PurchaseLedger = (user: any) => {
                           value={fontSize.toString()}
                           onChange={handleFontSizeChange}
                           type="text"
-                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                          className="font-medium text-sm h-10 w-20! min-w-[80px] text-center"
                         />
                         <PrintButton
                           onClick={handlePrint}
@@ -1071,7 +1071,7 @@ const PurchaseLedger = (user: any) => {
                 value={perPage.toString()}
                 onChange={handlePerPageChange}
                 type="text"
-                className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                className="font-medium text-sm h-10 w-20! min-w-[80px] text-center"
               />
               <PrintFontInput
                 id="fontSize"
@@ -1080,7 +1080,7 @@ const PurchaseLedger = (user: any) => {
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
                 type="text"
-                className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                className="font-medium text-sm h-10 w-20! min-w-[80px] text-center"
               />
               <PrintButton
                 onClick={handlePrint}

@@ -57,7 +57,7 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/50 px-3 py-6"
+      className="fixed inset-0 z-1001 flex items-center justify-center bg-black/50 px-3 py-6"
       onClick={onClose}
     >
       <div

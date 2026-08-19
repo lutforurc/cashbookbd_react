@@ -35,7 +35,7 @@ const CompanyPad: React.FC<Props> = ({ branch }) => {
           </div>
           { settings?.company?.notes && (
             <div>
-              <span className="!-mt-3 text-xs"> {settings?.company?.notes}</span>
+              <span className="-mt-3! text-xs"> {settings?.company?.notes}</span>
             </div>
           )}
         </div>

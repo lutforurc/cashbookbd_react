@@ -133,7 +133,7 @@ const SignIn: React.FC = () => {
 
             {/* Ambient glows */}
             <div className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-meta-3/20 blur-[120px]" />
-            <div className="pointer-events-none absolute -bottom-32 right-0 h-[28rem] w-[28rem] rounded-full bg-primary/20 blur-[130px]" />
+            <div className="pointer-events-none absolute -bottom-32 right-0 h-112 w-md rounded-full bg-primary/20 blur-[130px]" />
 
             {/* Grid texture. Fades from the top-left so it sits behind the
                 heading and dissolves before the feature tiles. */}
@@ -165,7 +165,7 @@ const SignIn: React.FC = () => {
                 Accounts,
                 <br />
                 Inventory and{' '}
-                <span className="bg-gradient-to-r from-meta-3 to-secondary bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-meta-3 to-secondary bg-clip-text text-transparent">
                   HRM
                 </span>
               </h1>
@@ -221,7 +221,7 @@ const SignIn: React.FC = () => {
                 ].map(({ icon: Icon, tint, title, desc }) => (
                   <li
                     key={title}
-                    className="group flex items-start gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] p-3 transition-colors duration-200 hover:border-white/15 hover:bg-white/[0.06]"
+                    className="group flex items-start gap-3 rounded-xl border border-white/[0.07] bg-white/3 p-3 transition-colors duration-200 hover:border-white/15 hover:bg-white/6"
                   >
                     <span
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ring-white/10 ${tint}`}

@@ -437,7 +437,7 @@ const BalanceSheet = (user: any) => {
                   label=""
                   value={perPage}
                   onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
-                  className="h-10 !w-20 text-center"
+                  className="h-10 w-20! text-center"
                 />
                 <PrintFontInput
                   type="number"
@@ -445,7 +445,7 @@ const BalanceSheet = (user: any) => {
                   label=""
                   value={fontSize}
                   onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                  className="h-10 !w-20 text-center"
+                  className="h-10 w-20! text-center"
                 />
                 <PrintButton
                   label="Print"
@@ -480,7 +480,7 @@ const BalanceSheet = (user: any) => {
                     label=""
                     value={perPage}
                     onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
-                    className="h-10 !w-20 text-center"
+                    className="h-10 w-20! text-center"
                   />
                   <PrintFontInput
                     type="number"
@@ -488,7 +488,7 @@ const BalanceSheet = (user: any) => {
                     label=""
                     value={fontSize}
                     onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                    className="h-10 !w-20 text-center"
+                    className="h-10 w-20! text-center"
                   />
                   <PrintButton
                     label="Print"
@@ -892,7 +892,7 @@ const SectionCard = ({
 
   return (
     <div className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-      <div className={`bg-gradient-to-r ${accent} px-5 py-4 text-white`}>
+      <div className={`bg-linear-to-r ${accent} px-5 py-4 text-white`}>
         <h3 className="text-lg font-bold">{title}</h3>
       </div>
       <div className="overflow-x-auto">
@@ -979,7 +979,7 @@ const GroupDetailsModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-[999] overflow-y-auto bg-slate-950/50 px-4 py-3"
+      className="fixed inset-0 z-999 overflow-y-auto bg-slate-950/50 px-4 py-3"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

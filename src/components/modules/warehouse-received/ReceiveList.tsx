@@ -154,8 +154,8 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
       // look as the Transfer List, so it reads as one feature seen twice.
       key: 'compare',
       header: '',
-      headerClass: 'text-center !pl-0',
-      cellClass: 'text-center w-8 !px-1',
+      headerClass: 'text-center pl-0!',
+      cellClass: 'text-center w-8 px-1!',
       render: (row: any) => {
         const id = Number(row?.id || 0);
         if (!id) return null;
@@ -182,8 +182,8 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
     {
       key: 'sl',
       header: 'Sl',
-      headerClass: 'text-center w-16 !pl-0',
-      cellClass: 'text-center w-16 !pl-0',
+      headerClass: 'text-center w-16 pl-0!',
+      cellClass: 'text-center w-16 pl-0!',
       render: (_row: any, index: number) => <span>{index + 1}</span>,
     },
     {
@@ -305,7 +305,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
               value={String(printFont)}
               onChange={handlePrintFontChange}
               type="text"
-              className="h-10 !w-20 text-center text-sm font-medium"
+              className="h-10 w-20! text-center text-sm font-medium"
             />
           </div>
         </div>

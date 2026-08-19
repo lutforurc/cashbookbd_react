@@ -469,7 +469,7 @@ const ProfitLoss = (user: any) => {
               <div
                 className={
                   useFilterMenuEnabled
-                    ? "absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800"
+                    ? "absolute left-0 top-full z-1000 mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800"
                     : "w-full"
                 }
               >
@@ -558,7 +558,7 @@ const ProfitLoss = (user: any) => {
                 value={perPage.toString()}
                 onChange={handlePerPageChange}
                 type="text"
-                className="font-medium text-sm h-10 !w-20 text-center"
+                className="font-medium text-sm h-10 w-20! text-center"
               />
 
               <PrintFontInput
@@ -568,7 +568,7 @@ const ProfitLoss = (user: any) => {
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
                 type="text"
-                className="font-medium text-sm h-10 !w-20 text-center"
+                className="font-medium text-sm h-10 w-20! text-center"
               />
 
               <PrintButton
@@ -612,7 +612,7 @@ const ProfitLoss = (user: any) => {
                   value={perPage.toString()}
                   onChange={handlePerPageChange}
                   type="text"
-                  className="font-medium text-sm h-10 !w-20 text-center"
+                  className="font-medium text-sm h-10 w-20! text-center"
                 />
 
                 <PrintFontInput
@@ -622,7 +622,7 @@ const ProfitLoss = (user: any) => {
                   value={fontSize.toString()}
                   onChange={handleFontSizeChange}
                   type="text"
-                  className="font-medium text-sm h-10 !w-20 text-center"
+                  className="font-medium text-sm h-10 w-20! text-center"
                 />
 
                 <PrintButton
@@ -726,7 +726,7 @@ const ExpenseDetailsModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-[999] overflow-y-auto bg-slate-950/50 px-4 py-3"
+      className="fixed inset-0 z-999 overflow-y-auto bg-slate-950/50 px-4 py-3"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

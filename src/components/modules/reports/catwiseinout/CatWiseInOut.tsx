@@ -277,7 +277,7 @@ const CatWiseInOut = (user: any) => {
               <div
                 className={
                   useFilterMenuEnabled
-                    ? "absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800"
+                    ? "absolute left-0 top-full z-1000 mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800"
                     : "w-full"
                 }
               >
@@ -376,7 +376,7 @@ const CatWiseInOut = (user: any) => {
                           name="perPageInline"
                           value={perPage.toString()}
                           onChange={(e) => setPerPage(Number(e.target.value))}
-                          className="h-10 !w-16 md:!w-18 text-sm"
+                          className="h-10 w-16! md:w-18! text-sm"
                         />
                         <PrintFontInput
                           id="fontSizeInline"
@@ -384,7 +384,7 @@ const CatWiseInOut = (user: any) => {
                           label="Font"
                           value={fontSize.toString()}
                           onChange={(e) => setFontSize(Number(e.target.value))}
-                          className="h-10 !w-16 md:!w-18 text-sm"
+                          className="h-10 w-16! md:w-18! text-sm"
                         />
                         <PrintButton
                           onClick={handlePrint}
@@ -466,7 +466,7 @@ const CatWiseInOut = (user: any) => {
               name="perPage"
               value={perPage.toString()}
               onChange={(e) => setPerPage(Number(e.target.value))}
-              className="h-10 !w-16 md:!w-18 text-sm"
+              className="h-10 w-16! md:w-18! text-sm"
             />
             <PrintFontInput
               id="fontSize"
@@ -474,7 +474,7 @@ const CatWiseInOut = (user: any) => {
               label={useFilterMenuEnabled ? "Font" : "Font"}
               value={fontSize.toString()}
               onChange={(e) => setFontSize(Number(e.target.value))}
-              className="h-10 !w-16 md:!w-18 text-sm"
+              className="h-10 w-16! md:w-18! text-sm"
             />
             <PrintButton
               onClick={handlePrint}

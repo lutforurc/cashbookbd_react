@@ -170,7 +170,7 @@ const AttendanceAuditHistory = ({ user }: any) => {
     {
       key: 'remarks',
       header: 'Remarks',
-      render: (row: any) => <span className="whitespace-normal break-words">{row.remarks || '-'}</span>,
+      render: (row: any) => <span className="whitespace-normal wrap-break-word">{row.remarks || '-'}</span>,
     },
   ];
 

@@ -246,7 +246,7 @@ const ClosingStockReport = ({ user }: any) => {
               value={perPage.toString()}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPerPage(Number(e.target.value) || 12)}
               type="text"
-              className="font-medium text-sm h-10 !w-full text-center"
+              className="font-medium text-sm h-10 w-full! text-center"
             />
             <PrintFontInput
               id="stockDetailsFont"
@@ -255,7 +255,7 @@ const ClosingStockReport = ({ user }: any) => {
               value={fontSize.toString()}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFontSize(Number(e.target.value) || 12)}
               type="text"
-              className="font-medium text-sm h-10 !w-full text-center"
+              className="font-medium text-sm h-10 w-full! text-center"
             />
             <PrintButton onClick={handlePrint} label="Print" className="h-10 px-6" disabled={!rows.length} />
           </div>
