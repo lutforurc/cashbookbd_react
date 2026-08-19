@@ -102,7 +102,7 @@ const SubscriptionPlanList: React.FC = () => {
                   <td className="px-4 py-3 text-right">
                     <Link
                       to={routes.subscription_plan_edit.replace(':id', String(plan.id))}
-                      className="inline-flex items-center gap-2 rounded bg-gray-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-400"
+                      className="inline-flex items-center gap-2 rounded bg-gray-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
                     >
                       <FiEdit />
                       Edit

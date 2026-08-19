@@ -138,7 +138,7 @@ const Pricing: React.FC = () => {
               </Link>
               <Link
                 to={routes.my_subscription}
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-sm bg-slate-700 px-5 py-2.5 text-center text-sm font-medium text-white transition hover:bg-blue-500 focus:bg-blue-500 focus:outline-none dark:hover:bg-blue-400"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-sm bg-slate-700 px-5 py-2.5 text-center text-sm font-medium text-white transition hover:bg-blue-700 focus:bg-blue-700 focus:outline-none dark:hover:bg-blue-400"
               >
                 Current Status
               </Link>

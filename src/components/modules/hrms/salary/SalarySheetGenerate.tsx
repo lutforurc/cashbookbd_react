@@ -1133,7 +1133,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         loading={saveButtonLoading}
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleSalaryGenerate}
-        className="bg-blue-400 hover:bg-blue-500"
+        className="bg-blue-700 hover:bg-blue-800"
       />
 
       {/* The trash button used to drop the row on the first click, with a whole

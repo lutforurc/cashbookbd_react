@@ -30,7 +30,12 @@ export const BUTTON_BASE = [
  */
 export const BUTTON_VARIANT = {
   /** The ordinary action: grey until you reach for it. */
-  default: 'text-white bg-gray-700 hover:bg-blue-400 focus:bg-blue-400 dark:hover:bg-blue-400',
+  // blue-700 rather than blue-400 for the reached-for state. The label is
+  // white, and white on blue-400 is 2.5:1 -- under 2.2:1 in dark mode, where
+  // white is softened -- so Apply and Reset went unreadable the moment they
+  // were hovered or, after a click, while they held focus. blue-700 carries
+  // the same white at 6.7:1.
+  default: 'text-white bg-gray-700 hover:bg-blue-700 focus:bg-blue-700 dark:hover:bg-blue-700',
 
   /** The one action a screen is for -- Sign In, Save on a wizard's last step. */
   primary: 'text-white bg-primary hover:bg-primary/90 focus:bg-primary/90',
