@@ -19,7 +19,6 @@ import { InstallmentStatus } from '../../utils/fields/DataConstant';
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import StatusIcon from '../../utils/utils-functions/StatusIcon';
 import InstallmentModal from './InstallmentModal';
-import 'antd/dist/reset.css';
 import PaymentDetailsModal from './PaymentDetailsModal';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getEmployeesDDL } from '../hrms/employee/employeeSlice';

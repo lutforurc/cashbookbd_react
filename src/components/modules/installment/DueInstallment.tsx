@@ -18,7 +18,6 @@ import InputElement from '../../utils/fields/InputElement';
 import PrintFontInput from '../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import InstallmentModal from './InstallmentModal';
-import 'antd/dist/reset.css';
 import { Tooltip } from 'antd';
 import { Popover } from '@headlessui/react';
 import PaymentDetailsModal from './PaymentDetailsModal';
