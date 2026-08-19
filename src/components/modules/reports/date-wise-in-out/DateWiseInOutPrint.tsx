@@ -4,6 +4,7 @@ import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import type { DateWiseInOutRow, InOutDetailRow } from './DateWiseInOut';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type DateWiseInOutPrintProps = {
   rows: DateWiseInOutRow[];
@@ -276,8 +277,9 @@ export const DateWiseInOutDetailPrint = React.forwardRef<HTMLDivElement, DateWis
 
     return (
       <div ref={ref} className="p-5 text-black" style={{ fontSize }}>
+        <PrintStyles orientation="landscape" />
         <style>
-          {'@page { size: landscape; margin: 10mm; }'}
+          {''}
         </style>
         {productPages.map((page, pageIndex) => (
           <div

@@ -107,13 +107,12 @@ const GroupReportPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="print-root p-8 text-sm text-gray-900">
-        <PrintStyles />
+        <PrintStyles orientation="landscape" />
         <style>
           {`
             @media print {
-              @page { size: A4 landscape; margin: 6mm 8mm 8mm 8mm; }
               .group-report-print-page {
-                min-height: calc(210mm - 6mm - 8mm - 8mm - 8mm) !important;
+                min-height: var(--print-page-height) !important;
               }
             }
           `}

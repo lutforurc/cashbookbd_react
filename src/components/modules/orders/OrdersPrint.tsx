@@ -142,15 +142,10 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
-        <PrintStyles />
+        <PrintStyles orientation="landscape" />
         <style>
           {`
             @media print {
-              @page {
-                size: A4 landscape;
-                /* small bottom margin so the footer can sit close to the paper edge */
-                margin: 6mm 8mm 5mm 10mm;
-              }
 
               /*
                 Landscape printable height = 210mm - 6mm(top margin) - 5mm(bottom margin) = 199mm.
@@ -159,7 +154,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                 mt-auto); the tiny 1mm buffer keeps a sub-millimetre overflow off a second page.
               */
               .orders-print-page {
-                min-height: calc(210mm - 6mm - 5mm - 8mm - 2mm - 1mm);
+                min-height: var(--print-page-height);
               }
             }
           `}

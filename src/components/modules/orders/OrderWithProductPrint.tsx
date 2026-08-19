@@ -243,10 +243,9 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="p-6 text-sm text-gray-900 print-root">
-        <PrintStyles />
+        <PrintStyles orientation="landscape" />
         <style>{`
           @media print {
-            @page { size: landscape; }
             .order-with-transaction-print-page {
               display: block !important;
               min-height: auto !important;

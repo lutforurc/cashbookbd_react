@@ -4,6 +4,7 @@ import PadPrinting from '../../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../../utils/utils-functions/thousandSeparator';
 import { chartDateTime } from '../../../../utils/utils-functions/formatDate';
 import { formatMobile, useMobileFormat } from '../../../../utils/utils-functions/mobileFormat';
+import PrintStyles from '../../../../utils/utils-functions/PrintStyles';
 
 type CashVoucherMode = 'payment' | 'received';
 type CashVoucherVariant = 'a4-portrait' | 'a4-landscape' | 'half-portrait' | 'half-landscape';
@@ -172,10 +173,10 @@ const CashVoucherPrintBase = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="print-root text-gray-900">
+        <PrintStyles />
         <style>{`
           @media print {
-            @page {
-              size: ${config.pageSize};
+;
               margin: ${config.pageMargin};
             }
             .print-root {

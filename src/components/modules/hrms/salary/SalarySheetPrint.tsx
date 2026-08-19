@@ -211,15 +211,11 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="print-root text-gray-900">
-        <PrintStyles />
+        <PrintStyles orientation="landscape" />
 
         {/* ========= PRINT CSS ========= */}
         <style>{`
           @media print {
-            @page {
-              size: A4 landscape;
-              margin: 8mm 18mm 8mm 18mm;
-            }
 
             .print-root {
               padding: 0 !important;

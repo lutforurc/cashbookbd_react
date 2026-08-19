@@ -4,6 +4,7 @@ import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
+import PrintStyles from '../../utils/utils-functions/PrintStyles';
 
 type Props = {
   master: any;
@@ -151,35 +152,18 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="print-root text-gray-900" style={{ fontSize }}>
+        <PrintStyles />
+        {/* Only what is the challan's own: it breaks a page per challan page,
+            and it names its page class rather than reusing .print-page because
+            a challan page is one challan, not one screenful of rows. The
+            margins, the sheet height and the gap under the footer come from
+            PrintStyles above, where every report reads them. */}
         <style>{`
           @media print {
-            /* Wider at the sides than top and bottom: a challan is filed in a
-               folder and read at arm's length, and text that runs to the edge
-               of the sheet is the first thing a punch hole or a photocopier
-               takes off. */
-            /* The foot is the one edge that gives its margin back: nothing is
-               punched or stapled there, and the footer is the line a reader
-               can most afford to lose a millimetre of. Held at the same 5mm
-               the Cash Book prints at, so a challan and a report filed
-               together have their last line at the same height. */
-            @page {
-              size: A4 portrait;
-              margin: 8mm 16mm 5mm 16mm;
-            }
-            .print-root {
-              padding: 0 !important;
-            }
-            /* A page tall enough to reach the foot of the paper, so the
-               footer's mt-auto has somewhere to push to. Without the height a
-               short challan leaves its footer floating under the signatures
-               instead of at the bottom of the sheet, which is where a reader
-               looks for the page count. 297mm less the two @page margins,
-               less a millimetre so a rounding overflow does not spill a blank
-               second sheet. */
             .challan-page {
               display: flex;
               flex-direction: column;
-              min-height: calc(297mm - 8mm - 5mm - 1mm);
+              min-height: var(--print-page-height);
               break-after: page;
               page-break-after: always;
             }

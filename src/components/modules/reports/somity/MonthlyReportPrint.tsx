@@ -91,8 +91,7 @@ const MonthlyReportPrint = forwardRef<HTMLDivElement, Props>(
         <style>
           {`
             @media print {
-              @page { size: A4 portrait; margin: 7mm; }
-              .print-page { min-height: calc(297mm - 14mm - 16mm); }
+              .print-page { min-height: var(--print-page-height); }
             }
           `}
         </style>

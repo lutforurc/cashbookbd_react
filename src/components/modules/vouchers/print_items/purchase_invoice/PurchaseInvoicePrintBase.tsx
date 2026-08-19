@@ -6,6 +6,7 @@ import { formatTransportationNumber } from '../../../../utils/utils-functions/fo
 import { chartDateTime } from '../../../../utils/utils-functions/formatDate';
 import numberToWords from '../../../../utils/utils-functions/numberToWords';
 import { formatMobile, useMobileFormat } from '../../../../utils/utils-functions/mobileFormat';
+import PrintStyles from '../../../../utils/utils-functions/PrintStyles';
 
 type Variant = 'a4-portrait' | 'a4-landscape' | 'half-portrait' | 'half-landscape';
 
@@ -167,10 +168,10 @@ const PurchaseInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="print-root text-gray-900">
+        <PrintStyles />
         <style>{`
           @media print {
-            @page {
-              size: ${config.pageSize};
+;
               margin: ${config.pageMargin};
             }
             thead { display: table-header-group; }

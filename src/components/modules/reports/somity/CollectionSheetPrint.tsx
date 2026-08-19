@@ -111,7 +111,7 @@ const CollectionSheetPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
-        <PrintStyles />
+        <PrintStyles orientation="landscape" />
         <style>
           {`
             @font-face {
@@ -123,8 +123,7 @@ const CollectionSheetPrint = React.forwardRef<HTMLDivElement, Props>(
             }
             .sutonny-text { font-family: 'SutonnyMJ', serif; }
             @media print {
-              @page { size: A4 landscape; margin: 7mm; }
-              .print-page { min-height: calc(210mm - 14mm - 16mm); }
+              .print-page { min-height: var(--print-page-height); }
             }
           `}
         </style>

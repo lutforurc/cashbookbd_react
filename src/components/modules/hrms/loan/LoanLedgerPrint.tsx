@@ -4,6 +4,7 @@ import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import dayjs from 'dayjs';
 import { formatDateUsdToBd } from '../../../utils/utils-functions/formatDate';
+import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 export type EmployeeData = {
   id?: number | string;
@@ -68,9 +69,9 @@ const LoanLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
+        <PrintStyles />
         <style>{`
           @media print {
-            @page { size: A4 portrait; margin: 5mm 4mm 8mm 8mm; }
             .no-print { display: none !important; }
             .page-break { page-break-after: always; }
             .avoid-break { break-inside: avoid; }
@@ -79,7 +80,7 @@ const LoanLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
             .print-page {
               display: flex;
               flex-direction: column;
-              min-height: calc(297mm - 5mm - 4mm - 8mm - 8mm);
+              min-height: var(--print-page-height);
             }
             h1, h2, h3 { margin-top: 0; }
           }

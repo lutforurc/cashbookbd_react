@@ -168,10 +168,9 @@ const OvertimeSalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="print-root text-gray-900">
-        <PrintStyles />
+        <PrintStyles orientation="landscape" />
         <style>{`
           @media print {
-            @page { size: A4 landscape; margin: 8mm 18mm 8mm 18mm; }
             .print-root { padding: 0 !important; }
             .page-break { page-break-after: always; }
             table { width: 100%; border-collapse: collapse; break-inside: avoid; }

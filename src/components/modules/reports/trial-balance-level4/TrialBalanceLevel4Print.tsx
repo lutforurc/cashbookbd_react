@@ -2,6 +2,7 @@ import React from "react";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type TrialBalancePrintRow = {
   key: string;
@@ -58,17 +59,14 @@ const TrialBalanceLevel4Print = React.forwardRef<
 
   return (
     <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
+      <PrintStyles />
       <style>{`
         @media print {
-          @page {
-            size: A4 portrait;
-            margin: 5mm 4mm 8mm 8mm;
-          }
           .page-break { page-break-after: always; }
           .print-root { padding: 0 !important; }
           .print-page {
             padding: 8mm !important;
-            min-height: calc(297mm - 5mm - 4mm - 8mm - 8mm);
+            min-height: var(--print-page-height);
             display: flex;
             flex-direction: column;
           }

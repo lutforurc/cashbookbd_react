@@ -44,8 +44,8 @@ const CashBankReceivedPaymentPrint = forwardRef<HTMLDivElement, Props>(
     const fs = Number(fontSize) || 12;
     const cell = { border: '1px solid #444', padding: '5px 6px', fontSize: fs, textAlign: 'right' as const };
 
-    return <div ref={ref} className="print-root p-8 text-gray-900"><PrintStyles />
-      <style>{`@media print { @page { size: A4 landscape; margin: 6mm 8mm 5mm 10mm; } .cash-bank-print-page { box-sizing: border-box; height: calc(210mm - 6mm - 5mm - 1mm); min-height: 0; max-height: calc(210mm - 6mm - 5mm - 1mm); break-inside: avoid; page-break-inside: avoid; overflow: hidden; } .cash-bank-print-page.break-after { break-after: page; page-break-after: always; } }`}</style>
+    return <div ref={ref} className="print-root p-8 text-gray-900"><PrintStyles orientation="landscape" />
+      <style>{`@media print {.cash-bank-print-page { box-sizing: border-box; height: var(--print-page-height); min-height: 0; max-height: var(--print-page-height); break-inside: avoid; page-break-inside: avoid; overflow: hidden; } .cash-bank-print-page.break-after { break-after: page; page-break-after: always; } }`}</style>
       {pages.map((pageRows, pageIndex) => {
         const lastPage = pageIndex === pages.length - 1;
         const offset = pageIndex * Math.max(1, Number(rowsPerPage) || 12);

@@ -4,6 +4,7 @@ import { formatBdShortDate } from '../../utils/utils-functions/formatDate';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
+import PrintStyles from '../../utils/utils-functions/PrintStyles';
 
 export type InstallmentRow = {
   sl_number?: string | number;
@@ -82,16 +83,10 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
         {/* Print-only styles */}
+        <PrintStyles />
         <style>
           {`
             @media print {
-              @page {
-                size: A4 portrait;
-                margin-top: 6mm;   /* top margin */
-                margin-right: 6mm; /* right margin */
-                margin-bottom: 8mm;/* bottom margin */
-                margin-left: 10mm;  /* left margin */
-              }
               .no-print { display: none !important; }
               .page-break { page-break-after: always; }
               .avoid-break { break-inside: avoid; }

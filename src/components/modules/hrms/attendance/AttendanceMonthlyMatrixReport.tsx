@@ -15,6 +15,7 @@ import Table, { Column, TableFooterCell } from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchAttendanceReport, fetchLeaveApplications, fetchMonthlyAttendanceSummary } from './attendanceSlice';
 import AttendanceMonthlyMatrixPrint from './AttendanceMonthlyMatrixPrint';
+import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 const monthNames = [
   'January',
@@ -668,6 +669,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       </div>
 
       <div className={`attendance-monthly-screen border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark ${activeTab === 'matrix' ? '' : 'hidden'}`}>
+        <PrintStyles />
         <style>
           {`
             .attendance-monthly-screen .status-cell {
@@ -778,10 +780,6 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             }
 
             @media print {
-              @page {
-                size: A4 landscape;
-                margin: 8mm;
-              }
 
               html,
               body {

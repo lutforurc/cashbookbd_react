@@ -80,10 +80,6 @@ const FestivalBonusPrint = React.forwardRef<HTMLDivElement, Props>(
         <PrintStyles />
         <style>{`
           @media print {
-            @page {
-              size: A4 portrait;
-              margin: 10mm 12mm;
-            }
 
             table {
               width: 100%;

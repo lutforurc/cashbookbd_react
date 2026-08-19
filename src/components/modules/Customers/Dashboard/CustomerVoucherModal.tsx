@@ -7,6 +7,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import PurchaseInvoicePrint from '../../vouchers/print_items/PurchaseInvoicePrint';
 import ElectronicsSalesInvoicePrint from '../../invoices/sales/ElectronicsSalesInvoicePrint';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type Props = {
   mtmId: number | string;
@@ -136,7 +137,8 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
           {!loading && !error && voucher && !isInvoice && (
             /* ===== Printable voucher (always light, like a real document) ===== */
             <div ref={printRef} className="bg-white p-6 text-[13px] text-gray-900">
-              <style>{`@media print { @page { size: A4 portrait; margin: 10mm; } }`}</style>
+              <PrintStyles />
+              <style>{`@media print {}`}</style>
 
               {/* Letterhead */}
               <div className="text-center">

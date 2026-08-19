@@ -88,7 +88,7 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
 
     return (
     <div ref={ref} className="attendance-monthly-print bg-white text-slate-950">
-      <PrintStyles />
+      <PrintStyles orientation="landscape" />
       <style>
         {`
           .attendance-monthly-print .matrix-header-cell {
@@ -178,10 +178,6 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
           }
 
           @media print {
-            @page {
-              size: A4 landscape;
-              margin: 8mm;
-            }
 
             html,
             body {

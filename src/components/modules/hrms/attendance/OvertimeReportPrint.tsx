@@ -107,7 +107,7 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
       ref={ref}
 	      className="overtime-monthly-print bg-white text-slate-950"
     >
-      <PrintStyles />
+      <PrintStyles orientation="landscape" />
       <style>{`
 	        .overtime-monthly-print .matrix-header-cell {
 	          background: #e8eef6;
@@ -135,10 +135,6 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
 	        }
 
         @media print {
-          @page {
-            size: A4 landscape;
-            margin: 8mm;
-          }
 
           html,
           body {

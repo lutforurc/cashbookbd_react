@@ -18,6 +18,7 @@ import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import Table from '../../../utils/others/Table';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type BranchColumn = { id: number | string; name: string };
 
@@ -371,7 +372,8 @@ const BranchStockReport = ({ user }: any) => {
       {/* Print view */}
       <div className="hidden">
         <div ref={printRef} className="print-root p-6 text-gray-900">
-          <style>{`@media print { @page { size: A4 landscape; margin: 8mm; } .print-root { padding: 0 !important; } }`}</style>
+          <PrintStyles orientation="landscape" />
+          <style>{`@media print {.print-root { padding: 0 !important; } }`}</style>
           <PadPrinting />
           <h1 className="mt-3 text-center text-xl font-bold uppercase">Branch Stock Report</h1>
           <div className="mb-3 mt-1 text-center text-sm">

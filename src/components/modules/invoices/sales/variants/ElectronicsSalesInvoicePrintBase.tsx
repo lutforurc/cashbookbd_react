@@ -5,6 +5,7 @@ import thousandSeparator from '../../../../utils/utils-functions/thousandSeparat
 import { chartDateTime } from '../../../../utils/utils-functions/formatDate';
 import { formatTransportationNumber } from '../../../../utils/utils-functions/formatRoleName';
 import { formatMobile, useMobileFormat } from '../../../../utils/utils-functions/mobileFormat';
+import PrintStyles from '../../../../utils/utils-functions/PrintStyles';
 
 type Variant = 'a4-portrait' | 'a4-landscape' | 'half-portrait' | 'half-landscape';
 
@@ -192,10 +193,10 @@ const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>
 
     return (
       <div ref={ref} className="print-root text-gray-900">
+        <PrintStyles />
         <style>{`
           @media print {
-            @page {
-              size: ${config.pageSize};
+;
               margin: ${config.pageMargin};
             }
             thead { display: table-header-group; }

@@ -121,12 +121,8 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
-        <PrintStyles />
+        <PrintStyles orientation="landscape" />
         <style media="print">{`
-          @page {
-            size: A4 landscape;
-            margin: 5mm;
-          }
 
           /*
             Each page block fills the sheet, so the foot of it — summary bar,
@@ -144,7 +140,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
           */
           .print-page {
             box-sizing: border-box;
-            min-height: calc(210mm - 5mm - 5mm - 1mm) !important;
+            min-height: var(--print-page-height) !important;
           }
 
           .print-page.ledger-break-after {

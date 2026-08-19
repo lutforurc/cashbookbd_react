@@ -7,6 +7,7 @@ import { chartDate } from '../../utils/utils-functions/formatDate';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import { getMaterialIssueDetails } from './materialIssueSlice';
+import PrintStyles from '../../utils/utils-functions/PrintStyles';
 
 type Props = {
   id: number | string;
@@ -91,7 +92,8 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
           {!loading && !error && master && (
             /* ===== Printable challan (always light, like a real document) ===== */
             <div ref={printRef} className="bg-white p-6 text-[13px] text-gray-900">
-              <style>{`@media print { @page { size: A4 portrait; margin: 10mm; } }`}</style>
+              <PrintStyles />
+              <style>{`@media print {}`}</style>
 
               {/* Letterhead (shared branch / company pad) */}
               <PadPrinting />

@@ -84,13 +84,12 @@ const StockAlertPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
-        <PrintStyles />
+        <PrintStyles orientation="landscape" />
         <style>
           {`
             @media print {
-              @page { size: A4 landscape; margin: 6mm 8mm 8mm 8mm; }
               .print-page {
-                min-height: calc(210mm - 6mm - 8mm - 8mm - 8mm);
+                min-height: var(--print-page-height);
               }
               .stock-alert-print-table th,
               .stock-alert-print-table td {
