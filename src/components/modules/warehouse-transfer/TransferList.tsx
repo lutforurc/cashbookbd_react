@@ -12,7 +12,7 @@ import {
 import InlineConfirm, {
   InlineConfirmPosition,
 } from '../../utils/components/InlineConfirm';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, IconButton } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
 import PrintFontInput from '../../utils/fields/PrintFontInput';
@@ -378,21 +378,20 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
         return (
           <div className="flex items-center justify-center gap-3">
             {canEdit ? (
-              <button
-                type="button"
+              <IconButton
                 title="Edit this transfer"
+                tone="warning"
+                icon={<FiEdit2 className="inline h-4 w-4" />}
                 onClick={() =>
                   navigate(ROUTES.branch_transfer, { state: { editTransferId: row.id } })
                 }
-                className="text-warning hover:opacity-80"
-              >
-                <FiEdit2 className="inline h-4 w-4" />
-              </button>
+              />
             ) : null}
             {isOwnVoucher ? (
-              <button
-                type="button"
+              <IconButton
                 title="Delete this transfer"
+                tone="danger"
+                icon={<FiTrash2 className="inline h-4 w-4" />}
                 disabled={deletingId === row.id}
                 onClick={(event) => {
                   const rect = event.currentTarget.getBoundingClientRect();
@@ -402,31 +401,24 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
                     at: { top: rect.bottom + 10, left: rect.left + rect.width / 2 },
                   });
                 }}
-                className="text-danger hover:opacity-80 disabled:opacity-40"
-              >
-                <FiTrash2 className="inline h-4 w-4" />
-              </button>
+              />
             ) : null}
-            <button
-              type="button"
+            <IconButton
               title="Print challan"
+              tone="primary"
+              icon={<FiPrinter className="inline h-4 w-4" />}
               disabled={printingId === row.id}
               onClick={() => handlePrint(row.id)}
-              className="text-primary hover:opacity-80 disabled:opacity-40"
-            >
-              <FiPrinter className="inline h-4 w-4" />
-            </button>
+            />
             {canReceive ? (
-              <button
-                type="button"
+              <IconButton
                 title="Receive this transfer"
+                tone="success"
+                icon={<FiInbox className="inline h-4 w-4" />}
                 onClick={() =>
                   navigate(ROUTES.branch_received, { state: { sourceTransferId: row.id } })
                 }
-                className="text-meta-3 hover:opacity-80"
-              >
-                <FiInbox className="inline h-4 w-4" />
-              </button>
+              />
             ) : null}
           </div>
         );

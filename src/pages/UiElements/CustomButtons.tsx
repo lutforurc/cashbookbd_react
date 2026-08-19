@@ -49,6 +49,101 @@ interface ButtonProps {
  */
 export const ROW_ACTION_BUTTON_CLASS = 'h-7 w-full';
 
+/**
+ * A single icon that does something: edit a row, print it, close a panel.
+ *
+ * These were written by hand about a hundred and fifty times, each with its own
+ * size, its own hover and its own idea of which colour means delete -- so the
+ * same action looked different from one table to the next, and changing how any
+ * of them looked meant finding them all.
+ *
+ * `tone` names the meaning rather than the colour, so the palette can move
+ * without every screen being edited. `title` is not decoration: an icon with no
+ * words needs it, and it becomes the accessible name too.
+ */
+export type IconButtonTone = 'default' | 'primary' | 'warning' | 'danger' | 'success' | 'muted';
+
+const ICON_TONE: Record<IconButtonTone, string> = {
+  default: 'text-body hover:text-black dark:text-bodydark dark:hover:text-white',
+  primary: 'text-primary hover:opacity-80',
+  warning: 'text-warning hover:opacity-80',
+  danger: 'text-danger hover:opacity-80',
+  success: 'text-meta-3 hover:opacity-80',
+  muted: 'text-slate-400 hover:text-slate-700 dark:hover:text-white',
+};
+
+interface IconButtonProps {
+  icon: React.ReactNode;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  /** Said aloud by a screen reader, and shown on hover. Required for a reason. */
+  title: string;
+  tone?: IconButtonTone;
+  disabled?: boolean;
+  type?: 'button' | 'submit';
+  className?: string;
+}
+
+export const IconButton: React.FC<IconButtonProps> = ({
+  icon,
+  onClick,
+  title,
+  tone = 'default',
+  disabled = false,
+  type = 'button',
+  className = '',
+}) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    aria-label={title}
+    className={`inline-flex items-center justify-center transition disabled:cursor-not-allowed disabled:opacity-40 ${ICON_TONE[tone]} ${className}`}
+  >
+    {icon}
+  </button>
+);
+
+/**
+ * One tab of a segmented control -- Attendance against Vouchers, and the like.
+ *
+ * The pair of states was being spelled out at every call site, which is how two
+ * segmented controls on two screens ended up different heights with different
+ * blues. Here the caller says which one is on.
+ */
+interface TabButtonProps {
+  label: React.ReactNode;
+  active: boolean;
+  onClick: () => void;
+  icon?: React.ReactNode;
+  disabled?: boolean;
+  className?: string;
+}
+
+export const TabButton: React.FC<TabButtonProps> = ({
+  label,
+  active,
+  onClick,
+  icon,
+  disabled = false,
+  className = '',
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    aria-pressed={active}
+    className={`${BUTTON_BASE} h-9 px-4 text-sm ${
+      active
+        ? 'bg-primary text-white'
+        : 'bg-gray-100 text-body hover:bg-gray-200 dark:bg-meta-4 dark:text-bodydark dark:hover:bg-gray-700'
+    } ${className}`}
+  >
+    {icon ? <span className="mr-2 inline-flex items-center">{icon}</span> : null}
+    {label}
+  </button>
+);
+
 // Button component definition
 
 export const ButtonLoading: React.FC<ButtonProps> = ({
