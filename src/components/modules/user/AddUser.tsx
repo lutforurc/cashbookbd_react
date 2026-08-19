@@ -15,6 +15,7 @@ import { storeUser } from './userSlice';
 import { hasPermission } from '../../utils/permissionChecker';
 import { FiArrowLeft, FiCheckSquare } from 'react-icons/fi';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
+import ThemeSetupSection, { ThemeSetupValues } from './ThemeSetupSection';
 
 type MultiOption = {
   value: string | number;
@@ -33,6 +34,21 @@ const initialFormData = {
   role_id: '',
   sidebar_menu: false,
   use_filter_parameter: false,
+  // How the software looks for this user. Blank means the way it ships.
+  theme_primary_color: '',
+  theme_secondary_color: '',
+  theme_success_color: '',
+  theme_danger_color: '',
+  theme_warning_color: '',
+  theme_info_color: '',
+  theme_sidebar_color: '',
+  theme_header_color: '',
+  theme_page_bg_color: '',
+  theme_print_color: '',
+  theme_chart_palette: '',
+  theme_mode: '',
+  theme_control_height: '',
+  theme_control_radius: '',
 };
 
 const CREATE_USER_PERMISSIONS = [
@@ -295,6 +311,13 @@ const AddUser = () => {
             />
           </div>
         </div>
+
+        <ThemeSetupSection
+          values={formData as ThemeSetupValues}
+          onChange={(name, value) =>
+            setFormData((prevData) => ({ ...prevData, [name]: value }))
+          }
+        />
 
         <div className="flex gap-2 md:col-span-2">
           <ButtonLoading

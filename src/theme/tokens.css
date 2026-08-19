@@ -35,6 +35,28 @@
    * ---------------------------------------------------------------------- */
   --control-height: 2.125rem;        /* 34px -- the height of the search button */
 
+  /* How round a control's corners are. Square is what this software has always
+     been; it is a variable so that is a choice rather than an accident. */
+  --control-radius: 0px;
+
+  /* The chrome: what sits behind the sidebar and the top bar. Named apart from
+     the page's own white because a user may repaint the chrome without
+     repainting every card on the page -- see theme/userTheme.ts, which writes
+     this variable from that user's saved choice. Left alone it is exactly the
+     white the sidebar has always been, and html.dark below restates it for
+     dark mode rather than letting it follow --c-white, which is text there. */
+  --c-sidebar: var(--c-white);
+
+  /* The top bar. Its own variable rather than sharing the sidebar's, because a
+     user may want the bar to carry the brand colour while the menu under it
+     stays quiet -- and following the sidebar by default means nobody who wants
+     them the same has to say so twice. */
+  --c-header: var(--c-sidebar);
+
+  /* What a printed report's table headings are inked in. Black on paper unless
+     a user says otherwise. */
+  --c-print-accent: var(--c-black-2);
+
   /* Brand and interaction */
   --c-primary: 43 95 217;            /* #2B5FD9 */
   --c-secondary: 127 190 234;        /* #7FBEEA */
@@ -390,6 +412,11 @@
  * ------------------------------------------------------------------------ */
 
 html.dark {
+  /* The chrome in dark mode. Stated rather than inherited: --c-white is the
+     text colour here, and following it would paint the sidebar near-white. */
+  --c-sidebar: var(--c-boxdark);
+  --c-header: var(--c-sidebar);
+
   /* Pure white text on a dark page bleeds at the edges -- the effect people
      describe as "my eyes hurt after a few hours". Softening it here reaches all
      1,229 `dark:text-white` uses without touching one of them. Contrast drops

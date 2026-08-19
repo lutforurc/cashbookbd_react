@@ -450,8 +450,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
       ref={sidebar}
       className={
         isTopbar
-          ? 'topbar-menu sticky top-0 isolate z-9998 w-full border-b border-stroke bg-white dark:border-strokedark dark:bg-boxdark'
-          : `app-sidebar-menu w-72.5 ${sidebarCollapsed ? 'app-sidebar-collapsed lg:w-20' : ''} absolute left-0 top-0 z-9999 flex h-screen flex-col overflow-y-hidden duration-300 ease-linear bg-white dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
+          ? 'topbar-menu sticky top-0 isolate z-9998 w-full border-b border-stroke bg-[rgb(var(--c-sidebar))] dark:border-strokedark'
+          : `app-sidebar-menu w-72.5 ${sidebarCollapsed ? 'app-sidebar-collapsed lg:w-20' : ''} absolute left-0 top-0 z-9999 flex h-screen flex-col overflow-y-hidden duration-300 ease-linear bg-[rgb(var(--c-sidebar))] lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
       }
     >
       {!isTopbar ? (

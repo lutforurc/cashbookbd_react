@@ -98,6 +98,7 @@ import LabourLedger from './components/modules/reports/ledger-labour/LabourLedge
 import ConstructionLabourInvoice from './components/modules/invoices/labour/ConstructionLabourInvoice';
 import RemoveApproval from './components/modules/voucher_approval/RemoveApproval';
 import FaviconUpdater from './components/utils/components/FaviconUpdater';
+import { useUserTheme } from './theme/userTheme';
 import BulkImageUpload from './components/modules/image-upload/BulkImageUpload';
 import GroupPurchaseSales from './components/modules/reports/group-report/GroupPurchaseSales';
 import GroupReportSetup from './components/modules/reports/group-report/GroupReportSetup';
@@ -256,6 +257,11 @@ function App() {
   useEffect(() => {
     dispatch(authCheck());
   }, []);
+
+  // The colours and the control height this user chose for themselves, put on
+  // the root element as soon as the session settings arrive. Everything below
+  // is already reading those variables, so nothing else has to know about it.
+  useUserTheme(settings?.data?.user);
 
 
 

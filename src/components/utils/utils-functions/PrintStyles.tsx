@@ -63,6 +63,21 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait' }) => {
           }
 
           h1, h2, h3 { margin-top: 0; }
+
+          /* The one colour a printed page takes from the user: the report's
+             own heading and the column headings under it. Everything else on
+             paper stays black, because most of these go out on a laser printer
+             and a coloured table is a slower, dearer page. Left unset, the
+             variable resolves to near-black, which is what reports printed as
+             before this existed. */
+          .print-page h1,
+          .print-page h2,
+          .print-page h3,
+          .print-page thead th {
+            color: rgb(var(--c-print-accent));
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
         }
       `}
     </style>

@@ -109,8 +109,11 @@ export const withFieldHeight = (
  * -- one at a time: rounded-sm in twelve places, rounded-none in five,
  * rounded-lg, rounded-md and a bare rounded in the rest. Two boxes in the same
  * filter row could differ. Said here, they cannot.
+ *
+ * The number itself is --control-radius in tokens.css, which is 0 -- square,
+ * as before -- until a user asks for something else on their own form.
  */
-export const FIELD_RADIUS = 'rounded-none';
+export const FIELD_RADIUS = 'rounded-[var(--control-radius)]';
 
 const FIELD_SURFACE = [
   // `form-input rounded-xs` stood here and rendered nothing: the forms plugin is

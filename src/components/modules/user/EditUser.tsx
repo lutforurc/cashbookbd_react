@@ -16,6 +16,7 @@ import { authCheck } from '../../../features/authReducer';
 import MultiSelectDropdown from '../../utils/utils-functions/MultiSelectDropdown';
 import { FiArrowLeft, FiCheckSquare } from 'react-icons/fi';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
+import ThemeSetupSection, { ThemeSetupValues } from './ThemeSetupSection';
 import { hasPermission } from '../../utils/permissionChecker';
 
 type MultiOption = {
@@ -79,6 +80,21 @@ const EditUser = (user: any) => {
         role_id: '',
         sidebar_menu: false,
         use_filter_parameter: false,
+        // How the software looks for this user. Blank means the way it ships.
+        theme_primary_color: '',
+        theme_secondary_color: '',
+        theme_success_color: '',
+        theme_danger_color: '',
+        theme_warning_color: '',
+        theme_info_color: '',
+        theme_sidebar_color: '',
+        theme_header_color: '',
+        theme_page_bg_color: '',
+        theme_print_color: '',
+        theme_chart_palette: '',
+        theme_mode: '',
+        theme_control_height: '',
+        theme_control_radius: '',
     });
 
     const roleOptions: MultiOption[] = (roles?.roles?.data?.data || []).map((item: any) => ({
@@ -104,6 +120,22 @@ const EditUser = (user: any) => {
                     showUser.editData.use_filter_parameter == 1 ||
                     showUser.editData.use_filter_parameter === '1' ||
                     showUser.editData.use_filter_parameter === true,
+                // A user with no theme row of their own comes back with these
+                // empty; read as text so a null never reaches a colour box.
+                theme_primary_color: String(showUser.editData.theme_primary_color || ''),
+                theme_secondary_color: String(showUser.editData.theme_secondary_color || ''),
+                theme_success_color: String(showUser.editData.theme_success_color || ''),
+                theme_danger_color: String(showUser.editData.theme_danger_color || ''),
+                theme_warning_color: String(showUser.editData.theme_warning_color || ''),
+                theme_info_color: String(showUser.editData.theme_info_color || ''),
+                theme_sidebar_color: String(showUser.editData.theme_sidebar_color || ''),
+                theme_header_color: String(showUser.editData.theme_header_color || ''),
+                theme_page_bg_color: String(showUser.editData.theme_page_bg_color || ''),
+                theme_print_color: String(showUser.editData.theme_print_color || ''),
+                theme_chart_palette: String(showUser.editData.theme_chart_palette || ''),
+                theme_mode: String(showUser.editData.theme_mode || ''),
+                theme_control_height: String(showUser.editData.theme_control_height || ''),
+                theme_control_radius: String(showUser.editData.theme_control_radius || ''),
             }));
         }
     }, [showUser.editData]);
@@ -332,6 +364,14 @@ const EditUser = (user: any) => {
                      
                     </div>
                 </div>
+
+                <ThemeSetupSection
+                    values={formData as ThemeSetupValues}
+                    onChange={(name, value) =>
+                        setFormData((prevData) => ({ ...prevData, [name]: value }))
+                    }
+                />
+
                 <div className='flex gap-2 md:col-span-2'>
                     <ButtonLoading
                         onClick={handleUserUpdate}
