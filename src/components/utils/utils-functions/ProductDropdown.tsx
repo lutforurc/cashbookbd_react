@@ -5,6 +5,7 @@ import { getDdlProduct } from '../../modules/product/productSlice';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { hasPermission } from '../permissionChecker';
+import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
 
 interface OptionType {
   value: string;
@@ -67,7 +68,7 @@ const ProductDropdown: React.FC<DropdownProps> = ({
   const canSeePurchasePrice = hasPermission(permissions, 'product.purchase.price.view');
   const themeMode = useLocalStorage('color-theme', 'light');
   const darkMode = themeMode[0] === 'dark';
-  const controlHeight = getControlHeightFromClassName(className);
+  const controlHeight = getControlHeightFromClassName(className) || FIELD_HEIGHT_REM;
 
   React.useEffect(() => {
     setInternalSelectedOption(value ?? defaultValue ?? null);
@@ -127,7 +128,7 @@ const ProductDropdown: React.FC<DropdownProps> = ({
   const customStyles: StylesConfig = {
     control: (provided, state) => ({
       ...provided,
-      minHeight: controlHeight || '2.1rem',
+      minHeight: controlHeight,
       height: controlHeight,
       borderRadius: '0.0rem',
       borderColor: state.isFocused || isControlFocused ? 'rgb(var(--c-blue-500))' : darkMode ? 'rgb(var(--c-strokedark))' : 'rgb(var(--c-gray-300))',

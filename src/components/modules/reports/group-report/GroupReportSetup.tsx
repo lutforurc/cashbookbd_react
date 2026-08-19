@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FIELD_SELECT } from '../../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, FIELD_SELECT } from '../../../../theme/fieldStyles';
 import Select from 'react-select';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -190,6 +190,10 @@ const GroupReportSetup = () => {
               noOptionsMessage={() => (groupId ? 'No group item found' : 'Select a group first')}
               className="cash-react-select-container w-full"
               classNamePrefix="cash-react-select"
+              styles={{
+                // The one height, in the units react-select understands.
+                control: (base) => ({ ...base, minHeight: FIELD_HEIGHT_REM }),
+              }}
               classNames={{
                 control: (state) =>
                   `min-h-10! rounded-none! border-stroke! bg-transparent! text-sm! shadow-none! dark:border-strokedark! dark:bg-form-input! ${

@@ -5,6 +5,7 @@ import { getCoal4DdlNext } from '../../modules/chartofaccounts/levelfour/coal4Dd
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { StylesConfig } from 'react-select';
 import { employeeLoan } from '../../modules/hrms/loan/employeeLoanSlice';
+import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
 
 interface OptionType {
   value: string;
@@ -94,6 +95,9 @@ const EmployeeDropdownSearch: React.FC<DropdownProps> = ({
   const customStyles: StylesConfig = {
     control: (provided, state) => ({
       ...provided,
+      // The height every field in the app stands at. react-select draws
+      // its own control, so it takes the number rather than the class.
+      minHeight: FIELD_HEIGHT_REM,
       borderRadius: '0.0rem',
       borderColor: state.isFocused
         ? 'rgb(var(--c-blue-500))'

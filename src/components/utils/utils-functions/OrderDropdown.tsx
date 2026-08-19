@@ -6,6 +6,7 @@ import { components, OptionProps } from 'react-select';
 import { getDdlOrders } from '../../modules/orders/ordersSlice';
 import {formatDate} from './formatDate';
 import thousandSeparator from './thousandSeparator';
+import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
 
 interface OptionType {
     value: string;
@@ -100,7 +101,7 @@ interface DropdownProps {
 
 const OrderDropdown: React.FC<DropdownProps> = ({
     onSelect,
-    heightPx,
+    heightPx = FIELD_HEIGHT_REM,
     defaultValue,
     value,
     id,

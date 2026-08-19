@@ -5,6 +5,7 @@ import { getDdlProduct } from '../../modules/product/productSlice';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { getDdlLabourItem } from '../../modules/labour-item/labourItemSlice';
+import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
 
 interface OptionType {
   value: string;
@@ -74,6 +75,9 @@ const LabourDropdown: React.FC<DropdownProps> = ({
   const customStyles: StylesConfig = {
     control: (provided, state) => ({
       ...provided,
+      // The height every field in the app stands at. react-select draws
+      // its own control, so it takes the number rather than the class.
+      minHeight: FIELD_HEIGHT_REM,
       borderRadius: '0',
       borderColor: state.isFocused
         ? 'rgb(var(--c-blue-500))'

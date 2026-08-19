@@ -2,6 +2,7 @@ import React from "react";
 import AsyncSelect from "react-select/async";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import { StylesConfig } from "react-select";
+import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
 
 interface OptionType {
   value: string;
@@ -50,6 +51,9 @@ const DdlDynamicMultiline: React.FC<DropdownProps> = ({
   const customStyles: StylesConfig = {
     control: (provided, state) => ({
       ...provided,
+      // The height every field in the app stands at. react-select draws
+      // its own control, so it takes the number rather than the class.
+      minHeight: FIELD_HEIGHT_REM,
       borderRadius: "0.0rem",
       borderColor: state.isFocused ? "rgb(var(--c-blue-500))" : darkMode ? "rgb(var(--c-strokedark))" : "rgb(var(--c-gray-300))",
       backgroundColor: darkMode ? "rgb(var(--c-form-input))" : "rgb(var(--c-gray-3))",

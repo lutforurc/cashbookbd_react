@@ -15,6 +15,7 @@ import {
 } from "./userManagementSlice";
 import { Button } from '../../../pages/UiElements/CustomButtons';
 import { Input } from '../../utils/fields/FormControls';
+import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
 
 interface PermissionItem {
   name: string;
@@ -238,6 +239,10 @@ const AddPermission: React.FC = () => {
                   isSearchable
                   isClearable
                   className="text-left text-sm"
+                  styles={{
+                    // The one height, in the units react-select understands.
+                    control: (base) => ({ ...base, minHeight: FIELD_HEIGHT_REM }),
+                  }}
                   classNames={{
                     control: (state) =>
                       `min-h-[38px]! bg-white! border-gray-300! rounded-xs! dark:bg-boxdark! dark:border-gray-600! ${
