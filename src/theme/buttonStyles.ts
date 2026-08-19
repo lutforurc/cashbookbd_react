@@ -16,7 +16,11 @@
 
 /** Layout, typography and focus. Everything a button has regardless of colour. */
 export const BUTTON_BASE = [
-  'inline-flex items-center justify-center text-center font-medium',
+  // semibold, not medium. A light label on a dark fill renders thinner than the
+  // same weight does dark-on-light -- the same bleed that makes pure white hard
+  // on the eyes in dark mode -- and at 14px that reads as grey rather than
+  // white. The extra weight is what makes it look like the colour it is.
+  'inline-flex items-center justify-center text-center font-semibold',
   'transition-colors focus:outline-none',
   'disabled:cursor-not-allowed disabled:opacity-60',
 ].join(' ');
