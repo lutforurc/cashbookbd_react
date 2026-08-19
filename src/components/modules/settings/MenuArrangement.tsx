@@ -127,7 +127,7 @@ const MenuArrangement = () => {
                   addDivider(newDivider);
                   setNewDivider('');
                 }}
-                className="h-8 w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-white"
+                className="w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-white"
               />
               <ButtonLoading
                 onClick={() => {
@@ -137,7 +137,7 @@ const MenuArrangement = () => {
                 buttonLoading={false}
                 label={newDivider.trim() ? 'Divider' : 'Line'}
                 size="sm"
-                className="h-8 whitespace-nowrap"
+                className="whitespace-nowrap"
                 icon={<FiPlus />}
               />
               <ButtonLoading
@@ -148,7 +148,7 @@ const MenuArrangement = () => {
                 buttonLoading={false}
                 label="Reset"
                 size="sm"
-                className="h-8 whitespace-nowrap"
+                className="whitespace-nowrap"
                 icon={<FiRotateCcw />}
               />
             </div>
@@ -331,7 +331,7 @@ const MenuArrangement = () => {
                     addSubDivider(selectedMenu, declared, newSubDivider);
                     setNewSubDivider('');
                   }}
-                  className="h-8 w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-white"
+                  className="w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-white"
                 />
                 <ButtonLoading
                   onClick={() => {
@@ -341,7 +341,7 @@ const MenuArrangement = () => {
                   buttonLoading={false}
                   label={newSubDivider.trim() ? 'Divider' : 'Line'}
                   size="sm"
-                  className="h-8 whitespace-nowrap"
+                  className="whitespace-nowrap"
                   icon={<FiPlus />}
                 />
               </div>

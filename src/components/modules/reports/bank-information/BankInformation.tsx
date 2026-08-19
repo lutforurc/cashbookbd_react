@@ -186,14 +186,14 @@ const BankInformation = () => {
             buttonLoading={loading}
             label="Apply"
             icon={<FiCheckSquare />}
-            className="h-10 px-6"
+            className="px-6"
           />
           <ButtonLoading
           onClick={handleReset}
             buttonLoading={false}
             label="Reset"
             icon={<FiRefreshCcw />}
-            className="h-10 px-5"
+            className="px-5"
           />
           <div>
             <label htmlFor="bank-info-rows" className={labelClass}>Rows</label>
@@ -204,7 +204,7 @@ const BankInformation = () => {
               value={String(rowsPerPage)}
               onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 12)}
               type="text"
-              className="h-10 w-full! rounded-none text-center text-sm font-bold"
+              className="w-full! rounded-none text-center text-sm font-bold"
             />
           </div>
           <div>
@@ -216,13 +216,13 @@ const BankInformation = () => {
               value={String(fontSize)}
               onChange={(event: any) => setFontSize(Number(event.target.value) || 12)}
               type="text"
-              className="h-10 w-full! rounded-none text-center text-sm font-bold"
+              className="w-full! rounded-none text-center text-sm font-bold"
             />
           </div>
           <PrintButton
             onClick={handlePrint}
             label="Print"
-            className="h-10 px-6"
+            className="px-6"
             disabled={rows.length === 0}
           />
         </div>

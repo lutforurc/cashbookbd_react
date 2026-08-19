@@ -686,11 +686,9 @@ const OrderWithProduct = ({
                   <Button
                     type="button"
                     onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-                    className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                      isFilterMenuOpen
-                        ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
-                        : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-boxdark dark:text-blue-300 dark:hover:bg-boxdark-2'
-                    }`}
+                    className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
+ isFilterMenuOpen
+ ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-boxdark dark:text-blue-300 dark:hover:bg-boxdark-2'}`}
                     aria-label="Toggle filter menu"
                   >
                     <FiFilter className="text-lg" />
@@ -756,7 +754,6 @@ const OrderWithProduct = ({
                       {showSelector ? (
                         <OrderDropdown
                           id="order_with_transaction"
-                          heightPx="40px"
                           onSelect={(option) =>
                             setSelectedOrder(
                               option
@@ -794,7 +791,7 @@ const OrderWithProduct = ({
                           onChange={() => {}}
                           placeholder="Select Order"
                           label=""
-                          className="h-10 border-stroke bg-white dark:border-form-strokedark dark:bg-boxdark-2"
+                          className="border-stroke bg-white dark:border-form-strokedark dark:bg-boxdark-2"
                           disabled
                         />
                       )}
@@ -811,13 +808,13 @@ const OrderWithProduct = ({
                         onClick={handleApplyFilters}
                         buttonLoading={buttonLoading}
                         label="Apply"
-                        className="h-10 min-w-[92px] bg-meta-4 px-4 hover:bg-graydark focus:bg-graydark"
+                        className="min-w-[92px] bg-meta-4 px-4 hover:bg-graydark focus:bg-graydark"
                         icon={<FiCheckSquare className="text-base ml-0 mr-0" />}
                       />
                       <Button
                         type="button"
                         onClick={handleResetFilters}
-                        className="inline-flex h-10 min-w-[92px] items-center justify-center bg-meta-4 px-4 text-sm font-medium text-white transition hover:bg-graydark focus:bg-graydark focus:outline-none"
+                        className="inline-flex min-w-[92px] items-center justify-center bg-meta-4 px-4 text-sm font-medium text-white transition hover:bg-graydark focus:bg-graydark focus:outline-none"
                       >
                           Reset
                       </Button>
@@ -842,7 +839,7 @@ const OrderWithProduct = ({
                     onChange={(e) => setPerPage(Number(e.target.value) || 12)}
                     placeholder="Rows"
                     label=""
-                    className="h-10 w-full! border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
+                    className="w-full! border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
                   />
                 </div>
 
@@ -858,13 +855,13 @@ const OrderWithProduct = ({
                     onChange={(e) => setFontSize(Number(e.target.value) || 12)}
                     placeholder="Font"
                     label=""
-                    className="h-10 w-full! border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
+                    className="w-full! border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
                   />
                 </div>
               </div>
               <PrintButton
                 onClick={handlePrint}
-                className="h-10 min-w-[52px] justify-center bg-meta-4 px-0 hover:bg-graydark focus:bg-graydark"
+                className="min-w-[52px] justify-center bg-meta-4 px-0 hover:bg-graydark focus:bg-graydark"
                 label=""
               />
             </div>

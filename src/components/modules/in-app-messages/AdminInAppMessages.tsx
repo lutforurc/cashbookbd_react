@@ -196,14 +196,14 @@ const AdminInAppMessages: React.FC = () => {
           onClick={() => navigate(routes.admin_in_app_message_create)}
           buttonLoading={false}
           label="New Campaign"
-          className="mr-0 h-8.5 whitespace-nowrap text-center"
+          className="mr-0 whitespace-nowrap text-center"
           icon={<FiPlus className="ml-2 mr-2 text-lg" />}
         />
         <ButtonLoading
           onClick={load}
           buttonLoading={false}
           label="Refresh"
-          className="mr-0 h-8.5 whitespace-nowrap text-center"
+          className="mr-0 whitespace-nowrap text-center"
           icon={<FiRefreshCcw className="ml-2 mr-2 text-lg" />}
         />
       </div>

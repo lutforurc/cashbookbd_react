@@ -399,7 +399,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
               setPage(1);
             }}
             value={categoryId}
-            className="w-full text-sm h-9!"
+            className="w-full text-sm !"
             categoryDdl={categoryOptions}
           />
 
@@ -410,7 +410,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
               setPage(1);
             }}
             value={brandId}
-            className="w-full text-sm h-9!"
+            className="w-full text-sm !"
             categoryDdl={brandOptions}
           />
 
@@ -449,13 +449,13 @@ const StockAlertProducts = ({ alertType }: Props) => {
               label="Search"
               icon={<FiSearch className="text-gray-500" />}
               onClick={handleSearch}
-              className="h-9 flex-1"
+              className="flex-1"
             />
             <ButtonLoading
               label="Reset"
               icon={<FiRefreshCcw className="text-gray-500" />}
               onClick={handleReset}
-              className="h-9 flex-1"
+              className="flex-1"
             />
             {canPrint ? (
               <>
@@ -482,7 +482,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
                 <PrintButton
                   label="Print"
                   onClick={handlePrint}
-                  className="h-9 flex-1"
+                  className="flex-1"
                   disabled={rows.length === 0}
                 />
               </>

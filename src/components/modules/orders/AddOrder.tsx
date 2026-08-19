@@ -674,7 +674,6 @@ const AddOrder = (user: any) => {
                                     focusNextField('order_number');
                                 }
                             }}
-                            className='h-10'
                         />
 
                     </div>
@@ -879,7 +878,6 @@ const AddOrder = (user: any) => {
                                 }
                                 : null
                         }
-                        heightPx="2.5rem"
                         orderType={referenceOrderType}
                         refDirection="reference"
                         isDisabled={!referenceOrderType}

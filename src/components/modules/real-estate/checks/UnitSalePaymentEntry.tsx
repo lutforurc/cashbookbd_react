@@ -551,7 +551,7 @@ export default function UnitSalePaymentEntry() {
               }}
               buttonLoading={false}
               label="Reset"
-              className="h-8"
+              className=""
             />
             <Link to={LIST_PATH} className="h-8 p-2">
               <FiArrowLeft className="mr-2" /> Back
@@ -595,7 +595,7 @@ export default function UnitSalePaymentEntry() {
                 }}
                 buttonLoading={saleOptionsLoading}
                 label="Load Sale Info"
-                className="h-8.5 w-full"
+                className="w-full"
                 icon={<FiSearch className="text-lg ml-2 mr-2" />}
               />
             </div>
@@ -785,7 +785,7 @@ export default function UnitSalePaymentEntry() {
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                     setField("cheque_collect_status", e.target.value)
                   }
-                  className="h-10 bg-transparent"
+                  className="bg-transparent"
                   data={CHEQUE_STATUSES}
                 />
                 {needsBankReceivedAccount ? (
@@ -797,7 +797,7 @@ export default function UnitSalePaymentEntry() {
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                       setField("coal4_id", e.target.value)
                     }
-                    className="h-10 bg-transparent"
+                    className="bg-transparent"
                     data={bankAccountOptions}
                   />
                 ) : null}
@@ -881,7 +881,7 @@ export default function UnitSalePaymentEntry() {
               onClick={() => { }}
               buttonLoading={isSubmitting}
               label="Save"
-              className="h-9"
+              className=""
               icon={<FiSave className="text-lg ml-2 mr-2" />}
             />
 

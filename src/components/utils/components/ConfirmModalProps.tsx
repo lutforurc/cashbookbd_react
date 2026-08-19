@@ -55,7 +55,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             <ButtonLoading
               onClick={onCancel}
               label={cancelLabel}
-              className="h-8 whitespace-nowrap bg-slate-500 hover:bg-slate-600 dark:bg-gray-500 dark:hover:bg-gray-600"
+              className="whitespace-nowrap bg-slate-500 hover:bg-slate-600 dark:bg-gray-500 dark:hover:bg-gray-600"
               icon={<FiX className="text-lg mr-2" />}
               disabled={loading}
             />

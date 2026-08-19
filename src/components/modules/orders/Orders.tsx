@@ -1073,11 +1073,9 @@ const Orders = () => {
               <Button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
-                className={`inline-flex h-9 w-10 items-center justify-center rounded border text-sm transition ${
-                  filterOpen
-                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
-                    : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
-                }`}
+                className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
+ filterOpen
+ ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-slate-300 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'}`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -1208,14 +1206,14 @@ const Orders = () => {
                       onClick={handleSearchButton}
                       buttonLoading={false}
                       label="Apply"
-                      className="whitespace-nowrap h-9"
+                      className="whitespace-nowrap"
                        icon={<FiCheckSquare />}
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={resetButtonLoading}
                       label="Reset"
-                      className="whitespace-nowrap h-9"
+                      className="whitespace-nowrap"
                       icon={<FiRefreshCw />}
                     />
                   </div>
@@ -1245,7 +1243,7 @@ const Orders = () => {
                 onClick={handleSearchButton}
                 buttonLoading={false}
                 label="Apply"
-                className="whitespace-nowrap h-9"
+                className="whitespace-nowrap"
                  icon={<FiCheckSquare />}
                  />
               
@@ -1253,7 +1251,7 @@ const Orders = () => {
                 onClick={handleResetFilters}
                 buttonLoading={resetButtonLoading}
                 label="Reset"
-                className="whitespace-nowrap h-9"
+                className="whitespace-nowrap"
                 icon={<FiRefreshCw />}
               />
 
@@ -1287,7 +1285,7 @@ const Orders = () => {
               <PrintButton
                 onClick={() => void handleListPrint()}
                 label="Print"
-                className="h-9 shrink-0 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
+                className="shrink-0 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
               />
               <div className="shrink-0">
                 <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto h-9">
@@ -1328,7 +1326,7 @@ const Orders = () => {
                 <PrintButton
                   onClick={() => void handleListPrint()}
                   label="Print"
-                  className="h-9 shrink-0 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
+                  className="shrink-0 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
                 />
               </div>
               <div className="ml-auto shrink-0">

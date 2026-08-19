@@ -301,14 +301,14 @@ const AddUser = () => {
             onClick={handleUserSave}
             buttonLoading={users.isLoading}
             label="Save"
-            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-10"
+            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
             icon={<FiCheckSquare />}
           />
           <ButtonLoading
             onClick={handleBack}
             buttonLoading={users.isLoading}
             label="Back"
-            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-10"
+            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
             icon={<FiArrowLeft />}
           /> 
         </div>

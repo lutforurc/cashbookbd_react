@@ -573,11 +573,9 @@ const TrialBalanceLevel3 = (user: any) => {
                 <Button
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
-                  className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                    filterOpen
-                      ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
-                      : "border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"
-                  }`}
+                  className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
+ filterOpen
+ ?"border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300":"border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"}`}
                   title="Open filters"
                   aria-label="Open filters"
                 >
@@ -648,14 +646,14 @@ const TrialBalanceLevel3 = (user: any) => {
                         label="Apply"
                         onClick={handleActionButtonClick}
                         buttonLoading={buttonLoading}
-                        className="h-10 px-6"
+                        className="px-6"
                         icon={<FiCheckSquare />}
                       />
                       <ButtonLoading
                         label="Reset"
                         onClick={handleResetFilters}
                         buttonLoading={false}
-                        className="h-10 px-4"
+                        className="px-4"
                         icon={<FiRotateCcw />}
                       />
 
@@ -683,7 +681,7 @@ const TrialBalanceLevel3 = (user: any) => {
                   label=""
                   value={perPage}
                   onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
-                  className="h-10 w-20! text-center"
+                  className="w-20! text-center"
                 />
                 <PrintFontInput
                   type="number"
@@ -691,12 +689,12 @@ const TrialBalanceLevel3 = (user: any) => {
                   label=""
                   value={fontSize}
                   onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                  className="h-10 w-20! text-center"
+                  className="w-20! text-center"
                 />
                 <PrintButton
                   label="Print"
                   onClick={handlePrint}
-                  className="h-10 px-6"
+                  className="px-6"
                   disabled={!hasReportData}
                 />
               </div>
@@ -707,7 +705,7 @@ const TrialBalanceLevel3 = (user: any) => {
                     label="Apply"
                     onClick={handleActionButtonClick}
                     buttonLoading={buttonLoading}
-                    className="h-10 px-6"
+                    className="px-6"
                     icon={<FiCheckSquare />}
                   />
 
@@ -715,7 +713,7 @@ const TrialBalanceLevel3 = (user: any) => {
                     label="Reset"
                     onClick={handleResetFilters}
                     buttonLoading={false}
-                    className="h-10 px-4"
+                    className="px-4"
                     icon={<FiRotateCcw />}
                   />
                 </div>
@@ -726,7 +724,7 @@ const TrialBalanceLevel3 = (user: any) => {
                     label=""
                     value={perPage}
                     onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
-                    className="h-10 w-20! text-center"
+                    className="w-20! text-center"
                   />
                   <PrintFontInput
                     type="number"
@@ -734,12 +732,12 @@ const TrialBalanceLevel3 = (user: any) => {
                     label=""
                     value={fontSize}
                     onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                    className="h-10 w-20! text-center"
+                    className="w-20! text-center"
                   />
                   <PrintButton
                     label="Print"
                     onClick={handlePrint}
-                    className="h-10 px-6"
+                    className="px-6"
                     disabled={!hasReportData}
                   />
                 </div>

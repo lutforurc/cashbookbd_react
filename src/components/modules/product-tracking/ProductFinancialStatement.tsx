@@ -198,7 +198,7 @@ const ProductFinancialStatement = () => {
             onClick={apply}
             buttonLoading={loading}
             label="Apply"
-            className="h-10 whitespace-nowrap"
+            className="whitespace-nowrap"
             icon={<FiSearch className="text-lg ml-2 mr-2" />}
           />
           {data ? (
@@ -206,7 +206,7 @@ const ProductFinancialStatement = () => {
               onClick={handlePrint}
               buttonLoading={false}
               label="Print"
-              className="h-10 whitespace-nowrap"
+              className="whitespace-nowrap"
               icon={<FiPrinter className="text-lg ml-2 mr-2" />}
             />
           ) : null}

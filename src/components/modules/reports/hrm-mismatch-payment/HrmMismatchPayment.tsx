@@ -223,7 +223,7 @@ const HrmMismatchPayment = (user: any) => {
               onClick={handleRun}
               buttonLoading={hrmMismatchPayment?.isLoading}
               label="Search"
-              className="mt-0 md:mt-6 h-10 whitespace-nowrap"
+              className="mt-0 md:mt-6 whitespace-nowrap"
               icon={<FiSearch size={15} />}
             />
           </div>

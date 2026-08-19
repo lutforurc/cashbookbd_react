@@ -263,7 +263,7 @@ const AdminNotifications = () => {
             <Select
               value={tone}
               onChange={(e) => setTone(e.target.value as Tone)}
-              className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
+              className={`${FIELD_SELECT} w-full rounded-sm px-3 text-sm`}
             >
               {TONES.map((item) => (
                 <option key={item.value} value={item.value} className={FIELD_OPTION}>
@@ -283,7 +283,7 @@ const AdminNotifications = () => {
             <Select
               value={audience}
               onChange={(e) => setAudience(e.target.value as Audience)}
-              className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
+              className={`${FIELD_SELECT} w-full rounded-sm px-3 text-sm`}
             >
               {AUDIENCES.map((item) => (
                 <option key={item.value} value={item.value} className={FIELD_OPTION}>
@@ -316,7 +316,7 @@ const AdminNotifications = () => {
               <Select
                 value={roleId}
                 onChange={(e) => setRoleId(e.target.value)}
-                className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
+                className={`${FIELD_SELECT} w-full rounded-sm px-3 text-sm`}
               >
                 <option value="" className={FIELD_OPTION}>
                   Select role
@@ -348,7 +348,7 @@ const AdminNotifications = () => {
             buttonLoading={sending}
             label={sending ? 'Sending...' : 'Send'}
             icon={<FiSend />}
-            className="h-10 px-6"
+            className="px-6"
           />
         </div>
       </div>
@@ -362,7 +362,7 @@ const AdminNotifications = () => {
           <Button
             type="button"
             onClick={loadNotifications}
-            className="flex h-8 w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
+            className="flex w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
             aria-label="Refresh list"
           >
             <FiRefreshCw className={loadingList ? 'animate-spin' : ''} />
@@ -422,7 +422,7 @@ const AdminNotifications = () => {
                         type="button"
                         onClick={() => handleDelete(row.id)}
                         disabled={deletingId === row.id}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-rose-500 transition hover:bg-rose-50 disabled:opacity-50 dark:hover:bg-rose-900/20"
+                        className="inline-flex w-8 items-center justify-center rounded-sm text-rose-500 transition hover:bg-rose-50 disabled:opacity-50 dark:hover:bg-rose-900/20"
                         aria-label={`Delete ${row.title}`}
                       >
                         <FiTrash2 />

@@ -131,7 +131,7 @@ const LabourItemAdd = () => {
           value={form.lab_cat_id?.toString()}
           data={categoryOptions}
           onChange={(e: any) => setForm((prev) => ({ ...prev, lab_cat_id: e.target.value }))}
-          className="h-9"
+          className=""
         />
 
         <InputElement
@@ -162,7 +162,7 @@ const LabourItemAdd = () => {
             value={form.unit_id?.toString()}
             data={unitOptions}
             onChange={(e: any) => setForm((prev) => ({ ...prev, unit_id: e.target.value }))}
-            className="h-9"
+            className=""
           />
           <InputElement
  id="purchase_price"
@@ -189,13 +189,13 @@ const LabourItemAdd = () => {
             onClick={handleSave}
             buttonLoading={saving}
             label={editingId ? 'Update' : 'Save'}
-            className="mr-0 h-9 whitespace-nowrap text-center"
+            className="mr-0 whitespace-nowrap text-center"
             icon={<FiSave className="ml-2 mr-2 text-lg" />}
           />
           <ButtonLoading
             onClick={() => navigate(routes.labour_item)}
             label="Back"
-            className="mr-0 h-9 whitespace-nowrap text-center"
+            className="mr-0 whitespace-nowrap text-center"
             icon={<FiHome className="ml-2 mr-2 text-lg" />}
           />
         </div>

@@ -436,7 +436,7 @@ export default function UnitSalePaymentList() {
               </>
             }
             placeholder="Type receipt no or reference no"
-            className="h-8.5"
+            className=""
             value={q}
             onChange={(e: any) => setQ(e.target.value)}
           />
@@ -473,7 +473,7 @@ export default function UnitSalePaymentList() {
           onClick={handleSearch}
           buttonLoading={false}
           label="Search"
-          className="whitespace-nowrap text-center mr-0  h-8.5"
+          className="whitespace-nowrap text-center mr-0"
           icon={<FiSearch className="text-lg ml-2 mr-2" />}
         />
 
@@ -481,7 +481,7 @@ export default function UnitSalePaymentList() {
           onClick={handleReset}
           buttonLoading={false}
           label="Reset"
-          className="whitespace-nowrap text-center mr-0  h-8.5"
+          className="whitespace-nowrap text-center mr-0"
           icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
         />
 
@@ -491,7 +491,7 @@ export default function UnitSalePaymentList() {
             onClick={handleAddNew}
             buttonLoading={false}
             label="Add New"
-            className="whitespace-nowrap text-center mr-0  h-8.5 w-full"
+            className="whitespace-nowrap text-center mr-0 w-full"
             icon={<FiPlus className="text-lg ml-2 mr-2" />}
           />
 
@@ -499,7 +499,7 @@ export default function UnitSalePaymentList() {
             onClick={handleHome}
             buttonLoading={false}
             label="Home"
-            className="whitespace-nowrap text-center mr-0  h-8.5 w-full"
+            className="whitespace-nowrap text-center mr-0 w-full"
             icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
           />
       

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react"; // ✅ Add useMemo import
 import Select from "react-select";
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 interface CategoryDropdownProps {
   categoryDdl: { id: number | string; name: string }[];
@@ -67,10 +67,10 @@ useEffect(() => {
       placeholder="Select Category..."
       isSearchable
       className={`block text-sm bg-transparent outline-none dark:bg-boxdark dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}
-      styles={{
+      styles={withFieldHeight({
         // The one height, in the units react-select understands.
         control: (base) => ({ ...base, minHeight: FIELD_HEIGHT_REM }),
-      }}
+      })}
       classNames={{
         control: (state) =>
           `bg-transparent! border-gray-300! rounded-none! dark:bg-boxdark! dark:border-gray-600! ${

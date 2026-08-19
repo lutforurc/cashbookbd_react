@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiArrowRightCircle, FiCheck, FiPrinter } from 'react-icons/fi';
-import { BUTTON_BASE, BUTTON_VARIANT, ButtonVariant } from '../../theme/buttonStyles';
+import { BUTTON_BASE, BUTTON_HEIGHT, BUTTON_VARIANT, ButtonVariant } from '../../theme/buttonStyles';
 
 // Define the props for the Button component
 interface ButtonProps {
@@ -47,7 +47,7 @@ interface ButtonProps {
  * and keep a slot standing where a button is conditional, or the row shifts
  * sideways as that button comes and goes.
  */
-export const ROW_ACTION_BUTTON_CLASS = 'h-7 w-full';
+export const ROW_ACTION_BUTTON_CLASS = 'h-7! w-full';
 
 /**
  * The button every button in the app is made of.
@@ -74,7 +74,7 @@ export const Button = React.forwardRef<
 >(({ className = '', variant, children, ...rest }, ref) => (
   <button
     ref={ref}
-    className={`transition-colors disabled:cursor-not-allowed ${
+    className={`${BUTTON_HEIGHT} transition-colors disabled:cursor-not-allowed ${
       variant ? BUTTON_VARIANT[variant] : ''
     } ${className}`}
     {...rest}
@@ -169,7 +169,7 @@ export const TabButton: React.FC<TabButtonProps> = ({
     onClick={onClick}
     disabled={disabled}
     aria-pressed={active}
-    className={`${BUTTON_BASE} h-9 px-4 text-sm ${
+    className={`${BUTTON_BASE} px-4 text-sm ${
       active
         ? 'bg-primary text-white'
         : 'bg-gray-100 text-body hover:bg-gray-200 dark:bg-meta-4 dark:text-bodydark dark:hover:bg-gray-700'
@@ -256,7 +256,7 @@ export const ButtonSuccess: React.FC<ButtonProps> = ({
         onClick={onClick}
         disabled={disabled}
         onKeyDown={onKeyDown}
-        className={`text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:bg-blue-400 font-medium rounded-lg text-sm px-5 py-1 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 inline-flex items-center ${className}`}
+        className={`${BUTTON_HEIGHT} text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:bg-blue-400 font-medium rounded-lg text-sm px-5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 inline-flex items-center ${className}`}
       >
         {label}
       </button>
@@ -338,7 +338,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
       type="button"
       onClick={onClick}
       disabled={disabled || loading}
-      className={`text-white focus:outline-none font-medium text-sm px-5 h-8 text-center rounded inline-flex items-center justify-center ${className}`}
+      className={`${BUTTON_HEIGHT} text-white focus:outline-none font-medium text-sm px-5 text-center rounded inline-flex items-center justify-center ${className}`}
     >
       <span className="flex items-center">
         {loading ? (

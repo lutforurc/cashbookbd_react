@@ -284,7 +284,7 @@ const AdminInAppMessageForm: React.FC = () => {
               label="Layout"
               value={form.layout}
               onChange={(e) => set('layout', e.target.value)}
-              className="h-8.5 bg-transparent"
+              className="bg-transparent"
               data={LAYOUTS}
             />
 
@@ -294,7 +294,7 @@ const AdminInAppMessageForm: React.FC = () => {
               label="Trigger"
               value={form.trigger_event}
               onChange={(e) => set('trigger_event', e.target.value)}
-              className="h-8.5 bg-transparent"
+              className="bg-transparent"
               data={TRIGGERS}
             />
 
@@ -355,7 +355,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 type="color"
                 value={form.bg_color || 'rgb(var(--c-white))'}
                 onChange={(e) => set('bg_color', e.target.value)}
-                className="h-8.5 w-full rounded-xs border border-gray-300 dark:border-gray-600"
+                className="w-full rounded-xs border border-gray-300 dark:border-gray-600"
               />
             </div>
             <div>
@@ -364,7 +364,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 type="color"
                 value={form.text_color || 'rgb(var(--c-gray-900))'}
                 onChange={(e) => set('text_color', e.target.value)}
-                className="h-8.5 w-full rounded-xs border border-gray-300 dark:border-gray-600"
+                className="w-full rounded-xs border border-gray-300 dark:border-gray-600"
               />
             </div>
             <div>
@@ -373,7 +373,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 type="color"
                 value={form.button_color || 'rgb(var(--c-primary))'}
                 onChange={(e) => set('button_color', e.target.value)}
-                className="h-8.5 w-full rounded-xs border border-gray-300 dark:border-gray-600"
+                className="w-full rounded-xs border border-gray-300 dark:border-gray-600"
               />
             </div>
             <div className="flex items-end">
@@ -384,7 +384,7 @@ const AdminInAppMessageForm: React.FC = () => {
                   set('text_color', '');
                   set('button_color', '');
                 }}
-                className="h-8.5 w-full rounded border border-stroke text-sm dark:border-strokedark"
+                className="w-full rounded border border-stroke text-sm dark:border-strokedark"
               >
                 Use app theme colours
               </Button>
@@ -396,7 +396,7 @@ const AdminInAppMessageForm: React.FC = () => {
               label="Audience"
               value={form.audience_type}
               onChange={(e) => set('audience_type', e.target.value)}
-              className="h-8.5 bg-transparent"
+              className="bg-transparent"
               data={AUDIENCES}
             />
             {needed ? (
@@ -419,7 +419,7 @@ const AdminInAppMessageForm: React.FC = () => {
               label="Platform"
               value={form.platform}
               onChange={(e) => set('platform', e.target.value)}
-              className="h-8.5 bg-transparent"
+              className="bg-transparent"
               data={PLATFORMS}
             />
             <DropdownCommon
@@ -428,7 +428,7 @@ const AdminInAppMessageForm: React.FC = () => {
               label="Status"
               value={form.status}
               onChange={(e) => set('status', e.target.value)}
-              className="h-8.5 bg-transparent"
+              className="bg-transparent"
               data={STATUSES}
             />
 
@@ -497,14 +497,14 @@ const AdminInAppMessageForm: React.FC = () => {
               onClick={handleSave}
               buttonLoading={saving}
               label={isEdit ? 'Update' : 'Save'}
-              className="mr-0 h-8.5 whitespace-nowrap text-center"
+              className="mr-0 whitespace-nowrap text-center"
               icon={<FiSave className="ml-2 mr-2 text-lg" />}
             />
             <ButtonLoading
               onClick={() => navigate(routes.admin_in_app_messages)}
               buttonLoading={false}
               label="Back"
-              className="mr-0 h-8.5 whitespace-nowrap text-center"
+              className="mr-0 whitespace-nowrap text-center"
               icon={<FiArrowLeft className="ml-2 mr-2 text-lg" />}
             />
           </div>

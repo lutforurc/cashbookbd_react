@@ -419,7 +419,7 @@ const Employees = ({ user }: any) => {
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
               label="Search"
-              className="whitespace-nowrap h-9.5"
+              className="whitespace-nowrap"
               icon={<FiSearch size={15} />}
             />
           </div>

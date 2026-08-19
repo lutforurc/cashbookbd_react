@@ -169,16 +169,16 @@ const ProjectSummaryReport = ({ user }: any) => {
               buttonLoading={loading}
               label="Apply"
               icon={<FiCheckSquare />}
-              className="h-10 px-6"
+              className="px-6"
             />
             <ButtonLoading
               onClick={handleReset}
               buttonLoading={false}
               label="Reset"
               icon={<FiRotateCcw />}
-              className="h-10 px-4"
+              className="px-4"
             />
-            <PrintButton onClick={handlePrint} label="Print" className="h-10 px-6" disabled={!projectData.length} />
+            <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={!projectData.length} />
           </div>
         </div>
       </div>

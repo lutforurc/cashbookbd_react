@@ -1219,7 +1219,7 @@ const ElectronicsBusinessSales = () => {
                       }
                       : null
                   }
-                  className='h-9'
+                  className=''
                 />
               </div>
               <div>
@@ -1375,7 +1375,7 @@ const ElectronicsBusinessSales = () => {
                     })
                   }
                   label=""
-                  className="pt-[0.45rem] pb-[0.45rem] h-9"
+                  className="pt-[0.45rem] pb-[0.45rem]"
                 />
               </div>
             </div>
@@ -1519,8 +1519,8 @@ const ElectronicsBusinessSales = () => {
                       value={installment.installment_no}
                       readOnly
                       className={`form-input text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
-                    dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 
-                    dark:focus:ring-blue-400 dark:focus:border-blue-400 mt-1 block w-10 h-8.5 text-center`}
+ dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 
+ dark:focus:ring-blue-400 dark:focus:border-blue-400 mt-1 block w-10 text-center`}
                       style={{
                         appearance: 'textfield', // for Firefox
                         MozAppearance: 'textfield', // for older Firefox

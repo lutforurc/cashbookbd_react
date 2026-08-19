@@ -104,7 +104,7 @@ const ResellerDashboard: React.FC = () => {
             disabled={loading}
             icon={<FiRefreshCw className="" />}
             label={loading ? 'Refreshing...' : 'Refresh'}
-            className="h-10 w-34 p-2"
+            className="w-34 p-2"
           />
         </div>
       </section>

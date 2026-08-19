@@ -4,7 +4,7 @@ import AsyncSelect from 'react-select/async';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage'; 
 import { fetchProjectDdl } from '../../modules/real-estate/project/projectSlice';
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 /* ================= TYPES ================= */
 
@@ -190,7 +190,7 @@ const ProjectDropdown: React.FC<DropdownProps> = ({
         )}
         getOptionValue={(option) => option.value}
         placeholder={placeholder || 'Select a project'}
-        styles={customStyles}
+        styles={withFieldHeight(customStyles)}
         defaultValue={defaultValue}
         value={value}
         menuPortalTarget={document.body} // Fix Dropdown Render Issue

@@ -30,20 +30,77 @@
  * were routinely a few pixels apart, and there was nowhere to say what a field
  * should measure.
  *
- * h-10 because it is what most of them already were, and what the toolbar
- * buttons beside them are -- so a filter row lines up without anyone arranging
- * it. A field that genuinely needs another size asks for one through `size`.
+ * The number itself is not here -- it is `--control-height` in tokens.css, and
+ * this is the Tailwind class that reads it. That indirection is the whole
+ * point: buttons take the class and react-select takes the raw length, and
+ * while those were two literals (`h-8.5` and `2.125rem`) nothing stopped one
+ * from being changed without the other.
+ *
+ * It stands at 34px because that is what the buttons the fields sit against
+ * measure. The Search box on Cash Received was the plain case: a 40px input
+ * beside a 34px button, sharing an edge, six pixels apart.
+ *
+ * A field that genuinely needs another size asks for one through `size`.
  */
-export const FIELD_HEIGHT = 'h-10';
+export const FIELD_HEIGHT = 'h-[var(--control-height)]';
 
 /**
  * The same height as a length.
  *
  * react-select draws its own control through inline styles and cannot be given
- * a Tailwind class, so the dropdowns built on it need the number rather than
- * the name. Kept beside FIELD_HEIGHT so the two cannot drift: h-10 is 2.5rem.
+ * a Tailwind class, so the dropdowns built on it need a length rather than a
+ * class name. It is the same variable FIELD_HEIGHT reads, so the dropdowns
+ * cannot stand apart from the boxes beside them: there is only one number, and
+ * it is in tokens.css.
  */
-export const FIELD_HEIGHT_REM = '2.5rem';
+export const FIELD_HEIGHT_REM = 'var(--control-height)';
+
+/**
+ * The one height, forced onto a react-select control.
+ *
+ * Setting `minHeight` alone is not enough and that is worth writing down: it is
+ * a floor, and react-select's own insides -- the value container's padding, the
+ * margin on its hidden input, the indicator column -- stand taller than 34px on
+ * their own. A dropdown given only a minHeight came out 38px beside a 34px text
+ * box, which is the gap this file exists to close.
+ *
+ * So the height is stated on the control and on the two children that decide
+ * its content box, and the input's own margins are taken out from under it.
+ *
+ * It wraps rather than replaces: a dropdown's own colours, borders and focus
+ * rings run first and this lands on top of the result, so the only thing a call
+ * site gives up is the argument about how tall it is.
+ */
+export const withFieldHeight = (
+  styles: any = {},
+  height: string = FIELD_HEIGHT_REM,
+): any => {
+  const run = (key: string) => (base: any, state: any) =>
+    typeof styles[key] === 'function' ? styles[key](base, state) : base;
+
+  return {
+    ...styles,
+    control: (base: any, state: any) => ({
+      ...run('control')(base, state),
+      minHeight: height,
+      height,
+    }),
+    valueContainer: (base: any, state: any) => ({
+      ...run('valueContainer')(base, state),
+      height,
+      padding: '0 0.5rem',
+    }),
+    input: (base: any, state: any) => ({
+      ...run('input')(base, state),
+      margin: 0,
+      padding: 0,
+    }),
+    indicatorsContainer: (base: any, state: any) => ({
+      ...run('indicatorsContainer')(base, state),
+      height,
+    }),
+  };
+};
 
 /**
  * How square a field's corners are.

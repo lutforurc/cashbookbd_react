@@ -386,9 +386,9 @@ const GeneralCashReceived = () => {
  name="search"
  placeholder="Search Received"
  label=""
-                          // everywhere on this form -- the search button
-                          // beside it is already , and the fields below
-                          // are only 34px by accident of their padding.
+                          // The height is not stated here: it comes from
+                          // FIELD_HEIGHT, which is the 34px the search button
+                          // beside it stands at.
  className="w-full py-1"
  onChange={(e) => setSearch(e.target.value)}
                         />
@@ -399,7 +399,7 @@ const GeneralCashReceived = () => {
                         onClick={searchTransaction}
                         buttonLoading={buttonLoading}
                         label=" "
-                        className="-ml-px h-8.5 w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
+                        className="-ml-px w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
                         icon={<FiSearch className="text-lg ml-2" />}
                       />
                     </>

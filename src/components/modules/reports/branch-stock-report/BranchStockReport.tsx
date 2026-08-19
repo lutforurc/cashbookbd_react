@@ -264,7 +264,7 @@ const BranchStockReport = ({ user }: any) => {
       <HelmetTitle title="Branch Stock Report" />
 
       <div className="px-0 py-3">
-        <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-[repeat(3,minmax(0,1fr))_auto]">
           <div>
             <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-white">
               Select Branch
@@ -272,7 +272,7 @@ const BranchStockReport = ({ user }: any) => {
             <Select
               value={branchId}
               onChange={(event) => setBranchId(event.target.value)}
-              className={`${FIELD_SELECT} h-10 w-full px-2 text-sm font-medium`}
+              className={`${FIELD_SELECT} w-full px-2 text-sm font-medium`}
             >
               <option value="">All Branch</option>
               {dropdownData.map((item: any) => (
@@ -305,7 +305,7 @@ const BranchStockReport = ({ user }: any) => {
             </label>
             <CategoryDropdown
               onChange={(option: any) => setBrandId(option?.value ?? '')}
-              className="w-full text-sm h-9.5"
+              className="w-full text-sm"
               categoryDdl={brandOptions}
               value={brandId}
             />
@@ -317,7 +317,7 @@ const BranchStockReport = ({ user }: any) => {
             </label>
             <CategoryDropdown
               onChange={(option: any) => setCategoryId(option?.value ?? '')}
-              className="w-full text-sm h-9.5"
+              className="w-full text-sm"
               categoryDdl={categoryOptions}
               placeholder="All Categories"
               value={categoryId}
@@ -331,24 +331,24 @@ const BranchStockReport = ({ user }: any) => {
             placeholder="Filter by product"
             value={search}
             onChange={(event: any) => setSearch(event.target.value)}
-            className="h-10 text-sm font-medium"
+            className="text-sm font-medium"
           />
 
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-2 md:col-span-3 xl:col-span-1">
             <ButtonLoading
               onClick={runReport}
               buttonLoading={buttonLoading}
               label="OK"
               icon={<FiCheckSquare />}
-              className="h-10 px-6"
+              className="px-6"
             />
-            <PrintButton onClick={onPrint} label="Print" className="h-10 px-5" />
+            <PrintButton onClick={onPrint} label="Print" className="px-5" />
             <ButtonLoading
               onClick={() => navigate('/')}
               buttonLoading={false}
               label="Home"
               icon={<FiHome />}
-              className="h-10 px-5"
+              className="px-5"
             />
           </div>
         </div>

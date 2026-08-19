@@ -496,7 +496,7 @@ const FestivalBonusUpdate = ({ user }: any) => {
               value={selectedEmployeeId}
               data={employeeOptions}
               onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className="h-9"
+              className=""
             />
           </div>
           <ButtonLoading
@@ -505,7 +505,7 @@ const FestivalBonusUpdate = ({ user }: any) => {
             disabled={addEmployeeLoading || !selectedEmployeeId}
             label="Add Employee"
             icon={<FiPlus className="mr-1 font-bold" />}
-            className="h-9 whitespace-nowrap bg-emerald-600 px-5 py-1 hover:bg-emerald-700"
+            className="whitespace-nowrap bg-emerald-600 px-5 py-1 hover:bg-emerald-700"
           />
           <ButtonLoading
             onClick={() =>
@@ -516,7 +516,7 @@ const FestivalBonusUpdate = ({ user }: any) => {
               })
             }
             label="Back"
-            className="h-9 whitespace-nowrap bg-slate-500 px-6 py-1 hover:bg-slate-600"
+            className="whitespace-nowrap bg-slate-500 px-6 py-1 hover:bg-slate-600"
             icon={<FiArrowLeft className="mr-1" />}
           />
           <ButtonLoading
@@ -524,7 +524,7 @@ const FestivalBonusUpdate = ({ user }: any) => {
             buttonLoading={saveLoading}
             disabled={saveLoading || rows.length === 0}
             label="Update Bonus"
-            className="h-9 whitespace-nowrap bg-blue-600 px-6 py-1 hover:bg-blue-700"
+            className="whitespace-nowrap bg-blue-600 px-6 py-1 hover:bg-blue-700"
             icon={<FiCheckSquare />}
           />
         </div>

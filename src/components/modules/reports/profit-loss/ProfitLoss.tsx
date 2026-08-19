@@ -454,11 +454,9 @@ const ProfitLoss = (user: any) => {
               <Button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
-                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                  filterOpen
-                    ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
-                    : "border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"
-                }`}
+                className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
+ filterOpen
+ ?"border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300":"border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"}`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -497,7 +495,7 @@ const ProfitLoss = (user: any) => {
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
                       setCurrentDate={(d: any) => setStartDate(d)}
-                      className="font-medium text-sm w-full h-10"
+                      className="font-medium text-sm w-full"
                       selectedDate={startDate}
                       setSelectedDate={setStartDate}
                     />
@@ -507,7 +505,7 @@ const ProfitLoss = (user: any) => {
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
                       setCurrentDate={(d: any) => setEndDate(d)}
-                      className="font-medium text-sm w-full h-10"
+                      className="font-medium text-sm w-full"
                       selectedDate={endDate}
                       setSelectedDate={setEndDate}
                     />
@@ -525,14 +523,14 @@ const ProfitLoss = (user: any) => {
                       buttonLoading={buttonLoading}
                       label="Apply"
                       icon={<FiCheckSquare />}
-                      className="h-10 px-6"
+                      className="px-6"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
                       label="Reset"
                       icon={<FiRotateCcw />}
-                      className="h-10 px-4"
+                      className="px-4"
                     />
                   </div>
                 </div>
@@ -575,14 +573,14 @@ const ProfitLoss = (user: any) => {
               <PrintButton
                 onClick={handlePrint}
                 label="Print"
-                className="h-10 px-6"
+                className="px-6"
                 disabled={!hasReportData}
               />
 
               <PrintButton
                 onClick={handleItemPrintButtonClick}
                 label="Item Print"
-                className="h-10 px-6"
+                className="px-6"
                 disabled={!hasReportData || itemPrintLoading}
               />
             </div>
@@ -594,14 +592,14 @@ const ProfitLoss = (user: any) => {
                   buttonLoading={buttonLoading}
                   label="Apply"
                   icon={<FiCheckSquare />}
-                  className="h-10 px-6"
+                  className="px-6"
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
                   buttonLoading={false}
                   label="Reset"
                   icon={<FiRotateCcw />}
-                  className="h-10 px-4"
+                  className="px-4"
                 />
               </div>
 
@@ -629,14 +627,14 @@ const ProfitLoss = (user: any) => {
                 <PrintButton
                   onClick={handlePrint}
                   label="Print"
-                  className="h-10 px-6"
+                  className="px-6"
                   disabled={!hasReportData}
                 />
 
                 <PrintButton
                   onClick={handleItemPrintButtonClick}
                   label="Item"
-                  className="h-10 px-6"
+                  className="px-6"
                   disabled={!hasReportData || itemPrintLoading}
                 />
               </div>

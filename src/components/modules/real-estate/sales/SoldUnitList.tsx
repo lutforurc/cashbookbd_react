@@ -671,7 +671,7 @@ const SoldUnitList: React.FC = () => {
           onClick={() => loadData()}
           buttonLoading={false}
           label="Search"
-          className="mr-0 h-8.5 whitespace-nowrap text-center"
+          className="mr-0 whitespace-nowrap text-center"
           icon={<FiSearch className="ml-2 mr-2 text-lg" />}
         />
 
@@ -679,7 +679,7 @@ const SoldUnitList: React.FC = () => {
           onClick={handleReset}
           buttonLoading={false}
           label="Reset"
-          className="mr-0 h-8.5 whitespace-nowrap text-center"
+          className="mr-0 whitespace-nowrap text-center"
           icon={<FiRefreshCcw className="ml-2 mr-2 text-lg" />}
         />
 
@@ -687,7 +687,7 @@ const SoldUnitList: React.FC = () => {
           onClick={handlePrint}
           buttonLoading={false}
           label="Print"
-          className="mr-0 h-8.5 whitespace-nowrap text-center"
+          className="mr-0 whitespace-nowrap text-center"
           icon={<FiPrinter className="ml-2 mr-2 text-lg" />}
         />
       </div>

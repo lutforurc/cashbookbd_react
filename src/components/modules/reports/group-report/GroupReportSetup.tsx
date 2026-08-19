@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FIELD_HEIGHT_REM, FIELD_SELECT } from '../../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, FIELD_SELECT, withFieldHeight } from '../../../../theme/fieldStyles';
 import Select from 'react-select';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -168,7 +168,7 @@ const GroupReportSetup = () => {
             <FormSelect
               value={groupId}
               onChange={(event) => setGroupId(event.target.value)}
-              className={`${FIELD_SELECT} h-10 w-full px-3 text-sm font-medium`}
+              className={`${FIELD_SELECT} w-full px-3 text-sm font-medium`}
             >
               <option value="">Select your group</option>
               {reportGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
@@ -190,10 +190,10 @@ const GroupReportSetup = () => {
               noOptionsMessage={() => (groupId ? 'No group item found' : 'Select a group first')}
               className="cash-react-select-container w-full"
               classNamePrefix="cash-react-select"
-              styles={{
+              styles={withFieldHeight({
                 // The one height, in the units react-select understands.
                 control: (base) => ({ ...base, minHeight: FIELD_HEIGHT_REM }),
-              }}
+              })}
               classNames={{
                 control: (state) =>
                   `min-h-10! rounded-none! border-stroke! bg-transparent! text-sm! shadow-none! dark:border-strokedark! dark:bg-form-input! ${
@@ -219,14 +219,14 @@ const GroupReportSetup = () => {
               buttonLoading={saving}
               label="Add"
               icon={<FiCheckSquare />}
-              className="h-10 px-6"
+              className="px-6"
             />
             <ButtonLoading
               onClick={() => navigate('/dashboard')}
               buttonLoading={false}
               label="Home"
               icon={<FaHouse />}
-              className="h-10 px-5"
+              className="px-5"
             />
           </div>
         </div>

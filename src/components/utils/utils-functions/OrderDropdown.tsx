@@ -6,7 +6,7 @@ import { components, OptionProps } from 'react-select';
 import { getDdlOrders } from '../../modules/orders/ordersSlice';
 import {formatDate} from './formatDate';
 import thousandSeparator from './thousandSeparator';
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 interface OptionType {
     value: string;
@@ -280,7 +280,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                 getOptionValue={(option) => option.value}
 
                 placeholder={isDisabled ? "Select Order Type First" : "Select Order"}
-                styles={{
+                styles={withFieldHeight({
                     control: (base) => ({
                         ...base,
                         borderRadius: '0.0rem',
@@ -307,7 +307,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                         zIndex: 1000,
                         borderColor: 'rgb(var(--c-black-2))',
                     }),
-                }}
+                }, heightPx)}
                 defaultValue={defaultValue}
                 value={value}
             />

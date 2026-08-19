@@ -176,7 +176,7 @@ const InventorySystem = () => {
             <Select
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: Number(e.target.value) }))}
-              className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
+              className={`${FIELD_SELECT} w-full rounded-sm px-3 text-sm`}
             >
               <option value={1} className={FIELD_OPTION}>Active</option>
               <option value={0} className={FIELD_OPTION}>Inactive</option>
@@ -203,7 +203,7 @@ const InventorySystem = () => {
             buttonLoading={saving}
             label={saving ? 'Saving...' : isEditing ? 'Update' : 'Add'}
             icon={isEditing ? <FiSave /> : <FiPlus />}
-            className="h-10 px-6"
+            className="px-6"
           />
         </div>
       </div>
@@ -217,7 +217,7 @@ const InventorySystem = () => {
           <Button
             type="button"
             onClick={loadList}
-            className="flex h-8 w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
+            className="flex w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
             aria-label="Refresh list"
           >
             <FiRefreshCw className={loadingList ? 'animate-spin' : ''} />
@@ -274,7 +274,7 @@ const InventorySystem = () => {
                         <Button
                           type="button"
                           onClick={() => startEdit(row)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-sky-500 transition hover:bg-sky-50 dark:hover:bg-sky-900/20"
+                          className="inline-flex w-8 items-center justify-center rounded-sm text-sky-500 transition hover:bg-sky-50 dark:hover:bg-sky-900/20"
                           aria-label={`Edit ${row.name}`}
                         >
                           <FiEdit2 />
@@ -292,7 +292,7 @@ const InventorySystem = () => {
                             type="button"
                             onClick={() => handleDelete(row)}
                             disabled={deletingId === row.id}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-rose-500 transition hover:bg-rose-50 disabled:opacity-50 dark:hover:bg-rose-900/20"
+                            className="inline-flex w-8 items-center justify-center rounded-sm text-rose-500 transition hover:bg-rose-50 disabled:opacity-50 dark:hover:bg-rose-900/20"
                             aria-label={`Delete ${row.name}`}
                           >
                             <FiTrash2 />

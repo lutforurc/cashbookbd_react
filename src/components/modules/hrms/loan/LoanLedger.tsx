@@ -307,12 +307,12 @@ const LoanLedger = (user: any) => {
               buttonLoading={buttonLoading}
               label="Run"
               icon={<FiSearch size={15} />}
-              className="h-9 px-4"
+              className="px-4"
             />
             <PrintButton
               onClick={handlePrint}
               label=""
-              className="h-9 px-3"
+              className="px-3"
             />
           </div>
         </div>

@@ -317,7 +317,7 @@ const GroupPurchaseSales = () => {
             <Select
               value={reportGroup}
               onChange={(event) => setReportGroup(event.target.value)}
-              className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
+              className={`${FIELD_SELECT} w-full rounded-sm px-3 text-sm`}
             >
               {reportGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
             </Select>
@@ -350,7 +350,7 @@ const GroupPurchaseSales = () => {
             buttonLoading={loading}
             label="Apply"
             icon={<FiCheckSquare />}
-            className="h-10 w-full px-6 sm:w-auto"
+            className="w-full px-6 sm:w-auto"
           />
           <PrintRowsInput
  id="groupReportRowsPerPage"
@@ -370,10 +370,10 @@ const GroupPurchaseSales = () => {
  type="text"
  className="w-full! text-center text-sm font-medium sm:w-20!"
           />
-          <Button type="button" onClick={handlePrint} disabled={!hasReport} className="inline-flex h-10 w-full items-center justify-center gap-2 bg-gray-700 px-5 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
+          <Button type="button" onClick={handlePrint} disabled={!hasReport} className="inline-flex w-full items-center justify-center gap-2 bg-gray-700 px-5 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
             <FaPrint /> Print
           </Button>
-          <Button type="button" onClick={() => navigate('/dashboard')} className="col-span-2 inline-flex h-10 w-full items-center justify-center gap-2 bg-gray-700 px-5 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none sm:col-span-1 sm:w-auto">
+          <Button type="button" onClick={() => navigate('/dashboard')} className="col-span-2 inline-flex w-full items-center justify-center gap-2 bg-gray-700 px-5 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none sm:col-span-1 sm:w-auto">
             <FaHouse /> Home
           </Button>
         </div>

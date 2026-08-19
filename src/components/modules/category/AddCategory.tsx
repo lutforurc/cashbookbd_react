@@ -100,7 +100,7 @@ const AddCategory: React.FC = () => {
             buttonLoading={saveButtonLoading}
             disabled={saveButtonLoading}
             label="Save"
-            className="whitespace-nowrap text-center mr-0 h-8"
+            className="whitespace-nowrap text-center mr-0"
             icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
 

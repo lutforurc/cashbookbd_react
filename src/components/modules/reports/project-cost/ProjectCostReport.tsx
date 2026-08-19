@@ -468,14 +468,14 @@ const ProjectCostReport = ({ user }: any) => {
               label="Apply"
               onClick={handleApply}
               buttonLoading={buttonLoading}
-              className="h-10 px-6"
+              className="px-6"
               icon={<FiCheckSquare />}
             />
             <ButtonLoading
               label="Reset"
               onClick={handleReset}
               buttonLoading={false}
-              className="h-10 px-4"
+              className="px-4"
               icon={<FiRotateCcw />}
             />
             <PrintRowsInput
@@ -494,7 +494,7 @@ const ProjectCostReport = ({ user }: any) => {
  value={fontSize}
  onChange={(e) => setFontSize(Number(e.target.value) || 12)}
             />
-            <PrintButton label="Print" onClick={handlePrint} className="h-10 px-6" disabled={!hasData} />
+            <PrintButton label="Print" onClick={handlePrint} className="px-6" disabled={!hasData} />
           </div>
         </div>
 

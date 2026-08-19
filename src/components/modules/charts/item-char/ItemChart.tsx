@@ -155,7 +155,7 @@ const ItemChart = (user) => {
             onClick={handleRun}
             buttonLoading={buttonLoading}
             label="Run"
-            className="mt-2 w-full h-9"
+            className="mt-2 w-full"
           /> */}
         </div>
       </div>

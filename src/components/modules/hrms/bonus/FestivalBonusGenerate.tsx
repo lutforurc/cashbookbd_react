@@ -312,7 +312,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
                     onChange={(e) => setBonusPercent(e.target.value)}
                     type="number"
                     inputMode="decimal"
-                    className="w-full h-8.5"
+                    className="w-full"
                   />
                 </div>
                 <div className="flex items-end">
@@ -320,10 +320,10 @@ const FestivalBonusGenerate = ({ user }: any) => {
                     onClick={handleSearch}
                     label="Load Employees"
                     icon={<FiSearch className="h-4 w-4" />}
-                    className="w-full whitespace-nowrap h-8.5  xl:w-auto"
+                    className="w-full whitespace-nowrap xl:w-auto"
                   />
                   <div className="ml-2 flex justify-end">
-                    <ButtonLoading className="px-5 py-2 h-8.5"  onClick={() => setShowConfirm(true)} buttonLoading={saveButtonLoading} label="Generate Bonus" icon={<FiCheckSquare className="h-4 w-4" />}  />
+                    <ButtonLoading className="px-5 py-2"  onClick={() => setShowConfirm(true)} buttonLoading={saveButtonLoading} label="Generate Bonus" icon={<FiCheckSquare className="h-4 w-4" />}  />
                   </div>
                 </div>
               </div>
@@ -371,7 +371,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
                 name="bonus_month_id"
                 value={monthId}
                 onChange={handleMonthChange}
-                className="h-9 bg-transparent min-w-35"
+                className="bg-transparent min-w-35"
               />
             </div>
 
@@ -382,7 +382,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
                 label="Bonus Title"
                 onChange={(e) => setBonusTitle(e.target.value)}
                 value={bonusTitle}
-                className="h-9 bg-transparent"
+                className="bg-transparent"
                 data={bonusTitleOptions}
               />
             </div>

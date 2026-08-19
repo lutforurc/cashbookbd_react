@@ -502,7 +502,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               setSidebarCollapsed((current) => !current);
               setOpenMenu(null);
             }}
-            className={`hidden h-9 w-9 items-center justify-center rounded-sm border border-stroke bg-white text-slate-600 shadow-sm transition hover:bg-gray-100 hover:text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-slate-300 dark:hover:bg-meta-4 lg:flex ${sidebarCollapsed ? 'lg:h-8 lg:w-8 lg:flex-none' : ''}`}
+            className={`hidden w-9 items-center justify-center rounded-sm border border-stroke bg-white text-slate-600 shadow-sm transition hover:bg-gray-100 hover:text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-slate-300 dark:hover:bg-meta-4 lg:flex ${sidebarCollapsed ?'lg: lg:w-8 lg:flex-none':''}`}
             title={sidebarCollapsed ? 'Show menu labels' : 'Show icons only'}
             aria-label={sidebarCollapsed ? 'Show menu labels' : 'Show icons only'}
           >

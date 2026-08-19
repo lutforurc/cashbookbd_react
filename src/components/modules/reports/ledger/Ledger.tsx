@@ -664,7 +664,7 @@ const Ledger = (user: any) => {
                 onClick={handleActionButtonClick}
                 buttonLoading={buttonLoading}
                 label="Apply" 
-                className="h-10 px-6"
+                className="px-6"
                 icon={<FiCheckSquare />}
               />
               <ButtonLoading
@@ -672,7 +672,7 @@ const Ledger = (user: any) => {
                 buttonLoading={false}
                 label="Reset" 
                 icon={<FiRotateCcw />}
-                className="h-10 px-4"
+                className="px-4"
               />
             </div>
 
@@ -683,14 +683,14 @@ const Ledger = (user: any) => {
                   buttonLoading={buttonLoading}
                   label="Apply"
                   icon={<FiCheckSquare />}
-                  className="h-10 px-6"
+                  className="px-6"
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
                   buttonLoading={false}
                   label="Reset"
                   icon={<FiRotateCcw />}
-                  className="h-10 px-4"
+                  className="px-4"
                 />
                 <PrintRowsInput
  id="perPageInline"
@@ -713,7 +713,7 @@ const Ledger = (user: any) => {
                 <PrintButton
                   onClick={handlePrint}
                   label="Print"
-                  className="h-10 px-6"
+                  className="px-6"
                   disabled={!Array.isArray(tableData) || tableData.length === 0}
                 />
               </div>
@@ -748,7 +748,7 @@ const Ledger = (user: any) => {
               <PrintButton
                 onClick={handlePrint}
                 label="Print"
-                className="h-10 px-6"
+                className="px-6"
                 disabled={!Array.isArray(tableData) || tableData.length === 0}
               />
             </div>
@@ -760,14 +760,14 @@ const Ledger = (user: any) => {
                   buttonLoading={buttonLoading}
                   label="Apply"
                   icon={<FiCheckSquare />}
-                  className="h-10 px-6"
+                  className="px-6"
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
                   buttonLoading={false}
                   label="Reset"
                   icon={<FiRotateCcw />}
-                  className="h-10 px-4"
+                  className="px-4"
                 />
               </div>
               <div className="flex flex-nowrap items-end gap-2">
@@ -792,7 +792,7 @@ const Ledger = (user: any) => {
                 <PrintButton
                   onClick={handlePrint}
                   label="Print"
-                  className="h-10 px-6"
+                  className="px-6"
                   disabled={!Array.isArray(tableData) || tableData.length === 0}
                 />
               </div>

@@ -148,10 +148,10 @@ const SubscriptionAdmin: React.FC = () => {
 
           <div className="flex flex-wrap gap-2">
             <Link to={routes.subscription_plan_list} className="inline-flex">
-              <ButtonLoading label="Plan List" icon={<FiList />} className="h-10 px-4" />
+              <ButtonLoading label="Plan List" icon={<FiList />} className="px-4" />
             </Link>
             <Link to={routes.subscription_plan_entry} className="inline-flex">
-              <ButtonLoading label="New Plan" icon={<FiPlus />} className="h-10 px-4" />
+              <ButtonLoading label="New Plan" icon={<FiPlus />} className="px-4" />
             </Link>
           </div>
         </div>
@@ -293,7 +293,7 @@ const SubscriptionAdmin: React.FC = () => {
               onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                 setForm((prev) => ({ ...prev, notes: event.target.value }))
               }
-              className="h-8.5"
+              className=""
             />
           </div>
 
@@ -304,7 +304,7 @@ const SubscriptionAdmin: React.FC = () => {
               disabled={updatingAdminPayment}
               icon={<FiCheckSquare className="" />}
               label={updatingAdminPayment ? 'Saving...' : 'Assign Subscription'}
-              className="w-50 p-2 h-10"
+              className="w-50 p-2"
             />
           </div>
         </form>

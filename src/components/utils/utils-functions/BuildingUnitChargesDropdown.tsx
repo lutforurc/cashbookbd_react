@@ -5,7 +5,7 @@ import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { flatDdl } from '../../modules/real-estate/building-flat/flatSlice';
 import { unitChargeTypeDdl } from '../../modules/real-estate/units/unitSlice';
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 /* ================= TYPES ================= */
 
@@ -191,7 +191,7 @@ const BuildingUnitChargesDropdown: React.FC<DropdownProps> = ({
         )}
         getOptionValue={(option) => option.value}
         placeholder={placeholder || 'Select charege'}
-        styles={customStyles}
+        styles={withFieldHeight(customStyles)}
         defaultValue={defaultValue}
         value={value}
         menuPortalTarget={document.body} // Fix Dropdown Render Issue

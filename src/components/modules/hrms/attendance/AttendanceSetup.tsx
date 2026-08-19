@@ -438,11 +438,9 @@ const AttendanceSetup = ({ user }: any) => {
                   setActiveTab(tab.key);
                   fetchTabData(tab.key);
                 }}
-                className={`inline-flex h-11 items-center gap-2 rounded px-4 text-sm font-medium transition md:w-full md:justify-start ${
-                  active
-                    ? 'bg-blue-50 text-blue-600 dark:bg-slate-700/60 dark:text-blue-400'
-                    : 'text-slate-500 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-700/40 dark:hover:text-blue-400'
-                }`}
+                className={`inline-flex items-center gap-2 rounded px-4 text-sm font-medium transition md:w-full md:justify-start ${
+ active
+ ?'bg-blue-50 text-blue-600 dark:bg-slate-700/60 dark:text-blue-400':'text-slate-500 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-700/40 dark:hover:text-blue-400'}`}
               >
                 <Icon className="text-base" />
                 {tab.label}
@@ -534,7 +532,7 @@ const AttendanceSetup = ({ user }: any) => {
               selectedDate={dateFromString(rosterForm.duty_date)}
               setSelectedDate={(date) => setRosterForm((prev: any) => ({ ...prev, duty_date: dateToString(date) }))}
               setCurrentDate={(date) => setRosterForm((prev: any) => ({ ...prev, duty_date: dateToString(date) }))}
-              className="h-9 w-full"
+              className="w-full"
             />
             <DropdownCommon id="roster_status" name="status" label="Status" value={rosterForm.status} data={rosterStatuses} onChange={handleChange(setRosterForm)} className="" />
             <InputElement name="remarks" label="Remarks" value={rosterForm.remarks || ''} onChange={handleChange(setRosterForm)} />
@@ -567,7 +565,7 @@ const AttendanceSetup = ({ user }: any) => {
               selectedDate={dateFromString(weeklyForm.effective_from)}
               setSelectedDate={(date) => setWeeklyForm((prev: any) => ({ ...prev, effective_from: dateToString(date) }))}
               setCurrentDate={(date) => setWeeklyForm((prev: any) => ({ ...prev, effective_from: dateToString(date) }))}
-              className="h-9 w-full"
+              className="w-full"
             />
             <InputDatePicker
               id="effective_to"
@@ -576,7 +574,7 @@ const AttendanceSetup = ({ user }: any) => {
               selectedDate={dateFromString(weeklyForm.effective_to)}
               setSelectedDate={(date) => setWeeklyForm((prev: any) => ({ ...prev, effective_to: dateToString(date) }))}
               setCurrentDate={(date) => setWeeklyForm((prev: any) => ({ ...prev, effective_to: dateToString(date) }))}
-              className="h-9 w-full"
+              className="w-full"
             />
             <InputElement name="remarks" label="Remarks" value={weeklyForm.remarks || ''} onChange={handleChange(setWeeklyForm)} />
           </div>
@@ -601,7 +599,7 @@ const AttendanceSetup = ({ user }: any) => {
               selectedDate={dateFromString(holidayForm.holiday_date)}
               setSelectedDate={(date) => setHolidayForm((prev: any) => ({ ...prev, holiday_date: dateToString(date) }))}
               setCurrentDate={(date) => setHolidayForm((prev: any) => ({ ...prev, holiday_date: dateToString(date) }))}
-              className="h-9 w-full"
+              className="w-full"
             />
             <InputElement name="holiday_name" label="Holiday Name" value={holidayForm.holiday_name} onChange={handleChange(setHolidayForm)} />
             <DropdownCommon id="holiday_type" name="holiday_type" label="Holiday Type" value={holidayForm.holiday_type} data={holidayTypes} onChange={handleChange(setHolidayForm)} className="" />

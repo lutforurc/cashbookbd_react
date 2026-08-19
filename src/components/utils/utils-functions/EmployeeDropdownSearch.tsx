@@ -5,7 +5,7 @@ import { getCoal4DdlNext } from '../../modules/chartofaccounts/levelfour/coal4Dd
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { StylesConfig } from 'react-select';
 import { employeeLoan } from '../../modules/hrms/loan/employeeLoanSlice';
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 interface OptionType {
   value: string;
@@ -201,7 +201,7 @@ const EmployeeDropdownSearch: React.FC<DropdownProps> = ({
         )}
         getOptionValue={(option) => option.value}
         placeholder={placeholder || 'Select an account'}
-        styles={customStyles}
+        styles={withFieldHeight(customStyles)}
         defaultValue={defaultValue}
         value={value}
         menuPortalTarget={document.body} // Fix Dropdown Render Issue

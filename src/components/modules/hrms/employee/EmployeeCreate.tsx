@@ -508,7 +508,7 @@ const EmployeeCreate = ({ user }: any) => {
             buttonLoading={saveLoading}
             disabled={saveLoading}
             label="Save"
-            className="whitespace-nowrap text-center mr-0 h-8"
+            className="whitespace-nowrap text-center mr-0"
             icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
           <Link to="/dashboard" className="h-8">

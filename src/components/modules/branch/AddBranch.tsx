@@ -1726,7 +1726,7 @@ const AddBranch = () => {
                           buttonLoading={clearingOpening}
                           disabled={clearInFlight}
                           onClick={() => setConfirmClearOpening(true)}
-                          className="h-8.5 whitespace-nowrap rounded bg-danger hover:bg-danger/90"
+                          className="whitespace-nowrap rounded bg-danger hover:bg-danger/90"
                         />
                       </div>
                     )}
@@ -1744,7 +1744,7 @@ const AddBranch = () => {
                           buttonLoading={clearingTransactions}
                           disabled={clearInFlight}
                           onClick={() => setConfirmClearTransactions(true)}
-                          className="h-8.5 whitespace-nowrap rounded bg-danger hover:bg-danger/90"
+                          className="whitespace-nowrap rounded bg-danger hover:bg-danger/90"
                         />
                       </div>
                     )}

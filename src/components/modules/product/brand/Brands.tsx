@@ -290,7 +290,7 @@ const Brands = () => {
               <Button
                 type="button"
                 onClick={closeEdit}
-                className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>
@@ -300,7 +300,7 @@ const Brands = () => {
                 buttonLoading={editLoading}
                 disabled={editLoading}
                 label="Update"
-                className="h-9 px-6"
+                className="px-6"
                 icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
               />
             </div>
@@ -330,7 +330,7 @@ const Brands = () => {
               <Button
                 type="button"
                 onClick={() => setDeleteRow(null)}
-                className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>
@@ -341,7 +341,7 @@ const Brands = () => {
                 disabled={deleteLoading}
                 label="Delete"
                 icon={<FiTrash2 className="mr-2" />}
-                className="h-9 bg-red-600 px-6 hover:bg-red-700"
+                className="bg-red-600 px-6 hover:bg-red-700"
               />
             </div>
           </div>

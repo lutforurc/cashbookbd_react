@@ -5,7 +5,7 @@ import { getDdlProduct } from '../../modules/product/productSlice';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { getDdlLabourItem } from '../../modules/labour-item/labourItemSlice';
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 interface OptionType {
   value: string;
@@ -174,7 +174,7 @@ const LabourDropdown: React.FC<DropdownProps> = ({
         )}
         getOptionValue={(option) => option.value}
         placeholder="Select Labour Item"
-        styles={customStyles}
+        styles={withFieldHeight(customStyles)}
         defaultValue={defaultValue}
         value={value}
         menuPortalTarget={document.body} // Fix dropdown rendering issue

@@ -258,7 +258,7 @@ const LoanBalance = (user: any) => {
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
               label="Search"
-              className="whitespace-nowrap h-8.5 w-25"
+              className="whitespace-nowrap w-25"
                icon={<FiSearch size={15} />}
             />
           </div>

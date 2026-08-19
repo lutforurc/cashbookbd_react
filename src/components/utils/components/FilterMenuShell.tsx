@@ -37,11 +37,9 @@ const FilterMenuShell = ({
         <Button
           type="button"
           onClick={onToggle}
-          className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-            isOpen
-              ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
-              : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
-          }`}
+          className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
+ isOpen
+ ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'}`}
           title="Open filters"
           aria-label="Open filters"
         >

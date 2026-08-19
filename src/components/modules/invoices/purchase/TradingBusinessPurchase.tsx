@@ -1053,7 +1053,7 @@ const TradingBusinessPurchase = () => {
                     <DdlMultiline
                       id="account"
                       name="account"
-                      className={`h-9.5 ${autofillHighlights.supplier ? autofillHighlightClass : ''}`}
+                      className={`${autofillHighlights.supplier ? autofillHighlightClass : ''}`}
                       onSelect={supplierAccountHandler}
                       actionOptionLabel="+ Add New Supplier"
                       onActionSelect={openCustomerModal}
@@ -1271,7 +1271,7 @@ const TradingBusinessPurchase = () => {
                 <ProductDropdown
                   id="product"
                   name="product"
-                  className={`h-9 ${autofillHighlights.product ? autofillHighlightClass : ''}`}
+                  className={`${autofillHighlights.product ? autofillHighlightClass : ''}`}
                   onSelect={productSelectHandler}
                   // defaultValue={
                   //   productData.product_name && productData.product
@@ -1349,7 +1349,7 @@ const TradingBusinessPurchase = () => {
                   value={productData.variance_type}
                   onChange={weightVarianceType}
                   defaultValue={productData?.variance_type || ''}
-                  className="w-full h-8.5"
+                  className="w-full"
                 />
               </div>
             </div>

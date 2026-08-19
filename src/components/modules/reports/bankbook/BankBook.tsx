@@ -543,14 +543,14 @@ const BankBook = (user: any) => {
                 buttonLoading={buttonLoading}
                 label="Apply"
                 icon={<FiCheckSquare />}
-                className="h-10 px-6"
+                className="px-6"
               />
               <ButtonLoading
                 onClick={handleResetFilters}
                 buttonLoading={false}
                 label="Reset"
                 icon={<FiRotateCcw />}
-                className="h-10 px-4"
+                className="px-4"
               />
             </div>
           </FilterMenuShell>
@@ -562,14 +562,14 @@ const BankBook = (user: any) => {
                 buttonLoading={buttonLoading}
                 label="Apply"
                 icon={<FiCheckSquare />}
-                className="h-10 px-6"
+                className="px-6"
               />
               <ButtonLoading
                 onClick={handleResetFilters}
                 buttonLoading={false}
                 label="Reset"
                 icon={<FiRotateCcw />}
-                className="h-10 px-4"
+                className="px-4"
               />
               <div>
                   <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
@@ -603,7 +603,7 @@ const BankBook = (user: any) => {
               <PrintButton
                 onClick={handlePrint}
                 label="Print"
-                className="h-10 px-6"
+                className="px-6"
                 disabled={!Array.isArray(tableData) || tableData.length === 0}
               />
             </div>
@@ -614,14 +614,14 @@ const BankBook = (user: any) => {
                 buttonLoading={buttonLoading}
                 label="Apply"
                 icon={<FiCheckSquare />}
-                className="h-10 px-6"
+                className="px-6"
               />
               <ButtonLoading
                 onClick={handleResetFilters}
                 buttonLoading={false}
                 label="Reset"
                 icon={<FiRotateCcw />}
-                className="h-10 px-4"
+                className="px-4"
               />
               <div>
 
@@ -651,7 +651,7 @@ const BankBook = (user: any) => {
               <PrintButton
                 onClick={handlePrint}
                 label="Print"
-                className="h-10 px-6"
+                className="px-6"
                 disabled={!Array.isArray(tableData) || tableData.length === 0}
               />
             </div>

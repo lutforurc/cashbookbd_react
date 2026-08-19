@@ -150,8 +150,8 @@ const MonthlyReport = (user: any) => {
         </div>
 
         <div className="grid w-full grid-cols-2 items-end gap-2 md:col-span-2 lg:col-span-1 lg:grid-cols-[minmax(78px,1fr)_minmax(78px,1fr)_64px_64px_minmax(78px,1fr)]">
-          <ButtonLoading onClick={handleLoad} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="h-9 w-full px-2" />
-          <ButtonLoading onClick={handleReset} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="h-9 w-full px-2" />
+          <ButtonLoading onClick={handleLoad} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="w-full px-2" />
+          <ButtonLoading onClick={handleReset} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="w-full px-2" />
           <div>
             <label htmlFor="monthly-report-rows" className={labelClass}>Rows</label>
             <PrintRowsInput
@@ -161,7 +161,7 @@ const MonthlyReport = (user: any) => {
               value={String(rowsPerPage)}
               onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 30)}
               type="text"
-              className="h-9 w-full! rounded-none text-center text-sm font-bold"
+              className="w-full! rounded-none text-center text-sm font-bold"
             />
           </div>
           <div>
@@ -173,10 +173,10 @@ const MonthlyReport = (user: any) => {
               value={String(fontSize)}
               onChange={(event: any) => setFontSize(Number(event.target.value) || 12)}
               type="text"
-              className="h-9 w-full! rounded-none text-center text-sm font-bold"
+              className="w-full! rounded-none text-center text-sm font-bold"
             />
           </div>
-          <PrintButton onClick={handlePrint} label="Print" className="h-9 w-full px-2" disabled={rows.length === 0} />
+          <PrintButton onClick={handlePrint} label="Print" className="w-full px-2" disabled={rows.length === 0} />
         </div>
       </div>
 

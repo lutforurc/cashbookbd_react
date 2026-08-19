@@ -57,11 +57,9 @@ const AttendanceExceptionReports = ({ user }: any) => {
               key={tab.key}
               type="button"
               onClick={() => navigate(tab.path)}
-              className={`inline-flex h-10 items-center border-b-2 px-3 text-sm font-medium transition-colors ${
-                active
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400'
-              }`}
+              className={`inline-flex items-center border-b-2 px-3 text-sm font-medium transition-colors ${
+ active
+ ?'border-blue-500 text-blue-600 dark:text-blue-400':'border-transparent text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400'}`}
             >
               <Icon className="mr-2" />
               {tab.label}

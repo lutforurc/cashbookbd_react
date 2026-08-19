@@ -148,7 +148,7 @@ const VoucherDelete = () => {
                 }}
                 buttonLoading={saveButtonLoading}
                 label="Delete Voucher"
-                className="h-10 whitespace-nowrap"
+                className="whitespace-nowrap"
                 icon={<FiTrash2 className="ml-2 mr-2 text-lg text-red-400" />}
               />
 
@@ -200,7 +200,7 @@ const VoucherDelete = () => {
               <Button
                 type="button"
                 onClick={() => setAlreadyDeletedMsg('')}
-                className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>
@@ -211,7 +211,7 @@ const VoucherDelete = () => {
                 disabled={forceLoading}
                 label="Continue"
                 icon={<FiSave className="mr-2 text-lg" />}
-                className="h-9 px-6"
+                className="px-6"
               />
             </div>
           </div>

@@ -338,14 +338,14 @@ const EditUser = (user: any) => {
                         buttonLoading={showUser.isLoading}
                         label="Update"
                         icon={<FiCheckSquare />}
-                        className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-10"
+                        className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
                     />
                     <ButtonLoading
                         onClick={handleBack}
                         buttonLoading={showUser.isLoading}
                         label="Back"
                         icon={<FiArrowLeft />}
-                        className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-10"
+                        className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
                     />
                 </div>
 

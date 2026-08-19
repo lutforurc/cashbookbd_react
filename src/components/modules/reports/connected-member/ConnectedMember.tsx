@@ -186,8 +186,8 @@ const ConnectedMember = (user: any) => {
           </div>
 
         <div className="grid min-w-max grid-cols-[auto_auto_72px_72px_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
-          <ButtonLoading onClick={handleLoad} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="h-9 px-5" />
-          <ButtonLoading onClick={handleReset} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="h-9 px-4" />
+          <ButtonLoading onClick={handleLoad} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="px-5" />
+          <ButtonLoading onClick={handleReset} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="px-4" />
           <div>
             <label htmlFor="connected-member-rows" className={labelClass}>Rows</label>
             <PrintRowsInput
@@ -197,7 +197,7 @@ const ConnectedMember = (user: any) => {
               value={String(rowsPerPage)}
               onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 20)}
               type="text"
-              className="h-9 w-full! rounded-none text-center text-sm font-bold"
+              className="w-full! rounded-none text-center text-sm font-bold"
             />
           </div>
           <div>
@@ -209,10 +209,10 @@ const ConnectedMember = (user: any) => {
               value={String(fontSize)}
               onChange={(event: any) => setFontSize(Number(event.target.value) || 12)}
               type="text"
-              className="h-9 w-full! rounded-none text-center text-sm font-bold"
+              className="w-full! rounded-none text-center text-sm font-bold"
             />
           </div>
-          <PrintButton onClick={handlePrint} label="Print" className="h-9 px-6" disabled={groups.length === 0} />
+          <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={groups.length === 0} />
         </div>
       </div>
 

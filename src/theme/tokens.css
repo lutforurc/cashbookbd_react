@@ -19,6 +19,22 @@
  * ======================================================================== */
 
 :root {
+  /* -------------------------------------------------------------------------
+   * How tall a control stands.
+   *
+   * Not a colour, and it sits in the colour file for one reason: it has to be
+   * readable from both sides. A text box and a button take it as a Tailwind
+   * class (`h-[var(--control-height)]`); a react-select dropdown draws its own
+   * control through inline styles and takes it as a length. Written twice --
+   * once as `h-8.5`, once as `2.125rem` -- the two drifted apart the moment
+   * someone changed one and not the other, which is exactly how the dropdowns
+   * ended up standing apart from the boxes beside them.
+   *
+   * Change this line and every input, every button and every dropdown in the
+   * app moves together. Nothing else needs editing.
+   * ---------------------------------------------------------------------- */
+  --control-height: 2.125rem;        /* 34px -- the height of the search button */
+
   /* Brand and interaction */
   --c-primary: 43 95 217;            /* #2B5FD9 */
   --c-secondary: 127 190 234;        /* #7FBEEA */

@@ -194,7 +194,7 @@ const LabourItemList = () => {
                 setCategoryFilter(e.target.value);
                 setPage(1);
               }}
-              className="h-9"
+              className=""
             />
           </div>
 
@@ -216,7 +216,7 @@ const LabourItemList = () => {
             onClick={() => navigate(routes.labour_item_create)}
             label="New Item"
             icon={<FiPlus size={18} />}
-            className="h-9 whitespace-nowrap"
+            className="whitespace-nowrap"
           />
         ) : null}
       </div>

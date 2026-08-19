@@ -146,7 +146,7 @@ const AveragePrice = (user: any) => {
                             onClick={handleActionButtonClick}
                             buttonLoading={buttonLoading}
                             label="Run"
-                            className="mt-0 md:mt-2 w-full h-10"
+                            className="mt-0 md:mt-2 w-full"
                             icon={<FiCheckSquare className="text-lg ml-2" />}
                         />
                     </div>

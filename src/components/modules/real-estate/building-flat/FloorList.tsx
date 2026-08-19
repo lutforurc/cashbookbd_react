@@ -195,7 +195,7 @@ const FloorList = ({ user }: any) => {
         </div>
 
         <ButtonLoading
-          className="h-9"
+          className=""
           onClick={handleCreateFloor}
           label="New Floor"
           icon={<FiPlus size={18} />}

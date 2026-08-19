@@ -398,7 +398,7 @@ const SignIn: React.FC = () => {
                       label="Sign In"
                       buttonLoading={isLoading}
                       icon={<FiLogIn className="h-5 w-5" />}
-                      className="h-10 w-full"
+                      className="w-full"
                     />
                   </div>
 

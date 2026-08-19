@@ -262,11 +262,9 @@ const CatWiseInOut = (user: any) => {
               <Button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
-                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                  filterOpen
-                    ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
-                    : "border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"
-                }`}
+                className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
+ filterOpen
+ ?"border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300":"border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"}`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -320,7 +318,7 @@ const CatWiseInOut = (user: any) => {
                       value={reportType}
                       onChange={(e) => setReportType(e.target.value)}
                       data={reportTypeWithAll}
-                      className="h-10"
+                      className=""
                     />
                   </div>
 
@@ -362,14 +360,14 @@ const CatWiseInOut = (user: any) => {
                           buttonLoading={buttonLoading}
                           label="Apply"
                           icon={<FiCheckSquare />}
-                          className="h-10 px-6"
+                          className="px-6"
                         />
                         <ButtonLoading
                           onClick={handleResetFilters}
                           buttonLoading={false}
                           label="Reset"
                           icon={<FiRotateCcw />}
-                          className="h-10 px-4"
+                          className="px-4"
                         />
                         <PrintRowsInput
                           id="perPageInline"
@@ -377,7 +375,7 @@ const CatWiseInOut = (user: any) => {
                           name="perPageInline"
                           value={perPage.toString()}
                           onChange={(e) => setPerPage(Number(e.target.value))}
-                          className="h-10 w-16! md:w-18! text-sm"
+                          className="w-16! md:w-18! text-sm"
                         />
                         <PrintFontInput
                           id="fontSizeInline"
@@ -385,11 +383,11 @@ const CatWiseInOut = (user: any) => {
                           label="Font"
                           value={fontSize.toString()}
                           onChange={(e) => setFontSize(Number(e.target.value))}
-                          className="h-10 w-16! md:w-18! text-sm"
+                          className="w-16! md:w-18! text-sm"
                         />
                         <PrintButton
                           onClick={handlePrint}
-                          className="h-10 px-4"
+                          className="px-4"
                         />
                       </div>
                     </div>
@@ -407,14 +405,14 @@ const CatWiseInOut = (user: any) => {
                       buttonLoading={buttonLoading}
                       label="Apply"
                       icon={<FiCheckSquare />}
-                      className="h-10 px-6"
+                      className="px-6"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
                       label="Reset"
                       icon={<FiRotateCcw />}
-                      className="h-10 px-4"
+                      className="px-4"
                     />
                   </div>
                 </div>
@@ -450,14 +448,14 @@ const CatWiseInOut = (user: any) => {
                   buttonLoading={buttonLoading}
                   label="Apply"
                   icon={<FiCheckSquare />}
-                  className="h-10 px-6"
+                  className="px-6"
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
                   buttonLoading={false}
                   label="Reset"
                   icon={<FiRotateCcw />}
-                  className="h-10 px-4"
+                  className="px-4"
                 />
               </>
             )}
@@ -467,7 +465,7 @@ const CatWiseInOut = (user: any) => {
               name="perPage"
               value={perPage.toString()}
               onChange={(e) => setPerPage(Number(e.target.value))}
-              className="h-10 w-16! md:w-18! text-sm"
+              className="w-16! md:w-18! text-sm"
             />
             <PrintFontInput
               id="fontSize"
@@ -475,11 +473,11 @@ const CatWiseInOut = (user: any) => {
               label={useFilterMenuEnabled ? "Font" : "Font"}
               value={fontSize.toString()}
               onChange={(e) => setFontSize(Number(e.target.value))}
-              className="h-10 w-16! md:w-18! text-sm"
+              className="w-16! md:w-18! text-sm"
             />
             <PrintButton
               onClick={handlePrint}
-              className="h-10 px-4"
+              className="px-4"
             />
           </div>
         </div>

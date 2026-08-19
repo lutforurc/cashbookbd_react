@@ -425,7 +425,7 @@ const TradingCashPayment = () => {
                       onClick={searchTransaction}
                       buttonLoading={buttonLoading}
                       label=" "
-                      className="-ml-px h-8.5 w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
+                      className="-ml-px w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
                       icon={<FiSearch className="text-lg ml-2" />}
                     />
                   </>
@@ -467,7 +467,6 @@ const TradingCashPayment = () => {
                 id="account"
                 name='account'
                 onSelect={selectedLedgerOptionHandler}
-                className="h-9.5"
                 defaultValue={
                   formData.account
                     ? {
@@ -597,7 +596,7 @@ const TradingCashPayment = () => {
         <div className="col-span-2 overflow-x-auto lg:mt-6">
           {cashPayment.isLoading ? <Loader /> : null}
           <table
-            className={`min-w-[680px] w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400`}
+            className={`w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400`}
           >
             <thead className="text-xs text-gray-700 uppercase bg-gray-300 dark:bg-gray-700 dark:text-gray-200">
               <tr className="bg-black-700">

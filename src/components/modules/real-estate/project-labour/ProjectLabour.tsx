@@ -574,7 +574,7 @@ const ProjectLabour = () => {
                 buttonLoading={searching}
                 label=" "
                 title="Search invoice"
-                className="-ml-px h-9.5 w-12 shrink-0 border border-gray-600 text-center hover:border-blue-500 sm:w-20"
+                className="-ml-px w-12 shrink-0 border border-gray-600 text-center hover:border-blue-500 sm:w-20"
                 icon={<FiSearch className="ml-2 text-lg" />}
               />
             </div>

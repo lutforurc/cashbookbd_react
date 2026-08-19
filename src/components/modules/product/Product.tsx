@@ -632,7 +632,7 @@ const Product = (user: any) => {
             <div className="w-full sm:w-64">
               <SearchInput className="w-full! " search={search} setSearchValue={setSearchValue} />
             </div>
-            <ButtonLoading label="Search" icon={<FiSearch className="text-gray-500" />}  onClick={handleSearchButton} className="h-9 w-full sm:w-auto" />
+            <ButtonLoading label="Search" icon={<FiSearch className="text-gray-500" />}  onClick={handleSearchButton} className="w-full sm:w-auto" />
           </div>
 
           <div className="flex w-full">
@@ -659,7 +659,7 @@ const Product = (user: any) => {
  className="font-medium text-sm w-12!"
               />
             </div>
-            <PrintButton onClick={handlePrint} label="Print" className="ml-2 pt-[0.45rem] pb-[0.45rem] h-9" />
+            <PrintButton onClick={handlePrint} label="Print" className="ml-2 pt-[0.45rem] pb-[0.45rem]" />
           </div>
         </div>
 
@@ -725,7 +725,7 @@ const Product = (user: any) => {
               <Button
                 type="button"
                 onClick={() => setOpeningDeleteRow(null)}
-                className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>
@@ -736,7 +736,7 @@ const Product = (user: any) => {
                 disabled={openingDeleteLoading}
                 label="Delete"
                 icon={<FiTrash2 className="mr-2" />}
-                className="h-9 bg-red-600 px-6 hover:bg-red-700"
+                className="bg-red-600 px-6 hover:bg-red-700"
               />
             </div>
           </div>
@@ -766,7 +766,7 @@ const Product = (user: any) => {
               <Button
                 type="button"
                 onClick={() => setDeleteRow(null)}
-                className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>
@@ -777,7 +777,7 @@ const Product = (user: any) => {
                 disabled={deleteLoading}
                 label="Delete"
                 icon={<FiTrash2 className="mr-2" />}
-                className="h-9 bg-red-600 px-6 hover:bg-red-700"
+                className="bg-red-600 px-6 hover:bg-red-700"
               />
             </div>
           </div>

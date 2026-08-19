@@ -220,7 +220,7 @@ const DropdownNotification = () => {
         <Button
           type="button"
           onClick={() => setDropdownOpen((current) => !current)}
-          className="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border border-stroke bg-gray text-slate-600 transition hover:border-primary hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
+          className="relative flex w-8.5 items-center justify-center rounded-full border border-stroke bg-gray text-slate-600 transition hover:border-primary hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
           aria-label="Notification center"
         >
           <FiBell className="text-lg" />
@@ -245,7 +245,7 @@ const DropdownNotification = () => {
               <Button
                 type="button"
                 onClick={loadNotifications}
-                className="flex h-8 w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
+                className="flex w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
                 aria-label="Refresh notifications"
               >
                 <FiRefreshCw className={loading ? 'animate-spin' : ''} />

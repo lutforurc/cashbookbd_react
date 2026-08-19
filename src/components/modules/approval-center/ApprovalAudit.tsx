@@ -203,7 +203,7 @@ const ApprovalAudit = ({ user }: any) => {
             selectedDate={dateFromString(filters.date_from)}
             setSelectedDate={(date) => setFilters((prev) => ({ ...prev, date_from: dateToString(date), page: 1 }))}
             setCurrentDate={(date) => setFilters((prev) => ({ ...prev, date_from: dateToString(date), page: 1 }))}
-            className="h-10 w-full"
+            className="w-full"
           />
           <InputDatePicker
             id="date_to"
@@ -212,7 +212,7 @@ const ApprovalAudit = ({ user }: any) => {
             selectedDate={dateFromString(filters.date_to)}
             setSelectedDate={(date) => setFilters((prev) => ({ ...prev, date_to: dateToString(date), page: 1 }))}
             setCurrentDate={(date) => setFilters((prev) => ({ ...prev, date_to: dateToString(date), page: 1 }))}
-            className="h-10 w-full"
+            className="w-full"
           />
           <div>
             <label className="mb-1 block text-sm font-medium text-black dark:text-white">Branch/Project</label>
@@ -249,7 +249,7 @@ const ApprovalAudit = ({ user }: any) => {
               if (event.key === 'Enter') loadWithFilters();
             }}
             placeholder="Employee, user, remarks"
-            className="h-10"
+            className=""
           />
           <div>
             <label className="mb-1 block text-sm font-medium text-black dark:text-white">Per Page</label>
@@ -270,15 +270,15 @@ const ApprovalAudit = ({ user }: any) => {
             type="button"
             label="Load"
             onClick={loadWithFilters}
-            className="h-10 min-w-[110px] whitespace-nowrap px-5"
+            className="min-w-[110px] whitespace-nowrap px-5"
             icon={<FiRefreshCcw className="mr-2" />}
           />
-          <PrintButton label="Print" onClick={handlePrint} className="h-10" disabled={!rows.length} />
+          <PrintButton label="Print" onClick={handlePrint} className="" disabled={!rows.length} />
           <Button
             type="button"
             onClick={handleExcelExport}
             disabled={exporting}
-            className="inline-flex h-10 items-center justify-center whitespace-nowrap bg-emerald-700 px-5 text-sm font-medium text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-400"
+            className="inline-flex items-center justify-center whitespace-nowrap bg-emerald-700 px-5 text-sm font-medium text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-400"
           >
             <FiDownload className="mr-2" />
             Excel

@@ -937,7 +937,7 @@ const SalarySheetUpdate = (user: any) => {
               value={selectedEmployeeId}
               data={employeeOptions}
               onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className="h-9"
+              className=""
             />
           </div>
           <ButtonLoading
@@ -946,7 +946,7 @@ const SalarySheetUpdate = (user: any) => {
             disabled={addEmployeeLoading || !selectedEmployeeId}
             label="Add Employee"
             icon={<FiPlus className="mr-1 font-bold" />}
-            className="whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 px-5 py-1 h-9"
+            className="whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 px-5 py-1"
           />
           <ButtonLoading
             onClick={() =>
@@ -957,7 +957,7 @@ const SalarySheetUpdate = (user: any) => {
               })
             }
             label="Back"
-            className="whitespace-nowrap bg-slate-500 hover:bg-slate-600 px-6 py-1 h-9"
+            className="whitespace-nowrap bg-slate-500 hover:bg-slate-600 px-6 py-1"
             icon={<FiArrowLeft className="mr-1" />}
           />
           <ButtonLoading
@@ -965,7 +965,7 @@ const SalarySheetUpdate = (user: any) => {
             buttonLoading={saveLoading}
             disabled={saveLoading || rows.length === 0}
             label="Update Salary"
-            className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 px-6 py-1 h-9"
+            className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 px-6 py-1"
             icon={<FiCheckSquare />}
           />
         </div>

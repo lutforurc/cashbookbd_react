@@ -307,7 +307,7 @@ const AddEditProject = (user: any) => {
                     onClick={handleSave}
                     buttonLoading={buttonLoading}
                     label={id ? 'Update' : 'Save'}
-                    className='h-9'
+                    className=''
                     icon={<FiSave className="ml-2 text-lg" />}
                 />
                 <ButtonLoading

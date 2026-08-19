@@ -1051,7 +1051,7 @@ const SalarySheetGenerate = ({ user }: any) => {
               }}
               buttonLoading={saveButtonLoading}
               label="Salary Generate"
-              className="whitespace-nowrap h-9"
+              className="whitespace-nowrap"
               icon={<FiCheckSquare className="mr-2" />}
             />
           )}

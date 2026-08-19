@@ -260,7 +260,7 @@ const SmsTemplateList = () => {
             <ButtonLoading
               onClick={handleSearch}
               label="Search"
-              className="h-9 whitespace-nowrap"
+              className="whitespace-nowrap"
               icon={<FiCheckSquare />}
             />
           </div>

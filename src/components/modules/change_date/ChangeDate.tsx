@@ -211,7 +211,7 @@ const ChangeDate = () => {
                   type="submit"
                   buttonLoading={isSubmitting}
                   label="Change"
-                  className="whitespace-nowrap text-center mr-0 h-8"
+                  className="whitespace-nowrap text-center mr-0"
                   icon={
                     <FiCheckSquare className="text-white text-lg ml-2 mr-2" />
                   }

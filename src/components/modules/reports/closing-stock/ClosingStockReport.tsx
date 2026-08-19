@@ -230,14 +230,14 @@ const ClosingStockReport = ({ user }: any) => {
               buttonLoading={loading}
               label="Apply"
               icon={<FiCheckSquare />}
-              className="h-10 px-6"
+              className="px-6"
             />
             <ButtonLoading
               onClick={handleReset}
               buttonLoading={false}
               label="Reset"
               icon={<FiRotateCcw />}
-              className="h-10 px-4"
+              className="px-4"
             />
             <PrintRowsInput
               id="stockDetailsRows"
@@ -246,7 +246,7 @@ const ClosingStockReport = ({ user }: any) => {
               value={perPage.toString()}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPerPage(Number(e.target.value) || 12)}
               type="text"
-              className="font-medium text-sm h-10 w-full! text-center"
+              className="font-medium text-sm w-full! text-center"
             />
             <PrintFontInput
               id="stockDetailsFont"
@@ -255,9 +255,9 @@ const ClosingStockReport = ({ user }: any) => {
               value={fontSize.toString()}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFontSize(Number(e.target.value) || 12)}
               type="text"
-              className="font-medium text-sm h-10 w-full! text-center"
+              className="font-medium text-sm w-full! text-center"
             />
-            <PrintButton onClick={handlePrint} label="Print" className="h-10 px-6" disabled={!rows.length} />
+            <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={!rows.length} />
           </div>
         </div>
       </div>

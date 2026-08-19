@@ -13,6 +13,22 @@
  * Colour comes from tokens.css underneath -- these are class names, and every
  * colour class resolves to a variable there.
  */
+import { FIELD_HEIGHT } from './fieldStyles';
+
+
+/**
+ * How tall a button stands.
+ *
+ * The field's height, read from the field's own file rather than copied here,
+ * because a button and the box beside it are only ever right together. Nothing
+ * decided the height before this: `py-2` in thirty-seven places, `py-1.5` in
+ * seventeen, `h-10` in a couple of hundred more -- so a Save button and the
+ * amount box it sat against were routinely six pixels apart.
+ *
+ * A button that genuinely has to be shorter -- the ones inside a table row --
+ * says so with `!`, which is what ROW_ACTION_BUTTON_CLASS does.
+ */
+export const BUTTON_HEIGHT = FIELD_HEIGHT;
 
 /** Layout, typography and focus. Everything a button has regardless of colour. */
 export const BUTTON_BASE = [
@@ -21,6 +37,7 @@ export const BUTTON_BASE = [
   // on the eyes in dark mode -- and at 14px that reads as grey rather than
   // white. The extra weight is what makes it look like the colour it is.
   'inline-flex items-center justify-center text-center font-semibold',
+  BUTTON_HEIGHT,
   'transition-colors focus:outline-none',
   'disabled:cursor-not-allowed disabled:opacity-60',
 ].join(' ');

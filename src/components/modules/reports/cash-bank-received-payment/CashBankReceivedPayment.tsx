@@ -169,11 +169,11 @@ const CashBankReceivedPayment = ({ user }: { user: any }) => {
           <div><label className={labelClass}>End Date <span className="text-red-500">*</span></label><InputDatePicker selectedDate={endDate} setSelectedDate={setEndDate} setCurrentDate={setEndDate} className="font-medium text-sm w-full " /></div>
         </div>
         <div className="grid min-w-max grid-cols-[auto_auto_88px_88px_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
-          <ButtonLoading onClick={loadReport} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="h-10 px-5" />
-          <ButtonLoading onClick={() => { setRows([]); setBankDetails([]); }} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="h-10 px-5" />
-          <PrintRowsInput id="cash-bank-rows" name="cash-bank-rows" label="" value={String(rowsPerPage)} onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 12)} type="text" className="h-10 w-full! text-center text-sm font-medium" />
-          <PrintFontInput id="cash-bank-font" name="cash-bank-font" label="" value={String(fontSize)} onChange={(event: any) => setFontSize(Number(event.target.value) || 12)} type="text" className="h-10 w-full! text-center text-sm font-medium" />
-          <PrintButton onClick={print} label="Print" className="h-10 px-5" disabled={!rows.length} />
+          <ButtonLoading onClick={loadReport} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="px-5" />
+          <ButtonLoading onClick={() => { setRows([]); setBankDetails([]); }} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="px-5" />
+          <PrintRowsInput id="cash-bank-rows" name="cash-bank-rows" label="" value={String(rowsPerPage)} onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 12)} type="text" className="w-full! text-center text-sm font-medium" />
+          <PrintFontInput id="cash-bank-font" name="cash-bank-font" label="" value={String(fontSize)} onChange={(event: any) => setFontSize(Number(event.target.value) || 12)} type="text" className="w-full! text-center text-sm font-medium" />
+          <PrintButton onClick={print} label="Print" className="px-5" disabled={!rows.length} />
         </div>
       </div>
 

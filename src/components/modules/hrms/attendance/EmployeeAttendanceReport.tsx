@@ -259,7 +259,7 @@ const EmployeeAttendanceReport = ({ user }: any) => {
           selectedDate={dateFromString(filters.date_from)}
           setSelectedDate={(date) => setFilters((prev: any) => ({ ...prev, date_from: dateToString(date) }))}
           setCurrentDate={(date) => setFilters((prev: any) => ({ ...prev, date_from: dateToString(date) }))}
-          className="h-9 w-full"
+          className="w-full"
         />
         <InputDatePicker
           id="date_to"
@@ -268,7 +268,7 @@ const EmployeeAttendanceReport = ({ user }: any) => {
           selectedDate={dateFromString(filters.date_to)}
           setSelectedDate={(date) => setFilters((prev: any) => ({ ...prev, date_to: dateToString(date) }))}
           setCurrentDate={(date) => setFilters((prev: any) => ({ ...prev, date_to: dateToString(date) }))}
-          className="h-9 w-full"
+          className="w-full"
         />
         <div>
           <label className="text-black dark:text-white">Branch</label>

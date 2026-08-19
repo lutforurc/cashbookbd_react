@@ -812,10 +812,8 @@ const LedgerWithProduct = (user: any) => {
                 <Button
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
-                  className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${filterOpen
-                      ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
-                      : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
-                    }`}
+                  className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${filterOpen
+ ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'}`}
                   title="Open filters"
                   aria-label="Open filters"
                 >
@@ -865,7 +863,6 @@ const LedgerWithProduct = (user: any) => {
                           );
                           setPartyLabel(option?.label || '');
                         }}
-                        className="h-10"
                       />
                     </div>
 
@@ -944,13 +941,13 @@ const LedgerWithProduct = (user: any) => {
                         onClick={handleRun}
                         icon={<FiCheckSquare />}
                         buttonLoading={statementState?.loading}
-                        className="h-10 px-6"
+                        className="px-6"
                       />
                       <ButtonLoading
                         label="Reset"
                         onClick={handleResetFilters}
                         buttonLoading={false}
-                        className="h-10 px-4"
+                        className="px-4"
                         icon={<FiRotateCcw />}
                       />
                     </div>
@@ -1017,14 +1014,14 @@ const LedgerWithProduct = (user: any) => {
                 <PrintButton
                   label="Print"
                   onClick={handlePrint}
-                  className="h-10 px-6"
+                  className="px-6"
                   disabled={!rows.length}
                 />
                 <ButtonLoading
                   label="Excel"
                   onClick={handleExcelExport}
                   buttonLoading={false}
-                  className="h-10 px-5"
+                  className="px-5"
                   icon={<FiDownload />}
                   disabled={!rows.length}
                 />
@@ -1036,7 +1033,7 @@ const LedgerWithProduct = (user: any) => {
                     label="Apply"
                     onClick={handleRun}
                     buttonLoading={statementState?.loading}
-                    className="h-10 px-6"
+                    className="px-6"
                     icon={<FiCheckSquare />}
                   />
 
@@ -1044,7 +1041,7 @@ const LedgerWithProduct = (user: any) => {
                     label="Reset"
                     onClick={handleResetFilters}
                     buttonLoading={false}
-                    className="h-10 px-4"
+                    className="px-4"
                     icon={<FiRotateCcw />}
                   />
                 </div>
@@ -1078,14 +1075,14 @@ const LedgerWithProduct = (user: any) => {
                   <PrintButton
                     label="Print"
                     onClick={handlePrint}
-                    className="h-10 px-6"
+                    className="px-6"
                     disabled={!rows.length}
                   />
                   <ButtonLoading
                     label="Excel"
                     onClick={handleExcelExport}
                     buttonLoading={false}
-                    className="h-10 px-5"
+                    className="px-5"
                     icon={<FiDownload />}
                     disabled={!rows.length}
                   />

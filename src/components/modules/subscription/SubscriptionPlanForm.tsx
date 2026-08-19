@@ -462,14 +462,14 @@ const SubscriptionPlanForm: React.FC = () => {
             buttonLoading={savingPlan || loadingPlanDetails}
             disabled={savingPlan || loadingPlanDetails}
             label={isEdit ? 'Update' : 'Save'}
-            className="h-10 px-5 w-34"
+            className="px-5 w-34"
             icon={<FiSave className="text-lg" />}
           />
           <ButtonLoading
             type="button"
             onClick={() => resetForm()}
             label="Reset"
-            className="h-10 px-5 w-34"
+            className="px-5 w-34"
             icon={<FiRefreshCcw className="text-lg" />}
           />
           <Link

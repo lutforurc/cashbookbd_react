@@ -1199,7 +1199,7 @@ const TradingBusinessSales = () => {
                   <div className="min-w-0 flex-1">
                     <DdlMultiline
                       key={`${selectedCustomerOption?.value || formData.account || 'empty'}-${selectedCustomerOption?.label || formData.accountName || 'empty'}`}
-                      className={`h-9.5 ${autofillHighlights.customer ? autofillHighlightClass : ''}`}
+                      className={`${autofillHighlights.customer ? autofillHighlightClass : ''}`}
                       onSelect={customerAccountHandler}
                       actionOptionLabel="+ Add New Customer"
                       onActionSelect={openCustomerModal}

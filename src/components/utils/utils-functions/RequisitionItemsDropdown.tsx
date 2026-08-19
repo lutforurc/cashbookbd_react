@@ -6,7 +6,7 @@ import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { getDdlLabourItem } from '../../modules/labour-item/labourItemSlice';
 import { requisitionItem } from '../../modules/Requisition/requisitionSlice';
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 interface OptionType {
   value: string;
@@ -172,7 +172,7 @@ const RequisitionItemsDropdown: React.FC<DropdownProps> = ({
         )}
         getOptionValue={(option) => option.value}
         placeholder="Select product"
-        styles={customStyles}
+        styles={withFieldHeight(customStyles)}
         defaultValue={defaultValue}
         value={value}
         menuPortalTarget={document.body} // Fix dropdown rendering issue

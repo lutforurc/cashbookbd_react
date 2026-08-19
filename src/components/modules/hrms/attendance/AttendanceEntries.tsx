@@ -869,7 +869,7 @@ const AttendanceEntries = ({ user }: any) => {
             selectedDate={dateFromString(form.attendance_date)}
             setSelectedDate={(date) => setForm((prev: any) => ({ ...prev, attendance_date: dateToString(date) }))}
             setCurrentDate={(date) => setForm((prev: any) => ({ ...prev, attendance_date: dateToString(date) }))}
-            className="h-9 w-full"
+            className="w-full"
           />
           <InputTimePicker name="in_time" label="In Time" value={form.in_time || ''} onChange={handleChange(setForm)} />
           <InputTimePicker name="out_time" label="Out Time" value={form.out_time || ''} onChange={handleChange(setForm)} />
@@ -891,7 +891,7 @@ const AttendanceEntries = ({ user }: any) => {
             disabled={form.id && form.approval_status === 'approved'}
             label={form.employee_id ? 'Update Single' : 'Save Single'}
             // className={commandButtonClass}
-            className =" h-9"
+            className =""
             icon={<FiSave className="mr-2" />}
           />
           <ButtonLoading
@@ -899,21 +899,21 @@ const AttendanceEntries = ({ user }: any) => {
             onClick={handleBulkSubmit}
             buttonLoading={bulkLoading}
             label="Bulk Entry"
-            className =" h-9"
+            className =""
             icon={<FiUsers className="mr-2" />}
           />
           <ButtonLoading
             type="button"
             onClick={reset}
             label="Reset"
-            className =" h-9"
+            className =""
             icon={<FiRefreshCcw className="mr-2" />}
           />
           <ButtonLoading
             type="button"
             onClick={handleBulkLoad}
             label="Load"
-            className =" h-9 w-30"
+            className ="w-30"
             icon={<FiSearch className="mr-2" />}
           />
         </div>
@@ -940,7 +940,7 @@ const AttendanceEntries = ({ user }: any) => {
           selectedDate={dateFromString(filters.date_from)}
           setSelectedDate={(date) => setFilters((prev: any) => ({ ...prev, date_from: dateToString(date) }))}
           setCurrentDate={(date) => setFilters((prev: any) => ({ ...prev, date_from: dateToString(date) }))}
-          className="h-9 w-full"
+          className="w-full"
         />
         <InputDatePicker
           id="date_to"
@@ -949,7 +949,7 @@ const AttendanceEntries = ({ user }: any) => {
           selectedDate={dateFromString(filters.date_to)}
           setSelectedDate={(date) => setFilters((prev: any) => ({ ...prev, date_to: dateToString(date) }))}
           setCurrentDate={(date) => setFilters((prev: any) => ({ ...prev, date_to: dateToString(date) }))}
-          className="h-9 w-full"
+          className="w-full"
         />
         <div>
           <label className={sectionLabelClass}>Branch</label>
@@ -967,7 +967,7 @@ const AttendanceEntries = ({ user }: any) => {
             type="button"
             onClick={() => loadEntries()}
             label="Load"
-            className ="h-9 min-w-[92px] whitespace-nowrap px-4"
+            className ="min-w-[92px] whitespace-nowrap px-4"
             icon={<FiSearch className="mr-2" />}
           />
         {/* </div>
@@ -978,7 +978,7 @@ const AttendanceEntries = ({ user }: any) => {
             buttonLoading={bulkApproveLoading}
             disabled={bulkApproveLoading || (pendingRowsList().length === 0 && entries.every((row: any) => row?.approval_status === 'approved'))}
             label="Bulk Approve"
-            className ="h-9 min-w-[135px] whitespace-nowrap px-4"
+            className ="min-w-[135px] whitespace-nowrap px-4"
             icon={<FiCheck className="mr-2" />}
           />
           <ButtonLoading
@@ -987,7 +987,7 @@ const AttendanceEntries = ({ user }: any) => {
             buttonLoading={bulkClearLoading}
             disabled={bulkClearLoading || approvedEntriesForClear.length === 0}
             label="Bulk Clear"
-            className ="h-9 min-w-[120px] whitespace-nowrap px-4"
+            className ="min-w-[120px] whitespace-nowrap px-4"
             icon={<FiTrash2 className="mr-2" />}
           />
         </div>

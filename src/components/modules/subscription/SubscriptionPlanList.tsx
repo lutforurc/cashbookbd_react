@@ -34,7 +34,7 @@ const SubscriptionPlanList: React.FC = () => {
         <Link to={routes.subscription_plan_entry} className="inline-flex">
           <ButtonLoading
             label="New Plan"
-            className="h-10 px-4"
+            className="px-4"
             icon={<FiPlus className="text-lg" />}
           />
         </Link>

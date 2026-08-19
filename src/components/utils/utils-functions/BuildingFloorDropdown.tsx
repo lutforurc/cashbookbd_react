@@ -4,7 +4,7 @@ import AsyncSelect from 'react-select/async';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { flatDdl } from '../../modules/real-estate/building-flat/flatSlice';
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 /* ================= TYPES ================= */
 
@@ -190,7 +190,7 @@ const BuildingFloorDropdown: React.FC<DropdownProps> = ({
         )}
         getOptionValue={(option) => option.value}
         placeholder={placeholder || 'Select a building'}
-        styles={customStyles}
+        styles={withFieldHeight(customStyles)}
         defaultValue={defaultValue}
         value={value}
         menuPortalTarget={document.body} // Fix Dropdown Render Issue

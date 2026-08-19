@@ -264,14 +264,14 @@ const AddCoaL4 = () => {
               type="submit"
               label={isEditMode ? 'UPDATE' : 'SAVE'}
               buttonLoading={buttonLoading}
-              className="px-4 h-9 min-w-30"
+              className="px-4 min-w-30"
               icon={<FiCheckSquare />}
             />
             <ButtonLoading
               type="button"
               label={"Back"}
               onClick={() => navigate(-1)}
-              className="px-4 h-9 min-w-30"
+              className="px-4 min-w-30"
               icon={<FiArrowLeft className="text-sm" />}
             />
 

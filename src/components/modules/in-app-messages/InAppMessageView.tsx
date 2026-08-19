@@ -69,7 +69,7 @@ const CloseButton: React.FC<{ onClose: () => void; className?: string }> = ({
     type="button"
     onClick={onClose}
     aria-label="Close message"
-    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black/20 text-white transition hover:bg-black/40 ${className}`}
+    className={`flex w-7 shrink-0 items-center justify-center rounded-full bg-black/20 text-white transition hover:bg-black/40 ${className}`}
   >
     <FiX />
   </Button>

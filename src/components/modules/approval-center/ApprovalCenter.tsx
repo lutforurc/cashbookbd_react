@@ -276,7 +276,7 @@ const ApprovalCenter = ({ user }: any) => {
             selectedDate={dateFromString(filters.date_from)}
             setSelectedDate={(date) => setFilters((prev) => ({ ...prev, date_from: dateToString(date) }))}
             setCurrentDate={(date) => setFilters((prev) => ({ ...prev, date_from: dateToString(date) }))}
-            className="h-10 w-full"
+            className="w-full"
           />
           <InputDatePicker
             id="date_to"
@@ -285,7 +285,7 @@ const ApprovalCenter = ({ user }: any) => {
             selectedDate={dateFromString(filters.date_to)}
             setSelectedDate={(date) => setFilters((prev) => ({ ...prev, date_to: dateToString(date) }))}
             setCurrentDate={(date) => setFilters((prev) => ({ ...prev, date_to: dateToString(date) }))}
-            className="h-10 w-full"
+            className="w-full"
           />
           <div>
             <label className="mb-1 block text-sm font-medium text-black dark:text-white">Branch/Project</label>
@@ -308,7 +308,7 @@ const ApprovalCenter = ({ user }: any) => {
               if (event.key === 'Enter') loadWithFilters();
             }}
             placeholder="Employee, voucher, branch"
-            className="h-10"
+            className=""
           />
           <div>
             <label className="mb-1 block text-sm font-medium text-black dark:text-white">Per Page</label>
@@ -328,7 +328,7 @@ const ApprovalCenter = ({ user }: any) => {
               type="button"
               label="Load"
               onClick={loadWithFilters}
-              className="h-10 min-w-[110px] whitespace-nowrap px-5"
+              className="min-w-[110px] whitespace-nowrap px-5"
               icon={<FiRefreshCcw className="mr-2" />}
             />
           </div>
@@ -347,10 +347,10 @@ const ApprovalCenter = ({ user }: any) => {
       <div className="border border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stroke px-4 py-3 dark:border-strokedark">
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" onClick={() => setActiveTab('attendance')} className={`h-9 px-4 text-sm font-semibold ${activeTab === 'attendance' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
+            <Button type="button" onClick={() => setActiveTab('attendance')} className={`px-4 text-sm font-semibold ${activeTab ==='attendance'?'bg-primary text-white':'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
               Attendance ({data?.counts?.attendance || 0})
             </Button>
-            <Button type="button" onClick={() => setActiveTab('voucher')} className={`h-9 px-4 text-sm font-semibold ${activeTab === 'voucher' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
+            <Button type="button" onClick={() => setActiveTab('voucher')} className={`px-4 text-sm font-semibold ${activeTab ==='voucher'?'bg-primary text-white':'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
               Vouchers ({data?.counts?.voucher || 0})
             </Button>
             <Link
@@ -365,14 +365,14 @@ const ApprovalCenter = ({ user }: any) => {
                 <Button
                   type="button"
                   onClick={() => changeVoucherStatus('pending')}
-                  className={`h-9 px-3 text-xs font-semibold ${filters.voucher_status === 'pending' ? 'bg-primary text-white' : 'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
+                  className={`px-3 text-xs font-semibold ${filters.voucher_status ==='pending'?'bg-primary text-white':'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
                 >
                   Pending
                 </Button>
                 <Button
                   type="button"
                   onClick={() => changeVoucherStatus('approved')}
-                  className={`h-9 px-3 text-xs font-semibold ${filters.voucher_status === 'approved' ? 'bg-primary text-white' : 'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
+                  className={`px-3 text-xs font-semibold ${filters.voucher_status ==='approved'?'bg-primary text-white':'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
                 >
                   Approved
                 </Button>
@@ -386,7 +386,7 @@ const ApprovalCenter = ({ user }: any) => {
               label="Approve"
               disabled={!activeSelection.length || (activeTab === 'voucher' && filters.voucher_status === 'approved')}
               onClick={() => openConfirm({ type: activeTab, action: 'approve' })}
-              className="h-9 min-w-[110px] whitespace-nowrap px-4"
+              className="min-w-[110px] whitespace-nowrap px-4"
               icon={<FiCheck className="mr-2" />}
             />
             {activeTab === 'voucher' && filters.voucher_status === 'approved' && canRemoveApproval ? (
@@ -395,7 +395,7 @@ const ApprovalCenter = ({ user }: any) => {
                 label="Remove Approval"
                 disabled={!selectedVouchers.length}
                 onClick={() => openConfirm({ type: 'voucher', action: 'remove' })}
-                className="h-9 min-w-[150px] whitespace-nowrap bg-amber-600 px-4 hover:bg-amber-700"
+                className="min-w-[150px] whitespace-nowrap bg-amber-600 px-4 hover:bg-amber-700"
                 icon={<FiRotateCcw className="mr-2" />}
               />
             ) : null}
@@ -404,7 +404,7 @@ const ApprovalCenter = ({ user }: any) => {
               label="Reject"
               disabled={activeTab !== 'attendance' || !activeSelection.length}
               onClick={() => openConfirm({ type: 'attendance', action: 'reject' })}
-              className="h-9 min-w-[105px] whitespace-nowrap px-4"
+              className="min-w-[105px] whitespace-nowrap px-4"
               icon={<FiX className="mr-2" />}
             />
             <ButtonLoading
@@ -412,7 +412,7 @@ const ApprovalCenter = ({ user }: any) => {
               label="Clear"
               disabled={activeTab !== 'attendance' || !activeSelection.length}
               onClick={() => openConfirm({ type: 'attendance', action: 'clear' })}
-              className="h-9 min-w-[100px] whitespace-nowrap px-4"
+              className="min-w-[100px] whitespace-nowrap px-4"
               icon={<FiTrash2 className="mr-2" />}
             />
           </div>

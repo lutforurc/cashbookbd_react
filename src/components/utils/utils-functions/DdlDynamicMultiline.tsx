@@ -2,7 +2,7 @@ import React from "react";
 import AsyncSelect from "react-select/async";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import { StylesConfig } from "react-select";
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 interface OptionType {
   value: string;
@@ -131,7 +131,7 @@ const DdlDynamicMultiline: React.FC<DropdownProps> = ({
         )}
         getOptionValue={(option) => option.value}
         placeholder="Select an account..."
-        styles={customStyles}
+        styles={withFieldHeight(customStyles)}
         defaultValue={defaultValue}
         value={value}
         menuPortalTarget={document.body}

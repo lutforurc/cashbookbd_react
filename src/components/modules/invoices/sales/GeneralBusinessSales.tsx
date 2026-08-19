@@ -843,7 +843,7 @@ const GeneralBusinessSales = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   responsiveLabel
-                  className="whitespace-nowrap text-center mr-0 py-1.5 h-8"
+                  className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
               ) : (
@@ -853,7 +853,7 @@ const GeneralBusinessSales = () => {
                   buttonLoading={buttonLoading}
                   label="Add New"
                   responsiveLabel
-                  className="whitespace-nowrap text-center mr-0 h-8"
+                  className="whitespace-nowrap text-center mr-0"
                   icon={<FiPlus className="text-lg ml-2 mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -883,7 +883,7 @@ const GeneralBusinessSales = () => {
                   buttonLoading={buttonLoading}
                   label="Save"
                   responsiveLabel
-                  className="whitespace-nowrap text-center mr-0 h-8"
+                  className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-lg ml-2 mr-2" />}
                 />
               )}
@@ -904,7 +904,7 @@ const GeneralBusinessSales = () => {
                 buttonLoading={buttonLoading}
                 label="Print"
                 responsiveLabel
-                className="whitespace-nowrap text-center mr-0 h-8"
+                className="whitespace-nowrap text-center mr-0"
                 icon={<FiPrinter className="text-lg ml-2 mr-2" />}
               />
 

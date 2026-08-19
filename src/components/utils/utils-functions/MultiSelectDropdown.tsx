@@ -5,7 +5,7 @@ import Select, {
   ValueContainerProps,
 } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 interface Option {
   value: number | string;
@@ -169,7 +169,7 @@ const MultiSelectDropdown = ({
       onChange={(selected) => onChange(selected as Option[])}
       isDisabled={isDisabled}
       placeholder={placeholder}
-      styles={styles}
+      styles={withFieldHeight(styles)}
       className={className}
       classNamePrefix="react-select"
       closeMenuOnSelect={false}

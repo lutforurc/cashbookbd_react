@@ -19,7 +19,7 @@ import CollectionSheetPrint, { CollectionSheetRow } from './CollectionSheetPrint
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { Input } from '../../../utils/fields/FormControls';
-import { FIELD_HEIGHT_REM } from '../../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../../theme/fieldStyles';
 
 const statusOptions = [
   { id: '1', name: 'Opening' },
@@ -369,7 +369,7 @@ const CollectionSheet = (user: any) => {
               onChange={(selected) => setSomityId(selected?.value ?? '')}
               placeholder="Select Somity"
               noOptionsMessage={() => 'No options'}
-              styles={somitySelectStyles}
+              styles={withFieldHeight(somitySelectStyles)}
               menuPortalTarget={document.body}
             />
           </div>

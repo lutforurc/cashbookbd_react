@@ -124,7 +124,7 @@ const OnlineUsers = () => {
           onClick={() => fetchOnlineUsers()}
           buttonLoading={loading}
           label="Refresh"
-          className="whitespace-nowrap h-9"
+          className="whitespace-nowrap"
           icon={<FiRefreshCw />}
         />
       </div>

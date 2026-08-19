@@ -192,16 +192,16 @@ const GodownStockReport = ({ user }: any) => {
               buttonLoading={loading}
               label="Apply"
               icon={<FiCheckSquare />}
-              className="h-10 min-w-30"
+              className="min-w-30"
             />
             <ButtonLoading
               onClick={handleReset}
               buttonLoading={false}
               label="Reset"
               icon={<FiRotateCcw />}
-              className="h-10 px-4"
+              className="px-4"
             />
-            <PrintButton onClick={handlePrint} label="Print" className="h-10 px-6" disabled={!rows.length} />
+            <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={!rows.length} />
           </div>
         </div>
       </div>

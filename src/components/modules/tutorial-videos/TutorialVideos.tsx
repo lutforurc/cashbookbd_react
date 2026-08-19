@@ -593,11 +593,9 @@ const TutorialVideos = () => {
                             onClick={() => setEdit(row, { status: shown ? 0 : 1 })}
                             aria-label={shown ? 'Hide this video' : 'Show this video'}
                             title={shown ? 'Hide this video' : 'Show this video'}
-                            className={`inline-flex h-8 w-8 items-center justify-center rounded-md transition ${
-                              shown
-                                ? 'bg-success/10 text-success'
-                                : 'bg-slate-200 text-slate-500 dark:bg-gray-700 dark:text-slate-400'
-                            }`}
+                            className={`inline-flex w-8 items-center justify-center rounded-md transition ${
+ shown
+ ?'bg-success/10 text-success':'bg-slate-200 text-slate-500 dark:bg-gray-700 dark:text-slate-400'}`}
                           >
                             {shown ? <FiEye /> : <FiEyeOff />}
                           </Button>
@@ -609,7 +607,7 @@ const TutorialVideos = () => {
                             onClick={() => startEdit(row)}
                             aria-label={`Edit ${row.title}`}
                             title="Edit this screen's name, group or key"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary transition hover:bg-primary/20"
+                            className="inline-flex w-8 items-center justify-center rounded-md bg-primary/10 text-primary transition hover:bg-primary/20"
                           >
                             <FiEdit2 />
                           </Button>
@@ -621,7 +619,7 @@ const TutorialVideos = () => {
                             onClick={() => setRemoveRow(row)}
                             aria-label={`Remove ${row.title}`}
                             title="Remove this screen from the list"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-danger/10 text-danger transition hover:bg-danger/20"
+                            className="inline-flex w-8 items-center justify-center rounded-md bg-danger/10 text-danger transition hover:bg-danger/20"
                           >
                             <FiTrash2 />
                           </Button>

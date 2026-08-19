@@ -126,7 +126,7 @@ const SendSms = (user: any) => {
                 <ButtonLoading
                   onClick={handleSearchButton}
                   label="Search"
-                  className="whitespace-nowrap h-9"
+                  className="whitespace-nowrap"
                   icon={<FiCheckSquare />}
                 />
               </div>

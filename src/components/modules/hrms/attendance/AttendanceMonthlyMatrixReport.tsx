@@ -616,9 +616,9 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             buttonLoading={attendance.loading}
             label="Load"
             icon={<FiCheckSquare />}
-            className="h-10 px-6"
+            className="px-6"
           />
-          <PrintButton label="Print A4" onClick={handlePrint} className="h-10 px-6" disabled={attendance.loading} />
+          <PrintButton label="Print A4" onClick={handlePrint} className="px-6" disabled={attendance.loading} />
         </div>
       </div>
       </div>

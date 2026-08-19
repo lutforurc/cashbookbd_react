@@ -4,7 +4,7 @@ import AsyncSelect from 'react-select/async';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { parkingDdl, unitDdl } from '../../modules/real-estate/units/unitSlice';
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 /* ================= TYPES ================= */
 
@@ -160,7 +160,7 @@ const BuildingParkingDropdown: React.FC<DropdownProps> = ({
         onKeyDown={onKeyDown}
         getOptionValue={(option) => option.value}
         placeholder={placeholder || 'Select Unit'}
-        styles={customStyles}
+        styles={withFieldHeight(customStyles)}
         defaultValue={defaultValue}
         value={value}
         menuPortalTarget={document.body}

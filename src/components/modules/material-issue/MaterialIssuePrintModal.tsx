@@ -79,7 +79,7 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
             </Button>
             <Button
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-bodydark dark:hover:bg-strokedark"
+              className="flex w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-bodydark dark:hover:bg-strokedark"
             >
               <FiX />
             </Button>

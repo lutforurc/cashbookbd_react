@@ -317,11 +317,9 @@ const DashboardCustomizeButton = ({
                   <Button
                     type="button"
                     onClick={() => onToggleWidget(widget.id)}
-                    className={`flex h-8 w-8 items-center justify-center rounded-sm border transition ${
-                      visible
-                        ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300'
-                        : 'border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-900/30'
-                    }`}
+                    className={`flex w-8 items-center justify-center rounded-sm border transition ${
+ visible
+ ?'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300':'border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-900/30'}`}
                     aria-label={visible ? `Hide ${widget.title}` : `Show ${widget.title}`}
                   >
                     {visible ? <FiEye /> : <FiEyeOff />}
@@ -333,7 +331,7 @@ const DashboardCustomizeButton = ({
                     type="button"
                     onClick={() => onMoveWidget(widget.id, 'up')}
                     disabled={index === 0}
-                    className="flex h-8 w-8 items-center justify-center rounded-sm border border-slate-200 text-slate-500 transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300"
+                    className="flex w-8 items-center justify-center rounded-sm border border-slate-200 text-slate-500 transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300"
                     aria-label={`Move ${widget.title} up`}
                   >
                     <FiChevronUp />
@@ -342,7 +340,7 @@ const DashboardCustomizeButton = ({
                     type="button"
                     onClick={() => onMoveWidget(widget.id, 'down')}
                     disabled={index === widgets.length - 1}
-                    className="flex h-8 w-8 items-center justify-center rounded-sm border border-slate-200 text-slate-500 transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300"
+                    className="flex w-8 items-center justify-center rounded-sm border border-slate-200 text-slate-500 transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300"
                     aria-label={`Move ${widget.title} down`}
                   >
                     <FiChevronDown />

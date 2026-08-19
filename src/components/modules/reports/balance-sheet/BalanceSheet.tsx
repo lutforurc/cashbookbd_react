@@ -413,14 +413,14 @@ const BalanceSheet = (user: any) => {
                   label="Apply"
                   onClick={handleActionButtonClick}
                   buttonLoading={buttonLoading}
-                  className="h-10 px-6"
+                  className="px-6"
                   icon={<FiCheckSquare />}
                 />
                 <ButtonLoading
                   label="Reset"
                   onClick={handleResetFilters}
                   buttonLoading={false}
-                  className="h-10 px-4"
+                  className="px-4"
                   icon={<FiRotateCcw />}
                 />
               </div>
@@ -438,7 +438,7 @@ const BalanceSheet = (user: any) => {
                   label=""
                   value={perPage}
                   onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
-                  className="h-10 w-20! text-center"
+                  className="w-20! text-center"
                 />
                 <PrintFontInput
                   type="number"
@@ -446,12 +446,12 @@ const BalanceSheet = (user: any) => {
                   label=""
                   value={fontSize}
                   onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                  className="h-10 w-20! text-center"
+                  className="w-20! text-center"
                 />
                 <PrintButton
                   label="Print"
                   onClick={handlePrint}
-                  className="h-10 px-6"
+                  className="px-6"
                   disabled={!hasReportData}
                 />
               </div>
@@ -462,14 +462,14 @@ const BalanceSheet = (user: any) => {
                     label="Apply"
                     onClick={handleActionButtonClick}
                     buttonLoading={buttonLoading}
-                    className="h-10 px-6"
+                    className="px-6"
                     icon={<FiCheckSquare />}
                   />
                   <ButtonLoading
                     label="Reset"
                     onClick={handleResetFilters}
                     buttonLoading={false}
-                    className="h-10 px-4"
+                    className="px-4"
                     icon={<FiRotateCcw />}
                   />
 
@@ -481,7 +481,7 @@ const BalanceSheet = (user: any) => {
                     label=""
                     value={perPage}
                     onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
-                    className="h-10 w-20! text-center"
+                    className="w-20! text-center"
                   />
                   <PrintFontInput
                     type="number"
@@ -489,12 +489,12 @@ const BalanceSheet = (user: any) => {
                     label=""
                     value={fontSize}
                     onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                    className="h-10 w-20! text-center"
+                    className="w-20! text-center"
                   />
                   <PrintButton
                     label="Print"
                     onClick={handlePrint}
-                    className="h-10 px-6"
+                    className="px-6"
                     disabled={!hasReportData}
                   />
                 </div>

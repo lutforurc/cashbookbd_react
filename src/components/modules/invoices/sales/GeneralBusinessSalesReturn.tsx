@@ -497,7 +497,7 @@ const GeneralBusinessSalesReturn = () => {
                   onClick={editProduct}
                   buttonLoading={buttonLoading}
                   label="Update"
-                  className="whitespace-nowrap text-center mr-0 py-1.5 h-8"
+                  className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
               ) : (
@@ -506,7 +506,7 @@ const GeneralBusinessSalesReturn = () => {
                   onClick={addProduct}
                   buttonLoading={buttonLoading}
                   label="Add New"
-                  className="whitespace-nowrap text-center mr-0 h-8"
+                  className="whitespace-nowrap text-center mr-0"
                   icon={<FiPlus className="text-lg ml-2 mr-2" />}
                 />
               )}
@@ -514,7 +514,7 @@ const GeneralBusinessSalesReturn = () => {
                 onClick={handleSave}
                 buttonLoading={buttonLoading}
                 label="Save"
-                className="whitespace-nowrap text-center mr-0 h-8"
+                className="whitespace-nowrap text-center mr-0"
                 icon={<FiSave className="text-lg ml-2 mr-2" />}
               />
               <ButtonLoading

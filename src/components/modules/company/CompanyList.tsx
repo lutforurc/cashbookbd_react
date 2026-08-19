@@ -151,7 +151,7 @@ const CompanyList = () => {
         <Button
           type="button"
           onClick={() => handleEdit(row)}
-          className="inline-flex h-7 w-7 items-center justify-center rounded text-blue-600 transition hover:bg-blue-50 dark:hover:bg-gray-700"
+          className="inline-flex w-7 items-center justify-center rounded text-blue-600 transition hover:bg-blue-50 dark:hover:bg-gray-700"
           title="Edit company"
           aria-label="Edit company"
         >
@@ -181,7 +181,7 @@ const CompanyList = () => {
             buttonLoading={buttonLoading}
             label="Search"
             icon={<FiSearch />}
-            className="whitespace-nowrap h-9 -ml-1"
+            className="whitespace-nowrap -ml-1"
           />
           </div>
         </div>

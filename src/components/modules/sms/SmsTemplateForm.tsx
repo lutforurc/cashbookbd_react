@@ -291,7 +291,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
             buttonLoading={smsState?.preview?.loading}
             disabled={smsState?.preview?.loading}
             label="Preview"
-            className="h-10 whitespace-nowrap"
+            className="whitespace-nowrap"
             icon={<FiEye className="text-lg" />}
           />
 
@@ -301,7 +301,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
               buttonLoading={smsState?.saveLoading}
               disabled={smsState?.saveLoading}
               label={mode === 'edit' ? 'Update' : 'Save'}
-              className="h-10 w-30 whitespace-nowrap"
+              className="w-30 whitespace-nowrap"
               icon={<FiSave className="text-lg" />}
             />
           ) : null}

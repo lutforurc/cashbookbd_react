@@ -630,7 +630,7 @@ export default function RealEstateInstallmentCreate() {
               resetForm();
             }}
             label="Reset"
-            className="h-8"
+            className=""
             icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
           />
         </div>
@@ -677,7 +677,7 @@ export default function RealEstateInstallmentCreate() {
                 }}
                 buttonLoading={loadingSales || summaryLoading || installmentsLoading}
                 label="Load"
-                className="h-8.5 w-full"
+                className="w-full"
                 icon={<FiSearch className="text-lg ml-2 mr-2" />}
               />
             </div>
@@ -810,7 +810,7 @@ export default function RealEstateInstallmentCreate() {
                 disabled={scheduleLocked}
                 buttonLoading={saving}
                 label="Create Installments"
-                className="h-9"
+                className=""
                 icon={<FiSave className="text-lg ml-2 mr-2" />}
               />
             </div>
@@ -868,7 +868,7 @@ export default function RealEstateInstallmentCreate() {
                             setCurrentDate={(date) =>
                               setEditingRow((prev) => (prev ? { ...prev, dueDateValue: date } : prev))
                             }
-                            className="h-8.5 w-36 text-sm"
+                            className="w-36 text-sm"
                           />
                         ) : (
                           row.due_date
@@ -884,7 +884,7 @@ export default function RealEstateInstallmentCreate() {
                                 prev ? { ...prev, amountValue: e.target.value } : prev,
                               )
                             }
-                            className="h-8.5 w-32 rounded-xs border bg-white px-3 py-1 text-right text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-white"
+                            className="w-32 rounded-xs border bg-white px-3 py-1 text-right text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-white"
                           />
                         ) : (
                           formatAmount(row.amount)
@@ -900,7 +900,7 @@ export default function RealEstateInstallmentCreate() {
                             setCurrentDate={(date) =>
                               setEditingRow((prev) => (prev ? { ...prev, earlyPaymentDateValue: date } : prev))
                             }
-                            className="h-8.5 w-36 text-sm"
+                            className="w-36 text-sm"
                           />
                         ) : isFirstRow ? (
                           row.early_payment_date || '-'
@@ -918,7 +918,7 @@ export default function RealEstateInstallmentCreate() {
                                 prev ? { ...prev, earlyDiscountValue: e.target.value } : prev,
                               )
                             }
-                            className="h-8.5 w-32 rounded-xs border bg-white px-3 py-1 text-right text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-white"
+                            className="w-32 rounded-xs border bg-white px-3 py-1 text-right text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-white"
                           />
                         ) : isFirstRow && row.early_payment_discount ? (
                           formatAmount(row.early_payment_discount)
@@ -933,7 +933,7 @@ export default function RealEstateInstallmentCreate() {
                               type="button"
                               onClick={saveInstallmentEdit}
                               disabled={isUpdating}
-                              className="inline-flex h-8 items-center gap-1 bg-gray-700 px-3 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-60"
+                              className="inline-flex items-center gap-1 bg-gray-700 px-3 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-60"
                             >
                               <FiSave />
                               {isUpdating ? 'Saving' : 'Save'}
@@ -942,7 +942,7 @@ export default function RealEstateInstallmentCreate() {
                               type="button"
                               onClick={cancelEditInstallment}
                               disabled={isUpdating}
-                              className="inline-flex h-8 items-center gap-1 border border-gray-500 px-3 text-xs font-semibold text-white hover:bg-gray-700 disabled:opacity-60"
+                              className="inline-flex items-center gap-1 border border-gray-500 px-3 text-xs font-semibold text-white hover:bg-gray-700 disabled:opacity-60"
                             >
                               <FiX />
                               Cancel
@@ -952,7 +952,7 @@ export default function RealEstateInstallmentCreate() {
                           <Button
                             type="button"
                             onClick={() => startEditInstallment(row)}
-                            className="inline-flex h-8 items-center gap-1 bg-gray-700 px-3 text-xs font-semibold text-white hover:bg-blue-500"
+                            className="inline-flex items-center gap-1 bg-gray-700 px-3 text-xs font-semibold text-white hover:bg-blue-500"
                           >
                             <FiEdit2 />
                             Edit

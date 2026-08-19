@@ -191,7 +191,7 @@ const ProjectsList = ({ user }: any) => {
           />
         </div>
         <ButtonLoading
-        className='h-9'
+        className=''
           onClick={handleSearchButton}
           // buttonLoading={buttonLoading}
           label="New Project"

@@ -104,7 +104,7 @@ const InstallmentDelete = () => {
             }}
             buttonLoading={saveButtonLoading}
             label="Delete Installment"
-            className="whitespace-nowrap h-8"
+            className="whitespace-nowrap"
             icon={<FiTrash2 className="dark:text-red-700 text-lg ml-2 mr-2" />}
           />
 
@@ -129,7 +129,7 @@ const InstallmentDelete = () => {
               <ButtonLoading
                 onClick={() => setShowConfirm(false)}
                 label="Cancel"
-                className="whitespace-nowrap h-8 bg-gray-600 hover:bg-gray-700"
+                className="whitespace-nowrap bg-gray-600 hover:bg-gray-700"
                 icon={<FiX className="text-lg mr-2" />}
                 disabled={saveButtonLoading} // Cancel button disabled while loading
               />

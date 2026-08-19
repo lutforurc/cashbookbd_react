@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 interface COAL4ByCOAL3Props {
   categoryDdl: { id: number; name: string }[];
@@ -43,10 +43,10 @@ const COAL4ByCOAL3: React.FC<COAL4ByCOAL3Props> = ({
       placeholder="Select Category..."
       isSearchable
       className={`block text-sm bg-transparent outline-none dark:bg-boxdark dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}
-      styles={{
+      styles={withFieldHeight({
         // The one height, in the units react-select understands.
         control: (base) => ({ ...base, minHeight: FIELD_HEIGHT_REM }),
-      }}
+      })}
       classNames={{
         control: (state) =>
           `bg-transparent! border-gray-300! rounded-none! dark:bg-boxdark! dark:border-gray-600! ${

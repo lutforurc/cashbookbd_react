@@ -275,7 +275,7 @@ const handleToggle = (row: any) => {
         </div>
 
         <ButtonLoading
-          className="h-9"
+          className=""
           onClick={handleCreateUnit}
           label="New Unit"
           icon={ <FiPlus className="text-lg" /> }

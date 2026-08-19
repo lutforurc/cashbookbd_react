@@ -200,7 +200,7 @@ const LeaveApplications = ({ user }: any) => {
             selectedDate={dateFromString(form.from_date)}
             setSelectedDate={(date) => setForm((prev: any) => ({ ...prev, from_date: dateToString(date) }))}
             setCurrentDate={(date) => setForm((prev: any) => ({ ...prev, from_date: dateToString(date) }))}
-            className="h-9 w-full"
+            className="w-full"
           />
           <InputDatePicker
             id="to_date"
@@ -209,7 +209,7 @@ const LeaveApplications = ({ user }: any) => {
             selectedDate={dateFromString(form.to_date)}
             setSelectedDate={(date) => setForm((prev: any) => ({ ...prev, to_date: dateToString(date) }))}
             setCurrentDate={(date) => setForm((prev: any) => ({ ...prev, to_date: dateToString(date) }))}
-            className="h-9 w-full"
+            className="w-full"
           />
           <InputElement name="reason" label="Reason" value={form.reason || ''} onChange={handleChange(setForm)} />
         </div>
@@ -230,7 +230,7 @@ const LeaveApplications = ({ user }: any) => {
           selectedDate={dateFromString(filters.date_from)}
           setSelectedDate={(date) => setFilters((prev: any) => ({ ...prev, date_from: dateToString(date) }))}
           setCurrentDate={(date) => setFilters((prev: any) => ({ ...prev, date_from: dateToString(date) }))}
-          className="h-9 w-full"
+          className="w-full"
         />
         <InputDatePicker
           id="date_to"
@@ -239,7 +239,7 @@ const LeaveApplications = ({ user }: any) => {
           selectedDate={dateFromString(filters.date_to)}
           setSelectedDate={(date) => setFilters((prev: any) => ({ ...prev, date_to: dateToString(date) }))}
           setCurrentDate={(date) => setFilters((prev: any) => ({ ...prev, date_to: dateToString(date) }))}
-          className="h-9 w-full"
+          className="w-full"
         />
         <div>
           <label className="text-black dark:text-white">Branch</label>

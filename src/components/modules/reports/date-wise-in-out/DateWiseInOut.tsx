@@ -393,7 +393,7 @@ const DateWiseInOut = ({ user }: any) => {
             <Select
               value={branchId}
               onChange={(event) => setBranchId(event.target.value)}
-              className={`${FIELD_SELECT} h-10 w-full px-2 text-sm font-medium`}
+              className={`${FIELD_SELECT} w-full px-2 text-sm font-medium`}
             >
               <option value="">All Branch</option>
               {dropdownData.map((item: any) => (
@@ -445,7 +445,7 @@ const DateWiseInOut = ({ user }: any) => {
               buttonLoading={buttonLoading}
               label="OK"
               icon={<FiCheckSquare />}
-              className="h-10 px-6"
+              className="px-6"
             />
             <PrintRowsInput
               id="dateWiseInOutRowsPerPage"
@@ -454,7 +454,7 @@ const DateWiseInOut = ({ user }: any) => {
               value={String(rowsPerPage)}
               onChange={(event) => setRowsPerPage(Number(event.target.value) || 12)}
               type="text"
-              className="h-10 w-22! text-center text-sm font-medium"
+              className="w-22! text-center text-sm font-medium"
             />
             <PrintFontInput
               id="dateWiseInOutFontSize"
@@ -463,19 +463,19 @@ const DateWiseInOut = ({ user }: any) => {
               value={String(fontSize)}
               onChange={(event) => setFontSize(Number(event.target.value) || 12)}
               type="text"
-              className="h-10 w-22! text-center text-sm font-medium"
+              className="w-22! text-center text-sm font-medium"
             />
             <PrintButton
               onClick={handleMainPrint}
               label="Print"
-              className="h-10 px-5"
+              className="px-5"
             />
             <ButtonLoading
               onClick={() => navigate('/')}
               buttonLoading={false}
               label="Home"
               icon={<FiHome />}
-              className="h-10 px-5"
+              className="px-5"
             />
           </div>
         </div>

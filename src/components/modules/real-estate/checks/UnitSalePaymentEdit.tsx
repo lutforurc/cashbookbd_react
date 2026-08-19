@@ -457,7 +457,7 @@ export default function UnitSalePaymentEdit() {
               }}
               buttonLoading={false}
               label="Reload"
-              className="h-8"
+              className=""
             />
             <Link to={LIST_PATH} className="h-8 p-2">
               <FiArrowLeft className="mr-2" /> Back
@@ -645,7 +645,7 @@ export default function UnitSalePaymentEdit() {
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                     setField("cheque_collect_status", e.target.value)
                   }
-                  className="h-10 bg-transparent"
+                  className="bg-transparent"
                   data={CHEQUE_STATUSES}
                 />
                 <div>
@@ -659,7 +659,7 @@ export default function UnitSalePaymentEdit() {
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                         setField("coal4_id", e.target.value)
                       }
-                      className="h-10 bg-transparent"
+                      className="bg-transparent"
                       data={optionsWithAll}
                     />
                   ) : null}
@@ -762,7 +762,7 @@ export default function UnitSalePaymentEdit() {
               onClick={() => { }}
               buttonLoading={isSubmitting}
               label="Update"
-              className="h-9"
+              className=""
               icon={<FiSave className="text-lg ml-2 mr-2" />}
             />
 

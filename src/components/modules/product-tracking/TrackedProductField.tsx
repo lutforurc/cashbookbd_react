@@ -3,7 +3,7 @@ import Select, { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { TrackedProduct } from './useTrackedProducts';
 import { Select as FormSelect } from '../../utils/fields/FormControls';
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 interface Props {
   id?: string;
@@ -127,7 +127,7 @@ const TrackedProductField: React.FC<Props> = ({
         value={selected}
         isClearable
         placeholder="-- No Product --"
-        styles={styles}
+        styles={withFieldHeight(styles)}
         menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
         onKeyDown={onKeyDown}
         onChange={(option) => onChange(option ? Number(option.value) : null)}

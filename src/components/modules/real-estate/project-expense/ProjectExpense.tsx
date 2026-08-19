@@ -548,7 +548,6 @@ const ProjectExpense = () => {
                 onSelect={handleOrderSelect}
                 value={selectedOrder}
                 defaultValue={selectedOrder}
-                heightPx="38px"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     focusField('account');

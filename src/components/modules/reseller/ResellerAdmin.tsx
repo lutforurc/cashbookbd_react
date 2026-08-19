@@ -335,7 +335,7 @@ const ResellerAdmin: React.FC = () => {
             disabled={loading}
             icon={<FiRefreshCw className="" />}
             label={loading ? 'Refreshing...' : 'Refresh'}
-            className="h-10 w-34 p-2"
+            className="w-34 p-2"
           />
         </div>
       </section>
@@ -408,13 +408,13 @@ const ResellerAdmin: React.FC = () => {
                 disabled={saving}
                 icon={<FiSave className="" />}
                 label={saving ? 'Saving...' : 'Save'}
-                className="h-10 w-28 p-2"
+                className="w-28 p-2"
               />
               {form.id && (
                 <Button
                   type="button"
                   onClick={resetForm}
-                  className="h-10 rounded-sm border border-stroke px-4 text-sm text-slate-600 hover:bg-gray-2 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                  className="rounded-sm border border-stroke px-4 text-sm text-slate-600 hover:bg-gray-2 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
                 >
                   Cancel
                 </Button>
@@ -465,7 +465,7 @@ const ResellerAdmin: React.FC = () => {
               disabled={saving}
               icon={<FiUsers className="" />}
               label="Assign"
-              className="h-10 w-30 p-2"
+              className="w-30 p-2"
             />
           </div>
         </div>
@@ -514,7 +514,7 @@ const ResellerAdmin: React.FC = () => {
               disabled={saving}
               icon={<FiCreditCard className="" />}
               label={saving ? 'Paying...' : 'Pay'}
-              className="h-10 w-28 p-2"
+              className="w-28 p-2"
             />
           </div>
         </form>

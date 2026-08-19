@@ -820,7 +820,7 @@ const ElectronicsBusinessPurchase = () => {
                       : null
                   }
                   onKeyDown={(e) => handleInputKeyDown(e, 'warehouse')} // Pass the next field's ID
-                  className='h-9'
+                  className=''
                 />
               </div>
               <div>
@@ -897,7 +897,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={editProduct}
                 buttonLoading={buttonLoading}
                 label="Update"
-                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
+                className="whitespace-nowrap text-center mr-0 py-1.5"
                 icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
               />
             ) : (
@@ -906,7 +906,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={addProduct}
                 buttonLoading={buttonLoading}
                 label="Add New"
-                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
+                className="whitespace-nowrap text-center mr-0 py-1.5"
                 icon={<FiPlus className="text-lg ml-2 mr-2" />}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -925,7 +925,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={handleInvoiceUpdate}
                 buttonLoading={buttonLoading}
                 label="Update"
-                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
+                className="whitespace-nowrap text-center mr-0 py-1.5"
                 icon={<FiEdit className="text-lg ml-2 mr-2" />}
               />
             ) : (
@@ -933,7 +933,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={handlePurchaseInvoiceSave}
                 buttonLoading={saveButtonLoading}
                 label="Save"
-                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
+                className="whitespace-nowrap text-center mr-0 py-1.5"
                 icon={<FiSave className="text-lg ml-2 mr-2" />}
                 disabled={saveButtonLoading}
               />
@@ -943,7 +943,7 @@ const ElectronicsBusinessPurchase = () => {
               onClick={resetProducts}
               buttonLoading={buttonLoading}
               label="Reset"
-              className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
+              className="whitespace-nowrap text-center mr-0 py-1.5"
               icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
             />
             <Link to="/dashboard" className="text-nowrap justify-center mr-0 h-9 py-1.5">

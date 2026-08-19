@@ -741,9 +741,9 @@ const FlatLayout = () => {
                 key={unit.id ?? `${floor.floor_no}-${unit.unit_no}`}
                 onClick={(e) => handleUnitClick(unit, e)}
                 title={unit.unit_no}
-                className={`relative group isolate flex h-14 w-20 flex-col items-center justify-center overflow-hidden rounded-[4px] border-2 border-slate-900/25 px-1 text-center text-[11px] font-semibold leading-tight text-white shadow-[0_4px_10px_rgba(0,0,0,0.28)] ring-1 ring-inset ring-white/35 transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none ${getUnitButtonClass(
-                  unit,
-                )}`}
+                className={`relative group isolate flex w-20 flex-col items-center justify-center overflow-hidden rounded-[4px] border-2 border-slate-900/25 px-1 text-center text-[11px] font-semibold leading-tight text-white shadow-[0_4px_10px_rgba(0,0,0,0.28)] ring-1 ring-inset ring-white/35 transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none ${getUnitButtonClass(
+ unit,
+ )}`}
               >
                 {/* window panes */}
                 <span className="pointer-events-none absolute left-1/2 top-1 bottom-1 z-5 w-px -translate-x-1/2 bg-white/30" />

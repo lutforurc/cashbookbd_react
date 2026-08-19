@@ -644,7 +644,7 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
             value={assignedTo}
             data={[{ id: '', name: 'Myself (personal note)' }, ...people]}
             onChange={(e) => setAssignedTo(e.target.value)}
-            className="h-9"
+            className=""
             description="Handing this to somebody else puts it on their board too."
           />
 
@@ -674,7 +674,7 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
             onClick={onCancel}
             label="Cancel"
             disabled={saving}
-            className="h-9 whitespace-nowrap bg-slate-500 hover:bg-slate-600 dark:bg-gray-500 dark:hover:bg-gray-600"
+            className="whitespace-nowrap bg-slate-500 hover:bg-slate-600 dark:bg-gray-500 dark:hover:bg-gray-600"
             icon={<FiX className="mr-2 text-lg" />}
           />
           <ButtonLoading
@@ -683,7 +683,7 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
             variant="primary"
             buttonLoading={saving}
             disabled={!canSave}
-            className="h-9 whitespace-nowrap"
+            className="whitespace-nowrap"
             icon={
               isNew ? (
                 <FiPlus className="mr-2 text-lg text-white" />
@@ -1056,7 +1056,7 @@ export default function MyTasks() {
               onClick={() => setFormFor(null)}
               label="New Task"
               variant="primary"
-              className="mr-1 h-9 whitespace-nowrap"
+              className="mr-1 whitespace-nowrap"
               icon={<FiPlus className="mr-2 text-lg" />}
             />
 
@@ -1065,11 +1065,9 @@ export default function MyTasks() {
                 key={option.key}
                 type="button"
                 onClick={() => setFilter(option.key)}
-                className={`flex h-9 items-center rounded-sm border px-3 text-xs font-medium transition-colors ${
-                  filter === option.key
-                    ? 'border-primary bg-primary text-white'
-                    : 'border-stroke bg-white text-body hover:border-primary hover:text-primary dark:border-strokedark dark:bg-boxdark dark:text-bodydark'
-                }`}
+                className={`flex items-center rounded-sm border px-3 text-xs font-medium transition-colors ${
+ filter === option.key
+ ?'border-primary bg-primary text-white':'border-stroke bg-white text-body hover:border-primary hover:text-primary dark:border-strokedark dark:bg-boxdark dark:text-bodydark'}`}
               >
                 {option.label}
               </Button>
@@ -1109,7 +1107,7 @@ export default function MyTasks() {
               onClick={runSearch}
               label="Search"
               buttonLoading={refreshing}
-              className="h-9 whitespace-nowrap"
+              className="whitespace-nowrap"
               icon={<FiSearch className="mr-2 text-base" />}
             />
 
@@ -1119,7 +1117,7 @@ export default function MyTasks() {
                 onClick={clearSearch}
                 label="Clear"
                 variant="ghost"
-                className="h-9 whitespace-nowrap border border-stroke dark:border-strokedark"
+                className="whitespace-nowrap border border-stroke dark:border-strokedark"
                 icon={<FiX className="mr-2 text-base" />}
               />
             ) : null}

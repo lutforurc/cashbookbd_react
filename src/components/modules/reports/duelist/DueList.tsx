@@ -197,10 +197,8 @@ const DueList = (user: any) => {
               <Button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
-                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${filterOpen
-                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
-                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
-                  }`}
+                className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${filterOpen
+ ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'}`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -255,14 +253,14 @@ const DueList = (user: any) => {
                       buttonLoading={buttonLoading}
                       icon={<FiCheckSquare />}
                       label="Apply"
-                      className="h-10 px-6"
+                      className="px-6"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
                       icon={<FiRotateCcw />}
                       label="Reset"
-                      className="h-10 px-4"
+                      className="px-4"
                     />
                   </div>
                 </div>
@@ -287,14 +285,14 @@ const DueList = (user: any) => {
                   buttonLoading={buttonLoading}
                   icon={<FiCheckSquare />}
                   label="Apply"
-                  className="h-10 px-6"
+                  className="px-6"
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
                   buttonLoading={false}
                   icon={<FiRotateCcw />}
                   label="Reset"
-                  className="h-10 px-4"
+                  className="px-4"
                 />
               </>
             )}
@@ -319,7 +317,7 @@ const DueList = (user: any) => {
             <PrintButton
               onClick={handlePrint}
               label="Print"
-              className="h-10 px-6"
+              className="px-6"
               disabled={!Array.isArray(tableData) || tableData.length === 0}
             />
           </div>

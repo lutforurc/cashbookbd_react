@@ -229,14 +229,14 @@ const LoginLogReport: React.FC = () => {
               onClick={handleSearch}
               buttonLoading={loading}
               label="Search"
-              className="h-8.5 flex-1 bg-primary text-sm text-white"
+              className="flex-1 bg-primary text-sm text-white"
               icon={<FiSearch />}
             />
             <ButtonLoading
               onClick={handleReset}
               buttonLoading={false}
               label="Reset"
-              className="h-8.5 flex-1 text-sm"
+              className="flex-1 text-sm"
               icon={<FiRefreshCcw />}
             />
           </div>

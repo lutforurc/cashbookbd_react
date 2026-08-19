@@ -311,11 +311,9 @@ const FestivalBonus = ({ user }: any) => {
                 <Button
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
-                  className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                    filterOpen
-                      ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
-                      : "border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-boxdark dark:text-blue-300 dark:hover:bg-boxdark-2"
-                  }`}
+                  className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
+ filterOpen
+ ?"border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300":"border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-boxdark dark:text-blue-300 dark:hover:bg-boxdark-2"}`}
                   aria-label="Open filters"
                 >
                   <FiFilter size={16} />
@@ -363,7 +361,7 @@ const FestivalBonus = ({ user }: any) => {
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">Select Year</label>
                       <YearDropdown
-                        className="h-10 w-full border-form-strokedark bg-boxdark text-sm"
+                        className="w-full border-form-strokedark bg-boxdark text-sm"
                         name="year"
                         value={yearId}
                         onChange={(e: any) => setYearId(e.target.value)}
@@ -372,8 +370,8 @@ const FestivalBonus = ({ user }: any) => {
 
 
                     <div className="flex justify-end gap-2 pt-1">
-                      <ButtonLoading onClick={handleApplyFilters} label="Apply" className="h-10 px-6 bg-meta-4 hover:bg-graydark" />
-                      <ButtonLoading onClick={handleResetFilters} buttonLoading={false} label="Reset" icon="" className="h-10 px-4 bg-meta-4 hover:bg-graydark" />
+                      <ButtonLoading onClick={handleApplyFilters} label="Apply" className="px-6 bg-meta-4 hover:bg-graydark" />
+                      <ButtonLoading onClick={handleResetFilters} buttonLoading={false} label="Reset" icon="" className="px-4 bg-meta-4 hover:bg-graydark" />
                     </div>
                   </div>
                 </form>
@@ -391,7 +389,7 @@ const FestivalBonus = ({ user }: any) => {
                     // onChange={handlePerPageChange}
                     onChange={(e) => setRowsPerPage(Number(e.target.value) || 18)}
                     type='text'
-                    className="mt-0 h-10 w-20! text-center "
+                    className="mt-0 w-20! text-center"
                   />
               </div>
 
@@ -408,11 +406,11 @@ const FestivalBonus = ({ user }: any) => {
  onChange={(e) => setFontSize(Number(e.target.value) || 11)}
                 />
               </div>
-              <ButtonLoading onClick={handleSearch} label="Search" icon={<FiSearch size={15} />} className="h-10 px-6 bg-meta-4 hover:bg-graydark" />
+              <ButtonLoading onClick={handleSearch} label="Search" icon={<FiSearch size={15} />} className="px-6 bg-meta-4 hover:bg-graydark" />
               <PrintButton
                 onClick={handleHeaderPrint}
                 label="Print"
-                className="h-10 px-6 bg-meta-4 hover:bg-graydark"
+                className="px-6 bg-meta-4 hover:bg-graydark"
               />
             </div>
           </div>

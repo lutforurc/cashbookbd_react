@@ -136,7 +136,6 @@ const ImeiStock = () => {
             <ProductDropdown
               value={selectedProduct}
               onSelect={(selected) => setSelectedProduct(selected ? { value: String(selected.value), label: selected.label } : null)}
-              className="h-10"
             />
           </div>
 
@@ -146,14 +145,14 @@ const ImeiStock = () => {
               buttonLoading={loading}
               label="Go"
               icon={<FiCheckSquare />}
-              className="h-10 px-5 uppercase"
+              className="px-5 uppercase"
             />
             <ButtonLoading
               onClick={handlePrint}
               buttonLoading={false}
               label="Print"
               icon={<FiPrinter />}
-              className="h-10 px-5 uppercase"
+              className="px-5 uppercase"
               disabled={imeis.length === 0}
             />
             <ButtonLoading
@@ -161,7 +160,7 @@ const ImeiStock = () => {
               buttonLoading={false}
               label="Home"
               icon={<FiHome />}
-              className="h-10 px-5 uppercase"
+              className="px-5 uppercase"
             />
           </div>
         </div>

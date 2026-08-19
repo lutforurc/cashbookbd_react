@@ -170,7 +170,7 @@ const LabourCategoryList = () => {
             onClick={() => navigate(routes.labour_category_create)}
             label="New Category"
             icon={<FiPlus size={18} />}
-            className="h-9 whitespace-nowrap"
+            className="whitespace-nowrap"
           />
         ) : null}
       </div>

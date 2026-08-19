@@ -434,7 +434,7 @@ const AttendanceReport = ({
           selectedDate={dateFromString(filters.date_from)}
           setSelectedDate={(date) => setFilters((prev: any) => ({ ...prev, date_from: dateToString(date) }))}
           setCurrentDate={(date) => setFilters((prev: any) => ({ ...prev, date_from: dateToString(date) }))}
-          className="h-9 w-full"
+          className="w-full"
         />
         <InputDatePicker
           id="date_to"
@@ -443,7 +443,7 @@ const AttendanceReport = ({
           selectedDate={dateFromString(filters.date_to)}
           setSelectedDate={(date) => setFilters((prev: any) => ({ ...prev, date_to: dateToString(date) }))}
           setCurrentDate={(date) => setFilters((prev: any) => ({ ...prev, date_to: dateToString(date) }))}
-          className="h-9 w-full"
+          className="w-full"
         />
         <div>
           <label className="text-black dark:text-white">Branch</label>
@@ -492,7 +492,7 @@ const AttendanceReport = ({
               }}
               onBlur={() => setOvertimeRowsPerPage(String(Math.max(1, Number(overtimeRowsPerPage) || 12)))}
               title="Rows per page for print"
-              className="h-10 w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
+              className="w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
             />
             <Input
               type="text"
@@ -503,12 +503,12 @@ const AttendanceReport = ({
               }}
               onBlur={() => setOvertimePrintFontSize(String(Math.max(6, Number(overtimePrintFontSize) || 12)))}
               title="Font Size for print"
-              className="h-10 w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
+              className="w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
             />
             <PrintButton
               label="Print"
               onClick={handleOvertimePrint}
-              className="h-10 px-5"
+              className="px-5"
               disabled={attendance.loading || employeeState.loading}
             />
           </div>

@@ -237,13 +237,13 @@ const AddCoaL3 = () => {
               type="submit"
               label={isEditMode ? 'UPDATE' : 'SAVE'}
               buttonLoading={buttonLoading}
-              className="h-9 min-w-30 px-4"
+              className="min-w-30 px-4"
             />
             <ButtonLoading
               type="button"
               label="Back"
               onClick={() => navigate(-1)}
-              className="h-9 min-w-30 px-4"
+              className="min-w-30 px-4"
               icon={<FiArrowLeft className="text-sm" />}
             />
           </div>

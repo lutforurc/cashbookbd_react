@@ -189,7 +189,7 @@ const AttendanceAuditHistory = ({ user }: any) => {
             selectedDate={dateFromString(filters.date_from)}
             setSelectedDate={(date) => setFilters((prev: any) => ({ ...prev, date_from: dateToString(date) }))}
             setCurrentDate={(date) => setFilters((prev: any) => ({ ...prev, date_from: dateToString(date) }))}
-            className="h-10 w-full"
+            className="w-full"
           />
           <InputDatePicker
             id="date_to"
@@ -198,7 +198,7 @@ const AttendanceAuditHistory = ({ user }: any) => {
             selectedDate={dateFromString(filters.date_to)}
             setSelectedDate={(date) => setFilters((prev: any) => ({ ...prev, date_to: dateToString(date) }))}
             setCurrentDate={(date) => setFilters((prev: any) => ({ ...prev, date_to: dateToString(date) }))}
-            className="h-10 w-full"
+            className="w-full"
           />
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch/Project</label>
@@ -223,7 +223,7 @@ const AttendanceAuditHistory = ({ user }: any) => {
                 setEmployeeOption(option);
                 setFilters((prev: any) => ({ ...prev, employee_id: option?.value || '' }));
               }}
-              className="h-10"
+              className=""
             />
           </div>
           <InputElement
@@ -257,7 +257,7 @@ const AttendanceAuditHistory = ({ user }: any) => {
               setFilters(resetFilters);
               loadHistory(resetFilters);
             }}
-            className="inline-flex h-10 items-center justify-center rounded-none bg-slate-500 px-5 text-sm font-medium text-white hover:bg-slate-600"
+            className="inline-flex items-center justify-center rounded-none bg-slate-500 px-5 text-sm font-medium text-white hover:bg-slate-600"
           >
             <FiSearch className="mr-2" />
             Reset

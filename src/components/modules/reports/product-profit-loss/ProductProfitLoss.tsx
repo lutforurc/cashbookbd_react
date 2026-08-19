@@ -531,11 +531,9 @@ const ProductProfitLoss = (user: any) => {
                 <Button
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
-                  className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                    filterOpen
-                      ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
-                      : "border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"
-                  }`}
+                  className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
+ filterOpen
+ ?"border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300":"border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"}`}
                   title="Open filters"
                   aria-label="Open filters"
                 >
@@ -605,7 +603,7 @@ const ProductProfitLoss = (user: any) => {
                         label="Apply"
                         onClick={handleRunReport}
                         buttonLoading={buttonLoading}
-                        className="h-10 px-6"
+                        className="px-6"
                         icon={<FiCheckSquare />}
                       />
                       <ButtonLoading
@@ -613,7 +611,7 @@ const ProductProfitLoss = (user: any) => {
                         onClick={handleResetFilters}
                         buttonLoading={false}
                         icon={<FiRotateCcw />}
-                        className="h-10 px-4"
+                        className="px-4"
                       />
                     </div>
                   </div>
@@ -656,7 +654,7 @@ const ProductProfitLoss = (user: any) => {
                 <PrintButton
                   onClick={handlePrint}
                   label="Print"
-                  className="h-10 px-6"
+                  className="px-6"
                   disabled={tableData.length === 0}
                 />
               </div>
@@ -668,14 +666,14 @@ const ProductProfitLoss = (user: any) => {
                     onClick={handleRunReport}
                     buttonLoading={buttonLoading}
                     icon={<FiCheckSquare />}
-                    className="h-10 px-6"
+                    className="px-6"
                   />
                   <ButtonLoading
                     label="Reset"
                     onClick={handleResetFilters}
                     buttonLoading={false} 
                     icon={<FiRotateCcw />}
-                    className="h-10 px-4"
+                    className="px-4"
                   />
                 </div>
 
@@ -703,7 +701,7 @@ const ProductProfitLoss = (user: any) => {
                   <PrintButton
                     onClick={handlePrint}
                     label="Print"
-                    className="h-10 px-6"
+                    className="px-6"
                     disabled={tableData.length === 0}
                   />
                 </div>

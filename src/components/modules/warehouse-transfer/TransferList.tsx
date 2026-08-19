@@ -461,7 +461,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
               value={String(printFont)}
               onChange={handlePrintFontChange}
               type="text"
-              className="h-10 w-20! text-center text-sm font-medium"
+              className="w-20! text-center text-sm font-medium"
             />
           </div>
         </div>

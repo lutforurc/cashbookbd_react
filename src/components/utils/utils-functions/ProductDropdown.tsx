@@ -5,7 +5,7 @@ import { getDdlProduct } from '../../modules/product/productSlice';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { hasPermission } from '../permissionChecker';
-import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
+import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 interface OptionType {
   value: string;
@@ -289,7 +289,7 @@ const ProductDropdown: React.FC<DropdownProps> = ({
         )}
         getOptionValue={(option) => option.value}
         placeholder="Select product"
-        styles={customStyles}
+        styles={withFieldHeight(customStyles, controlHeight)}
         defaultValue={defaultValue}
         value={value ?? internalSelectedOption}
         menuPortalTarget={document.body}
