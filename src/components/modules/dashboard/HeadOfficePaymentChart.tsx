@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import ApexChart from 'react-apexcharts';
+﻿import React, { useEffect, useState } from "react";
+import ApexChart from '../../utils/interop/ApexChart';
 import { useDispatch, useSelector } from "react-redux";
 import { getBranchChart, getHeadOfficePaymentChart } from "./chartSlice";
 import useLocalStorage from "../../../hooks/useLocalStorage";

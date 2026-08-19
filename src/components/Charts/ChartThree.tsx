@@ -1,7 +1,7 @@
-import { ApexOptions } from 'apexcharts';
+﻿import { ApexOptions } from 'apexcharts';
 import React, { useState } from 'react';
 import { FIELD_OPTION } from '../../theme/fieldStyles';
-import ReactApexChart from 'react-apexcharts';
+import ReactApexChart from '../utils/interop/ApexChart';
 import { chartSeries } from '../../theme/themeColors';
 
 interface ChartThreeState {

@@ -1,7 +1,14 @@
 import React from 'react';
-import DatePicker from 'react-datepicker';
+import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FIELD_BASE, FIELD_LABEL } from '../../../theme/fieldStyles';
+
+// react-datepicker 7 ships no `exports` map, and under Vite 8's rolldown its
+// default import can arrive as the module object rather than the component —
+// "Element type is invalid ... got: object" on every screen with a date field.
+// Unwrap one level when that happens; under Vite 4 this is a no-op.
+const DatePicker: typeof ReactDatePicker =
+  ((ReactDatePicker as any).default ?? ReactDatePicker) as typeof ReactDatePicker;
 
 interface DatePickerProps {
   id?: string; // ID for the date picker component
@@ -20,7 +27,7 @@ interface DatePickerProps {
 }
 
 const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder, month = false, showTime = false, disabled = false }) => {
-  const datePickerRef = React.useRef<DatePicker>(null);
+  const datePickerRef = React.useRef<ReactDatePicker>(null);
   const safeSelectedDate =
     selectedDate instanceof Date && !Number.isNaN(selectedDate.getTime()) ? selectedDate : null;
 

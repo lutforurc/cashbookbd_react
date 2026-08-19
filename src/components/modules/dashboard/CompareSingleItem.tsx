@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import ApexChart from 'react-apexcharts';
+﻿import React, { useEffect, useState } from 'react';
+import ApexChart from '../../utils/interop/ApexChart';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCompare } from './chartSlice';
 import useLocalStorage from '../../../hooks/useLocalStorage';
@@ -27,7 +27,7 @@ const CompareSingleItem = ({
   });
 
   /* ===============================
-   âœ… Dynamic API Call (SAFE)
+   Ã¢Å“â€¦ Dynamic API Call (SAFE)
   ================================= */
   useEffect(() => {
     if (!branchId || !startDate1 || !endDate1) return;
@@ -62,7 +62,7 @@ const CompareSingleItem = ({
   ]);
 
   /* ===============================
-   âœ… Chart Data Mapping (SAFE)
+   Ã¢Å“â€¦ Chart Data Mapping (SAFE)
   ================================= */
   useEffect(() => {
     const compare = charts?.compareData?.data?.period1;
@@ -76,7 +76,7 @@ const CompareSingleItem = ({
   }, [charts]);
 
   /* ===============================
-   âœ… Chart Options
+   Ã¢Å“â€¦ Chart Options
   ================================= */
 
   const allValues = chartData.series.flatMap((s) => s.data);
@@ -99,14 +99,14 @@ const CompareSingleItem = ({
     },
 
     yaxis: {
-      min: 0, // à¦¨à¦¿à¦šà§‡à¦° à¦¸à¦°à§à¦¬à¦¨à¦¿à¦®à§à¦¨ à¦­à§à¦¯à¦¾à¦²à§
-      max: maxValue, // à¦‰à¦ªà¦°à§‡à¦° à¦¸à¦°à§à¦¬à§‹à¦šà§à¦š à¦­à§à¦¯à¦¾à¦²à§ âœ… (à¦†à¦ªà¦¨à¦¾à¦° à¦¡à¦¾à¦Ÿà¦¾ à¦…à¦¨à§à¦¯à¦¾à§Ÿà§€ à¦¸à§‡à¦Ÿ à¦•à¦°à¦¬à§‡à¦¨)
-      tickAmount: 10, // âœ… à¦®à§‹à¦Ÿ 5à¦Ÿà¦¾ à¦¸à§à¦Ÿà§‡à¦ª à¦¹à¦¬à§‡ (gap control)
+      min: 0, // Ã Â¦Â¨Ã Â¦Â¿Ã Â¦Å¡Ã Â§â€¡Ã Â¦Â° Ã Â¦Â¸Ã Â¦Â°Ã Â§ÂÃ Â¦Â¬Ã Â¦Â¨Ã Â¦Â¿Ã Â¦Â®Ã Â§ÂÃ Â¦Â¨ Ã Â¦Â­Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â¦Â²Ã Â§Â
+      max: maxValue, // Ã Â¦â€°Ã Â¦ÂªÃ Â¦Â°Ã Â§â€¡Ã Â¦Â° Ã Â¦Â¸Ã Â¦Â°Ã Â§ÂÃ Â¦Â¬Ã Â§â€¹Ã Â¦Å¡Ã Â§ÂÃ Â¦Å¡ Ã Â¦Â­Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â¦Â²Ã Â§Â Ã¢Å“â€¦ (Ã Â¦â€ Ã Â¦ÂªÃ Â¦Â¨Ã Â¦Â¾Ã Â¦Â° Ã Â¦Â¡Ã Â¦Â¾Ã Â¦Å¸Ã Â¦Â¾ Ã Â¦â€¦Ã Â¦Â¨Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â§Å¸Ã Â§â‚¬ Ã Â¦Â¸Ã Â§â€¡Ã Â¦Å¸ Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¬Ã Â§â€¡Ã Â¦Â¨)
+      tickAmount: 10, // Ã¢Å“â€¦ Ã Â¦Â®Ã Â§â€¹Ã Â¦Å¸ 5Ã Â¦Å¸Ã Â¦Â¾ Ã Â¦Â¸Ã Â§ÂÃ Â¦Å¸Ã Â§â€¡Ã Â¦Âª Ã Â¦Â¹Ã Â¦Â¬Ã Â§â€¡ (gap control)
 
       labels: {
         // formatter: (value) => thousandSeparator(value),
         formatter: (value) => {
-          const rounded = Math.round(value / 100) * 100; // âœ… 495 â†’ 500
+          const rounded = Math.round(value / 100) * 100; // Ã¢Å“â€¦ 495 Ã¢â€ â€™ 500
           return thousandSeparator(rounded);
         },
       },
@@ -124,7 +124,7 @@ const CompareSingleItem = ({
       y: {
         formatter: (value, { dataPointIndex }) => {
           const label = chartData.labels[dataPointIndex] || '';
-          return `${label} â†’ ${thousandSeparator(value)}`;
+          return `${label} Ã¢â€ â€™ ${thousandSeparator(value)}`;
         },
       },
     },
