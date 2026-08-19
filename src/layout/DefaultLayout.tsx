@@ -32,7 +32,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, us
   }, [dispatch, isLoading, isLoggedIn, subscription.initialized, subscription.loadingCurrent, user]);
 
   return isLoggedIn ? (
-    <div className="dark:bg-boxdark-2 dark:text-bodydark">
+    <div className="bg-[rgb(var(--c-page))] dark:text-bodydark">
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       <div className="flex h-screen overflow-hidden">
         {/* <!-- ===== Sidebar Start ===== --> */}

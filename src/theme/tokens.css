@@ -53,6 +53,12 @@
      them the same has to say so twice. */
   --c-header: var(--c-sidebar);
 
+  /* The paper the cards sit on. Named apart from --c-whiten because the
+     page is a different colour in each mode -- whiten on a light screen,
+     boxdark-2 on a dark one -- and a user choosing a page colour has to
+     move one variable, not know which of the two the mode is using. */
+  --c-page: var(--c-whiten);
+
   /* What a printed report's table headings are inked in. Black on paper unless
      a user says otherwise. */
   --c-print-accent: var(--c-black-2);
@@ -416,6 +422,7 @@ html.dark {
      text colour here, and following it would paint the sidebar near-white. */
   --c-sidebar: var(--c-boxdark);
   --c-header: var(--c-sidebar);
+  --c-page: var(--c-boxdark-2);
 
   /* Pure white text on a dark page bleeds at the edges -- the effect people
      describe as "my eyes hurt after a few hours". Softening it here reaches all

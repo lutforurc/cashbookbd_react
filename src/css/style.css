@@ -757,7 +757,11 @@
 
 @layer base {
   body {
-    @apply font-satoshi font-normal text-base text-body bg-whiten relative z-1;
+    @apply font-satoshi font-normal text-base text-body relative z-1;
+    /* The page colour, one variable for both modes -- see --c-page in
+       tokens.css. It replaced `bg-whiten` here, which said only what a light
+       screen should be and left the dark page to a wrapper further in. */
+    background-color: rgb(var(--c-page));
   }
 
   /* Date and time inputs are drawn by the browser, not by us. On a dark page

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * The colours and sizes a user picked for themselves.
@@ -8,31 +8,39 @@ import { useEffect } from 'react';
  * them changing the brand colour should not repaint the other's screen. They
  * live in `user_theme_settings`, one row each, and arrive on the session user.
  *
- * Nothing here paints anything itself. Every value moves a variable the
+ * Every colour comes in two, a light value and a dark one, and only the half
+ * matching the mode on screen is written. One value could not serve both: the
+ * sidebar is white on a light screen and near-black on a dark one, so a single
+ * chosen colour would have painted the dark sidebar white.
+ *
+ * Nothing here paints anything itself. Each value moves a variable the
  * stylesheet is already reading, which is why one colour reaches the buttons,
  * the links, the active menu row and the charts at once.
  */
-export type UserTheme = {
-  theme_primary_color?: string | null;
-  theme_secondary_color?: string | null;
-  theme_success_color?: string | null;
-  theme_danger_color?: string | null;
-  theme_warning_color?: string | null;
-  theme_info_color?: string | null;
-  theme_sidebar_color?: string | null;
-  theme_header_color?: string | null;
-  theme_page_bg_color?: string | null;
-  theme_print_color?: string | null;
-  /** Stored, not yet worn: cards and tables are still described screen by screen. */
-  theme_card_color?: string | null;
-  theme_table_header_color?: string | null;
-  theme_text_color?: string | null;
-  /** The chart series in order, as comma-separated hex. */
-  theme_chart_palette?: string | null;
-  theme_mode?: string | null;
-  theme_control_height?: string | number | null;
-  theme_control_radius?: string | number | null;
-};
+
+/** The colours stored once per mode, and the variable each one moves. */
+const PER_MODE_VARS: Array<[string, string]> = [
+  ['primary_color', '--c-primary'],
+  ['secondary_color', '--c-secondary'],
+  ['success_color', '--c-success'],
+  ['danger_color', '--c-danger'],
+  ['warning_color', '--c-warning'],
+  // `info` has no token of its own -- the app has always said "a notice" with
+  // meta-5 -- so that is what it moves.
+  ['info_color', '--c-meta-5'],
+  ['sidebar_color', '--c-sidebar'],
+  ['header_color', '--c-header'],
+  ['page_bg_color', '--c-page'],
+];
+
+/**
+ * Stored, not yet worn: nothing central draws a card, a table head or body
+ * text, so choosing one of these would change nothing. They are listed here so
+ * the next person can see they were meant, not forgotten.
+ */
+const NOT_WIRED_YET = ['card_color', 'table_header_color', 'text_color'];
+
+export type UserTheme = Record<string, string | number | null | undefined>;
 
 /**
  * `#2B5FD9` -> `43 95 217`.
@@ -45,7 +53,7 @@ export type UserTheme = {
  * value in the database leaves the built-in colour standing rather than
  * blanking the screen.
  */
-export const hexToChannels = (hex?: string | null): string | null => {
+export const hexToChannels = (hex?: string | number | null): string | null => {
   if (!hex) return null;
   const v = String(hex).trim().replace(/^#/, '');
   const full = v.length === 3 ? v.split('').map((c) => c + c).join('') : v;
@@ -60,31 +68,14 @@ const setVar = (name: string, value: string | null) => {
   else root.style.removeProperty(name);
 };
 
-/**
- * Which chosen colour moves which variable.
- *
- * `info` has no token of its own -- the app has always said "a notice" with
- * meta-5 -- so that is what it moves. The three at the end have no entry
- * because nothing central draws a card, a table head or body text yet; they
- * are stored against the day those are brought together, and until then
- * choosing one changes nothing. Better an empty column than a control that
- * lies about what it does.
- */
-const COLOR_VARS: Array<[keyof UserTheme, string]> = [
-  ['theme_primary_color', '--c-primary'],
-  ['theme_secondary_color', '--c-secondary'],
-  ['theme_success_color', '--c-success'],
-  ['theme_danger_color', '--c-danger'],
-  ['theme_warning_color', '--c-warning'],
-  ['theme_info_color', '--c-meta-5'],
-  ['theme_sidebar_color', '--c-sidebar'],
-  ['theme_header_color', '--c-header'],
-  ['theme_page_bg_color', '--c-whiten'],
-  ['theme_print_color', '--c-print-accent'],
-];
+/** A size the user gave in pixels, or null if they gave nothing usable. */
+const px = (value: unknown, min: number, max: number): string | null => {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= min && n <= max ? `${n}px` : null;
+};
 
 /** The chart palette, spread over the eight series variables in order. */
-const applyChartPalette = (palette?: string | null) => {
+const applyChartPalette = (palette?: string | number | null) => {
   const colours = String(palette || '')
     .split(',')
     .map((c) => hexToChannels(c))
@@ -95,27 +86,30 @@ const applyChartPalette = (palette?: string | null) => {
   }
 };
 
-/** A size the user gave in pixels, or null if they gave nothing usable. */
-const px = (value: unknown, min: number, max: number): string | null => {
-  const n = Number(value);
-  return Number.isFinite(n) && n >= min && n <= max ? `${n}px` : null;
-};
-
 /**
- * Write the user's choices onto the root element.
+ * Write the user's choices onto the root element, in the mode given.
  *
  * A missing or unreadable value removes the override rather than writing a
  * blank, which puts the built-in colour back -- so clearing a box on the form
- * and saving really does return that colour to the one the software ships.
+ * and saving really does return that colour to the one the software ships, and
+ * switching to a mode the user never set a colour for shows the shipped
+ * palette rather than the other mode's choices.
  */
-export const applyUserTheme = (theme?: UserTheme | null): void => {
+export const applyUserTheme = (theme?: UserTheme | null, dark?: boolean): void => {
   if (typeof document === 'undefined') return;
 
-  COLOR_VARS.forEach(([field, variable]) => {
-    setVar(variable, hexToChannels(theme?.[field] as string | undefined));
+  const isDark = dark ?? document.documentElement.classList.contains('dark');
+  const suffix = isDark ? '_dark' : '_light';
+
+  PER_MODE_VARS.forEach(([name, variable]) => {
+    setVar(variable, hexToChannels(theme?.[`theme_${name}${suffix}`]));
   });
 
-  applyChartPalette(theme?.theme_chart_palette);
+  applyChartPalette(theme?.[`theme_chart_palette${suffix}`]);
+
+  // Paper has no dark mode: a report prints on white whichever screen it was
+  // ordered from.
+  setVar('--c-print-accent', hexToChannels(theme?.theme_print_color));
 
   // Nothing below 24px holds a 14px label, and past 56 a form row stops
   // reading as one. The radius is capped where a 34px box turns into a pill.
@@ -131,7 +125,7 @@ export const applyUserTheme = (theme?: UserTheme | null): void => {
  * this dragging it back. sessionStorage is exactly that memory: gone when the
  * browser tab is, which is when "opens in" starts meaning something again.
  */
-const applyDefaultMode = (mode?: string | null) => {
+const applyDefaultMode = (mode?: string | number | null) => {
   if (mode !== 'light' && mode !== 'dark') return;
   if (sessionStorage.getItem('user-theme-mode-applied') === '1') return;
 
@@ -141,26 +135,51 @@ const applyDefaultMode = (mode?: string | null) => {
 };
 
 /**
+ * Whether the page is in dark mode, and again whenever that changes.
+ *
+ * The switch in the header adds and removes a class on <html>; there is no
+ * event for it, so the class is watched. Without this the colours would be
+ * right until someone flipped the switch and then be a mode behind.
+ */
+const useIsDarkMode = (): boolean => {
+  const read = () =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  const [dark, setDark] = useState(read);
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => setDark(read()));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+  return dark;
+};
+
+/**
  * Keep the page wearing what the signed-in user chose.
  *
  * Call it once, high up, with the user off the session settings. It reapplies
- * whenever those values change -- which is what makes the Save on the user form
- * show its result without a reload.
+ * when those values change -- which is what makes the Save on the user form
+ * show its result without a reload -- and when the mode changes, which is what
+ * swaps the light half of their palette for the dark one.
  */
 export const useUserTheme = (user?: UserTheme | null): void => {
-  // One string rather than seventeen dependencies: the effect has to rerun when
+  const dark = useIsDarkMode();
+
+  // One string rather than thirty dependencies: the effect has to rerun when
   // any of them moves, and listing them all invites the next colour to be
   // forgotten.
-  const signature = JSON.stringify([
-    ...COLOR_VARS.map(([field]) => user?.[field] ?? ''),
-    user?.theme_chart_palette ?? '',
-    user?.theme_control_height ?? '',
-    user?.theme_control_radius ?? '',
-    user?.theme_mode ?? '',
-  ]);
+  const signature = JSON.stringify(
+    [...PER_MODE_VARS.map(([name]) => name), 'chart_palette']
+      .flatMap((name) => [`theme_${name}_light`, `theme_${name}_dark`])
+      .concat(['theme_print_color', 'theme_control_height', 'theme_control_radius', 'theme_mode'])
+      .map((key) => user?.[key] ?? ''),
+  );
 
   useEffect(() => {
-    applyUserTheme(user);
+    applyUserTheme(user, dark);
     applyDefaultMode(user?.theme_mode);
-  }, [signature]);
+  }, [signature, dark]);
 };
+
+export { NOT_WIRED_YET, PER_MODE_VARS };
