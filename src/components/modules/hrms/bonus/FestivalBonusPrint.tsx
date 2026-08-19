@@ -1,7 +1,7 @@
 import React from "react";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
-import ReportFooter from "../../../utils/utils-functions/ReportFooter";
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { formatDate, formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
 
@@ -207,7 +207,7 @@ const FestivalBonusPrint = React.forwardRef<HTMLDivElement, Props>(
             </div>
           );
         })}
-        <ReportFooter />
+        <PrintFooter fixed />
       </div>
     );
   }

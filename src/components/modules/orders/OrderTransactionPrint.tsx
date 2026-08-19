@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { formatTransportationNumber } from '../../utils/utils-functions/formatRoleName';
@@ -443,10 +443,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
               </div>
             ) : null}
 
-            <div style={{ fontSize: fs }} className="mt-auto flex items-end justify-between gap-4 border-t border-gray-400 pt-1 text-xs text-gray-600">
-              <span className="text-left"><ReportFooter inline /></span>
-              <span className="whitespace-nowrap text-right">Page {pageIndex + 1} of {printablePages.length}</span>
-            </div>
+            <PrintFooter page={pageIndex + 1} total={printablePages.length} fontSize={fs} className="text-xs" />
 
 		            {pageIndex !== printablePages.length - 1 ? <div className="page-break" /> : null}
 	          </div>

@@ -1,7 +1,7 @@
 import React, { forwardRef, useMemo } from 'react';
 
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 
@@ -162,14 +162,11 @@ const ConnectedMemberPrint = forwardRef<HTMLDivElement, Props>(
                 ) : null}
               </table>
 
-              <div style={{ fontSize: fs }} className="mt-auto text-right text-xs">
-                Page {pageIndex + 1} of {pages.length}
-              </div>
+              <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} />
               {pageIndex !== pages.length - 1 && <div className="page-break" />}
             </div>
           );
         })}
-        <ReportFooter />
       </div>
     );
   },

@@ -1,6 +1,6 @@
 import React from "react";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
-import ReportFooter from "../../../utils/utils-functions/ReportFooter";
+import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
@@ -328,12 +328,7 @@ const ExpenseReportPrint = React.forwardRef<
                 </table>
               </div>
 
-              <div
-                style={{ fontSize: fs }}
-                className="mt-auto text-right text-xs"
-              >
-                Page {pIdx + 1} of {pages.length}
-              </div>
+              <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
 
               {/* Page break between pages */}
               {!isLastPage && <div className="page-break" />}
@@ -342,7 +337,6 @@ const ExpenseReportPrint = React.forwardRef<
         })}
 
         {/* Note */}
-        <ReportFooter />
       </div>
     );
   },

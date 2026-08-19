@@ -1,7 +1,7 @@
 import React from 'react';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import { employeeGroup } from '../../../utils/fields/DataConstant';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import { FaKipSign } from 'react-icons/fa6';
@@ -119,14 +119,11 @@ const EmployeePrint = React.forwardRef<HTMLDivElement, Props>(
             </table>
 
             {/* Footer */}
-            <div className="mt-2 text-right text-xs">
-              Page {pIdx + 1} of {pages.length}
-            </div>
+            <PrintFooter page={pIdx + 1} total={pages.length} />
 
             {pIdx !== pages.length - 1 && <div className="page-break" />}
           </div>
         ))}
-        <ReportFooter />
       </div>
     );
   },

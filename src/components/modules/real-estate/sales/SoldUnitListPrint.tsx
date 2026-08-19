@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
-import ReportFooter from "../../../utils/utils-functions/ReportFooter";
+import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import { SoldUnitCustomer, SoldUnitTotals } from "./types";
 import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
 import {
@@ -298,15 +298,12 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
             ) : null}
           </table>
 
-          <div style={{ fontSize: fs }} className="mt-auto text-right text-xs">
-            Page {pIdx + 1} of {pageCount}
-          </div>
+          <PrintFooter page={pIdx + 1} total={pageCount} fontSize={fs} />
 
           {!isLastPage && <div className="page-break" />}
         </div>
         );
         })}
-        <ReportFooter />
       </div>
     );
   }

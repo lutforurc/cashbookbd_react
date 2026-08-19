@@ -2,7 +2,7 @@ import React from 'react';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { formatBdShortDate } from '../../utils/utils-functions/formatDate';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 
 export type InstallmentRow = {
@@ -311,7 +311,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
         </div>
 
         {/* Optional note */}
-        <ReportFooter />
+        <PrintFooter fixed />
       </div>
     );
   },

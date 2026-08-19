@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
@@ -201,13 +201,10 @@ const CollectionSheetPrint = React.forwardRef<HTMLDivElement, Props>(
               </tbody>
             </table>
 
-            <div className="mt-2 text-right text-xs">
-              Page {pageIndex + 1} of {pages.length || 1}
-            </div>
+            <PrintFooter page={pageIndex + 1} total={pages.length || 1} />
             {pageIndex !== pages.length - 1 && <div className="page-break" />}
           </div>
         ))}
-        <ReportFooter />
       </div>
     );
   },

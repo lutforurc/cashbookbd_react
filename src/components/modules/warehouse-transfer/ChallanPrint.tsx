@@ -1,7 +1,7 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 
@@ -433,15 +433,13 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
             wrote the software on the left, where the reader is on the right.
             `continued` stays on it, because a challan is signed, and a signer
             has to know the goods go on past the sheet in their hand. */}
-        <div className="mt-auto flex shrink-0 items-end justify-between gap-4 border-t border-gray-400 pt-1 text-gray-600">
-          <span className="text-left">
-            <ReportFooter inline />
-          </span>
-          <span className="whitespace-nowrap text-right">
-            Page {pageIndex + 1} of {pages.length}
-            {isLastPage ? '' : ' — continued'}
-          </span>
-        </div>
+        {/* `continued` stays: a challan is signed, and a signer has to know
+            the goods run on past the sheet in their hand. */}
+        <PrintFooter
+          page={pageIndex + 1}
+          total={pages.length}
+          note={isLastPage ? undefined : '— continued'}
+        />
             </div>
           );
         })}

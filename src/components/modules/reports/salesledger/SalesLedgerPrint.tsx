@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
-import ReportFooter from "../../../utils/utils-functions/ReportFooter";
+import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import SalesLedgerCalculator from "../../../utils/calculators/SalesLedgerCalculator";
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
 import { formatDateUsdToBd, formatLongDateUsdToBd } from "../../../utils/utils-functions/formatDate";
@@ -500,18 +500,12 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                 )}
               </div>
 
-              <div
-                style={{ fontSize: fs }}
-                className="mt-auto text-right text-xs"
-              >
-                Page {pIdx + 1} of {pages.length}
-              </div>
+              <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
 
               {pIdx !== pages.length - 1 && <div className="page-break" />}
             </div>
           );
         })}
-        <ReportFooter />
       </div>
     );
   }

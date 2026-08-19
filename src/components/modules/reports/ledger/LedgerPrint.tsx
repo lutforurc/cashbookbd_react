@@ -1,7 +1,7 @@
 import React from 'react';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import dayjs from 'dayjs';
 import formatDate, { formatDateUsdToBd } from '../../../utils/utils-functions/formatDate';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
@@ -346,9 +346,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                 <div style={{ fontSize: fs }} className="font-semibold">
                   {pIdx !== pages.length - 1 ? `Balance: ${thousandSeparator(pageClosingBalance)}` : ''}
                 </div>
-                <div style={{ fontSize: fs }} className="text-right">
-                  Page {pIdx + 1} of {pages.length}
-                </div>
+                <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
               </div>
 
               {pIdx !== pages.length - 1 && <div className="page-break" />}
@@ -376,7 +374,6 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
         </div> */}
 
         {/* Note */}
-        <ReportFooter />
       </div>
     );
   },

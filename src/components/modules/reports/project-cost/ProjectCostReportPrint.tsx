@@ -1,7 +1,7 @@
 import React from 'react';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type Section = 'summary' | 'building' | 'untagged';
@@ -173,16 +173,12 @@ const ProjectCostReportPrint = React.forwardRef<HTMLDivElement, Props>(
                 ) : null}
               </table>
 
-              <p className="mt-2 text-right text-xs">
-                Page {pageIndex + 1} of {pages.length}
-              </p>
+              <PrintFooter page={pageIndex + 1} total={pages.length} />
 
               {!isLastPage ? <div className="page-break" /> : null}
             </div>
           );
         })}
-
-        <ReportFooter />
       </div>
     );
   },

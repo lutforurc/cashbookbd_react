@@ -1,7 +1,7 @@
 import { forwardRef, useMemo } from 'react';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import type { PrintBranch } from '../../../utils/utils-functions/printBranch';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import type { BankDetailRow, CashBankSummaryRow } from './CashBankReceivedPayment';
@@ -56,7 +56,7 @@ const CashBankReceivedPaymentPrint = forwardRef<HTMLDivElement, Props>(
             <tbody>{pageRows.map((row, index) => <tr key={`${row.name}-${index}`}><td style={{ ...cell, textAlign: 'center' }}>{offset + index + 1}</td><td style={{ ...cell, textAlign: 'left' }}>{row.name}</td>{[row.cash_debit, row.cash_credit, row.bank_debit, row.bank_credit].map((value, i) => <td key={i} style={cell}>{num(value) ? thousandSeparator(num(value)) : '-'}</td>)}</tr>)}</tbody>
             {lastPage && <tfoot>{[['Total', totals], ['Balance', balances]].map(([label, values]: any) => <tr key={label}><td colSpan={2} style={{ ...cell, fontWeight: 700 }}>{label}</td>{values.map((value: number, index: number) => <td key={index} style={{ ...cell, fontWeight: 700 }}>{value ? thousandSeparator(value) : '-'}</td>)}</tr>)}</tfoot>}
           </table>
-          <div style={{ fontSize: fs }} className="mt-auto flex shrink-0 items-end justify-between gap-4 border-t border-gray-400 pt-1 text-gray-600"><span className="text-left"><ReportFooter inline /></span><span className="whitespace-nowrap text-right">Page {pageIndex + 1} of {totalPages}</span></div>
+          <PrintFooter page={pageIndex + 1} total={totalPages} fontSize={fs} />
         </div>;
       })}
       {bankPages.map((pageBanks, bankPageIndex) => {
@@ -66,7 +66,7 @@ const CashBankReceivedPaymentPrint = forwardRef<HTMLDivElement, Props>(
           <PadPrinting branch={branch} />
           <div className="mb-2" style={{ fontSize: fs }}><h1 className="text-center text-xl font-bold">Bank-wise Details</h1><div className="flex justify-between"><span><b>Branch:</b> {projectName || '-'}</span><span><b>Period:</b> {startDate} to {endDate}</span></div></div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}><thead><tr>{['Sl. No.', 'Bank Account', 'Received (Tk.)', 'Payment (Tk.)', 'Balance (Tk.)'].map((title, index) => <th key={title} style={{ ...cell, textAlign: index === 1 ? 'left' : index === 0 ? 'center' : 'right' }}>{title}</th>)}</tr></thead><tbody>{pageBanks.map((bank, index) => { const received = num(bank.received); const payment = num(bank.payment); return <tr key={`${bank.bank_account_id ?? bank.bank_name}-${index}`}><td style={{ ...cell, textAlign: 'center' }}>{offset + index + 1}</td><td style={{ ...cell, textAlign: 'left' }}>{bank.bank_name}</td><td style={cell}>{received ? thousandSeparator(received) : '-'}</td><td style={cell}>{payment ? thousandSeparator(payment) : '-'}</td><td style={cell}>{thousandSeparator(received - payment)}</td></tr>; })}</tbody></table>
-          <div style={{ fontSize: fs }} className="mt-auto flex shrink-0 items-end justify-between gap-4 border-t border-gray-400 pt-1 text-gray-600"><span className="text-left"><ReportFooter inline /></span><span className="whitespace-nowrap text-right">Page {pageNumber} of {totalPages}</span></div>
+          <PrintFooter page={pageNumber} total={totalPages} fontSize={fs} />
         </div>;
       })}
     </div>;

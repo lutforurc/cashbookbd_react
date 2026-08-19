@@ -5,7 +5,7 @@ import PurchaseLedgerCalculator from "../../../utils/calculators/PurchaseLedgerC
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
-import ReportFooter from "../../../utils/utils-functions/ReportFooter";
+import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import { useSelector } from "react-redux";
 
 type Props = {
@@ -359,19 +359,13 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                 )}
               </div>
 
-              <div
-                style={{ fontSize: fs }}
-                className="mt-auto text-right text-xs"
-              >
-                Page {pIdx + 1} of {pages.length}
-              </div>
+              <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
 
               {pIdx !== pages.length - 1 && <div className="page-break" />}
 
             </div>
           );
         })}
-        <ReportFooter />
       </div>
     );
   }

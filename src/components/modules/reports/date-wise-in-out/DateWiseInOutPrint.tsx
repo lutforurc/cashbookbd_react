@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import type { DateWiseInOutRow, InOutDetailRow } from './DateWiseInOut';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
@@ -216,7 +216,7 @@ export const DateWiseInOutPrint = React.forwardRef<HTMLDivElement, DateWiseInOut
             </table>
           </div>
         ))}
-        <ReportFooter />
+        <PrintFooter fixed />
       </div>
     );
   },
@@ -386,7 +386,7 @@ export const DateWiseInOutDetailPrint = React.forwardRef<HTMLDivElement, DateWis
             </div>
           </div>
         ))}
-        <ReportFooter />
+        <PrintFooter fixed />
       </div>
     );
   },

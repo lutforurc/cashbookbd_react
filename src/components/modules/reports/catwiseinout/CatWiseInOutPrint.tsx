@@ -1,7 +1,7 @@
 import React from "react";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
-import ReportFooter from "../../../utils/utils-functions/ReportFooter";
+import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 type RowType = {
@@ -252,14 +252,11 @@ const CatWiseInOutPrint = React.forwardRef<HTMLDivElement, Props>(
                         </table>
 
                         {/* PAGE FOOTER */}
-                        <div className="text-right text-xs mt-2" style={{ fontSize: fs }}>
-                            Page {pageIndex + 1} of {pages.length}
-                        </div>
+                        <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} />
 
                         {pageIndex !== pages.length - 1 && <div className="page-break" />}
                     </div>
                 ))}
-                <ReportFooter />
             </div>
         );
     }

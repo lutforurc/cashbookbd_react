@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
 import { formatDayMonthYear, formatDaySpan } from '../../utils/utils-functions/formatDate';
 
@@ -204,14 +204,11 @@ const StockAlertPrint = React.forwardRef<HTMLDivElement, Props>(
               </tbody>
             </table>
 
-            <div className="mt-auto text-right text-xs">
-              Page {pageIndex + 1} of {pages.length}
-            </div>
+            <PrintFooter page={pageIndex + 1} total={pages.length} />
 
             {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
           </div>
         ))}
-        <ReportFooter />
       </div>
     );
   },

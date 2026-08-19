@@ -1,6 +1,6 @@
 import React from 'react';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type OvertimeEmployeeRow = {
@@ -248,12 +248,9 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
 		            <div>{title}</div>
 		          </div>
 		          {renderTable(pageRows, pageIndex, pageIndex === pages.length - 1)}
-		          <div className="mt-auto text-right text-xs">
-		            Page {pageIndex + 1} of {pages.length}
-		          </div>
+		          <PrintFooter page={pageIndex + 1} total={pages.length} />
 		        </div>
 		      ))}
-	      <ReportFooter />
 	    </div>
     );
   },

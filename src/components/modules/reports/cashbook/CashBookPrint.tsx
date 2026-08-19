@@ -1,7 +1,7 @@
 import React from 'react';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import { reportDescription as description } from '../../../utils/utils-functions/reportDescription';
@@ -216,9 +216,7 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
 
                 {/* ðŸ‘‡ Force break after each page except the last */}
               </div>
-              <div style={{ fontSize: fs }} className="mt-auto text-right text-xs">
-                Page {pIdx + 1} of {pages.length}
-              </div>
+              <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
 
               {/* Page break between pages */}
 
@@ -229,7 +227,6 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
         })}
 
         {/* Note */}
-        <ReportFooter />
       </div>
     );
   },

@@ -1,7 +1,7 @@
 import React from 'react';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import dayjs from 'dayjs';
 import { formatDateUsdToBd } from '../../../utils/utils-functions/formatDate';
 
@@ -229,15 +229,12 @@ const LoanLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                   </tbody>
                 </table>
               </div>
-              <div style={{ fontSize: fs }} className="mt-2 text-right text-xs">
-                Page {pIdx + 1} of {pages.length}
-              </div>
+              <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
 
               {pIdx !== pages.length - 1 && <div className="page-break" />}
             </div>
           );
         })}
-        <ReportFooter />
       </div>
     );
   },

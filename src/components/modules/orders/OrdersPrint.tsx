@@ -1,6 +1,6 @@
 import React from 'react';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 
@@ -299,12 +299,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                 </table>
               ) : null}
 
-              <div style={{ fontSize: fs }} className="mt-auto flex items-end justify-between gap-4 border-t border-gray-400 pt-1 text-xs text-gray-600">
-                <span className="text-left"><ReportFooter inline /></span>
-                <span className="whitespace-nowrap text-right">
-                  Page {pageIndex + 1} of {pages.length}
-                </span>
-              </div>
+              <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} className="text-xs" />
 
               {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
             </div>

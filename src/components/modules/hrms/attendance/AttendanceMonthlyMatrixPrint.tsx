@@ -1,7 +1,7 @@
 import React from 'react';
 
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type AttendanceMonthlyMatrixPrintProps = {
@@ -405,15 +405,12 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
           )}
         </div>
 
-        <div className="mt-auto text-right text-xs">
-          Page {pIdx + 1} of {pageCount}
-        </div>
+        <PrintFooter page={pIdx + 1} total={pageCount} />
 
         {!isLastPage && <div className="page-break" />}
       </div>
       );
       })}
-      <ReportFooter />
     </div>
     );
   },

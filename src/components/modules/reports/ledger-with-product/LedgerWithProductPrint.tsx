@@ -1,7 +1,7 @@
 import React from 'react';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
@@ -322,10 +322,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               of the page. mt-auto holds it at the bottom of the flex column, so
               it keeps the same spot on every page and the rows stop above it.
             */}
-            <div className="mt-auto flex shrink-0 items-end justify-between gap-4 border-t border-gray-400 pt-1 text-xs text-gray-600">
-              <ReportFooter inline />
-              <span className="whitespace-nowrap">Page {pageIndex + 1} of {pages.length}</span>
-            </div>
+            <PrintFooter page={pageIndex + 1} total={pages.length} className="text-xs" />
           </div>
         ))}
       </div>

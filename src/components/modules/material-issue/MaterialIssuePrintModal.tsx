@@ -5,7 +5,7 @@ import { FiPrinter, FiX } from 'react-icons/fi';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { chartDate } from '../../utils/utils-functions/formatDate';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
-import ReportFooter from '../../utils/utils-functions/ReportFooter';
+import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import { getMaterialIssueDetails } from './materialIssueSlice';
 
 type Props = {
@@ -184,7 +184,7 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
               </div>
 
               {/* Software-developed-by footer (pinned to page bottom in print) */}
-              <ReportFooter />
+              <PrintFooter fixed />
             </div>
           )}
         </div>

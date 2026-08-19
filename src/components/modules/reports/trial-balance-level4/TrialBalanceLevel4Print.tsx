@@ -1,6 +1,6 @@
 import React from "react";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
-import ReportFooter from "../../../utils/utils-functions/ReportFooter";
+import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 type TrialBalancePrintRow = {
@@ -287,15 +287,12 @@ const TrialBalanceLevel4Print = React.forwardRef<
               </table>
             </div>
 
-            <div style={{ fontSize: fs }} className="mt-2 text-right text-xs">
-              Page {pageIndex + 1} of {safePages.length}
-            </div>
+            <PrintFooter page={pageIndex + 1} total={safePages.length} fontSize={fs} />
 
             {!isLastPage && <div className="page-break" />}
           </div>
         );
       })}
-      <ReportFooter />
     </div>
   );
 });
