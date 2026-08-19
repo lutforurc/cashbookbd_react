@@ -41,7 +41,7 @@ const CustomerLayout: React.FC = () => {
   }
 
   return (
-    <div className="dark:bg-boxdark-2 dark:text-bodydark">
+    <div className="dark:bg-boxdark-2 dark:text-[rgb(var(--c-text-muted))]">
       {/* Page Wrapper */}
       <div className="flex h-screen overflow-hidden">
         {/* Uncomment to enable Sidebar and Header later */}

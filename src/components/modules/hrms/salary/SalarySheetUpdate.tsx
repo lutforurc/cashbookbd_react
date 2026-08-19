@@ -918,7 +918,7 @@ const SalarySheetUpdate = (user: any) => {
 
       <div className="mb-3 flex items-center justify-between">
         <div>
-          {/* <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
+          {/* <h1 className="text-xl font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
             Salary Sheet Update
           </h1> */}
           <p className="text-xl text-slate-600 dark:text-slate-100 font-semibold">

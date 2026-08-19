@@ -193,7 +193,7 @@ const Profile = () => {
           </div>
 
           <div className="mt-4">
-            <h3 className="mb-1.5 text-2xl font-semibold text-black dark:text-white">
+            <h3 className="mb-1.5 text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               {me?.name || 'User Name'}
             </h3>
 

@@ -329,7 +329,7 @@ const AccountOpeningBalance = () => {
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stroke px-4 py-4 dark:border-strokedark">
           <div>
-            <h2 className="text-lg font-semibold text-black dark:text-white">
+            <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Account Opening Balance
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -404,14 +404,14 @@ const AccountOpeningBalance = () => {
         message={
           <div className="text-base leading-7 text-slate-700 dark:text-slate-200">
             <div>Delete the opening balance of</div>
-            <div className="font-bold text-slate-900 dark:text-white">{deleteRow?.name}</div>
+            <div className="font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">{deleteRow?.name}</div>
             <div className="mt-2 text-sm">
               Amount{' '}
-              <span className="font-semibold text-slate-900 dark:text-white">
+              <span className="font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {money(Number(deleteRow?.openingbalance || 0))}
               </span>
               {' · '}Voucher{' '}
-              <span className="font-mono font-semibold text-slate-900 dark:text-white">
+              <span className="font-mono font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {deleteRow?.opening_vr_no}
               </span>
             </div>

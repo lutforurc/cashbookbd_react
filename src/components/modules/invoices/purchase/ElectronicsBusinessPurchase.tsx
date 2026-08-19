@@ -622,7 +622,7 @@ const ElectronicsBusinessPurchase = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <label className="text-black dark:text-white" htmlFor="">
+                <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="">
                   Select Supplier
                 </label>
                 <div className="min-w-0">
@@ -695,7 +695,7 @@ const ElectronicsBusinessPurchase = () => {
                 onKeyDown={(e) => handleInputKeyDown(e, 'invoice_date')} // Pass the next field's ID
               />
               <div className="w-full">
-                <label className="text-black dark:text-white" htmlFor="">
+                <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="">
                   Invoice Date
                 </label>
                 <InputDatePicker
@@ -744,7 +744,7 @@ const ElectronicsBusinessPurchase = () => {
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')} // Pass the next field's ID
               />
               <div className="flex items-end mb-2">
-                <p className="text-xs font-bold dark:text-white">
+                <p className="text-xs font-bold dark:text-[rgb(var(--c-text))]">
                   Total Tk. {thousandSeparator(totalAmount)}
                 </p>
               </div>
@@ -782,7 +782,7 @@ const ElectronicsBusinessPurchase = () => {
                         label=""
                         className="whitespace-nowrap bg-transparent! text-center mr-0 py-2 -mt-6 absolute -right-2 top-6 background-red-500 pr-2! pl-2!"
                         icon={
-                          <FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />
+                          <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg ml-2  mr-2" />
                         }
                       />
                     </div>
@@ -796,7 +796,7 @@ const ElectronicsBusinessPurchase = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <label className="text-black dark:text-white" htmlFor="">
+                <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="">
                   Select Product
                 </label>
                 <ProductDropdown
@@ -824,7 +824,7 @@ const ElectronicsBusinessPurchase = () => {
                 />
               </div>
               <div>
-                <label className="text-black dark:text-white" htmlFor="">
+                <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="">
                   Select Warehouse
                 </label>
                 {warehouse.isLoading == true ? <Loader /> : ''}
@@ -841,7 +841,7 @@ const ElectronicsBusinessPurchase = () => {
               <div className="block relative">
                 <label
                   htmlFor="serial_no"
-                  className="block text-sm font-medium text-black dark:text-white mb-1"
+                  className="block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] mb-1"
                 >
                   Enter Serial Number
                 </label>
@@ -850,7 +850,7 @@ const ElectronicsBusinessPurchase = () => {
  name="serial_no"
  placeholder="Enter Serial Number"
  className={`w-full px-3 py-1 text-gray-600 bg-white border  
- outline-none dark:bg-transparent dark:border-gray-600 dark:text-white 
+ outline-none dark:bg-transparent dark:border-gray-600 dark:text-[rgb(var(--c-text))] 
  dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 
  dark:focus:ring-blue-400 dark:focus:border-blue-400`}
  value={productData.serial_no}
@@ -993,32 +993,32 @@ const ElectronicsBusinessPurchase = () => {
                   className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                 >
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center `}
                   >
                     {++index}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] `}
                   >
                     {row.product_name}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
                   >
                     {thousandSeparator(Number(row.qty))} {row.unit}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
                   >
                     {thousandSeparator(Number(row.price))}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
                   >
                     {thousandSeparator(Number(row.price) * Number(row.qty))}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20 `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20 `}
                   >
                     <Button
                       onClick={() => handleDelete(row.id)}

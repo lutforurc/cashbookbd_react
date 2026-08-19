@@ -149,10 +149,10 @@ const ChartOfAccountsL3: React.FC<DropdownProps> = ({
         getOptionLabel={(option) => option.label}
         formatOptionLabel={(option) => (
           <div>
-            <div className="text-sm text-gray-900 dark:text-white focus:border-blue-500">
+            <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))] focus:border-blue-500">
               {option.label}
               {option?.label_3 && Number(option.label_3) > 0 && (
-                <span className="text-gray-600 dark:text-white text-sm">
+                <span className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                   {' '}({option.label_3})
                 </span>
               )}
@@ -161,7 +161,7 @@ const ChartOfAccountsL3: React.FC<DropdownProps> = ({
               <div className="additional-info">
                 
                 {option.label_2 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
+                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                     {option.label_2}
                   </div>
                 )}

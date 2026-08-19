@@ -112,13 +112,13 @@ const InventorySystem = () => {
   };
 
   return (
-    <div className="text-slate-900 dark:text-white">
+    <div className="text-slate-900 dark:text-[rgb(var(--c-text))]">
       <HelmetTitle title="Inventory Systems" />
 
       {/* Form */}
       <div className="mb-6 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark sm:p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-black dark:text-white">
+          <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             {isEditing ? 'Edit Inventory System' : 'Add Inventory System'}
           </h2>
           {isEditing && (
@@ -192,7 +192,7 @@ const InventorySystem = () => {
               }
               rows={2}
               placeholder="Optional note about this inventory system"
-              className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-blue-500 dark:border-form-strokedark dark:bg-transparent dark:text-white"
+              className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-[rgb(var(--c-text))] outline-none focus:border-blue-500 dark:border-form-strokedark dark:bg-transparent dark:text-[rgb(var(--c-text))]"
             />
           </div>
         </div>
@@ -211,7 +211,7 @@ const InventorySystem = () => {
       {/* List */}
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="flex items-center justify-between border-b border-stroke px-4 py-3 dark:border-strokedark">
-          <h2 className="text-lg font-bold text-black dark:text-white">
+          <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             Inventory Systems
           </h2>
           <Button
@@ -247,7 +247,7 @@ const InventorySystem = () => {
                 rows.map((row, index) => (
                   <tr key={row.id} className="text-slate-700 dark:text-slate-200">
                     <td className="px-4 py-3 text-center tabular-nums">{index + 1}</td>
-                    <td className="px-4 py-3 font-semibold text-black dark:text-white">
+                    <td className="px-4 py-3 font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                       {row.name}
                     </td>
                     <td className="px-4 py-3">

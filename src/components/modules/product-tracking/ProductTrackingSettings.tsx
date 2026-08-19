@@ -171,7 +171,7 @@ const ProductTrackingSettings = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* ------------------ Add / Edit ------------------ */}
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
-          <h3 className="mb-3 text-lg font-semibold text-black dark:text-white">
+          <h3 className="mb-3 text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             {editingId ? 'Edit Setting' : 'Add New Product'}
           </h3>
 
@@ -191,7 +191,7 @@ const ProductTrackingSettings = () => {
             />
 
             <div>
-              <label className="dark:text-white text-left text-sm text-gray-900" htmlFor="coa4_id">
+              <label className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900" htmlFor="coa4_id">
                 Customer / Supplier
               </label>
               {/* This one is a react-select, and its own styles paint the box a
@@ -217,7 +217,7 @@ const ProductTrackingSettings = () => {
             </div>
 
             <div>
-              <label className="dark:text-white text-left text-sm text-gray-900" htmlFor="branch_id">
+              <label className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900" htmlFor="branch_id">
                 Branch
               </label>
               <BranchDropdown
@@ -280,14 +280,14 @@ const ProductTrackingSettings = () => {
         {/* ------------------ List ------------------ */}
         <div className="lg:col-span-2 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h3 className="text-lg font-semibold text-black dark:text-white">
+            <h3 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Tracked Products ({settings.length})
             </h3>
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search product"
-              className="w-56 rounded-xs border border-gray-300 p-1 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+              className="w-56 rounded-xs border border-gray-300 p-1 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
             />
           </div>
 
@@ -334,7 +334,7 @@ const ProductTrackingSettings = () => {
                           row.party_name ?? row.coa4_id
                         )}
                       </td>
-                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
+                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                         {row.product_name}
                       </td>
                       <td className="px-2 py-2 text-center">{flag(row.track_sales_bill)}</td>

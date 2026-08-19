@@ -699,19 +699,19 @@ const Product = (user: any) => {
               <span className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 text-red-500">
                 <FiTrash2 />
               </span>
-              <h3 className="text-base font-semibold text-black dark:text-white">Delete Opening Stock</h3>
+              <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Delete Opening Stock</h3>
             </div>
 
-            <div className="px-5 py-4 text-sm text-slate-600 dark:text-bodydark">
+            <div className="px-5 py-4 text-sm text-slate-600 dark:text-[rgb(var(--c-text-muted))]">
               Delete the opening stock of
-              <span className="font-semibold text-black dark:text-white"> {openingDeleteRow.name}</span>?
+              <span className="font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"> {openingDeleteRow.name}</span>?
               <div className="mt-2">
                 Quantity{' '}
-                <span className="font-semibold text-black dark:text-white">
+                <span className="font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   {openingDeleteRow.qty ?? openingDeleteRow.openingbalance ?? 0}
                 </span>
                 {' Â· '}Voucher{' '}
-                <span className="font-mono font-semibold text-black dark:text-white">
+                <span className="font-mono font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   {openingDeleteRow.opening_vr_no}
                 </span>
               </div>
@@ -725,7 +725,7 @@ const Product = (user: any) => {
               <Button
                 type="button"
                 onClick={() => setOpeningDeleteRow(null)}
-                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>
@@ -750,12 +750,12 @@ const Product = (user: any) => {
               <span className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 text-red-500">
                 <FiTrash2 />
               </span>
-              <h3 className="text-base font-semibold text-black dark:text-white">Delete Product</h3>
+              <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Delete Product</h3>
             </div>
 
-            <div className="px-5 py-4 text-sm text-slate-600 dark:text-bodydark">
+            <div className="px-5 py-4 text-sm text-slate-600 dark:text-[rgb(var(--c-text-muted))]">
               Are you sure you want to delete
-              <span className="font-semibold text-black dark:text-white"> {deleteRow.name}</span>?
+              <span className="font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"> {deleteRow.name}</span>?
               <p className="mt-1 text-xs text-slate-400">
                 This cannot be undone. A product already used in a transaction
                 will not be deleted.
@@ -766,7 +766,7 @@ const Product = (user: any) => {
               <Button
                 type="button"
                 onClick={() => setDeleteRow(null)}
-                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>

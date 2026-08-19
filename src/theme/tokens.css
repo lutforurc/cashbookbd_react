@@ -59,6 +59,21 @@
      move one variable, not know which of the two the mode is using. */
   --c-page: var(--c-whiten);
 
+  /* What words are written in.
+     
+     Its own variable because the token it used to borrow does double
+     duty: --c-white is the dark-mode text colour AND the light-mode
+     card background, so moving it to recolour text repainted 51 white
+     boxes as well. Text asks for this now -- `text-[rgb(var(--c-text))]` and
+     `dark:text-[rgb(var(--c-text))]` were swept onto it, and body takes it too -- and
+     nothing else does. */
+  --c-text: var(--c-black);
+
+  /* The quieter half of the writing: help text, captions, the line under
+     a field explaining it. Separate from --c-text because someone
+     darkening their headings rarely wants the captions to follow. */
+  --c-text-muted: var(--c-body);
+
   /* What a printed report's table headings are inked in. Black on paper unless
      a user says otherwise. */
   --c-print-accent: var(--c-black-2);
@@ -423,10 +438,12 @@ html.dark {
   --c-sidebar: var(--c-boxdark);
   --c-header: var(--c-sidebar);
   --c-page: var(--c-boxdark-2);
+  --c-text: var(--c-white);
+  --c-text-muted: var(--c-bodydark);
 
   /* Pure white text on a dark page bleeds at the edges -- the effect people
      describe as "my eyes hurt after a few hours". Softening it here reaches all
-     1,229 `dark:text-white` uses without touching one of them. Contrast drops
+     1,229 `dark:text-[rgb(var(--c-text))]` uses without touching one of them. Contrast drops
      from roughly 15:1 to 11:1, still far above what is required. */
   --c-white: 230 234 240;             /* #E6EAF0 */
 

@@ -321,7 +321,7 @@ const FestivalBonus = ({ user }: any) => {
                 <Button
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
-                  className="text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-bodydark dark:hover:text-white"
+                  className="text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-[rgb(var(--c-text-muted))] dark:hover:text-white"
                 >
                   Use the filter
                 </Button>
@@ -333,7 +333,7 @@ const FestivalBonus = ({ user }: any) => {
                   className="absolute left-0 top-full z-30 mt-2 w-[min(320px,calc(100vw-2rem))] rounded-md border border-stroke bg-white p-4 shadow-2xl dark:border-form-strokedark dark:bg-boxdark"
                 >
                   <div className="mb-3 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-800 dark:text-white">Filter Menu</span>
+                    <span className="text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">Filter Menu</span>
                     <Button
                       type="button"
                       onClick={() => setFilterOpen(false)}

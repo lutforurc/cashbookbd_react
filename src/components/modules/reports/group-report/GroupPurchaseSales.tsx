@@ -121,7 +121,7 @@ const GroupReportTable = ({ section, months }: { section: ReportSection; months:
 
   return (
     <div className="mb-6">
-      <h3 className="mb-2 text-base font-semibold text-gray-900 dark:text-white">{section.title}</h3>
+      <h3 className="mb-2 text-base font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">{section.title}</h3>
       <div className="overflow-x-auto">
         <table className="min-w-full table-fixed text-left text-sm text-gray-700 dark:text-gray-300">
           <thead>

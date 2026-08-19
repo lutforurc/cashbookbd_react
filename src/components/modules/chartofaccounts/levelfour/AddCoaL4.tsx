@@ -23,7 +23,7 @@ type SelectOption = {
   label: string;
 };
 
-const fieldLabelClass = 'mb-2 text-[12px] font-semibold text-black dark:text-white';
+const fieldLabelClass = 'mb-2 text-[12px] font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]';
 const DEFAULT_REPORTING_TO_ID = '3';
 
 const AddCoaL4 = () => {

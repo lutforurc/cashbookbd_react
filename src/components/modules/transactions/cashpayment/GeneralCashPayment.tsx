@@ -589,29 +589,29 @@ const GeneralCashPayment = () => {
                   className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                 >
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 dark:text-white `}
+                    className={`px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))] `}
                   >
                     {row.accountName}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 dark:text-white `}
+                    className={`px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))] `}
                   >
                     {row.remarks}
                   </td>
                   {trackedProducts.length > 0 ? (
                     <td
-                      className={`px-2 py-2 font-medium text-gray-900 dark:text-white `}
+                      className={`px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))] `}
                     >
                       {trackedProducts.find((p) => p.id === row.trackedProductId)?.name ?? ''}
                     </td>
                   ) : null}
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
                   >
                     {thousandSeparator(Number(row.amount))}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20 `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20 `}
                   >
                     <Button
                       onClick={() => handleDelete(row.id)}
@@ -631,18 +631,18 @@ const GeneralCashPayment = () => {
               ))}
               <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                 <td
-                  className={`px-2 py-2 font-bold text-gray-900 whitespace-nowrap dark:text-white `}
+                  className={`px-2 py-2 font-bold text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] `}
                   colSpan={2}
                 >
                   Payment Total
                 </td>
                 <td
-                  className={`px-2 py-2 font-bold whitespace-nowrap dark:text-white text-right  text-gray-900`}
+                  className={`px-2 py-2 font-bold whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right  text-gray-900`}
                 >
                   {thousandSeparator(Number(totalAmount))}{' '}
                 </td>
                 <td
-                  className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center `}
+                  className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center `}
                 ></td>
               </tr>
             </tbody>

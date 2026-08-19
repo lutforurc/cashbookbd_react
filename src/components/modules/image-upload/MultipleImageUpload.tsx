@@ -346,7 +346,7 @@ export default function VoucherUpload(user: any): JSX.Element {
                 multiple
                 accept={`image/*,.pdf,${EXCEL_FILE_ACCEPT}`}
                 onChange={(e) => handleFileChange(voucherId, e.target.files)}
-                className={`block w-full text-sm text-slate-600 dark:text-white ${FIELD_FILE_BUTTON}`}
+                className={`block w-full text-sm text-slate-600 dark:text-[rgb(var(--c-text))] ${FIELD_FILE_BUTTON}`}
               />
             </div>
 

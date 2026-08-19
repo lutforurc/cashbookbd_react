@@ -28,17 +28,25 @@ const PER_MODE_VARS: Array<[string, string]> = [
   // `info` has no token of its own -- the app has always said "a notice" with
   // meta-5 -- so that is what it moves.
   ['info_color', '--c-meta-5'],
+  // What words are written in. It has a variable of its own -- see --c-text in
+  // tokens.css -- because the token text used to borrow also painted card
+  // backgrounds, so recolouring text repainted boxes with it.
+  ['text_color', '--c-text'],
+  // The quieter half: help text, captions, the line under a field. Separate
+  // because darkening the headings rarely means darkening those too.
+  ['text_secondary_color', '--c-text-muted'],
   ['sidebar_color', '--c-sidebar'],
   ['header_color', '--c-header'],
   ['page_bg_color', '--c-page'],
 ];
 
 /**
- * Stored, not yet worn: nothing central draws a card, a table head or body
- * text, so choosing one of these would change nothing. They are listed here so
- * the next person can see they were meant, not forgotten.
+ * Stored, not yet worn: nothing central draws a card or a table head, so
+ * choosing one of these would change nothing. They are listed here so the next
+ * person can see they were meant, not forgotten. Text used to be among them
+ * until `text-black` and `dark:text-white` were swept onto --c-text.
  */
-const NOT_WIRED_YET = ['card_color', 'table_header_color', 'text_color'];
+const NOT_WIRED_YET = ['card_color', 'table_header_color'];
 
 export type UserTheme = Record<string, string | number | null | undefined>;
 

@@ -386,7 +386,7 @@ const DateWiseInOut = ({ user }: any) => {
       <div className="px-0 py-3">
         <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(220px,1fr)_minmax(260px,1.5fr)_minmax(150px,0.6fr)_minmax(150px,0.6fr)_auto]">
           <div>
-            <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-white">
+            <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               Select Branch <span className="text-red-600">*</span>
             </label>
             {branchDdlData?.isLoading ? <Loader /> : null}
@@ -406,7 +406,7 @@ const DateWiseInOut = ({ user }: any) => {
 
           <div>
             <div className="mb-1 flex items-center gap-2">
-              <label className="block text-sm font-semibold text-slate-800 dark:text-white">Select Item / Product</label>
+              <label className="block text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">Select Item / Product</label>
               <Button
                 type="button"
                 onClick={() => selectedProduct(null)}

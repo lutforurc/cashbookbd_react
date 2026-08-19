@@ -490,7 +490,7 @@ const ProjectLabour = () => {
           />
 
           <div className="text-left flex flex-col">
-            <label htmlFor="invoice_date" className="text-black dark:text-white">
+            <label htmlFor="invoice_date" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Bill Date
             </label>
             <InputDatePicker
@@ -528,8 +528,8 @@ const ProjectLabour = () => {
           />
 
           <div className="flex flex-col justify-end">
-            <span className="text-black dark:text-white">Total Tk.</span>
-            <span className="py-1 text-lg font-semibold text-black dark:text-white">
+            <span className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Total Tk.</span>
+            <span className="py-1 text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               {thousandSeparator(total)}
             </span>
           </div>
@@ -538,8 +538,8 @@ const ProjectLabour = () => {
               the two figures read side by side and the row keeps the height of
               the fields next to it. */}
           <div className="flex flex-col justify-end">
-            <span className="text-black dark:text-white">Due Tk.</span>
-            <span className="py-1 text-lg font-semibold text-black dark:text-white">
+            <span className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Due Tk.</span>
+            <span className="py-1 text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               {thousandSeparator(due)}
             </span>
           </div>
@@ -751,21 +751,21 @@ const ProjectLabour = () => {
                     : 'bg-white dark:bg-gray-800')
                 }
               >
-                <td className="px-2 py-2 text-gray-900 dark:text-white">{index + 1}</td>
-                <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{index + 1}</td>
+                <td className="px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {row.productName}
                 </td>
-                <td className="px-2 py-2 text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {row.projectName || '—'}
                   <span className="block text-xs text-gray-500 dark:text-gray-400">
                     {row.buildingName || 'Whole project'}
                   </span>
                 </td>
-                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {row.qty} {row.unit}
                 </td>
-                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">{row.price}</td>
-                <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">{row.price}</td>
+                <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(Number(row.qty || 0) * Number(row.price || 0))}
                 </td>
                 <td className="px-2 py-2">
@@ -794,7 +794,7 @@ const ProjectLabour = () => {
             ))}
           </tbody>
           <tfoot>
-            <tr className="bg-gray-200 font-semibold text-gray-900 dark:bg-gray-700 dark:text-white">
+            <tr className="bg-gray-200 font-semibold text-gray-900 dark:bg-gray-700 dark:text-[rgb(var(--c-text))]">
               <td className="px-2 py-2" colSpan={5}>
                 Invoice Total
               </td>

@@ -511,7 +511,7 @@ const BalanceSheet = (user: any) => {
 
         {!balanceSheetState?.loading && !hasReportData && (
           <div className="rounded-sm border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-default dark:border-slate-700 dark:bg-boxdark">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-white">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               No balance sheet loaded yet
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
@@ -611,7 +611,7 @@ const BalanceSheet = (user: any) => {
             <div className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h4 className="text-base font-semibold text-slate-900 dark:text-white">
+                  <h4 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                     Final Position
                   </h4>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -622,7 +622,7 @@ const BalanceSheet = (user: any) => {
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     Liabilities + Equity
                   </p>
-                  <p className="text-xl font-bold text-slate-900 dark:text-white">
+                  <p className="text-xl font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
                     {formatAmount(totals.liabilitiesAndEquity)}
                   </p>
                 </div>
@@ -837,13 +837,13 @@ const SummaryCard = ({
 }) => {
   const toneMap: Record<string, string> = {
     emerald:
-      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-white",
+      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]",
     blue:
-      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-white",
+      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]",
     amber:
       "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100",
     slate:
-      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-white",
+      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]",
   };
 
   return (
@@ -929,13 +929,13 @@ const SectionCard = ({
                     </span>
                   </div>
                 </td>
-                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
+                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(row.opening)}
                 </td>
-                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
+                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(row.movement)}
                 </td>
-                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
+                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(row.closing)}
                 </td>
               </tr>
@@ -943,16 +943,16 @@ const SectionCard = ({
           </tbody>
           <tfoot>
             <tr className="border-t-2 border-slate-300 dark:border-slate-600">
-              <td className="px-5 py-4 font-bold text-slate-900 dark:text-white">
+              <td className="px-5 py-4 font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {totalLabel}
               </td>
-              <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
+              <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {thousandSeparator(totalColumns.opening)}
               </td>
-              <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
+              <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {thousandSeparator(totalColumns.movement)}
               </td>
-              <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
+              <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {thousandSeparator(totalColumns.closing || totalValue)}
               </td>
             </tr>
@@ -989,7 +989,7 @@ const GroupDetailsModal = ({
       <div className="my-2 flex max-h-[92vh] w-full flex-col overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-stroke bg-white px-5 py-4 dark:border-strokedark dark:bg-boxdark">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
               {title}: {group.group_name || "Details"}
             </h3>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -1048,7 +1048,7 @@ const GroupDetailsModal = ({
                     <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-200">
                       {formatAmount(toNum(item.movement))}
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-right font-medium text-slate-900 dark:text-[rgb(var(--c-text))]">
                       {formatAmount(toNum(item.closing || item.balance))}
                     </td>
                   </tr>
@@ -1085,7 +1085,7 @@ const ModalStat = ({
     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
       {label}
     </p>
-    <p className="mt-2 text-lg font-bold text-slate-900 dark:text-white">
+    <p className="mt-2 text-lg font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
       {isCount ? value : formatAmount(value)}
     </p>
   </div>

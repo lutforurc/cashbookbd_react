@@ -8,7 +8,7 @@ const LoginLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
 
 
   return (
-    <div className="dark:bg-boxdark-2 dark:text-bodydark">
+    <div className="dark:bg-boxdark-2 dark:text-[rgb(var(--c-text-muted))]">
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       <div className="flex overflow-hidden">
         {/* <!-- ===== Sidebar Start ===== --> */}

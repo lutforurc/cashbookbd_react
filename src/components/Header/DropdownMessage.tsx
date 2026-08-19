@@ -19,7 +19,7 @@ const DropdownMessage = () => {
             setNotifying(false);
             setDropdownOpen(!dropdownOpen);
           }}
-          className="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
+          className="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-[rgb(var(--c-text))]"
           to="#"
         >
           <span
@@ -76,7 +76,7 @@ const DropdownMessage = () => {
                   </div>
 
                   <div>
-                    <h6 className="text-sm font-medium text-black dark:text-white">
+                    <h6 className="text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                       Mariya Desoja
                     </h6>
                     <p className="text-sm">I like your confidence 💪</p>
@@ -94,7 +94,7 @@ const DropdownMessage = () => {
                   </div>
 
                   <div>
-                    <h6 className="text-sm font-medium text-black dark:text-white">
+                    <h6 className="text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                       Robert Jhon
                     </h6>
                     <p className="text-sm">Can you share your offer?</p>
@@ -112,7 +112,7 @@ const DropdownMessage = () => {
                   </div>
 
                   <div>
-                    <h6 className="text-sm font-medium text-black dark:text-white">
+                    <h6 className="text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                       Henry Dholi
                     </h6>
                     <p className="text-sm">I cam across your profile and...</p>
@@ -130,7 +130,7 @@ const DropdownMessage = () => {
                   </div>
 
                   <div>
-                    <h6 className="text-sm font-medium text-black dark:text-white">
+                    <h6 className="text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                       Cody Fisher
                     </h6>
                     <p className="text-sm">I’m waiting for you response!</p>
@@ -148,7 +148,7 @@ const DropdownMessage = () => {
                   </div>
 
                   <div>
-                    <h6 className="text-sm font-medium text-black dark:text-white">
+                    <h6 className="text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                       Mariya Desoja
                     </h6>
                     <p className="text-sm">I like your confidence 💪</p>

@@ -244,7 +244,7 @@ const ProductTrackingSummary = () => {
           className="rounded-sm border border-stroke bg-white p-4 dark:border-strokedark dark:bg-boxdark"
         >
           <div className="mb-3 text-center">
-            <h2 className="text-lg font-bold text-black dark:text-white">
+            <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Product-wise Receivable &amp; Payable
             </h2>
             <p className="text-sm">
@@ -301,7 +301,7 @@ const ProductTrackingSummary = () => {
                     key={row.product_id}
                     className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
                   >
-                    <td className="whitespace-nowrap px-2 py-1 font-medium text-gray-900 dark:text-white">
+                    <td className="whitespace-nowrap px-2 py-1 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       <Link to={statementLink(row.product_id)} className="hover:underline">
                         {row.product_name}
                       </Link>
@@ -310,14 +310,14 @@ const ProductTrackingSummary = () => {
                     <td className="px-2 py-1 text-right tabular-nums">{money(row.sales_bill)}</td>
                     <td className="px-2 py-1 text-right tabular-nums">{money(row.sales_return)}</td>
                     <td className="px-2 py-1 text-right tabular-nums">{money(row.cash_received)}</td>
-                    <td className="px-2 py-1 text-right font-semibold tabular-nums text-gray-900 dark:text-white">
+                    <td className="px-2 py-1 text-right font-semibold tabular-nums text-gray-900 dark:text-[rgb(var(--c-text))]">
                       {money(row.closing_receivable)}
                     </td>
                     <td className="border-l px-2 py-1 text-right tabular-nums">{money(row.opening_payable)}</td>
                     <td className="px-2 py-1 text-right tabular-nums">{money(row.purchase_bill)}</td>
                     <td className="px-2 py-1 text-right tabular-nums">{money(row.purchase_return)}</td>
                     <td className="px-2 py-1 text-right tabular-nums">{money(row.cash_payment)}</td>
-                    <td className="px-2 py-1 text-right font-semibold tabular-nums text-gray-900 dark:text-white">
+                    <td className="px-2 py-1 text-right font-semibold tabular-nums text-gray-900 dark:text-[rgb(var(--c-text))]">
                       {money(row.closing_payable)}
                     </td>
                   </tr>
@@ -326,7 +326,7 @@ const ProductTrackingSummary = () => {
 
               {data.totals ? (
                 <tfoot>
-                  <tr className="bg-gray-200 font-semibold text-gray-900 dark:bg-gray-700 dark:text-white">
+                  <tr className="bg-gray-200 font-semibold text-gray-900 dark:bg-gray-700 dark:text-[rgb(var(--c-text))]">
                     <td className="px-2 py-2">Total</td>
                     <td className="border-l px-2 py-2 text-right tabular-nums">{money(data.totals.opening_receivable)}</td>
                     <td className="px-2 py-2 text-right tabular-nums">{money(data.totals.sales_bill)}</td>

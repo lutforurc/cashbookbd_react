@@ -268,7 +268,7 @@ const Brands = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark">
             <div className="flex items-center justify-between border-b border-stroke px-5 py-3 dark:border-strokedark">
-              <h3 className="text-base font-semibold text-black dark:text-white">Edit Brand</h3>
+              <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Edit Brand</h3>
               <Button
                 type="button"
                 onClick={closeEdit}
@@ -290,7 +290,7 @@ const Brands = () => {
               <Button
                 type="button"
                 onClick={closeEdit}
-                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>
@@ -315,12 +315,12 @@ const Brands = () => {
               <span className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 text-red-500">
                 <FiTrash2 />
               </span>
-              <h3 className="text-base font-semibold text-black dark:text-white">Delete Brand</h3>
+              <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Delete Brand</h3>
             </div>
 
-            <div className="px-5 py-4 text-sm text-slate-600 dark:text-bodydark">
+            <div className="px-5 py-4 text-sm text-slate-600 dark:text-[rgb(var(--c-text-muted))]">
               Are you sure you want to delete
-              <span className="font-semibold text-black dark:text-white"> {deleteRow.name}</span>?
+              <span className="font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"> {deleteRow.name}</span>?
               <p className="mt-1 text-xs text-slate-400">
                 If any product exists under this brand, it cannot be deleted.
               </p>
@@ -330,7 +330,7 @@ const Brands = () => {
               <Button
                 type="button"
                 onClick={() => setDeleteRow(null)}
-                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>

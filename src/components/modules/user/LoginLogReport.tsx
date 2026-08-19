@@ -188,7 +188,7 @@ const LoginLogReport: React.FC = () => {
 
       <div className="rounded border border-stroke bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
         <div className="mb-3">
-          <h2 className="text-lg font-semibold text-black dark:text-white">Login History</h2>
+          <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Login History</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             When each user signed in, from which address and on what device.
           </p>

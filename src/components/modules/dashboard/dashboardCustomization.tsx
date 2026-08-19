@@ -265,7 +265,7 @@ const DashboardCustomizeButton = ({
       {open ? (
         <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-sm border border-slate-200 bg-white shadow-5 dark:border-slate-700 dark:bg-gray-800">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
-            <span className="text-sm font-bold text-slate-800 dark:text-white">
+            <span className="text-sm font-bold text-slate-800 dark:text-[rgb(var(--c-text))]">
               Dashboard Widgets
             </span>
             <Button

@@ -140,7 +140,7 @@ const SubscriptionAdmin: React.FC = () => {
       <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-black dark:text-white">Subscription Admin</h1>
+            <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Subscription Admin</h1>
             <p className="mt-2 text-sm text-bodydark2">
               Review subscriptions, pending manual payments, and activation status.
             </p>
@@ -165,7 +165,7 @@ const SubscriptionAdmin: React.FC = () => {
       </div>
 
       <section className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-        <h2 className="text-lg font-semibold text-black dark:text-white">Assign Subscription</h2>
+        <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Assign Subscription</h2>
         <p className="mt-2 text-sm text-bodydark2">
           Payment ছাড়া direct plan assign বা renew করতে এখানে company এবং plan select করুন।
         </p>
@@ -213,7 +213,7 @@ const SubscriptionAdmin: React.FC = () => {
             />
 
             <div>
-              <label className="mb-1 block text-sm text-gray-900 dark:text-white">Start Date</label>
+              <label className="mb-1 block text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">Start Date</label>
               <InputDatePicker
  id="start_date"
  name="start_date"
@@ -237,7 +237,7 @@ const SubscriptionAdmin: React.FC = () => {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm text-gray-900 dark:text-white">End Date</label>
+              <label className="mb-1 block text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">End Date</label>
               <InputDatePicker
  id="end_date"
  name="end_date"
@@ -261,7 +261,7 @@ const SubscriptionAdmin: React.FC = () => {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm text-gray-900 dark:text-white">Trial End</label>
+              <label className="mb-1 block text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">Trial End</label>
               <InputDatePicker
  id="trial_end_at"
  name="trial_end_at"
@@ -313,7 +313,7 @@ const SubscriptionAdmin: React.FC = () => {
       <div className="grid gap-6 xl:grid-cols-2">
         <section className="overflow-hidden rounded-2xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
           <div className="border-b border-stroke px-6 py-4 dark:border-strokedark">
-            <h2 className="text-lg font-semibold text-black dark:text-white">Subscriptions</h2>
+            <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Subscriptions</h2>
           </div>
 
           <div className="overflow-x-auto">
@@ -331,7 +331,7 @@ const SubscriptionAdmin: React.FC = () => {
                 {adminTenants.map((tenant: any) => (
                   <tr
                     key={tenant.id}
-                    className="border-t border-gray-200 text-sm text-gray-800 dark:border-gray-700 dark:text-white"
+                    className="border-t border-gray-200 text-sm text-gray-800 dark:border-gray-700 dark:text-[rgb(var(--c-text))]"
                   >
                     <td className="px-4 py-3">{tenant.company_name || '-'}</td>
                     <td className="px-4 py-3">{tenant.plan_name || '-'}</td>
@@ -355,7 +355,7 @@ const SubscriptionAdmin: React.FC = () => {
 
         <section className="overflow-hidden rounded-2xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
           <div className="border-b border-stroke px-6 py-4 dark:border-strokedark">
-            <h2 className="text-lg font-semibold text-black dark:text-white">Payment Requests</h2>
+            <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Payment Requests</h2>
           </div>
 
           <div className="space-y-3 p-6">
@@ -366,7 +366,7 @@ const SubscriptionAdmin: React.FC = () => {
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-gray-800 dark:text-white">
+                    <p className="font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
                       {payment.company_name || 'Unknown Company'}
                     </p>
                     <p className="text-sm text-gray-500">
@@ -430,7 +430,7 @@ const SubscriptionAdmin: React.FC = () => {
 const StatCard = ({ label, value }: { label: string; value: number }) => (
   <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
     <p className="text-sm text-bodydark2">{label}</p>
-    <p className="mt-2 text-2xl font-bold text-black dark:text-white">{value}</p>
+    <p className="mt-2 text-2xl font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">{value}</p>
   </div>
 );
 

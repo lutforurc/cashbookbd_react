@@ -26,7 +26,7 @@ const DISC = 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bor
 type StepState = 'active' | 'completed' | 'todo';
 
 const CARD: Record<StepState, string> = {
-  active: 'border-blue-600 bg-blue-50 text-gray-900 dark:bg-blue-500/10 dark:text-white',
+  active: 'border-blue-600 bg-blue-50 text-gray-900 dark:bg-blue-500/10 dark:text-[rgb(var(--c-text))]',
   completed: 'border-green-500 text-green-700 dark:text-green-400',
   todo:
     'border-gray-300 text-gray-600 hover:border-gray-400 ' +

@@ -17,7 +17,7 @@ import {
   uploadInAppMessageImage,
 } from './inAppMessageService';
 import { InAppMessage } from './types';
-import { FIELD_BASE, FIELD_CHECKBOX } from '../../../theme/fieldStyles';
+import { FIELD_BASE, FIELD_CHECKBOX, FIELD_COLOR } from '../../../theme/fieldStyles';
 import { Input, Textarea } from '../../utils/fields/FormControls';
 
 /**
@@ -273,7 +273,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 rows={3}
                 value={form.body}
                 onChange={(e) => set('body', e.target.value)}
-                className="w-full rounded-xs border border-gray-300 bg-white p-2 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+                className="w-full rounded-xs border border-gray-300 bg-white p-2 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
                 placeholder="What you want the user to read"
               />
             </div>
@@ -355,7 +355,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 type="color"
                 value={form.bg_color || 'rgb(var(--c-white))'}
                 onChange={(e) => set('bg_color', e.target.value)}
-                className="w-full rounded-xs border border-gray-300 dark:border-gray-600"
+                className={`${FIELD_COLOR} w-full`}
               />
             </div>
             <div>
@@ -364,7 +364,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 type="color"
                 value={form.text_color || 'rgb(var(--c-gray-900))'}
                 onChange={(e) => set('text_color', e.target.value)}
-                className="w-full rounded-xs border border-gray-300 dark:border-gray-600"
+                className={`${FIELD_COLOR} w-full`}
               />
             </div>
             <div>
@@ -373,7 +373,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 type="color"
                 value={form.button_color || 'rgb(var(--c-primary))'}
                 onChange={(e) => set('button_color', e.target.value)}
-                className="w-full rounded-xs border border-gray-300 dark:border-gray-600"
+                className={`${FIELD_COLOR} w-full`}
               />
             </div>
             <div className="flex items-end">

@@ -100,7 +100,7 @@ Button.displayName = 'Button';
 export type IconButtonTone = 'default' | 'primary' | 'warning' | 'danger' | 'success' | 'muted';
 
 const ICON_TONE: Record<IconButtonTone, string> = {
-  default: 'text-body hover:text-black dark:text-bodydark dark:hover:text-white',
+  default: 'text-[rgb(var(--c-text-muted))] hover:text-black dark:text-[rgb(var(--c-text-muted))] dark:hover:text-white',
   primary: 'text-primary hover:opacity-80',
   warning: 'text-warning hover:opacity-80',
   danger: 'text-danger hover:opacity-80',
@@ -172,7 +172,7 @@ export const TabButton: React.FC<TabButtonProps> = ({
     className={`${BUTTON_BASE} px-4 text-sm ${
       active
         ? 'bg-primary text-white'
-        : 'bg-gray-100 text-body hover:bg-gray-200 dark:bg-meta-4 dark:text-bodydark dark:hover:bg-gray-700'
+        : 'bg-gray-100 text-[rgb(var(--c-text-muted))] hover:bg-gray-200 dark:bg-meta-4 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-gray-700'
     } ${className}`}
   >
     {icon ? <span className="mr-2 inline-flex items-center">{icon}</span> : null}

@@ -1222,7 +1222,7 @@ const Orders = () => {
             )}
           </div>
 
-          <div className={`${useFilterMenuEnabled ? 'hidden min-w-[180px] flex-1 text-sm dark:text-white text-slate-900 md:block dark:text-slate-300f' : 'hidden'}`}>
+          <div className={`${useFilterMenuEnabled ? 'hidden min-w-[180px] flex-1 text-sm dark:text-[rgb(var(--c-text))] text-slate-900 md:block dark:text-slate-300f' : 'hidden'}`}>
             {searchFilter || orderType || selectedLedger?.value || selectedProductOption?.value || startDate || endDate
               ? 'Filters applied' : 'Use the filter'}
           </div>
@@ -1394,7 +1394,7 @@ const Orders = () => {
           <div className="w-full max-w-3xl border border-slate-200 bg-slate-50 shadow-2xl ring-1 ring-black/5 dark:border-slate-600 dark:bg-slate-800 dark:ring-white/10">
             <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-600 dark:bg-slate-700">
               <div>
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
                   Linked Orders
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">

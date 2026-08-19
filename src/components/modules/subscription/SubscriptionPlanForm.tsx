@@ -258,7 +258,7 @@ const SubscriptionPlanForm: React.FC = () => {
       <HelmetTitle title={isEdit ? 'Update Subscription Plan' : 'Entry Subscription Plan'} />
 
       <div className="rounded border border-gray-400 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-        <h1 className="text-lg font-semibold text-gray-800 dark:text-white">
+        <h1 className="text-lg font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
           {isEdit ? 'Update Subscription Plan' : 'New Subscription Plan'}
         </h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -410,7 +410,7 @@ const SubscriptionPlanForm: React.FC = () => {
           />
 
           <div className="md:col-span-2 xl:col-span-4">
-            <label className="mb-1 block text-sm text-gray-900 dark:text-white">Description</label>
+            <label className="mb-1 block text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">Description</label>
             <Textarea
               id="description"
               name="description"
@@ -423,12 +423,12 @@ const SubscriptionPlanForm: React.FC = () => {
           </div>
 
           <div className="md:col-span-2 xl:col-span-4">
-            <p className="mb-2 block text-sm text-gray-900 dark:text-white">Included Features</p>
+            <p className="mb-2 block text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">Included Features</p>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
               {FEATURE_DEFINITIONS.map((feature) => (
                 <label
                   key={feature.feature_key}
-                  className="flex items-center justify-between gap-3 rounded border border-gray-300 px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:text-white"
+                  className="flex items-center justify-between gap-3 rounded border border-gray-300 px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:text-[rgb(var(--c-text))]"
                 >
                   <span>{feature.feature_name}</span>
                   <span

@@ -590,7 +590,7 @@ const BranchTransfer = () => {
             moves. Everything below only describes a transfer already scoped. */}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-black dark:text-white">From Branch</label>
+            <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">From Branch</label>
             {/* Fixed once the voucher exists: the issue lives in the sending
                 branch's book and carries that branch's number, so moving it
                 elsewhere is a different voucher, not an edit of this one. */}
@@ -606,7 +606,7 @@ const BranchTransfer = () => {
             />
           </div>
           <div>
-            <label className="text-black dark:text-white">To Branch</label>
+            <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">To Branch</label>
             <BranchDropdown
               id="toBranch"
               name="toBranch"
@@ -698,7 +698,7 @@ const BranchTransfer = () => {
         <div className="md:col-span-2 mt-2 border-t border-gray-200 dark:border-gray-700 pt-3">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
             <div className="md:col-span-4">
-              <label className="text-black dark:text-white">Select Product</label>
+              <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Select Product</label>
               <RequisitionItemsDropdown
  id="transferProduct"
  name="transferProduct"
@@ -834,24 +834,24 @@ const BranchTransfer = () => {
           <tbody>
             {formData.products.map((row, index) => (
               <tr key={row.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <td className="px-2 py-2 text-center text-gray-900 dark:text-white">{index + 1}</td>
-                <td className="px-2 py-2 text-gray-900 dark:text-white">{row.productName}</td>
-                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">{index + 1}</td>
+                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.productName}</td>
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(Number(row.quantity))} {row.unit}
                 </td>
-                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(Number(row.damagedQty || 0))}
                 </td>
-                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(Number(row.shortQty || 0))}
                 </td>
-                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(Number(row.rate))}
                 </td>
-                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(Number(row.quantity) * Number(row.rate))}
                 </td>
-                <td className="px-2 py-2 text-center text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">
                   <Button
                     onClick={() => handleDeleteProduct(row.id)}
                     className="text-red-500 ml-2 text-center"
@@ -902,7 +902,7 @@ const BranchTransfer = () => {
                       key={item?.id ?? item?.coa4_id ?? `${item?.name}-${item?.mobile}`}
                       className="border-b border-gray-100 px-3 py-2 text-sm last:border-b-0 dark:border-gray-700"
                     >
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                         {item?.name || '-'}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">

@@ -767,7 +767,7 @@ export default function UnitSalePage() {
 
       <div className="mb-2 flex justify-between">
         <div>
-          <h1 className="text-md font-semibold text-gray-900 dark:text-white">
+          <h1 className="text-md font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
             {isEdit ? "Edit Unit Sale" : "Unit Sales Pricing Builder"}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -780,7 +780,7 @@ export default function UnitSalePage() {
         </div>
 
         <div className="text-right space-y-1 text-sm">
-          <div className="text-gray-900 dark:text-white">
+          <div className="text-gray-900 dark:text-[rgb(var(--c-text))]">
             <span className="text-gray-700 dark:text-gray-200">Grand Total:</span>{" "}
             <span className="font-semibold text-gray-900 dark:text-gray-100">
               {formatAmount(total)}

@@ -209,7 +209,7 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
       <div className="w-full max-w-2xl rounded-sm bg-white shadow-xl dark:bg-gray-800">
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
           <div>
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
               Add New {entityLabel}
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">

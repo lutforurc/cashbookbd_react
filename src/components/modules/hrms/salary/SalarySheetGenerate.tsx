@@ -1094,13 +1094,13 @@ const SalarySheetGenerate = ({ user }: any) => {
       {/* ===== FOOTER ===== */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
         <div>
-          Total Employees: <span className="font-semibold text-slate-900 dark:text-white">{employees.length}</span>
+          Total Employees: <span className="font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">{employees.length}</span>
         </div>
 
         <div className="flex flex-wrap justify-end gap-x-6 gap-y-1">
           <div>
             Total Salary:{" "}
-            <span className="font-semibold text-slate-900 dark:text-white">{thousandSeparator(grandTotals.total_salary)}</span>
+            <span className="font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">{thousandSeparator(grandTotals.total_salary)}</span>
           </div>
           {includeOvertime && (
             <div>
@@ -1147,7 +1147,7 @@ const SalarySheetGenerate = ({ user }: any) => {
           <>
             Are you sure you want to remove
             <span className="mt-1 block font-bold">{rowToRemove?.name} ?</span>
-            <span className="mt-2 block text-sm text-body dark:text-bodydark">
+            <span className="mt-2 block text-sm text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
               This only takes the employee off this sheet. Nothing is deleted
               until the sheet is generated.
             </span>

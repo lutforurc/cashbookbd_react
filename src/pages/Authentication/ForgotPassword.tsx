@@ -271,8 +271,8 @@ const ForgotPassword: React.FC = () => {
     <div className="fixed inset-0 overflow-y-auto bg-white dark:bg-boxdark">
       <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-8">
         <div className="w-full max-w-md rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-8">
-          <h2 className="text-2xl font-bold text-black dark:text-white">Forgot Password</h2>
-          <p className="mt-2 text-sm text-black/60 dark:text-white/60">
+          <h2 className="text-2xl font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Forgot Password</h2>
+          <p className="mt-2 text-sm text-[rgb(var(--c-text))]/60 dark:text-[rgb(var(--c-text))]/60">
             {step === 'request' && 'Enter your mobile number to receive a password reset OTP.'}
             {step === 'verify' && `OTP sent to ${maskedMobile || mobile}. Enter it to continue.`}
             {step === 'reset' && 'OTP verified. Now set a new password for your account.'}
@@ -280,7 +280,7 @@ const ForgotPassword: React.FC = () => {
 
           {step === 'request' && (
             <form className="mt-6" onSubmit={handleRequestOtp}>
-              <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+              <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Mobile Number
               </label>
               <Input
@@ -288,7 +288,7 @@ const ForgotPassword: React.FC = () => {
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
                 placeholder="017********"
-                className="w-full rounded border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                className="w-full rounded border border-stroke bg-transparent px-4 py-2.5 text-[rgb(var(--c-text))] outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-[rgb(var(--c-text))]"
               />
 
               <ButtonLoading
@@ -304,7 +304,7 @@ const ForgotPassword: React.FC = () => {
 
           {step === 'verify' && (
             <form className="mt-6" onSubmit={handleVerifyOtp}>
-              <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+              <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 OTP Code
               </label>
               <OtpInput
@@ -333,7 +333,7 @@ const ForgotPassword: React.FC = () => {
                   type="button"
                   onClick={() => requestOtp(mobile, true)}
                   disabled={resendingOtp}
-                  className="inline-flex items-center justify-center rounded border border-stroke px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-2 disabled:cursor-not-allowed disabled:opacity-60 dark:border-strokedark dark:text-white dark:hover:bg-form-input"
+                  className="inline-flex items-center justify-center rounded border border-stroke px-4 py-3 text-sm font-medium text-[rgb(var(--c-text))] transition hover:bg-gray-2 disabled:cursor-not-allowed disabled:opacity-60 dark:border-strokedark dark:text-[rgb(var(--c-text))] dark:hover:bg-form-input"
                 >
                   <FiRefreshCcw className="mr-2" />
                   {resendingOtp ? 'Resending...' : 'Resend OTP'}
@@ -342,7 +342,7 @@ const ForgotPassword: React.FC = () => {
                 <Button
                   type="button"
                   onClick={backToRequestStep}
-                  className="inline-flex items-center justify-center rounded border border-stroke px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-2 dark:border-strokedark dark:text-white dark:hover:bg-form-input"
+                  className="inline-flex items-center justify-center rounded border border-stroke px-4 py-3 text-sm font-medium text-[rgb(var(--c-text))] transition hover:bg-gray-2 dark:border-strokedark dark:text-[rgb(var(--c-text))] dark:hover:bg-form-input"
                 >
                   <FiArrowLeft className="mr-2" />
                   Change Mobile
@@ -354,7 +354,7 @@ const ForgotPassword: React.FC = () => {
           {step === 'reset' && (
             <form className="mt-6" onSubmit={handleResetPassword}>
               <div className="mb-4">
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   New Password
                 </label>
                 <div className="relative">
@@ -363,7 +363,7 @@ const ForgotPassword: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter new password"
-                    className="w-full rounded border border-stroke bg-transparent px-4 py-2.5 pr-12 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                    className="w-full rounded border border-stroke bg-transparent px-4 py-2.5 pr-12 text-[rgb(var(--c-text))] outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-[rgb(var(--c-text))]"
                   />
                   <Button
                     type="button"
@@ -376,7 +376,7 @@ const ForgotPassword: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -385,7 +385,7 @@ const ForgotPassword: React.FC = () => {
                     value={passwordConfirmation}
                     onChange={(e) => setPasswordConfirmation(e.target.value)}
                     placeholder="Re-enter new password"
-                    className="w-full rounded border border-stroke bg-transparent px-4 py-2.5 pr-12 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                    className="w-full rounded border border-stroke bg-transparent px-4 py-2.5 pr-12 text-[rgb(var(--c-text))] outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-[rgb(var(--c-text))]"
                   />
                   <Button
                     type="button"
@@ -408,7 +408,7 @@ const ForgotPassword: React.FC = () => {
             </form>
           )}
 
-          <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
+          <p className="mt-4 text-center text-sm text-[rgb(var(--c-text))]/70 dark:text-[rgb(var(--c-text))]/70">
             Remember your password?{' '}
             <Link to={ROUTES.login} className="text-primary hover:underline">
               Back to sign in

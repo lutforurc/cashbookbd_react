@@ -560,7 +560,7 @@ const TrialBalanceLevel4 = (user: any) => {
 
         {!trialBalanceState?.loading && !hasReportData && (
           <div className="rounded-sm border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-default dark:border-slate-700 dark:bg-boxdark">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-white">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               No trial balance loaded yet
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
@@ -589,7 +589,7 @@ const TrialBalanceLevel4 = (user: any) => {
               <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                       Trial Balance Rows
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -645,13 +645,13 @@ const SummaryCard = ({
 }) => {
   const toneMap: Record<string, string> = {
     emerald:
-      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-white",
+      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]",
     blue:
-      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-white",
+      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]",
     amber:
       "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100",
     slate:
-      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-white",
+      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]",
   };
 
   return (

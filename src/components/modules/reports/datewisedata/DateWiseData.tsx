@@ -420,7 +420,7 @@ const DateWiseData = (user: any) => {
         <Table
           columns={columns}
           data={tableData}
-          rowClassName={(row: any) => (isRangeTotalRow(row) ? "font-bold text-slate-900 dark:text-white" : "")}
+          rowClassName={(row: any) => (isRangeTotalRow(row) ? "font-bold text-slate-900 dark:text-[rgb(var(--c-text))]" : "")}
         />
       </div>
 

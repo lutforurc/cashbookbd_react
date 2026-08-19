@@ -163,7 +163,7 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
                     onChange={(e) => update(line.key, { total_order: e.target.value })}
                     onKeyDown={goNext(`item_rate_${index}`)}
                     placeholder="Qty"
-                    className="w-full rounded-xs border border-gray-300 p-1 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white text-right"
+                    className="w-full rounded-xs border border-gray-300 p-1 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-[rgb(var(--c-text))] text-right"
                   />
                 </td>
 
@@ -175,7 +175,7 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
                     onChange={(e) => update(line.key, { order_rate: e.target.value })}
                     onKeyDown={goNext(`item_contract_${index}`)}
                     placeholder="Rate"
-                    className="w-full rounded-xs border border-gray-300 p-1 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white text-right"
+                    className="w-full rounded-xs border border-gray-300 p-1 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-[rgb(var(--c-text))] text-right"
                   />
                 </td>
 
@@ -187,7 +187,7 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
                     onChange={(e) => update(line.key, { contract_order_qty: e.target.value })}
                     onKeyDown={goNext('add_product_btn')}
                     placeholder="Contract Qty"
-                    className="w-full rounded-xs border border-gray-300 p-1 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white text-right"
+                    className="w-full rounded-xs border border-gray-300 p-1 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-[rgb(var(--c-text))] text-right"
                   />
                 </td>
 

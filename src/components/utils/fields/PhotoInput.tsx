@@ -126,7 +126,7 @@ const PhotoInput: React.FC<PhotoInputProps> = ({
           accept="image/*"
           disabled={disabled}
           onChange={handleFileChange}
-          className={`w-full text-sm text-black dark:text-white ${FIELD_FILE_BUTTON}`}
+          className={`w-full text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] ${FIELD_FILE_BUTTON}`}
         />
       </div>
     </div>

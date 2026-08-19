@@ -110,7 +110,7 @@ const TrackedProductField: React.FC<Props> = ({
 
   return (
     <div>
-      <label htmlFor={id} className="dark:text-white text-left text-sm text-gray-900">
+      <label htmlFor={id} className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900">
         {label}
       </label>
       {/* The container class and the prefix are what put this box on the same

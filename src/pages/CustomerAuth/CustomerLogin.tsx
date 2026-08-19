@@ -66,7 +66,7 @@ const CustomerLogin = () => {
   };
 
   const fieldClass =
-    "w-full rounded-lg border border-stroke bg-transparent py-2.5 pl-11 text-black outline-none transition focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
+    "w-full rounded-lg border border-stroke bg-transparent py-2.5 pl-11 text-[rgb(var(--c-text))] outline-none transition focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-[rgb(var(--c-text))] dark:focus:border-primary";
 
   return (
     <>
@@ -78,10 +78,10 @@ const CustomerLogin = () => {
             <span className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-primary/20">
               <FiLogIn className="h-7 w-7" />
             </span>
-            <h1 className="text-2xl font-semibold text-black dark:text-white">
+            <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Customer Login
             </h1>
-            <p className="mt-1 text-sm text-body dark:text-bodydark2">
+            <p className="mt-1 text-sm text-[rgb(var(--c-text-muted))] dark:text-bodydark2">
               See your statement, payments and dues.
             </p>
           </div>
@@ -113,12 +113,12 @@ const CustomerLogin = () => {
                     <div className="mb-4">
                       <label
                         htmlFor="mobile"
-                        className="mb-2.5 block font-medium text-black dark:text-white"
+                        className="mb-2.5 block font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                       >
                         Mobile Number
                       </label>
                       <div className="relative">
-                        <FiSmartphone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
+                        <FiSmartphone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[rgb(var(--c-text-muted))] dark:text-bodydark2" />
                         <Field
                           id="mobile"
                           name="mobile"
@@ -142,12 +142,12 @@ const CustomerLogin = () => {
                     <div className="mb-5">
                       <label
                         htmlFor="password"
-                        className="mb-2.5 block font-medium text-black dark:text-white"
+                        className="mb-2.5 block font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                       >
                         Password
                       </label>
                       <div className="relative">
-                        <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
+                        <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[rgb(var(--c-text-muted))] dark:text-bodydark2" />
                         <Field
                           id="password"
                           name="password"
@@ -178,7 +178,7 @@ const CustomerLogin = () => {
                         component="div"
                         className="mt-1.5 text-sm text-danger"
                       />
-                      <p className="mt-2 text-xs text-body dark:text-bodydark2">
+                      <p className="mt-2 text-xs text-[rgb(var(--c-text-muted))] dark:text-bodydark2">
                         First time? Your default password is your mobile number.
                       </p>
                     </div>
@@ -206,7 +206,7 @@ const CustomerLogin = () => {
             </Formik>
           </div>
 
-          <p className="mt-5 text-center text-xs text-body dark:text-bodydark2">
+          <p className="mt-5 text-center text-xs text-[rgb(var(--c-text-muted))] dark:text-bodydark2">
             Trouble signing in? Please contact your branch office.
           </p>
         </div>

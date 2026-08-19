@@ -117,8 +117,8 @@ const ProductFinancialStatement = () => {
 
   const cell = (label: string, value: number, strong = false) => (
     <div className="flex justify-between gap-4 py-1">
-      <span className={strong ? 'font-semibold text-black dark:text-white' : ''}>{label}</span>
-      <span className={`text-right tabular-nums ${strong ? 'font-semibold text-black dark:text-white' : ''}`}>
+      <span className={strong ? 'font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]' : ''}>{label}</span>
+      <span className={`text-right tabular-nums ${strong ? 'font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]' : ''}`}>
         {thousandSeparator(Number(value ?? 0))}
       </span>
     </div>
@@ -231,7 +231,7 @@ const ProductFinancialStatement = () => {
       {data ? (
         <div ref={printRef} className="rounded-sm border border-stroke bg-white p-4 dark:border-strokedark dark:bg-boxdark">
           <div className="mb-3 text-center">
-            <h2 className="text-lg font-bold text-black dark:text-white">Product Financial Statement</h2>
+            <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Product Financial Statement</h2>
             <p className="text-sm">
               {data.product.name}
               {data.product.barcode ? ` (${data.product.barcode})` : ''}
@@ -257,7 +257,7 @@ const ProductFinancialStatement = () => {
 
           <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="rounded-sm border border-stroke p-3 text-sm dark:border-strokedark">
-              <h3 className="mb-2 font-semibold text-black dark:text-white">Receivable (Sales)</h3>
+              <h3 className="mb-2 font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Receivable (Sales)</h3>
               {cell('Opening Receivable', s!.opening_receivable)}
               {cell('Sales Bill', s!.sales_bill)}
               {cell('Sales Return', -s!.sales_return)}
@@ -267,7 +267,7 @@ const ProductFinancialStatement = () => {
             </div>
 
             <div className="rounded-sm border border-stroke p-3 text-sm dark:border-strokedark">
-              <h3 className="mb-2 font-semibold text-black dark:text-white">Payable (Purchase)</h3>
+              <h3 className="mb-2 font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Payable (Purchase)</h3>
               {cell('Opening Payable', s!.opening_payable)}
               {cell('Purchase Bill', s!.purchase_bill)}
               {cell('Purchase Return', -s!.purchase_return)}

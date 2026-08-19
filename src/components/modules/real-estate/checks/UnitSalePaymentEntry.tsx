@@ -643,7 +643,7 @@ export default function UnitSalePaymentEntry() {
         <div className="bg-white dark:bg-gray-800 rounded border border-gray-300 p-3">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
             <div className="w-full">
-              <label className="dark:text-white text-left text-sm text-gray-900 block mb-1">
+              <label className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 block mb-1">
                 Payment Date
               </label>
               <InputDatePicker
@@ -772,7 +772,7 @@ export default function UnitSalePaymentEntry() {
 
           {isCheque ? (
             <div className="mt-4 border-t border-gray-300 dark:border-gray-700 pt-3">
-              <h3 className="dark:text-white text-left text-sm text-gray-900 font-semibold mb-2">
+              <h3 className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 font-semibold mb-2">
                 Cheque Deposit Information
               </h3>
 
@@ -803,7 +803,7 @@ export default function UnitSalePaymentEntry() {
                 ) : null}
 
                 <div className="w-full">
-                  <label className="dark:text-white text-left text-sm text-gray-900 block mb-1">
+                  <label className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 block mb-1">
                     Cheque Deposit Due Date
                   </label>
                   <InputDatePicker
@@ -821,7 +821,7 @@ export default function UnitSalePaymentEntry() {
                 </div>
 
                 <div className="w-full">
-                  <label className="dark:text-white text-left text-sm text-gray-900 block mb-1">
+                  <label className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 block mb-1">
                     Cheque Collect Date
                   </label>
                   <InputDatePicker
@@ -842,7 +842,7 @@ export default function UnitSalePaymentEntry() {
               {isChequeBouncedOrCancelled ? (
                 <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div className="w-full col-span-1">
-                    <label className="dark:text-white text-left text-sm text-gray-900 block mb-1">
+                    <label className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 block mb-1">
                       Cheque Bounce / Return Date
                     </label>
                     <InputDatePicker

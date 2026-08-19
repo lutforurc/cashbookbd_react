@@ -44,7 +44,7 @@ const cardTone = (label: string) => {
     'Early Out': { bar: 'bg-orange-500', value: 'text-orange-600 dark:text-orange-400', dot: 'bg-orange-500' },
     Deduction: { bar: 'bg-rose-500', value: 'text-rose-600 dark:text-rose-400', dot: 'bg-rose-500' },
   };
-  return map[label] || { bar: 'bg-slate-400', value: 'text-slate-900 dark:text-white', dot: 'bg-slate-400' };
+  return map[label] || { bar: 'bg-slate-400', value: 'text-slate-900 dark:text-[rgb(var(--c-text))]', dot: 'bg-slate-400' };
 };
 
 const BranchAttendanceSummaryReport = ({ user }: any) => {

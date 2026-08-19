@@ -554,7 +554,7 @@ const ConstructionDashboard = () => {
                           <span className="min-w-0 flex-1 truncate font-semibold text-slate-700 dark:text-slate-100">
                             {branchName}
                           </span>
-                          <span className="font-bold text-slate-800 whitespace-nowrap dark:text-white">
+                          <span className="font-bold text-slate-800 whitespace-nowrap dark:text-[rgb(var(--c-text))]">
                             {thousandSeparator(branchTotal)}
                           </span>
                           <span className="w-5 text-right text-sky-600">
@@ -593,7 +593,7 @@ const ConstructionDashboard = () => {
                                     {formatDate(item.vr_date)}
                                   </p>
                                 </div>
-                                <div className="shrink-0 whitespace-nowrap text-right text-xs font-bold text-slate-800 min-[462px]:text-sm dark:text-white">
+                                <div className="shrink-0 whitespace-nowrap text-right text-xs font-bold text-slate-800 min-[462px]:text-sm dark:text-[rgb(var(--c-text))]">
                                   {thousandSeparator(item.debit)}
                                 </div>
                                 <div className="w-7 shrink-0 text-right text-sm">

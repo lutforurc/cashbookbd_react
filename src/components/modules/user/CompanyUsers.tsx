@@ -566,9 +566,9 @@ const UserList = () => {
             Number(row?.company_id) === expandedCompanyId ? (
               <div className="border-y border-blue-500/30 bg-gray-2 px-3 py-3 dark:bg-meta-4">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-black dark:text-white">
+                  <h3 className="text-sm font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Users of {expandedCompanyName || 'this company'}
-                    <span className="ml-2 text-xs font-normal text-body dark:text-bodydark">
+                    <span className="ml-2 text-xs font-normal text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
                       the owner is the row above
                     </span>
                   </h3>

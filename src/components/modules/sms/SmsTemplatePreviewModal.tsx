@@ -31,7 +31,7 @@ const SmsTemplatePreviewModal: React.FC<SmsTemplatePreviewModalProps> = ({
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-stroke px-5 py-4 dark:border-strokedark">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">{title}</h3>
           <Button
             type="button"
             onClick={onClose}

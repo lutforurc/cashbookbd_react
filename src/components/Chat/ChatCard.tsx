@@ -60,7 +60,7 @@ const chatData: Chat[] = [
 const ChatCard = () => {
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white py-6 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
-      <h4 className="mb-6 px-7.5 text-xl font-semibold text-black dark:text-white">
+      <h4 className="mb-6 px-7.5 text-xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
         Chats
       </h4>
 
@@ -81,11 +81,11 @@ const ChatCard = () => {
 
             <div className="flex flex-1 items-center justify-between">
               <div>
-                <h5 className="font-medium text-black dark:text-white">
+                <h5 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   {chat.name}
                 </h5>
                 <p>
-                  <span className="text-sm text-black dark:text-white">
+                  <span className="text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     {chat.text}
                   </span>
                   <span className="text-xs"> . {chat.time} min</span>

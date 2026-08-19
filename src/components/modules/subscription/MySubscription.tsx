@@ -27,7 +27,7 @@ const MySubscription: React.FC = () => {
       <HelmetTitle title="My Subscription" />
 
       <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-        <h1 className="text-2xl font-semibold text-black dark:text-white">
+        <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           My Subscription
         </h1>
         <p className="mt-2 text-sm text-bodydark2">
@@ -40,7 +40,7 @@ const MySubscription: React.FC = () => {
           <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark lg:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-semibold text-black dark:text-white">
+                <h2 className="text-xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   {current.plan_name || 'Subscription Plan'}
                 </h2>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -59,7 +59,7 @@ const MySubscription: React.FC = () => {
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                   Start Date
                 </p>
-                <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-white">
+                <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
                   {current.start_date || '-'}
                 </p>
               </div>
@@ -67,7 +67,7 @@ const MySubscription: React.FC = () => {
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                   End Date
                 </p>
-                <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-white">
+                <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
                   {current.end_date || '-'}
                 </p>
               </div>
@@ -75,7 +75,7 @@ const MySubscription: React.FC = () => {
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                   Trial Ends
                 </p>
-                <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-white">
+                <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
                   {current.trial_end_at || '-'}
                 </p>
               </div>
@@ -83,14 +83,14 @@ const MySubscription: React.FC = () => {
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                   Next Billing Date
                 </p>
-                <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-white">
+                <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
                   {current.next_billing_date || '-'}
                 </p>
               </div>
             </div>
 
             <div className="mt-6">
-              <p className="text-sm font-medium text-black dark:text-white">
+              <p className="text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Enabled Features
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -112,7 +112,7 @@ const MySubscription: React.FC = () => {
           </div>
 
           <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-            <h3 className="text-lg font-semibold text-black dark:text-white">
+            <h3 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Need Renewal?
             </h3>
             <p className="mt-2 text-sm text-bodydark2">
@@ -152,7 +152,7 @@ const MySubscription: React.FC = () => {
           </div>
 
           <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-            <h3 className="text-lg font-semibold text-black dark:text-white">
+            <h3 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Manual Subscription
             </h3>
             <p className="mt-2 text-sm text-bodydark2">

@@ -324,7 +324,7 @@ interface TodoCardProps {
  * card from re-rendering at all unless its own row or its own busy flag moved.
  *
  * The paper colour is the user's, so the type on top of it stays dark in both
- * themes -- a `dark:text-white` here would put white text on a pastel card.
+ * themes -- a `dark:text-[rgb(var(--c-text))]` here would put white text on a pastel card.
  * Everything else is the app's: `rounded-sm` corners, the same as every panel
  * around it.
  *
@@ -594,8 +594,8 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg overflow-hidden rounded-lg border border-stroke bg-white text-slate-800 shadow-2xl dark:border-form-strokedark dark:bg-graydark dark:text-white">
-        <h3 className="border-b border-stroke px-5 py-3 text-lg font-semibold text-black dark:border-form-strokedark dark:text-white">
+      <div className="w-full max-w-lg overflow-hidden rounded-lg border border-stroke bg-white text-slate-800 shadow-2xl dark:border-form-strokedark dark:bg-graydark dark:text-[rgb(var(--c-text))]">
+        <h3 className="border-b border-stroke px-5 py-3 text-lg font-semibold text-[rgb(var(--c-text))] dark:border-form-strokedark dark:text-[rgb(var(--c-text))]">
           {isNew ? 'New Task' : 'Edit Task'}
         </h3>
 
@@ -716,7 +716,7 @@ const Section = ({ title, items, busyId, meId, ...handlers }: SectionProps) =>
       {/* A rule running out from the heading ties the row of notes under it
           together and separates it from the row above without a box. */}
       <div className="mb-4 flex items-center gap-3">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-body dark:text-bodydark">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
           {title}
         </h2>
         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
@@ -1067,7 +1067,7 @@ export default function MyTasks() {
                 onClick={() => setFilter(option.key)}
                 className={`flex items-center rounded-sm border px-3 text-xs font-medium transition-colors ${
  filter === option.key
- ?'border-primary bg-primary text-white':'border-stroke bg-white text-body hover:border-primary hover:text-primary dark:border-strokedark dark:bg-boxdark dark:text-bodydark'}`}
+ ?'border-primary bg-primary text-white':'border-stroke bg-white text-[rgb(var(--c-text-muted))] hover:border-primary hover:text-primary dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text-muted))]'}`}
               >
                 {option.label}
               </Button>

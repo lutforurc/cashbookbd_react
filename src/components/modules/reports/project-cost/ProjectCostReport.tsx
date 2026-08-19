@@ -555,7 +555,7 @@ const ProjectCostReport = ({ user }: any) => {
 
         {!loading && !hasData ? (
           <div className="rounded-sm border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-default dark:border-slate-700 dark:bg-boxdark">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-white">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               {loaded[section] ? 'Nothing to show' : 'No report loaded yet'}
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">

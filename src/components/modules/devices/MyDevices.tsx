@@ -76,8 +76,8 @@ const MyDevices: React.FC = () => {
       <div className="rounded-sm border border-stroke bg-white px-5 pb-5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="font-medium text-black dark:text-white">Signed-in devices</h3>
-            <p className="text-sm text-body">
+            <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Signed-in devices</h3>
+            <p className="text-sm text-[rgb(var(--c-text-muted))]">
               {deviceLimit === null
                 ? 'Your plan allows unlimited devices per user.'
                 : `Your plan allows ${deviceLimit} device${deviceLimit === 1 ? '' : 's'} per user — ${devices.length} in use.`}
@@ -94,9 +94,9 @@ const MyDevices: React.FC = () => {
         </div>
 
         {loading ? (
-          <p className="py-6 text-center text-sm text-body">Loading…</p>
+          <p className="py-6 text-center text-sm text-[rgb(var(--c-text-muted))]">Loading…</p>
         ) : devices.length === 0 ? (
-          <p className="py-6 text-center text-sm text-body">No active devices found.</p>
+          <p className="py-6 text-center text-sm text-[rgb(var(--c-text-muted))]">No active devices found.</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {devices.map((device) => (
@@ -105,9 +105,9 @@ const MyDevices: React.FC = () => {
                 className="flex flex-wrap items-center justify-between gap-3 rounded border border-stroke px-4 py-3 dark:border-strokedark"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <FiMonitor className="shrink-0 text-body" />
+                  <FiMonitor className="shrink-0 text-[rgb(var(--c-text-muted))]" />
                   <div className="min-w-0">
-                    <p className="flex items-center gap-2 truncate font-medium text-black dark:text-white">
+                    <p className="flex items-center gap-2 truncate font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                       {device.name}
                       {device.is_current && (
                         <span className="rounded bg-success px-2 py-0.5 text-xs font-normal text-white">
@@ -115,7 +115,7 @@ const MyDevices: React.FC = () => {
                         </span>
                       )}
                     </p>
-                    <p className="truncate text-xs text-body">
+                    <p className="truncate text-xs text-[rgb(var(--c-text-muted))]">
                       {device.ip ? `${device.ip} · ` : ''}
                       Signed in {formatWhen(device.created_at)} · Last used {formatWhen(device.last_used_at)}
                     </p>

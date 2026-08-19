@@ -202,7 +202,7 @@ const AddPermission: React.FC = () => {
             {isNewGroup ? (
               <>
                 <div className="flex items-center justify-between">
-                  <label htmlFor="group_name" className="text-black dark:text-white">
+                  <label htmlFor="group_name" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Group Name
                   </label>
                   <Button
@@ -226,7 +226,7 @@ const AddPermission: React.FC = () => {
               <>
                 <label
                   htmlFor="group_name"
-                  className="text-left text-sm text-gray-900 dark:text-white"
+                  className="text-left text-sm text-gray-900 dark:text-[rgb(var(--c-text))]"
                 >
                   Group Name
                 </label>
@@ -249,7 +249,7 @@ const AddPermission: React.FC = () => {
                         state.isFocused ? "border-blue-500! dark:border-blue-400!" : ""
                       }`,
                     placeholder: () => `text-gray-400 dark:text-gray-500 text-sm`,
-                    input: () => `text-gray-900 dark:text-white text-sm`,
+                    input: () => `text-gray-900 dark:text-[rgb(var(--c-text))] text-sm`,
                     menu: () =>
                       `rounded-xs! border border-gray-300 bg-white dark:bg-boxdark dark:border-gray-600 z-20`,
                     option: (state) =>
@@ -258,7 +258,7 @@ const AddPermission: React.FC = () => {
                           ? "bg-gray-100 dark:bg-gray-700"
                           : "bg-white dark:bg-boxdark"
                       } ${state.data.value === NEW_GROUP ? "font-medium text-primary" : ""}`,
-                    singleValue: () => `text-gray-900 dark:text-white text-sm`,
+                    singleValue: () => `text-gray-900 dark:text-[rgb(var(--c-text))] text-sm`,
                   }}
                 />
               </>

@@ -43,7 +43,7 @@ const TableTwo = () => {
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
       <div className="py-6 px-4 md:px-6 xl:px-7.5">
-        <h4 className="text-xl font-semibold text-black dark:text-white">
+        <h4 className="text-xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           Top Products
         </h4>
       </div>
@@ -76,23 +76,23 @@ const TableTwo = () => {
               <div className="h-12.5 w-15 rounded-md">
                 <img src={product.image} alt="Product" />
               </div>
-              <p className="text-sm text-black dark:text-white">
+              <p className="text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 {product.name}
               </p>
             </div>
           </div>
           <div className="col-span-2 hidden items-center sm:flex">
-            <p className="text-sm text-black dark:text-white">
+            <p className="text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               {product.category}
             </p>
           </div>
           <div className="col-span-1 flex items-center">
-            <p className="text-sm text-black dark:text-white">
+            <p className="text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               ${product.price}
             </p>
           </div>
           <div className="col-span-1 flex items-center">
-            <p className="text-sm text-black dark:text-white">{product.sold}</p>
+            <p className="text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">{product.sold}</p>
           </div>
           <div className="col-span-1 flex items-center">
             <p className="text-sm text-meta-3">${product.profit}</p>

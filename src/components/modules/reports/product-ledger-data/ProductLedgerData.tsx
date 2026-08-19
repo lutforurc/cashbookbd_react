@@ -275,7 +275,7 @@ const ProductLedgerData = (user: any) => {
         <div
           className={`${
             row?.rowType === 'opening'
-              ? 'font-medium text-slate-900 dark:text-white'
+              ? 'font-medium text-slate-900 dark:text-[rgb(var(--c-text))]'
               : 'cursor-pointer hover:underline'
           }`}
           onClick={() => {

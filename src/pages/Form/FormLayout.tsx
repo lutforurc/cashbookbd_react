@@ -15,7 +15,7 @@ const FormLayout = () => {
           {/* <!-- Contact Form --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-              <h3 className="font-medium text-black dark:text-white">
+              <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Contact Form
               </h3>
             </div>
@@ -23,7 +23,7 @@ const FormLayout = () => {
               <div className="p-6.5">
                 <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                   <div className="w-full xl:w-1/2">
-                    <label className="mb-2.5 block text-black dark:text-white">
+                    <label className="mb-2.5 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                       First name
                     </label>
                     <Input
@@ -34,7 +34,7 @@ const FormLayout = () => {
                   </div>
 
                   <div className="w-full xl:w-1/2">
-                    <label className="mb-2.5 block text-black dark:text-white">
+                    <label className="mb-2.5 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                       Last name
                     </label>
                     <Input
@@ -46,7 +46,7 @@ const FormLayout = () => {
                 </div>
 
                 <div className="mb-4.5">
-                  <label className="mb-2.5 block text-black dark:text-white">
+                  <label className="mb-2.5 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Email <span className="text-meta-1">*</span>
                   </label>
                   <Input
@@ -57,7 +57,7 @@ const FormLayout = () => {
                 </div>
 
                 <div className="mb-4.5">
-                  <label className="mb-2.5 block text-black dark:text-white">
+                  <label className="mb-2.5 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Subject
                   </label>
                   <Input
@@ -70,7 +70,7 @@ const FormLayout = () => {
                 <SelectGroupOne />
 
                 <div className="mb-6">
-                  <label className="mb-2.5 block text-black dark:text-white">
+                  <label className="mb-2.5 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Message
                   </label>
                   <Textarea
@@ -92,14 +92,14 @@ const FormLayout = () => {
           {/* <!-- Sign In Form --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-              <h3 className="font-medium text-black dark:text-white">
+              <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Sign In Form
               </h3>
             </div>
             <form action="#">
               <div className="p-6.5">
                 <div className="mb-4.5">
-                  <label className="mb-2.5 block text-black dark:text-white">
+                  <label className="mb-2.5 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Email
                   </label>
                   <Input
@@ -110,7 +110,7 @@ const FormLayout = () => {
                 </div>
 
                 <div>
-                  <label className="mb-2.5 block text-black dark:text-white">
+                  <label className="mb-2.5 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Password
                   </label>
                   <Input
@@ -166,14 +166,14 @@ const FormLayout = () => {
           {/* <!-- Sign Up Form --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-              <h3 className="font-medium text-black dark:text-white">
+              <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Sign Up Form
               </h3>
             </div>
             <form action="#">
               <div className="p-6.5">
                 <div className="mb-4.5">
-                  <label className="mb-2.5 block text-black dark:text-white">
+                  <label className="mb-2.5 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Name
                   </label>
                   <Input
@@ -184,7 +184,7 @@ const FormLayout = () => {
                 </div>
 
                 <div className="mb-4.5">
-                  <label className="mb-2.5 block text-black dark:text-white">
+                  <label className="mb-2.5 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Email
                   </label>
                   <Input
@@ -195,7 +195,7 @@ const FormLayout = () => {
                 </div>
 
                 <div className="mb-4.5">
-                  <label className="mb-2.5 block text-black dark:text-white">
+                  <label className="mb-2.5 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Password
                   </label>
                   <Input
@@ -206,7 +206,7 @@ const FormLayout = () => {
                 </div>
 
                 <div className="mb-5.5">
-                  <label className="mb-2.5 block text-black dark:text-white">
+                  <label className="mb-2.5 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Re-type Password
                   </label>
                   <Input

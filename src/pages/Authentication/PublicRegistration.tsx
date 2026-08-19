@@ -221,7 +221,7 @@ const PublicRegistration: React.FC = () => {
                 <FaYoutube className="text-base" />
               </a>
             </div>
-            {/* <p className="mt-1 text-sm text-black/60 dark:text-white/60">
+            {/* <p className="mt-1 text-sm text-[rgb(var(--c-text))]/60 dark:text-[rgb(var(--c-text))]/60">
               Create your account and request OTP for verification.
             </p> */}
           </div>
@@ -229,7 +229,7 @@ const PublicRegistration: React.FC = () => {
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Company Name *
                 </label>
                 <Input
@@ -243,7 +243,7 @@ const PublicRegistration: React.FC = () => {
               </div>
 
               {/* <div>
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Branch Name *
                 </label>
                 <Input
@@ -257,7 +257,7 @@ const PublicRegistration: React.FC = () => {
               </div> */}
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   User Name *
                 </label>
                 
@@ -272,7 +272,7 @@ const PublicRegistration: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Contact Person *
                 </label>
                 <Input
@@ -286,7 +286,7 @@ const PublicRegistration: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Mobile *
                 </label>
                 <Input
@@ -300,7 +300,7 @@ const PublicRegistration: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Email *
                 </label>
                 <Input
@@ -314,7 +314,7 @@ const PublicRegistration: React.FC = () => {
               </div>
 
               <div className="">
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Address *
                 </label>
                 <Input
@@ -328,7 +328,7 @@ const PublicRegistration: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Password (Min 8 Characters) *
                 </label>
                 <div className="relative">
@@ -352,7 +352,7 @@ const PublicRegistration: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Confirm Password *
                 </label>
                 <div className="relative">
@@ -377,7 +377,7 @@ const PublicRegistration: React.FC = () => {
               </div>
 
               {/* <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Notes
                 </label>
                 <Textarea
@@ -409,7 +409,7 @@ const PublicRegistration: React.FC = () => {
               {submitting ? 'Requesting OTP...' : 'Request OTP'}
             </Button> */}
 
-            <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
+            <p className="mt-4 text-center text-sm text-[rgb(var(--c-text))]/70 dark:text-[rgb(var(--c-text))]/70">
               Already have an account?{' '}
               <Link className="text-primary hover:underline" to={ROUTES.login}>
                 Sign In

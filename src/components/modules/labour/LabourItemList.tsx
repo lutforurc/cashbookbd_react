@@ -238,7 +238,7 @@ const LabourItemList = () => {
           <>
             Are you sure you want to delete
             <span className="mt-1 block font-bold">{rowToDelete?.name} ?</span>
-            <span className="mt-2 block text-sm text-body dark:text-bodydark">
+            <span className="mt-2 block text-sm text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
               An item already used on a labour bill cannot be deleted — mark it inactive instead.
             </span>
           </>

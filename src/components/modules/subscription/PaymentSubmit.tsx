@@ -169,7 +169,7 @@ const PaymentSubmit: React.FC = () => {
   };
 
   const fieldBaseClassName =
-    'w-full border border-stroke bg-transparent px-4 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white';
+    'w-full border border-stroke bg-transparent px-4 text-[rgb(var(--c-text))] outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-[rgb(var(--c-text))]';
   /**
    * The height is fixed rather than left to the padding: a select and an input
    * given the same padding do not come out the same height, and the date picker
@@ -178,7 +178,7 @@ const PaymentSubmit: React.FC = () => {
    */
   const fieldClassName = `h-10 ${fieldBaseClassName}`;
   const textareaClassName = `py-2 ${fieldBaseClassName}`;
-  const labelClassName = 'mb-2 block text-sm font-medium text-black dark:text-white';
+  const labelClassName = 'mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]';
 
   return (
     <div>
@@ -186,7 +186,7 @@ const PaymentSubmit: React.FC = () => {
 
       <div className="mb-4 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
             Subscription Payment Submit
           </h2>
           <p className="text-sm text-gray-500">
@@ -227,7 +227,7 @@ const PaymentSubmit: React.FC = () => {
         className="rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent"
       >
         <div className="mb-4">
-          <h3 className="text-base font-semibold text-gray-800 dark:text-white">
+          <h3 className="text-base font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
             Payment Information
           </h3>
         </div>

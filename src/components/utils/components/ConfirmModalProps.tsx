@@ -43,8 +43,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     // blurred backdrop pushes the page away, and the divider under the title
     // gives the box a structure to be seen by.
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-md overflow-hidden rounded-lg border border-stroke bg-white text-slate-800 shadow-2xl dark:border-form-strokedark dark:bg-graydark dark:text-white">
-        <h3 className="border-b border-stroke px-5 py-3 text-lg font-semibold text-black dark:border-form-strokedark dark:text-white">
+      <div className="w-full max-w-md overflow-hidden rounded-lg border border-stroke bg-white text-slate-800 shadow-2xl dark:border-form-strokedark dark:bg-graydark dark:text-[rgb(var(--c-text))]">
+        <h3 className="border-b border-stroke px-5 py-3 text-lg font-semibold text-[rgb(var(--c-text))] dark:border-form-strokedark dark:text-[rgb(var(--c-text))]">
           {title}
         </h3>
 

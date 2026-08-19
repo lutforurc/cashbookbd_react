@@ -49,18 +49,18 @@ const DeviceLimitNotice: React.FC<Props> = ({ block, loginId, password, onReleas
   return (
     <div className="rounded-lg border border-warning bg-warning/10 p-4 text-left">
       <div className="mb-2 flex items-start justify-between gap-3">
-        <h4 className="font-semibold text-black dark:text-white">Device limit reached</h4>
+        <h4 className="font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Device limit reached</h4>
         <Button
           type="button"
           onClick={onCancel}
           aria-label="Dismiss"
-          className="text-body hover:text-black dark:hover:text-white"
+          className="text-[rgb(var(--c-text-muted))] hover:text-black dark:hover:text-white"
         >
           <FiX />
         </Button>
       </div>
 
-      <p className="mb-3 text-sm text-body">
+      <p className="mb-3 text-sm text-[rgb(var(--c-text-muted))]">
         {block.message}
         {block.deviceLimit !== null && (
           <> Your plan allows {block.deviceLimit} device{block.deviceLimit === 1 ? '' : 's'} per user.</>
@@ -76,10 +76,10 @@ const DeviceLimitNotice: React.FC<Props> = ({ block, loginId, password, onReleas
             className="flex items-center justify-between gap-3 rounded border border-stroke bg-white px-3 py-2 dark:border-strokedark dark:bg-boxdark"
           >
             <div className="flex min-w-0 items-center gap-2">
-              <FiMonitor className="shrink-0 text-body" />
+              <FiMonitor className="shrink-0 text-[rgb(var(--c-text-muted))]" />
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-black dark:text-white">{device.name}</p>
-                <p className="truncate text-xs text-body">
+                <p className="truncate text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">{device.name}</p>
+                <p className="truncate text-xs text-[rgb(var(--c-text-muted))]">
                   {device.ip ? `${device.ip} · ` : ''}
                   Last used {formatWhen(device.last_used_at)}
                 </p>
@@ -98,7 +98,7 @@ const DeviceLimitNotice: React.FC<Props> = ({ block, loginId, password, onReleas
         ))}
       </ul>
 
-      <p className="text-xs text-body">
+      <p className="text-xs text-[rgb(var(--c-text-muted))]">
         Sign out of one device to continue, or upgrade your plan for more devices.
       </p>
     </div>

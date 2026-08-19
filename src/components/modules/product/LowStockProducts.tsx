@@ -193,7 +193,7 @@ const LowStockProducts = () => {
         header: 'Product',
         render: (row: any) => (
           <div className="min-w-0">
-            <div className="truncate font-medium text-gray-900 dark:text-white">
+            <div className="truncate font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
               {getDisplayValue(row?.name)}
             </div>
           </div>
@@ -259,7 +259,7 @@ const LowStockProducts = () => {
 
       <div className="mb-3 flex flex-col gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
             Low Stock Products
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -387,7 +387,7 @@ const LowStockProducts = () => {
                       <div className="text-xs text-gray-500">
                         SL {(page - 1) * perPage + index + 1}
                       </div>
-                      <div className="font-semibold text-gray-900 dark:text-white">
+                      <div className="font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
                         {getDisplayValue(row?.name)}
                       </div>
                     </div>
@@ -424,7 +424,7 @@ const LowStockProducts = () => {
                           <FiAlertTriangle />
                           Current Stock
                         </span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
+                        <span className="font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
                           {formatQuantity(row?.current_stock ?? row?.balance ?? 0, true)}
                         </span>
                       </div>

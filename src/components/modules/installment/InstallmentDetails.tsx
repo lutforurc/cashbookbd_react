@@ -306,7 +306,7 @@ const InstallmentDetails = () => {
               type="button"
               onClick={() => handleInstallments(row.payments)}
               title="View payment details"
-              className="inline-flex min-w-[76px] items-center justify-center gap-1 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-blue-400 hover:bg-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400/60 dark:border-slate-400/60 dark:bg-slate-700/45 dark:text-white"
+              className="inline-flex min-w-[76px] items-center justify-center gap-1 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-blue-400 hover:bg-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400/60 dark:border-slate-400/60 dark:bg-slate-700/45 dark:text-[rgb(var(--c-text))]"
             >
               <span className="text-blue-600 dark:text-blue-300">#</span>
               <span>{row.installment_no ?? ''}</span>
@@ -391,7 +391,7 @@ const InstallmentDetails = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="mb-4">
           <div className="">
-            <label htmlFor="" className="dark:text-white">
+            <label htmlFor="" className="dark:text-[rgb(var(--c-text))]">
               Select Customer
             </label>
             <DdlMultiline onSelect={handleCustomerSelect} acType={''} />

@@ -287,12 +287,12 @@ export default function BulkImageUpload(user: any): JSX.Element {
             />
             <label
               htmlFor="file-upload"
-              className="cursor-pointer text-black dark:text-white underline font-bold text-xl"
+              className="cursor-pointer text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] underline font-bold text-xl"
             >
               Choose Voucher
             </label>
             {files && files.length > 0 && (
-              <span className="ml-2 text-sm text-black dark:text-white">
+              <span className="ml-2 text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 {files.length} file(s) selected
               </span>
             )}

@@ -200,7 +200,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="body" className="mb-1 block text-black dark:text-white">
+              <label htmlFor="body" className="mb-1 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Message Body
               </label>
               <Textarea
@@ -226,7 +226,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="description" className="mb-1 block text-black dark:text-white">
+              <label htmlFor="description" className="mb-1 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Description
               </label>
               <Textarea
@@ -244,7 +244,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
             </div>
 
             <div>
-              <label htmlFor="status" className="mb-1 block text-black dark:text-white">
+              <label htmlFor="status" className="mb-1 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Status
               </label>
               <Select
@@ -263,7 +263,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
             </div>
 
             <div>
-              <label htmlFor="sample_data" className="mb-1 block text-black dark:text-white">
+              <label htmlFor="sample_data" className="mb-1 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Preview Variables JSON
               </label>
               <Textarea

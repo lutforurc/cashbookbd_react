@@ -132,7 +132,7 @@ const LoanLedger = (user: any) => {
       header: 'Remarks',  
       render: (row: any) => (
         <div className="">
-          <div className='block text-gray-900 dark:text-white'>{row.remarks ? row.remarks : ''}</div>
+          <div className='block text-gray-900 dark:text-[rgb(var(--c-text))]'>{row.remarks ? row.remarks : ''}</div>
           <div className='block text-gray-500 dark:text-gray-500'>{row.branch_name ? ` ${row.branch_name}` : ''}</div>
           </div>
       ),
@@ -246,7 +246,7 @@ const LoanLedger = (user: any) => {
           </div>
 
           <div className="min-w-[180px] flex-1">
-            <label className="text-black dark:text-white">Select Employee</label>
+            <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Select Employee</label>
             <EmployeeDropdownSearch
  id="account"
  name="account"

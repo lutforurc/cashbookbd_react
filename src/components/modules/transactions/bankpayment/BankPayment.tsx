@@ -736,22 +736,22 @@ const BankPayment = () => {
                     key={t.id}
                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                   >
-                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))]">
                       {t.accountName}
                     </td>
-                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))]">
                       {t.remarks}
                     </td>
                     {trackedProducts.length > 0 ? (
-                      <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                      <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))]">
                         {trackedProducts.find((p) => p.id === t.trackedProductId)
                           ?.name ?? ''}
                       </td>
                     ) : null}
-                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
+                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                       {thousandSeparator(Number(t.amount))}
                     </td>
-                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
+                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20">
                       <Button
                         onClick={() => handleDelete(Number(t.id))}
                         className="text-red-500 ml-2 text-center"
@@ -772,18 +772,18 @@ const BankPayment = () => {
 
               <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                 <td
-                  className={`px-2 py-2 font-bold text-gray-900 whitespace-nowrap dark:text-white `}
+                  className={`px-2 py-2 font-bold text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] `}
                   colSpan={trackedProducts.length > 0 ? 3 : 2}
                 >
                   Received Total
                 </td>
                 <td
-                  className={`px-2 py-2 font-bold whitespace-nowrap dark:text-white text-right  text-gray-900`}
+                  className={`px-2 py-2 font-bold whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right  text-gray-900`}
                 >
                   {thousandSeparator(Number(totalAmount))}{' '}
                 </td>
                 <td
-                  className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center `}
+                  className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center `}
                 ></td>
               </tr>
             </tbody>

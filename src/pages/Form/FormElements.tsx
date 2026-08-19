@@ -25,13 +25,13 @@ const FormElements = () => {
           {/* <!-- Input Fields --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-              <h3 className="font-medium text-black dark:text-white">
+              <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Input Fields
               </h3>
             </div>
             <div className="flex flex-col gap-5.5 p-6.5">
               <div>
-                <label className="mb-3 block text-black dark:text-white">
+                <label className="mb-3 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Default Input
                 </label>
                 <Input
@@ -42,7 +42,7 @@ const FormElements = () => {
               </div>
 
               <div>
-                <label className="mb-3 block text-black dark:text-white">
+                <label className="mb-3 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Active Input
                 </label>
                 <Input
@@ -53,7 +53,7 @@ const FormElements = () => {
               </div>
 
               <div>
-                <label className="mb-3 block font-medium text-black dark:text-white">
+                <label className="mb-3 block font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Disabled label
                 </label>
                 <Input
@@ -69,7 +69,7 @@ const FormElements = () => {
           {/* <!-- Toggle switch input --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-              <h3 className="font-medium text-black dark:text-white">
+              <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Toggle switch input
               </h3>
             </div>
@@ -84,7 +84,7 @@ const FormElements = () => {
           {/* <!-- Time and date --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-              <h3 className="font-medium text-black dark:text-white">
+              <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Time and date
               </h3>
             </div>
@@ -97,13 +97,13 @@ const FormElements = () => {
           {/* <!-- File upload --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-              <h3 className="font-medium text-black dark:text-white">
+              <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 File upload
               </h3>
             </div>
             <div className="flex flex-col gap-5.5 p-6.5">
               <div>
-                <label className="mb-3 block text-black dark:text-white">
+                <label className="mb-3 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Attach file
                 </label>
                 <Input
@@ -113,7 +113,7 @@ const FormElements = () => {
               </div>
 
               <div>
-                <label className="mb-3 block text-black dark:text-white">
+                <label className="mb-3 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Attach file
                 </label>
                 <Input
@@ -129,13 +129,13 @@ const FormElements = () => {
           {/* <!-- Textarea Fields --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-              <h3 className="font-medium text-black dark:text-white">
+              <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Textarea Fields
               </h3>
             </div>
             <div className="flex flex-col gap-5.5 p-6.5">
               <div>
-                <label className="mb-3 block text-black dark:text-white">
+                <label className="mb-3 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Default textarea
                 </label>
                 <Textarea
@@ -146,7 +146,7 @@ const FormElements = () => {
               </div>
 
               <div>
-                <label className="mb-3 block text-black dark:text-white">
+                <label className="mb-3 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Active textarea
                 </label>
                 <Textarea
@@ -157,7 +157,7 @@ const FormElements = () => {
               </div>
 
               <div>
-                <label className="mb-3 block text-black dark:text-white">
+                <label className="mb-3 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Disabled textarea
                 </label>
                 <Textarea
@@ -173,7 +173,7 @@ const FormElements = () => {
           {/* <!-- Checkbox and radio --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-              <h3 className="font-medium text-black dark:text-white">
+              <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Checkbox and radio
               </h3>
             </div>
@@ -189,7 +189,7 @@ const FormElements = () => {
           {/* <!-- Select input --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-              <h3 className="font-medium text-black dark:text-white">
+              <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Select input
               </h3>
             </div>

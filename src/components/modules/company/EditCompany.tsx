@@ -16,13 +16,13 @@ import { Input, Textarea } from '../../utils/fields/FormControls';
 
 /** Matches the textarea in the product form, so both read as the same field. */
 const TEXTAREA_CLASS =
-  'block w-full resize-y rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-boxdark dark:text-white dark:focus:border-blue-400';
+  'block w-full resize-y rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-boxdark dark:text-[rgb(var(--c-text))] dark:focus:border-blue-400';
 
 /**
  * Matches PhotoInput, which is how every other upload in the app is drawn --
  * and now says so by sharing its button rather than by repeating the string.
  */
-const FILE_INPUT_CLASS = `w-full text-sm text-black dark:text-white ${FIELD_FILE_BUTTON}`;
+const FILE_INPUT_CLASS = `w-full text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] ${FIELD_FILE_BUTTON}`;
 
 const buildCompanyFormData = (data: any, logoFile: File | null, logoDarkFile: File | null) => {
   const payload = new FormData();
@@ -185,7 +185,7 @@ const EditCompany = () => {
           />
 
           <div className="text-left flex flex-col">
-            <label htmlFor="address" className="text-black dark:text-white">
+            <label htmlFor="address" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Address
             </label>
             <Textarea
@@ -202,7 +202,7 @@ const EditCompany = () => {
           {/* Printed under the company name on letterheads, so it is worth a
               couple of lines rather than a single-line input. */}
           <div className="text-left flex flex-col">
-            <label htmlFor="notes" className="text-black dark:text-white">
+            <label htmlFor="notes" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Notes
             </label>
             <Textarea
@@ -230,7 +230,7 @@ const EditCompany = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="text-left flex flex-col">
-              <label htmlFor="company_logo" className="text-black dark:text-white">
+              <label htmlFor="company_logo" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Light Mode
               </label>
               <div className="flex items-center gap-2">
@@ -255,7 +255,7 @@ const EditCompany = () => {
             </div>
 
             <div className="text-left flex flex-col">
-              <label htmlFor="company_logo_dark" className="text-black dark:text-white">
+              <label htmlFor="company_logo_dark" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Dark Mode
               </label>
               <div className="flex items-center gap-2">

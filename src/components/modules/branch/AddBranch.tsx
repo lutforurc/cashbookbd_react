@@ -847,7 +847,7 @@ const AddBranch = () => {
               {/* Ruled off, so the step's own heading reads apart from the
                   fields under it rather than as the first line of them. */}
               <div className="mb-3 border-b border-gray-200 pb-1.5 dark:border-strokedark">
-                <h2 className="text-base font-semibold leading-tight text-gray-800 dark:text-white">
+                <h2 className="text-base font-semibold leading-tight text-gray-800 dark:text-[rgb(var(--c-text))]">
                   {steps[currentStep]}
                 </h2>
                 <p className="mt-0.5 text-xs leading-snug text-gray-500">
@@ -1063,7 +1063,7 @@ const AddBranch = () => {
                       <div className="flex flex-col">
                         <label
                           htmlFor="pad_header_image"
-                          className="text-black dark:text-white"
+                          className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                         >
                           Pad Header Image
                         </label>
@@ -1134,7 +1134,7 @@ const AddBranch = () => {
                   </div>
 
                   <div className="mb-2">
-                    <label className="text-black dark:text-white">
+                    <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                       Letter Signature Block
                     </label>
                     <RichTextEditor
@@ -1973,11 +1973,11 @@ const AddBranch = () => {
             message={
               <>
                 Set every opening balance in this branch back to zero?
-                <span className="mt-2 block text-xs text-body dark:text-bodydark">
+                <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
                   Products and customers/suppliers both. The figures are not kept
                   anywhere else, so they will have to be entered again.
                 </span>
-                <span className="mt-2 block text-xs text-body dark:text-bodydark">
+                <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
                   The journal and stock entries already posted are left as they
                   are.
                 </span>
@@ -1999,11 +1999,11 @@ const AddBranch = () => {
             message={
               <>
                 Withdraw every voucher in this branch from the books?
-                <span className="mt-2 block text-xs text-body dark:text-bodydark">
+                <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
                   Every voucher this branch holds is marked inactive at once, so
                   it stops showing in reports, ledgers and balances.
                 </span>
-                <span className="mt-2 block text-xs text-body dark:text-bodydark">
+                <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
                   Nothing is deleted -- the entries stay on record -- but there
                   is no button here to bring them back.
                 </span>

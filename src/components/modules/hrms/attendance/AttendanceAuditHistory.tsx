@@ -158,7 +158,7 @@ const AttendanceAuditHistory = ({ user }: any) => {
       header: 'Employee',
       render: (row: any) => (
         <div>
-          <div className="font-semibold text-slate-900 dark:text-white">{row.employee_name || '-'}</div>
+          <div className="font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">{row.employee_name || '-'}</div>
           <div className="text-xs text-slate-500 dark:text-slate-400">{row.employee_serial || ''}</div>
         </div>
       ),
@@ -269,14 +269,14 @@ const AttendanceAuditHistory = ({ user }: any) => {
         {summary.map((item) => (
           <div key={item.label} className="border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-boxdark">
             <div className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{item.label}</div>
-            <div className="mt-1 text-xl font-bold text-slate-900 dark:text-white">{item.value}</div>
+            <div className="mt-1 text-xl font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">{item.value}</div>
           </div>
         ))}
       </div>
 
       <div className="border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white">Audit History</h3>
+          <h3 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">Audit History</h3>
           <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             {auditHistory?.total || rows.length} records
           </span>

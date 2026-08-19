@@ -965,7 +965,7 @@ const ElectronicsBusinessSales = () => {
                 {showInstallmentPopup && (
                   <div className="fixed inset-0 bg-opacity-50 flex mt-50 items-start justify-center z-50">
                     <div className="bg-white dark:bg-black p-6 rounded border-solid border-2 border-black dark:border-white shadow-lg w-96">
-                      <h3 className="text-lg font-bold mb-4 text-gray-700 dark:text-white">
+                      <h3 className="text-lg font-bold mb-4 text-gray-700 dark:text-[rgb(var(--c-text))]">
                         Installment Details
                       </h3>
                       <div className="grid grid-cols-2 gap-4">
@@ -980,7 +980,7 @@ const ElectronicsBusinessSales = () => {
                         />
                         <div className="w-full">
                           <label
-                            className="dark:text-white text-gray-900"
+                            className="dark:text-[rgb(var(--c-text))] text-gray-900"
                             htmlFor=""
                           >
                             Installment Start Date
@@ -1026,7 +1026,7 @@ const ElectronicsBusinessSales = () => {
 
                             <div className="w-full">
                               <label
-                                className="dark:text-white text-gray-900"
+                                className="dark:text-[rgb(var(--c-text))] text-gray-900"
                                 htmlFor=""
                               >
                                 Early Payment Date
@@ -1148,7 +1148,7 @@ const ElectronicsBusinessSales = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
             <div className="mt-4">
-              <p className="text-sm font-bold dark:text-white">
+              <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
                 Total Tk. {thousandSeparator((totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)))}  {Number(formData?.receivedAmt) > 0 ? `(${(totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)) - Number(formData?.receivedAmt)})` : ""}
               </p>
             </div>
@@ -1184,7 +1184,7 @@ const ElectronicsBusinessSales = () => {
                       label=""
                       className="whitespace-nowrap bg-transparent! text-center -mr-2 py-2 absolute right-0 top-2 pr-2! pl-2!"
                       icon={
-                        <FiSearch className="dark:text-white text-black-2 text-lg ml-2 mr-2" />
+                        <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg ml-2 mr-2" />
                       }
                     />
                   </div>
@@ -1238,7 +1238,7 @@ const ElectronicsBusinessSales = () => {
               <div className="block relative">
                 <label
                   htmlFor="serial_no"
-                  className="block text-sm font-medium text-black dark:text-white mb-1"
+                  className="block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] mb-1"
                 >
                   Enter Serial Number
                 </label>
@@ -1247,7 +1247,7 @@ const ElectronicsBusinessSales = () => {
  name="serial_no"
  placeholder="Enter Serial Number"
  className={`w-full px-3 py-1 text-gray-600 bg-white border  
- outline-none dark:bg-transparent dark:border-gray-600 dark:text-white 
+ outline-none dark:bg-transparent dark:border-gray-600 dark:text-[rgb(var(--c-text))] 
  dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 
  dark:focus:ring-blue-400 dark:focus:border-blue-400`}
  value={productData.serial_no}
@@ -1414,23 +1414,23 @@ const ElectronicsBusinessSales = () => {
                   key={index}
                   className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                 >
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center">
                     {++index}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))]">
                     {row.product_name}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                     {row.qty} {row.unit}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                     {row.price}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                     {thousandSeparator(
                       parseFloat((row.price * row.qty).toFixed(2)))}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20">
                     <Button
                       onClick={() => handleDelete(row.id)}
                       className="text-red-500 ml-2 text-center"
@@ -1519,7 +1519,7 @@ const ElectronicsBusinessSales = () => {
                       value={installment.installment_no}
                       readOnly
                       className={`form-input text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
- dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 
+ dark:border-gray-600 dark:text-[rgb(var(--c-text))] dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 
  dark:focus:ring-blue-400 dark:focus:border-blue-400 mt-1 block w-10 text-center`}
                       style={{
                         appearance: 'textfield', // for Firefox
@@ -1539,7 +1539,7 @@ const ElectronicsBusinessSales = () => {
                         setEditedInstallments(updated);
                       }}
                       className={`form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
-                    dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none  focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 mt-1 block w-26 text-right`}
+                    dark:border-gray-600 dark:text-[rgb(var(--c-text))] dark:placeholder-gray-500 focus:outline-none  focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 mt-1 block w-26 text-right`}
                       style={{
                         appearance: 'textfield', // for Firefox
                         MozAppearance: 'textfield', // for older Firefox

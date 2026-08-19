@@ -737,7 +737,7 @@ const ExpenseDetailsModal = ({
         >
           <div className="sticky top-0 z-10 flex items-start justify-between border-b border-stroke bg-white px-5 py-4 dark:border-strokedark dark:bg-boxdark">
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {detail.name}
               </h3>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
@@ -810,7 +810,7 @@ const ExpenseDetailsModal = ({
                         </td>
                       </tr>
                     ))}
-                    <tr className="border-t border-stroke font-semibold text-slate-900 dark:border-strokedark dark:text-white">
+                    <tr className="border-t border-stroke font-semibold text-slate-900 dark:border-strokedark dark:text-[rgb(var(--c-text))]">
                       <td className="px-3 py-3">Total</td>
                       <td className="px-3 py-3 text-right">
                         {thousandSeparator(totalMovementDebit)}
@@ -854,7 +854,7 @@ const ModalStat = ({
       <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
         {label}
       </p>
-      <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+      <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
         {thousandSeparator(value)}
       </p>
     </div>

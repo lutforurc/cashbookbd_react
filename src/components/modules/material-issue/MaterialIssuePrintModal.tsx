@@ -68,7 +68,7 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
       >
         {/* Toolbar (not printed) */}
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-strokedark">
-          <h3 className="text-base font-semibold text-gray-800 dark:text-white">Material Issue</h3>
+          <h3 className="text-base font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">Material Issue</h3>
           <div className="flex items-center gap-2">
             <Button
               onClick={handlePrint}
@@ -79,7 +79,7 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
             </Button>
             <Button
               onClick={onClose}
-              className="flex w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-bodydark dark:hover:bg-strokedark"
+              className="flex w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-strokedark"
             >
               <FiX />
             </Button>

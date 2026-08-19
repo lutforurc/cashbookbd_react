@@ -170,7 +170,7 @@ const ApprovalAudit = ({ user }: any) => {
       header: 'Employee',
       render: (row: any) => (
         <div>
-          <div className="font-semibold text-slate-900 dark:text-white">{row.employee_name || '-'}</div>
+          <div className="font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">{row.employee_name || '-'}</div>
           <div className="text-xs text-slate-500">{row.employee_serial || ''}</div>
         </div>
       ),
@@ -215,7 +215,7 @@ const ApprovalAudit = ({ user }: any) => {
             className="w-full"
           />
           <div>
-            <label className="mb-1 block text-sm font-medium text-black dark:text-white">Branch/Project</label>
+            <label className="mb-1 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Branch/Project</label>
             <BranchDropdown
  name="branch_id"
  defaultValue={userBranchId}
@@ -226,7 +226,7 @@ const ApprovalAudit = ({ user }: any) => {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-black dark:text-white">Action</label>
+            <label className="mb-1 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Action</label>
             <Select
  name="action"
  value={filters.action}
@@ -252,7 +252,7 @@ const ApprovalAudit = ({ user }: any) => {
             className=""
           />
           <div>
-            <label className="mb-1 block text-sm font-medium text-black dark:text-white">Per Page</label>
+            <label className="mb-1 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Per Page</label>
             <Select
  name="per_page"
  value={filters.per_page}
@@ -295,7 +295,7 @@ const ApprovalAudit = ({ user }: any) => {
 
       <div className="border border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stroke px-4 py-3 dark:border-strokedark">
-          <h5 className="text-sm font-bold text-black dark:text-white">Attendance Approval Audit</h5>
+          <h5 className="text-sm font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Attendance Approval Audit</h5>
           <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{total} record(s)</span>
         </div>
 

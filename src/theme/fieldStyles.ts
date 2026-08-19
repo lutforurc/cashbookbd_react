@@ -229,6 +229,19 @@ export const FIELD_SELECT_ARROW = `${FIELD_SELECT} appearance-none pr-8`;
  */
 export const FIELD_OPTION = 'dark:bg-boxdark dark:text-white';
 
+/**
+ * A colour box.
+ *
+ * The same surface, border and height as every other field, with the padding
+ * taken out -- the browser draws the colour inside the control, so padding
+ * leaves it as a small chip floating in a box rather than a colour you can see.
+ * The `!` is there because the field's own `px-3 py-1` would otherwise win.
+ *
+ * The browser's own padding and swatch border are removed in style.css, where
+ * the pseudo-elements that draw them can be reached.
+ */
+export const FIELD_COLOR = `${FIELD_BASE} cursor-pointer p-0!`;
+
 /** A tick box. Sized to the text beside it rather than to a form row. */
 export const FIELD_CHECKBOX = [
   'h-4 w-4 shrink-0 cursor-pointer rounded-xs',

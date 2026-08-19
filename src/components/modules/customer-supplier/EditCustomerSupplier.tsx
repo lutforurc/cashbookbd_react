@@ -432,7 +432,7 @@ const EditCustomerSupplier = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 items-start">
             {needArea && (
               <div>
-                <label className="dark:text-white text-sm text-gray-900">
+                <label className="dark:text-[rgb(var(--c-text))] text-sm text-gray-900">
                   Select Area
                 </label>
                 <DdlDynamicMultiline
@@ -796,7 +796,7 @@ const EditCustomerSupplier = () => {
                       type="button"
                       onClick={() => setDetailsTab(tab.key)}
                       className={`-mb-px rounded-t border-b-2 px-4 py-2 text-sm transition ${activeDetailsTab === tab.key
-                        ? 'border-blue-600 bg-blue-50 font-semibold text-blue-700 dark:border-blue-500 dark:bg-blue-500/15 dark:text-white'
+                        ? 'border-blue-600 bg-blue-50 font-semibold text-blue-700 dark:border-blue-500 dark:bg-blue-500/15 dark:text-[rgb(var(--c-text))]'
                         : 'border-transparent font-medium text-gray-500 hover:border-gray-300 hover:text-blue-500 dark:text-gray-400'
                         }`}
                     >

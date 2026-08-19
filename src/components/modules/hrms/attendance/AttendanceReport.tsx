@@ -135,7 +135,7 @@ const cardTone = (label: string) => {
     Approved: { bar: 'bg-emerald-500', value: 'text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500' },
     Rejected: { bar: 'bg-rose-500', value: 'text-rose-600 dark:text-rose-400', dot: 'bg-rose-500' },
   };
-  return map[label] || { bar: 'bg-slate-400', value: 'text-slate-900 dark:text-white', dot: 'bg-slate-400' };
+  return map[label] || { bar: 'bg-slate-400', value: 'text-slate-900 dark:text-[rgb(var(--c-text))]', dot: 'bg-slate-400' };
 };
 
 type AttendanceReportProps = {
@@ -446,7 +446,7 @@ const AttendanceReport = ({
           className="w-full"
         />
         <div>
-          <label className="text-black dark:text-white">Branch</label>
+          <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Branch</label>
           <BranchDropdown
  name="branch_id"
  defaultValue={userBranchId}
@@ -492,7 +492,7 @@ const AttendanceReport = ({
               }}
               onBlur={() => setOvertimeRowsPerPage(String(Math.max(1, Number(overtimeRowsPerPage) || 12)))}
               title="Rows per page for print"
-              className="w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
+              className="w-20 border border-stroke bg-white px-3 text-center text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
             />
             <Input
               type="text"
@@ -503,7 +503,7 @@ const AttendanceReport = ({
               }}
               onBlur={() => setOvertimePrintFontSize(String(Math.max(6, Number(overtimePrintFontSize) || 12)))}
               title="Font Size for print"
-              className="w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
+              className="w-20 border border-stroke bg-white px-3 text-center text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
             />
             <PrintButton
               label="Print"

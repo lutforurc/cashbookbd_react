@@ -124,7 +124,7 @@ const ComputerAccessories = () => {
           visibleWidgets.map((widget) => {
             if (widget.id === 'summary') {
               return (
-            <div key={widget.id} className="group relative flex flex-col overflow-hidden bg-white text-black shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:text-white dark:ring-gray-700">
+            <div key={widget.id} className="group relative flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:text-[rgb(var(--c-text))] dark:ring-gray-700">
               <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
                 <span className="truncate text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   {dashboard?.data &&
@@ -256,7 +256,7 @@ const ComputerAccessories = () => {
 
             if (widget.id === 'top-sales' && topProductsSales?.length > 0) {
               return (
-              <div key={widget.id} className="relative flex flex-col overflow-hidden bg-white text-black shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700">
+              <div key={widget.id} className="relative flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:text-[rgb(var(--c-text))] dark:ring-gray-700">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-gray-700">
                   <span className="truncate text-sm font-bold">
@@ -322,7 +322,7 @@ const ComputerAccessories = () => {
 
             if (widget.id === 'top-purchase' && topProductsPurchase?.length > 0) {
               return (
-              <div key={widget.id} className="relative flex flex-col overflow-hidden bg-white text-black shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700">
+              <div key={widget.id} className="relative flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:text-[rgb(var(--c-text))] dark:ring-gray-700">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-gray-700">
                   <span className="truncate text-sm font-bold">

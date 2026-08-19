@@ -52,10 +52,10 @@ const Alerts = () => {
               </svg>
             </div>
             <div className="w-full">
-              <h5 className="mb-3 text-lg font-semibold text-black dark:text-[rgb(var(--c-emerald-400))] ">
+              <h5 className="mb-3 text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-emerald-400))] ">
                 Message Sent Successfully
               </h5>
-              <p className="text-base leading-relaxed text-body">
+              <p className="text-base leading-relaxed text-[rgb(var(--c-text-muted))]">
                 Lorem Ipsum is simply dummy text of the printing and typesetting
                 industry.
               </p>

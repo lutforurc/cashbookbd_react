@@ -94,6 +94,10 @@ const EditUser = (user: any) => {
         theme_warning_color_dark: '',
         theme_info_color_light: '',
         theme_info_color_dark: '',
+        theme_text_color_light: '',
+        theme_text_color_dark: '',
+        theme_text_secondary_color_light: '',
+        theme_text_secondary_color_dark: '',
         theme_sidebar_color_light: '',
         theme_sidebar_color_dark: '',
         theme_header_color_light: '',
@@ -145,6 +149,10 @@ const EditUser = (user: any) => {
                 theme_warning_color_dark: String(showUser.editData.theme_warning_color_dark || ''),
                 theme_info_color_light: String(showUser.editData.theme_info_color_light || ''),
                 theme_info_color_dark: String(showUser.editData.theme_info_color_dark || ''),
+                theme_text_color_light: String(showUser.editData.theme_text_color_light || ''),
+                theme_text_color_dark: String(showUser.editData.theme_text_color_dark || ''),
+                theme_text_secondary_color_light: String(showUser.editData.theme_text_secondary_color_light || ''),
+                theme_text_secondary_color_dark: String(showUser.editData.theme_text_secondary_color_dark || ''),
                 theme_sidebar_color_light: String(showUser.editData.theme_sidebar_color_light || ''),
                 theme_sidebar_color_dark: String(showUser.editData.theme_sidebar_color_dark || ''),
                 theme_header_color_light: String(showUser.editData.theme_header_color_light || ''),
@@ -361,7 +369,7 @@ const EditUser = (user: any) => {
 
                 <div className="md:col-span-2 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
                     <div className="mb-4">
-                        <h3 className="text-base font-semibold text-gray-800 dark:text-white">
+                        <h3 className="text-base font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
                             User Features
                         </h3>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -387,10 +395,13 @@ const EditUser = (user: any) => {
                 </div>
 
                 <ThemeSetupSection
-                    values={formData as ThemeSetupValues}
-                    onChange={(name, value) =>
-                        setFormData((prevData) => ({ ...prevData, [name]: value }))
-                    }
+                  values={formData as ThemeSetupValues}
+                  onChange={(name, value) =>
+                    setFormData((prevData) => ({ ...prevData, [name]: value }))
+                  }
+                  onChangeMany={(next) =>
+                    setFormData((prevData) => ({ ...prevData, ...next }))
+                  }
                 />
 
                 <div className='flex gap-2 md:col-span-2'>

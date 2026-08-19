@@ -23,7 +23,7 @@ import { Input } from '../../components/utils/fields/FormControls';
  * muted voice for everything on the card that is not the action. The underline
  * on hover is what says they are clickable, not a brighter colour.
  */
-const TEXT_LINK = 'text-sm font-medium text-body hover:underline dark:text-bodydark';
+const TEXT_LINK = 'text-sm font-medium text-[rgb(var(--c-text-muted))] hover:underline dark:text-[rgb(var(--c-text-muted))]';
 
 const SignIn: React.FC = () => {
   const { isLoading, errors, isLoggedIn, deviceLimit } = useSelector((state: any) => state.auth);
@@ -278,19 +278,19 @@ const SignIn: React.FC = () => {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-meta-3 opacity-75" />
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-meta-3" />
                 </span>
-                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-black dark:text-white">
+                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   CashbookBD
                 </span>
               </div>
 
-              <h2 className="mb-2 text-center text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
+              <h2 className="mb-2 text-center text-2xl font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] sm:text-title-xl2">
                 <HelmetTitle title={getSignInTitleByHost(hostname)} />
               </h2>
 
-              {/* `text-body` / `dark:text-bodydark`, not black-at-60% over
+              {/* `text-[rgb(var(--c-text-muted))]` / `dark:text-[rgb(var(--c-text-muted))]`, not black-at-60% over
                   white-at-60%: the two are not the same grey, so the line used
                   to change weight as well as colour between the themes. */}
-              <p className="mb-6 w-full text-center text-sm text-body dark:text-bodydark">
+              <p className="mb-6 w-full text-center text-sm text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
                 Sign in to continue.
               </p>
 
@@ -318,7 +318,7 @@ const SignIn: React.FC = () => {
                       Email or Phone
                     </label>
                     <div className="relative">
-                      <FiMail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
+                      <FiMail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[rgb(var(--c-text-muted))] dark:text-bodydark2" />
                       <Input
                         type="text"
                         name="loginId"
@@ -337,7 +337,7 @@ const SignIn: React.FC = () => {
                       Password
                     </label>
                     <div className="relative">
-                      <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
+                      <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[rgb(var(--c-text-muted))] dark:text-bodydark2" />
                       <Input
                         name="password"
                         type={checkPassword ? 'password' : 'text'}
@@ -353,7 +353,7 @@ const SignIn: React.FC = () => {
                         type="button"
                         onClick={handleCheckPassword}
                         title={checkPassword ? 'Show password' : 'Hide password'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-body transition-colors hover:text-primary dark:text-bodydark2 dark:hover:text-primary"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[rgb(var(--c-text-muted))] transition-colors hover:text-primary dark:text-bodydark2 dark:hover:text-primary"
                       >
                         {checkPassword ? <FiEye className="h-5 w-5" /> : <FiEyeOff className="h-5 w-5" />}
                       </Button>
@@ -366,7 +366,7 @@ const SignIn: React.FC = () => {
                       checked={formData.remember}
                       onChange={handleChange}
                       label="Remember me"
-                      labelClassName="text-sm text-body dark:text-bodydark"
+                      labelClassName="text-sm text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]"
                     />
                     <Link to={ROUTES.forgot_password} className={TEXT_LINK}>
                       Forgot password?
@@ -404,7 +404,7 @@ const SignIn: React.FC = () => {
 
                     {shouldShowCompanyRegistration && (
                       <div>
-                        <p className="mt-4 text-center text-sm text-body dark:text-bodydark">
+                        <p className="mt-4 text-center text-sm text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
                           New here?{' '}
                           <Link to={ROUTES.public_register} className={TEXT_LINK}>
                             Register your company
@@ -418,7 +418,7 @@ const SignIn: React.FC = () => {
 
               {/* Was black-at-80% in light and white-at-20% in dark -- the same
                   line, near-solid on one theme and almost gone on the other. */}
-              <p className="mt-6 text-center text-xs text-body dark:text-bodydark2">
+              <p className="mt-6 text-center text-xs text-[rgb(var(--c-text-muted))] dark:text-bodydark2">
                 © {new Date().getFullYear()} CashbookBD - All rights reserved.
               </p>
             </div>

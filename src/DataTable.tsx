@@ -16,7 +16,7 @@ const DataTable: React.FC<DropdownProps> = ({ options, onSelect }) => {
   const formatOptionLabel = ({ label, additionalDetails }: OptionType) => (
     <div>
       <div>{label}</div>
-      <div className='text-sm text-black'>{additionalDetails}</div>
+      <div className='text-sm text-[rgb(var(--c-text))]'>{additionalDetails}</div>
     </div>
   );
 

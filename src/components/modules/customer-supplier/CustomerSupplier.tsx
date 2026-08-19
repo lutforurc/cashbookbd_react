@@ -621,7 +621,7 @@ const CustomerSupplier = () => {
         message={
           <div className="text-base leading-7 text-slate-700 dark:text-slate-200">
             <div>Are you sure you want to delete voucher</div>
-            <div className="font-bold text-slate-800 dark:text-white">
+            <div className="font-bold text-slate-800 dark:text-[rgb(var(--c-text))]">
               {deleteConfirmRow?.name || 'this customer'} ?
             </div>
           </div>
@@ -643,16 +643,16 @@ const CustomerSupplier = () => {
         message={
           <div className="text-base leading-7 text-slate-700 dark:text-slate-200">
             <div>Delete the opening balance of</div>
-            <div className="font-bold text-slate-800 dark:text-white">
+            <div className="font-bold text-slate-800 dark:text-[rgb(var(--c-text))]">
               {openingDeleteRow?.name}
             </div>
             <div className="mt-2 text-sm">
               Amount{' '}
-              <span className="font-semibold text-slate-800 dark:text-white">
+              <span className="font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
                 {openingDeleteRow?.openingbalance}
               </span>
               {' · '}Voucher{' '}
-              <span className="font-mono font-semibold text-slate-800 dark:text-white">
+              <span className="font-mono font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
                 {openingDeleteRow?.opening_vr_no}
               </span>
             </div>

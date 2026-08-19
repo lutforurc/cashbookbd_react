@@ -191,7 +191,7 @@ const GlobalSearch = () => {
         <div className="relative">
           <Button
             type="submit"
-            className="absolute left-0 top-1/2 -translate-y-1/2 text-body hover:text-primary dark:text-bodydark dark:hover:text-primary"
+            className="absolute left-0 top-1/2 -translate-y-1/2 text-[rgb(var(--c-text-muted))] hover:text-primary dark:text-[rgb(var(--c-text-muted))] dark:hover:text-primary"
             aria-label="Search"
           >
             <FiSearch size={20} />
@@ -207,7 +207,7 @@ const GlobalSearch = () => {
             // positioned against its own edges, so a border and a solid fill
             // put both of those on top of the frame and boxed in what used to
             // read as part of the bar. Only the colours are shared.
-            className="w-full bg-transparent pl-9 pr-16 text-black placeholder-gray-400 outline-none transition focus:outline-none dark:text-white dark:placeholder-gray-500 xl:w-125"
+            className="w-full bg-transparent pl-9 pr-16 text-[rgb(var(--c-text))] placeholder-gray-400 outline-none transition focus:outline-none dark:text-[rgb(var(--c-text))] dark:placeholder-gray-500 xl:w-125"
             onChange={(event) => {
               setQuery(event.target.value);
               setOpen(true);
@@ -221,14 +221,14 @@ const GlobalSearch = () => {
           {query ? (
             <Button
               type="button"
-              className="absolute right-0 top-1/2 -translate-y-1/2 text-body hover:text-danger dark:text-bodydark"
+              className="absolute right-0 top-1/2 -translate-y-1/2 text-[rgb(var(--c-text-muted))] hover:text-danger dark:text-[rgb(var(--c-text-muted))]"
               onClick={resetSearch}
               aria-label="Clear search"
             >
               <FiX size={18} />
             </Button>
           ) : (
-            <span className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 rounded border border-stroke px-1.5 py-0.5 text-[10px] font-semibold uppercase text-body dark:border-strokedark dark:text-bodydark md:inline-flex">
+            <span className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 rounded border border-stroke px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[rgb(var(--c-text-muted))] dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] md:inline-flex">
               Ctrl K
             </span>
           )}
@@ -240,7 +240,7 @@ const GlobalSearch = () => {
           {voucherTarget || isCustomerMobileSearch || results.length > 0 ? (
             <ul className="max-h-96 overflow-y-auto py-2">
               {!query.trim() && results.length > 0 ? (
-                <li className="px-4 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-body dark:text-bodydark">
+                <li className="px-4 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
                   Quick Actions
                 </li>
               ) : null}
@@ -253,12 +253,12 @@ const GlobalSearch = () => {
                     onClick={printVoucher}
                   >
                     <span className="min-w-0">
-                      <span className="block truncate font-medium text-black dark:text-white">
+                      <span className="block truncate font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                         Print Preview {voucherTarget.label}
                       </span>
-                      <span className="block truncate text-xs text-body dark:text-bodydark">{query.trim()}</span>
+                      <span className="block truncate text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">{query.trim()}</span>
                     </span>
-                    <span className="shrink-0 truncate text-xs text-body dark:text-bodydark">Voucher Print</span>
+                    <span className="shrink-0 truncate text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">Voucher Print</span>
                   </Button>
                 </li>
               ) : null}
@@ -271,10 +271,10 @@ const GlobalSearch = () => {
                     onClick={goToCustomerSearch}
                   >
                     <span className="min-w-0">
-                      <span className="block truncate font-medium text-black dark:text-white">Search Customer</span>
-                      <span className="block truncate text-xs text-body dark:text-bodydark">{query.trim()}</span>
+                      <span className="block truncate font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Search Customer</span>
+                      <span className="block truncate text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">{query.trim()}</span>
                     </span>
-                    <span className="shrink-0 truncate text-xs text-body dark:text-bodydark">List Customers</span>
+                    <span className="shrink-0 truncate text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">List Customers</span>
                   </Button>
                 </li>
               ) : null}
@@ -290,18 +290,18 @@ const GlobalSearch = () => {
                     onClick={() => goToItem(item)}
                   >
                       <span className="min-w-0">
-                      <span className="block truncate font-medium text-black dark:text-white">
+                      <span className="block truncate font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                         {!query.trim() ? QUICK_ACTION_LABELS[item.title] ?? item.title : item.title}
                       </span>
-                      <span className="block truncate text-xs text-body dark:text-bodydark">{item.group}</span>
+                      <span className="block truncate text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">{item.group}</span>
                     </span>
-                    <span className="shrink-0 truncate text-xs text-body dark:text-bodydark">{item.path}</span>
+                    <span className="shrink-0 truncate text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">{item.path}</span>
                   </Button>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="px-4 py-3 text-sm text-body dark:text-bodydark">No matching pages found.</div>
+            <div className="px-4 py-3 text-sm text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">No matching pages found.</div>
           )}
         </div>
       ) : null}

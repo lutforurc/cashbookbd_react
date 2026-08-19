@@ -470,7 +470,7 @@ const TradingPurchaseImport = () => {
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
         <HelmetTitle title="Trading Purchase Invoice Import" screen="purchase-import.trading" />
       </div>
-      {purchase.isLoading ? <div className="mb-2 text-sm dark:text-white">Saving...</div> : null}
+      {purchase.isLoading ? <div className="mb-2 text-sm dark:text-[rgb(var(--c-text))]">Saving...</div> : null}
       <div className="grid grid-cols-1 gap-4">
         {!preview && (
           <div>
@@ -515,7 +515,7 @@ const TradingPurchaseImport = () => {
                   <tbody className="divide-y divide-stroke dark:divide-strokedark">
                     {importedRows.length > 0 ? (
                       importedRows.map((row, index) => (
-                        <tr key={`${row.slNo || index}-${row.supplier}-${row.product}`} className="dark:text-white">
+                        <tr key={`${row.slNo || index}-${row.supplier}-${row.product}`} className="dark:text-[rgb(var(--c-text))]">
                           <td className="px-3 py-2 text-center">{row.slNo || index + 1}</td>
                           <td className="px-3 py-2">{row.supplier}</td>
                           <td className="px-3 py-2">{row.product}</td>
@@ -548,7 +548,7 @@ const TradingPurchaseImport = () => {
                     setPreview(null);
                   }}
                   placeholder="Paste Excel rows here"
-                  className="h-40 w-full rounded border border-stroke bg-white p-3 text-sm text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className="h-40 w-full rounded border border-stroke bg-white p-3 text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-[rgb(var(--c-text))]"
                 />
               )}
               <div className="mt-3 grid grid-cols-2 gap-2">
@@ -635,10 +635,10 @@ const TradingPurchaseImport = () => {
                       className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
                     >
                       <td className="px-2 py-2">{row.slNo || index + 1}</td>
-                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
+                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                         {row.supplierName}
                       </td>
-                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
+                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                         {row.productName}
                       </td>
                       <td className="px-2 py-2 text-right">{ thousandSeparator(row.qty) } {row.unit}</td>

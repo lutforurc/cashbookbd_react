@@ -722,7 +722,7 @@ const ProductProfitLoss = (user: any) => {
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
                 Qty.
               </p>
-              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {thousandSeparator(summary.totalQty)}
               </p>
             </div>
@@ -731,7 +731,7 @@ const ProductProfitLoss = (user: any) => {
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
                 Purchase
               </p>
-              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {thousandSeparator(summary.totalPurchase)}
               </p>
             </div>
@@ -740,7 +740,7 @@ const ProductProfitLoss = (user: any) => {
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
                 Sales
               </p>
-              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {thousandSeparator(summary.totalSales)}
               </p>
             </div>

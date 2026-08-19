@@ -781,7 +781,7 @@ const LedgerWithProduct = (user: any) => {
               <span className="text-slate-500 dark:text-slate-400">
                 Closing:
               </span>{' '}
-              <span className="font-bold text-slate-900 dark:text-white">
+              <span className="font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {thousandSeparator(footerClosingValue)}
               </span>
             </div>
@@ -1100,7 +1100,7 @@ const LedgerWithProduct = (user: any) => {
 
         {!statementState?.loading && !hasLoaded ? (
           <div className="rounded-sm border border-slate-200 bg-white px-6 py-12 text-center shadow-default dark:border-slate-700 dark:bg-[rgb(var(--c-boxdark))]">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-white">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               No statement loaded yet
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">

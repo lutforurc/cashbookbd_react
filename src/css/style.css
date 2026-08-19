@@ -757,11 +757,46 @@
 
 @layer base {
   body {
-    @apply font-satoshi font-normal text-base text-body relative z-1;
+    @apply font-satoshi font-normal text-base relative z-1;
+    /* The text colour, one variable for both modes -- see --c-text in
+       tokens.css. It replaced `text-[rgb(var(--c-text-muted))]` here so that everything inheriting
+       from the page moves with the user's choice; the screens that ask for
+       `text-[rgb(var(--c-text-muted))]` on purpose still get the quieter grey. */
+    color: rgb(var(--c-text));
     /* The page colour, one variable for both modes -- see --c-page in
        tokens.css. It replaced `bg-whiten` here, which said only what a light
        screen should be and left the dark page to a wrapper further in. */
     background-color: rgb(var(--c-page));
+  }
+
+  /* A colour box should BE the colour.
+     
+     The browser draws its own swatch inside the field, with padding of its own
+     and a border around it -- so a 34px control showed a small chip floating in
+     the middle of a box, which is what the theme form looked like at first. The
+     three rules below take the browser's padding and border away, and the field
+     itself carries the border, exactly like the text box beside it. */
+  input[type='color'] {
+    padding: 0;
+    cursor: pointer;
+  }
+
+  input[type='color']::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  /* Separate rules, not one selector list. A list containing a pseudo-element
+     the browser does not know is thrown away whole -- so pairing the -webkit-
+     and -moz- names left BOTH browsers drawing their own pale border, which is
+     the white ring that showed up around every swatch on a dark screen. */
+  input[type='color']::-webkit-color-swatch {
+    border: 0;
+    border-radius: 0;
+  }
+
+  input[type='color']::-moz-color-swatch {
+    border: 0;
+    border-radius: 0;
   }
 
   /* Date and time inputs are drawn by the browser, not by us. On a dark page
@@ -818,7 +853,7 @@
 }
 
 .apexcharts-legend-text {
-  @apply text-body! dark:text-bodydark!;
+  @apply text-[rgb(var(--c-text-muted))]! dark:text-[rgb(var(--c-text-muted))]!;
 }
 .apexcharts-text {
   @apply fill-body! dark:fill-bodydark!;
@@ -857,7 +892,7 @@
   @apply border-b-gray! dark:border-b-meta-4!;
 }
 .apexcharts-xaxistooltip-bottom {
-  @apply rounded-sm! border-none! bg-gray! text-xs! font-medium! text-black! dark:text-white!;
+  @apply rounded-sm! border-none! bg-gray! text-xs! font-medium! text-[rgb(var(--c-text))]! dark:text-[rgb(var(--c-text))]!;
 }
 .apexcharts-tooltip-series-group {
   @apply pl-1.5!;
@@ -877,14 +912,14 @@
   @apply dark:border-b-boxdark!;
 }
 .flatpickr-calendar {
-  @apply p-6! dark:bg-boxdark! dark:text-bodydark! dark:shadow-8! 2xsm:w-auto!;
+  @apply p-6! dark:bg-boxdark! dark:text-[rgb(var(--c-text-muted))]! dark:shadow-8! 2xsm:w-auto!;
 }
 .flatpickr-day {
-  @apply dark:text-bodydark! dark:hover:border-meta-4! dark:hover:bg-meta-4!;
+  @apply dark:text-[rgb(var(--c-text-muted))]! dark:hover:border-meta-4! dark:hover:bg-meta-4!;
 }
 .flatpickr-months .flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month {
-  @apply top-7! dark:fill-white! dark:text-white!;
+  @apply top-7! dark:fill-white! dark:text-[rgb(var(--c-text))]!;
 }
 .flatpickr-months .flatpickr-prev-month.flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month.flatpickr-prev-month {
@@ -896,7 +931,7 @@
 }
 span.flatpickr-weekday,
 .flatpickr-months .flatpickr-month {
-  @apply dark:fill-white! dark:text-white!;
+  @apply dark:fill-white! dark:text-[rgb(var(--c-text))]!;
 }
 .flatpickr-day.inRange {
   @apply dark:shadow-7!;
@@ -922,7 +957,7 @@ span.flatpickr-weekday,
 .flatpickr-day.startRange,
 .flatpickr-day.selected,
 .flatpickr-day.endRange {
-  @apply dark:text-white!;
+  @apply dark:text-[rgb(var(--c-text))]!;
 }
 .flatpickr-day.selected,
 .flatpickr-day.startRange,
@@ -952,7 +987,7 @@ span.flatpickr-weekday,
 }
 
 .map-btn .jvm-zoom-btn {
-  @apply flex items-center justify-center w-7.5 h-7.5 rounded-sm border border-stroke dark:border-strokedark hover:border-primary dark:hover:border-primary bg-white hover:bg-primary text-body hover:text-white dark:text-bodydark dark:hover:text-white text-2xl leading-none px-0 pt-0 pb-0.5;
+  @apply flex items-center justify-center w-7.5 h-7.5 rounded-sm border border-stroke dark:border-strokedark hover:border-primary dark:hover:border-primary bg-white hover:bg-primary text-[rgb(var(--c-text-muted))] hover:text-white dark:text-[rgb(var(--c-text-muted))] dark:hover:text-white text-2xl leading-none px-0 pt-0 pb-0.5;
 }
 .mapOne .jvm-zoom-btn {
   @apply left-auto top-auto bottom-0;

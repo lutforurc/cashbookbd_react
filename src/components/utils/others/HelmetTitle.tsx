@@ -37,7 +37,7 @@ const HelmetTitle: React.FC<HelmetParam> = ({ title = '', screen }) => {
 
       {title !== 'Dashboard' && title !== 'Construction Dashboard' &&
         (<div className="flex items-center justify-center gap-2">
-          <h1 className="text-xl text-black-2 dark:text-white font-bold">
+          <h1 className="text-xl text-black-2 dark:text-[rgb(var(--c-text))] font-bold">
             {title}
           </h1>
           <TutorialVideoLink screen={screenKey} title={String(title || '')} />

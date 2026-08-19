@@ -79,14 +79,14 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
           <form>
             <div className="grid grid-cols-3 gap-5 justify-normal">
               <div className="form-group w-full col-span-3">
-                <label className="mb-3 block text-sm font-medium text-black dark:text-white"
+                <label className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                   htmlFor="id">Bond ID (Input "ALL" to track all bonds with paramaters below)</label>
                 <Input className={`${FIELD_BASE} w-full py-3 pl-3 pr-4.5`}
                   name="id" onChange={handleChange} value={formState.id} />
               </div>
 
               <div className="form-group ">
-                <label className="mb-3 block text-sm font-medium text-black dark:text-white" htmlFor="para">Parameter</label>
+                <label className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="para">Parameter</label>
                 <div className="relative z-20 w-full rounded border border-stroke p-1.5 pr-8 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input">
                   <div className="flex flex-wrap items-center"></div>
                   <span className="m-1.5 flex items-center justify-center rounded border-[.5px] border-stroke bg-gray py-1.5 px-2.5 text-sm font-medium dark:border-strokedark dark:bg-white/30">
@@ -129,7 +129,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
 
 
               <div className="form-group">
-                <label className="mb-3 block text-sm font-medium text-black dark:text-white" htmlFor="criterion">Criterion</label>
+                <label className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="criterion">Criterion</label>
                 <div className="relative z-20 w-full rounded border border-stroke p-1.5 pr-8 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input">
                   <div className="flex flex-wrap items-center"></div>
                   <span className="m-1.5 flex items-center justify-center rounded border-[.5px] border-stroke bg-gray py-1.5 px-2.5 text-sm font-medium dark:border-strokedark dark:bg-white/30">
@@ -169,13 +169,13 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
                 </div>
               </div>
               <div className="form-group w-full">
-                <label className="mb-3 block text-sm font-medium text-black dark:text-white" htmlFor="value">Value to give Alert</label>
+                <label className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="value">Value to give Alert</label>
                 <Input className={`${FIELD_BASE} w-full py-3 pl-3 pr-4.5`}
                   name="value" onChange={handleChange} value={formState.value} />
               </div>
 
               <div className="form-group">
-                <label className="mb-3 block text-sm font-medium text-black dark:text-white" htmlFor="type">Alert Type</label>
+                <label className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="type">Alert Type</label>
                 <div className="relative z-20 w-full rounded border border-stroke p-1.5 pr-8 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input">
                   <div className="flex flex-wrap items-center"></div>
                   <span className={`${formState.type == 0 ? "bg-[rgb(var(--c-success))]" : formState.type == 1 ? "bg-[rgb(var(--c-meta-6))]" : "bg-[rgb(var(--c-danger))]"} m-1.5 flex items-center justify-center rounded border-[.5px] border-stroke py-1.5 px-2.5 text-white font-medium dark:border-strokedark`}>

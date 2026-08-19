@@ -14,7 +14,7 @@ const Settings = () => {
           <div className="col-span-5 xl:col-span-3">
             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
               <div className="border-b border-stroke py-4 px-7 dark:border-strokedark">
-                <h3 className="font-medium text-black dark:text-white">
+                <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Personal Information
                 </h3>
               </div>
@@ -23,7 +23,7 @@ const Settings = () => {
                   <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
                     <div className="w-full sm:w-1/2">
                       <label
-                        className="mb-3 block text-sm font-medium text-black dark:text-white"
+                        className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                         htmlFor="fullName"
                       >
                         Full Name
@@ -67,7 +67,7 @@ const Settings = () => {
 
                     <div className="w-full sm:w-1/2">
                       <label
-                        className="mb-3 block text-sm font-medium text-black dark:text-white"
+                        className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                         htmlFor="phoneNumber"
                       >
                         Phone Number
@@ -85,7 +85,7 @@ const Settings = () => {
 
                   <div className="mb-5.5">
                     <label
-                      className="mb-3 block text-sm font-medium text-black dark:text-white"
+                      className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                       htmlFor="emailAddress"
                     >
                       Email Address
@@ -129,7 +129,7 @@ const Settings = () => {
 
                   <div className="mb-5.5">
                     <label
-                      className="mb-3 block text-sm font-medium text-black dark:text-white"
+                      className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                       htmlFor="Username"
                     >
                       Username
@@ -146,7 +146,7 @@ const Settings = () => {
 
                   <div className="mb-5.5">
                     <label
-                      className="mb-3 block text-sm font-medium text-black dark:text-white"
+                      className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                       htmlFor="Username"
                     >
                       BIO
@@ -196,7 +196,7 @@ const Settings = () => {
 
                   <div className="flex justify-end gap-4.5">
                     <Button
-                      className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
+                      className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-[rgb(var(--c-text))] hover:shadow-1 dark:border-strokedark dark:text-[rgb(var(--c-text))]"
                       type="submit"
                     >
                       Cancel
@@ -215,7 +215,7 @@ const Settings = () => {
           <div className="col-span-5 xl:col-span-2">
             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
               <div className="border-b border-stroke py-4 px-7 dark:border-strokedark">
-                <h3 className="font-medium text-black dark:text-white">
+                <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Your Photo
                 </h3>
               </div>
@@ -226,7 +226,7 @@ const Settings = () => {
                       <img src={userThree} alt="User" />
                     </div>
                     <div>
-                      <span className="mb-1.5 text-black dark:text-white">
+                      <span className="mb-1.5 text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                         Edit your photo
                       </span>
                       <span className="flex gap-2.5">
@@ -289,7 +289,7 @@ const Settings = () => {
 
                   <div className="flex justify-end gap-4.5">
                     <Button
-                      className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
+                      className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-[rgb(var(--c-text))] hover:shadow-1 dark:border-strokedark dark:text-[rgb(var(--c-text))]"
                       type="submit"
                     >
                       Cancel

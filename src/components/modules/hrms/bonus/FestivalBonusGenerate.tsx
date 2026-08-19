@@ -306,7 +306,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
               
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
-                  <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Bonus % of Basic</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Bonus % of Basic</label>
                   <InputElement
                     value={bonusPercent}
                     onChange={(e) => setBonusPercent(e.target.value)}
@@ -352,7 +352,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
         <div className="border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Branch</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Branch</label>
               <BranchDropdown
                 defaultValue={branchId?.toString()}
                 onChange={(e: any) => {
@@ -365,7 +365,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
             </div>
 
             <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Bonus Month</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Bonus Month</label>
               <MonthDropdown
                 id="bonus_month_id"
                 name="bonus_month_id"
@@ -387,7 +387,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
               />
             </div>
             <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Designation Level</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Designation Level</label>
               <MultiSelectDropdown
  options={designationLevelOptions}
  value={selectedLevels}
@@ -401,7 +401,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
 
           {bonusTitle === "Other" && (
             <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-white">Custom Bonus Title</label>
+              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Custom Bonus Title</label>
               <InputElement value={customBonusTitle} onChange={(e) => setCustomBonusTitle(e.target.value)} className="w-full" />
             </div>
           )}

@@ -319,11 +319,11 @@ const allPayments = paymentList.map((pay: any) => ({
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-xs text-gray-500 dark:text-bodydark">Welcome back 👋</p>
-                <h1 className="truncate text-lg font-bold text-gray-800 dark:text-white sm:text-2xl">
+                <p className="text-xs text-gray-500 dark:text-[rgb(var(--c-text-muted))]">Welcome back 👋</p>
+                <h1 className="truncate text-lg font-bold text-gray-800 dark:text-[rgb(var(--c-text))] sm:text-2xl">
                   {profile.name || 'Customer'}
                 </h1>
-                <div className="mt-1 flex flex-col gap-x-4 gap-y-0.5 text-xs text-gray-500 dark:text-bodydark sm:flex-row sm:flex-wrap sm:text-sm">
+                <div className="mt-1 flex flex-col gap-x-4 gap-y-0.5 text-xs text-gray-500 dark:text-[rgb(var(--c-text-muted))] sm:flex-row sm:flex-wrap sm:text-sm">
                   {profile.phone && (
                     <span className="flex items-center gap-1.5">
                       <FiPhone className="h-3.5 w-3.5 shrink-0" />
@@ -345,7 +345,7 @@ const allPayments = paymentList.map((pay: any) => ({
                 onClick={() => setColorMode(isDark ? 'light' : 'dark')}
                 title="Toggle theme"
                 aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-                className="flex w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-strokedark"
+                className="flex w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-100 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-strokedark"
               >
                 {isDark ? <FaSun /> : <FaMoon />}
               </Button>
@@ -367,22 +367,22 @@ const allPayments = paymentList.map((pay: any) => ({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-sm text-gray-500 dark:text-bodydark">Total Received</span>
+              <span className="text-sm text-gray-500 dark:text-[rgb(var(--c-text-muted))]">Total Received</span>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
                 <FiShoppingBag />
               </span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-white">৳ {money(totalDebit)}</p>
+            <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-[rgb(var(--c-text))]">৳ {money(totalDebit)}</p>
           </div>
 
           <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-sm text-gray-500 dark:text-bodydark">Total Payment</span>
+              <span className="text-sm text-gray-500 dark:text-[rgb(var(--c-text-muted))]">Total Payment</span>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
                 <FiCreditCard />
               </span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-white">৳ {money(totalCredit)}</p>
+            <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-[rgb(var(--c-text))]">৳ {money(totalCredit)}</p>
           </div>
 
           <div
@@ -393,7 +393,7 @@ const allPayments = paymentList.map((pay: any) => ({
             }`}
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-sm text-gray-500 dark:text-bodydark">
+              <span className="text-sm text-gray-500 dark:text-[rgb(var(--c-text-muted))]">
                 {balance > 0 ? 'Balance Due' : 'Balance'}
               </span>
               <span
@@ -408,13 +408,13 @@ const allPayments = paymentList.map((pay: any) => ({
             </div>
             <p
               className={`mt-2 text-3xl font-bold sm:text-4xl ${
-                balance > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-800 dark:text-white'
+                balance > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-800 dark:text-[rgb(var(--c-text))]'
               }`}
             >
               ৳ {money(balance)}
             </p>
             {balance > 0 && (
-              <p className="mt-1 text-xs text-gray-500 dark:text-bodydark">
+              <p className="mt-1 text-xs text-gray-500 dark:text-[rgb(var(--c-text-muted))]">
                 Received less payment. See the Due tab for what falls when.
               </p>
             )}
@@ -448,7 +448,7 @@ const allPayments = paymentList.map((pay: any) => ({
                     ${
                       active
                         ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-bodydark dark:hover:text-white'
+                        : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-[rgb(var(--c-text-muted))] dark:hover:text-white'
                     }`}
                 >
                   <span className={active ? 'text-primary' : 'opacity-70'}>{tab.icon}</span>
@@ -505,7 +505,7 @@ const allPayments = paymentList.map((pay: any) => ({
                             <p className="truncate text-xs text-gray-500 dark:text-gray-400">{s.label}</p>
                             <p
                               className={`text-xl font-bold ${
-                                raised ? s.tone : 'text-gray-800 dark:text-white'
+                                raised ? s.tone : 'text-gray-800 dark:text-[rgb(var(--c-text))]'
                               }`}
                             >
                               {s.value}

@@ -124,7 +124,7 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
 
   return (
     <div className="mt-6">
-      <h3 className="text-lg font-semibold text-black dark:text-white mb-2">Issue List</h3>
+      <h3 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] mb-2">Issue List</h3>
 
       <div className="flex overflow-x-auto justify-between mb-2">
         <div className="flex">

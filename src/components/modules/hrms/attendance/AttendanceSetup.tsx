@@ -261,7 +261,7 @@ const AttendanceSetup = ({ user }: any) => {
 
   const branchField = (name: string, value: any, onChange: any) => (
     <div>
-      <label className="text-black dark:text-white">Branch</label>
+      <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Branch</label>
       <BranchDropdown
         defaultValue={value?.toString()}
         onChange={(e: any) => {
@@ -508,7 +508,7 @@ const AttendanceSetup = ({ user }: any) => {
         >
           <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-4">
             <div>
-              <label className="text-black dark:text-white">Employee</label>
+              <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Employee</label>
               <EmployeeDropdownSearch
                 id="roster_employee_id"
                 name="employee_id"

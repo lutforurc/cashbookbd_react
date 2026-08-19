@@ -53,7 +53,7 @@ const guardianNameOf = (row: CollectionSheetRow) => {
 const banglaValueOf = (value?: string | null) => String(value || '').trim();
 
 const banglaTextClass = (value?: string | null) =>
-  hasBanglaText(value) ? 'text-base font-semibold text-slate-950 dark:text-white' : 'sutonny-text text-[20px] leading-6 text-slate-950 dark:text-white';
+  hasBanglaText(value) ? 'text-base font-semibold text-slate-950 dark:text-[rgb(var(--c-text))]' : 'sutonny-text text-[20px] leading-6 text-slate-950 dark:text-[rgb(var(--c-text))]';
 
 const formatMonthForRequest = (value: string) => {
   if (!value) return '';
@@ -255,8 +255,8 @@ const CollectionSheet = (user: any) => {
     setRows([]);
   };
 
-  const labelClass = 'mb-1 block text-sm font-semibold text-slate-900 dark:text-white';
-  const controlClass = 'h-10 w-full rounded-none border! border-slate-300! bg-white! px-3 text-sm font-semibold text-slate-900! outline-none focus:border-slate-500! dark:border-[rgb(var(--c-form-strokedark))]! dark:bg-[rgb(var(--c-form-input))]! dark:text-white! dark:focus:border-[rgb(var(--c-gray-600))]!';
+  const labelClass = 'mb-1 block text-sm font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]';
+  const controlClass = 'h-10 w-full rounded-none border! border-slate-300! bg-white! px-3 text-sm font-semibold text-slate-900! outline-none focus:border-slate-500! dark:border-[rgb(var(--c-form-strokedark))]! dark:bg-[rgb(var(--c-form-input))]! dark:text-[rgb(var(--c-text))]! dark:focus:border-[rgb(var(--c-gray-600))]!';
   const buttonClass = 'inline-flex h-10 items-center justify-center gap-2 rounded-none bg-slate-800 px-6 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[rgb(var(--c-form-strokedark))] dark:hover:bg-[rgb(var(--c-gray-600))]';
   const somitySelectStyles: StylesConfig<SomityOption, false> = {
     control: (provided, state) => ({
@@ -340,7 +340,7 @@ const CollectionSheet = (user: any) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 p-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-white">
+    <div className="min-h-screen bg-slate-100 p-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-[rgb(var(--c-text))]">
       <HelmetTitle title="Collection Sheet" />
 
       <div className="mb-3 flex flex-wrap items-end gap-3">
@@ -461,7 +461,7 @@ const CollectionSheet = (user: any) => {
         {loading ? <Loader /> : null}
         <table className="w-full min-w-[980px] table-fixed border-collapse bg-white text-sm text-slate-900 dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-bodydark1))]">
           <thead>
-            <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-white">
+            <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-[rgb(var(--c-text))]">
               <th className="w-20 px-3 py-4 text-center">SL. NO</th>
               <th className="px-3 py-4 text-left">MEMBER DETAILS</th>
               <th className="w-36 px-3 py-4 text-right">TOTAL SALES</th>
@@ -488,7 +488,7 @@ const CollectionSheet = (user: any) => {
                     <td className="px-3 py-4 text-center align-middle">{index + 1}</td>
                     <td className="px-3 py-4">
                       {banglaName ? <div className={banglaTextClass(banglaName)}>{withCode(banglaName, row.idfr_code)}</div> : null}
-                      <div className="text-slate-950 dark:text-white">{withCode(row.name || '-', row.idfr_code)}</div>
+                      <div className="text-slate-950 dark:text-[rgb(var(--c-text))]">{withCode(row.name || '-', row.idfr_code)}</div>
                       {guardianName ? (
                         <div className="text-slate-600 dark:text-[rgb(var(--c-gray-300))]">
                           à¦ªà¦¿:/à¦¸à§à¦¬à¦¾: <span className={hasBanglaText(guardianName) ? '' : 'sutonny-text text-[20px] leading-6'}>{guardianName}</span>
@@ -513,7 +513,7 @@ const CollectionSheet = (user: any) => {
               </tr>
             )}
             {rows.length > 0 ? (
-              <tr className="bg-slate-300 font-bold text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-white">
+              <tr className="bg-slate-300 font-bold text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-[rgb(var(--c-text))]">
                 <td colSpan={2} className="px-3 py-3 text-right">Grand Total</td>
                 <td className="px-3 py-3 text-right">{thousandSeparator(totals.sales)}</td>
                 <td className="px-3 py-3 text-right">{thousandSeparator(totals.downPayment)}</td>

@@ -739,13 +739,13 @@ const ProjectExpense = () => {
                       : 'bg-white dark:bg-gray-800')
                   }
                 >
-                  <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
+                  <td className="px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                     {row.accountName}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
+                  <td className="px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                     {row.remarks}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
+                  <td className="px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                     {row.isExpense ? row.projectName || 'Branch expense' : 'Not tracked'}
                     <span className="block text-xs text-gray-500 dark:text-gray-400">
                       {row.isExpense && row.projectId
@@ -753,7 +753,7 @@ const ProjectExpense = () => {
                         : ''}
                     </span>
                   </td>
-                  <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                  <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                     {thousandSeparator(Number(row.amount))}
                   </td>
                   <td className="px-2 py-2">
@@ -782,7 +782,7 @@ const ProjectExpense = () => {
               ))}
             </tbody>
             <tfoot>
-              <tr className="bg-gray-200 font-semibold text-gray-900 dark:bg-gray-700 dark:text-white">
+              <tr className="bg-gray-200 font-semibold text-gray-900 dark:bg-gray-700 dark:text-[rgb(var(--c-text))]">
                 <td className="px-2 py-2" colSpan={3}>
                   Payment Total
                 </td>

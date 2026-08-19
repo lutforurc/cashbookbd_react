@@ -914,7 +914,7 @@ const SoldUnitList: React.FC = () => {
                                               `${routes.real_estate_unit_sales}/edit/${unit.sale_id}`,
                                             )
                                           }
-                                          className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
+                                          className="flex items-center gap-1 text-xs text-[rgb(var(--c-text-muted))] hover:text-primary disabled:opacity-50 dark:text-[rgb(var(--c-text-muted))] dark:hover:text-secondary"
                                         >
                                           <FiEdit2 /> EDIT
                                         </Button>
@@ -992,7 +992,7 @@ const SoldUnitList: React.FC = () => {
                                     title="Preview only â€” built from today's data, not saved"
                                     disabled={busySaleId === unit.sale_id}
                                     onClick={() => handleAllotmentLetter(unit.sale_id)}
-                                    className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
+                                    className="flex items-center gap-1 text-xs text-[rgb(var(--c-text-muted))] hover:text-primary disabled:opacity-50 dark:text-[rgb(var(--c-text-muted))] dark:hover:text-secondary"
                                   >
                                     <FiFileText /> DEMO
                                   </Button>
@@ -1021,7 +1021,7 @@ const SoldUnitList: React.FC = () => {
                                       className={`flex items-center gap-1 text-xs disabled:opacity-50 ${
                                         unit.nominee_count
                                           ? "text-meta-3 hover:opacity-80"
-                                          : "text-body hover:text-primary dark:text-bodydark dark:hover:text-secondary"
+                                          : "text-[rgb(var(--c-text-muted))] hover:text-primary dark:text-[rgb(var(--c-text-muted))] dark:hover:text-secondary"
                                       }`}
                                     >
                                       <FiUsers />
@@ -1039,7 +1039,7 @@ const SoldUnitList: React.FC = () => {
                                       }
                                       disabled={busySaleId === unit.sale_id}
                                       onClick={() => askToGenerate(unit, "BOOKING")}
-                                      className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
+                                      className="flex items-center gap-1 text-xs text-[rgb(var(--c-text-muted))] hover:text-primary disabled:opacity-50 dark:text-[rgb(var(--c-text-muted))] dark:hover:text-secondary"
                                     >
                                       <FiClipboard /> BOOKING
                                     </Button>
@@ -1084,7 +1084,7 @@ const SoldUnitList: React.FC = () => {
                                       title="Preview the booking form â€” built from today's data, not saved"
                                       disabled={busySaleId === unit.sale_id}
                                       onClick={() => handleBookingFormDemo(unit.sale_id)}
-                                      className="text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
+                                      className="text-xs text-[rgb(var(--c-text-muted))] hover:text-primary disabled:opacity-50 dark:text-[rgb(var(--c-text-muted))] dark:hover:text-secondary"
                                     >
                                       <FiFileText />
                                     </Button>
@@ -1126,7 +1126,7 @@ const SoldUnitList: React.FC = () => {
                                         title="Attach the scanned deed and nominee papers (PDF, max 1.5 MB)"
                                         disabled={busySaleId === unit.sale_id}
                                         onClick={() => openFilePicker(unit.sale_id)}
-                                        className="text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
+                                        className="text-xs text-[rgb(var(--c-text-muted))] hover:text-primary disabled:opacity-50 dark:text-[rgb(var(--c-text-muted))] dark:hover:text-secondary"
                                       >
                                         <FiUpload />
                                       </Button>
@@ -1202,7 +1202,7 @@ const SoldUnitList: React.FC = () => {
             {(confirmKind === "BOOKING"
               ? Number(confirmUnit?.booking_form_count ?? 0)
               : Number(confirmUnit?.letter_count ?? 0)) > 0 ? (
-              <span className="mt-2 block text-xs text-body dark:text-bodydark">
+              <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
                 The earlier{" "}
                 {confirmKind === "BOOKING" ? "form" : "letter"}
                 {(confirmKind === "BOOKING"
@@ -1299,7 +1299,7 @@ const SoldUnitList: React.FC = () => {
                 "this unit"}{" "}
               ?
             </span>
-            <span className="mt-2 block text-xs text-body dark:text-bodydark">
+            <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
               The stored copy goes with it and cannot be printed again. The
               number is not reused â€” the next one issued carries the next number
               up, so nothing else is renamed.
@@ -1324,7 +1324,7 @@ const SoldUnitList: React.FC = () => {
             <span className="mt-1 block font-bold">
               {confirmDeleteUnit?.unit_no || confirmDeleteUnit?.parking_no || "this unit"} ?
             </span>
-            <span className="mt-2 block text-xs text-body dark:text-bodydark">
+            <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
               No copy is kept anywhere else. It will have to be scanned again.
             </span>
           </>
@@ -1356,7 +1356,7 @@ const SoldUnitList: React.FC = () => {
                 : ""}{" "}
               ?
             </span>
-            <span className="mt-2 block text-xs text-body dark:text-bodydark">
+            <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
               The flat goes back on the market and the voucher moves to the
               Recycle Bin, where restoring it puts the sale back as it was.
               Money already received stops counting until then.

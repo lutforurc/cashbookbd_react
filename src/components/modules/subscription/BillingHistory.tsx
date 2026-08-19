@@ -63,7 +63,7 @@ const BillingHistory: React.FC = () => {
       <HelmetTitle title="Billing History" />
 
       <div className="border-stroke bg-white pl-3 pt-6 pb-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-        <h1 className="text-2xl font-semibold text-black dark:text-white">
+        <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           Billing History
         </h1>
         <p className="mt-2 text-sm text-bodydark2">

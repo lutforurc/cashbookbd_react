@@ -35,7 +35,7 @@ const iconButtonClass = 'inline-flex h-8 w-8 items-center justify-center rounded
 const iconSuccessClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-success text-white transition hover:bg-success/90';
 const iconDangerClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-danger text-white transition hover:bg-danger/90';
 const iconNeutralClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-meta-3 text-white transition hover:bg-meta-3/90';
-const sectionLabelClass = 'mb-1 block text-sm font-medium text-black dark:text-white';
+const sectionLabelClass = 'mb-1 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]';
 
 const dateFromString = (value?: string | null) => {
   if (!value) return null;
@@ -819,7 +819,7 @@ const AttendanceEntries = ({ user }: any) => {
             <FiEdit2 className="h-5 w-5" />
           </span>
           <div>
-            <h3 className="text-base font-semibold text-black dark:text-white">Attendance Entry</h3>
+            <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Attendance Entry</h3>
             <p className="text-xs text-bodydark2">Single or bulk daily attendance</p>
           </div>
         </div>
@@ -927,7 +927,7 @@ const AttendanceEntries = ({ user }: any) => {
             <FiSearch className="h-5 w-5" />
           </span>
           <div>
-            <h3 className="text-base font-semibold text-black dark:text-white">Filter &amp; Approval</h3>
+            <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Filter &amp; Approval</h3>
             <p className="text-xs text-bodydark2">Load entries and approve in bulk</p>
           </div>
         </div>
@@ -1001,7 +1001,7 @@ const AttendanceEntries = ({ user }: any) => {
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
               <FiUsers className="h-5 w-5" />
             </span>
-            <h3 className="text-base font-semibold text-black dark:text-white">Attendance List</h3>
+            <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Attendance List</h3>
           </div>
           <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             {displayEntries.length} entries

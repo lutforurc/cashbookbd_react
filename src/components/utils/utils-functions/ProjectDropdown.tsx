@@ -155,10 +155,10 @@ const ProjectDropdown: React.FC<DropdownProps> = ({
         getOptionLabel={(option) => option.label}
         formatOptionLabel={(option) => (
           <div>
-            <div className="text-sm text-gray-900 dark:text-white focus:border-blue-500">
+            <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))] focus:border-blue-500">
               {option.label}
               {option?.label_4 && Number(option.label_4) > 0 && (
-                <span className="text-gray-600 dark:text-white text-sm">
+                <span className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                   {' '}({option.label_4})
                 </span>
               )}
@@ -166,7 +166,7 @@ const ProjectDropdown: React.FC<DropdownProps> = ({
             {isSelected && (
               <div className="additional-info">
                 {option.label_5 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
+                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                     {option.label_5 &&
                       option.label_5.trim() !== '' &&
                       option.label_5.trim() !== '0' && (
@@ -175,12 +175,12 @@ const ProjectDropdown: React.FC<DropdownProps> = ({
                   </div>
                 )}
                 {option.label_2 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
+                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                     {option.label_2}
                   </div>
                 )}
                 {option.label_3 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
+                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                     {option.label_3}
                   </div>
                 )}

@@ -110,10 +110,10 @@ const DdlDynamicMultiline: React.FC<DropdownProps> = ({
         getOptionLabel={(option) => option.label}
         formatOptionLabel={(option) => (
           <div>
-            <div className="text-sm text-gray-900 dark:text-white">
+            <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
               {option.label}
               {option.label_4 && (
-                <span className="text-gray-600 dark:text-white text-sm">
+                <span className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                   {" "}
                   ({option.label_4})
                 </span>
@@ -121,7 +121,7 @@ const DdlDynamicMultiline: React.FC<DropdownProps> = ({
             </div>
              
             {isSelected && (
-              <div className="text-sm text-gray-600 dark:text-white additional-info">
+              <div className="text-sm text-gray-600 dark:text-[rgb(var(--c-text))] additional-info">
                 {option.label_5 && <div>C/O: {option.label_5}</div>}
                 {option.label_2 && <div>{option.label_2}</div>}
                 {option.label_3 && <div>{option.label_3}</div>}

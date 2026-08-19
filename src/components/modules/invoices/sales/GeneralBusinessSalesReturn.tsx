@@ -360,7 +360,7 @@ const GeneralBusinessSalesReturn = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div className="w-full">
-                <label className="text-black dark:text-white" htmlFor="">
+                <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="">
                   Sales Invoice Date
                 </label>
                 <InputDatePicker
@@ -424,8 +424,8 @@ const GeneralBusinessSalesReturn = () => {
                 ))}
               </datalist>
               <div className="grid grid-cols-2 md:gap-x-1 mt-3">
-                <p className="text-sm font-bold dark:text-white">Total Tk.</p>
-                <span className="text-sm font-bold dark:text-white">
+                <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">Total Tk.</p>
+                <span className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(totalAmount)}
                 </span>
               </div>
@@ -547,22 +547,22 @@ const GeneralBusinessSalesReturn = () => {
           <tbody>
             {formData.products.map((row, index) => (
               <tr key={row.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center">
                   {index + 1}
                 </td>
-                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))]">
                   {row.product_name}
                 </td>
-                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
+                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                   {thousandSeparator(row.qty)} {row.unit}
                 </td>
-                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
+                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                   {thousandSeparator(row.price)}
                 </td>
-                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
+                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                   {thousandSeparator(row.price * row.qty)}
                 </td>
-                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
+                <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20">
                   <Button onClick={() => handleDelete(row.id)} className="text-red-500 ml-2 text-center">
                     <FiTrash2 className="cursor-pointer text-center" />
                   </Button>

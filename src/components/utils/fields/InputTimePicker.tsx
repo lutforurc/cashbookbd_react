@@ -184,7 +184,7 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
       'block w-full cursor-pointer px-2 py-1 text-center text-sm transition-colors',
       selected
         ? 'bg-primary font-semibold text-white'
-        : 'text-black hover:bg-gray-100 dark:text-white dark:hover:bg-meta-4',
+        : 'text-[rgb(var(--c-text))] hover:bg-gray-100 dark:text-[rgb(var(--c-text))] dark:hover:bg-meta-4',
     ].join(' ');
 
   return (
@@ -226,7 +226,7 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
           <Button
             type="button"
             title="Clear"
-            className="absolute right-8 top-1/2 -translate-y-1/2 text-body hover:text-danger dark:text-bodydark2"
+            className="absolute right-8 top-1/2 -translate-y-1/2 text-[rgb(var(--c-text-muted))] hover:text-danger dark:text-bodydark2"
             onClick={() => emit('')}
           >
             <FiX className="h-4 w-4" />
@@ -238,7 +238,7 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
           tabIndex={-1}
           title="Pick a time"
           disabled={disabled}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-body hover:text-primary disabled:cursor-not-allowed dark:text-bodydark2 dark:hover:text-primary"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-[rgb(var(--c-text-muted))] hover:text-primary disabled:cursor-not-allowed dark:text-bodydark2 dark:hover:text-primary"
           onClick={() => setOpen((previous) => !previous)}
         >
           <FiClock className="h-4 w-4" />
@@ -304,7 +304,7 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
               </Button>
               <Button
                 type="button"
-                className="text-xs font-medium text-body hover:underline dark:text-bodydark"
+                className="text-xs font-medium text-[rgb(var(--c-text-muted))] hover:underline dark:text-[rgb(var(--c-text-muted))]"
                 onClick={() => setOpen(false)}
               >
                 Done

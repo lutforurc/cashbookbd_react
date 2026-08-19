@@ -30,7 +30,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       // toastClassName={() =>
       //   themeMode == 'dark'
       //     ? 'bg-gray-800 text-white'
-      //     : 'bg-white text-black'
+      //     : 'bg-white text-[rgb(var(--c-text))]'
       // }
 
       />

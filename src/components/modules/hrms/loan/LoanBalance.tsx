@@ -151,7 +151,7 @@ const LoanBalance = (user: any) => {
       header: 'Employee Name',
       render: (row: any) =>
         <span>
-          <div className='text-black-2 dark:text-white'>{row.employee_name}</div>
+          <div className='text-black-2 dark:text-[rgb(var(--c-text))]'>{row.employee_name}</div>
           <div className="text-xs text-gray-500 dark:text-gray-500">{row.branch}</div>
         </span>,
     },
@@ -238,7 +238,7 @@ const LoanBalance = (user: any) => {
       <HelmetTitle title="Loan Balance" />
       <div className="rounded-sm px-4 py-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2 text-sm text-black dark:text-white">
+          <div className="flex items-center gap-2 text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             <SelectOption onChange={(e) => setPerPage(Number(e.target.value))} />
             <BranchDropdown
  defaultValue={(branchId ?? '').toString()}
@@ -271,7 +271,7 @@ const LoanBalance = (user: any) => {
           </div>
           <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="rounded-xs border border-stroke px-3 py-1.5 text-sm font-semibold text-black dark:border-strokedark dark:text-white">
+              <div className="rounded-xs border border-stroke px-3 py-1.5 text-sm font-semibold text-[rgb(var(--c-text))] dark:border-strokedark dark:text-[rgb(var(--c-text))]">
                 Total Balance: {thousandSeparator(grandTotalBalance)}
               </div>
             </div>

@@ -162,7 +162,7 @@ const AddHrmDesignation = () => {
 
           <div className="w-full">
             <div className="mb-2 text-left">
-              <label htmlFor="level_id" className="text-black dark:text-white">
+              <label htmlFor="level_id" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Designation Level
               </label>
               <DropdownCommon

@@ -258,28 +258,28 @@ const ProductDropdown: React.FC<DropdownProps> = ({
         getOptionLabel={(option) => option.label}
         formatOptionLabel={(option) => (
           <div>
-            <div className="text-sm text-gray-900 dark:text-white">
+            <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
               {option.label}
             </div>
             {isSelected && (
               <div className="additional-info">
                 {option.label_2 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
+                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                     Category: {option.label_2}
                   </div>
                 )}
                 {canSeePurchasePrice && option.label_3 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
+                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                     Purchase Price: {option.label_3}
                   </div>
                 )}
                 {option.label_4 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
+                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                     Sales Price: {option.label_4}
                   </div>
                 )}
                 {option.label_5 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
+                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                     Unit: {option.label_5}
                   </div>
                 )}

@@ -111,7 +111,7 @@ const OnlineUsers = () => {
             <FiUsers className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
               Online Users: {count}
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">

@@ -696,7 +696,7 @@ const OrderWithProduct = ({
                   <Button
                     type="button"
                     onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-                    className="text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-bodydark dark:hover:text-white"
+                    className="text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-[rgb(var(--c-text-muted))] dark:hover:text-white"
                   >
                     Use the filter
                   </Button>
@@ -713,7 +713,7 @@ const OrderWithProduct = ({
                 >
                   {useFilterMenuEnabled && (
                     <div className="mb-3 flex items-center justify-between">
-                      <span className="text-sm font-semibold text-slate-800 dark:text-white">Filter Menu</span>
+                      <span className="text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">Filter Menu</span>
                       <Button
                         type="button"
                         onClick={() => setIsFilterMenuOpen(false)}
@@ -889,7 +889,7 @@ const OrderWithProduct = ({
             getRowKey={(row: any) => row.id}
             className=""
             // tableClassName="min-w-[1180px] text-sm text-gray-100 dark:text-gray-100"
-            // theadClassName="bg-slate-700 text-white dark:bg-slate-700 dark:text-white"
+            // theadClassName="bg-slate-700 text-white dark:bg-slate-700 dark:text-[rgb(var(--c-text))]"
             // tbodyClassName="divide-y divide-slate-700 bg-slate-800 dark:divide-slate-700 dark:bg-slate-800"
             // rowClassName="hover:bg-slate-700 dark:hover:bg-slate-700"
           />

@@ -25,7 +25,7 @@ const SubscriptionPlanList: React.FC = () => {
 
       <div className="flex flex-col gap-3 rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-black dark:text-white">Subscription Plans</h1>
+          <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Subscription Plans</h1>
           <p className="mt-2 text-sm text-bodydark2">
             You can manage the pricing plan, quota, trial period, and activation status from here.
           </p>
@@ -63,7 +63,7 @@ const SubscriptionPlanList: React.FC = () => {
               {adminPlans.map((plan: any) => (
                 <tr
                   key={plan.id}
-                  className="border-t border-gray-200 text-sm text-gray-800 dark:border-gray-700 dark:text-white"
+                  className="border-t border-gray-200 text-sm text-gray-800 dark:border-gray-700 dark:text-[rgb(var(--c-text))]"
                 >
                   <td className="px-4 py-3">
                     <div className="font-semibold">{plan.name}</div>

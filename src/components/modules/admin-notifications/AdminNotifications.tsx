@@ -220,12 +220,12 @@ const AdminNotifications = () => {
   };
 
   return (
-    <div className="text-slate-900 dark:text-white">
+    <div className="text-slate-900 dark:text-[rgb(var(--c-text))]">
       <HelmetTitle title="Admin Notifications" />
 
       {/* A. Compose */}
       <div className="mb-6 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark sm:p-6">
-        <h2 className="mb-4 text-lg font-bold text-black dark:text-white">
+        <h2 className="mb-4 text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           Compose Notification
         </h2>
 
@@ -254,7 +254,7 @@ const AdminNotifications = () => {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="What do you want everyone to know?"
               rows={3}
-              className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-blue-500 dark:border-form-strokedark dark:bg-transparent dark:text-white"
+              className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-[rgb(var(--c-text))] outline-none focus:border-blue-500 dark:border-form-strokedark dark:bg-transparent dark:text-[rgb(var(--c-text))]"
             />
           </div>
 
@@ -356,7 +356,7 @@ const AdminNotifications = () => {
       {/* B. Sent list */}
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="flex items-center justify-between border-b border-stroke px-4 py-3 dark:border-strokedark">
-          <h2 className="text-lg font-bold text-black dark:text-white">
+          <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             Sent Notifications
           </h2>
           <Button
@@ -393,7 +393,7 @@ const AdminNotifications = () => {
                 notifications.map((row) => (
                   <tr key={row.id} className="text-slate-700 dark:text-slate-200">
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-black dark:text-white">
+                      <div className="font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                         {row.title}
                       </div>
                       <div className="mt-0.5 max-w-md truncate text-xs text-slate-500 dark:text-slate-400">

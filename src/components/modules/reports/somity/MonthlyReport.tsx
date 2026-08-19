@@ -112,11 +112,11 @@ const MonthlyReport = (user: any) => {
   });
 
   const controlClass =
-    'h-9 w-full rounded-none border border-slate-600 bg-transparent px-3 text-sm font-bold text-slate-950 outline-none focus:border-slate-400 dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-white dark:focus:border-slate-300';
-  const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-white';
+    'h-9 w-full rounded-none border border-slate-600 bg-transparent px-3 text-sm font-bold text-slate-950 outline-none focus:border-slate-400 dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-text))] dark:focus:border-slate-300';
+  const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-[rgb(var(--c-text))]';
 
   return (
-    <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-white">
+    <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-[rgb(var(--c-text))]">
       <HelmetTitle title="Monthly Report" />
       <div className="mb-3 grid grid-cols-1 items-end gap-2 md:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_minmax(150px,170px)_minmax(150px,170px)_minmax(390px,auto)]">
         <div>
@@ -186,7 +186,7 @@ const MonthlyReport = (user: any) => {
         <div className="overflow-x-auto bg-white dark:bg-[rgb(var(--c-boxdark))]">
           <table className="w-full min-w-[1080px] table-fixed border-collapse text-sm" style={{ fontSize }}>
             <thead>
-              <tr className="bg-slate-300 text-xs font-bold text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-white">
+              <tr className="bg-slate-300 text-xs font-bold text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-[rgb(var(--c-text))]">
                 <th className="w-20 px-3 py-4 text-center">à¦•à§à¦°à¦®à¦¿à¦•</th>
                 <th className="w-40 px-3 py-4 text-center">à¦¤à¦¾à¦°à¦¿à¦–</th>
                 <th className="px-3 py-4 text-right">à¦¬à¦¿à¦¤à¦°à¦£</th>
@@ -218,7 +218,7 @@ const MonthlyReport = (user: any) => {
               )}
             </tbody>
             {rows.length > 0 ? (
-              <tfoot className="bg-slate-300 font-bold text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-white">
+              <tfoot className="bg-slate-300 font-bold text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-[rgb(var(--c-text))]">
                 <tr>
                   <td colSpan={2} className="px-3 py-3 text-right text-base">Grand Total</td>
                   <td className="px-3 py-3 text-right">{thousandSeparator(totals.sales)}</td>

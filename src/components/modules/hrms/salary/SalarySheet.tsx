@@ -271,7 +271,7 @@ const SalarySheet = ({ user }: any) => {
       key: "net_salary",
       header: "Net Salary",
       headerClass: "text-right",
-      cellClass: "text-right font-semibold text-slate-900 dark:text-white",
+      cellClass: "text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]",
       render: (row: any) => thousandSeparator(row.net_salary),
     },
     {

@@ -243,13 +243,13 @@ const PublicRegistrationOtp: React.FC = () => {
     <div className="fixed inset-0 overflow-y-auto bg-white dark:bg-boxdark">
       <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-8">
         <div className="w-full max-w-md rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-8">
-          <h2 className="text-2xl font-bold text-black dark:text-white">Verify OTP</h2>
-          <p className="mt-2 text-sm text-black/60 dark:text-white/60">
+          <h2 className="text-2xl font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Verify OTP</h2>
+          <p className="mt-2 text-sm text-[rgb(var(--c-text))]/60 dark:text-[rgb(var(--c-text))]/60">
             OTP sent to {maskedMobile || mobile}. Enter it to complete registration.
           </p>
 
           <form className="mt-6" onSubmit={handleVerifyOtp}>
-            <label className="mb-2 block text-sm font-medium text-black dark:text-white">
+            <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               OTP Code
             </label>
             <OtpInput
@@ -279,12 +279,12 @@ const PublicRegistrationOtp: React.FC = () => {
             type="button"
             onClick={handleResendOtp}
             disabled={resending}
-            className="mt-4 w-full border border-stroke px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-2 disabled:cursor-not-allowed disabled:opacity-60 dark:border-strokedark dark:text-white dark:hover:bg-form-input"
+            className="mt-4 w-full border border-stroke px-4 py-3 text-sm font-medium text-[rgb(var(--c-text))] transition hover:bg-gray-2 disabled:cursor-not-allowed disabled:opacity-60 dark:border-strokedark dark:text-[rgb(var(--c-text))] dark:hover:bg-form-input"
           >
             {resending ? 'Resending...' : 'Resend OTP'}
           </Button>
 
-          <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
+          <p className="mt-4 text-center text-sm text-[rgb(var(--c-text))]/70 dark:text-[rgb(var(--c-text))]/70">
             Wrong information?{' '}
             <Link to={ROUTES.public_register} className="text-primary hover:underline">
               Back to registration

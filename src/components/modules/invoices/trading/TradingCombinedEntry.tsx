@@ -898,7 +898,7 @@ const TradingCombinedEntry = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div>
-                <label htmlFor="" className='text-black dark:text-white'>Select Supplier</label>
+                <label htmlFor="" className='text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>Select Supplier</label>
                 <DdlMultiline
  id="supplierAccount"
  className=""
@@ -918,7 +918,7 @@ const TradingCombinedEntry = () => {
                 />
               </div>
               <div>
-                <label htmlFor="" className='text-black dark:text-white'>Select Customer</label>
+                <label htmlFor="" className='text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>Select Customer</label>
                 <DdlMultiline
  id="customerAccount"
  className=""
@@ -962,7 +962,7 @@ const TradingCombinedEntry = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="relative">
                 <div>
-                  <label htmlFor="" className='text-black dark:text-white'>Select Purchase Order</label>
+                  <label htmlFor="" className='text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>Select Purchase Order</label>
                   <OrderDropdown
                     id="purchaseOrderNumber"
                     name="purchaseOrderNumber"
@@ -979,7 +979,7 @@ const TradingCombinedEntry = () => {
               </div>
               <div className="relative">
                 <div>
-                  <label htmlFor="" className='text-black dark:text-white'>Select Sales Order</label>
+                  <label htmlFor="" className='text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>Select Sales Order</label>
                   <OrderDropdown
                     id="salesOrderNumber"
                     name="salesOrderNumber"
@@ -998,7 +998,7 @@ const TradingCombinedEntry = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div>
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <label htmlFor="amount" className='text-black dark:text-white'>Amount Tk.</label>
+                  <label htmlFor="amount" className='text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>Amount Tk.</label>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
                       <span className='font-semibold'> {formData.onlySalesPosting ? 'Sales' : 'Both'}</span>
@@ -1053,7 +1053,7 @@ const TradingCombinedEntry = () => {
               />
               <div>
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <label htmlFor="notes" className="text-black dark:text-white">
+                  <label htmlFor="notes" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Notes
                   </label>
 
@@ -1088,7 +1088,7 @@ const TradingCombinedEntry = () => {
                   autoComplete="off"
                   onChange={handleFormChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'product')}
-                  className="w-full form-input rounded-xs border bg-white px-3 py-1 text-gray-600 outline-none focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-transparent dark:text-white dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+                  className="w-full form-input rounded-xs border bg-white px-3 py-1 text-gray-600 outline-none focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-transparent dark:text-[rgb(var(--c-text))] dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400"
                 />
               </div>
               <datalist id="combined-notes-suggestions">
@@ -1100,12 +1100,12 @@ const TradingCombinedEntry = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
               <div className="mt-4">
-                <p className="text-sm font-bold dark:text-white">
+                <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
                   Purchase Tk. {thousandSeparator(purchaseTotal)}
                 </p>
               </div>
               <div className="mt-4">
-                <p className="text-sm font-bold dark:text-white">
+                <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
                   Sales Tk. {thousandSeparator(salesTotal)}
                 </p>
               </div>
@@ -1139,7 +1139,7 @@ const TradingCombinedEntry = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 gap-2">
               <div>
-                <label htmlFor="" className='text-black dark:text-white'>
+                <label htmlFor="" className='text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>
                   Select Product
                 </label>
                 <ProductDropdown
@@ -1186,7 +1186,7 @@ const TradingCombinedEntry = () => {
                 onKeyDown={(e) => handleInputKeyDown(e, 'qty')}
               />
               <div>
-                <label htmlFor="" className='text-black dark:text-white'>
+                <label htmlFor="" className='text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>
                   Variance Type
                 </label>
                 <SelectWeightVariance
@@ -1309,34 +1309,34 @@ const TradingCombinedEntry = () => {
                     key={row.id}
                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                   >
-                    <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       {index + 1}
                     </td>
-                    <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       {row.product_name}
                     </td>
-                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       {row.variance && row.variance_type && row.variance_type !== 'Not Applicable'
                         ? `(${row.variance_type || '-'}) ${thousandSeparator(Number(row.variance))}`
                         : '-'}
                     </td>
-                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       {thousandSeparator(Number(row.qty))} {row.unit}
                     </td>
 
-                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       {thousandSeparator(Number(row.purchase_price))}
                     </td>
-                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       {thousandSeparator(rowPurchaseTotal)}
                     </td>
-                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       {thousandSeparator(Number(row.sales_price))}
                     </td>
-                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       {thousandSeparator(rowSalesTotal)}
                     </td>
-                    <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-white">
+                    <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       <Button
                         onClick={() => handleEdit(row)}
                         className="text-blue-500 text-center"

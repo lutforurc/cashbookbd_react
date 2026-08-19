@@ -75,8 +75,8 @@ const InstallmentDelete = () => {
       <div className="grid grid-cols-1 gap-2 w-full md:w-1/2 xl:w-1/3 mx-auto mt-5">
         {/* Branch Info */}
         <div className="mb-2!">
-          <div className='text-gray-800 dark:text-white mb-1'>The branch whose data you want to delete:</div>
-          <span className="text-gray-800 dark:text-white font-bold">
+          <div className='text-gray-800 dark:text-[rgb(var(--c-text))] mb-1'>The branch whose data you want to delete:</div>
+          <span className="text-gray-800 dark:text-[rgb(var(--c-text))] font-bold">
             {settings?.data?.branch?.name}
           </span>
         </div>

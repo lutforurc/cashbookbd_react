@@ -486,7 +486,7 @@ function ConstructionLabourInvoice(): JSX.Element {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <label className="text-black dark:text-white">Select Supplier</label>
+                <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Select Supplier</label>
                 <DdlMultiline
  id="account"
  name="account"
@@ -566,8 +566,8 @@ function ConstructionLabourInvoice(): JSX.Element {
               />
 
               <div className="grid grid-cols-1 md:gap-x-1 -mb-1 ">
-                <p className="text-sm font-bold dark:text-white">Total Tk.</p>
-                <span className="text-sm font-bold dark:text-white">
+                <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">Total Tk.</p>
+                <span className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(totalAmountForUI)}
                 </span>
               </div>
@@ -595,7 +595,7 @@ function ConstructionLabourInvoice(): JSX.Element {
 
               {hasPermission(settings?.data?.permissions, "purchase.edit") && (
                 <div className="relative">
-                  <label className="text-black dark:text-white">Search Invoice</label>
+                  <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Search Invoice</label>
                   <div className="w-full ">
                     <InputOnly
                       id="search"
@@ -624,7 +624,7 @@ function ConstructionLabourInvoice(): JSX.Element {
 
             <div className="grid grid-cols-12 gap-x-2">
               <div className="col-span-12 md:col-span-6">
-                <label className="text-black dark:text-white">Select Labour Item</label>
+                <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Select Labour Item</label>
                 <LabourDropdown
                   id="product"
                   name="product"
@@ -756,22 +756,22 @@ function ConstructionLabourInvoice(): JSX.Element {
             {state.products.length > 0 &&
               state.products.map((row, index) => (
                 <tr key={row.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center">
                     {index + 1}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))]">
                     {row.product_name}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                     {thousandSeparator(Number(row.qty))} {row.unit}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                     {thousandSeparator(Number(row.price))}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                     {thousandSeparator(Number(row.price) * Number(row.qty))}
                   </td>
-                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
+                  <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20">
                     <Button onClick={() => removeProduct(row.id)} className="text-red-500 ml-2">
                       <FiTrash2 />
                     </Button>

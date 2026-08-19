@@ -170,7 +170,7 @@ const BuildingParkingDropdown: React.FC<DropdownProps> = ({
 
           return (
             <div>
-              <div className="text-sm font-medium text-gray-900 dark:text-white">
+              <div className="text-sm font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                 {option.label}
               </div>
               {isMenu && (

@@ -138,11 +138,11 @@ const BankInformation = () => {
   });
 
   const controlClass =
-    'h-10 w-full rounded-none border border-slate-600 bg-transparent px-3 text-sm font-bold text-slate-950 outline-none focus:border-slate-400 dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-white dark:focus:border-slate-300';
-  const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-white';
+    'h-10 w-full rounded-none border border-slate-600 bg-transparent px-3 text-sm font-bold text-slate-950 outline-none focus:border-slate-400 dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-text))] dark:focus:border-slate-300';
+  const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-[rgb(var(--c-text))]';
 
   return (
-    <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-white">
+    <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-[rgb(var(--c-text))]">
       <HelmetTitle title="Bank Information" />
       <div className="mb-3 flex flex-wrap items-end gap-3">
         <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
@@ -236,7 +236,7 @@ const BankInformation = () => {
         <div className="overflow-x-auto bg-white dark:bg-[rgb(var(--c-boxdark))]">
           <table className="w-full min-w-[760px] table-fixed border-collapse text-sm" style={{ fontSize }}>
             <thead>
-              <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-white">
+              <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-[rgb(var(--c-text))]">
                 <th className="w-24 px-3 py-4 text-center">Sl. No.</th>
                 <th className="px-3 py-4 text-left">Bank Name</th>
                 <th className="w-40 px-3 py-4 text-right">Debit Balance</th>
@@ -272,7 +272,7 @@ const BankInformation = () => {
                 </tr>
               )}
             </tbody>
-            <tfoot className="bg-slate-100 font-bold text-slate-950 dark:bg-[rgb(var(--c-meta-4))] dark:text-white">
+            <tfoot className="bg-slate-100 font-bold text-slate-950 dark:bg-[rgb(var(--c-meta-4))] dark:text-[rgb(var(--c-text))]">
               <tr className="font-bold">
                 <td colSpan={2} className="px-3 py-3 text-right">Total</td>
                 <td className="px-3 py-3 text-right">

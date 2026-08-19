@@ -224,7 +224,7 @@ const BranchReceiveReport = ({ user }: any) => {
       <div className="px-0 py-3">
         <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
           <div>
-            <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-white">
+            <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               Receive Branch <span className="text-red-600">*</span>
             </label>
             {branchDdlData?.isLoading ? <Loader /> : null}

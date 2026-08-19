@@ -77,10 +77,10 @@ const DropdownUser = () => {
         to="#"
       >
         <span className="hidden text-right lg:block">
-          <span className="block text-sm font-medium text-black dark:text-white">
+          <span className="block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             {me.name}
           </span>
-          <span className="block text-xs text-black dark:text-white">Trx. Dt. {settings?.data?.trx_dt}</span>
+          <span className="block text-xs text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Trx. Dt. {settings?.data?.trx_dt}</span>
         </span>
         {/* The count rides on the avatar, not only on the menu row inside.
             My Tasks now lives behind a closed dropdown, and a badge nobody can
@@ -185,7 +185,7 @@ const DropdownUser = () => {
             <li>
               <div className="flex items-center justify-end gap-3 rounded-sm bg-gray-50 px-3 py-2.5 text-sm font-medium dark:bg-meta-4 lg:text-base">
                 <div className="flex items-center gap-2.5">
-                  <span className="min-w-10 text-right text-xs font-medium text-body dark:text-bodydark2">
+                  <span className="min-w-10 text-right text-xs font-medium text-[rgb(var(--c-text-muted))] dark:text-bodydark2">
                     {colorMode === 'dark' ? 'Dark' : 'Light'}
                   </span>
                   <DarkModeSwitcher />

@@ -148,23 +148,23 @@ const LabourDropdown: React.FC<DropdownProps> = ({
         getOptionLabel={(option) => option.label}
         formatOptionLabel={(option) => (
           <div>
-            <div className="text-sm text-gray-900 dark:text-white focus:border-blue-500">
+            <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))] focus:border-blue-500">
               {option.label}
             </div>
             {isSelected && (
               <div className="additional-info">
                 {option.label_2 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
+                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                     Category: {option.label_2}
                   </div>
                 )}
                 {option.label_3 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
+                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                     Unit: {option.label_3}
                   </div>
                 )}
                 {option.label_4 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
+                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                     Unit Rate: {option.label_4}
                   </div>
                 )}

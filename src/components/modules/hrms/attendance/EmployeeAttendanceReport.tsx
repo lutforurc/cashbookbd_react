@@ -79,7 +79,7 @@ const cardTone = (label: string) => {
     'Half Day': { bar: 'bg-blue-500', value: 'text-blue-600 dark:text-blue-400', dot: 'bg-blue-500' },
     Holiday: { bar: 'bg-sky-500', value: 'text-sky-600 dark:text-sky-400', dot: 'bg-sky-500' },
   };
-  return map[label] || { bar: 'bg-slate-400', value: 'text-slate-900 dark:text-white', dot: 'bg-slate-400' };
+  return map[label] || { bar: 'bg-slate-400', value: 'text-slate-900 dark:text-[rgb(var(--c-text))]', dot: 'bg-slate-400' };
 };
 
 const EmployeeAttendanceReport = ({ user }: any) => {
@@ -237,7 +237,7 @@ const EmployeeAttendanceReport = ({ user }: any) => {
       <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
       <div className="grid grid-cols-1 gap-2 md:grid-cols-6">
         <div className="md:col-span-2">
-          <label className="text-black dark:text-white">Employee</label>
+          <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Employee</label>
           <EmployeeDropdownSearch
             id="employee_attendance_employee_id"
             name="employee_id"
@@ -271,7 +271,7 @@ const EmployeeAttendanceReport = ({ user }: any) => {
           className="w-full"
         />
         <div>
-          <label className="text-black dark:text-white">Branch</label>
+          <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Branch</label>
           <BranchDropdown
  name="branch_id"
  defaultValue={userBranchId}

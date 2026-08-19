@@ -70,7 +70,7 @@ const CustomerChangePassword = () => {
   };
 
   const fieldClass =
-    "w-full rounded-lg border border-stroke bg-transparent py-2.5 pl-11 pr-12 text-black outline-none transition focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
+    "w-full rounded-lg border border-stroke bg-transparent py-2.5 pl-11 pr-12 text-[rgb(var(--c-text))] outline-none transition focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-[rgb(var(--c-text))] dark:focus:border-primary";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-10 dark:bg-boxdark-2">
@@ -79,13 +79,13 @@ const CustomerChangePassword = () => {
           <span className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-primary/20">
             <FiShield className="h-7 w-7" />
           </span>
-          <h1 className="text-2xl font-semibold text-black dark:text-white">
+          <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             Set a New Password
           </h1>
           {mustChange && (
             // A sentence to a line, rather than left to wrap where it likes --
             // free wrapping left "only you know." stranded on a line of its own.
-            <p className="mt-1.5 text-sm leading-relaxed text-body dark:text-bodydark2">
+            <p className="mt-1.5 text-sm leading-relaxed text-[rgb(var(--c-text-muted))] dark:text-bodydark2">
               <span className="block">Your account still uses the default password.</span>
               <span className="block">Please replace it with one only you know.</span>
             </p>
@@ -123,12 +123,12 @@ const CustomerChangePassword = () => {
                     <div className="mb-4">
                       <label
                         htmlFor="current_password"
-                        className="mb-2.5 block font-medium text-black dark:text-white"
+                        className="mb-2.5 block font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                       >
                         Current Password
                       </label>
                       <div className="relative">
-                        <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
+                        <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[rgb(var(--c-text-muted))] dark:text-bodydark2" />
                         <Field
                           id="current_password"
                           name="current_password"
@@ -161,12 +161,12 @@ const CustomerChangePassword = () => {
                   <div className="mb-4">
                     <label
                       htmlFor="password"
-                      className="mb-2.5 block font-medium text-black dark:text-white"
+                      className="mb-2.5 block font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                     >
                       New Password
                     </label>
                     <div className="relative">
-                      <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
+                      <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[rgb(var(--c-text-muted))] dark:text-bodydark2" />
                       <Field
                         id="password"
                         name="password"
@@ -193,7 +193,7 @@ const CustomerChangePassword = () => {
                       component="div"
                       className="mt-1.5 text-sm text-danger"
                     />
-                    <p className="mt-2 text-xs text-body dark:text-bodydark2">
+                    <p className="mt-2 text-xs text-[rgb(var(--c-text-muted))] dark:text-bodydark2">
                       At least {MIN_LENGTH} characters. Avoid your mobile number
                       or date of birth.
                     </p>
@@ -202,12 +202,12 @@ const CustomerChangePassword = () => {
                   <div className="mb-5">
                     <label
                       htmlFor="password_confirmation"
-                      className="mb-2.5 block font-medium text-black dark:text-white"
+                      className="mb-2.5 block font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
                     >
                       Confirm Password
                     </label>
                     <div className="relative">
-                      <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
+                      <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[rgb(var(--c-text-muted))] dark:text-bodydark2" />
                       <Field
                         id="password_confirmation"
                         name="password_confirmation"
@@ -252,7 +252,7 @@ const CustomerChangePassword = () => {
           </Formik>
         </div>
 
-        <p className="mt-5 text-center text-xs text-body dark:text-bodydark2">
+        <p className="mt-5 text-center text-xs text-[rgb(var(--c-text-muted))] dark:text-bodydark2">
           You will use this password the next time you sign in.
         </p>
       </div>

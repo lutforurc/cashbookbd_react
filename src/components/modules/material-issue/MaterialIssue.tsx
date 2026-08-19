@@ -278,7 +278,7 @@ const MaterialIssue = () => {
  className="w-full "
         />
         <div>
-          <label className="text-black dark:text-white">From Warehouse</label>
+          <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">From Warehouse</label>
           <WarehouseDropdown
             id="warehouseId"
             name="warehouseId"
@@ -289,7 +289,7 @@ const MaterialIssue = () => {
           />
         </div>
         <div>
-          <label className="text-black dark:text-white">Project / Site</label>
+          <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Project / Site</label>
           <Select
             id="projectId"
             name="projectId"
@@ -327,7 +327,7 @@ const MaterialIssue = () => {
         <div className="md:col-span-2 mt-2 border-t border-gray-200 dark:border-gray-700 pt-3">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
             <div className="md:col-span-4">
-              <label className="text-black dark:text-white">Select Product</label>
+              <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Select Product</label>
               <RequisitionItemsDropdown
                 id="issueProduct"
                 name="issueProduct"
@@ -450,15 +450,15 @@ const MaterialIssue = () => {
           <tbody>
             {formData.items.map((row, index) => (
               <tr key={row.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <td className="px-2 py-2 text-center text-gray-900 dark:text-white">{index + 1}</td>
-                <td className="px-2 py-2 text-gray-900 dark:text-white">{row.productName}</td>
-                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">{index + 1}</td>
+                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.productName}</td>
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(Number(row.quantity))} {row.unit}
                 </td>
-                <td className="px-2 py-2 text-gray-900 dark:text-white">{row.building || '-'}</td>
-                <td className="px-2 py-2 text-gray-900 dark:text-white">{row.workItem || '-'}</td>
-                <td className="px-2 py-2 text-gray-900 dark:text-white">{row.note || '-'}</td>
-                <td className="px-2 py-2 text-center text-gray-900 dark:text-white">
+                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.building || '-'}</td>
+                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.workItem || '-'}</td>
+                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.note || '-'}</td>
+                <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">
                   <Button
                     onClick={() => handleDeleteProduct(row.id)}
                     className="text-red-500 ml-2 text-center"

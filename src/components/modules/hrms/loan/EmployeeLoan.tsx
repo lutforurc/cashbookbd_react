@@ -206,7 +206,7 @@ const EmployeeLoan = () => {
                   {hasPermission(settings?.data?.permissions, 'cash.received.edit') && (
                     <>
                       <div className="min-w-0 flex-1 mb-4">
-                        <label htmlFor="search" className="text-black dark:text-white">
+                        <label htmlFor="search" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                           Search Employee Loan (Vr. No.)
                         </label>
                         <InputOnly
@@ -240,7 +240,7 @@ const EmployeeLoan = () => {
                 </div>
 
                 <div className="mt-0 mb-2">
-                  <label className="text-black dark:text-white">Select Employee</label>
+                  <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Select Employee</label>
                   <EmployeeDropdownSearch
                     id="account"
                     name="account"

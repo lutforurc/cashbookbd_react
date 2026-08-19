@@ -67,7 +67,7 @@ const ResellerAdmin: React.FC = () => {
       header: 'Name',
       render: (reseller: Reseller) => (
         <>
-          <p className="font-medium text-black dark:text-white">{reseller.name}</p>
+          <p className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">{reseller.name}</p>
           <p className="text-xs text-slate-500 dark:text-bodydark2">{reseller.business_name || '-'}</p>
         </>
       ),
@@ -324,7 +324,7 @@ const ResellerAdmin: React.FC = () => {
       <section className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-lg font-semibold text-black dark:text-white">Reseller Admin</h1>
+            <h1 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Reseller Admin</h1>
             <p className="mt-1 text-sm text-slate-500 dark:text-bodydark2">Manage reseller accounts, client assignment, and commission tracking.</p>
           </div>
 
@@ -351,7 +351,7 @@ const ResellerAdmin: React.FC = () => {
 
       <div className="grid gap-4 xl:grid-cols-[420px_1fr]">
         <section className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
-          <h2 className="text-base font-semibold text-black dark:text-white">
+          <h2 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             {form.id ? 'Edit Reseller' : 'New Reseller'}
           </h2>
 
@@ -414,7 +414,7 @@ const ResellerAdmin: React.FC = () => {
                 <Button
                   type="button"
                   onClick={resetForm}
-                  className="rounded-sm border border-stroke px-4 text-sm text-slate-600 hover:bg-gray-2 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                  className="rounded-sm border border-stroke px-4 text-sm text-slate-600 hover:bg-gray-2 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
                 >
                   Cancel
                 </Button>
@@ -425,7 +425,7 @@ const ResellerAdmin: React.FC = () => {
 
         <section className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
           <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
-            <h2 className="text-base font-semibold text-black dark:text-white">Reseller List</h2>
+            <h2 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Reseller List</h2>
           </div>
           <Table
             columns={resellerColumns}
@@ -438,7 +438,7 @@ const ResellerAdmin: React.FC = () => {
       </div>
 
       <section className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
-        <h2 className="text-base font-semibold text-black dark:text-white">Assign Company</h2>
+        <h2 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Assign Company</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
           <SelectField
             label="Reseller"
@@ -472,7 +472,7 @@ const ResellerAdmin: React.FC = () => {
       </section>
 
       <section className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
-        <h2 className="text-base font-semibold text-black dark:text-white">Pay Reseller Commission</h2>
+        <h2 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Pay Reseller Commission</h2>
         <form onSubmit={handlePayCommission} className="mt-4 grid gap-3 xl:grid-cols-4">
           <SelectField
             label="Reseller"
@@ -584,7 +584,7 @@ const formatDate = (value?: string | null) => (value ? new Date(value).toLocaleD
 const StatCard = ({ label, value }: { label: string; value: number | string }) => (
   <div className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
     <p className="text-sm font-medium text-slate-500 dark:text-bodydark2">{label}</p>
-    <p className="mt-2 text-title-sm font-bold text-black dark:text-white">{value}</p>
+    <p className="mt-2 text-title-sm font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">{value}</p>
   </div>
 );
 
@@ -598,7 +598,7 @@ const Field = ({ label, className = '', ...props }: any) => (
 
 const TextareaField = ({ label, ...props }: any) => (
   <label className="block">
-    <span className="mb-1 block text-sm text-black dark:text-white">{label}</span>
+    <span className="mb-1 block text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">{label}</span>
     <Textarea
       {...props}
       rows={3}
@@ -619,7 +619,7 @@ const SelectField = ({ label, options, ...props }: any) => (
 const TableSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
     <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
-      <h2 className="text-base font-semibold text-black dark:text-white">{title}</h2>
+      <h2 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">{title}</h2>
     </div>
     {children}
   </section>

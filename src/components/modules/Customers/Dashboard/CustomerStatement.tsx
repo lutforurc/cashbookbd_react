@@ -98,7 +98,7 @@ const CustomerStatement: React.FC<CustomerStatementProps> = ({
       <div className="flex flex-wrap items-end gap-3 mb-4">
         {branches.length > 1 && (
           <div className="w-52">
-            <label className="text-gray-900 dark:text-white text-sm">Select Branch</label>
+            <label className="text-gray-900 dark:text-[rgb(var(--c-text))] text-sm">Select Branch</label>
             <BranchDropdown
               value={branchId}
               onChange={(e) => setBranchId(e.target.value)}

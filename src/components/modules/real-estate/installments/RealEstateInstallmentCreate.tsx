@@ -748,7 +748,7 @@ export default function RealEstateInstallmentCreate() {
  onChange={(e: any) => setNumberOfInstallments(e.target.value)}
               />
               <div>
-                <label className="mb-1 block text-sm text-gray-900 dark:text-white">Start Date</label>
+                <label className="mb-1 block text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">Start Date</label>
                 <InputDatePicker
  selectedDate={startDate}
  setSelectedDate={setStartDate}
@@ -792,7 +792,7 @@ export default function RealEstateInstallmentCreate() {
                 />
               </div>
               <div className={earlyPayment ? '' : 'invisible'} aria-hidden={!earlyPayment}>
-                <label className="mb-1 block text-sm text-gray-900 dark:text-white">Early Payment Date</label>
+                <label className="mb-1 block text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">Early Payment Date</label>
                 <InputDatePicker
  selectedDate={earlyPaymentDate}
  setSelectedDate={setEarlyPaymentDate}
@@ -884,7 +884,7 @@ export default function RealEstateInstallmentCreate() {
                                 prev ? { ...prev, amountValue: e.target.value } : prev,
                               )
                             }
-                            className="w-32 rounded-xs border bg-white px-3 py-1 text-right text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-white"
+                            className="w-32 rounded-xs border bg-white px-3 py-1 text-right text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-[rgb(var(--c-text))]"
                           />
                         ) : (
                           formatAmount(row.amount)
@@ -918,7 +918,7 @@ export default function RealEstateInstallmentCreate() {
                                 prev ? { ...prev, earlyDiscountValue: e.target.value } : prev,
                               )
                             }
-                            className="w-32 rounded-xs border bg-white px-3 py-1 text-right text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-white"
+                            className="w-32 rounded-xs border bg-white px-3 py-1 text-right text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-[rgb(var(--c-text))]"
                           />
                         ) : isFirstRow && row.early_payment_discount ? (
                           formatAmount(row.early_payment_discount)

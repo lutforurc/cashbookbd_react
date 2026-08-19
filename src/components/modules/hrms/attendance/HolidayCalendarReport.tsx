@@ -71,7 +71,7 @@ const cardTone = (label: string) => {
     Paid: { bar: 'bg-teal-500', value: 'text-teal-600 dark:text-teal-400', dot: 'bg-teal-500' },
     Optional: { bar: 'bg-amber-500', value: 'text-amber-600 dark:text-amber-400', dot: 'bg-amber-500' },
   };
-  return map[label] || { bar: 'bg-slate-400', value: 'text-slate-900 dark:text-white', dot: 'bg-slate-400' };
+  return map[label] || { bar: 'bg-slate-400', value: 'text-slate-900 dark:text-[rgb(var(--c-text))]', dot: 'bg-slate-400' };
 };
 
 const HolidayCalendarReport = ({ user }: any) => {
@@ -282,7 +282,7 @@ const HolidayCalendarReport = ({ user }: any) => {
       <div className="overflow-hidden border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-3 py-3 dark:border-slate-700">
           <div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+            <h3 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
               {monthNames[monthIndex]} {year}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-300">

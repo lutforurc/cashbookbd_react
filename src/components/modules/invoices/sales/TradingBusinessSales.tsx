@@ -1364,7 +1364,7 @@ const TradingBusinessSales = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
             <div className="mt-4 ">
-              <p className="text-sm font-bold dark:text-white">
+              <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
                 Total Tk. {thousandSeparator(totalAmount)}
               </p>
             </div>
@@ -1404,7 +1404,7 @@ const TradingBusinessSales = () => {
                       label=""
                       className="whitespace-nowrap bg-transparent! text-center -mr-2 py-2 absolute right-0 top-2 background-red-500 pr-2! pl-2!"
                       icon={
-                        <FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />
+                        <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg ml-2  mr-2" />
                       }
                     />
                   </div>
@@ -1513,7 +1513,7 @@ const TradingBusinessSales = () => {
                 <span className="absolute top-7 right-3 z-50">{unit}</span>
               </div>
               <div>
-                <label htmlFor="" className="text-black dark:text-white">
+                <label htmlFor="" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   {'Variance Type'}
                 </label>
                 <SelectWeightVariance
@@ -1680,40 +1680,40 @@ const TradingBusinessSales = () => {
                   className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                 >
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center `}
                   >
                     {++index}
                   </td>
 	                  <td
-	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white `}
+	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] `}
 	                  >
 	                    {row.product_name}
 	                  </td>
 	                  <td
-	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
+	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
 	                  >
 	                    {row.variance && row.variance_type && row.variance_type !== 'Not Applicable'
 	                      ? `(${row.variance_type || '-'}) ${thousandSeparator(Number(row.variance))}`
 	                      : '-'}
 	                  </td>
 	                  <td
-	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
+	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
 	                  >
                     {row.qty} {row.unit}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
                   >
                     {row.price}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
                   >
                     {thousandSeparator(
                       parseFloat((row.price * row.qty).toFixed(2)))}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20 `}
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20 `}
                   >
                     <Button
                       onClick={() => handleDelete(row.id)}

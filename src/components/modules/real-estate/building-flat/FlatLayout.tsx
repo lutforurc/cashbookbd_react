@@ -610,7 +610,7 @@ const FlatLayout = () => {
         <div className="border-b border-gray-100 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/35">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
                 {floorTitle}
               </h3>
               <p className="mt-1 inline-flex rounded bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700 ring-1 ring-amber-300 dark:bg-amber-400/15 dark:text-amber-300 dark:ring-amber-400/30">
@@ -817,7 +817,7 @@ const FlatLayout = () => {
             <p className="text-xs font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
               Real Estate Layout
             </p>
-            <h2 className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="mt-1 text-xl font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
               {viewLayout?.building ?? "Building Layout"}
             </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -1010,7 +1010,7 @@ const FlatLayout = () => {
                 <p className="text-xs font-semibold uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
                   Unit Details
                 </p>
-                <h3 className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="mt-1 text-lg font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {selectedUnit.unit_no ?? "Unit"}
                 </h3>
               </div>
@@ -1043,7 +1043,7 @@ const FlatLayout = () => {
 
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
                     <FiUser className="text-cyan-500" />
                     Customer
                   </div>
@@ -1064,7 +1064,7 @@ const FlatLayout = () => {
                 </div>
 
                 <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
                     <FiDollarSign className="text-emerald-500" />
                     Pricing
                   </div>

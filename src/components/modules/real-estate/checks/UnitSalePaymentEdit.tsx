@@ -469,28 +469,28 @@ export default function UnitSalePaymentEdit() {
         <div className="bg-white dark:bg-gray-800 rounded border border-gray-400 p-3 mb-3">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-sm">
             <div>
-              <div className="dark:text-white text-left text-sm text-gray-900">Receipt No</div>
+              <div className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900">Receipt No</div>
               <div className="font-medium">{dash(form.receipt_no)}</div>
             </div>
 
             <div>
-              <div className="dark:text-white text-left text-sm text-gray-900">Booking</div>
+              <div className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900">Booking</div>
               <div className="font-medium">{dash(bookingPreview.unitLabel)}</div>
-              <div className="text-xs dark:text-white text-left text-gray-900">
+              <div className="text-xs dark:text-[rgb(var(--c-text))] text-left text-gray-900">
                 {dash(bookingPreview.parkingLabel)}
               </div>
             </div>
 
             <div>
-              <div className="dark:text-white text-left text-sm text-gray-900">Customer</div>
+              <div className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900">Customer</div>
               <div className="font-medium">{dash(bookingPreview.customerLabel)}</div>
-              <div className="text-xs dark:text-white text-left text-gray-900">
+              <div className="text-xs dark:text-[rgb(var(--c-text))] text-left text-gray-900">
                 {dash(bookingPreview.customerLabel2)}
               </div>
             </div>
 
             <div>
-              <div className="dark:text-white text-left text-sm text-gray-900">Issued Amount</div>
+              <div className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900">Issued Amount</div>
               <div className="font-medium">
                 {form.amount !== "" && form.amount !== null && form.amount !== undefined
                   ? thousandSeparator(Number(form.amount))
@@ -505,7 +505,7 @@ export default function UnitSalePaymentEdit() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Payment Date */}
             <div className="w-full">
-              <label className="dark:text-white text-left text-sm text-gray-900 block mb-1">
+              <label className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 block mb-1">
                 Payment Date
               </label>
               <InputDatePicker
@@ -632,7 +632,7 @@ export default function UnitSalePaymentEdit() {
           {/* Cheque-specific fields */}
           {isCheque ? (
             <div className="mt-4 border-t border-gray-400 pt-3">
-              <h3 className="dark:text-white text-left text-sm text-gray-900 font-semibold">
+              <h3 className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 font-semibold">
                 Cheque Details
               </h3>
 
@@ -665,7 +665,7 @@ export default function UnitSalePaymentEdit() {
                   ) : null}
                 </div>
                 <div className="w-full">
-                  <label className="dark:text-white text-left text-sm text-gray-900 block mb-1">
+                  <label className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 block mb-1">
                     Cheque Deposit Due Date
                   </label>
                   <InputDatePicker
@@ -683,7 +683,7 @@ export default function UnitSalePaymentEdit() {
                 </div>
 
                 <div className="w-full">
-                  <label className="dark:text-white text-left text-sm text-gray-900 block mb-1">
+                  <label className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 block mb-1">
                     Cheque Collect Date
                   </label>
                   <InputDatePicker
@@ -705,7 +705,7 @@ export default function UnitSalePaymentEdit() {
               {isChequeBouncedOrCancelled ? (
                 <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div className="w-full col-span-1">
-                    <label className="dark:text-white text-left text-sm text-gray-900 block mb-1">
+                    <label className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 block mb-1">
                       Cheque Bounce / Return Date
                     </label>
                     <InputDatePicker

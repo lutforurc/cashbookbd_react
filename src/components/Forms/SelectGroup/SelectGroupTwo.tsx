@@ -11,7 +11,7 @@ const SelectGroupTwo: React.FC = () => {
 
   return (
     <div>
-      <label className="mb-3 block text-black dark:text-white">
+      <label className="mb-3 block text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
         Select Country
       </label>
 
@@ -54,19 +54,19 @@ const SelectGroupTwo: React.FC = () => {
             changeTextColor();
           }}
           className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-            isOptionSelected ? 'text-black dark:text-white' : ''
+            isOptionSelected ? 'text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]' : ''
           }`}
         >
-          <option value="" disabled className="text-body dark:text-bodydark">
+          <option value="" disabled className="text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
             Select Country
           </option>
-          <option value="USA" className="text-body dark:text-bodydark">
+          <option value="USA" className="text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
             USA
           </option>
-          <option value="UK" className="text-body dark:text-bodydark">
+          <option value="UK" className="text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
             UK
           </option>
-          <option value="Canada" className="text-body dark:text-bodydark">
+          <option value="Canada" className="text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
             Canada
           </option>
         </Select>

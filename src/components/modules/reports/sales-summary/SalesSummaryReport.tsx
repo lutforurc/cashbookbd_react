@@ -289,7 +289,7 @@ const SalesSummaryReport: React.FC = () => {
       </div>
 
       {/* PRINT */}
-      <div ref={printRef} className="hidden bg-white p-6 text-black">
+      <div ref={printRef} className="hidden bg-white p-6 text-[rgb(var(--c-text))]">
         <h2 className="mb-1 text-center text-lg font-bold">Sales Summary Report</h2>
         <p className="mb-4 text-center text-xs">
           Location: {nameOf(areaId, areaOptions) || "All Locations"} Â· Project:{" "}

@@ -10,7 +10,7 @@ const Buttons = () => {
       {/* <!-- Normal Button Items --> */}
       <div className="mb-10 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="border-b border-stroke px-7 py-4 dark:border-strokedark">
-          <h3 className="font-medium text-black dark:text-white">
+          <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             Normal Button
           </h3>
         </div>
@@ -100,7 +100,7 @@ const Buttons = () => {
 
             <Link
               to="#"
-              className="inline-flex items-center justify-center rounded-md border border-black py-4 px-10 text-center font-medium text-black hover:bg-opacity-90 lg:px-8 xl:px-10"
+              className="inline-flex items-center justify-center rounded-md border border-black py-4 px-10 text-center font-medium text-[rgb(var(--c-text))] hover:bg-opacity-90 lg:px-8 xl:px-10"
             >
               Button
             </Link>
@@ -111,7 +111,7 @@ const Buttons = () => {
       {/* <!-- Button With Icon Items --> */}
       <div className="mb-10 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="border-b border-stroke px-7 py-4 dark:border-strokedark">
-          <h3 className="font-medium text-black dark:text-white">
+          <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             Button With Icon
           </h3>
         </div>

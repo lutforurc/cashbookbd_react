@@ -127,7 +127,7 @@ const MenuArrangement = () => {
                   addDivider(newDivider);
                   setNewDivider('');
                 }}
-                className="w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-white"
+                className="w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
               />
               <ButtonLoading
                 onClick={() => {
@@ -223,7 +223,7 @@ const MenuArrangement = () => {
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                         }}
-                        className="min-w-0 flex-1 rounded-sm border border-stroke bg-transparent px-1.5 py-0.5 text-sm font-semibold uppercase tracking-wide text-black outline-none dark:border-strokedark dark:text-white"
+                        className="min-w-0 flex-1 rounded-sm border border-stroke bg-transparent px-1.5 py-0.5 text-sm font-semibold uppercase tracking-wide text-[rgb(var(--c-text))] outline-none dark:border-strokedark dark:text-[rgb(var(--c-text))]"
                       />
                       <Button
                         type="button"
@@ -239,7 +239,7 @@ const MenuArrangement = () => {
                       </Button>
                     </>
                   ) : (
-                    <span className="min-w-0 flex-1 truncate text-black dark:text-white">
+                    <span className="min-w-0 flex-1 truncate text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                       {menu.title}
                     </span>
                   )}
@@ -331,7 +331,7 @@ const MenuArrangement = () => {
                     addSubDivider(selectedMenu, declared, newSubDivider);
                     setNewSubDivider('');
                   }}
-                  className="w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-white"
+                  className="w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
                 />
                 <ButtonLoading
                   onClick={() => {
@@ -411,7 +411,7 @@ const MenuArrangement = () => {
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                           }}
-                          className="min-w-0 flex-1 rounded-sm border border-stroke bg-transparent px-1.5 py-0.5 text-sm font-semibold uppercase tracking-wide text-black outline-none dark:border-strokedark dark:text-white"
+                          className="min-w-0 flex-1 rounded-sm border border-stroke bg-transparent px-1.5 py-0.5 text-sm font-semibold uppercase tracking-wide text-[rgb(var(--c-text))] outline-none dark:border-strokedark dark:text-[rgb(var(--c-text))]"
                         />
                         <Button
                           type="button"
@@ -424,7 +424,7 @@ const MenuArrangement = () => {
                         </Button>
                       </>
                     ) : (
-                      <span className="min-w-0 flex-1 truncate text-black dark:text-white">
+                      <span className="min-w-0 flex-1 truncate text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                         {item.title}
                       </span>
                     )}

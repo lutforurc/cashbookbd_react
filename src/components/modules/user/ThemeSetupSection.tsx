@@ -1,8 +1,16 @@
 import React from 'react';
 import { FiRotateCcw } from 'react-icons/fi';
-import { fieldClass, FIELD_LABEL, FIELD_SELECT } from '../../../theme/fieldStyles';
+import { fieldClass, FIELD_COLOR, FIELD_LABEL, FIELD_SELECT } from '../../../theme/fieldStyles';
 import { Input, Select } from '../../utils/fields/FormControls';
-import { IconButton } from '../../../pages/UiElements/CustomButtons';
+import { Button, IconButton } from '../../../pages/UiElements/CustomButtons';
+import {
+  CONTROL_HEIGHT_DEFAULT,
+  CONTROL_RADIUS_DEFAULT,
+  PRINT_COLOR_DEFAULT,
+  THEME_DEFAULTS,
+  clearedThemeValues,
+  defaultThemeValues,
+} from '../../../theme/themeDefaults';
 
 /**
  * What one user wants the software to look like.
@@ -28,6 +36,12 @@ interface ThemeSetupSectionProps {
   values: ThemeSetupValues;
   /** Called with the field name and its new value, ready for the form's state. */
   onChange: (name: string, value: string) => void;
+  /**
+   * Called with a whole set at once -- the two buttons at the top of the
+   * section. Optional, so a screen that only wants the fields need not have an
+   * opinion about them.
+   */
+  onChangeMany?: (values: Record<string, string>) => void;
 }
 
 /**
@@ -49,7 +63,7 @@ const ColorBox: React.FC<{
       type="color"
       value={value || fallback}
       onChange={(e) => onChange(name, e.target.value)}
-      className={fieldClass(undefined, 'w-10 shrink-0 cursor-pointer p-1')}
+      className={`${FIELD_COLOR} w-14 shrink-0`}
       title={title}
     />
     <Input
@@ -127,19 +141,20 @@ const Group: React.FC<{ title: string; note: string; children: React.ReactNode }
   </div>
 );
 
-const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({ values, onChange }) => {
-  const pair = (
-    field: string,
-    label: string,
-    lightFallback: string,
-    darkFallback: string,
-    help?: string,
-  ) => (
+const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({
+  values,
+  onChange,
+  onChangeMany,
+}) => {
+  // The fallbacks are the shipped palette, read from one place rather than
+  // written into the markup -- so a colour that changes in tokens.css changes
+  // what this form offers, in both modes, without an edit here.
+  const pair = (field: string, label: string, help?: string) => (
     <ColorPair
       field={field}
       label={label}
-      lightFallback={lightFallback}
-      darkFallback={darkFallback}
+      lightFallback={THEME_DEFAULTS[field]?.light ?? '#FFFFFF'}
+      darkFallback={THEME_DEFAULTS[field]?.dark ?? '#212932'}
       help={help}
       values={values}
       onChange={onChange}
@@ -149,7 +164,7 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({ values, onChange 
   return (
     <div className="md:col-span-2 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
       <div className="mb-4">
-        <h3 className="text-base font-semibold text-gray-800 dark:text-white">
+        <h3 className="text-base font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
           Color and Theme Setup
         </h3>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -157,23 +172,48 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({ values, onChange 
           blank keeps the colour the software ships with, and the arrow beside
           one puts it back.
         </p>
+
+        {/* For the person who does not think in hex. The first button puts the
+            working palette in every box, so they can nudge one colour at a time
+            and see what it does; the second empties them, which hands the
+            colours back to the software. */}
+        {onChangeMany ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="default"
+              className="px-4 text-xs"
+              onClick={() => onChangeMany(defaultThemeValues())}
+            >
+              Use default colors
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="border border-gray-300 px-4 text-xs dark:border-gray-600"
+              onClick={() => onChangeMany(clearedThemeValues())}
+            >
+              Clear all
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       <Group
         title="Meaning"
         note="The colours the software already says things with. Changing one changes it everywhere that thing is said."
       >
-        {pair('primary_color', 'Brand (Primary)', '#2B5FD9', '#2B5FD9',
+        {pair('primary_color', 'Brand (Primary)',
           'Buttons, links, the menu row you are on.')}
-        {pair('secondary_color', 'Secondary', '#7FBEEA', '#7FBEEA',
+        {pair('secondary_color', 'Secondary',
           'The quieter brand colour, beside the first.')}
-        {pair('success_color', 'Success', '#17804C', '#17804C',
+        {pair('success_color', 'Success',
           'Saved, approved, paid.')}
-        {pair('danger_color', 'Danger', '#CB3A4C', '#CB3A4C',
+        {pair('danger_color', 'Danger',
           'Deleted, overdue, refused.')}
-        {pair('warning_color', 'Warning', '#F0A000', '#F0A000',
+        {pair('warning_color', 'Warning',
           'Careful -- not wrong yet.')}
-        {pair('info_color', 'Info', '#2E90E0', '#2E90E0',
+        {pair('info_color', 'Info',
           'A notice that is neither good news nor bad.')}
       </Group>
 
@@ -181,11 +221,15 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({ values, onChange 
         title="The furniture"
         note="The frame around the work, rather than the work itself. This is where the two modes differ most."
       >
-        {pair('sidebar_color', 'Sidebar', '#FFFFFF', '#212932',
+        {pair('text_color', 'Text (Font) Color -- Primary',
+          'Headings, labels, figures -- the words the screen is made of.')}
+        {pair('text_secondary_color', 'Text (Font) Color -- Secondary',
+          'The quieter grey: help text, captions, the line under a field.')}
+        {pair('sidebar_color', 'Sidebar',
           'The strip down the left.')}
-        {pair('header_color', 'Header Bar', '#FFFFFF', '#212932',
+        {pair('header_color', 'Header Bar',
           'The bar across the top. Follows the sidebar unless set.')}
-        {pair('page_bg_color', 'Page Background', '#F4F7FA', '#171D25',
+        {pair('page_bg_color', 'Page Background',
           'The paper the cards sit on.')}
       </Group>
 
@@ -203,7 +247,7 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({ values, onChange 
               <Input
                 type="text"
                 value={values.theme_chart_palette_light || ''}
-                placeholder="#2B5FD9, #12A66E, #E08A0C"
+                placeholder={THEME_DEFAULTS.chart_palette.light}
                 onChange={(e) => onChange('theme_chart_palette_light', e.target.value)}
                 className={fieldClass(undefined, 'w-full text-xs')}
               />
@@ -215,7 +259,7 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({ values, onChange 
               <Input
                 type="text"
                 value={values.theme_chart_palette_dark || ''}
-                placeholder="#5B8DEF, #34D399, #FBBF24"
+                placeholder={THEME_DEFAULTS.chart_palette.dark}
                 onChange={(e) => onChange('theme_chart_palette_dark', e.target.value)}
                 className={fieldClass(undefined, 'w-full text-xs')}
               />
@@ -236,7 +280,7 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({ values, onChange 
             <ColorBox
               name="theme_print_color"
               value={values.theme_print_color}
-              fallback="#0B0E12"
+              fallback={PRINT_COLOR_DEFAULT}
               title="Report print colour"
               onChange={onChange}
             />
@@ -265,7 +309,7 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({ values, onChange 
               min={24}
               max={56}
               value={values.theme_control_height || ''}
-              placeholder="34 (default)"
+              placeholder={`${CONTROL_HEIGHT_DEFAULT} (default)`}
               onChange={(e) => onChange('theme_control_height', e.target.value)}
               className={fieldClass(undefined, 'w-full text-sm')}
             />
@@ -286,7 +330,7 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({ values, onChange 
               min={0}
               max={20}
               value={values.theme_control_radius || ''}
-              placeholder="0 (square, as it ships)"
+              placeholder={`${CONTROL_RADIUS_DEFAULT} (square, as it ships)`}
               onChange={(e) => onChange('theme_control_radius', e.target.value)}
               className={fieldClass(undefined, 'w-full text-sm')}
             />

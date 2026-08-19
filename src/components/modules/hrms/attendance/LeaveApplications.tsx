@@ -167,7 +167,7 @@ const LeaveApplications = ({ user }: any) => {
       <form onSubmit={handleSubmit} className="mb-4">
         <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
           <div>
-            <label className="text-black dark:text-white">Employee</label>
+            <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Employee</label>
             <EmployeeDropdownSearch
               id="leave_employee_id"
               name="employee_id"
@@ -183,7 +183,7 @@ const LeaveApplications = ({ user }: any) => {
             />
           </div>
           <div>
-            <label className="text-black dark:text-white">Branch</label>
+            <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Branch</label>
             <BranchDropdown
  name="branch_id"
  branchDdl={[{ id: '', name: 'Select Branch' }, ...branches]}
@@ -242,7 +242,7 @@ const LeaveApplications = ({ user }: any) => {
           className="w-full"
         />
         <div>
-          <label className="text-black dark:text-white">Branch</label>
+          <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Branch</label>
           <BranchDropdown
  name="branch_id"
  branchDdl={[{ id: '', name: 'All Branches' }, ...branches]}

@@ -67,178 +67,178 @@ const ProfitLossReport = ({
     <div className="overflow-x-auto dark:bg-gray-800 dark:text-gray-300 p-3 rounded">
       {loading ? loader : null}
 
-      <div className="text-center font-semibold mb-2 dark:text-white text-black p-2">
+      <div className="text-center font-semibold mb-2 dark:text-[rgb(var(--c-text))] text-[rgb(var(--c-text))] p-2">
         PROFIT OR LOSS A/C (TRADING A/C)
       </div>
 
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b dark:border-gray-700 border-gray-200">
-            <th className="text-left text-black dark:text-white p-2">Particulars</th>
-            <th className="text-right text-black dark:text-white p-2 w-30"></th>
-            <th className="text-right text-black dark:text-white p-2 w-[160px]">Debit (Tk.)</th>
-            <th className="text-right text-black dark:text-white p-2 w-[160px]">Credit (Tk.)</th>
+            <th className="text-left text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">Particulars</th>
+            <th className="text-right text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 w-30"></th>
+            <th className="text-right text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 w-[160px]">Debit (Tk.)</th>
+            <th className="text-right text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 w-[160px]">Credit (Tk.)</th>
           </tr>
         </thead>
 
         <tbody>
           <tr className="border-b dark:border-gray-700 border-gray-200">
-            <td className="text-black dark:text-white p-2">Opening Stock</td>
-            <td className="text-black dark:text-white p-2 text-right"></td>
-            <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.opening)}</td>
-            <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">Opening Stock</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(report.trading.opening)}</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(0)}</td>
           </tr>
 
           <tr className="border-b dark:border-gray-700 border-gray-200">
-            <td className="text-black dark:text-white p-2">Closing Stock</td>
-            <td className="text-black dark:text-white p-2 text-right"></td>
-            <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
-            <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.closing)}</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">Closing Stock</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(0)}</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(report.trading.closing)}</td>
           </tr>
 
           {report.trading.purchaseDiscountCredit || report.trading.purchaseReturnCredit ? (
             <tr className="border-b dark:border-gray-700 border-gray-200">
-              <td className="text-black dark:text-white p-2 pl-6">Purchase</td>
-              <td className="text-black dark:text-white p-2 text-right">
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">Purchase</td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
                 {fmtEmptyIfZero(report.trading.purchaseDebit)}
               </td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
             </tr>
           ) : null}
 
           {report.trading.purchaseReturnCredit > 0 ? (
             <tr className="border-b dark:border-gray-700 border-gray-200">
-              <td className="text-black dark:text-white p-2 pl-6">(-) Purchase Return</td>
-              <td className="text-black dark:text-white p-2 text-right">
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Purchase Return</td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
                 {fmtEmptyIfZero(report.trading.purchaseReturnCredit)}
               </td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
             </tr>
           ) : null}
 
           {report.trading.purchaseDiscountCredit > 0 ? (
             <tr className="border-b dark:border-gray-700 border-gray-200">
-              <td className="text-black dark:text-white p-2 pl-6">(-) Purchase Discount</td>
-              <td className="text-black dark:text-white p-2 text-right">
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Purchase Discount</td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
                 {fmtEmptyIfZero(report.trading.purchaseDiscountCredit)}
               </td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
             </tr>
           ) : null}
 
           <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
-            <td className="text-black dark:text-white p-2">Net Purchase</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">Net Purchase</td>
             <td
-              className={`text-black dark:text-white p-2 text-right ${
+              className={`text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right ${
                 report.trading.purchaseDiscountCredit || report.trading.purchaseReturnCredit
                   ? "border-t dark:border-gray-100 border-gray-600"
                   : ""
               }`}
             ></td>
-            <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.netPurchase)}</td>
-            <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(report.trading.netPurchase)}</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(0)}</td>
           </tr>
 
           {report.trading.salesDiscountDebit || report.trading.salesReturnDebit ? (
             <tr className="border-b dark:border-gray-700 border-gray-200">
-              <td className="text-black dark:text-white p-2 pl-6">Sales</td>
-              <td className="text-black dark:text-white p-2 text-right">
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">Sales</td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
                 {fmtEmptyIfZero(report.trading.salesCredit)}
               </td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
             </tr>
           ) : null}
 
           {report.trading.salesDiscountDebit > 0 ? (
             <tr className="border-b dark:border-gray-700 border-gray-200">
-              <td className="text-black dark:text-white p-2 pl-6">(-) Sales Discount</td>
-              <td className="text-black dark:text-white p-2 text-right w-30">
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Sales Discount</td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right w-30">
                 {fmtEmptyIfZero(report.trading.salesDiscountDebit)}
               </td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
             </tr>
           ) : null}
 
           {report.trading.salesReturnDebit > 0 ? (
             <tr className="border-b dark:border-gray-700 border-gray-200">
-              <td className="text-black dark:text-white p-2 pl-6">(-) Sales Return</td>
-              <td className="text-black dark:text-white p-2 text-right w-30">
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Sales Return</td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right w-30">
                 {fmtEmptyIfZero(report.trading.salesReturnDebit)}
               </td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
             </tr>
           ) : null}
 
           <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
-            <td className="text-black dark:text-white p-2">Net Sales</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">Net Sales</td>
             <td
-              className={`text-black dark:text-white p-2 text-right ${
+              className={`text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right ${
                 report.trading.salesDiscountDebit || report.trading.salesReturnDebit
                   ? "border-t dark:border-gray-100 border-gray-600"
                   : ""
               }`}
             ></td>
-            <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
-            <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.netSalesCredit)}</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(0)}</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(report.trading.netSalesCredit)}</td>
           </tr>
 
           {/* Only shown when goods actually crossed a branch line -- on the
               many branches that never transfer, the report reads as before. */}
           {report.trading.goodsReceived > 0 ? (
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
-              <td className="text-black dark:text-white p-2">Goods Received from Branch</td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right">
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">Goods Received from Branch</td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
                 {fmtZero(report.trading.goodsReceived)}
               </td>
-              <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(0)}</td>
             </tr>
           ) : null}
 
           {report.trading.goodsIssued > 0 ? (
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
-              <td className="text-black dark:text-white p-2">Goods Issued to Branch</td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
-              <td className="text-black dark:text-white p-2 text-right">
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">Goods Issued to Branch</td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(0)}</td>
+              <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
                 {fmtZero(report.trading.goodsIssued)}
               </td>
             </tr>
           ) : null}
 
           <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
-            <td className="text-black dark:text-white p-2">
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">
               {report.trading.grossProfit > 0 ? "Gross Profit" : "Gross Loss"}
             </td>
-            <td className="text-black dark:text-white p-2 text-right"></td>
-            <td className="text-black dark:text-white p-2 text-right">
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
               {fmtZero(report.trading.grossProfit > 0 ? report.trading.grossProfit : 0)}
             </td>
-            <td className="text-black dark:text-white p-2 text-right">
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
               {fmtZero(report.trading.grossLoss > 0 ? report.trading.grossLoss : 0)}
             </td>
           </tr>
 
           <tr className="font-semibold border-t-2 dark:border-gray-300 border-gray-600">
-            <td className="text-black dark:text-white p-2">Total</td>
-            <td className="text-black dark:text-white p-2 text-right"></td>
-            <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.totalDebit)}</td>
-            <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.totalCredit)}</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">Total</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(report.trading.totalDebit)}</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(report.trading.totalCredit)}</td>
           </tr>
         </tbody>
       </table>
 
-      <div className="text-center font-semibold mt-6 mb-2 text-black dark:text-white">
+      <div className="text-center font-semibold mt-6 mb-2 text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
         NET PROFIT OR LOSS A/C
       </div>
 
-      <table className="w-full text-sm text-black dark:text-white">
+      <table className="w-full text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
         <thead>
           <tr className="border-b dark:border-gray-700 border-gray-200">
             <th className="text-left p-2">Particulars</th>
@@ -280,7 +280,7 @@ const ProfitLossReport = ({
           <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
             <td className="p-2">Total Expense</td>
             <td
-              className={`text-black dark:text-white p-2 text-right w-30 ${
+              className={`text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right w-30 ${
                 report.net.expenses.length > 0 ? "border-t dark:border-gray-100 border-gray-600" : ""
               }`}
             ></td>

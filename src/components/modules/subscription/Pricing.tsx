@@ -25,7 +25,7 @@ const Pricing: React.FC = () => {
       <HelmetTitle title="Subscription Pricing" />
 
       <div className="rounded-sm border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-        <h1 className="text-2xl font-semibold text-black dark:text-white">
+        <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           Subscription Plans
         </h1>
         <p className="mt-2 text-sm text-bodydark2">
@@ -41,7 +41,7 @@ const Pricing: React.FC = () => {
             className="flex h-full flex-col rounded-sm border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/60 dark:border-strokedark dark:bg-boxdark dark:shadow-none"
           >
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {plan.name}
               </h2>
               <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold capitalize tracking-wide text-slate-700">
@@ -50,7 +50,7 @@ const Pricing: React.FC = () => {
             </div>
 
             <div className="mt-5">
-              <p className="text-4xl font-bold tracking-tight text-slate-950 dark:text-white">
+              <p className="text-4xl font-bold tracking-tight text-slate-950 dark:text-[rgb(var(--c-text))]">
                 {plan.currency || 'BDT'} { thousandSeparator(Number(plan.price || 0)) }
               </p>
               <p className="mt-2 text-sm font-medium text-slate-500 dark:text-bodydark2">
@@ -62,43 +62,43 @@ const Pricing: React.FC = () => {
               <ul className="space-y-3 text-sm text-slate-700 dark:text-bodydark2">
                 <li className="flex items-start justify-between gap-4">
                   <span className="font-medium text-slate-500 dark:text-slate-300">Employees</span>
-                  <span className="text-right font-semibold text-slate-900 dark:text-white">
+                  <span className="text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                     {plan.max_employees ?? 'Unlimited'}
                   </span>
                 </li>
                 <li className="flex items-start justify-between gap-4">
                   <span className="font-medium text-slate-500 dark:text-slate-300">Customers</span>
-                  <span className="text-right font-semibold text-slate-900 dark:text-white">
+                  <span className="text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                     {plan.max_customers ?? 'Unlimited'}
                   </span>
                 </li>
                 <li className="flex items-start justify-between gap-4">
                   <span className="font-medium text-slate-500 dark:text-slate-300">Products</span>
-                  <span className="text-right font-semibold text-slate-900 dark:text-white">
+                  <span className="text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                     {plan.max_products ?? 'Unlimited'}
                   </span>
                 </li>
                 <li className="flex items-start justify-between gap-4">
                   <span className="font-medium text-slate-500 dark:text-slate-300">Users</span>
-                  <span className="text-right font-semibold text-slate-900 dark:text-white">
+                  <span className="text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                     {plan.max_users ?? 'Unlimited'}
                   </span>
                 </li>
                 <li className="flex items-start justify-between gap-4">
                   <span className="font-medium text-slate-500 dark:text-slate-300">Branches</span>
-                  <span className="text-right font-semibold text-slate-900 dark:text-white">
+                  <span className="text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                     {plan.max_branches ?? 'Unlimited'}
                   </span>
                 </li>
                 <li className="flex items-start justify-between gap-4">
                   <span className="font-medium text-slate-500 dark:text-slate-300">Transactions/month</span>
-                  <span className="text-right font-semibold text-slate-900 dark:text-white">
+                  <span className="text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                     {plan.max_transactions_per_month ?? 'Unlimited'}
                   </span>
                 </li>
                 <li className="flex items-start justify-between gap-4">
                   <span className="font-medium text-slate-500 dark:text-slate-300">Support Time</span>
-                  <span className="text-right font-semibold text-slate-900 dark:text-white">
+                  <span className="text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                     {plan.support_time || '-'}
                   </span>
                 </li>
@@ -118,7 +118,7 @@ const Pricing: React.FC = () => {
                   {getEnabledFeatures(plan).map((feature: any) => (
                     <li key={feature.feature_key} className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-blue-500" />
-                      <span className="font-medium text-slate-800 dark:text-white">{feature.feature_name}</span>
+                      <span className="font-medium text-slate-800 dark:text-[rgb(var(--c-text))]">{feature.feature_name}</span>
                     </li>
                   ))}
                 </ul>

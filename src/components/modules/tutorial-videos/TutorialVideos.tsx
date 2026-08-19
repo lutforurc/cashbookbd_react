@@ -38,7 +38,7 @@ const labelClass =
   'mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300';
 
 const fieldClass =
-  'w-full rounded border border-slate-300 bg-transparent px-3 py-1.5 text-sm outline-none transition focus:border-primary dark:border-slate-600 dark:text-white';
+  'w-full rounded border border-slate-300 bg-transparent px-3 py-1.5 text-sm outline-none transition focus:border-primary dark:border-slate-600 dark:text-[rgb(var(--c-text))]';
 
 /**
  * Headings only for the groups that title-casing gets wrong.
@@ -564,7 +564,7 @@ const TutorialVideos = () => {
                                   onChange={(e) =>
                                     setEdit(row, { [field]: e.target.value })
                                   }
-                                  className="w-full rounded border border-slate-300 bg-transparent px-3 py-1.5 text-sm outline-none transition focus:border-primary dark:border-slate-600 dark:text-white"
+                                  className="w-full rounded border border-slate-300 bg-transparent px-3 py-1.5 text-sm outline-none transition focus:border-primary dark:border-slate-600 dark:text-[rgb(var(--c-text))]"
                                 />
                                 {url ? (
                                   <a

@@ -236,7 +236,7 @@ const ApprovalCenter = ({ user }: any) => {
       header: 'Employee',
       render: (row: any) => (
         <div>
-          <div className="font-semibold text-slate-900 dark:text-white">{row.employee_name || '-'}</div>
+          <div className="font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">{row.employee_name || '-'}</div>
           <div className="text-xs text-slate-500">{row.employee_serial || ''}</div>
         </div>
       ),
@@ -288,7 +288,7 @@ const ApprovalCenter = ({ user }: any) => {
             className="w-full"
           />
           <div>
-            <label className="mb-1 block text-sm font-medium text-black dark:text-white">Branch/Project</label>
+            <label className="mb-1 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Branch/Project</label>
             <BranchDropdown
  name="branch_id"
  defaultValue={userBranchId}
@@ -311,7 +311,7 @@ const ApprovalCenter = ({ user }: any) => {
             className=""
           />
           <div>
-            <label className="mb-1 block text-sm font-medium text-black dark:text-white">Per Page</label>
+            <label className="mb-1 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Per Page</label>
             <Select
  name="per_page"
  value={filters.per_page}
@@ -339,7 +339,7 @@ const ApprovalCenter = ({ user }: any) => {
         {summaryCards.map((card) => (
           <div key={card.label} className="border border-stroke bg-white px-4 py-3 dark:border-strokedark dark:bg-boxdark">
             <div className="text-xs font-semibold uppercase text-slate-500">{card.label}</div>
-            <div className="mt-1 text-xl font-bold text-slate-900 dark:text-white">{card.value}</div>
+            <div className="mt-1 text-xl font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">{card.value}</div>
           </div>
         ))}
       </div>
@@ -455,7 +455,7 @@ const ApprovalCenter = ({ user }: any) => {
                   rows={3}
                   maxLength={255}
                   placeholder={`Reason / note for this ${confirmAction?.action}`}
-                  className="block w-full rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+                  className="block w-full rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
                 />
               </span>
             ) : null}

@@ -220,7 +220,7 @@ const DropdownNotification = () => {
         <Button
           type="button"
           onClick={() => setDropdownOpen((current) => !current)}
-          className="relative flex w-8.5 items-center justify-center rounded-full border border-stroke bg-gray text-slate-600 transition hover:border-primary hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
+          className="relative flex w-8.5 items-center justify-center rounded-full border border-stroke bg-gray text-slate-600 transition hover:border-primary hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-[rgb(var(--c-text))]"
           aria-label="Notification center"
         >
           <FiBell className="text-lg" />
@@ -235,7 +235,7 @@ const DropdownNotification = () => {
           <div className="absolute -right-20 mt-2.5 flex w-80 flex-col overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-96">
             <div className="flex items-center justify-between border-b border-stroke px-4 py-3 dark:border-strokedark">
               <div>
-                <h5 className="text-sm font-bold text-black dark:text-white">
+                <h5 className="text-sm font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Notification Center
                 </h5>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -271,7 +271,7 @@ const DropdownNotification = () => {
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center justify-between gap-3">
-                            <span className="truncate text-sm font-bold text-black dark:text-white">
+                            <span className="truncate text-sm font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                               {item.title}
                             </span>
                             {item.count ? (

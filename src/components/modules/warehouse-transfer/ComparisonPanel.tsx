@@ -44,7 +44,7 @@ const ComparisonPanel = ({
 
   const difference = (value: number) => {
     const n = Number(value || 0);
-    if (n === 0) return <span className="text-body dark:text-bodydark">0</span>;
+    if (n === 0) return <span className="text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">0</span>;
     return (
       <span className={n < 0 ? 'font-semibold text-danger' : 'font-semibold text-meta-6'}>
         {n > 0 ? `+${thousandSeparator(n)}` : thousandSeparator(n)}
@@ -58,7 +58,7 @@ const ComparisonPanel = ({
   return (
     <div className="border-y border-blue-500/30 bg-gray-2 px-3 py-3 dark:bg-meta-4">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-black dark:text-white">
+        <h3 className="text-sm font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           Issued vs Received
           {!comparison?.is_received && (
             <span className="ml-2 text-xs font-normal text-danger">
@@ -94,7 +94,7 @@ const ComparisonPanel = ({
               <tr>
                 <td
                   colSpan={columnCount}
-                  className={`${cell} py-4 text-center text-body dark:text-bodydark`}
+                  className={`${cell} py-4 text-center text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]`}
                 >
                   No product on this challan
                 </td>
@@ -151,7 +151,7 @@ const ComparisonPanel = ({
                       isOpen &&
                       layers.map((layer, index) => (
                         <tr key={`${row.product_id}-${index}`} className="bg-gray-2 dark:bg-meta-4">
-                          <td className={`${cell} pl-8 text-xs text-body dark:text-bodydark`}>
+                          <td className={`${cell} pl-8 text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]`}>
                             at {thousandSeparator(layer.rate)}
                           </td>
                           <td className={`${cell} text-right text-xs`}>

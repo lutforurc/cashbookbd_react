@@ -153,13 +153,13 @@ const SignUp: React.FC = () => {
           <div className="w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
             <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
               <span className="mb-1.5 block font-medium">Start for free</span>
-              <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
+              <h2 className="mb-9 text-2xl font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] sm:text-title-xl2">
                 Sign Up to TailAdmin
               </h2>
 
               <form>
                 <div className="mb-4">
-                  <label className="mb-2.5 block font-medium text-black dark:text-white">
+                  <label className="mb-2.5 block font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Name
                   </label>
                   <div className="relative">
@@ -194,7 +194,7 @@ const SignUp: React.FC = () => {
                 </div>
 
                 <div className="mb-4">
-                  <label className="mb-2.5 block font-medium text-black dark:text-white">
+                  <label className="mb-2.5 block font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Email
                   </label>
                   <div className="relative">
@@ -225,7 +225,7 @@ const SignUp: React.FC = () => {
                 </div>
 
                 <div className="mb-4">
-                  <label className="mb-2.5 block font-medium text-black dark:text-white">
+                  <label className="mb-2.5 block font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Password
                   </label>
                   <div className="relative">
@@ -260,7 +260,7 @@ const SignUp: React.FC = () => {
                 </div>
 
                 <div className="mb-6">
-                  <label className="mb-2.5 block font-medium text-black dark:text-white">
+                  <label className="mb-2.5 block font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Re-type Password
                   </label>
                   <div className="relative">

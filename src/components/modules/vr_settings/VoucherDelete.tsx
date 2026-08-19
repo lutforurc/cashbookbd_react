@@ -109,7 +109,7 @@ const VoucherDelete = () => {
               <FiTrash2 className="h-5 w-5" />
             </span>
             <div>
-              <h3 className="text-base font-semibold text-black dark:text-white">Voucher Delete</h3>
+              <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Voucher Delete</h3>
               <p className="text-xs text-slate-500 dark:text-bodydark2">Remove a voucher and its related entries.</p>
             </div>
           </div>
@@ -120,7 +120,7 @@ const VoucherDelete = () => {
               <div className="text-[11px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
                 Branch whose data you want to delete
               </div>
-              <div className="mt-0.5 text-base font-bold text-slate-800 dark:text-white">
+              <div className="mt-0.5 text-base font-bold text-slate-800 dark:text-[rgb(var(--c-text))]">
                 {settings?.data?.branch?.name || '-'}
               </div>
             </div>
@@ -188,10 +188,10 @@ const VoucherDelete = () => {
               <p className="mt-0.5 text-sm text-amber-700/90 dark:text-amber-400/90">{alreadyDeletedMsg}</p>
             </div>
 
-            <div className="px-5 py-4 text-sm text-slate-600 dark:text-bodydark">
+            <div className="px-5 py-4 text-sm text-slate-600 dark:text-[rgb(var(--c-text-muted))]">
               You can continue and delete it again, or cancel.
               <div className="mt-2 border border-stroke px-3 py-2 dark:border-strokedark">
-                <div className="font-semibold text-black dark:text-white">Voucher: {voucherNo}</div>
+                <div className="font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Voucher: {voucherNo}</div>
                 <div className="text-xs text-slate-400">{settings?.data?.branch?.name}</div>
               </div>
             </div>
@@ -200,7 +200,7 @@ const VoucherDelete = () => {
               <Button
                 type="button"
                 onClick={() => setAlreadyDeletedMsg('')}
-                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>
