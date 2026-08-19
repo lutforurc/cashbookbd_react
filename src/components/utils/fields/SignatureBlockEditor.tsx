@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import { FIELD_BASE, FIELD_LABEL } from '../../../theme/fieldStyles';
 import { Button } from '../../../pages/UiElements/CustomButtons';
+import { Input, Textarea } from './FormControls';
 
 /**
  * The letter signature block, as a form instead of a rich-text editor.
@@ -189,7 +190,7 @@ const SignatureBlockEditor: React.FC<Props> = ({ value, onChange, placeholder })
           This signature block was written with the old editor in a layout this
           form cannot edit. It still prints on the letter exactly as before.
         </p>
-        <textarea
+        <Textarea
           readOnly
           value={value}
           rows={4}
@@ -212,7 +213,7 @@ const SignatureBlockEditor: React.FC<Props> = ({ value, onChange, placeholder })
   return (
     <div className="rounded-lg border border-gray-300 bg-white p-3 dark:border-gray-600 dark:bg-boxdark">
       <label className={`${FIELD_LABEL} text-sm`}>Text above the signatures (optional)</label>
-      <textarea
+      <Textarea
         value={lead}
         onChange={(e) => apply(e.target.value, signatories)}
         placeholder={placeholder || 'One sentence per line'}
@@ -229,7 +230,7 @@ const SignatureBlockEditor: React.FC<Props> = ({ value, onChange, placeholder })
           >
             {/* The printed shape, in miniature: space, line, then the labels. */}
             <div className="mb-2 border-b border-gray-400 pb-6 dark:border-gray-500" />
-            <input
+            <Input
               value={signatory.label}
               onChange={(e) =>
                 apply(
@@ -242,7 +243,7 @@ const SignatureBlockEditor: React.FC<Props> = ({ value, onChange, placeholder })
               placeholder="Authorized Signatory"
               className={`${FIELD_BASE} mb-1 w-full px-2 py-1 text-center text-xs`}
             />
-            <input
+            <Input
               value={signatory.sub}
               onChange={(e) =>
                 apply(

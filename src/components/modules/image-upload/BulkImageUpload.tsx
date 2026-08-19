@@ -12,6 +12,7 @@ import dayjs from 'dayjs';
 import { FiCheckSquare, FiX } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
+import { Input } from '../../utils/fields/FormControls';
 
 export default function BulkImageUpload(user: any): JSX.Element {
   const [files, setFiles] = useState<File[]>([]);
@@ -277,7 +278,7 @@ export default function BulkImageUpload(user: any): JSX.Element {
       <div className="mt-4">
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <input
+            <Input
               type="file"
               id="file-upload"
               className="hidden"

@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
 import { FIELD_FILE_BUTTON, FIELD_LABEL } from '../../../theme/fieldStyles';
 import { Button } from '../../../pages/UiElements/CustomButtons';
+import { Input } from './FormControls';
 
 /** Matches the API's limit so an oversized file fails before the upload. */
 const MAX_PHOTO_KB = 150;
@@ -117,7 +118,7 @@ const PhotoInput: React.FC<PhotoInputProps> = ({
           </Button>
         ) : null}
 
-        <input
+        <Input
           ref={inputRef}
           id={id || name}
           name={name}

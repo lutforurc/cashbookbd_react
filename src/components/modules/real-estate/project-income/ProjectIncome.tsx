@@ -19,6 +19,7 @@ import {
   API_PROJECT_INCOME_STORE_URL,
   API_PROJECT_INCOME_UPDATE_URL,
 } from '../../../services/apiRoutes';
+import { Select as FormSelect } from '../../../utils/fields/FormControls';
 
 interface Option {
   value: number | string;
@@ -28,7 +29,7 @@ interface Option {
 /**
  * Not an `Option`. DdlMultiline types its option values as strings, so an
  * account id is a string from the moment it leaves the API -- see
- * loadAccountOptions. The plain <select> dropdowns above take `Option`, which
+ * loadAccountOptions. The plain <FormSelect> dropdowns above take `Option`, which
  * keeps the number.
  */
 interface AccountOption {
@@ -565,7 +566,7 @@ const ProjectIncome = () => {
 
             <div>
               <label htmlFor="project_id">Select Project (Optional)</label>
-              <select
+              <FormSelect
                 id="project_id"
                 name="project_id"
                 className={SELECT_CLASS}
@@ -585,12 +586,12 @@ const ProjectIncome = () => {
                     {project.label}
                   </option>
                 ))}
-              </select>
+              </FormSelect>
             </div>
 
             <div>
               <label htmlFor="building_id">Select Building</label>
-              <select
+              <FormSelect
                 id="building_id"
                 name="building_id"
                 className={SELECT_CLASS}
@@ -610,7 +611,7 @@ const ProjectIncome = () => {
                     {building.label}
                   </option>
                 ))}
-              </select>
+              </FormSelect>
             </div>
 
             <InputElement

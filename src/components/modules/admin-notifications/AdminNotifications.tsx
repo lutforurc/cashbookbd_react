@@ -15,6 +15,7 @@ import httpService from '../../services/httpService';
 import { API_ADMIN_NOTIFICATIONS_URL } from '../../services/apiRoutes';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { getRoles } from '../user-management/userManagementSlice';
+import { Select, Textarea } from '../../utils/fields/FormControls';
 
 type Tone = 'info' | 'warning' | 'danger' | 'success';
 type Audience = 'global' | 'company' | 'branch' | 'role' | 'user';
@@ -248,7 +249,7 @@ const AdminNotifications = () => {
             <label className={labelClass}>
               Message <span className="text-rose-500">*</span>
             </label>
-            <textarea
+            <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="What do you want everyone to know?"
@@ -259,7 +260,7 @@ const AdminNotifications = () => {
 
           <div>
             <label className={labelClass}>Tone</label>
-            <select
+            <Select
               value={tone}
               onChange={(e) => setTone(e.target.value as Tone)}
               className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
@@ -269,7 +270,7 @@ const AdminNotifications = () => {
                   {item.label}
                 </option>
               ))}
-            </select>
+            </Select>
             <span
               className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-bold ${toneClass[tone]}`}
             >
@@ -279,7 +280,7 @@ const AdminNotifications = () => {
 
           <div>
             <label className={labelClass}>Audience</label>
-            <select
+            <Select
               value={audience}
               onChange={(e) => setAudience(e.target.value as Audience)}
               className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
@@ -289,7 +290,7 @@ const AdminNotifications = () => {
                   {item.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           {audience === 'branch' && (
@@ -312,7 +313,7 @@ const AdminNotifications = () => {
               <label className={labelClass}>
                 Role <span className="text-rose-500">*</span>
               </label>
-              <select
+              <Select
                 value={roleId}
                 onChange={(e) => setRoleId(e.target.value)}
                 className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
@@ -325,7 +326,7 @@ const AdminNotifications = () => {
                     {role.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           )}
 

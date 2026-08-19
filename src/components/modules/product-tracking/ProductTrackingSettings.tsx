@@ -17,6 +17,7 @@ import {
   useAvailableProducts,
   useProductTrackingSettings,
 } from './productTrackingSettingsSlice';
+import { Input } from '../../utils/fields/FormControls';
 
 const emptyForm: SettingPayload = {
   product_id: 0,
@@ -282,7 +283,7 @@ const ProductTrackingSettings = () => {
             <h3 className="text-lg font-semibold text-black dark:text-white">
               Tracked Products ({settings.length})
             </h3>
-            <input
+            <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search product"

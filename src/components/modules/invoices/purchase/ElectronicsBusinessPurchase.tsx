@@ -39,6 +39,7 @@ import httpService from '../../../services/httpService';
 import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import { Textarea } from '../../../utils/fields/FormControls';
 
 interface Product {
   id: number;
@@ -844,7 +845,7 @@ const ElectronicsBusinessPurchase = () => {
                 >
                   Enter Serial Number
                 </label>
-                <textarea
+                <Textarea
                   id="serial_no"
                   name="serial_no"
                   placeholder="Enter Serial Number"

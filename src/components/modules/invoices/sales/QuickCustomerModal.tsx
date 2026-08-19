@@ -11,6 +11,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import DdlDynamicMultiline from '../../../utils/utils-functions/DdlDynamicMultiline';
 import { FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
+import { Textarea } from '../../../utils/fields/FormControls';
 
 interface QuickCustomerFormData {
   name: string;
@@ -288,7 +289,7 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
             >
               Address
             </label>
-            <textarea
+            <Textarea
               id="quick_customer_address"
               name="manual_address"
               rows={3}

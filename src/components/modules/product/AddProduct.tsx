@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { fetchBrandDdl } from './brand/brandSlice';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
+import { Textarea } from '../../utils/fields/FormControls';
 
 interface productItem {
   id: string | number;
@@ -496,7 +497,7 @@ console.log('====================================');
               >
                 IMEI / Serial
               </label>
-              <textarea
+              <Textarea
                 id="opening_serial_no"
                 name="opening_serial_no"
                 rows={3}

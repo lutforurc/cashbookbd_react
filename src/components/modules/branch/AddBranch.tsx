@@ -32,6 +32,7 @@ import { formatMobile } from '../../utils/utils-functions/mobileFormat';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import httpService from '../../services/httpService';
 import { hasPermission } from '../../utils/permissionChecker';
+import { Input } from '../../utils/fields/FormControls';
 
 const shouldStripPublicPrefix = /^(https?:\/\/)?(localhost|127\.0\.0\.1|cashbook_api\.test)(:\d+)?$/i.test(
   API_REMOTE_URL,
@@ -1102,7 +1103,7 @@ const AddBranch = () => {
                         >
                           Pad Header Image
                         </label>
-                        <input
+                        <Input
                           id="pad_header_image"
                           name="pad_header_image"
                           type="file"

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
+import { Select } from '../fields/FormControls';
 
 interface SelectOptionProps {
   onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -37,7 +38,7 @@ const SelectWeightVariance: React.FC<SelectOptionProps> = ({
   };
 
   return (
-    <select
+    <Select
     id={id}
       name={'weightVariance'} // Assuming name is a string for the select element
       value={selectedValue}
@@ -52,7 +53,7 @@ const SelectWeightVariance: React.FC<SelectOptionProps> = ({
       {/* <option value="">Not Applicable</option>
       <option value="+">(+) Increase</option>
       <option value="-">(-) Decrease</option> */}
-    </select>
+    </Select>
   );
 };
 

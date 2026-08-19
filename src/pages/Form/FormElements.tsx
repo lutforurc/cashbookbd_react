@@ -13,6 +13,7 @@ import DatePickerTwo from '../../components/Forms/DatePicker/DatePickerTwo';
 import SelectGroupTwo from '../../components/Forms/SelectGroup/SelectGroupTwo';
 import MultiSelect from '../../components/Forms/MultiSelect';
 import { FIELD_BASE, FIELD_TEXTAREA } from '../../theme/fieldStyles';
+import { Input, Textarea } from '../../components/utils/fields/FormControls';
 
 const FormElements = () => {
   return (
@@ -33,7 +34,7 @@ const FormElements = () => {
                 <label className="mb-3 block text-black dark:text-white">
                   Default Input
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="Default Input"
                   className={`${FIELD_BASE} w-full py-3 px-5`}
@@ -44,7 +45,7 @@ const FormElements = () => {
                 <label className="mb-3 block text-black dark:text-white">
                   Active Input
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="Active Input"
                   className={`${FIELD_BASE} w-full py-3 px-5`}
@@ -55,7 +56,7 @@ const FormElements = () => {
                 <label className="mb-3 block font-medium text-black dark:text-white">
                   Disabled label
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="Disabled label"
                   disabled
@@ -105,7 +106,7 @@ const FormElements = () => {
                 <label className="mb-3 block text-black dark:text-white">
                   Attach file
                 </label>
-                <input
+                <Input
                   type="file"
                   className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:py-3 file:px-5 file:hover:bg-primary/10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
                 />
@@ -115,7 +116,7 @@ const FormElements = () => {
                 <label className="mb-3 block text-black dark:text-white">
                   Attach file
                 </label>
-                <input
+                <Input
                   type="file"
                   className="w-full rounded-md border border-stroke p-3 outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-[rgb(var(--c-gray-100))] file:py-1 file:px-2.5 file:text-sm focus:border-primary file:focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-strokedark dark:file:bg-white/30 dark:file:text-white"
                 />
@@ -137,34 +138,34 @@ const FormElements = () => {
                 <label className="mb-3 block text-black dark:text-white">
                   Default textarea
                 </label>
-                <textarea
+                <Textarea
                   rows={6}
                   placeholder="Default textarea"
                   className={`${FIELD_TEXTAREA} w-full py-3 px-5`}
-                ></textarea>
+                ></Textarea>
               </div>
 
               <div>
                 <label className="mb-3 block text-black dark:text-white">
                   Active textarea
                 </label>
-                <textarea
+                <Textarea
                   rows={6}
                   placeholder="Active textarea"
                   className={`${FIELD_TEXTAREA} w-full py-3 px-5`}
-                ></textarea>
+                ></Textarea>
               </div>
 
               <div>
                 <label className="mb-3 block text-black dark:text-white">
                   Disabled textarea
                 </label>
-                <textarea
+                <Textarea
                   rows={6}
                   disabled
                   placeholder="Disabled textarea"
                   className={`${FIELD_TEXTAREA} w-full py-3 px-5`}
-                ></textarea>
+                ></Textarea>
               </div>
             </div>
           </div>

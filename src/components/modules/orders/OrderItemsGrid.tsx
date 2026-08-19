@@ -4,6 +4,7 @@ import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { Button } from '../../../pages/UiElements/CustomButtons';
+import { Input } from '../../utils/fields/FormControls';
 
 export type OrderLine = {
   /** Stable row key; the saved line id when editing, a local key otherwise. */
@@ -155,7 +156,7 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
                 </td>
 
                 <td className={cell}>
-                  <input
+                  <Input
                     id={`item_qty_${index}`}
                     type="number"
                     value={line.total_order}
@@ -167,7 +168,7 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
                 </td>
 
                 <td className={cell}>
-                  <input
+                  <Input
                     id={`item_rate_${index}`}
                     type="number"
                     value={line.order_rate}
@@ -179,7 +180,7 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
                 </td>
 
                 <td className={cell}>
-                  <input
+                  <Input
                     id={`item_contract_${index}`}
                     type="number"
                     value={line.contract_order_qty}

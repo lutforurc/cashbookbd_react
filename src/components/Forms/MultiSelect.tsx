@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../../pages/UiElements/CustomButtons';
+import { Input, Select } from '../utils/fields/FormControls';
 
 interface Option {
   value: string;
@@ -100,15 +101,15 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
         Multiselect Dropdown
       </label>
       <div>
-        <select className="hidden" id={id}>
+        <Select className="hidden" id={id}>
           <option value="1">Option 2</option>
           <option value="2">Option 3</option>
           <option value="3">Option 4</option>
           <option value="4">Option 5</option>
-        </select>
+        </Select>
 
         <div className="flex flex-col items-center">
-          <input name="values" type="hidden" defaultValue={selectedValues()} />
+          <Input name="values" type="hidden" defaultValue={selectedValues()} />
           <div className="relative z-20 inline-block w-full">
             <div className="relative flex flex-col items-center">
               <div ref={trigger} onClick={open} className="w-full">
@@ -149,7 +150,7 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
                     ))}
                     {selected.length === 0 && (
                       <div className="flex-1">
-                        <input
+                        <Input
                           placeholder="Select an option"
                           className="h-full w-full appearance-none bg-transparent p-1 px-2 outline-none"
                           defaultValue={selectedValues()}

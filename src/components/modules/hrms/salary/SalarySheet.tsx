@@ -23,6 +23,7 @@ import { salarySheetPrint } from "./salarySlice";
 import routes from "../../../services/appRoutes";
 import { FiSearch } from "react-icons/fi";
 import * as XLSX from "xlsx";
+import { Select } from '../../../utils/fields/FormControls';
 
 const getSalaryHistory = (history?: string | Record<string, any>) => {
   if (!history) return {};
@@ -328,7 +329,7 @@ const SalarySheet = ({ user }: any) => {
             {dueAmount === 0 ? (
               <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">Paid</span>
             ) : (
-              <select
+              <Select
                 defaultValue=""
                 onChange={(e) => {
                   const value = e.target.value;
@@ -341,7 +342,7 @@ const SalarySheet = ({ user }: any) => {
                 <option value="update">Update</option>
                 <option value="excel">Excel</option>
                 <option value="payment">Payment</option>
-              </select>
+              </Select>
             )}
           </>
         );

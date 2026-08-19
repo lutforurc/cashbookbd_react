@@ -5,6 +5,7 @@ import {
   SWITCH_TRACK_OFF,
   SWITCH_TRACK_ON,
 } from '../../../theme/fieldStyles';
+import { Input } from './FormControls';
 
 interface ToggleSwitchProps {
   id?: string;
@@ -52,7 +53,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         disabled ? 'cursor-not-allowed opacity-60' : ''
       } ${className}`}
     >
-      <input
+      <Input
         type="checkbox"
         id={id || name}
         name={name}

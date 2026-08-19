@@ -12,6 +12,7 @@ import InputElement from '../../utils/fields/InputElement';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Link from '../../utils/others/Link';
 import { editCompany, updateCompany } from './companySlice';
+import { Input, Textarea } from '../../utils/fields/FormControls';
 
 /** Matches the textarea in the product form, so both read as the same field. */
 const TEXTAREA_CLASS =
@@ -187,7 +188,7 @@ const EditCompany = () => {
             <label htmlFor="address" className="text-black dark:text-white">
               Address
             </label>
-            <textarea
+            <Textarea
               id="address"
               name="address"
               rows={2}
@@ -204,7 +205,7 @@ const EditCompany = () => {
             <label htmlFor="notes" className="text-black dark:text-white">
               Notes
             </label>
-            <textarea
+            <Textarea
               id="notes"
               name="notes"
               rows={2}
@@ -242,7 +243,7 @@ const EditCompany = () => {
                     logoPreview ? '' : 'hidden'
                   }`}
                 />
-                <input
+                <Input
                   id="company_logo"
                   name="company_logo"
                   type="file"
@@ -267,7 +268,7 @@ const EditCompany = () => {
                     logoDarkPreview ? '' : 'hidden'
                   }`}
                 />
-                <input
+                <Input
                   id="company_logo_dark"
                   name="company_logo_dark"
                   type="file"

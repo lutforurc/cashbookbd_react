@@ -1,5 +1,6 @@
 import React from 'react';
 import { FIELD_TRANSPARENT, fieldClass } from '../../../theme/fieldStyles';
+import { Input } from './FormControls';
 
 interface InputElementProps {
   id: string;
@@ -25,7 +26,7 @@ const InputOnly: React.FC<InputElementProps> = ({
 }) => {
   return (
     <div className="text-left flex flex-col">
-      <input
+      <Input
         id={id}
         name={name}
         onChange={onChange}

@@ -11,6 +11,7 @@ import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButton
 import Table from '../../../utils/others/Table';
 import httpService from '../../../services/httpService';
 import { API_REPORT_GROUP_SETUP_URL } from '../../../services/apiRoutes';
+import { Select as FormSelect } from '../../../utils/fields/FormControls';
 
 type GroupItem = {
   id: number;
@@ -164,14 +165,14 @@ const GroupReportSetup = () => {
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Select Group
             </label>
-            <select
+            <FormSelect
               value={groupId}
               onChange={(event) => setGroupId(event.target.value)}
               className={`${FIELD_SELECT} h-10 w-full px-3 text-sm font-medium`}
             >
               <option value="">Select your group</option>
               {reportGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
-            </select>
+            </FormSelect>
           </div>
 
           <div className="min-w-[280px] flex-[1.4]">

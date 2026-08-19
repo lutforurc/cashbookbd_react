@@ -20,6 +20,7 @@ import InputElement from '../../utils/fields/InputElement';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { useDispatch, useSelector } from 'react-redux';
 import { chartDate } from '../../utils/utils-functions/formatDate';
+import { Select } from '../../utils/fields/FormControls';
 
 const dateFromString = (value?: string | null) => {
   if (!value) return null;
@@ -226,7 +227,7 @@ const ApprovalAudit = ({ user }: any) => {
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-black dark:text-white">Action</label>
-            <select
+            <Select
               name="action"
               value={filters.action}
               onChange={handleChange}
@@ -236,7 +237,7 @@ const ApprovalAudit = ({ user }: any) => {
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
               <option value="cancelled">Cleared / Cancelled</option>
-            </select>
+            </Select>
           </div>
           <InputElement
             id="search"
@@ -252,7 +253,7 @@ const ApprovalAudit = ({ user }: any) => {
           />
           <div>
             <label className="mb-1 block text-sm font-medium text-black dark:text-white">Per Page</label>
-            <select
+            <Select
               name="per_page"
               value={filters.per_page}
               onChange={handleChange}
@@ -261,7 +262,7 @@ const ApprovalAudit = ({ user }: any) => {
               {[10, 25, 50, 100, 200].map((value) => (
                 <option key={value} value={value}>{value}</option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2">

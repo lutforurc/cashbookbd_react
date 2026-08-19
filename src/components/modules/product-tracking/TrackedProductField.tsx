@@ -2,6 +2,7 @@ import React from 'react';
 import Select, { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { TrackedProduct } from './useTrackedProducts';
+import { Select as FormSelect } from '../../utils/fields/FormControls';
 
 interface Props {
   id?: string;
@@ -25,7 +26,7 @@ type Option = { value: string; label: string };
  *
  * It deliberately looks like the Select Order and Select Account beside it:
  * the same react-select, the same height, the same dark-mode colours. A native
- * <select> looked different and left the form feeling half-finished.
+ * <FormSelect> looked different and left the form feeling half-finished.
  *
  * With no tracked product it renders nothing, so a company not using this
  * feature keeps exactly the form it had before.

@@ -19,6 +19,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
 import { API_REPORT_BANK_INFORMATION_DATA_URL } from '../../../services/apiRoutes';
 import BankInformationPrint from './BankInformationPrint';
+import { Select } from '../../../utils/fields/FormControls';
 
 type BankInformationRow = {
   coa4_id?: number | string;
@@ -147,25 +148,25 @@ const BankInformation = () => {
         <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
           <div>
             <label className={labelClass}>Select Branch</label>
-            <select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>
+            <Select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>
               <option value="">All Branch</option>
               {branchOptions.map((branch: any) => (
                 <option key={branch.id} value={branch.id}>
                   {branch.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
             <label className={labelClass}>Report Type</label>
-            <select value={reportTypeId} onChange={(event) => setReportTypeId(event.target.value)} className={controlClass}>
+            <Select value={reportTypeId} onChange={(event) => setReportTypeId(event.target.value)} className={controlClass}>
               {reportTypes.map((type) => (
                 <option key={type.id} value={type.id}>
                   {type.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>

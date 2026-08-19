@@ -24,6 +24,7 @@ import {
   saveTutorialVideos,
   updateTutorialVideo,
 } from './tutorialVideoSlice';
+import { Input } from '../../utils/fields/FormControls';
 
 const emptyForm = {
   screen_key: '',
@@ -348,7 +349,7 @@ const TutorialVideos = () => {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             <div>
               <label className={labelClass}>Screen key</label>
-              <input
+              <Input
                 type="text"
                 value={form.screen_key}
                 placeholder="/reports/new-report"
@@ -363,7 +364,7 @@ const TutorialVideos = () => {
 
             <div>
               <label className={labelClass}>Title</label>
-              <input
+              <Input
                 type="text"
                 value={form.title}
                 placeholder="New Report"
@@ -377,7 +378,7 @@ const TutorialVideos = () => {
 
             <div>
               <label className={labelClass}>Group</label>
-              <input
+              <Input
                 type="text"
                 value={form.group_name}
                 placeholder="reports"
@@ -399,7 +400,7 @@ const TutorialVideos = () => {
 
             <div>
               <label className={labelClass}>Web URL</label>
-              <input
+              <Input
                 type="url"
                 value={form.web_url}
                 placeholder="https://www.youtube.com/watch?v=..."
@@ -414,7 +415,7 @@ const TutorialVideos = () => {
 
             <div>
               <label className={labelClass}>Mobile URL</label>
-              <input
+              <Input
                 type="url"
                 value={form.mobile_url}
                 placeholder="https://www.youtube.com/watch?v=..."
@@ -556,7 +557,7 @@ const TutorialVideos = () => {
                           return (
                             <td className="px-4 py-2" key={field}>
                               <div className="flex items-center gap-1">
-                                <input
+                                <Input
                                   type="url"
                                   value={url}
                                   placeholder="https://www.youtube.com/watch?v=..."

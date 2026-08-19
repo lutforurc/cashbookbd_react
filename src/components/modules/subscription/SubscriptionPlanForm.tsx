@@ -17,6 +17,7 @@ import {
   updateSubscriptionPlan,
 } from './subscriptionSlice';
 import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
+import { Textarea } from '../../utils/fields/FormControls';
 
 type FeatureSelection = Record<string, boolean>;
 
@@ -410,7 +411,7 @@ const SubscriptionPlanForm: React.FC = () => {
 
           <div className="md:col-span-2 xl:col-span-4">
             <label className="mb-1 block text-sm text-gray-900 dark:text-white">Description</label>
-            <textarea
+            <Textarea
               id="description"
               name="description"
               value={form.description}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Select } from '../../utils/fields/FormControls';
 
 const SelectGroupOne: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string>('');
@@ -16,7 +17,7 @@ const SelectGroupOne: React.FC = () => {
       </label>
 
       <div className="relative z-20 bg-transparent dark:bg-form-input">
-        <select
+        <Select
           value={selectedOption}
           onChange={(e) => {
             setSelectedOption(e.target.value);
@@ -38,7 +39,7 @@ const SelectGroupOne: React.FC = () => {
           <option value="Canada" className="text-body dark:text-bodydark">
             Canada
           </option>
-        </select>
+        </Select>
 
         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
           <svg

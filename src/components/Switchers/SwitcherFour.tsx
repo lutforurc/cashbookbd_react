@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Input } from '../utils/fields/FormControls';
 
 const SwitcherFour = () => {
   const [enabled, setEnabled] = useState<boolean>(false);
@@ -10,7 +11,7 @@ const SwitcherFour = () => {
         className="flex cursor-pointer select-none items-center"
       >
         <div className="relative">
-          <input
+          <Input
             type="checkbox"
             id="toggle4"
             className="sr-only"

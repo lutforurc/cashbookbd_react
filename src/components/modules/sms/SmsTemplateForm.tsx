@@ -22,6 +22,7 @@ import {
 } from './smsSlice';
 import { FIELD_SELECT, FIELD_TEXTAREA } from '../../../theme/fieldStyles';
 import { hasPermission } from '../../utils/permissionChecker';
+import { Select, Textarea } from '../../utils/fields/FormControls';
 
 interface SmsTemplateFormProps {
   mode: 'create' | 'edit';
@@ -202,7 +203,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
               <label htmlFor="body" className="mb-1 block text-black dark:text-white">
                 Message Body
               </label>
-              <textarea
+              <Textarea
                 id="body"
                 name="body"
                 rows={6}
@@ -228,7 +229,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
               <label htmlFor="description" className="mb-1 block text-black dark:text-white">
                 Description
               </label>
-              <textarea
+              <Textarea
                 id="description"
                 name="description"
                 rows={3}
@@ -246,7 +247,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
               <label htmlFor="status" className="mb-1 block text-black dark:text-white">
                 Status
               </label>
-              <select
+              <Select
                 id="status"
                 name="status"
                 value={formValues.status}
@@ -255,7 +256,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
-              </select>
+              </Select>
               {fieldError('status') && (
                 <div className="mt-1 text-sm text-rose-500">{fieldError('status')}</div>
               )}
@@ -265,7 +266,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
               <label htmlFor="sample_data" className="mb-1 block text-black dark:text-white">
                 Preview Variables JSON
               </label>
-              <textarea
+              <Textarea
                 id="sample_data"
                 name="sample_data"
                 rows={4}

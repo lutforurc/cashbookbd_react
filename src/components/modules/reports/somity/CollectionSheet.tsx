@@ -18,6 +18,7 @@ import { API_DDL_AREA_LIST_URL, API_SOMITY_COLLECTION_SHEET_URL } from '../../..
 import CollectionSheetPrint, { CollectionSheetRow } from './CollectionSheetPrint';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import { Input } from '../../../utils/fields/FormControls';
 
 const statusOptions = [
   { id: '1', name: 'Opening' },
@@ -407,7 +408,7 @@ const CollectionSheet = (user: any) => {
 
             <label className="block">
               <span className={labelClass}>Rows</span>
-              <input
+              <Input
                 type="number"
                 min={1}
                 value={draft.rows ?? rowsPerPage}
@@ -428,7 +429,7 @@ const CollectionSheet = (user: any) => {
             </label>
             <label className="block">
               <span className={labelClass}>Font</span>
-              <input
+              <Input
                 type="number"
                 min={8}
                 value={draft.font ?? fontSize}

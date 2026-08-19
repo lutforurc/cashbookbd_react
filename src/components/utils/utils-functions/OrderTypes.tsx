@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
+import { Select } from '../fields/FormControls';
 
 interface OrderProps {
   name?: string;
@@ -34,7 +35,7 @@ const OrderTypes: React.FC<OrderProps> = ({
   };
 
   return (
-    <select
+    <Select
       onChange={handleChange}
       onKeyDown={onKeyDown}
       value={selectedValue} // Bind the selected value to state
@@ -48,7 +49,7 @@ const OrderTypes: React.FC<OrderProps> = ({
       <option value="1">Purchase</option>
       <option value="2">Sales</option>
       <option value="3">Stock</option>
-    </select>
+    </Select>
   );
 };
 

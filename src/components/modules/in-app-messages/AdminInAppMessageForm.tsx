@@ -18,6 +18,7 @@ import {
 } from './inAppMessageService';
 import { InAppMessage } from './types';
 import { FIELD_BASE, FIELD_CHECKBOX } from '../../../theme/fieldStyles';
+import { Input, Textarea } from '../../utils/fields/FormControls';
 
 /**
  * The schedule fields are held as "YYYY-MM-DDTHH:mm" — what the API is sent
@@ -268,7 +269,7 @@ const AdminInAppMessageForm: React.FC = () => {
 
             <div className="md:col-span-2">
               <label className="block text-sm">Body</label>
-              <textarea
+              <Textarea
                 rows={3}
                 value={form.body}
                 onChange={(e) => set('body', e.target.value)}
@@ -300,7 +301,7 @@ const AdminInAppMessageForm: React.FC = () => {
             <div className="md:col-span-2">
               <label className="block text-sm">Image</label>
               <div className="flex items-center gap-2">
-                <input
+                <Input
                   className={`${FIELD_BASE} h-8.5 w-full p-1 text-sm`}
                   placeholder="Paste an image URL, or upload"
                   value={form.image_url}
@@ -309,7 +310,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 <label className="flex h-8.5 shrink-0 cursor-pointer items-center gap-1 rounded bg-primary px-3 text-sm font-semibold text-white">
                   <FiUpload />
                   {uploading ? 'Uploading…' : 'Upload'}
-                  <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+                  <Input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
                 </label>
               </div>
             </div>
@@ -350,7 +351,7 @@ const AdminInAppMessageForm: React.FC = () => {
 
             <div>
               <label className="block text-sm">Background colour</label>
-              <input
+              <Input
                 type="color"
                 value={form.bg_color || 'rgb(var(--c-white))'}
                 onChange={(e) => set('bg_color', e.target.value)}
@@ -359,7 +360,7 @@ const AdminInAppMessageForm: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm">Text colour</label>
-              <input
+              <Input
                 type="color"
                 value={form.text_color || 'rgb(var(--c-gray-900))'}
                 onChange={(e) => set('text_color', e.target.value)}
@@ -368,7 +369,7 @@ const AdminInAppMessageForm: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm">Button colour</label>
-              <input
+              <Input
                 type="color"
                 value={form.button_color || 'rgb(var(--c-primary))'}
                 onChange={(e) => set('button_color', e.target.value)}
@@ -481,7 +482,7 @@ const AdminInAppMessageForm: React.FC = () => {
               onChange={(e: any) => set('priority', e.target.value)}
             />
             <label className="flex items-end gap-2 pb-1 text-sm">
-              <input
+              <Input
                 type="checkbox"
                 checked={form.require_ack}
                 onChange={(e) => set('require_ack', e.target.checked)}

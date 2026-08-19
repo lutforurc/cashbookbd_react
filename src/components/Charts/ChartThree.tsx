@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { FIELD_OPTION } from '../../theme/fieldStyles';
 import ReactApexChart from '../utils/interop/ApexChart';
 import { chartSeries } from '../../theme/themeColors';
+import { Select } from '../utils/fields/FormControls';
 
 interface ChartThreeState {
   series: number[];
@@ -74,7 +75,7 @@ const ChartThree: React.FC = () => {
         </div>
         <div>
           <div className="relative z-20 inline-block">
-            <select
+            <Select
               name=""
               id=""
               className="relative z-20 inline-flex appearance-none bg-transparent py-1 pl-3 pr-8 text-sm font-medium outline-none"
@@ -85,7 +86,7 @@ const ChartThree: React.FC = () => {
               <option value="" className={FIELD_OPTION}>
                 Yearly
               </option>
-            </select>
+            </Select>
             <span className="absolute right-3 top-1/2 z-10 -translate-y-1/2">
               <svg
                 width="10"

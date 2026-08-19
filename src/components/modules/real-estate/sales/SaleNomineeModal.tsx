@@ -9,6 +9,7 @@ import httpService from "../../../services/httpService";
 import { API_UNIT_SALE_DOCUMENTS_URL } from "../../../services/apiRoutes";
 import { SoldUnitRow } from "./types";
 import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
+import { Input } from '../../../utils/fields/FormControls';
 
 /** One person on the buyer's nominee list, as the customer screen saved them. */
 type CustomerNominee = {
@@ -282,7 +283,7 @@ const SaleNomineeModal: React.FC<Props> = ({ unit, onClose, onSaved }) => {
                       className="border-b border-gray-200 last:border-0 dark:border-gray-700"
                     >
                       <td className="p-2">
-                        <input
+                        <Input
                           type="checkbox"
                           id={`sale-nominee-${nominee.id}`}
                           className={FIELD_CHECKBOX}

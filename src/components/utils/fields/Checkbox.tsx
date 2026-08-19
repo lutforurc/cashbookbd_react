@@ -1,5 +1,6 @@
 import React from 'react';
 import { FIELD_CHECKBOX } from '../../../theme/fieldStyles';
+import { Input } from './FormControls';
 
 const Checkbox = ({
   name,
@@ -14,7 +15,7 @@ const Checkbox = ({
   return (
     <div className={className}>
       <label htmlFor={id} className={`flex items-center space-x-2 ${labelClassName}`}>
-        <input
+        <Input
           id={id}
           name={name}
           type="checkbox"

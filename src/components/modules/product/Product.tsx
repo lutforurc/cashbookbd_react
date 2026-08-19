@@ -23,6 +23,7 @@ import { fetchBrandDdl } from './brand/brandSlice';
 import ProductPrint from './ProductPrint';
 import { useReactToPrint } from 'react-to-print';
 import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
+import { Textarea } from '../../utils/fields/FormControls';
 
 const isGroupRow = (row: any) => row?.__type === 'CAT_HEADER';
 
@@ -375,7 +376,7 @@ const Product = (user: any) => {
       render: (row: any) => {
         if (isGroupRow(row)) return '';
         return (
-          <textarea
+          <Textarea
             className={`${FIELD_TEXTAREA} w-full h-8 px-3 py-1 resize-none`}
             placeholder="IMEI Number"
             value={editedRows[row.product_id]?.serial_no ?? row.serial_no ?? ''}

@@ -13,6 +13,7 @@ import InputElement from '../../components/utils/fields/InputElement';
 import { Button, ButtonLoading } from '../UiElements/CustomButtons';
 import HelmetTitle from '../../components/utils/others/HelmetTitle';
 import { FIELD_BASE, FIELD_TEXTAREA } from '../../theme/fieldStyles';
+import { Input, Textarea } from '../../components/utils/fields/FormControls';
 
 type RegistrationForm = {
   company_name: string;
@@ -231,7 +232,7 @@ const PublicRegistration: React.FC = () => {
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                   Company Name *
                 </label>
-                <input
+                <Input
                   type="text"
                   name="company_name"
                   value={formData.company_name}
@@ -245,7 +246,7 @@ const PublicRegistration: React.FC = () => {
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                   Branch Name *
                 </label>
-                <input
+                <Input
                   type="text"
                   name="branch_name"
                   value={formData.branch_name}
@@ -260,7 +261,7 @@ const PublicRegistration: React.FC = () => {
                   User Name *
                 </label>
                 
-                <input
+                <Input
                   type="text"
                   name="user_name"
                   value={formData.user_name}
@@ -274,7 +275,7 @@ const PublicRegistration: React.FC = () => {
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                   Contact Person *
                 </label>
-                <input
+                <Input
                   type="text"
                   name="contact_person"
                   value={formData.contact_person}
@@ -288,7 +289,7 @@ const PublicRegistration: React.FC = () => {
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                   Mobile *
                 </label>
-                <input
+                <Input
                   type="text"
                   name="mobile"
                   value={formData.mobile}
@@ -302,7 +303,7 @@ const PublicRegistration: React.FC = () => {
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                   Email *
                 </label>
-                <input
+                <Input
                   type="email"
                   name="email"
                   value={formData.email}
@@ -316,7 +317,7 @@ const PublicRegistration: React.FC = () => {
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                   Address *
                 </label>
-                <input
+                <Input
                   type="text"
                   name="address"
                   value={formData.address}
@@ -331,7 +332,7 @@ const PublicRegistration: React.FC = () => {
                   Password (Min 8 Characters) *
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     type={showPassword ? 'text' : 'password'}
                     name="password"
                     value={formData.password}
@@ -355,7 +356,7 @@ const PublicRegistration: React.FC = () => {
                   Confirm Password *
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     type={showConfirmPassword ? 'text' : 'password'}
                     name="password_confirmation"
                     value={formData.password_confirmation}
@@ -379,7 +380,7 @@ const PublicRegistration: React.FC = () => {
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                   Notes
                 </label>
-                <textarea
+                <Textarea
                   rows={3}
                   name="notes"
                   value={formData.notes}

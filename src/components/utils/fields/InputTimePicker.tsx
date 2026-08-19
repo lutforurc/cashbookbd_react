@@ -2,11 +2,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FiClock, FiX } from 'react-icons/fi';
 import { FIELD_BASE, FIELD_LABEL } from '../../../theme/fieldStyles';
 import { Button } from '../../../pages/UiElements/CustomButtons';
+import { Input } from './FormControls';
 
 /**
  * A time field that opens a palette instead of the browser's own control.
  *
- * `<input type="time">` is drawn by the browser, so it ignored the theme, sat
+ * `<Input type="time">` is drawn by the browser, so it ignored the theme, sat
  * a different height from the fields beside it, and showed `--:-- --` with a
  * clock glyph nobody could restyle. Next to the date field on the same row --
  * which has been a themed picker all along -- the mismatch was the whole
@@ -195,7 +196,7 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
       ) : null}
 
       <div className="relative">
-        <input
+        <Input
           id={id || name}
           name={name}
           type="text"

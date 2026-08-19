@@ -13,6 +13,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
 import routes from '../../../services/appRoutes';
 import { API_REPORT_STOCK_IMEI_DATA_URL } from '../../../services/apiRoutes';
+import { Select } from '../../../utils/fields/FormControls';
 
 type ProductOption = {
   value: string;
@@ -106,7 +107,7 @@ const ImeiStock = () => {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
           <div>
             <label className={labelClass}>Select Branch</label>
-            <select
+            <Select
               value={branchId}
               onChange={(event) => setBranchId(event.target.value)}
               className={controlClass}
@@ -117,7 +118,7 @@ const ImeiStock = () => {
                   {branch.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>

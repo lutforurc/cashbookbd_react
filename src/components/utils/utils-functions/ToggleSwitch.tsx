@@ -1,4 +1,5 @@
-interface ToggleSwitchProps {
+
+import { Input } from '../fields/FormControls';interface ToggleSwitchProps {
   /** Omitted where the switch sits in a table cell and a caption would not fit. */
   label?: string;
   checked: boolean;
@@ -27,7 +28,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
       aria-disabled={disabled}
     >
       <div className="relative shrink-0">
-        <input
+        <Input
           type="checkbox"
           checked={checked}
           disabled={disabled}

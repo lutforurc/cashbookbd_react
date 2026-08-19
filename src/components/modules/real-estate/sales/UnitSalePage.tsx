@@ -37,6 +37,7 @@ import httpService from "../../../services/httpService";
 import { API_UNIT_SALE_CUSTOMER_NOMINEES_URL } from "../../../services/apiRoutes";
 import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import { Input } from '../../../utils/fields/FormControls';
 
 /* ================= TYPES ================= */
 
@@ -917,7 +918,7 @@ export default function UnitSalePage() {
                           key={nominee.id}
                           className="flex items-center gap-2 text-sm"
                         >
-                          <input
+                          <Input
                             type="checkbox"
                             id={`nominee-${nominee.id}`}
                             checked={Boolean(pick?.checked)}

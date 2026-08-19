@@ -45,6 +45,7 @@ import {
   getCombinedVoucherOpenState,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
+import { Input } from '../../../utils/fields/FormControls';
 
 dayjs.extend(utc);
 
@@ -1007,7 +1008,7 @@ const TradingCombinedEntry = () => {
                       className="relative inline-flex cursor-pointer items-center"
                       title="It helps to identify whether the transaction amount is for sales only or includes both purchase and sales."
                     >
-                      <input
+                      <Input
                         id="onlySalesPosting"
                         name="onlySalesPosting"
                         type="checkbox"
@@ -1078,7 +1079,7 @@ const TradingCombinedEntry = () => {
                     </div>
                   )}
                 </div>
-                <input
+                <Input
                   id="notes"
                   value={formData.notes}
                   name="notes"

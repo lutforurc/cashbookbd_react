@@ -16,6 +16,7 @@ import httpService from '../../services/httpService';
 import { API_PRODUCT_TRACKING_SUMMARY_URL } from '../../services/apiRoutes';
 import routes from '../../services/appRoutes';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
+import { Input } from '../../utils/fields/FormControls';
 
 type SummaryRow = {
   product_id: number;
@@ -212,7 +213,7 @@ const ProductTrackingSummary = () => {
       </div>
 
       <label className="mb-3 flex items-center gap-2 text-sm">
-        <input
+        <Input
           type="checkbox"
           checked={includeInactive}
           onChange={(e) => setIncludeInactive(e.target.checked)}

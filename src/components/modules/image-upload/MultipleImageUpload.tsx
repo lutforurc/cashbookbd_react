@@ -24,6 +24,7 @@ import {
 } from '../../services/apiRoutes';
 import { hasPermission } from '../../Sidebar/permissionUtils';
 import { FiCheckSquare } from 'react-icons/fi';
+import { Input } from '../../utils/fields/FormControls';
 
 type FileMap = { [voucherId: number]: File[] };
 type PreviewMap = { [voucherId: number]: string[] };
@@ -339,7 +340,7 @@ export default function VoucherUpload(user: any): JSX.Element {
           {renderExistingVoucherImage(row)}
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_112px] sm:items-center">
             <div className="p-2">
-              <input
+              <Input
                 key={inputResetKeys[voucherId] || 0}
                 type="file"
                 multiple

@@ -20,6 +20,7 @@ import { fetchStockAlertProducts, StockAlertType } from './stockAlertSlice';
 import { formatDayMonthYear, formatDaySpan } from '../../utils/utils-functions/formatDate';
 import StockAlertPrint from './StockAlertPrint';
 import { FIELD_BASE } from '../../../theme/fieldStyles';
+import { Input } from '../../utils/fields/FormControls';
 
 type Props = {
   alertType: StockAlertType;
@@ -414,7 +415,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
           />
 
           {alertType === 'slowMoving' ? (
-            <input
+            <Input
               type="number"
               min="1"
               className={`${FIELD_BASE} h-9 w-full px-3 text-sm`}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { FIELD_HELP, FIELD_LABEL, fieldClass } from '../../../theme/fieldStyles';
+import { Select } from '../fields/FormControls';
 
 interface SelectOptionProps {
   id?: string;
@@ -40,7 +41,7 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
         </label>
       )}
 
-      <select
+      <Select
         id={id}
         name={name}
         value={value}                 // ✅ parent controls value
@@ -55,7 +56,7 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
             {item.name}
           </option>
         ))}
-      </select>
+      </Select>
 
       {description ? (
         <p className={FIELD_HELP}>

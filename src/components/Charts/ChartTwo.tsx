@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { FIELD_OPTION } from '../../theme/fieldStyles';
 import ReactApexChart from '../utils/interop/ApexChart';
 import { chartSeries } from '../../theme/themeColors';
+import { Select } from '../utils/fields/FormControls';
 
 const options: ApexOptions = {
   colors: chartSeries(2),
@@ -102,14 +103,14 @@ const ChartTwo: React.FC = () => {
         </div>
         <div>
           <div className="relative z-20 inline-block">
-            <select
+            <Select
               name="#"
               id="#"
               className="relative z-20 inline-flex appearance-none bg-transparent py-1 pl-3 pr-8 text-sm font-medium outline-none"
             >
               <option value="" className={FIELD_OPTION}>This Week</option>
               <option value="" className={FIELD_OPTION}>Last Week</option>
-            </select>
+            </Select>
             <span className="absolute top-1/2 right-3 z-10 -translate-y-1/2">
               <svg
                 width="10"

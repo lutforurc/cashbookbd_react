@@ -16,6 +16,7 @@ import {
   API_CHART_OF_ACCOUNTS_L3_URL,
 } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
+import { Select } from '../../../utils/fields/FormControls';
 
 type DdlOption = {
   id: string | number;
@@ -181,7 +182,7 @@ const AddCoaL3 = () => {
             <label htmlFor="coal2_id" className={fieldLabelClass}>
               Chart of Accounts (Level-2)<span className="text-red-500">*</span>
             </label>
-            <select
+            <Select
               id="coal2_id"
               name="coal2_id"
               value={formData.coal2_id}
@@ -194,7 +195,7 @@ const AddCoaL3 = () => {
                   {item.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           {sourceOptions.length > 0 ? (
@@ -202,7 +203,7 @@ const AddCoaL3 = () => {
               <label htmlFor="source_id" className={fieldLabelClass}>
                 Source
               </label>
-              <select
+              <Select
                 id="source_id"
                 name="source_id"
                 value={formData.source_id}
@@ -214,7 +215,7 @@ const AddCoaL3 = () => {
                     {item.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           ) : null}
 

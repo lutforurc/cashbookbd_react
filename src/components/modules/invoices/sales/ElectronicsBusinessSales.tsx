@@ -42,6 +42,7 @@ import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSea
 import StockShortageModal, {
   StockShortage,
 } from '../../../utils/components/StockShortageModal';
+import { Input, Textarea } from '../../../utils/fields/FormControls';
 
 interface Product {
   id: number;
@@ -1241,7 +1242,7 @@ const ElectronicsBusinessSales = () => {
                 >
                   Enter Serial Number
                 </label>
-                <textarea
+                <Textarea
                   id="serial_no"
                   name="serial_no"
                   placeholder="Enter Serial Number"
@@ -1514,7 +1515,7 @@ const ElectronicsBusinessSales = () => {
                   className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-1 items-center shadow-sm"
                 >
                   <div className="flex justify-center">
-                    <input
+                    <Input
                       value={installment.installment_no}
                       readOnly
                       className={`form-input text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
@@ -1529,7 +1530,7 @@ const ElectronicsBusinessSales = () => {
                   </div>
 
                   <div>
-                    <input
+                    <Input
                       type="number"
                       value={Number(installment.amount)}
                       onChange={(e) => {

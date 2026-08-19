@@ -14,6 +14,7 @@ import {
   fetchSubscriptionPlans,
   submitManualSubscriptionPayment,
 } from './subscriptionSlice';
+import { Input, Select, Textarea } from '../../utils/fields/FormControls';
 
 type PaymentFormState = {
   plan_id: number;
@@ -236,7 +237,7 @@ const PaymentSubmit: React.FC = () => {
             <label className={labelClassName}>
               Plan
             </label>
-            <select
+            <Select
               name="plan_id"
               value={form.plan_id}
               onChange={handleChange}
@@ -248,14 +249,14 @@ const PaymentSubmit: React.FC = () => {
                   {plan.name} - {plan.currency || 'BDT'} {Number(plan.price || 0).toFixed(0)}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
             <label className={labelClassName}>
               Amount
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               step="0.01"
@@ -279,7 +280,7 @@ const PaymentSubmit: React.FC = () => {
             <label className={labelClassName}>
               Payment Method
             </label>
-            <select
+            <Select
               name="payment_method"
               value={form.payment_method}
               onChange={handleChange}
@@ -289,14 +290,14 @@ const PaymentSubmit: React.FC = () => {
               <option value="nagad">Nagad</option>
               <option value="bank">Bank Transfer</option>
               <option value="cash">Cash</option>
-            </select>
+            </Select>
           </div>
 
           <div>
             <label className={labelClassName}>
               Billing Months
             </label>
-            <input
+            <Input
               type="number"
               min="1"
               max="24"
@@ -335,7 +336,7 @@ const PaymentSubmit: React.FC = () => {
             <label className={labelClassName}>
               Transaction ID
             </label>
-            <input
+            <Input
               type="text"
               name="transaction_id"
               value={form.transaction_id}
@@ -348,7 +349,7 @@ const PaymentSubmit: React.FC = () => {
             <label className={labelClassName}>
               Sender Number
             </label>
-            <input
+            <Input
               type="text"
               name="sender_number"
               value={form.sender_number}
@@ -361,7 +362,7 @@ const PaymentSubmit: React.FC = () => {
             <label className={labelClassName}>
               Receiver Account
             </label>
-            <input
+            <Input
               type="text"
               name="receiver_account"
               value={form.receiver_account}
@@ -376,7 +377,7 @@ const PaymentSubmit: React.FC = () => {
           <label className={labelClassName}>
             Note
           </label>
-          <textarea
+          <Textarea
             rows={4}
             name="customer_note"
             value={form.customer_note}

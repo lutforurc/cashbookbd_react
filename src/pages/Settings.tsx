@@ -2,6 +2,7 @@ import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import userThree from '../images/user/user-03.png';
 import { FIELD_BASE, FIELD_TEXTAREA } from '../theme/fieldStyles';
 import { Button } from './UiElements/CustomButtons';
+import { Input, Textarea } from '../components/utils/fields/FormControls';
 
 const Settings = () => {
   return (
@@ -53,7 +54,7 @@ const Settings = () => {
                             </g>
                           </svg>
                         </span>
-                        <input
+                        <Input
                           className={`${FIELD_BASE} w-full py-3 pl-11.5 pr-4.5`}
                           type="text"
                           name="fullName"
@@ -71,7 +72,7 @@ const Settings = () => {
                       >
                         Phone Number
                       </label>
-                      <input
+                      <Input
                         className={`${FIELD_BASE} w-full py-3 px-4.5`}
                         type="text"
                         name="phoneNumber"
@@ -115,7 +116,7 @@ const Settings = () => {
                           </g>
                         </svg>
                       </span>
-                      <input
+                      <Input
                         className={`${FIELD_BASE} w-full py-3 pl-11.5 pr-4.5`}
                         type="email"
                         name="emailAddress"
@@ -133,7 +134,7 @@ const Settings = () => {
                     >
                       Username
                     </label>
-                    <input
+                    <Input
                       className={`${FIELD_BASE} w-full py-3 px-4.5`}
                       type="text"
                       name="Username"
@@ -182,14 +183,14 @@ const Settings = () => {
                         </svg>
                       </span>
 
-                      <textarea
+                      <Textarea
                         className={`${FIELD_TEXTAREA} w-full py-3 pl-11.5 pr-4.5`}
                         name="bio"
                         id="bio"
                         rows={6}
                         placeholder="Write your bio here"
                         defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque posuere fermentum urna, eu condimentum mauris tempus ut. Donec fermentum blandit aliquet."
-                      ></textarea>
+                      ></Textarea>
                     </div>
                   </div>
 
@@ -243,7 +244,7 @@ const Settings = () => {
                     id="FileUpload"
                     className="relative mb-5.5 block w-full cursor-pointer appearance-none rounded border border-dashed border-primary bg-gray py-4 px-4 dark:bg-meta-4 sm:py-7.5"
                   >
-                    <input
+                    <Input
                       type="file"
                       accept="image/*"
                       className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCoal4Ddl } from '../../../modules/extrasliders/coal4Sliders';
 import { FIELD_BASE } from '../../../theme/fieldStyles';
+import { Input } from './FormControls';
 
 interface DropAccountsProps {
     setSelectValue: (value: any) => void;
@@ -51,7 +52,7 @@ const DropAccounts: React.FC<DropAccountsProps> = ({ setSelectValue, account, se
 
     return (
         <div className="relative w-full max-w-md">
-            <input type="hidden" ref={account} id="id-chart-of-accounts" value={selectedItem.name || ''} name="account" />
+            <Input type="hidden" ref={account} id="id-chart-of-accounts" value={selectedItem.name || ''} name="account" />
 
             <div
                 className="flex items-center p-2 border border-gray-300 rounded-lg cursor-pointer"
@@ -62,7 +63,7 @@ const DropAccounts: React.FC<DropAccountsProps> = ({ setSelectValue, account, se
                         {selectedItem.name}
                     </div>
                 ) : (
-                    <input
+                    <Input
                         type="text"
                         ref={searchInput}
                         onChange={handleSearchChange}

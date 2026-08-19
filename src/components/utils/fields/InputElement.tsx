@@ -9,6 +9,7 @@ import {
   FieldSize,
   fieldClass,
 } from '../../../theme/fieldStyles';
+import { Input } from './FormControls';
 
 interface InputElementProps {
   id?: string;
@@ -130,7 +131,7 @@ const InputElement: React.FC<InputElementProps> = ({
         onFocusCapture={showTooltip}
         onBlurCapture={hideTooltip}
       >
-        <input
+        <Input
           id={id}
           name={name}
           value={value}

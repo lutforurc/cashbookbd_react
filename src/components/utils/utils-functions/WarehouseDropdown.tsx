@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
+import { Select } from '../fields/FormControls';
 
 interface SelectOptionProps {
   warehouseDdl: Array<{ id: string; name: string }>; // Assuming warehouseDdl is an array of objects
@@ -42,7 +43,7 @@ const WarehouseDropdown: React.FC<SelectOptionProps> = ({
   };
 
   return (
-    <select
+    <Select
       id={id} 
       name={name || 'warehouse'}
       value={selectedValue} // Bind the value to state
@@ -55,7 +56,7 @@ const WarehouseDropdown: React.FC<SelectOptionProps> = ({
         warehouseDdl.map((item: any, index: number) => (
           <option key={index} value={item.id}>{item.name}</option>
         ))}
-    </select>
+    </Select>
   );
 };
 

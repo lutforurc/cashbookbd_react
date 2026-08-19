@@ -3,6 +3,7 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SelectGroupOne from '../../components/Forms/SelectGroup/SelectGroupOne';
 import { FIELD_BASE, FIELD_TEXTAREA } from '../../theme/fieldStyles';
 import { Button } from '../UiElements/CustomButtons';
+import { Input, Textarea } from '../../components/utils/fields/FormControls';
 
 const FormLayout = () => {
   return (
@@ -25,7 +26,7 @@ const FormLayout = () => {
                     <label className="mb-2.5 block text-black dark:text-white">
                       First name
                     </label>
-                    <input
+                    <Input
                       type="text"
                       placeholder="Enter your first name"
                       className={`${FIELD_BASE} w-full py-3 px-5`}
@@ -36,7 +37,7 @@ const FormLayout = () => {
                     <label className="mb-2.5 block text-black dark:text-white">
                       Last name
                     </label>
-                    <input
+                    <Input
                       type="text"
                       placeholder="Enter your last name"
                       className={`${FIELD_BASE} w-full py-3 px-5`}
@@ -48,7 +49,7 @@ const FormLayout = () => {
                   <label className="mb-2.5 block text-black dark:text-white">
                     Email <span className="text-meta-1">*</span>
                   </label>
-                  <input
+                  <Input
                     type="email"
                     placeholder="Enter your email address"
                     className={`${FIELD_BASE} w-full py-3 px-5`}
@@ -59,7 +60,7 @@ const FormLayout = () => {
                   <label className="mb-2.5 block text-black dark:text-white">
                     Subject
                   </label>
-                  <input
+                  <Input
                     type="text"
                     placeholder="Select subject"
                     className={`${FIELD_BASE} w-full py-3 px-5`}
@@ -72,11 +73,11 @@ const FormLayout = () => {
                   <label className="mb-2.5 block text-black dark:text-white">
                     Message
                   </label>
-                  <textarea
+                  <Textarea
                     rows={6}
                     placeholder="Type your message"
                     className={`${FIELD_TEXTAREA} w-full py-3 px-5`}
-                  ></textarea>
+                  ></Textarea>
                 </div>
 
                 <Button className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90">
@@ -101,7 +102,7 @@ const FormLayout = () => {
                   <label className="mb-2.5 block text-black dark:text-white">
                     Email
                   </label>
-                  <input
+                  <Input
                     type="email"
                     placeholder="Enter your email address"
                     className={`${FIELD_BASE} w-full py-3 px-5`}
@@ -112,7 +113,7 @@ const FormLayout = () => {
                   <label className="mb-2.5 block text-black dark:text-white">
                     Password
                   </label>
-                  <input
+                  <Input
                     type="password"
                     placeholder="Enter password"
                     className={`${FIELD_BASE} w-full py-3 px-5`}
@@ -122,7 +123,7 @@ const FormLayout = () => {
                 <div className="mt-5 mb-5.5 flex items-center justify-between">
                   <label htmlFor="formCheckbox" className="flex cursor-pointer">
                     <div className="relative pt-0.5">
-                      <input
+                      <Input
                         type="checkbox"
                         id="formCheckbox"
                         className="taskCheckbox sr-only"
@@ -175,7 +176,7 @@ const FormLayout = () => {
                   <label className="mb-2.5 block text-black dark:text-white">
                     Name
                   </label>
-                  <input
+                  <Input
                     type="text"
                     placeholder="Enter your full name"
                     className={`${FIELD_BASE} w-full py-3 px-5`}
@@ -186,7 +187,7 @@ const FormLayout = () => {
                   <label className="mb-2.5 block text-black dark:text-white">
                     Email
                   </label>
-                  <input
+                  <Input
                     type="email"
                     placeholder="Enter your email address"
                     className={`${FIELD_BASE} w-full py-3 px-5`}
@@ -197,7 +198,7 @@ const FormLayout = () => {
                   <label className="mb-2.5 block text-black dark:text-white">
                     Password
                   </label>
-                  <input
+                  <Input
                     type="password"
                     placeholder="Enter password"
                     className={`${FIELD_BASE} w-full py-3 px-5`}
@@ -208,7 +209,7 @@ const FormLayout = () => {
                   <label className="mb-2.5 block text-black dark:text-white">
                     Re-type Password
                   </label>
-                  <input
+                  <Input
                     type="password"
                     placeholder="Re-enter password"
                     className={`${FIELD_BASE} w-full py-3 px-5`}

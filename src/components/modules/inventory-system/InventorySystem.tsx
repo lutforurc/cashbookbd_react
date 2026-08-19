@@ -13,6 +13,7 @@ import {
   fetchInventorySystems,
   updateInventorySystem,
 } from './inventorySystemSlice';
+import { Select, Textarea } from '../../utils/fields/FormControls';
 
 const labelClass =
   'mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200';
@@ -172,19 +173,19 @@ const InventorySystem = () => {
 
           <div>
             <label className={labelClass}>Status</label>
-            <select
+            <Select
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: Number(e.target.value) }))}
               className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
             >
               <option value={1} className={FIELD_OPTION}>Active</option>
               <option value={0} className={FIELD_OPTION}>Inactive</option>
-            </select>
+            </Select>
           </div>
 
           <div className="md:col-span-2">
             <label className={labelClass}>Description</label>
-            <textarea
+            <Textarea
               value={form.description}
               onChange={(e) =>
                 setForm((f) => ({ ...f, description: e.target.value.slice(0, 512) }))

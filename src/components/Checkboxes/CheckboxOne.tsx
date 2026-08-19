@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Input } from '../utils/fields/FormControls';
 
 const CheckboxOne = () => {
   const [isChecked, setIsChecked] = useState<boolean>(false);
@@ -10,7 +11,7 @@ const CheckboxOne = () => {
         className="flex cursor-pointer select-none items-center"
       >
         <div className="relative">
-          <input
+          <Input
             type="checkbox"
             id="checkboxLabelOne"
             className="sr-only"

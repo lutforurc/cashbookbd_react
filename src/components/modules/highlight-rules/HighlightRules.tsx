@@ -19,6 +19,7 @@ import {
   fetchHighlightRules,
   updateHighlightRule,
 } from './highlightRulesSlice';
+import { Select, Textarea } from '../../utils/fields/FormControls';
 
 const labelClass =
   'mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200';
@@ -175,7 +176,7 @@ const HighlightRules = () => {
 
           <div>
             <label className={labelClass}>Color</label>
-            <select
+            <Select
               value={form.color}
               onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
               className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
@@ -185,7 +186,7 @@ const HighlightRules = () => {
                   {c.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
@@ -209,14 +210,14 @@ const HighlightRules = () => {
 
           <div>
             <label className={labelClass}>Status</label>
-            <select
+            <Select
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: Number(e.target.value) }))}
               className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
             >
               <option value={1} className={FIELD_OPTION}>Active</option>
               <option value={0} className={FIELD_OPTION}>Inactive</option>
-            </select>
+            </Select>
           </div>
 
           <div>
@@ -230,7 +231,7 @@ const HighlightRules = () => {
 
           <div className="md:col-span-2">
             <label className={labelClass}>Description</label>
-            <textarea
+            <Textarea
               value={form.description}
               onChange={(e) =>
                 setForm((f) => ({ ...f, description: e.target.value.slice(0, 255) }))

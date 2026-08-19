@@ -7,6 +7,7 @@ import Logo from '../../images/logo/logo.svg';
 import InputElement from '../../components/utils/fields/InputElement';
 import { FIELD_BASE } from '../../theme/fieldStyles';
 import { Button } from '../UiElements/CustomButtons';
+import { Input } from '../../components/utils/fields/FormControls';
 
 const SignUp: React.FC = () => {
   return (
@@ -162,7 +163,7 @@ const SignUp: React.FC = () => {
                     Name
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       type="text"
                       placeholder="Enter your full name"
                       className={`${FIELD_BASE} w-full py-4 pl-6 pr-10`}
@@ -197,7 +198,7 @@ const SignUp: React.FC = () => {
                     Email
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       type="email"
                       placeholder="Enter your email"
                       className={`${FIELD_BASE} w-full py-4 pl-6 pr-10`}
@@ -228,7 +229,7 @@ const SignUp: React.FC = () => {
                     Password
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       type="password"
                       placeholder="Enter your password"
                       className={`${FIELD_BASE} w-full py-4 pl-6 pr-10`}
@@ -263,7 +264,7 @@ const SignUp: React.FC = () => {
                     Re-type Password
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       type="password"
                       placeholder="Re-enter your password"
                       className={`${FIELD_BASE} w-full py-4 pl-6 pr-10`}
@@ -294,7 +295,7 @@ const SignUp: React.FC = () => {
                 </div>
 
                 <div className="mb-5">
-                  <input
+                  <Input
                     type="submit"
                     value="Create account"
                     className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-primary/90"

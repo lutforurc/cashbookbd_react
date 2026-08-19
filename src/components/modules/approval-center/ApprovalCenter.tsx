@@ -20,6 +20,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { chartDate } from '../../utils/utils-functions/formatDate';
 import routes from '../../services/appRoutes';
 import { hasPermission } from '../../utils/permissionChecker';
+import { Input, Select, Textarea } from '../../utils/fields/FormControls';
 
 const dateFromString = (value?: string | null) => {
   if (!value) return null;
@@ -205,7 +206,7 @@ const ApprovalCenter = ({ user }: any) => {
   const selectionColumn = (type: 'attendance' | 'voucher') => ({
     key: 'select',
     header: (
-      <input
+      <Input
         type="checkbox"
         checked={activeRows.length > 0 && activeSelection.length === activeRows.length}
         onChange={toggleAll}
@@ -217,7 +218,7 @@ const ApprovalCenter = ({ user }: any) => {
     render: (row: any) => {
       const selected = type === 'attendance' ? selectedAttendance : selectedVouchers;
       return (
-        <input
+        <Input
           type="checkbox"
           checked={selected.includes(Number(row.id))}
           onChange={() => toggleSelected(type, Number(row.id))}
@@ -311,7 +312,7 @@ const ApprovalCenter = ({ user }: any) => {
           />
           <div>
             <label className="mb-1 block text-sm font-medium text-black dark:text-white">Per Page</label>
-            <select
+            <Select
               name="per_page"
               value={filters.per_page}
               onChange={handleChange}
@@ -320,7 +321,7 @@ const ApprovalCenter = ({ user }: any) => {
               {[10, 25, 50, 100, 200].map((value) => (
                 <option key={value} value={value}>{value}</option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="flex items-end">
             <ButtonLoading
@@ -448,7 +449,7 @@ const ApprovalCenter = ({ user }: any) => {
                 <span className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">
                   Remarks {confirmAction?.action === 'approve' ? '(optional)' : '(recommended)'}
                 </span>
-                <textarea
+                <Textarea
                   value={remarks}
                   onChange={(event) => setRemarks(event.target.value)}
                   rows={3}

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import dataJSON from '../../public/data.json';
 import { FIELD_BASE } from '../theme/fieldStyles';
 import { Button } from '../pages/UiElements/CustomButtons';
+import { Input, Select } from './utils/fields/FormControls';
 
 
 
@@ -80,7 +81,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
               <div className="form-group w-full col-span-3">
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white"
                   htmlFor="id">Bond ID (Input "ALL" to track all bonds with paramaters below)</label>
-                <input className={`${FIELD_BASE} w-full py-3 pl-3 pr-4.5`}
+                <Input className={`${FIELD_BASE} w-full py-3 pl-3 pr-4.5`}
                   name="id" onChange={handleChange} value={formState.id} />
               </div>
 
@@ -93,7 +94,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
 
 
                   </span>
-                  <select
+                  <Select
                     className="absolute top-0 left-0 z-20 h-full w-full bg-transparent opacity-0"
 
                     name="para"
@@ -102,7 +103,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
                   >
                     {fields.map((item: any, idx: number) => (<option key={idx} value={item}>{item}</option>))}
 
-                  </select>
+                  </Select>
                   <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
                     <svg
                       width="24"
@@ -134,7 +135,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
                   <span className="m-1.5 flex items-center justify-center rounded border-[.5px] border-stroke bg-gray py-1.5 px-2.5 text-sm font-medium dark:border-strokedark dark:bg-white/30">
                     {formState.criterion == 0 ? "goes down by" : formState.criterion == 1 ? "goes up by" : formState.criterion == 2 ? "is smaller than" : formState.criterion == 3 ? "is greater than" : "is equal to"}
                   </span>
-                  <select
+                  <Select
                     className="absolute top-0 left-0 z-20 h-full w-full bg-transparent opacity-0"
                     name="criterion"
                     onChange={handleChange}
@@ -146,7 +147,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
                     {!(formState.para == 'rating') && <option value="3">is greater than</option>}
 
                     <option value="4">is equal to</option>
-                  </select>
+                  </Select>
                   <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
                     <svg
                       width="24"
@@ -169,7 +170,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
               </div>
               <div className="form-group w-full">
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white" htmlFor="value">Value to give Alert</label>
-                <input className={`${FIELD_BASE} w-full py-3 pl-3 pr-4.5`}
+                <Input className={`${FIELD_BASE} w-full py-3 pl-3 pr-4.5`}
                   name="value" onChange={handleChange} value={formState.value} />
               </div>
 
@@ -182,7 +183,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
 
 
                   </span>
-                  <select
+                  <Select
                     className="absolute top-0 left-0 z-20 h-full w-full bg-transparent opacity-0"
                     name="type"
                     onChange={handleChange}
@@ -191,7 +192,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
                     <option value="0">Info</option>
                     <option value="1">Warning</option>
                     <option value="2">Alert</option>
-                  </select>
+                  </Select>
                   <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
                     <svg
                       width="24"

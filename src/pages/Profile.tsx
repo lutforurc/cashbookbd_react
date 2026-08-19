@@ -5,6 +5,7 @@ import CoverOne from '../images/cover/cover-01.png';
 import userSix from '../images/user/user-06.png';
 import { useDispatch, useSelector } from 'react-redux';
 import { uploadUserCover, uploadUserPhoto } from '../components/modules/user/userSlice';
+import { Input } from '../components/utils/fields/FormControls';
 
 // ✅ IMPORTANT: path ঠিক করুন (এইটাই আপনার main issue)
 // উদাহরণ:
@@ -149,7 +150,7 @@ const Profile = () => {
               htmlFor="cover"
               className="flex cursor-pointer items-center justify-center gap-2 rounded bg-primary py-1 px-2 text-sm font-medium text-white hover:bg-primary/90 xsm:px-4"
             >
-              <input
+              <Input
                 type="file"
                 name="cover"
                 id="cover"
@@ -179,7 +180,7 @@ const Profile = () => {
               title="Change photo"
             >
               <FiCamera />
-              <input
+              <Input
                 type="file"
                 name="profile"
                 id="profile"

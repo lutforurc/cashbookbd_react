@@ -20,6 +20,7 @@ import {
   API_UNIT_SALE_INSTALLMENT_UPDATE_URL,
   API_UNIT_SALE_SUMMARY_URL,
 } from '../../../services/apiRoutes';
+import { Input } from '../../../utils/fields/FormControls';
 
 dayjs.extend(customParseFormat);
 
@@ -875,7 +876,7 @@ export default function RealEstateInstallmentCreate() {
                       </td>
                       <td className="p-2 text-right">
                         {isEditing ? (
-                          <input
+                          <Input
                             type="number"
                             value={activeEditingRow?.amountValue ?? ''}
                             onChange={(e) =>
@@ -909,7 +910,7 @@ export default function RealEstateInstallmentCreate() {
                       </td>
                       <td className="p-2 text-right">
                         {isEditing && isFirstRow ? (
-                          <input
+                          <Input
                             type="number"
                             value={activeEditingRow?.earlyDiscountValue ?? ''}
                             onChange={(e) =>

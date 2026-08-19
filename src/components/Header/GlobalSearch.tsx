@@ -9,6 +9,7 @@ import { VoucherPrintRegistry } from '../modules/vouchers/VoucherPrintRegistry';
 import routes from '../services/appRoutes';
 import globalSearchItems, { GlobalSearchItem } from './globalSearchItems';
 import { Button } from '../../pages/UiElements/CustomButtons';
+import { Input } from '../utils/fields/FormControls';
 
 const RESULT_LIMIT = 10;
 const VOUCHER_NO_PATTERN = /^\d+-[\w-]+$/;
@@ -196,7 +197,7 @@ const GlobalSearch = () => {
             <FiSearch size={20} />
           </Button>
 
-          <input
+          <Input
             ref={inputRef}
             type="text"
             value={query}

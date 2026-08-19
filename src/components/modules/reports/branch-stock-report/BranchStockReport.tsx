@@ -20,6 +20,7 @@ import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PrintFooter from '../../../utils/utils-functions/PrintFooter';
+import { Select } from '../../../utils/fields/FormControls';
 
 type BranchColumn = { id: number | string; name: string };
 
@@ -268,7 +269,7 @@ const BranchStockReport = ({ user }: any) => {
             <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-white">
               Select Branch
             </label>
-            <select
+            <Select
               value={branchId}
               onChange={(event) => setBranchId(event.target.value)}
               className={`${FIELD_SELECT} h-10 w-full px-2 text-sm font-medium`}
@@ -279,7 +280,7 @@ const BranchStockReport = ({ user }: any) => {
                   {item.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <InputDatePicker

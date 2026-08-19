@@ -13,6 +13,7 @@ import { getSignInTitleByHost } from '../../components/services/tenantTitles';
 import DeviceLimitNotice from '../../components/modules/devices/DeviceLimitNotice';
 import { FIELD_BASE, FIELD_LABEL } from '../../theme/fieldStyles';
 import ToggleSwitch from '../../components/utils/fields/ToggleSwitch';
+import { Input } from '../../components/utils/fields/FormControls';
 
 /**
  * Forgot password and Register: the quiet way out of this screen, so they are
@@ -318,7 +319,7 @@ const SignIn: React.FC = () => {
                     </label>
                     <div className="relative">
                       <FiMail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
-                      <input
+                      <Input
                         type="text"
                         name="loginId"
                         id="emailaddress"
@@ -337,7 +338,7 @@ const SignIn: React.FC = () => {
                     </label>
                     <div className="relative">
                       <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
-                      <input
+                      <Input
                         name="password"
                         type={checkPassword ? 'password' : 'text'}
                         id="password"

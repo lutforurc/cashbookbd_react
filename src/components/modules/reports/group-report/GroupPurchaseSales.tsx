@@ -19,6 +19,7 @@ import httpService from '../../../services/httpService';
 import { API_REPORT_GROUP_DATA_URL } from '../../../services/apiRoutes';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import GroupReportPrint from './GroupReportPrint';
+import { Select } from '../../../utils/fields/FormControls';
 
 type ReportEntry = {
   year?: string;
@@ -313,13 +314,13 @@ const GroupPurchaseSales = () => {
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Select Report Group <span className="text-red-500">*</span>
             </label>
-            <select
+            <Select
               value={reportGroup}
               onChange={(event) => setReportGroup(event.target.value)}
               className={`${FIELD_SELECT} h-10 w-full rounded-sm px-3 text-sm`}
             >
               {reportGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
-            </select>
+            </Select>
           </div>
 
           <div>

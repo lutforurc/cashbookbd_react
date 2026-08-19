@@ -21,6 +21,7 @@ import MonthlyReportPrint, {
   summarizeMonthlyRows,
   toNumber,
 } from './MonthlyReportPrint';
+import { Select } from '../../../utils/fields/FormControls';
 
 const parseTransactionDate = (value?: string | null) => {
   if (!value) return new Date();
@@ -120,12 +121,12 @@ const MonthlyReport = (user: any) => {
       <div className="mb-3 grid grid-cols-1 items-end gap-2 md:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_minmax(150px,170px)_minmax(150px,170px)_minmax(390px,auto)]">
         <div>
           <label className={labelClass}>Select Project</label>
-          <select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>
+          <Select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>
             <option value="">Select Project</option>
             {branchOptions.map((branch: any) => (
               <option key={branch.id} value={branch.id}>{branch.name}</option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div>

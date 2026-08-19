@@ -25,6 +25,7 @@ import {
 } from "./bonusSlice";
 import routes from "../../../services/appRoutes";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import { Select } from '../../../utils/fields/FormControls';
 
 const FestivalBonus = ({ user }: any) => {
   const dispatch: any = useDispatch();
@@ -269,7 +270,7 @@ const FestivalBonus = ({ user }: any) => {
         }
 
         return (
-          <select
+          <Select
             defaultValue=""
             onChange={(e) => {
               const value = e.target.value;
@@ -281,7 +282,7 @@ const FestivalBonus = ({ user }: any) => {
             <option value="">Select</option>
             <option value="update">Update</option>
             <option value="payment">Payment</option>
-          </select>
+          </Select>
         );
       },
     },

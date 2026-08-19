@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
+import { Select } from '../fields/FormControls';
 
 interface OrderProps {
   onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -20,7 +21,7 @@ const RequisitionTypes: React.FC<OrderProps> = ({
   };
 
   return (
-    <select
+    <Select
       onChange={handleChange}
       value={selectedValue} // Bind the selected value to state
       id={id}
@@ -30,7 +31,7 @@ const RequisitionTypes: React.FC<OrderProps> = ({
       <option value="">Select All</option>
       <option value="1">Approved</option>
       <option value="2">Rejected</option> 
-    </select>
+    </Select>
   );
 };
 

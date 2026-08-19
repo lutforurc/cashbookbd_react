@@ -20,6 +20,7 @@ import {
   useSidebarCustomization,
   useSidebarSubCustomization,
 } from '../../Sidebar/sidebarCustomization';
+import { Input } from '../../utils/fields/FormControls';
 
 /**
  * Where a user arranges their own sidebar.
@@ -116,7 +117,7 @@ const MenuArrangement = () => {
               {/* Named if you type a name, a plain rule if you do not. The button
                   says which it will be rather than refusing the click, so an
                   unnamed line is a choice and not a thing that failed. */}
-              <input
+              <Input
                 value={newDivider}
                 maxLength={DIVIDER_LABEL_MAX}
                 placeholder="Divider name"
@@ -209,7 +210,7 @@ const MenuArrangement = () => {
                       and a field costs less than a rename dialogue. */}
                   {isDivider(menu.id) ? (
                     <>
-                      <input
+                      <Input
                         value={dividerDraft[menu.id] ?? menu.title}
                         maxLength={DIVIDER_LABEL_MAX}
                         placeholder="(plain line)"
@@ -320,7 +321,7 @@ const MenuArrangement = () => {
                 be broken into named groups the same way the sidebar itself is. */}
             {selectedMenu ? (
               <div className="flex items-center gap-2">
-                <input
+                <Input
                   value={newSubDivider}
                   maxLength={DIVIDER_LABEL_MAX}
                   placeholder="Divider name"
@@ -396,7 +397,7 @@ const MenuArrangement = () => {
 
                     {isDivider(itemId) ? (
                       <>
-                        <input
+                        <Input
                           value={subDraft[itemId] ?? item.title}
                           maxLength={DIVIDER_LABEL_MAX}
                           placeholder="(plain line)"

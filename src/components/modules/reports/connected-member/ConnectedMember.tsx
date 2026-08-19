@@ -21,6 +21,7 @@ import ConnectedMemberPrint, {
   summarizeRows,
   toNumber,
 } from './ConnectedMemberPrint';
+import { Select } from '../../../utils/fields/FormControls';
 
 const parseTransactionDate = (value?: string | null) => {
   if (!value) return new Date();
@@ -156,12 +157,12 @@ const ConnectedMember = (user: any) => {
       <div className="mb-3 grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(320px,1fr)_minmax(220px,0.45fr)_minmax(220px,0.45fr)_auto]">
           <div>
             <label className={labelClass}>Select Project</label>
-            <select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>
+            <Select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>
               <option value="">Select Project</option>
               {branchOptions.map((branch: any) => (
                 <option key={branch.id} value={branch.id}>{branch.name}</option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>

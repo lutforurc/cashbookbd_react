@@ -13,6 +13,7 @@ import {
 import httpService from '../../components/services/httpService';
 import { Button, ButtonLoading } from '../UiElements/CustomButtons';
 import { FIELD_BASE } from '../../theme/fieldStyles';
+import { Input } from '../../components/utils/fields/FormControls';
 
 type Step = 'request' | 'verify' | 'reset';
 
@@ -282,7 +283,7 @@ const ForgotPassword: React.FC = () => {
               <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                 Mobile Number
               </label>
-              <input
+              <Input
                 type="text"
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
@@ -311,7 +312,7 @@ const ForgotPassword: React.FC = () => {
                 onChange={setOtp}
                 numInputs={6}
                 renderInput={(props) => (
-                  <input
+                  <Input
                     {...props}
                     className={`${FIELD_BASE} h-10! w-10! text-center text-xl font-semibold transition-all duration-200 mx-0 shadow-sm sm:h-12! sm:w-12!`}
                   />
@@ -357,7 +358,7 @@ const ForgotPassword: React.FC = () => {
                   New Password
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -379,7 +380,7 @@ const ForgotPassword: React.FC = () => {
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     type={showPasswordConfirmation ? 'text' : 'password'}
                     value={passwordConfirmation}
                     onChange={(e) => setPasswordConfirmation(e.target.value)}

@@ -16,6 +16,7 @@ import { fetchAttendanceReport, fetchLeaveApplications } from './attendanceSlice
 import { chartDate } from '../../../utils/utils-functions/formatDate';
 import OvertimeReportMatrix from './OvertimeReportMatrix';
 import OvertimeReportPrint from './OvertimeReportPrint';
+import { Input } from '../../../utils/fields/FormControls';
 
 const today = new Date().toISOString().slice(0, 10);
 const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
@@ -482,7 +483,7 @@ const AttendanceReport = ({
         })}
         {reportType === 'overtime' && (
           <div className="flex items-end gap-2">
-            <input
+            <Input
               type="text"
               inputMode="numeric"
               value={overtimeRowsPerPage}
@@ -493,7 +494,7 @@ const AttendanceReport = ({
               title="Rows per page for print"
               className="h-10 w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
             />
-            <input
+            <Input
               type="text"
               inputMode="numeric"
               value={overtimePrintFontSize}

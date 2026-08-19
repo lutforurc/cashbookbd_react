@@ -20,6 +20,7 @@ import {
   API_PROJECT_LABOUR_STORE_URL,
   API_PROJECT_LABOUR_UPDATE_URL,
 } from '../../../services/apiRoutes';
+import { Select } from '../../../utils/fields/FormControls';
 
 interface Option {
   value: number | string;
@@ -584,7 +585,7 @@ const ProjectLabour = () => {
         <div className="grid grid-cols-1 content-start gap-2 sm:grid-cols-2">
           <div>
             <label htmlFor="project_id">Select Project</label>
-            <select
+            <Select
               id="project_id"
               name="project_id"
               className={SELECT_CLASS}
@@ -597,12 +598,12 @@ const ProjectLabour = () => {
                   {project.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
             <label htmlFor="building_id">Select Building</label>
-            <select
+            <Select
               id="building_id"
               name="building_id"
               className={SELECT_CLASS}
@@ -616,7 +617,7 @@ const ProjectLabour = () => {
                   {building.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div className="sm:col-span-2">

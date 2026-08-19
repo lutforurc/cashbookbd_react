@@ -23,6 +23,7 @@ import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
 import httpService from '../../../services/httpService';
+import { Textarea } from '../../../utils/fields/FormControls';
 
 interface Person {
   id: number;
@@ -614,7 +615,7 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
             <label className={`${FIELD_LABEL} text-sm`} htmlFor="todo_description">
               Description
             </label>
-            <textarea
+            <Textarea
               id="todo_description"
               name="todo_description"
               rows={3}

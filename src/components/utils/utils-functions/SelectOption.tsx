@@ -1,5 +1,6 @@
 import React from 'react';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
+import { Select } from '../fields/FormControls';
 
 interface SelectOptionProps {
   onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -13,7 +14,7 @@ const SelectOption: React.FC<SelectOptionProps> = ({
   id,
 }) => {
   return (
-    <select
+    <Select
       onChange={onChange}
       id={id}
       className={`${FIELD_SELECT} block p-2 text-sm ${className}`}
@@ -24,7 +25,7 @@ const SelectOption: React.FC<SelectOptionProps> = ({
       <option value="50">50</option>
       <option value="100">100</option>
       <option value="">All</option>
-    </select>
+    </Select>
   );
 };
 

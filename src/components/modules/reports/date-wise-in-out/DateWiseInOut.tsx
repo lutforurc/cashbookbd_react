@@ -21,6 +21,7 @@ import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import Table from '../../../utils/others/Table';
 import { DateWiseInOutDetailPrint, DateWiseInOutPrint } from './DateWiseInOutPrint';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { Select } from '../../../utils/fields/FormControls';
 
 export type DateWiseInOutRow = {
   sl_no: string;
@@ -389,7 +390,7 @@ const DateWiseInOut = ({ user }: any) => {
               Select Branch <span className="text-red-600">*</span>
             </label>
             {branchDdlData?.isLoading ? <Loader /> : null}
-            <select
+            <Select
               value={branchId}
               onChange={(event) => setBranchId(event.target.value)}
               className={`${FIELD_SELECT} h-10 w-full px-2 text-sm font-medium`}
@@ -400,7 +401,7 @@ const DateWiseInOut = ({ user }: any) => {
                   {item.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>

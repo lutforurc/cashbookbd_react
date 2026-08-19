@@ -12,6 +12,7 @@ import { getDdlOrders } from '../../orders/ordersSlice';
 import { tradingSalesStore } from './tradingSalesSlice';
 import { API_CHART_OF_ACCOUNTS_DDL_L4_URL } from '../../../services/apiRoutes';
 import { getToken } from '../../../../features/authReducer';
+import { Input, Textarea } from '../../../utils/fields/FormControls';
 
 interface ImportRow {
   slNo: string;
@@ -485,7 +486,7 @@ const TradingSalesImport = () => {
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded bg-primary px-3 py-2 text-sm font-medium text-white">
                   <FiUpload />
                   Upload
-                  <input
+                  <Input
                     type="file"
                     accept=".xlsx,.csv,.txt,.tsv"
                     className="hidden"
@@ -540,7 +541,7 @@ const TradingSalesImport = () => {
                 </table>
               </div>
               {showPasteBox && (
-                <textarea
+                <Textarea
                   value={rawText}
                   onChange={(e) => {
                     setRawText(e.target.value);

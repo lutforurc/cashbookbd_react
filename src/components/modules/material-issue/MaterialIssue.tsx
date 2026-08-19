@@ -16,6 +16,7 @@ import { API_PROJECT_DDL_LIST_URL } from '../../services/apiRoutes';
 import { getDdlWarehouse } from '../warehouse/ddlWarehouseSlider';
 import { storeMaterialIssue } from './materialIssueSlice';
 import MaterialIssueList from './MaterialIssueList';
+import { Select } from '../../utils/fields/FormControls';
 
 type ProductOption = {
   value: string;
@@ -289,7 +290,7 @@ const MaterialIssue = () => {
         </div>
         <div>
           <label className="text-black dark:text-white">Project / Site</label>
-          <select
+          <Select
             id="projectId"
             name="projectId"
             value={formData.projectId}
@@ -302,7 +303,7 @@ const MaterialIssue = () => {
                 {p.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <InputElement
           id="receivedBy"

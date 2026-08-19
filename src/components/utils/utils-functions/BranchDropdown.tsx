@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { clearPrintBranch, setPrintBranchId } from './printBranchSlice';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
+import { Select } from '../fields/FormControls';
 
 interface SelectOptionProps {
   name?: string;
@@ -62,7 +63,7 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
   };
 
   return (
-    <select
+    <Select
       id={id}
       name={name}
       value={selectedValue} // Bind the value to state
@@ -79,7 +80,7 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
             {item.name}
           </option>
         ))}
-    </select>
+    </Select>
   );
 };
 

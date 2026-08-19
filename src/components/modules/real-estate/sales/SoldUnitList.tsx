@@ -52,6 +52,7 @@ import SoldUnitListPrint from "./SoldUnitListPrint";
 import SaleNomineeModal from "./SaleNomineeModal";
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import { Input } from '../../../utils/fields/FormControls';
 
 
 const cellBase = "border border-stroke px-2 py-1.5 dark:border-strokedark";
@@ -657,7 +658,7 @@ const SoldUnitList: React.FC = () => {
 
       <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-5">
         <label className="flex h-8.5 items-center gap-2 text-sm">
-          <input
+          <Input
             type="checkbox"
             checked={dueOnly}
             onChange={(e) => setDueOnly(e.target.checked)}
@@ -1397,7 +1398,7 @@ const SoldUnitList: React.FC = () => {
       />
 
       {/* One picker for the whole page; openFilePicker points it at a row. */}
-      <input
+      <Input
         ref={filePickerRef}
         type="file"
         accept="application/pdf"

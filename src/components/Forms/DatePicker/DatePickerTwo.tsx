@@ -1,6 +1,7 @@
 import flatpickr from 'flatpickr';
 import { useEffect } from 'react';
 import { FIELD_BASE } from '../../../theme/fieldStyles';
+import { Input } from '../../utils/fields/FormControls';
 
 const DatePickerTwo = () => {
   useEffect(() => {
@@ -25,7 +26,7 @@ const DatePickerTwo = () => {
         Select date
       </label>
       <div className="relative">
-        <input
+        <Input
           className={`${FIELD_BASE} form-datepicker w-full px-5 py-3 font-normal`}
           placeholder="mm/dd/yyyy"
           data-class="flatpickr-right"

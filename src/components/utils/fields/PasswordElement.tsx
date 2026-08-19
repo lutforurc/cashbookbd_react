@@ -1,5 +1,6 @@
 import React from 'react';
 import { FIELD_LABEL, fieldClass } from '../../../theme/fieldStyles';
+import { Input } from './FormControls';
 
 interface InputElementProps {
   // Define the prop types here if known
@@ -29,7 +30,7 @@ const PasswordElement: React.FC<InputElementProps> = ({
       >
         {label}
       </label>
-      <input
+      <Input
         id={id}
         name={name}
         onChange={onChange}

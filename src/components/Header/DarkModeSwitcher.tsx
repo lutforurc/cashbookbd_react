@@ -1,4 +1,5 @@
 import useColorMode from '../../hooks/useColorMode';
+import { Input } from '../utils/fields/FormControls';
 
 const DarkModeSwitcher = () => {
   const [colorMode, setColorMode] = useColorMode();
@@ -9,7 +10,7 @@ const DarkModeSwitcher = () => {
         colorMode === 'dark' ? 'bg-primary' : 'bg-stroke'
       }`}
     >
-      <input
+      <Input
         type="checkbox"
         onChange={() => {
           if (typeof setColorMode === 'function') {

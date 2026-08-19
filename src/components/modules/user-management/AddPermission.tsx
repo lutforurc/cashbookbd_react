@@ -14,6 +14,7 @@ import {
   updatePermission,
 } from "./userManagementSlice";
 import { Button } from '../../../pages/UiElements/CustomButtons';
+import { Input } from '../../utils/fields/FormControls';
 
 interface PermissionItem {
   name: string;
@@ -285,7 +286,7 @@ const AddPermission: React.FC = () => {
                         key={perm.id}
                         className="flex items-center gap-1 rounded border border-blue-400 bg-white px-1 py-0.5 dark:bg-boxdark"
                       >
-                        <input
+                        <Input
                           value={editingName}
                           autoFocus
                           onChange={(e) => setEditingName(e.target.value)}
