@@ -33,6 +33,9 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait' }) => {
     <style>
       {`
         @media print {
+          /* The last number is the gap under the footer -- the only thing
+             below it is the edge of the paper. Change it here and every report
+             moves together; nothing else in the app states it. */
           @page {
             size: A4 ${orientation};
             margin: 6mm 8mm 5mm 10mm;

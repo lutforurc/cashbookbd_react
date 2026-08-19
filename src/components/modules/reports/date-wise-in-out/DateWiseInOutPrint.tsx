@@ -135,7 +135,7 @@ export const DateWiseInOutPrint = React.forwardRef<HTMLDivElement, DateWiseInOut
     ];
 
     return (
-      <div ref={ref} className="p-6 text-black" style={{ fontSize }}>
+      <div ref={ref} className="print-root p-6 text-black" style={{ fontSize }}>
         {printPages.map((pageRows, index) => (
           <div
             key={index}
