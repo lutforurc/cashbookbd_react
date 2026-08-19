@@ -30,16 +30,17 @@ export const BUTTON_BASE = [
  */
 export const BUTTON_VARIANT = {
   /** The ordinary action: grey until you reach for it. */
-  // The blue is the one the app has always reached for and the one the screens
-  // were designed around, so it stays. What could not stay is the white label
-  // on top of it: white on blue-400 is 2.54:1, and a clicked button holds
-  // focus, so Apply and Save sat unreadable until something else was clicked.
-  // The label turns dark for those two states only -- 7:1 on the same blue,
-  // and the button still looks exactly as blue as it did.
+  // White label throughout -- dark text on the hover blue was tried and read
+  // as a different button, not a pressed one.
+  //
+  // So the blue carries the readability instead. blue-400 is a pale blue and
+  // white on it is 2.54:1, which is why Apply and Save went faint the moment
+  // the pointer touched them and stayed faint after a click, since a clicked
+  // button keeps focus. blue-600 is the same blue a shade deeper, and holds
+  // the same white at 5.17:1.
   default: [
     'text-white bg-gray-700',
-    'hover:bg-blue-400 focus:bg-blue-400 dark:hover:bg-blue-400',
-    'hover:text-gray-900 focus:text-gray-900 dark:hover:text-gray-900 dark:focus:text-gray-900',
+    'hover:bg-blue-600 focus:bg-blue-600 dark:hover:bg-blue-600 dark:focus:bg-blue-600',
   ].join(' '),
 
   /** The one action a screen is for -- Sign In, Save on a wizard's last step. */
