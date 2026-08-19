@@ -1,0 +1,207 @@
+# নিরাপত্তা পর্যালোচনা — যা বাকি, আর কেন
+
+**তারিখ:** ২০২৬-০৮-১৯
+**উৎস ডকুমেন্ট:** [security-audit-2026-08-19.md](security-audit-2026-08-19.md)
+**রিপোজিটরি:** `D:/www/cashbook_api` (ব্রাঞ্চ `Lutfor`), `D:/cashbookbd_react` (ব্রাঞ্চ `Lutfor-Rahman`)
+
+মূল অডিট ফাইলটি বলে *কী কী সমস্যা আছে*। এই ফাইলটি বলে **কাজ শেষ করার পর কী কী পড়ে
+রইল এবং কেন** — যাতে পরের বার কেউ শূন্য থেকে খোঁজা শুরু না করে।
+
+---
+
+## ১. যা শেষ হয়েছে
+
+API রিপোতে ১৪টি কমিট, React রিপোতে ৪টি। সবগুলোই `php -l` পাস, কোনোটিই চালিয়ে দেখা হয়নি
+(§৫ দেখুন)।
+
+| # | কাজ | কমিট |
+|---|---|---|
+| ১.১ | ভাউচার অনুমোদনে পারমিশন ও ব্রাঞ্চ স্কোপ; রুট GET→POST | `5db17fba` + `c2017a7` |
+| ১.২ | ক্যাশ/ব্যাংক বুকে stored XSS — ২২টি জায়গায় `e()` | `a30f02ee` |
+| ১.৩ | লেবার লেজারে `branchScope()` | `997f6262` |
+| ১.৪ | `get_hash()`-এর মান কাঁচা SQL-এ — ২টি ইনজেকশন সাইট | `ebfef457` |
+| ১.৫ | `PartyController::update` অন্য কোম্পানির পার্টি দখল করত | `ebfef457` |
+| ১.৬ | `NioHash` — `APP_KEY` থেকে চাবি, MAC যাচাই, base64url | `832a0fe9` |
+| ২.২ | ব্যাংক রিপোর্টের `LIKE` → `whereIn` | `6bdea6c4` |
+| ২.৩ | স্কোপড lookup — ৫ ব্যাচে ৬৬টি lookup, ১৩টি null-গার্ড | `ca459d47`, `e7a7b540`, `9beea1e7`, `86f82561` |
+| ২.১ | ব্রাঞ্চ যাচাই — ৫৫টি মেথডে `branchInReach()`/`branchScope()` | `25c20925`, `66bc2eda`, `4eb39927` |
+| ৩.১ | মৃত পাবলিক রুট `/api/reports/due-pdf` | `54c01b47` |
+| — | `composer audit` — `league/commonmark` 2.8.3 → 2.10.0 | `54c01b47` |
+
+**১.৪, ১.৫, ১.৬ মূল অডিটে ছিল না** — ২.৩-এর কাজ করতে গিয়ে পাওয়া। মূল ডকের §৪-এ লেখা
+"SQL ইনজেকশন পাওয়া যায়নি" দাবিটি সে কারণে সংশোধন করা হয়েছে।
+
+---
+
+## ২. যা করা যায়নি — স্কিমায় বাধা
+
+**১৫টি মেথড।** এগুলোর টেবিলে `company_id`ও নেই, `branch_id`ও নেই — অর্থাৎ lookup-এ
+স্কোপ বসানোর মতো কোনো কলামই নেই। কোড বদলে সমাধান হয় না।
+
+| টেবিল | সারি | যেসব মেথড আটকে গেল |
+|---|---|---|
+| `hrm_designation` | ৫২ | `DesignationController::update`, `DesignationManagementController::designationUpdate`, `designationDelete` |
+| `designation_levels` | ৬ | `DesignationManagementController::designationLevelEdit`, `designationLevelUpdate`, `designationLevelDelete` |
+| `hrm_payment_list` | ৬ | `PaymentListController::edit`, `update`, `SalarySetupController::store` |
+| `labour_categories` | ৯ | `LabourCategoryController::update`, `LabourItemController::categoryName` |
+| `labour_items` | ০ | `LabourItemController::update` |
+| `job_category` | ৭ | `JobCategoryController::edit` |
+| `tourism_details` | ০ | `TourismVisitorController::viewPdf` |
+| `product_pack_size` | ৪ | `ItemController::cylinderItem` |
+| `tutorial_videos` | ১৯৮ | `TutorialVideoController::update`, `destroy` |
+| `inventory_system` | ৪ | `InventorySystemController::update`, `destroy` |
+
+উপরন্তু `hrm_designation`-এ validation নিয়ম `unique:hrm_designation,name` কোম্পানি-নিরপেক্ষ,
+তাই এক কোম্পানির পদবির নাম আরেক কোম্পানির সাথে সংঘর্ষে পড়ে।
+
+### সিদ্ধান্ত দরকার
+
+এই দশটি তালিকা কি **ইচ্ছাকৃতভাবেই সব কোম্পানির সাধারণ** (জেলা-থানার তালিকার মতো), নাকি
+টেন্যান্টপ্রতি হওয়ার কথা ছিল?
+
+- **সাধারণ হলে** — কিছু করার নেই, কেবল ডকে লিখে রাখলেই হয়।
+- **টেন্যান্টপ্রতি হলে** — প্রতিটি টেবিলে `company_id` যোগ, বিদ্যমান সারিতে backfill,
+  তারপর ১৫টি মেথডে স্কোপ। `tutorial_videos` (১৯৮ সারি) ও `hrm_designation` (৫২ সারি)
+  ছাড়া বাকিগুলো ছোট, তাই backfill সহজ।
+
+---
+
+## ৩. যা করা যায়নি — আলাদা করে সাবধানে করা দরকার
+
+**২টি মেথড, দুটোই টাকার অঙ্ক বদলায়।**
+
+### ৩.১ `Reports/ReportsController::cashBookUpdate`
+
+রুট `routes/web.php:236` (POST, CSRF সহ)। ক্যাশ বুকের সারিতে সরাসরি debit/credit
+সম্পাদনা করে:
+
+```php
+$id = get_hash($id);
+$transaction = AccTransactionDetails::find($id);      // স্কোপ নেই
+...
+$transactionDebit->debit = $debit;
+$transactionDebit->save();
+```
+
+`acc_transaction_details`-এ কোনো tenant কলাম নেই। স্কোপ করতে হলে
+`trx_mstr_id → acc_transaction_master → main_trx_master.branch_id` — দুই join হয়ে যেতে
+হবে, `whereHas()` বা একটি explicit join দিয়ে।
+
+**কেন ব্যাচে ঢোকানো হয়নি:** বাকি ৬৬টি lookup এক লাইনের পরিবর্তন ছিল; এটি নয়। আর এটি
+হিসাবের অঙ্ক বদলায়, তাই ভুল করলে ক্ষতি অন্য রকম। id এখন MAC-যাচাই করা (১.৬), তাই
+নিছক অনুমান করে অন্য কারো সারিতে পৌঁছানো যায় না — কিন্তু নিজের কোম্পানির বাইরের কোনো
+বৈধ hash হাতে পেলে এখনো যায়।
+
+### ৩.২ `VoucherModification/VoucherModificationController::updatePaymentVoucher`
+
+একই আকার, একই কারণ:
+
+```php
+$atm       = AccTransactionMaster::find($request['id']);        // স্কোপ নেই
+$accTrDtls = AccTransactionDetails::find($ud['atd_id']);        // স্কোপ নেই
+```
+
+দ্বিতীয়টি লুপের ভেতরে, প্রতিটি সারির `coa4_id`, debit ও credit বদলায়।
+
+**সুপারিশ:** দুটোকে একসাথে, একটি কমিটে, একটি সাধারণ স্কোপ-হেল্পার দিয়ে —
+যেমন `AccTransactionDetails` মডেলে একটি `scopeInReach()` যা main transaction হয়ে
+`branchScope()`-এ পৌঁছায়। তাতে ভবিষ্যতের accounting কোডেও একই পথ থাকবে।
+
+---
+
+## ৪. যা ইচ্ছাকৃতভাবে ছাড়া হয়েছে
+
+### ৪.১ ২.১-এর বাকি ২৯টি মেথড
+
+স্ক্যানে এখনো ধরা পড়ে, কিন্তু **বেশিরভাগ ইতিমধ্যেই সুরক্ষিত** — অন্য উপায়ে:
+
+- `Auth/UserController` (৩টি) — ঠিক উপরের লাইনেই `findScopedBranch()` দিয়ে যাচাই
+- `Company/BranchController` — `get_hash()` + `findScopedBranch()`
+- `Reports/ReportsController` (৪টি) — `Branch::where('id', ...)->where('company_id', ...)`
+- `Hrms/AttendanceManagementController` (৩টি) — `scopeToBranches()`-এ যায়, যা নিজেই
+  `branchScope()` ডাকে
+- `Asset/*`, `SalesOrder`, `Realestate` — id আসে আগেই তোলা সারি থেকে, রিকোয়েস্ট থেকে নয়
+
+সত্যিই ছাড়া হয়েছে **তিনটি**, প্রতিটিরই কারণ আছে:
+
+| জায়গা | কেন |
+|---|---|
+| `CustomerAuth/CustomerAuthController:165, 320` | কাস্টমার guard — `branchInReach()` `Auth::user()` জিজ্ঞেস করে, আর সেখানে staff user নেই। কুয়েরি এমনিতেই `$customer->company_id` ও কাস্টমারের নিজের `coa4_id` দিয়ে বাঁধা |
+| `Hrms/AttendanceManagementController:930` | ছুটির ক্যালেন্ডারে `null` মানে "কোম্পানি-ব্যাপী" — ফর্মে ব্রাঞ্চের ঘর নেই, তাই সব ছুটি `branch_id = NULL` হিসেবেই সেভ হয়। `branchInReach()` বসালে অর্থ উল্টে যেত |
+| `Hrms/EmployeeController:591` ধরনের ফর্ম | ব্যবহারকারী তৈরির সময় ব্রাঞ্চ *নির্ধারণ* করা হয়, পড়া হয় না |
+
+### ৪.২ `LevelThreeController::delete` — মৃত delete-লজিক
+
+মেথডটি তৃতীয় লাইনেই `return $coal3;` করে, নিচের delete-লজিক পুরোটাই কমেন্ট করা।
+স্কোপ বসিয়ে **ফাঁকটা বন্ধ** করা হয়েছে (`ca459d47`), কিন্তু delete-টা অকেজোই রাখা
+হয়েছে — সেটি ফেরানো নিরাপত্তার কাজ নয়, নতুন আচরণ।
+
+### ৪.৩ `ReportsController.php.bak_product_profit_loss_fix`
+
+রিপোতে একটি ব্যাকআপ ফাইল পড়ে আছে। PHP লোড করে না (এক্সটেনশন `.php` নয়), তাই নিরাপত্তার
+ঝুঁকি নেই — কিন্তু ওতে `ReportsController`-এর **পুরোনো, অসংশোধিত** কপি রয়েছে। মুছে ফেলা
+উচিত কিনা মালিকের সিদ্ধান্ত, তাই ছোঁয়া হয়নি।
+
+---
+
+## ৫. যা চালানো যায়নি
+
+### ৫.১ `npm audit`
+
+এই মেশিনে চলে না:
+
+```
+npm error Class extends value undefined is not a constructor or null
+```
+
+npm 11.16.0 আর Node v25.2.1 — এই জোড়াটি ভাঙা। **অন্য মেশিনে বা CI-তে চালাতে হবে।**
+`composer audit` চলেছে ও পরিষ্কার।
+
+### ৫.২ কোনো পরিবর্তনই চালিয়ে দেখা হয়নি
+
+সব ফাইল `php -l` পাস, আর `NioHash`-এর ১৪টি ইউনিট-স্তরের পরীক্ষা পাস (round trip,
+determinism, URL safety, tampering, পুরোনো CSRF-চাবির forgery)। কিন্তু **কোনো পর্দা
+খুলে দেখা হয়নি।**
+
+সবচেয়ে বেশি দেখা দরকার:
+
+- **ক্যাশ বুক ও ব্যাংক বুক** — নাম/পণ্যের কলাম ঠিক আসছে কিনা (১.২-এর escape), আর
+  অনুমোদনের বোতাম (১.১-এর POST)
+- **ব্যাংক তথ্য রিপোর্ট** — অঙ্ক কমেছে কিনা, আর সেটা প্রত্যাশিত কি না
+- **ক্রয়/বিক্রয় লেজার, স্টক রিপোর্ট, ব্রাঞ্চ স্টক** — ব্রাঞ্চ না বেছে চালালে এখন
+  নিজের কোম্পানির সব ব্রাঞ্চ আসবে (আগে সব কোম্পানি আসত)
+- **ইনভেন্টরি সেভ ফ্লো** — ক্রয়, বিক্রয়, সিলিন্ডার, ভাউচার সংশোধন। `Item::find`
+  → `findOrFail` হওয়ায় ভুল পণ্য কোডে এখন ৪০৪ ও রোলব্যাক, আগে ৫০০ হতো
+- **যেকোনো এডিট বোতাম** — hash ফরম্যাট বদলেছে (১.৬)
+
+---
+
+## ৬. ডিপ্লয়ের আগে
+
+| বিষয় | কী করতে হবে |
+|---|---|
+| **`composer install`** | lock বদলেছে (`league/commonmark` 2.10.0) |
+| **দুই রিপো একসাথে** | কেবল ১.১-এর জন্য — approve বোতাম GET→POST। API আগে গেলে পুরোনো React 405 পাবে |
+| **`NioHash` ফরম্যাট** | ডিপ্লয়ের মুহূর্তে খোলা পাতার হ্যাশ অচল হবে; রিফ্রেশেই ঠিক। (আজও লগইন করলে একই হয়, কারণ চাবি ছিল সেশনের CSRF টোকেন) |
+| **ব্যাংক রিপোর্টের অঙ্ক** | নির্দিষ্ট ব্রাঞ্চ বাছলে কমবে — এতদিন ব্রাঞ্চ `1` চাইলে `11`, `12`, `100`-এর টাকাও যোগ হচ্ছিল। এটিই সংশোধন, ক্ষতি নয় |
+| **মোবাইল অ্যাপ** | দেখা হয়নি। `accounts/voucher/approved` রুট ও `get_hash` হ্যাশ ব্যবহার করে কিনা যাচাই করা দরকার |
+
+---
+
+## ৭. সার্ভারের কাজ (কোডের নয়)
+
+- **৩.২** — nginx সার্ভার হলে `public/sale_document/`, `public/project_voucher/`
+  পাথগুলো server block-এ ব্লক করা। `.htaccess` nginx পড়ে না
+- **৩.৩** — প্রতিটি সার্ভারের `.env`-এ `APP_DEBUG=false` যাচাই
+
+---
+
+## ৮. পরের পদক্ষেপ, অগ্রাধিকার ক্রমে
+
+১. **§৫.২ অনুযায়ী পর্দাগুলো খুলে দেখা** — কোনো কিছু ভাঙেনি তা নিশ্চিত করা
+২. **§৩-এর দুটি accounting মেথড** — একটি সাধারণ স্কোপ-হেল্পার দিয়ে
+৩. **§২-এর সিদ্ধান্ত** — দশটি তালিকা সাধারণ না টেন্যান্টপ্রতি
+৪. **`npm audit`** অন্য মেশিনে
+৫. **`dangerouslySetInnerHTML` তুলে দেওয়া** — মূল ডকের ১.২-এর "টেকসই" সমাধান;
+   API-কে নাম, রিমার্কস ও ব্রাঞ্চ আলাদা ফিল্ডে পাঠাতে হবে। এখন escape করা আছে বলে
+   ঝুঁকি নেই, কিন্তু HTML বানানোর কাজটা রিপোর্ট কুয়েরির নয়

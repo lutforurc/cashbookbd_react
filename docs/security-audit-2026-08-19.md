@@ -1,8 +1,8 @@
 # নিরাপত্তা পর্যালোচনা — বাগ ও আক্রমণের সুযোগ
 
 **তারিখ:** ২০২৬-০৮-১৯
-**অবস্থা:** পর্যালোচনা সম্পূর্ণ, কোনো কোড পরিবর্তন করা হয়নি (ব্যবহারকারীর অনুমতির অপেক্ষায়)
-**সংশ্লিষ্ট রিপোজিটরি:** `F:/All_Database/www/cashbook_api` (ব্রাঞ্চ `Lutfor`), `F:/All_Database/cashbookbd_react` (ব্রাঞ্চ `Lutfor-Rahman`)
+**অবস্থা:** পর্যালোচনা সম্পূর্ণ; বেশিরভাগ সমস্যা সংশোধিত ও push করা। কী বাকি ও কেন — [security-audit-remaining-work.md](security-audit-remaining-work.md)
+**সংশ্লিষ্ট রিপোজিটরি:** `D:/www/cashbook_api` (ব্রাঞ্চ `Lutfor`), `D:/cashbookbd_react` (ব্রাঞ্চ `Lutfor-Rahman`)
 **পদ্ধতি:** কোড পড়ে বিশ্লেষণ — ~২০০ কন্ট্রোলার, ৫৭৪টি API রুট, React সোর্স। চালিয়ে দেখা penetration test নয়।
 
 ---
