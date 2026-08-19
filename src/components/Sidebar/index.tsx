@@ -2044,97 +2044,113 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Location
                               </NavLink>
                             </li>
-                            <li style={subSlot('real-estate', 'real_estate_project_list')}>
-                              <NavLink
-                                to={routes.real_estate_project_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Projects
-                              </NavLink>
-                            </li>
-                            <li style={subSlot('real-estate', 'real_estate_buildings_list')}>
-                              <NavLink
-                                to={routes.real_estate_buildings_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Buildings
-                              </NavLink>
-                            </li>
+                            {hasPermission(permissions, 'real.estate.project.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_project_list')}>
+                                <NavLink
+                                  to={routes.real_estate_project_list}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Projects
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'real.estate.building.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_buildings_list')}>
+                                <NavLink
+                                  to={routes.real_estate_buildings_list}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Buildings
+                                </NavLink>
+                              </li>
+                            )}
 
-                            <li style={subSlot('real-estate', 'real_estate_floor_list')}>
-                              <NavLink
-                                to={routes.real_estate_floor_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Floor List
-                              </NavLink>
-                            </li>
-                            <li style={subSlot('real-estate', 'real_estate_floor_unit_list')}>
-                              <NavLink
-                                to={routes.real_estate_floor_unit_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Unit List
-                              </NavLink>
-                            </li>
-                            <li style={subSlot('real-estate', 'real_estate_unit_types_list')}>
-                              <NavLink
-                                to={routes.real_estate_unit_types_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Chareges
-                              </NavLink>
-                            </li>
+                            {hasPermission(permissions, 'real.estate.floor.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_floor_list')}>
+                                <NavLink
+                                  to={routes.real_estate_floor_list}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Floor List
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'real.estate.unit.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_floor_unit_list')}>
+                                <NavLink
+                                  to={routes.real_estate_floor_unit_list}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Unit List
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'real.estate.charge.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_unit_types_list')}>
+                                <NavLink
+                                  to={routes.real_estate_unit_types_list}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Chareges
+                                </NavLink>
+                              </li>
+                            )}
 
-                            <li style={subSlot('real-estate', 'real-estate/flat-layout')}>
-                              <NavLink
-                                to="/real-estate/flat-layout"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Layout
-                              </NavLink>
-                            </li>
+                            {hasPermission(permissions, 'real.estate.layout.view') && (
+                              <li style={subSlot('real-estate', 'real-estate/flat-layout')}>
+                                <NavLink
+                                  to="/real-estate/flat-layout"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Layout
+                                </NavLink>
+                              </li>
+                            )}
 
-                            <li style={subSlot('real-estate', 'real-estate/unit-sales')}>
-                              <NavLink
-                                to="/real-estate/unit-sales"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Unit Sales
-                              </NavLink>
-                            </li>
-                            <li style={subSlot('real-estate', 'real_estate_sold_units')}>
-                              <NavLink
-                                to={routes.real_estate_sold_units}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Sold Units
-                              </NavLink>
-                            </li>
+                            {hasPermission(permissions, 'real.estate.unit.sale.view') && (
+                              <li style={subSlot('real-estate', 'real-estate/unit-sales')}>
+                                <NavLink
+                                  to="/real-estate/unit-sales"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Unit Sales
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'real.estate.sold.unit.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_sold_units')}>
+                                <NavLink
+                                  to={routes.real_estate_sold_units}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Sold Units
+                                </NavLink>
+                              </li>
+                            )}
                             {hasPermission(permissions, 'real.estate.sales.summary') && (
                               <li style={subSlot('real-estate', 'report_sales_summary')}>
                                 <NavLink
@@ -2159,83 +2175,97 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Installment Create
                               </NavLink>
                             </li>
-                            <li style={subSlot('real-estate', 'real_estate_project_expense')}>
-                              <NavLink
-                                to={routes.real_estate_project_expense}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Project Expense
-                              </NavLink>
-                            </li>
-                            <li style={subSlot('real-estate', 'real_estate_project_income')}>
-                              <NavLink
-                                to={routes.real_estate_project_income}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Project Income
-                              </NavLink>
-                            </li>
-                            <li style={subSlot('real-estate', 'real_estate_project_purchase')}>
-                              <NavLink
-                                to={routes.real_estate_project_purchase}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Project Purchase
-                              </NavLink>
-                            </li>
-                            <li style={subSlot('real-estate', 'real_estate_project_labour')}>
-                              <NavLink
-                                to={routes.real_estate_project_labour}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Project Labour
-                              </NavLink>
-                            </li>
-                            <li style={subSlot('real-estate', 'real_estate_project_summary_report')}>
-                              <NavLink
-                                to={routes.real_estate_project_summary_report}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Project Summary
-                              </NavLink>
-                            </li>
-                            <li style={subSlot('real-estate', 'real_estate_project_cost_report')}>
-                              <NavLink
-                                to={routes.real_estate_project_cost_report}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Project Cost Report
-                              </NavLink>
-                            </li>
-                            <li style={subSlot('real-estate', 'real_estate_project_income_report')}>
-                              <NavLink
-                                to={routes.real_estate_project_income_report}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Project Income Report
-                              </NavLink>
-                            </li>
+                            {hasPermission(permissions, 'real.estate.project.expense.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_project_expense')}>
+                                <NavLink
+                                  to={routes.real_estate_project_expense}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Project Expense
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'real.estate.project.income.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_project_income')}>
+                                <NavLink
+                                  to={routes.real_estate_project_income}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Project Income
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'real.estate.project.purchase.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_project_purchase')}>
+                                <NavLink
+                                  to={routes.real_estate_project_purchase}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Project Purchase
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'real.estate.project.labour.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_project_labour')}>
+                                <NavLink
+                                  to={routes.real_estate_project_labour}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Project Labour
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'real.estate.project.summary.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_project_summary_report')}>
+                                <NavLink
+                                  to={routes.real_estate_project_summary_report}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Project Summary
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'real.estate.project.cost.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_project_cost_report')}>
+                                <NavLink
+                                  to={routes.real_estate_project_cost_report}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Project Cost Report
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'real.estate.project.income.report.view') && (
+                              <li style={subSlot('real-estate', 'real_estate_project_income_report')}>
+                                <NavLink
+                                  to={routes.real_estate_project_income_report}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Project Income Report
+                                </NavLink>
+                              </li>
+                            )}
 
                           </ul>
                         </div>
@@ -3575,17 +3605,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
                             </li>
                           ))}
-                            <li style={subSlot('customer-supplier', 'customer-supplier/list')}>
-                              <NavLink
-                                to="/customer-supplier/list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Customers
-                              </NavLink>
-                            </li>
+                            {hasPermission(permissions, 'cs.view') && (
+                              <li style={subSlot('customer-supplier', 'customer-supplier/list')}>
+                                <NavLink
+                                  to="/customer-supplier/list"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Customers
+                                </NavLink>
+                              </li>
+                            )}
                             {hasPermission(permissions, 'coa.l1.view') && (
                               <li style={subSlot('customer-supplier', 'coal1/coal1-list')}>
                                 <NavLink

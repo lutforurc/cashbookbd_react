@@ -119,7 +119,27 @@ export const MENU_PERMISSIONS = {
     'coa.l4.view',
   ],
   analytics: ['analytics.comparison'],
-  real_estate: ['real.estate.view'],
+  // Every screen inside the menu, so a role given only one of them still sees
+  // the menu it lives in. real.estate.view stays: it is what opened the whole
+  // module before the screens had permissions of their own.
+  real_estate: [
+    'real.estate.view',
+    'real.estate.project.view',
+    'real.estate.building.view',
+    'real.estate.floor.view',
+    'real.estate.unit.view',
+    'real.estate.charge.view',
+    'real.estate.layout.view',
+    'real.estate.unit.sale.view',
+    'real.estate.sold.unit.view',
+    'real.estate.project.expense.view',
+    'real.estate.project.income.view',
+    'real.estate.project.purchase.view',
+    'real.estate.project.labour.view',
+    'real.estate.project.summary.view',
+    'real.estate.project.cost.view',
+    'real.estate.project.income.report.view',
+  ],
   reseller: ['reseller.dashboard.view'],
   subscription_history: ['subscription.view', 'subscription.history'],
   customer_dashboard: ['customer.dashboard'],
