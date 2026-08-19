@@ -33,6 +33,12 @@ export const BUTTON_VARIANT = {
   // White label throughout -- dark text on the hover blue was tried and read
   // as a different button, not a pressed one.
   //
+  // focus-visible, not focus: a button keeps focus after it is clicked, so with
+  // plain focus the blue stayed on Apply until something else was clicked --
+  // the button sat in its reached-for colour long after it had been reached
+  // for. focus-visible is the keyboard's focus, which is who the highlight is
+  // for; a mouse click now leaves the button as it found it.
+  //
   // So the blue carries the readability instead. blue-400 is a pale blue and
   // white on it is 2.54:1, which is why Apply and Save went faint the moment
   // the pointer touched them and stayed faint after a click, since a clicked
@@ -40,21 +46,21 @@ export const BUTTON_VARIANT = {
   // the same white at 5.17:1.
   default: [
     'text-white bg-gray-700',
-    'hover:bg-blue-600 focus:bg-blue-600 dark:hover:bg-blue-600 dark:focus:bg-blue-600',
+    'hover:bg-blue-600 focus-visible:bg-blue-600 dark:hover:bg-blue-600 dark:focus-visible:bg-blue-600',
   ].join(' '),
 
   /** The one action a screen is for -- Sign In, Save on a wizard's last step. */
-  primary: 'text-white bg-primary hover:bg-primary/90 focus:bg-primary/90',
+  primary: 'text-white bg-primary hover:bg-primary/90 focus-visible:bg-primary/90',
 
   /** Something is finished or confirmed. */
-  success: 'text-white bg-success hover:bg-success/90 focus:bg-success/90',
+  success: 'text-white bg-success hover:bg-success/90 focus-visible:bg-success/90',
 
   /** Something is removed, cancelled or withdrawn. */
-  danger: 'text-white bg-danger hover:bg-danger/90 focus:bg-danger/90',
+  danger: 'text-white bg-danger hover:bg-danger/90 focus-visible:bg-danger/90',
 
   /** A quiet action beside a loud one -- Cancel next to Delete. */
   ghost:
-    'text-body hover:bg-gray-100 focus:bg-gray-100 dark:text-bodydark dark:hover:bg-meta-4 dark:focus:bg-meta-4',
+    'text-body hover:bg-gray-100 focus-visible:bg-gray-100 dark:text-bodydark dark:hover:bg-meta-4 dark:focus-visible:bg-meta-4',
 } as const;
 
 export type ButtonVariant = keyof typeof BUTTON_VARIANT;
