@@ -41,6 +41,7 @@ import {
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import routes from '../../../services/appRoutes';
+import { reportDescription as description } from '../../../utils/utils-functions/reportDescription';
 
 // The cash book keeps nothing between visits.
 //
@@ -315,7 +316,10 @@ const CashBook = (user: any) => {
         <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
           <div className="truncate">
 	            <a href="http://localhost:5173/reports/ledger" target="_blank">
-	              <span dangerouslySetInnerHTML={{ __html: row.nam }}></span>
+	              {description(row).party ? (
+	                <span className="block">{description(row).party}</span>
+	              ) : null}
+	              <span>{description(row).account}</span>
 	              {row?.pay_branch_name ? (
 	                <p className="text-sm text-fuchsia-600 dark:text-green-500">{row.pay_branch_name}</p>
 	              ) : (

@@ -4,6 +4,7 @@ import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+import { reportDescription as description } from '../../../utils/utils-functions/reportDescription';
 
 type Somity = {
   idfr_code?: string;
@@ -139,12 +140,14 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                           <div className="w-full max-w-4xl leading-normal">
                             <div className="truncate leading-normal">
-	                              <span
-	                                className={`text-[${fs}px]`}
-	                                dangerouslySetInnerHTML={{
-	                                  __html: row?.nam || '',
-	                                }}
-	                              ></span>
+	                              {description(row).party ? (
+	                                <span className={`block text-[${fs}px]`}>
+	                                  {description(row).party}
+	                                </span>
+	                              ) : null}
+	                              <span className={`text-[${fs}px]`}>
+	                                {description(row).account}
+	                              </span>
 	                              {row?.pay_branch_name && (
 	                                <div className={` font-semibold text-[${fs}px]`}>
 	                                  {row.pay_branch_name}
