@@ -21,23 +21,6 @@
  * the disabled state: fields could be disabled before and looked exactly like
  * live ones.
  */
-export const FIELD_BASE = [
-  // `form-input rounded-xs` stood here and rendered nothing: the forms plugin is
-  // not installed (`plugins: []`), and `rounded-xs` is a Tailwind v4 name in a
-  // v3.4 project -- neither emits a single rule. Fields have therefore always
-  // been square, and `rounded-none` is that, said out loud. A caller asking for
-  // `rounded-sm` still wins, because tailwind emits the radii in that order.
-  'rounded-none border outline-none transition',
-  'bg-white text-gray-700 placeholder-gray-400',
-  'dark:bg-boxdark dark:border-gray-600 dark:text-white dark:placeholder-gray-500',
-  'focus:outline-none focus:border-blue-500 dark:focus:border-blue-400',
-  'disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500',
-  'dark:disabled:bg-form-input dark:disabled:text-bodydark2',
-].join(' ');
-
-/** The default box: what a field measures when nobody asks for a size. */
-export const FIELD_PADDING = 'px-3 py-1';
-
 /**
  * How tall a field stands.
  *
@@ -53,6 +36,35 @@ export const FIELD_PADDING = 'px-3 py-1';
  */
 export const FIELD_HEIGHT = 'h-10';
 
+const FIELD_SURFACE = [
+  // `form-input rounded-xs` stood here and rendered nothing: the forms plugin is
+  // not installed (`plugins: []`), and `rounded-xs` is a Tailwind v4 name in a
+  // v3.4 project -- neither emits a single rule. Fields have therefore always
+  // been square, and `rounded-none` is that, said out loud. A caller asking for
+  // `rounded-sm` still wins, because tailwind emits the radii in that order.
+  'rounded-none border outline-none transition',
+  'bg-white text-gray-700 placeholder-gray-400',
+  'dark:bg-boxdark dark:border-gray-600 dark:text-white dark:placeholder-gray-500',
+  'focus:outline-none focus:border-blue-500 dark:focus:border-blue-400',
+  'disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500',
+  'dark:disabled:bg-form-input dark:disabled:text-bodydark2',
+].join(' ');
+
+/**
+ * A single-line field: the surface, standing at the one height.
+ *
+ * The height lives here rather than at the call sites because the call sites
+ * had thirteen opinions between them. Everything that draws a one-line field
+ * reads this -- InputElement through fieldClass, and the screens that reach for
+ * FIELD_BASE or FIELD_SELECT directly -- so they all come out level.
+ */
+export const FIELD_BASE = `${FIELD_SURFACE} ${FIELD_HEIGHT}`;
+
+/** The default box: what a field measures when nobody asks for a size. */
+export const FIELD_PADDING = 'px-3 py-1';
+
+
+
 /**
  * Named heights.
  *
@@ -65,10 +77,10 @@ export const FIELD_HEIGHT = 'h-10';
  * rendered before this file existed.
  */
 export const FIELD_SIZE = {
-  xs: 'h-8 px-2 py-0.5 text-xs',
-  sm: 'h-8.5 px-3 py-1 text-sm',
-  md: 'h-9.5 px-3 py-1',
-  lg: 'h-10 px-3 py-2',
+  xs: 'h-8! px-2 py-0.5 text-xs',
+  sm: 'h-8.5! px-3 py-1 text-sm',
+  md: 'h-9.5! px-3 py-1',
+  lg: 'h-10! px-3 py-2',
 } as const;
 
 export type FieldSize = keyof typeof FIELD_SIZE;
@@ -81,7 +93,7 @@ export type FieldSize = keyof typeof FIELD_SIZE;
  * border, the background or the focus ring.
  */
 export const fieldClass = (size?: FieldSize, extra = ''): string =>
-  [FIELD_BASE, size ? FIELD_SIZE[size] : `${FIELD_PADDING} ${FIELD_HEIGHT}`, extra]
+  [FIELD_BASE, size ? FIELD_SIZE[size] : FIELD_PADDING, extra]
     .filter(Boolean)
     .join(' ');
 
@@ -109,7 +121,7 @@ export const FIELD_TRANSPARENT = 'bg-transparent dark:bg-transparent';
  * padding baked in here would silently beat the `py-1` a caller wrote — and
  * every textarea in the app already states its own.
  */
-export const FIELD_TEXTAREA = `${FIELD_BASE} leading-relaxed`;
+export const FIELD_TEXTAREA = `${FIELD_SURFACE} leading-relaxed`;
 
 /**
  * A native select.
