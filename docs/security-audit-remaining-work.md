@@ -34,36 +34,57 @@ API রিপোতে ১৪টি কমিট, React রিপোতে ৪�
 
 ---
 
-## ২. যা করা যায়নি — স্কিমায় বাধা
+## ২. স্কিমায় বাধা — চারটি টেবিল খুলে গেছে, ছয়টি বাকি
 
-**১৫টি মেথড।** এগুলোর টেবিলে `company_id`ও নেই, `branch_id`ও নেই — অর্থাৎ lookup-এ
-স্কোপ বসানোর মতো কোনো কলামই নেই। কোড বদলে সমাধান হয় না।
+শুরুতে **দশটি টেবিল** আটকে ছিল: `company_id`ও নেই, `branch_id`ও নেই, তাই lookup-এ
+স্কোপ বসানোর মতো কলামই ছিল না।
 
-| টেবিল | সারি | যেসব মেথড আটকে গেল |
+### ২ক. ✅ চারটির উত্তর এসে গেছে
+
+`hrm_designation`, `labour_categories`, `job_category`, `hrm_payment_list` — চারটিতেই
+`company_id` যোগ হয়েছে (SQL `04f28ffb`, patch কমান্ড `baeab8e9`), অর্থাৎ §২-এর প্রশ্নের
+উত্তর এই চারটির বেলায় **"টেন্যান্টপ্রতি"**।
+
+কলাম আসার পর যা করা হয়েছে:
+
+- **পরিবর্তনকারী মেথডগুলো** স্কোপড — `DesignationController::update`,
+  `DesignationManagementController::designationUpdate`/`designationDelete`,
+  `PaymentListController::edit`/`update`, `LabourCategoryController::update`,
+  `LabourItemController::categoryName`, `JobCategoryController::edit`
+- **`SalarySetupController::store`** — বেতনের খাতটি এখন লেখার *আগেই* নিজের কোম্পানির
+  ভেতরে খুঁজে নেওয়া হয়। আগে `payment_id` রিকোয়েস্ট থেকে নিয়ে সরাসরি সেভ হতো, তারপর
+  খাতের নাম তোলা হতো স্কোপ ছাড়াই — অর্থাৎ অন্য কোম্পানির খাত নিজের কর্মচারীর বেতনে
+  জুড়ে দেওয়া যেত, আর উত্তরে সেই খাতের নামও ফিরে আসত
+- **পড়ার জায়গাগুলোও** স্কোপড — ১৫টি তালিকা ও ড্রপডাউন (`Designation::query()`,
+  `PaymentList::all()`, `LabourCategory::select(...)`, `JobCategory::where('status',...)`
+  ইত্যাদি)। কলাম বসানোর পরও এগুলো সব কোম্পানির সারি দেখাত
+
+একটি জায়গা **ইচ্ছাকৃতভাবে** স্কোপ করা হয়নি:
+`DesignationManagementController` লাইন ১১১, যেখানে একটি পদবি-স্তর মুছতে গেলে দেখা হয়
+কোনো পদবি ওটা ব্যবহার করছে কিনা। `designation_levels`-এ এখনো কোম্পানি নেই, অর্থাৎ
+স্তরগুলো সবার সাধারণ — তাই প্রশ্নটাও সবার হয়েই থাকা উচিত। স্কোপ বসালে এক কোম্পানি এমন
+স্তর মুছে ফেলতে পারত যেটা অন্য কোম্পানির পদবি ব্যবহার করছে।
+
+### ২খ. ছয়টি টেবিল এখনো বাকি — সিদ্ধান্ত দরকার
+
+| টেবিল | সারি | যেসব মেথড আটকে আছে |
 |---|---|---|
-| `hrm_designation` | ৫২ | `DesignationController::update`, `DesignationManagementController::designationUpdate`, `designationDelete` |
 | `designation_levels` | ৬ | `DesignationManagementController::designationLevelEdit`, `designationLevelUpdate`, `designationLevelDelete` |
-| `hrm_payment_list` | ৬ | `PaymentListController::edit`, `update`, `SalarySetupController::store` |
-| `labour_categories` | ৯ | `LabourCategoryController::update`, `LabourItemController::categoryName` |
 | `labour_items` | ০ | `LabourItemController::update` |
-| `job_category` | ৭ | `JobCategoryController::edit` |
 | `tourism_details` | ০ | `TourismVisitorController::viewPdf` |
 | `product_pack_size` | ৪ | `ItemController::cylinderItem` |
-| `tutorial_videos` | ১৯৮ | `TutorialVideoController::update`, `destroy` |
+| `tutorial_videos` | ২০৪ | `TutorialVideoController::update`, `destroy` |
 | `inventory_system` | ৪ | `InventorySystemController::update`, `destroy` |
 
-উপরন্তু `hrm_designation`-এ validation নিয়ম `unique:hrm_designation,name` কোম্পানি-নিরপেক্ষ,
-তাই এক কোম্পানির পদবির নাম আরেক কোম্পানির সাথে সংঘর্ষে পড়ে।
+একই প্রশ্ন, ছয়বার: **এগুলো কি ইচ্ছাকৃতভাবেই সব কোম্পানির সাধারণ, নাকি টেন্যান্টপ্রতি
+হওয়ার কথা ছিল?**
 
-### সিদ্ধান্ত দরকার
+দুটোর উত্তর সম্ভবত "সাধারণ"-ই — `tutorial_videos` প্ল্যাটফর্ম অপারেটরের নিজের তালিকা
+(পর্দাপ্রতি একটি সারি, কোম্পানির সাথে সম্পর্ক নেই), আর `designation_levels` উপরে যে
+কারণে ছোঁয়া হয়নি সেটিও একই ইঙ্গিত দেয়। বাকি চারটির উত্তর মালিকের।
 
-এই দশটি তালিকা কি **ইচ্ছাকৃতভাবেই সব কোম্পানির সাধারণ** (জেলা-থানার তালিকার মতো), নাকি
-টেন্যান্টপ্রতি হওয়ার কথা ছিল?
-
-- **সাধারণ হলে** — কিছু করার নেই, কেবল ডকে লিখে রাখলেই হয়।
-- **টেন্যান্টপ্রতি হলে** — প্রতিটি টেবিলে `company_id` যোগ, বিদ্যমান সারিতে backfill,
-  তারপর ১৫টি মেথডে স্কোপ। `tutorial_videos` (১৯৮ সারি) ও `hrm_designation` (৫২ সারি)
-  ছাড়া বাকিগুলো ছোট, তাই backfill সহজ।
+চারটির অভিজ্ঞতা বলছে কাজটা বড় নয়: কলাম + ইনডেক্স + `DEFAULT 1` backfill, তারপর
+মেথডে স্কোপ। ছোট টেবিল, backfill-ও সহজ।
 
 ---
 
@@ -248,8 +269,9 @@ determinism, URL safety, tampering, পুরোনো CSRF-চাবির forg
 
 ## ৮. পরের পদক্ষেপ, অগ্রাধিকার ক্রমে
 
-১. **§২-এর সিদ্ধান্ত** — দশটি tenant-কলামহীন তালিকা সাধারণ না টেন্যান্টপ্রতি।
-   ১৫টি মেথড এই একটি উত্তরের অপেক্ষায়; উত্তর ছাড়া কোড লেখা যায় না
+১. **§২খ-এর সিদ্ধান্ত** — বাকি ছয়টি tenant-কলামহীন তালিকা সাধারণ না টেন্যান্টপ্রতি।
+   দশটির মধ্যে চারটির উত্তর এসে গেছে ও কাজ শেষ (§২ক); বাকি ছয়টির ১০টি মেথড এই
+   উত্তরের অপেক্ষায়
 ২. **§৫.২ অনুযায়ী পর্দাগুলো খুলে দেখা** — কোনো কিছু ভাঙেনি তা নিশ্চিত করা
 ৩. **একাধিক কোম্পানির ডাটাবেইজে যাচাই** — এই মেশিনে একটাই কোম্পানি, তাই সব
    স্কোপের *প্রত্যাখ্যানের* পথ অপরীক্ষিত (§৩ ও §৫.২ দেখুন)

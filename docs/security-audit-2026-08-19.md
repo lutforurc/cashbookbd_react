@@ -390,7 +390,8 @@ PDF দলিলগুলো URL দিয়ে নামানো যাবে
 **এখনই:**
 
 - [x] ১.১ — `approved()` এ পারমিশন ও কোম্পানি স্কোপ যোগ, রুট POST-এ সরানো — `5db17fba` (API) + `c2017a7` (React)
-- [x] ১.২ — `e()` দিয়ে escape — `a30f02ee`। `dangerouslySetInnerHTML` তোলা এখনো বাকি (নিচে দেখুন)
+- [x] ১.২ — `e()` দিয়ে escape — `a30f02ee`। `dangerouslySetInnerHTML`-ও তোলা হয়েছে: API এখন
+      `account_name`/`party_name` পাঠায়, চারটি পর্দাই লেখা হিসেবে আঁকে (`acfb37a7` + `01355432`)
 - [x] ১.৩ — `labourLedgerData` এ `branchScope()` — `997f6262`
 - [x] ১.৪ — `get_hash()`-এর মান কাঁচা SQL-এ: `(int)` কাস্ট ও বাইন্ডিং, ২টি জায়গায়
 - [x] ১.৫ — `PartyController::update` এ কোম্পানি স্কোপ ও null-গার্ড
@@ -400,6 +401,8 @@ PDF দলিলগুলো URL দিয়ে নামানো যাবে
 
 - [x] ২.২ — ব্যাংক রিপোর্টের `LIKE` সরানো — `6bdea6c4`। নির্দিষ্ট ব্রাঞ্চের অঙ্ক কমবে; সেটিই সংশোধন
 - [~] ২.৩ — স্কোপড lookup। ব্যাচ ১ (৯টি) `ca459d47`; ব্যাচ ২ Party (১.৪/১.৫) `ebfef457`; ব্যাচ ৩ Hrms (১৩টি)। মডিউল ধরে ধরে চলছে
+      স্কিমার অভাবে আটকে থাকা দশটি টেবিলের চারটিতে `company_id` যোগ হয়েছে, তাদের মেথড ও
+      তালিকা-পড়া সবই স্কোপড। বাকি ছয়টি সিদ্ধান্তের অপেক্ষায়
 - [~] ২.১ — `branchInReach()`/`branchScope()`। স্ক্যানে ৮৪ → **২৯** মেথড বাকি; বাকিগুলোর বেশিরভাগ `findScopedBranch()` বা কোম্পানি ফিল্টার দিয়ে ইতিমধ্যেই সুরক্ষিত
 
 **হাইজিন:**
@@ -408,4 +411,6 @@ PDF দলিলগুলো URL দিয়ে নামানো যাবে
 - [ ] ৩.২ — nginx সার্ভারে আপলোড ফোল্ডার ব্লক করা
 - [ ] ৩.৩ — প্রতিটি সার্ভারের `.env`-এ `APP_DEBUG=false` যাচাই
 - [x] `composer audit` — `league/commonmark` 2.8.3-এ ৬টি advisory (৪টি high) ছিল, Laravel-এর transitive নির্ভরতা। 2.10.0-এ তোলা হয়েছে; lock-এ ঐ একটি প্যাকেজই বদলেছে, audit এখন পরিষ্কার
-- [ ] `npm audit` — **চালানো যায়নি**: এই মেশিনে npm 11.16.0 Node v25.2.1-এর সাথে ভাঙা (`Class extends value undefined`)। অন্য মেশিনে বা CI-তে চালাতে হবে
+- [x] `npm audit` — Node 22 / npm 10-এর মেশিনে চলেছে। ৬টির মধ্যে `nanoid` ঠিক করা হয়েছে
+      (`36416382`); বাকি ৩টি (`esbuild`/vite, `quill`/react-quill, `xlsx`) সিদ্ধান্তের অপেক্ষায় —
+      বিস্তারিত [security-audit-remaining-work.md](security-audit-remaining-work.md) §৫.১
