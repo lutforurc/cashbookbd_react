@@ -553,23 +553,23 @@ const ProfitLoss = (user: any) => {
           {useFilterMenuEnabled ? (
             <div className="ml-auto flex flex-wrap items-end gap-2">
               <PrintRowsInput
-                id="perPage"
-                name="perPage"
-                label=""
-                value={perPage.toString()}
-                onChange={handlePerPageChange}
-                type="text"
-                className="font-medium text-sm h-10 w-20! text-center"
+ id="perPage"
+ name="perPage"
+ label=""
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="font-medium text-sm w-20! text-center"
               />
 
               <PrintFontInput
-                id="fontSize"
-                name="fontSize"
-                label=""
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type="text"
-                className="font-medium text-sm h-10 w-20! text-center"
+ id="fontSize"
+ name="fontSize"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="font-medium text-sm w-20! text-center"
               />
 
               <PrintButton
@@ -607,23 +607,23 @@ const ProfitLoss = (user: any) => {
 
               <div className="flex flex-nowrap items-end gap-2">
                 <PrintRowsInput
-                  id="perPage"
-                  name="perPage"
-                  label=""
-                  value={perPage.toString()}
-                  onChange={handlePerPageChange}
-                  type="text"
-                  className="font-medium text-sm h-10 w-20! text-center"
+ id="perPage"
+ name="perPage"
+ label=""
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="font-medium text-sm w-20! text-center"
                 />
 
                 <PrintFontInput
-                  id="fontSize"
-                  name="fontSize"
-                  label=""
-                  value={fontSize.toString()}
-                  onChange={handleFontSizeChange}
-                  type="text"
-                  className="font-medium text-sm h-10 w-20! text-center"
+ id="fontSize"
+ name="fontSize"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="font-medium text-sm w-20! text-center"
                 />
 
                 <PrintButton

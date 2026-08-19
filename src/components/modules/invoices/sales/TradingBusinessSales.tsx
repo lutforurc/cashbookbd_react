@@ -1372,12 +1372,12 @@ const TradingBusinessSales = () => {
               <>
                 <div className="mt-2">
                   <DropdownCommon
-                    id="saleType"
-                    name="saleType"
-                    onChange={handleSalesType}
-                    defaultValue={productData?.variance_type || ''}
-                    data={SalesType}
-                    className="w-full h-8.5"
+ id="saleType"
+ name="saleType"
+ onChange={handleSalesType}
+ defaultValue={productData?.variance_type || ''}
+ data={SalesType}
+ className="w-full "
                   />
                 </div>
                 <div className="relative">

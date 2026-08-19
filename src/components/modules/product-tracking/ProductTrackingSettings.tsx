@@ -180,13 +180,13 @@ const ProductTrackingSettings = () => {
                 native selects on dark:bg-boxdark, so the height was the only
                 thing setting them apart. */}
             <DropdownCommon
-              id="product_id"
-              name="product_id"
-              label="Product"
-              className="h-9"
-              value={String(form.product_id)}
-              data={productOptions}
-              onChange={(e) => setForm({ ...form, product_id: Number(e.target.value) })}
+ id="product_id"
+ name="product_id"
+ label="Product"
+ className=""
+ value={String(form.product_id)}
+ data={productOptions}
+ onChange={(e) => setForm({ ...form, product_id: Number(e.target.value) })}
               description="The product you want billing, receipts and payments counted separately for."
             />
 

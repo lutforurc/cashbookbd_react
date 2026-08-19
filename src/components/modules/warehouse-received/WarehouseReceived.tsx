@@ -474,13 +474,13 @@ const WarehouseReceived = () => {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <InputDatePicker
-            id="transferDate"
-            name="transferDate"
-            label="Receive Date"
-            selectedDate={receiveDate}
-            setSelectedDate={setReceiveDate}
-            setCurrentDate={handleTransferDateChange}
-            className="w-full h-8.5"
+ id="transferDate"
+ name="transferDate"
+ label="Receive Date"
+ selectedDate={receiveDate}
+ setSelectedDate={setReceiveDate}
+ setCurrentDate={handleTransferDateChange}
+ className="w-full "
           />
           <InputElement
             id="challanNumber"
@@ -568,50 +568,50 @@ const WarehouseReceived = () => {
             </div>
             <div className="md:col-span-2">
               <InputElement
-                id="quantity"
-                name="quantity"
-                className='h-9.5'
-                type="number"
-                label={`Quantity ${lineItem.unit ? `(${lineItem.unit})` : ''}`}
-                value={lineItem.quantity}
-                placeholder="0"
-                onChange={handleLineItemChange}
+ id="quantity"
+ name="quantity"
+ className=''
+ type="number"
+ label={`Quantity ${lineItem.unit ? `(${lineItem.unit})` : ''}`}
+ value={lineItem.quantity}
+ placeholder="0"
+ onChange={handleLineItemChange}
               />
             </div>
             <div className="md:col-span-2">
               <InputElement
-                id="damagedQty"
-                name="damagedQty"
-                className='h-9.5'
-                type="number"
-                label="Damaged Qty"
-                value={lineItem.damagedQty}
-                placeholder="0"
-                onChange={handleLineItemChange}
+ id="damagedQty"
+ name="damagedQty"
+ className=''
+ type="number"
+ label="Damaged Qty"
+ value={lineItem.damagedQty}
+ placeholder="0"
+ onChange={handleLineItemChange}
               />
             </div>
             <div className="md:col-span-2">
               <InputElement
-                id="shortQty"
-                name="shortQty"
-                className='h-9.5'
-                type="number"
-                label="Short Qty"
-                value={lineItem.shortQty}
-                placeholder="0"
-                onChange={handleLineItemChange}
+ id="shortQty"
+ name="shortQty"
+ className=''
+ type="number"
+ label="Short Qty"
+ value={lineItem.shortQty}
+ placeholder="0"
+ onChange={handleLineItemChange}
               />
             </div>
             <div className="md:col-span-2">
               <InputElement
-                id="rate"
-                name="rate"
-                className='h-9.5'
-                type="number"
-                label="Rate"
-                value={lineItem.rate}
-                placeholder="0"
-                onChange={handleLineItemChange}
+ id="rate"
+ name="rate"
+ className=''
+ type="number"
+ label="Rate"
+ value={lineItem.rate}
+ placeholder="0"
+ onChange={handleLineItemChange}
               />
             </div>
           </div>

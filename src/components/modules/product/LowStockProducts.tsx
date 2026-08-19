@@ -301,9 +301,9 @@ const LowStockProducts = () => {
           />
 
           <SearchInput
-            className="w-full! h-9"
-            search={search}
-            setSearchValue={setSearchValue}
+ className="w-full! "
+ search={search}
+ setSearchValue={setSearchValue}
           />
 
           <div className="flex flex-wrap gap-2 xl:col-span-2 xl:flex-nowrap">
@@ -320,24 +320,24 @@ const LowStockProducts = () => {
               className="h-9 flex-1"
             />
             <PrintRowsInput
-              id="low-stock-print-rows"
-              name="low-stock-print-rows"
-              label=""
-              title="Print rows per page"
-              value={printRowsPerPage}
-              onChange={handlePrintRowsPerPageChange}
-              type="number"
-              className="h-9 w-16! text-center"
+ id="low-stock-print-rows"
+ name="low-stock-print-rows"
+ label=""
+ title="Print rows per page"
+ value={printRowsPerPage}
+ onChange={handlePrintRowsPerPageChange}
+ type="number"
+ className="w-16! text-center"
             />
             <PrintFontInput
-              id="low-stock-print-font"
-              name="low-stock-print-font"
-              label=""
-              title="Print font size"
-              value={printFontSize}
-              onChange={handlePrintFontSizeChange}
-              type="number"
-              className="h-9 w-16! text-center"
+ id="low-stock-print-font"
+ name="low-stock-print-font"
+ label=""
+ title="Print font size"
+ value={printFontSize}
+ onChange={handlePrintFontSizeChange}
+ type="number"
+ className="w-16! text-center"
             />
             <PrintButton
               label="Print"

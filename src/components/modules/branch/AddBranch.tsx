@@ -919,34 +919,34 @@ const AddBranch = () => {
                       onChange={handleOnChange}
                     />
                     <DropdownCommon
-                      id="branch_types_id"
-                      name={'branch_types_id'}
-                      label="Select Branch Type"
-                      description="Head office or an ordinary branch. The head office sees company-wide figures and lists the others do not."
-                      onChange={handleOnSelectChange}
-                      value={formData?.branch_types_id || ''}
-                      className="h-[2.1rem] bg-transparent"
-                      data={settings?.branchSettings?.branchType}
+ id="branch_types_id"
+ name={'branch_types_id'}
+ label="Select Branch Type"
+ description="Head office or an ordinary branch. The head office sees company-wide figures and lists the others do not."
+ onChange={handleOnSelectChange}
+ value={formData?.branch_types_id || ''}
+ className="bg-transparent"
+ data={settings?.branchSettings?.branchType}
                     />
                     <DropdownCommon
-                      id="business_type_id"
-                      name={'business_type_id'}
-                      label="Select Business Type"
-                      description="The trade the branch is in. It decides which dashboard the branch opens on."
-                      onChange={handleOnSelectChange}
-                      value={formData?.business_type_id || ''}
-                      className="h-[2.1rem] bg-transparent"
-                      data={settings?.branchSettings?.businessType}
+ id="business_type_id"
+ name={'business_type_id'}
+ label="Select Business Type"
+ description="The trade the branch is in. It decides which dashboard the branch opens on."
+ onChange={handleOnSelectChange}
+ value={formData?.business_type_id || ''}
+ className="bg-transparent"
+ data={settings?.branchSettings?.businessType}
                     />
                     <DropdownCommon
-                      id="inventory_system_id"
-                      name={'inventory_system_id'}
-                      label="Select Inventory System"
-                      description="Which purchase and sales screens the branch works with -- electronics, construction or trading."
-                      onChange={handleOnSelectChange}
-                      value={formData?.inventory_system_id || ''}
-                      className="h-[2.1rem] bg-transparent"
-                      data={settings?.branchSettings?.inventorySystem}
+ id="inventory_system_id"
+ name={'inventory_system_id'}
+ label="Select Inventory System"
+ description="Which purchase and sales screens the branch works with -- electronics, construction or trading."
+ onChange={handleOnSelectChange}
+ value={formData?.inventory_system_id || ''}
+ className="bg-transparent"
+ data={settings?.branchSettings?.inventorySystem}
                     />
                     <InputElement
                       id="email"
@@ -999,14 +999,14 @@ const AddBranch = () => {
                       onChange={handleOnChange}
                     />
                     <DropdownCommon
-                      id="status"
-                      name={'status'}
-                      label="Select Status"
-                      description="An inactive branch stays on record with all its figures, but nobody can work in it."
-                      onChange={handleOnSelectChange}
-                      className="h-[2.1rem] bg-transparent"
-                      value={formData?.status?.toString() ?? ''}
-                      data={status}
+ id="status"
+ name={'status'}
+ label="Select Status"
+ description="An inactive branch stays on record with all its figures, but nobody can work in it."
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ value={formData?.status?.toString() ?? ''}
+ data={status}
                     />
                   </div>
                 </>
@@ -1016,34 +1016,34 @@ const AddBranch = () => {
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <DropdownCommon
-                      id="pad_heading_print"
-                      name={'pad_heading_print'}
-                      label="Select Print Heading"
-                      description="Whose letterhead the software draws at the top -- this branch's, the company's, or an uploaded image."
-                      onChange={handleOnSelectChange}
-                      value={formData?.pad_heading_print || ''}
-                      className="h-[2.1rem] bg-transparent"
-                      data={printPadHeading}
+ id="pad_heading_print"
+ name={'pad_heading_print'}
+ label="Select Print Heading"
+ description="Whose letterhead the software draws at the top -- this branch's, the company's, or an uploaded image."
+ onChange={handleOnSelectChange}
+ value={formData?.pad_heading_print || ''}
+ className="bg-transparent"
+ data={printPadHeading}
                     />
                     <DropdownCommon
-                      id="print_size"
-                      name={'print_size'}
-                      label="Select Printer Settings"
-                      description="A normal printer prints a full page; a POS printer prints the narrow roll used at a counter."
-                      onChange={handleOnSelectChange}
-                      className="h-[2.1rem] bg-transparent"
-                      value={formData?.print_size || ''}
-                      data={printerSettings}
+ id="print_size"
+ name={'print_size'}
+ label="Select Printer Settings"
+ description="A normal printer prints a full page; a POS printer prints the narrow roll used at a counter."
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ value={formData?.print_size || ''}
+ data={printerSettings}
                     />
                     <DropdownCommon
-                      id="paper_size"
-                      name={'paper_size'}
-                      label="Invoice Page Size"
-                      description="The paper an invoice is laid out for, so it fills the sheet the branch actually prints on."
-                      onChange={handleOnSelectChange}
-                      className="h-[2.1rem] bg-transparent"
-                      value={formData?.paper_size || ''}
-                      data={paperSizeOptions}
+ id="paper_size"
+ name={'paper_size'}
+ label="Invoice Page Size"
+ description="The paper an invoice is laid out for, so it fills the sheet the branch actually prints on."
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ value={formData?.paper_size || ''}
+ data={paperSizeOptions}
                     />
                   </div>
 
@@ -1054,13 +1054,13 @@ const AddBranch = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <div>
                       <DropdownCommon
-                        id="pad_print_mode"
-                        name={'pad_print_mode'}
-                        label="Pad Head Printing"
-                        onChange={handleOnSelectChange}
-                        value={formData?.pad_print_mode || ''}
-                        className="h-[2.1rem] bg-transparent"
-                        data={padPrintModes}
+ id="pad_print_mode"
+ name={'pad_print_mode'}
+ label="Pad Head Printing"
+ onChange={handleOnSelectChange}
+ value={formData?.pad_print_mode || ''}
+ className="bg-transparent"
+ data={padPrintModes}
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         Software generated draws the heading chosen above.
@@ -1216,14 +1216,14 @@ const AddBranch = () => {
                       onChange={handleOnChange}
                     />
                     <DropdownCommon
-                      id="money_format"
-                      name={'money_format'}
-                      label="Select Money Format"
-                      description="Where the word Taka sits when the amount is written out -- before the words, after them, or wrapped in Only."
-                      onChange={handleOnSelectChange}
-                      className="h-[2.1rem] bg-transparent"
-                      value={formData?.money_format || ''}
-                      data={moneySpellFormat}
+ id="money_format"
+ name={'money_format'}
+ label="Select Money Format"
+ description="Where the word Taka sits when the amount is written out -- before the words, after them, or wrapped in Only."
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ value={formData?.money_format || ''}
+ data={moneySpellFormat}
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -1593,13 +1593,13 @@ const AddBranch = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <div>
                       <DropdownCommon
-                        id="down_payment_base"
-                        name={'down_payment_base'}
-                        label="Down Payment Calculated On"
-                        onChange={handleOnSelectChange}
-                        value={formData?.down_payment_base || ''}
-                        className="h-[2.1rem] bg-transparent"
-                        data={downPaymentBases}
+ id="down_payment_base"
+ name={'down_payment_base'}
+ label="Down Payment Calculated On"
+ onChange={handleOnSelectChange}
+ value={formData?.down_payment_base || ''}
+ className="bg-transparent"
+ data={downPaymentBases}
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         On the net payable balance the booking money is already
@@ -1667,13 +1667,13 @@ const AddBranch = () => {
 
                     <div>
                       <InputDatePicker
-                        id="letter_ref_date"
-                        name="letter_ref_date"
-                        label="Reference Date"
-                        className="h-[2.1rem] w-full text-sm"
-                        selectedDate={parseIsoDate(formData.letter_ref_date)}
-                        setSelectedDate={handleRefDateChange}
-                        setCurrentDate={handleRefDateChange}
+ id="letter_ref_date"
+ name="letter_ref_date"
+ label="Reference Date"
+ className="w-full text-sm"
+ selectedDate={parseIsoDate(formData.letter_ref_date)}
+ setSelectedDate={handleRefDateChange}
+ setCurrentDate={handleRefDateChange}
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         The date letters are dated with. Left blank, each letter

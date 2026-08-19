@@ -182,10 +182,10 @@ const AddEditFlat = () => {
         <div>
           <label>Sale Date</label>
           <InputDatePicker
-            selectedDate={saleDate}
-            setSelectedDate={setSaleDate}
-            className="w-full h-8.5"
-            setCurrentDate={handleDate("sale_date", setSaleDate)}
+ selectedDate={saleDate}
+ setSelectedDate={setSaleDate}
+ className="w-full "
+ setCurrentDate={handleDate("sale_date", setSaleDate)}
           />
         </div>
 
@@ -199,13 +199,13 @@ const AddEditFlat = () => {
           onChange={handleOnChange}
         />
         <DropdownCommon
-          id="status"
-          name="status"
-          label="Select Status"
-          data={status}
-          className="h-8.5"
-          value={formData.status.toString()}
-          onChange={handleSelectChange}
+ id="status"
+ name="status"
+ label="Select Status"
+ data={status}
+ className=""
+ value={formData.status.toString()}
+ onChange={handleSelectChange}
         />
 
       </div>

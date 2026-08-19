@@ -240,8 +240,8 @@ const HolidayCalendarReport = ({ user }: any) => {
 
       <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
       <div className="grid grid-cols-1 gap-2 md:grid-cols-5">
-        <DropdownCommon id="month" name="month" label="Month" value={filters.month} data={monthOptions} onChange={handleChange} className="h-9" />
-        <DropdownCommon id="year" name="year" label="Year" value={filters.year} data={yearOptions} onChange={handleChange} className="h-9" />
+        <DropdownCommon id="month" name="month" label="Month" value={filters.month} data={monthOptions} onChange={handleChange} className="" />
+        <DropdownCommon id="year" name="year" label="Year" value={filters.year} data={yearOptions} onChange={handleChange} className="" />
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch/Project</label>
           <BranchDropdown
@@ -253,7 +253,7 @@ const HolidayCalendarReport = ({ user }: any) => {
             className="h-9 w-full font-medium text-sm p-1.5"
           />
         </div>
-        <DropdownCommon id="type" name="type" label="Type" value={filters.type} data={typeOptions} onChange={handleChange} className="h-9" />
+        <DropdownCommon id="type" name="type" label="Type" value={filters.type} data={typeOptions} onChange={handleChange} className="" />
         <div className="flex items-end">
           <Button type="button" onClick={() => loadReport()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
             <FiRefreshCcw className="mr-2" />

@@ -326,20 +326,20 @@ const GroupPurchaseSales = () => {
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date *</label>
             <InputDatePicker
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
-              setCurrentDate={setStartDate}
-              className="h-10 w-full text-sm"
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="w-full text-sm"
             />
           </div>
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date *</label>
             <InputDatePicker
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
-              setCurrentDate={setEndDate}
-              className="h-10 w-full text-sm"
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="w-full text-sm"
             />
           </div>
         </div>
@@ -353,22 +353,22 @@ const GroupPurchaseSales = () => {
             className="h-10 w-full px-6 sm:w-auto"
           />
           <PrintRowsInput
-            id="groupReportRowsPerPage"
-            name="groupReportRowsPerPage"
-            label=""
-            value={rowsPerPage.toString()}
-            onChange={handleRowsPerPageChange}
-            type="text"
-            className="h-10 w-full! text-center text-sm font-medium sm:w-20!"
+ id="groupReportRowsPerPage"
+ name="groupReportRowsPerPage"
+ label=""
+ value={rowsPerPage.toString()}
+ onChange={handleRowsPerPageChange}
+ type="text"
+ className="w-full! text-center text-sm font-medium sm:w-20!"
           />
           <PrintFontInput
-            id="groupReportFontSize"
-            name="groupReportFontSize"
-            label=""
-            value={fontSize.toString()}
-            onChange={handleFontSizeChange}
-            type="text"
-            className="h-10 w-full! text-center text-sm font-medium sm:w-20!"
+ id="groupReportFontSize"
+ name="groupReportFontSize"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="w-full! text-center text-sm font-medium sm:w-20!"
           />
           <Button type="button" onClick={handlePrint} disabled={!hasReport} className="inline-flex h-10 w-full items-center justify-center gap-2 bg-gray-700 px-5 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
             <FaPrint /> Print

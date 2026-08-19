@@ -862,13 +862,13 @@ export default function UnitSalePage() {
               <div className="">
                 <label className="text-sm font-semibold">Amount (Tk.)</label>
                 <InputElement
-                  id="amount"
-                  name="amount"
-                  type="number"
-                  label=""
-                  className="text-sm h-9.5"
-                  value={chargeAmount}
-                  onChange={(e: any) => setChargeAmount(e.target.value)}
+ id="amount"
+ name="amount"
+ type="number"
+ label=""
+ className="text-sm "
+ value={chargeAmount}
+ onChange={(e: any) => setChargeAmount(e.target.value)}
                 />
               </div>
             </div>
@@ -946,14 +946,14 @@ export default function UnitSalePage() {
                           {pick?.checked && (
                             <div className="flex items-center gap-1">
                               <InputElement
-                                id={`nominee-share-${nominee.id}`}
-                                name={`nominee-share-${nominee.id}`}
-                                type="number"
-                                label=""
-                                placeholder="%"
-                                className="h-7 w-16 text-right text-xs"
-                                value={pick.share}
-                                onChange={(e: any) =>
+ id={`nominee-share-${nominee.id}`}
+ name={`nominee-share-${nominee.id}`}
+ type="number"
+ label=""
+ placeholder="%"
+ className="w-16 text-right text-xs"
+ value={pick.share}
+ onChange={(e: any) =>
                                   setNomineeShare(nominee.id, e.target.value)
                                 }
                               />
@@ -1073,14 +1073,14 @@ export default function UnitSalePage() {
               <div>
                 <label className="block mt-1 text-sm font-semibold">Money Receipt No.</label>
                 <InputElement
-                  id="receipt_no"
-                  name="receipt_no"
-                  type="text"
-                  label=""
-                  placeholder="Enter money receipt number"
-                  className="text-sm h-8"
-                  value={moneyReceipt}
-                  onChange={(e: any) => setMoneyReceipt(e.target.value)}
+ id="receipt_no"
+ name="receipt_no"
+ type="text"
+ label=""
+ placeholder="Enter money receipt number"
+ className="text-sm "
+ value={moneyReceipt}
+ onChange={(e: any) => setMoneyReceipt(e.target.value)}
                 />
               </div>
             </div>

@@ -444,20 +444,20 @@ export default function UnitSalePaymentList() {
         <div className="w-full mt-0 md:mt-2">
           <label className="block text-sm">Date From</label>
           <InputDatePicker
-            setCurrentDate={handleStartDate}
-            className="font-medium text-sm w-full h-8.5"
-            selectedDate={dateFrom}
-            setSelectedDate={setDateFrom}
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={dateFrom}
+ setSelectedDate={setDateFrom}
           />
         </div>
 
         <div className="w-full mt-0 md:mt-2">
           <label className="block text-sm">Date To</label>
           <InputDatePicker
-            setCurrentDate={handleEndDate}
-            className="font-medium text-sm w-full h-8.5"
-            selectedDate={dateTo}
-            setSelectedDate={setDateTo}
+ setCurrentDate={handleEndDate}
+ className="font-medium text-sm w-full "
+ selectedDate={dateTo}
+ setSelectedDate={setDateTo}
           />
         </div>
       </div>

@@ -133,12 +133,12 @@ const ChangeDate = () => {
               <div className="w-full">
                 <label htmlFor="present_date">Enter Current Date</label>
                 <InputDatePicker
-                  setCurrentDate={handleStartDate}
-                  className="font-medium text-sm w-full h-8"
-                  selectedDate={
-                    values.present_date ? new Date(values.present_date) : null
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={
+ values.present_date ? new Date(values.present_date) : null
                   }
-                  setSelectedDate={(val: any) =>
+ setSelectedDate={(val: any) =>
                     setFieldValue('present_date', val)
                   }
                 />
@@ -151,12 +151,12 @@ const ChangeDate = () => {
               <div className="w-full">
                 <label htmlFor="change_date">Enter Change Date</label>
                 <InputDatePicker
-                  setCurrentDate={handleStartDate}
-                  className="font-medium text-sm w-full h-8"
-                  selectedDate={
-                    values.change_date ? new Date(values.change_date) : null
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={
+ values.change_date ? new Date(values.change_date) : null
                   }
-                  setSelectedDate={(val: any) =>
+ setSelectedDate={(val: any) =>
                     setFieldValue('change_date', val)
                   }
                 />

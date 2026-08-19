@@ -257,13 +257,13 @@ const AdminInAppMessageForm: React.FC = () => {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div className="md:col-span-2">
               <InputElement
-                id="title"
-                name="title"
-                label="Title"
-                placeholder="Eid greetings / new feature announcement"
-                className="h-8.5"
-                value={form.title}
-                onChange={(e: any) => set('title', e.target.value)}
+ id="title"
+ name="title"
+ label="Title"
+ placeholder="Eid greetings / new feature announcement"
+ className=""
+ value={form.title}
+ onChange={(e: any) => set('title', e.target.value)}
               />
             </div>
 
@@ -302,10 +302,10 @@ const AdminInAppMessageForm: React.FC = () => {
               <label className="block text-sm">Image</label>
               <div className="flex items-center gap-2">
                 <Input
-                  className={`${FIELD_BASE} h-8.5 w-full p-1 text-sm`}
-                  placeholder="Paste an image URL, or upload"
-                  value={form.image_url}
-                  onChange={(e) => set('image_url', e.target.value)}
+ className={`${FIELD_BASE} w-full p-1 text-sm`}
+ placeholder="Paste an image URL, or upload"
+ value={form.image_url}
+ onChange={(e) => set('image_url', e.target.value)}
                 />
                 <label className="flex h-8.5 shrink-0 cursor-pointer items-center gap-1 rounded bg-primary px-3 text-sm font-semibold text-white">
                   <FiUpload />
@@ -316,37 +316,37 @@ const AdminInAppMessageForm: React.FC = () => {
             </div>
 
             <InputElement
-              id="primary_label"
-              name="primary_label"
-              label="Primary button label"
-              className="h-8.5"
-              value={form.primary_label}
-              onChange={(e: any) => set('primary_label', e.target.value)}
+ id="primary_label"
+ name="primary_label"
+ label="Primary button label"
+ className=""
+ value={form.primary_label}
+ onChange={(e: any) => set('primary_label', e.target.value)}
             />
             <InputElement
-              id="primary_action"
-              name="primary_action"
-              label="Primary action (route or URL)"
-              placeholder="/dashboard or https://…"
-              className="h-8.5"
-              value={form.primary_action}
-              onChange={(e: any) => set('primary_action', e.target.value)}
+ id="primary_action"
+ name="primary_action"
+ label="Primary action (route or URL)"
+ placeholder="/dashboard or https://…"
+ className=""
+ value={form.primary_action}
+ onChange={(e: any) => set('primary_action', e.target.value)}
             />
             <InputElement
-              id="secondary_label"
-              name="secondary_label"
-              label="Secondary button label"
-              className="h-8.5"
-              value={form.secondary_label}
-              onChange={(e: any) => set('secondary_label', e.target.value)}
+ id="secondary_label"
+ name="secondary_label"
+ label="Secondary button label"
+ className=""
+ value={form.secondary_label}
+ onChange={(e: any) => set('secondary_label', e.target.value)}
             />
             <InputElement
-              id="secondary_action"
-              name="secondary_action"
-              label="Secondary action"
-              className="h-8.5"
-              value={form.secondary_action}
-              onChange={(e: any) => set('secondary_action', e.target.value)}
+ id="secondary_action"
+ name="secondary_action"
+ label="Secondary action"
+ className=""
+ value={form.secondary_action}
+ onChange={(e: any) => set('secondary_action', e.target.value)}
             />
 
             <div>
@@ -401,13 +401,13 @@ const AdminInAppMessageForm: React.FC = () => {
             />
             {needed ? (
               <InputElement
-                id={needed}
-                name={needed}
-                label={needed.replace('_', ' ')}
-                type="number"
-                className="h-8.5"
-                value={form[needed]}
-                onChange={(e: any) => set(needed, e.target.value)}
+ id={needed}
+ name={needed}
+ label={needed.replace('_', ' ')}
+ type="number"
+ className=""
+ value={form[needed]}
+ onChange={(e: any) => set(needed, e.target.value)}
               />
             ) : (
               <div />
@@ -436,50 +436,50 @@ const AdminInAppMessageForm: React.FC = () => {
                 like every other date on the screen. The stored value keeps its
                 YYYY-MM-DDTHH:mm shape, which is what the API is given. */}
             <InputDatePicker
-              label="Starts at"
-              showTime
-              placeholder="dd/mm/yyyy hh:mm"
-              className="h-8.5 w-full text-sm"
-              selectedDate={parseLocalDateTime(form.starts_at)}
-              setSelectedDate={(date) => set('starts_at', formatLocalDateTime(date))}
+ label="Starts at"
+ showTime
+ placeholder="dd/mm/yyyy hh:mm"
+ className="w-full text-sm"
+ selectedDate={parseLocalDateTime(form.starts_at)}
+ setSelectedDate={(date) => set('starts_at', formatLocalDateTime(date))}
               setCurrentDate={() => undefined}
             />
             <InputDatePicker
-              label="Ends at"
-              showTime
-              placeholder="dd/mm/yyyy hh:mm"
-              className="h-8.5 w-full text-sm"
-              selectedDate={parseLocalDateTime(form.ends_at)}
-              setSelectedDate={(date) => set('ends_at', formatLocalDateTime(date))}
+ label="Ends at"
+ showTime
+ placeholder="dd/mm/yyyy hh:mm"
+ className="w-full text-sm"
+ selectedDate={parseLocalDateTime(form.ends_at)}
+ setSelectedDate={(date) => set('ends_at', formatLocalDateTime(date))}
               setCurrentDate={() => undefined}
             />
 
             <InputElement
-              id="display_limit"
-              name="display_limit"
-              label="Show how many times (blank = unlimited)"
-              type="number"
-              className="h-8.5"
-              value={form.display_limit}
-              onChange={(e: any) => set('display_limit', e.target.value)}
+ id="display_limit"
+ name="display_limit"
+ label="Show how many times (blank = unlimited)"
+ type="number"
+ className=""
+ value={form.display_limit}
+ onChange={(e: any) => set('display_limit', e.target.value)}
             />
             <InputElement
-              id="min_interval_hours"
-              name="min_interval_hours"
-              label="Gap between two showings (hours)"
-              type="number"
-              className="h-8.5"
-              value={form.min_interval_hours}
-              onChange={(e: any) => set('min_interval_hours', e.target.value)}
+ id="min_interval_hours"
+ name="min_interval_hours"
+ label="Gap between two showings (hours)"
+ type="number"
+ className=""
+ value={form.min_interval_hours}
+ onChange={(e: any) => set('min_interval_hours', e.target.value)}
             />
             <InputElement
-              id="priority"
-              name="priority"
-              label="Priority (higher shows first)"
-              type="number"
-              className="h-8.5"
-              value={form.priority}
-              onChange={(e: any) => set('priority', e.target.value)}
+ id="priority"
+ name="priority"
+ label="Priority (higher shows first)"
+ type="number"
+ className=""
+ value={form.priority}
+ onChange={(e: any) => set('priority', e.target.value)}
             />
             <label className="flex items-end gap-2 pb-1 text-sm">
               <Input

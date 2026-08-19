@@ -294,22 +294,22 @@ const EmployeeCreate = ({ user }: any) => {
           <div>
             <label>Date of Birth</label>
             <InputDatePicker
-              placeholder="Date of Birth"
-              setCurrentDate={handleEndDate}
-              className="font-medium text-sm w-full h-9"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
+ placeholder="Date of Birth"
+ setCurrentDate={handleEndDate}
+ className="font-medium text-sm w-full "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
             />
           </div>
 
           <div>
             <label>Joining Date</label>
             <InputDatePicker
-              placeholder="Joining Date"
-              setCurrentDate={handleStartDate}
-              className="font-medium text-sm w-full h-9"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
+ placeholder="Joining Date"
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
             />
           </div>
           <InputElement
@@ -376,13 +376,13 @@ const EmployeeCreate = ({ user }: any) => {
             onChange={handleChange}
           />
           <DropdownCommon
-            id="designation"
-            name="designation"
-            label="Select Designation"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.designation?.toString() ?? ''}
-            data={designation}
+ id="designation"
+ name="designation"
+ label="Select Designation"
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ defaultValue={formData?.designation?.toString() ?? ''}
+ data={designation}
           />
 
           <div>
@@ -400,58 +400,58 @@ const EmployeeCreate = ({ user }: any) => {
             </div>
           </div>
           <DropdownCommon
-            id="sex"
-            name="sex"
-            label="Gender"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            value={formData.sex}
-            data={sex}
+ id="sex"
+ name="sex"
+ label="Gender"
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ value={formData.sex}
+ data={sex}
           />
           <DropdownCommon
-            id="salary_payable"
-            name="salary_payable"
-            label="Is Payable?"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.salary_payable?.toString() ?? ''}
-            data={isPayable}
+ id="salary_payable"
+ name="salary_payable"
+ label="Is Payable?"
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ defaultValue={formData?.salary_payable?.toString() ?? ''}
+ data={isPayable}
           />
           <DropdownCommon
-            id="employment_type"
-            name="employment_type"
-            label="Attendance Type"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            value={formData.employment_type}
-            data={employmentTypes}
+ id="employment_type"
+ name="employment_type"
+ label="Attendance Type"
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ value={formData.employment_type}
+ data={employmentTypes}
           />
           <DropdownCommon
-            id="attendance_policy_id"
-            name="attendance_policy_id"
-            label="Attendance Policy"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            value={formData.attendance_policy_id?.toString() ?? ''}
-            data={[{ id: '', name: 'Select Policy' }, ...policies]}
+ id="attendance_policy_id"
+ name="attendance_policy_id"
+ label="Attendance Policy"
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ value={formData.attendance_policy_id?.toString() ?? ''}
+ data={[{ id: '', name: 'Select Policy' }, ...policies]}
           />
           <DropdownCommon
-            id="default_shift_id"
-            name="default_shift_id"
-            label="Default Shift"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            value={formData.default_shift_id?.toString() ?? ''}
-            data={[{ id: '', name: 'Select Shift' }, ...shifts]}
+ id="default_shift_id"
+ name="default_shift_id"
+ label="Default Shift"
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ value={formData.default_shift_id?.toString() ?? ''}
+ data={[{ id: '', name: 'Select Shift' }, ...shifts]}
           />
           <DropdownCommon
-            id="overtime_eligible"
-            name="overtime_eligible"
-            label="Overtime Eligible"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            value={formData.overtime_eligible?.toString() ?? '0'}
-            data={yesNo}
+ id="overtime_eligible"
+ name="overtime_eligible"
+ label="Overtime Eligible"
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ value={formData.overtime_eligible?.toString() ?? '0'}
+ data={yesNo}
           />
           <InputElement
             id="daily_wage"
@@ -483,13 +483,13 @@ const EmployeeCreate = ({ user }: any) => {
        
           
           <DropdownCommon
-            id="status"
-            name="status"
-            label="Status"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.status.toString() ?? ''}
-            data={status}
+ id="status"
+ name="status"
+ label="Status"
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ defaultValue={formData?.status.toString() ?? ''}
+ data={status}
           />
           <InputElement
             id="employee_serial"

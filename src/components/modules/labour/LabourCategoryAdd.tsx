@@ -93,23 +93,23 @@ const LabourCategoryAdd = () => {
           stacked, and the two buttons sharing the width beneath them. */}
       <div className="mx-auto mt-5 grid w-full grid-cols-1 justify-center gap-2 md:w-2/3 lg:w-1/2">
         <InputElement
-          id="name"
-          name="name"
-          label="Enter Category Name"
-          placeholder="Category Name"
-          value={form.name}
-          className="mb-0 h-9"
-          onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+ id="name"
+ name="name"
+ label="Enter Category Name"
+ placeholder="Category Name"
+ value={form.name}
+ className="mb-0 "
+ onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
         />
 
         <InputElement
-          id="description"
-          name="description"
-          label="Category Description"
-          placeholder="Enter Category Description"
-          value={form.description}
-          className="mb-0 h-9"
-          onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+ id="description"
+ name="description"
+ label="Category Description"
+ placeholder="Enter Category Description"
+ value={form.description}
+ className="mb-0 "
+ onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
         />
 
         <div className="mt-1">

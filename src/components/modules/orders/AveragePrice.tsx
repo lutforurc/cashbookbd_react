@@ -134,11 +134,11 @@ const AveragePrice = (user: any) => {
                         <div>
                             {categoryData.isLoading == true ? <Loader /> : ''}
                             <DropdownCommon id="category_type_id"
-                                name={'category_type_id'}
-                                label="Report Type"
-                                onChange={handleReportTypeChange}
-                                className="h-9 bg-transparent"
-                                data={orderType} />
+ name={'category_type_id'}
+ label="Report Type"
+ onChange={handleReportTypeChange}
+ className="bg-transparent"
+ data={orderType} />
                         </div>
                     </div>
                     <div className='w-full'>

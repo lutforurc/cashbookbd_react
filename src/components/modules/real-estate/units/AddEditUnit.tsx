@@ -207,10 +207,10 @@ const AddEditUnit = () => {
         <div>
           <label>Sale Date</label>
           <InputDatePicker
-            selectedDate={saleDate}
-            setSelectedDate={setSaleDate}
-            className="w-full h-8.5"
-            setCurrentDate={handleDate("sale_date", setSaleDate)}
+ selectedDate={saleDate}
+ setSelectedDate={setSaleDate}
+ className="w-full "
+ setCurrentDate={handleDate("sale_date", setSaleDate)}
           />
         </div>
       </div>
@@ -230,24 +230,24 @@ const AddEditUnit = () => {
         </div>
         <div className="col-span-1">
           <DropdownCommon
-            id="unit_type"
-            name="unit_type"
-            label="Select Unit Type"
-            data={unitTypes}
-            className="h-8.5"
-            value={String(formData.unit_type ?? "unit")}   // ✅ controlled
-            onChange={handleUnitTypeChange}
+ id="unit_type"
+ name="unit_type"
+ label="Select Unit Type"
+ data={unitTypes}
+ className=""
+ value={String(formData.unit_type ?? "unit")}   // ✅ controlled
+ onChange={handleUnitTypeChange}
           />
         </div>
         <div className="col-span-1">
           <DropdownCommon
-            id="status"
-            name="status"
-            label="Select Status"
-            data={status}
-            className="h-8.5"
-            value={formData.status.toString()}
-            onChange={handleSelectChange}
+ id="status"
+ name="status"
+ label="Select Status"
+ data={status}
+ className=""
+ value={formData.status.toString()}
+ onChange={handleSelectChange}
           />
         </div>
       </div>

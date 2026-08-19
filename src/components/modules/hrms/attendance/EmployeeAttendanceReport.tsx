@@ -281,7 +281,7 @@ const EmployeeAttendanceReport = ({ user }: any) => {
             className="h-9 w-full font-medium text-sm p-1.5"
           />
         </div>
-        <DropdownCommon id="status" name="status" label="Status" value={filters.status} data={statusOptions} onChange={handleChange(setFilters)} className="h-9" />
+        <DropdownCommon id="status" name="status" label="Status" value={filters.status} data={statusOptions} onChange={handleChange(setFilters)} className="" />
         <div className="flex items-end">
           <Button type="button" onClick={() => loadReport()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
             <FiRefreshCcw className="mr-2" />

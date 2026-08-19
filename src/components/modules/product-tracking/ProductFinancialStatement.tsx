@@ -162,32 +162,32 @@ const ProductFinancialStatement = () => {
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Product</label>
           <DropdownCommon
-            id="product_id"
-            name="product_id"
-            className="h-10"
-            value={String(productId)}
-            data={productOptions}
-            onChange={(e) => setProductId(Number(e.target.value))}
+ id="product_id"
+ name="product_id"
+ className=""
+ value={String(productId)}
+ data={productOptions}
+ onChange={(e) => setProductId(Number(e.target.value))}
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
           <InputDatePicker
-            setCurrentDate={setStartDate}
-            className="font-medium text-sm w-full h-10"
-            selectedDate={startDate}
-            setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
           <InputDatePicker
-            setCurrentDate={setEndDate}
-            className="font-medium text-sm w-full h-10"
-            selectedDate={endDate}
-            setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="font-medium text-sm w-full "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
           />
         </div>
 

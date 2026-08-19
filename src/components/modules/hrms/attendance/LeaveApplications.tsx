@@ -192,7 +192,7 @@ const LeaveApplications = ({ user }: any) => {
               className="h-9 w-full font-medium text-sm p-1.5"
             />
           </div>
-          <DropdownCommon id="leave_type_id" name="leave_type_id" label="Leave Type" value={form.leave_type_id?.toString()} data={[{ id: '', name: 'Select Leave Type' }, ...leaveTypes]} onChange={handleChange(setForm)} className="h-9" />
+          <DropdownCommon id="leave_type_id" name="leave_type_id" label="Leave Type" value={form.leave_type_id?.toString()} data={[{ id: '', name: 'Select Leave Type' }, ...leaveTypes]} onChange={handleChange(setForm)} className="" />
           <InputDatePicker
             id="from_date"
             name="from_date"

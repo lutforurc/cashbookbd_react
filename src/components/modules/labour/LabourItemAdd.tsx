@@ -135,23 +135,23 @@ const LabourItemAdd = () => {
         />
 
         <InputElement
-          id="itemName"
-          name="name"
-          label="Enter Item Name"
-          placeholder="Item Name"
-          value={form.name}
-          className="mb-0 h-9"
-          onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+ id="itemName"
+ name="name"
+ label="Enter Item Name"
+ placeholder="Item Name"
+ value={form.name}
+ className="mb-0 "
+ onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
         />
 
         <InputElement
-          id="itemDescription"
-          name="description"
-          label="Item Description"
-          placeholder="Enter Item Description"
-          value={form.description}
-          className="mb-0 h-9"
-          onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+ id="itemDescription"
+ name="description"
+ label="Item Description"
+ placeholder="Enter Item Description"
+ value={form.description}
+ className="mb-0 "
+ onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
         />
 
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -165,14 +165,14 @@ const LabourItemAdd = () => {
             className="h-9"
           />
           <InputElement
-            id="purchase_price"
-            name="purchase_price"
-            label="Rate"
-            type="number"
-            placeholder="Enter Rate"
-            value={form.purchase_price}
-            className="mb-0 h-9 text-right"
-            onChange={(e) => setForm((prev) => ({ ...prev, purchase_price: e.target.value }))}
+ id="purchase_price"
+ name="purchase_price"
+ label="Rate"
+ type="number"
+ placeholder="Enter Rate"
+ value={form.purchase_price}
+ className="mb-0 text-right"
+ onChange={(e) => setForm((prev) => ({ ...prev, purchase_price: e.target.value }))}
           />
         </div>
 

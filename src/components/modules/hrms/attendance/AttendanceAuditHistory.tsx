@@ -211,7 +211,7 @@ const AttendanceAuditHistory = ({ user }: any) => {
               className="h-10 w-full font-medium text-sm p-2"
             />
           </div>
-          <DropdownCommon id="action" name="action" label="Action" value={filters.action} data={actionOptions} onChange={handleChange} className="h-10 font-medium" />
+          <DropdownCommon id="action" name="action" label="Action" value={filters.action} data={actionOptions} onChange={handleChange} className="font-medium" />
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Employee</label>
             <EmployeeDropdownSearch
@@ -227,13 +227,13 @@ const AttendanceAuditHistory = ({ user }: any) => {
             />
           </div>
           <InputElement
-            id="search"
-            name="search"
-            label="Search"
-            value={filters.search}
-            onChange={handleChange}
-            placeholder="Entry, employee, remarks"
-            className="h-10"
+ id="search"
+ name="search"
+ label="Search"
+ value={filters.search}
+ onChange={handleChange}
+ placeholder="Entry, employee, remarks"
+ className=""
           />
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2">

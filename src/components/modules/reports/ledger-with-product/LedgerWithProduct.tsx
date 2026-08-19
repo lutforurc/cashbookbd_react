@@ -914,10 +914,10 @@ const LedgerWithProduct = (user: any) => {
                         Start Date
                       </label>
                       <InputDatePicker
-                        selectedDate={startDate}
-                        setSelectedDate={setStartDate}
-                        setCurrentDate={setStartDate}
-                        className="font-medium text-sm w-full h-10"
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="font-medium text-sm w-full "
                       />
                     </div>
 
@@ -926,10 +926,10 @@ const LedgerWithProduct = (user: any) => {
                         End Date
                       </label>
                       <InputDatePicker
-                        selectedDate={endDate}
-                        setSelectedDate={setEndDate}
-                        setCurrentDate={setEndDate}
-                        className="font-medium text-sm w-full h-10"
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="font-medium text-sm w-full "
                       />
                     </div>
 

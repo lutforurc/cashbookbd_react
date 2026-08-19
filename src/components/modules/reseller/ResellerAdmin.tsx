@@ -591,8 +591,8 @@ const StatCard = ({ label, value }: { label: string; value: number | string }) =
 const Field = ({ label, className = '', ...props }: any) => (
   <InputElement
     {...props}
-    label={label}
-    className={`h-10 ${className}`}
+ label={label}
+ className={`${className}`}
   />
 );
 
@@ -610,9 +610,9 @@ const TextareaField = ({ label, ...props }: any) => (
 const SelectField = ({ label, options, ...props }: any) => (
   <DropdownCommon
     {...props}
-    label={label}
-    data={options}
-    className="h-10 bg-transparent"
+ label={label}
+ data={options}
+ className="bg-transparent"
   />
 );
 

@@ -509,9 +509,9 @@ export default function UnitSalePaymentEdit() {
                 Payment Date
               </label>
               <InputDatePicker
-                className="font-medium text-sm w-full h-8.5"
-                selectedDate={paymentDateObj}
-                setSelectedDate={(d: Date | null) => {
+ className="font-medium text-sm w-full "
+ selectedDate={paymentDateObj}
+ setSelectedDate={(d: Date | null) => {
                   setPaymentDateObj(d);
                   setField("payment_date", d ? dayjs(d).format("YYYY-MM-DD") : "");
                 }}
@@ -551,15 +551,15 @@ export default function UnitSalePaymentEdit() {
             {/* Amount */}
             <div>
               <InputElement
-                id="amount"
-                name="amount"
-                label="Amount"
-                type="number"
-                step="0.01"
-                placeholder="Enter amount"
-                className="h-8.5"
-                value={form.amount as any}
-                onChange={(e: any) => setField("amount", e.target.value)}
+ id="amount"
+ name="amount"
+ label="Amount"
+ type="number"
+ step="0.01"
+ placeholder="Enter amount"
+ className=""
+ value={form.amount as any}
+ onChange={(e: any) => setField("amount", e.target.value)}
               />
             </div>
 
@@ -579,52 +579,52 @@ export default function UnitSalePaymentEdit() {
             {/* Receipt No */}
             <div>
               <InputElement
-                id="receipt_no"
-                name="receipt_no"
-                label="Receipt No"
-                placeholder="Receipt No"
-                className="h-8.5"
-                value={form.receipt_no}
-                onChange={(e: any) => setField("receipt_no", e.target.value)}
+ id="receipt_no"
+ name="receipt_no"
+ label="Receipt No"
+ placeholder="Receipt No"
+ className=""
+ value={form.receipt_no}
+ onChange={(e: any) => setField("receipt_no", e.target.value)}
               />
             </div>
 
             {/* Ref / Cheque No */}
             <div className="mt-1">
               <InputElement
-                id="reference_no"
-                name="reference_no"
-                label={isCheque ? "Cheque No / Ref No" : "Reference No"}
-                placeholder="Enter reference no"
-                className="h-8.5"
-                value={form.reference_no}
-                onChange={(e: any) => setField("reference_no", e.target.value)}
+ id="reference_no"
+ name="reference_no"
+ label={isCheque ? "Cheque No / Ref No" : "Reference No"}
+ placeholder="Enter reference no"
+ className=""
+ value={form.reference_no}
+ onChange={(e: any) => setField("reference_no", e.target.value)}
               />
             </div>
 
             {/* Bank Name */}
             <div className="mt-1">
               <InputElement
-                id="bank_name"
-                name="bank_name"
-                label="Bank Name"
-                placeholder="Enter bank name"
-                className="h-8.5"
-                value={form.bank_name}
-                onChange={(e: any) => setField("bank_name", e.target.value)}
+ id="bank_name"
+ name="bank_name"
+ label="Bank Name"
+ placeholder="Enter bank name"
+ className=""
+ value={form.bank_name}
+ onChange={(e: any) => setField("bank_name", e.target.value)}
               />
             </div>
 
             {/* Branch Name */}
             <div className="mt-1">
               <InputElement
-                id="branch_name"
-                name="branch_name"
-                label="Branch Name"
-                placeholder="Enter branch name"
-                className="h-8.5"
-                value={form.branch_name}
-                onChange={(e: any) => setField("branch_name", e.target.value)}
+ id="branch_name"
+ name="branch_name"
+ label="Branch Name"
+ placeholder="Enter branch name"
+ className=""
+ value={form.branch_name}
+ onChange={(e: any) => setField("branch_name", e.target.value)}
               />
             </div>
           </div>
@@ -669,9 +669,9 @@ export default function UnitSalePaymentEdit() {
                     Cheque Deposit Due Date
                   </label>
                   <InputDatePicker
-                    className="font-medium text-sm w-full h-10"
-                    selectedDate={chequeDueDateObj}
-                    setSelectedDate={(d: Date | null) => {
+ className="font-medium text-sm w-full "
+ selectedDate={chequeDueDateObj}
+ setSelectedDate={(d: Date | null) => {
                       setChequeDueDateObj(d);
                       setField("cheque_deposit_due_date", d ? dayjs(d).format("YYYY-MM-DD") : "");
                     }}
@@ -687,9 +687,9 @@ export default function UnitSalePaymentEdit() {
                     Cheque Collect Date
                   </label>
                   <InputDatePicker
-                    className="font-medium text-sm w-full h-10"
-                    selectedDate={chequeCollectDateObj}
-                    setSelectedDate={(d: Date | null) => {
+ className="font-medium text-sm w-full "
+ selectedDate={chequeCollectDateObj}
+ setSelectedDate={(d: Date | null) => {
                       setChequeCollectDateObj(d);
                       setField("cheque_collect_date", d ? dayjs(d).format("YYYY-MM-DD") : "");
                     }}
@@ -709,9 +709,9 @@ export default function UnitSalePaymentEdit() {
                       Cheque Bounce / Return Date
                     </label>
                     <InputDatePicker
-                      className="font-medium text-sm w-full h-10"
-                      selectedDate={chequeBounceDateObj}
-                      setSelectedDate={(d: Date | null) => {
+ className="font-medium text-sm w-full "
+ selectedDate={chequeBounceDateObj}
+ setSelectedDate={(d: Date | null) => {
                         setChequeBounceDateObj(d);
                         setField("cheque_bounce_date", d ? dayjs(d).format("YYYY-MM-DD") : "");
                       }}
@@ -723,13 +723,13 @@ export default function UnitSalePaymentEdit() {
                   </div>
                   <div className="w-full col-span-3">
                     <InputElement
-                      id="cheque_return_reason"
-                      name="cheque_return_reason"
-                      label="Cheque Return Reason"
-                      placeholder="Enter return / cancel reason"
-                      className="h-10"
-                      value={form.cheque_return_reason}
-                      onChange={(e: any) => setField("cheque_return_reason", e.target.value)}
+ id="cheque_return_reason"
+ name="cheque_return_reason"
+ label="Cheque Return Reason"
+ placeholder="Enter return / cancel reason"
+ className=""
+ value={form.cheque_return_reason}
+ onChange={(e: any) => setField("cheque_return_reason", e.target.value)}
                     />
                   </div>
                 </div>

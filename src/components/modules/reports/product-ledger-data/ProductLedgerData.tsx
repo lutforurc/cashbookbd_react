@@ -454,22 +454,22 @@ const ProductLedgerData = (user: any) => {
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                       <InputDatePicker
-                        label=""
-                        selectedDate={startDate}
-                        setSelectedDate={setStartDate}
-                        setCurrentDate={setStartDate}
-                        className="font-medium text-sm w-full h-10"
+ label=""
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="font-medium text-sm w-full "
                       />
                     </div>
 
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                       <InputDatePicker
-                        label=""
-                        selectedDate={endDate}
-                        setSelectedDate={setEndDate}
-                        setCurrentDate={setEndDate}
-                        className="font-medium text-sm w-full h-10"
+ label=""
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="font-medium text-sm w-full "
                       />
                     </div>
 

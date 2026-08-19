@@ -625,33 +625,33 @@ const SoldUnitList: React.FC = () => {
 
         <div className="mt-1">
           <InputElement
-            id="q"
-            name="q"
-            label="Search (Customer, Mobile, Unit)"
-            placeholder="Type customer name, mobile or unit no"
-            className="h-8.5"
-            value={q}
-            onChange={(e: any) => setQ(e.target.value)}
+ id="q"
+ name="q"
+ label="Search (Customer, Mobile, Unit)"
+ placeholder="Type customer name, mobile or unit no"
+ className=""
+ value={q}
+ onChange={(e: any) => setQ(e.target.value)}
           />
         </div>
 
         <div className="mt-0 w-full md:mt-2">
           <label className="block text-sm">Sale Date From</label>
           <InputDatePicker
-            setCurrentDate={setDateFrom}
-            className="h-8.5 w-full text-sm font-medium"
-            selectedDate={dateFrom}
-            setSelectedDate={setDateFrom}
+ setCurrentDate={setDateFrom}
+ className="w-full text-sm font-medium"
+ selectedDate={dateFrom}
+ setSelectedDate={setDateFrom}
           />
         </div>
 
         <div className="mt-0 w-full md:mt-2">
           <label className="block text-sm">Sale Date To</label>
           <InputDatePicker
-            setCurrentDate={setDateTo}
-            className="h-8.5 w-full text-sm font-medium"
-            selectedDate={dateTo}
-            setSelectedDate={setDateTo}
+ setCurrentDate={setDateTo}
+ className="w-full text-sm font-medium"
+ selectedDate={dateTo}
+ setSelectedDate={setDateTo}
           />
         </div>
       </div>
@@ -1232,19 +1232,19 @@ const SoldUnitList: React.FC = () => {
                 Reference No
               </label>
               <InputElement
-                id="letter_ref_no"
-                name="letter_ref_no"
-                type="text"
-                value={refNo}
-                placeholder={
-                  confirmKind === "BOOKING"
+ id="letter_ref_no"
+ name="letter_ref_no"
+ type="text"
+ value={refNo}
+ placeholder={
+ confirmKind === "BOOKING"
                     ? "Left blank, the form numbers itself"
                     : letterRefPrefix
                       ? ""
                       : "Left blank, the letter numbers itself"
                 }
-                className="h-8.5 w-full text-sm"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+ className="w-full text-sm"
+ onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setRefNo(e.target.value)
                 }
               />
@@ -1260,10 +1260,10 @@ const SoldUnitList: React.FC = () => {
                 ) : null}
               </label>
               <InputDatePicker
-                setCurrentDate={setRefDate}
-                className="h-8.5 w-full text-sm font-medium"
-                selectedDate={refDate}
-                setSelectedDate={setRefDate}
+ setCurrentDate={setRefDate}
+ className="w-full text-sm font-medium"
+ selectedDate={refDate}
+ setSelectedDate={setRefDate}
               />
             </span>
           </>

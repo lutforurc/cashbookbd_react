@@ -468,7 +468,7 @@ const AttendanceSetup = ({ user }: any) => {
             <InputElement name="grace_minutes" label="Grace Minutes" type="number" value={shiftForm.grace_minutes} onChange={handleChange(setShiftForm)} />
             <InputElement name="half_day_minutes" label="Half Day Minutes" type="number" value={shiftForm.half_day_minutes} onChange={handleChange(setShiftForm)} />
             <InputElement name="early_out_minutes" label="Early Out Minutes" type="number" value={shiftForm.early_out_minutes} onChange={handleChange(setShiftForm)} />
-            <DropdownCommon id="is_night_shift" name="is_night_shift" label="Night Shift" value={shiftForm.is_night_shift?.toString()} data={yesNo} onChange={handleChange(setShiftForm)} className="h-9" />
+            <DropdownCommon id="is_night_shift" name="is_night_shift" label="Night Shift" value={shiftForm.is_night_shift?.toString()} data={yesNo} onChange={handleChange(setShiftForm)} className="" />
           </div>
           {renderActions(Boolean(shiftForm.id), () => setShiftForm(initialShift))}
         </form>
@@ -483,19 +483,19 @@ const AttendanceSetup = ({ user }: any) => {
         >
           <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-4">
             <InputElement name="name" label="Policy Name" value={policyForm.name} onChange={handleChange(setPolicyForm)} />
-            <DropdownCommon id="employment_type" name="employment_type" label="Employee Type" value={policyForm.employment_type} data={employmentTypes} onChange={handleChange(setPolicyForm)} className="h-9" />
+            <DropdownCommon id="employment_type" name="employment_type" label="Employee Type" value={policyForm.employment_type} data={employmentTypes} onChange={handleChange(setPolicyForm)} className="" />
             {branchField('branch_id', policyForm.branch_id, handleChange(setPolicyForm))}
-            <DropdownCommon id="default_shift_id" name="default_shift_id" label="Default Shift" value={policyForm.default_shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleChange(setPolicyForm)} className="h-9" />
+            <DropdownCommon id="default_shift_id" name="default_shift_id" label="Default Shift" value={policyForm.default_shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleChange(setPolicyForm)} className="" />
             <InputElement name="standard_work_minutes" label="Standard Work Minutes" type="number" value={policyForm.standard_work_minutes} onChange={handleChange(setPolicyForm)} />
             <InputElement name="minimum_work_minutes" label="Minimum Work Minutes" type="number" value={policyForm.minimum_work_minutes} onChange={handleChange(setPolicyForm)} />
             <InputElement name="half_day_minutes" label="Half Day Minutes" type="number" value={policyForm.half_day_minutes} onChange={handleChange(setPolicyForm)} />
             <InputElement name="grace_minutes" label="Grace Minutes" type="number" value={policyForm.grace_minutes} onChange={handleChange(setPolicyForm)} />
             <InputElement name="early_out_minutes" label="Early Out Minutes" type="number" value={policyForm.early_out_minutes} onChange={handleChange(setPolicyForm)} />
-            <DropdownCommon id="overtime_enabled" name="overtime_enabled" label="Overtime" value={policyForm.overtime_enabled?.toString()} data={yesNo} onChange={handleChange(setPolicyForm)} className="h-9" />
+            <DropdownCommon id="overtime_enabled" name="overtime_enabled" label="Overtime" value={policyForm.overtime_enabled?.toString()} data={yesNo} onChange={handleChange(setPolicyForm)} className="" />
             <InputElement name="overtime_after_minutes" label="OT After Minutes" type="number" value={policyForm.overtime_after_minutes} onChange={handleChange(setPolicyForm)} />
             <InputElement name="late_deduction_after_count" label="Late Deduction Count" type="number" value={policyForm.late_deduction_after_count} onChange={handleChange(setPolicyForm)} />
             <InputElement name="early_out_deduction_after_count" label="Early Out Deduction Count" type="number" value={policyForm.early_out_deduction_after_count} onChange={handleChange(setPolicyForm)} />
-            <DropdownCommon id="status" name="status" label="Status" value={policyForm.status?.toString()} data={yesNo} onChange={handleChange(setPolicyForm)} className="h-9" />
+            <DropdownCommon id="status" name="status" label="Status" value={policyForm.status?.toString()} data={yesNo} onChange={handleChange(setPolicyForm)} className="" />
           </div>
           {renderActions(Boolean(policyForm.id), () => setPolicyForm(initialPolicy))}
         </form>
@@ -526,7 +526,7 @@ const AttendanceSetup = ({ user }: any) => {
               />
             </div>
             {branchField('branch_id', rosterForm.branch_id, handleChange(setRosterForm))}
-            <DropdownCommon id="shift_id" name="shift_id" label="Shift" value={rosterForm.shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleChange(setRosterForm)} className="h-9" />
+            <DropdownCommon id="shift_id" name="shift_id" label="Shift" value={rosterForm.shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleChange(setRosterForm)} className="" />
             <InputDatePicker
               id="duty_date"
               name="duty_date"
@@ -536,7 +536,7 @@ const AttendanceSetup = ({ user }: any) => {
               setCurrentDate={(date) => setRosterForm((prev: any) => ({ ...prev, duty_date: dateToString(date) }))}
               className="h-9 w-full"
             />
-            <DropdownCommon id="roster_status" name="status" label="Status" value={rosterForm.status} data={rosterStatuses} onChange={handleChange(setRosterForm)} className="h-9" />
+            <DropdownCommon id="roster_status" name="status" label="Status" value={rosterForm.status} data={rosterStatuses} onChange={handleChange(setRosterForm)} className="" />
             <InputElement name="remarks" label="Remarks" value={rosterForm.remarks || ''} onChange={handleChange(setRosterForm)} />
           </div>
           {renderActions(Boolean(rosterForm.id), () => setRosterForm(initialRoster))}
@@ -558,8 +558,8 @@ const AttendanceSetup = ({ user }: any) => {
           <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-4">
             {branchField('branch_id', weeklyForm.branch_id, handleChange(setWeeklyForm))}
             <InputElement name="branch_type_id" label="Branch Type ID" value={weeklyForm.branch_type_id} onChange={handleChange(setWeeklyForm)} />
-            <DropdownCommon id="day_of_week" name="day_of_week" label="Day" value={weeklyForm.day_of_week?.toString()} data={dayOptions} onChange={handleChange(setWeeklyForm)} className="h-9" />
-            <DropdownCommon id="is_enabled" name="is_enabled" label="Enabled" value={weeklyForm.is_enabled?.toString()} data={yesNo} onChange={handleChange(setWeeklyForm)} className="h-9" />
+            <DropdownCommon id="day_of_week" name="day_of_week" label="Day" value={weeklyForm.day_of_week?.toString()} data={dayOptions} onChange={handleChange(setWeeklyForm)} className="" />
+            <DropdownCommon id="is_enabled" name="is_enabled" label="Enabled" value={weeklyForm.is_enabled?.toString()} data={yesNo} onChange={handleChange(setWeeklyForm)} className="" />
             <InputDatePicker
               id="effective_from"
               name="effective_from"
@@ -604,9 +604,9 @@ const AttendanceSetup = ({ user }: any) => {
               className="h-9 w-full"
             />
             <InputElement name="holiday_name" label="Holiday Name" value={holidayForm.holiday_name} onChange={handleChange(setHolidayForm)} />
-            <DropdownCommon id="holiday_type" name="holiday_type" label="Holiday Type" value={holidayForm.holiday_type} data={holidayTypes} onChange={handleChange(setHolidayForm)} className="h-9" />
-            <DropdownCommon id="is_paid" name="is_paid" label="Paid" value={holidayForm.is_paid?.toString()} data={yesNo} onChange={handleChange(setHolidayForm)} className="h-9" />
-            <DropdownCommon id="is_optional" name="is_optional" label="Optional" value={holidayForm.is_optional?.toString()} data={yesNo} onChange={handleChange(setHolidayForm)} className="h-9" />
+            <DropdownCommon id="holiday_type" name="holiday_type" label="Holiday Type" value={holidayForm.holiday_type} data={holidayTypes} onChange={handleChange(setHolidayForm)} className="" />
+            <DropdownCommon id="is_paid" name="is_paid" label="Paid" value={holidayForm.is_paid?.toString()} data={yesNo} onChange={handleChange(setHolidayForm)} className="" />
+            <DropdownCommon id="is_optional" name="is_optional" label="Optional" value={holidayForm.is_optional?.toString()} data={yesNo} onChange={handleChange(setHolidayForm)} className="" />
             <InputElement name="remarks" label="Remarks" value={holidayForm.remarks || ''} onChange={handleChange(setHolidayForm)} />
           </div>
           {renderActions(Boolean(holidayForm.id), () => setHolidayForm(initialHoliday))}
@@ -625,10 +625,10 @@ const AttendanceSetup = ({ user }: any) => {
             <InputElement name="code" label="Code" value={leaveTypeForm.code} onChange={handleChange(setLeaveTypeForm)} />
             <InputElement name="yearly_quota" label="Yearly Quota" type="number" value={leaveTypeForm.yearly_quota} onChange={handleChange(setLeaveTypeForm)} />
             <InputElement name="sort_order" label="Sort Order" type="number" value={leaveTypeForm.sort_order} onChange={handleChange(setLeaveTypeForm)} />
-            <DropdownCommon id="is_paid" name="is_paid" label="Paid" value={leaveTypeForm.is_paid?.toString()} data={yesNo} onChange={handleChange(setLeaveTypeForm)} className="h-9" />
-            <DropdownCommon id="allow_half_day" name="allow_half_day" label="Allow Half Day" value={leaveTypeForm.allow_half_day?.toString()} data={yesNo} onChange={handleChange(setLeaveTypeForm)} className="h-9" />
-            <DropdownCommon id="allow_backdated" name="allow_backdated" label="Allow Backdated" value={leaveTypeForm.allow_backdated?.toString()} data={yesNo} onChange={handleChange(setLeaveTypeForm)} className="h-9" />
-            <DropdownCommon id="requires_attachment" name="requires_attachment" label="Attachment" value={leaveTypeForm.requires_attachment?.toString()} data={yesNo} onChange={handleChange(setLeaveTypeForm)} className="h-9" />
+            <DropdownCommon id="is_paid" name="is_paid" label="Paid" value={leaveTypeForm.is_paid?.toString()} data={yesNo} onChange={handleChange(setLeaveTypeForm)} className="" />
+            <DropdownCommon id="allow_half_day" name="allow_half_day" label="Allow Half Day" value={leaveTypeForm.allow_half_day?.toString()} data={yesNo} onChange={handleChange(setLeaveTypeForm)} className="" />
+            <DropdownCommon id="allow_backdated" name="allow_backdated" label="Allow Backdated" value={leaveTypeForm.allow_backdated?.toString()} data={yesNo} onChange={handleChange(setLeaveTypeForm)} className="" />
+            <DropdownCommon id="requires_attachment" name="requires_attachment" label="Attachment" value={leaveTypeForm.requires_attachment?.toString()} data={yesNo} onChange={handleChange(setLeaveTypeForm)} className="" />
           </div>
           {renderActions(Boolean(leaveTypeForm.id), () => setLeaveTypeForm(initialLeaveType))}
         </form>

@@ -339,60 +339,60 @@ const DueInstallment = (user: any) => {
             <div className="min-w-0">
               <label>Start Date</label>
               <InputDatePicker
-                setCurrentDate={setStartDate}
-                className="font-medium text-sm w-full h-8"
-                selectedDate={startDate}
-                setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
               />
             </div>
             <div className="min-w-0">
               <label>End Date</label>
               <InputDatePicker
-                setCurrentDate={setEndDate}
-                className="font-medium text-sm w-full h-8"
-                selectedDate={endDate}
-                setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="font-medium text-sm w-full "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
               />
             </div>
           </div>
           <div className="min-w-0 md:col-span-2">
             <DropdownCommon
-              id="business_type_id"
-              name={'business_type_id'}
-              label="Select Status"
-              onChange={handleOnStatusChange}
-              defaultValue={''}
-              className="h-[2.0rem] bg-transparent"
-              data={InstallmentStatus}
+ id="business_type_id"
+ name={'business_type_id'}
+ label="Select Status"
+ onChange={handleOnStatusChange}
+ defaultValue={''}
+ className="bg-transparent"
+ data={InstallmentStatus}
             />
           </div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 md:col-span-2">
             <InputElement
-              id="upcoming_days"
-              value={upComingDays?.toString() || ''}
-              name="upcoming_days"
-              placeholder="Upcoming"
-              label="Soon"
-              className="h-8 w-full bg-transparent"
-              onChange={handleUpcomingChange}
+ id="upcoming_days"
+ value={upComingDays?.toString() || ''}
+ name="upcoming_days"
+ placeholder="Upcoming"
+ label="Soon"
+ className="w-full bg-transparent"
+ onChange={handleUpcomingChange}
             />
             <PrintRowsInput
-              id="page_size"
-              value={pageSize?.toString() || ''}  // ensure string
-              name="page_size"
-              placeholder="Rows"
-              label="Rows"
-              className="h-8 bg-transparent w-full"
-              onChange={handlePageSizeChange}
+ id="page_size"
+ value={pageSize?.toString() || ''}  // ensure string
+ name="page_size"
+ placeholder="Rows"
+ label="Rows"
+ className="bg-transparent w-full"
+ onChange={handlePageSizeChange}
             />
             <PrintFontInput
-              id="fontSize"
-              name="fontSize"
-              label="Font"
-              value={fontSize.toString()}
-              onChange={handleFontSizeChange}
-              type='text'
-              className="font-medium text-sm h-8 w-full"
+ id="fontSize"
+ name="fontSize"
+ label="Font"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type='text'
+ className="font-medium text-sm w-full"
             />
           </div>
           <div className="min-w-0 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between md:col-span-2 md:self-end">

@@ -655,16 +655,16 @@ const ElectronicsBusinessPurchase = () => {
                 </div>
               </div>
               <InputElement
-                id="notes"
-                value={formData.notes}
-                name="notes"
-                placeholder={'Notes'}
-                label={'Notes'}
-                className={'py-1 h-8.5'}
-                list="purchase-notes-suggestions"
-                autoComplete="off"
-                onChange={handleOnChange}
-                onKeyDown={(e) => {
+ id="notes"
+ value={formData.notes}
+ name="notes"
+ placeholder={'Notes'}
+ label={'Notes'}
+ className={'py-1 '}
+ list="purchase-notes-suggestions"
+ autoComplete="off"
+ onChange={handleOnChange}
+ onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     setTimeout(() => {
                       const productInput = document.querySelector('#product');
@@ -752,12 +752,12 @@ const ElectronicsBusinessPurchase = () => {
                 <>
                   <div className="relative ">
                     <DropdownCommon
-                      id="saleType"
-                      name="saleType"
-                      onChange={handlePurchaseType}
-                      defaultValue={productData?.variance_type || ''}
-                      data={PurchaseType}
-                      className="w-full h-8.5"
+ id="saleType"
+ name="saleType"
+ onChange={handlePurchaseType}
+ defaultValue={productData?.variance_type || ''}
+ data={PurchaseType}
+ className="w-full "
                     />
                   </div>
                   <>

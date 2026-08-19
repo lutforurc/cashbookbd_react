@@ -201,20 +201,20 @@ const HrmMismatchPayment = (user: any) => {
           <div>
             <label className="mb-1 block text-sm font-medium">Start Date</label>
             <InputDatePicker
-              setCurrentDate={setStartDate}
-              className="font-medium text-sm w-full h-10"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
             />
           </div>
 
           <div>
             <label className="mb-1 block text-sm font-medium">End Date</label>
             <InputDatePicker
-              setCurrentDate={setEndDate}
-              className="font-medium text-sm w-full h-10"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="font-medium text-sm w-full "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
             />
           </div>
 

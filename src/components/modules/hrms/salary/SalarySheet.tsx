@@ -455,22 +455,22 @@ const SalarySheet = ({ user }: any) => {
         <div className="flex">
           <div className="mr-2">
             <PrintRowsInput
-              id="perPage"
-              name="perPage"
-              value={perPage.toString()}
-              onChange={handlePerPageChange}
-              type="text"
-              className="font-medium text-sm h-9 w-12"
+ id="perPage"
+ name="perPage"
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="font-medium text-sm w-12"
             />
           </div>
           <div className="mr-2">
             <PrintFontInput
-              id="fontSize"
-              name="fontSize"
-              value={fontSize.toString()}
-              onChange={handleFontSizeChange}
-              type="text"
-              className="font-medium text-sm h-9 w-12"
+ id="fontSize"
+ name="fontSize"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="font-medium text-sm w-12"
             />
           </div>
         </div>

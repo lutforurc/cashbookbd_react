@@ -601,13 +601,13 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
 
         <div className="grid gap-3 px-5 py-4">
           <InputElement
-            id="todo_title"
-            name="todo_title"
-            label="Task"
-            placeholder="What do you want to do?"
-            value={title}
-            className="mb-0 h-9"
-            onChange={(e) => setTitle(e.target.value)}
+ id="todo_title"
+ name="todo_title"
+ label="Task"
+ placeholder="What do you want to do?"
+ value={title}
+ className="mb-0 "
+ onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && submit()}
           />
 
@@ -627,14 +627,14 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
           </div>
 
           <InputDatePicker
-            id="todo_due_date"
-            name="todo_due_date"
-            label="Due Date & Reminder"
-            showTime
-            selectedDate={dueMoment}
-            setSelectedDate={setDueMoment}
-            setCurrentDate={setDueMoment}
-            className="h-9 w-full"
+ id="todo_due_date"
+ name="todo_due_date"
+ label="Due Date & Reminder"
+ showTime
+ selectedDate={dueMoment}
+ setSelectedDate={setDueMoment}
+ setCurrentDate={setDueMoment}
+ className="w-full"
           />
 
           <DropdownCommon
@@ -1079,27 +1079,27 @@ export default function MyTasks() {
           <div className="flex flex-wrap items-end gap-2">
             <div className="w-36">
               <InputDatePicker
-                id="search_from"
-                name="search_from"
-                label="From"
-                placeholder="From date"
-                selectedDate={fromDate}
-                setSelectedDate={setFromDate}
-                setCurrentDate={setFromDate}
-                className="h-9 w-full text-sm"
+ id="search_from"
+ name="search_from"
+ label="From"
+ placeholder="From date"
+ selectedDate={fromDate}
+ setSelectedDate={setFromDate}
+ setCurrentDate={setFromDate}
+ className="w-full text-sm"
               />
             </div>
 
             <div className="w-36">
               <InputDatePicker
-                id="search_to"
-                name="search_to"
-                label="To"
-                placeholder="To date"
-                selectedDate={toDate}
-                setSelectedDate={setToDate}
-                setCurrentDate={setToDate}
-                className="h-9 w-full text-sm"
+ id="search_to"
+ name="search_to"
+ label="To"
+ placeholder="To date"
+ selectedDate={toDate}
+ setSelectedDate={setToDate}
+ setCurrentDate={setToDate}
+ className="w-full text-sm"
               />
             </div>
 

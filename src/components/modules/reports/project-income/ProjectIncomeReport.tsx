@@ -424,10 +424,10 @@ const ProjectIncomeReport = ({ user }: any) => {
                   Start Date
                 </label>
                 <InputDatePicker
-                  selectedDate={startDate}
-                  setSelectedDate={setStartDate}
-                  setCurrentDate={setStartDate}
-                  className="h-10 w-full text-sm font-medium"
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="w-full text-sm font-medium"
                 />
               </div>
               <div>
@@ -435,10 +435,10 @@ const ProjectIncomeReport = ({ user }: any) => {
                   End Date
                 </label>
                 <InputDatePicker
-                  selectedDate={endDate}
-                  setSelectedDate={setEndDate}
-                  setCurrentDate={setEndDate}
-                  className="h-10 w-full text-sm font-medium"
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="w-full text-sm font-medium"
                 />
               </div>
             </FilterMenuShell>
@@ -458,20 +458,20 @@ const ProjectIncomeReport = ({ user }: any) => {
               icon={<FiRotateCcw />}
             />
             <PrintRowsInput
-              type="number"
-              label=""
-              placeholder="Rows"
-              className="h-10 w-20! text-center"
-              value={perPage}
-              onChange={(e) => setPerPage(Number(e.target.value) || 12)}
+ type="number"
+ label=""
+ placeholder="Rows"
+ className="w-20! text-center"
+ value={perPage}
+ onChange={(e) => setPerPage(Number(e.target.value) || 12)}
             />
             <PrintFontInput
-              type="number"
-              label=""
-              placeholder="Font"
-              className="h-10 w-20! text-center"
-              value={fontSize}
-              onChange={(e) => setFontSize(Number(e.target.value) || 12)}
+ type="number"
+ label=""
+ placeholder="Font"
+ className="w-20! text-center"
+ value={fontSize}
+ onChange={(e) => setFontSize(Number(e.target.value) || 12)}
             />
             <PrintButton label="Print" onClick={handlePrint} className="h-10 px-6" disabled={!hasData} />
           </div>

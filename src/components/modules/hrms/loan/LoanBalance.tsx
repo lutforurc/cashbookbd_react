@@ -249,9 +249,9 @@ const LoanBalance = (user: any) => {
           </div>
           <div className="flex items-center md:justify-end">
             <SearchInput
-              search={search}
-              setSearchValue={setSearchValue}
-              className="text-nowrap h-8.5"
+ search={search}
+ setSearchValue={setSearchValue}
+ className="text-nowrap "
             />
 
             <ButtonLoading

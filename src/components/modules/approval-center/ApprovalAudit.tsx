@@ -228,10 +228,10 @@ const ApprovalAudit = ({ user }: any) => {
           <div>
             <label className="mb-1 block text-sm font-medium text-black dark:text-white">Action</label>
             <Select
-              name="action"
-              value={filters.action}
-              onChange={handleChange}
-              className={`${FIELD_SELECT} block h-10 w-full p-2 text-sm`}
+ name="action"
+ value={filters.action}
+ onChange={handleChange}
+ className={`${FIELD_SELECT} block w-full p-2 text-sm`}
             >
               <option value="">All Actions</option>
               <option value="approved">Approved</option>
@@ -254,10 +254,10 @@ const ApprovalAudit = ({ user }: any) => {
           <div>
             <label className="mb-1 block text-sm font-medium text-black dark:text-white">Per Page</label>
             <Select
-              name="per_page"
-              value={filters.per_page}
-              onChange={handleChange}
-              className={`${FIELD_SELECT} block h-10 w-full p-2 text-sm`}
+ name="per_page"
+ value={filters.per_page}
+ onChange={handleChange}
+ className={`${FIELD_SELECT} block w-full p-2 text-sm`}
             >
               {[10, 25, 50, 100, 200].map((value) => (
                 <option key={value} value={value}>{value}</option>

@@ -108,13 +108,13 @@ const JumpDate = () => {
           
             <div className='w-full mb-1'>
                 <InputDatePicker 
-                    id="jump_date"
-                    name="jump_date" 
-                    label={'Current Date (Transaction Date)'}
-                    setCurrentDate={handleStartDate}
-                    className="font-medium text-sm w-full h-8"
-                    selectedDate={startDate}
-                    setSelectedDate={setStartDate}
+ id="jump_date"
+ name="jump_date" 
+ label={'Current Date (Transaction Date)'}
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
                 />
             </div>
                

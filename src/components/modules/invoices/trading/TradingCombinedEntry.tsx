@@ -940,16 +940,16 @@ const TradingCombinedEntry = () => {
 
               <div>
                 <InputElement
-                  id="vehicleNumber"
-                  value={formData.vehicleNumber}
-                  name="vehicleNumber"
-                  placeholder="Vehicle Number"
-                  label="Vehicle Number"
-                  className="py-1 h-9.5"
-                  list="combined-vehicle-suggestions"
-                  autoComplete="off"
-                  onChange={handleFormChange}
-                  onKeyDown={handleVehicleNumberKeyDown}
+ id="vehicleNumber"
+ value={formData.vehicleNumber}
+ name="vehicleNumber"
+ placeholder="Vehicle Number"
+ label="Vehicle Number"
+ className="py-1 "
+ list="combined-vehicle-suggestions"
+ autoComplete="off"
+ onChange={handleFormChange}
+ onKeyDown={handleVehicleNumberKeyDown}
                 />
                 <datalist id="combined-vehicle-suggestions">
                   {vehicleSuggestions.map((item) => (

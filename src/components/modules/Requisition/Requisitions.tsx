@@ -211,20 +211,20 @@ const Requisitions = (user: any) => {
           />
           <div className='w-full mr-2'>
             <InputDatePicker
-              setCurrentDate={handleStartDate}
-              className="font-medium text-sm w-full h-9"
-              placeholder="Start Date"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ placeholder="Start Date"
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
             />
           </div>
           <div className='w-full mr-2'>
             <InputDatePicker
-              setCurrentDate={handleEndDate}
-              className="font-medium text-sm w-full h-9 mr-1 md:mr-2"
-              placeholder="End Date"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="font-medium text-sm w-full mr-1 md:mr-2"
+ placeholder="End Date"
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
 
             />
           </div>

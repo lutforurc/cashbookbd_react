@@ -502,14 +502,14 @@ function ConstructionLabourInvoice(): JSX.Element {
               </div>
 
               <InputElement
-                id="notes"
-                name="notes"
-                value={state.notes}
-                placeholder={"Notes"}
-                label={"Notes"}
-                className={"py-1 h-9"}
-                onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, "bill_no")}
+ id="notes"
+ name="notes"
+ value={state.notes}
+ placeholder={"Notes"}
+ label={"Notes"}
+ className={"py-1 "}
+ onChange={handleOnChange}
+ onKeyDown={(e) => handleInputKeyDown(e, "bill_no")}
               />
             </div>
 
@@ -582,11 +582,11 @@ function ConstructionLabourInvoice(): JSX.Element {
                 <div className="relative">
                   <div className="w-full ">
                     <DropdownCommon
-                      id={"voucher_type"}
-                      name={"voucher_type"}
-                      label={"Select Invoice Type"}
-                      className="h-9"
-                      onChange={(e: any) => setVoucherType(e.target.value)}
+ id={"voucher_type"}
+ name={"voucher_type"}
+ label={"Select Invoice Type"}
+ className=""
+ onChange={(e: any) => setVoucherType(e.target.value)}
                       data={voucherTypes}
                     />
                   </div>
@@ -645,30 +645,30 @@ function ConstructionLabourInvoice(): JSX.Element {
 
               <div className="col-span-12 md:col-span-3 block relative">
                 <InputElement
-                  id="qty"
-                  value={productData.qty || ""}
-                  name="qty"
-                  placeholder={"Quantity"}
-                  label={"Quantity"}
-                  className={"py-1 h-9.5"}
-                  type="number"
-                  onChange={handleProductChange}
-                  onKeyDown={(e) => handleInputKeyDown(e, "price")}
+ id="qty"
+ value={productData.qty || ""}
+ name="qty"
+ placeholder={"Quantity"}
+ label={"Quantity"}
+ className={"py-1 "}
+ type="number"
+ onChange={handleProductChange}
+ onKeyDown={(e) => handleInputKeyDown(e, "price")}
                 />
                 <span className="absolute top-8 right-3 z-50">{unit}</span>
               </div>
 
               <div className="col-span-12 md:col-span-3">
                 <InputElement
-                  id="price"
-                  value={productData.price || ""}
-                  name="price"
-                  placeholder={"Price"}
-                  label={"Price"}
-                  className={"py-1 h-9.5"}
-                  type="number"
-                  onChange={handleProductChange}
-                  onKeyDown={(e) => handleInputKeyDown(e, "addProduct")}
+ id="price"
+ value={productData.price || ""}
+ name="price"
+ placeholder={"Price"}
+ label={"Price"}
+ className={"py-1 "}
+ type="number"
+ onChange={handleProductChange}
+ onKeyDown={(e) => handleInputKeyDown(e, "addProduct")}
                 />
               </div>
             </div>

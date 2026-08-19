@@ -307,19 +307,19 @@ const StaffWiseDueInstallment = (user: any) => {
         <div>
           <label>Start Date</label>
           <InputDatePicker
-            setCurrentDate={setStartDate}
-            className="font-medium text-sm w-full h-7"
-            selectedDate={startDate}
-            setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
           />
         </div>
         <div>
           <label>End Date</label>
           <InputDatePicker
-            setCurrentDate={setEndDate}
-            className="font-medium text-sm w-full h-7"
-            selectedDate={endDate}
-            setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="font-medium text-sm w-full "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
           />
         </div>
         <div>

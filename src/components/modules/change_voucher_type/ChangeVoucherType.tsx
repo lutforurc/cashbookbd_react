@@ -133,13 +133,13 @@ const ChangeVoucherType = () => {
 
 {/* { voucherTypes?.isLoading && <Loader /> } */}
 <DropdownCommon
-  id="voucher_type"
-  name="voucher_type"
-  label="Select Voucher Type"
-  onChange={handleOnSelectChange}
-  defaultValue={formData?.voucher_type || ""}
-  className="h-[2.1rem] bg-transparent"
-  data={Array.isArray(voucherTypes?.voucherList) ? voucherTypes.voucherList : []}
+ id="voucher_type"
+ name="voucher_type"
+ label="Select Voucher Type"
+ onChange={handleOnSelectChange}
+ defaultValue={formData?.voucher_type || ""}
+ className="bg-transparent"
+ data={Array.isArray(voucherTypes?.voucherList) ? voucherTypes.voucherList : []}
 />
 
 

@@ -416,11 +416,11 @@ const StockAlertProducts = ({ alertType }: Props) => {
 
           {alertType === 'slowMoving' ? (
             <Input
-              type="number"
-              min="1"
-              className={`${FIELD_BASE} h-9 w-full px-3 text-sm`}
-              value={days}
-              onChange={(event) => {
+ type="number"
+ min="1"
+ className={`${FIELD_BASE} w-full px-3 text-sm`}
+ value={days}
+ onChange={(event) => {
                 setDays(Number(event.target.value) || 90);
                 setPage(1);
               }}
@@ -439,9 +439,9 @@ const StockAlertProducts = ({ alertType }: Props) => {
           />
 
           <SearchInput
-            className="w-full! h-9"
-            search={search}
-            setSearchValue={setSearchValue}
+ className="w-full! "
+ search={search}
+ setSearchValue={setSearchValue}
           />
 
           <div className="flex flex-wrap gap-2 xl:col-span-2 xl:flex-nowrap">
@@ -460,24 +460,24 @@ const StockAlertProducts = ({ alertType }: Props) => {
             {canPrint ? (
               <>
                 <PrintRowsInput
-                  id={`${alertType}-print-rows`}
-                  name={`${alertType}-print-rows`}
-                  label=""
-                  title="Print rows per page"
-                  value={printRowsPerPage}
-                  onChange={handlePrintRowsPerPageChange}
-                  type="number"
-                  className="h-9 w-16! text-center"
+ id={`${alertType}-print-rows`}
+ name={`${alertType}-print-rows`}
+ label=""
+ title="Print rows per page"
+ value={printRowsPerPage}
+ onChange={handlePrintRowsPerPageChange}
+ type="number"
+ className="w-16! text-center"
                 />
                 <PrintFontInput
-                  id={`${alertType}-print-font`}
-                  name={`${alertType}-print-font`}
-                  label=""
-                  title="Print font size"
-                  value={printFontSize}
-                  onChange={handlePrintFontSizeChange}
-                  type="number"
-                  className="h-9 w-16! text-center"
+ id={`${alertType}-print-font`}
+ name={`${alertType}-print-font`}
+ label=""
+ title="Print font size"
+ value={printFontSize}
+ onChange={handlePrintFontSizeChange}
+ type="number"
+ className="w-16! text-center"
                 />
                 <PrintButton
                   label="Print"

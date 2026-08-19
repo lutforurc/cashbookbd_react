@@ -849,12 +849,12 @@ const ConstructionBusinessPurchase = () => {
                   <div className="relative">
                     <div className="w-full ">
                       <DropdownCommon
-                        id={'voucher_type'}
-                        name={'voucher_type'}
-                        label={'Select Invoice Type'}
-                        className="h-9"
-                        onChange={handleChangeVoucherType}
-                        data={voucherTypes}
+ id={'voucher_type'}
+ name={'voucher_type'}
+ label={'Select Invoice Type'}
+ className=""
+ onChange={handleChangeVoucherType}
+ data={voucherTypes}
                       />
                     </div>
                   </div>

@@ -445,14 +445,14 @@ const AddCustomerSupplier = () => {
 
             <div className="text-left flex flex-col">
               <DropdownCommon
-                id="type_id"
-                name="type_id"
-                label="Select Type"
-                onChange={formik.handleChange}
-                onKeyDown={handleEnterNavigation('type_id')}
-                defaultValue={formik.values.type_id}
-                className="h-[2.4rem] bg-transparent"
-                data={ClientType}
+ id="type_id"
+ name="type_id"
+ label="Select Type"
+ onChange={formik.handleChange}
+ onKeyDown={handleEnterNavigation('type_id')}
+ defaultValue={formik.values.type_id}
+ className="bg-transparent"
+ data={ClientType}
               />
               {formik.errors.type_id && formik.touched.type_id && (
                 <div className="text-red-500 text-sm">
@@ -500,13 +500,13 @@ const AddCustomerSupplier = () => {
                 <>
                   <div className="md:col-span-1">
                     <DropdownCommon
-                      id="relation_id"
-                      name="relation_id"
-                      label="Relation"
-                      onChange={formik.handleChange}
-                      defaultValue={formik.values.relation_id}
-                      className="h-[2.4rem] bg-transparent"
-                      data={nomineeRelationType}
+ id="relation_id"
+ name="relation_id"
+ label="Relation"
+ onChange={formik.handleChange}
+ defaultValue={formik.values.relation_id}
+ className="bg-transparent"
+ data={nomineeRelationType}
                     />
                   </div>
                   <div className="md:col-span-3">
@@ -546,14 +546,14 @@ const AddCustomerSupplier = () => {
             {needSex && (
               <div className="text-left flex flex-col">
                 <DropdownCommon
-                  id="sex"
-                  name="sex"
-                  label="Sex"
-                  onChange={formik.handleChange}
+ id="sex"
+ name="sex"
+ label="Sex"
+ onChange={formik.handleChange}
                   // Controlled, so Reset actually clears it back to blank.
-                  value={formik.values.sex ?? ''}
-                  className="h-[2.4rem] bg-transparent"
-                  data={sexType}
+ value={formik.values.sex ?? ''}
+ className="bg-transparent"
+ data={sexType}
                 />
               </div>
             )}
@@ -756,14 +756,14 @@ const AddCustomerSupplier = () => {
             )}
 
             <DropdownCommon
-              id="customerLogin"
-              name="customerLogin"
-              label="Access Customer Login"
-              selectOption="Access Customer Login"
-              onChange={formik.handleChange}
-              value={formik.values.customerLogin.toString()}
-              className="h-[2.4rem] bg-transparent"
-              data={TrueFalse}
+ id="customerLogin"
+ name="customerLogin"
+ label="Access Customer Login"
+ selectOption="Access Customer Login"
+ onChange={formik.handleChange}
+ value={formik.values.customerLogin.toString()}
+ className="bg-transparent"
+ data={TrueFalse}
             />
 
             {/* ================= PORTAL PASSWORD (self-service login) ================= */}
@@ -890,13 +890,13 @@ const AddCustomerSupplier = () => {
                                 onChange={formik.handleChange}
                               />
                               <DropdownCommon
-                                id={`nominees.${index}.relation`}
-                                name={`nominees.${index}.relation`}
-                                label="Relation"
-                                onChange={formik.handleChange}
-                                value={n.relation || ''}
-                                className="h-[2.4rem] bg-transparent"
-                                data={nomineeRelationType}
+ id={`nominees.${index}.relation`}
+ name={`nominees.${index}.relation`}
+ label="Relation"
+ onChange={formik.handleChange}
+ value={n.relation || ''}
+ className="bg-transparent"
+ data={nomineeRelationType}
                               />
                               <InputElement
                                 name={`nominees.${index}.occupation`}
@@ -979,13 +979,13 @@ const AddCustomerSupplier = () => {
                                 onChange={formik.handleChange}
                               />
                               <DropdownCommon
-                                id={`nominees.${index}.status`}
-                                name={`nominees.${index}.status`}
-                                label="Status"
-                                onChange={formik.handleChange}
-                                value={n.status || 'active'}
-                                className="h-[2.4rem] bg-transparent"
-                                data={nomineeStatusOptions}
+ id={`nominees.${index}.status`}
+ name={`nominees.${index}.status`}
+ label="Status"
+ onChange={formik.handleChange}
+ value={n.status || 'active'}
+ className="bg-transparent"
+ data={nomineeStatusOptions}
                               />
                               {needNomineePhoto && (
                                 <PhotoInput

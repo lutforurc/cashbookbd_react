@@ -198,29 +198,29 @@ const LoginLogReport: React.FC = () => {
           <div>
             <label className="block text-sm">From</label>
             <InputDatePicker
-              className="h-8.5 w-full text-sm font-medium"
-              selectedDate={dateFrom}
-              setSelectedDate={setDateFrom}
-              setCurrentDate={setDateFrom}
+ className="w-full text-sm font-medium"
+ selectedDate={dateFrom}
+ setSelectedDate={setDateFrom}
+ setCurrentDate={setDateFrom}
             />
           </div>
 
           <div>
             <label className="block text-sm">To</label>
             <InputDatePicker
-              className="h-8.5 w-full text-sm font-medium"
-              selectedDate={dateTo}
-              setSelectedDate={setDateTo}
-              setCurrentDate={setDateTo}
+ className="w-full text-sm font-medium"
+ selectedDate={dateTo}
+ setSelectedDate={setDateTo}
+ setCurrentDate={setDateTo}
             />
           </div>
 
           <div className="md:col-span-2">
             <label className="block text-sm">Search</label>
             <SearchInput
-              search={search}
-              setSearchValue={setSearch}
-              className="w-full h-8.5 text-sm"
+ search={search}
+ setSearchValue={setSearch}
+ className="w-full text-sm"
             />
           </div>
 

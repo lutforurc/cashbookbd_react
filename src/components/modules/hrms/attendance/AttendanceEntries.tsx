@@ -854,11 +854,11 @@ const AttendanceEntries = ({ user }: any) => {
               className="h-9 w-full font-medium text-sm p-1.5"
             />
           </div>
-          <DropdownCommon id="shift_id" name="shift_id" label="Shift" value={form.shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleShiftChange} className="h-9" />
+          <DropdownCommon id="shift_id" name="shift_id" label="Shift" value={form.shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleShiftChange} className="" />
           {/* Attendance Type sits with Shift rather than down among the times:
               the two decide each other -- picking a type reloads the shifts --
               and both have to be settled before a time means anything. */}
-          <DropdownCommon id="employment_type" name="employment_type" label="Attendance Type" value={form.employment_type} data={employmentTypeOptions} onChange={handleEmploymentTypeChange} className="h-9" />
+          <DropdownCommon id="employment_type" name="employment_type" label="Attendance Type" value={form.employment_type} data={employmentTypeOptions} onChange={handleEmploymentTypeChange} className="" />
 
           {/* When. The fields run on from here without a gap -- the grid fills
               itself, so tabbing from one lands on the next. */}
@@ -875,7 +875,7 @@ const AttendanceEntries = ({ user }: any) => {
           <InputTimePicker name="out_time" label="Out Time" value={form.out_time || ''} onChange={handleChange(setForm)} />
 
           {/* What came of it. */}
-          <DropdownCommon id="status" name="status" label="Status" value={form.status} data={statusOptions} onChange={handleChange(setForm)} className="h-9" />
+          <DropdownCommon id="status" name="status" label="Status" value={form.status} data={statusOptions} onChange={handleChange(setForm)} className="" />
           <InputElement name="remarks" label="Remarks" value={form.remarks || ''} onChange={handleChange(setForm)} />
           <InputElement name="overtime_minutes" label="OT Hr." type="number" value={formatOtHours(overtimeMinutes)} onChange={() => {}} disabled />
         </div>

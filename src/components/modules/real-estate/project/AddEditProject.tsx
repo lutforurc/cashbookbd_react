@@ -274,29 +274,29 @@ const AddEditProject = (user: any) => {
                 <div className="w-full">
                     <label htmlFor="">Purchase Date</label>
                     <InputDatePicker
-                        setCurrentDate={handlePurchaseDate}
-                        className="font-medium text-sm w-full h-8.5"
-                        selectedDate={purchaseDate}
-                        setSelectedDate={setPurchaseDate}
+ setCurrentDate={handlePurchaseDate}
+ className="font-medium text-sm w-full "
+ selectedDate={purchaseDate}
+ setSelectedDate={setPurchaseDate}
                     />
                 </div>
                 <div className="w-full">
                     <label htmlFor="">Sales Date</label>
                     <InputDatePicker
-                        setCurrentDate={handleSalesDate}
-                        className="font-medium text-sm w-full h-9"
-                        selectedDate={salesDate}
-                        setSelectedDate={setSalesDate}
+ setCurrentDate={handleSalesDate}
+ className="font-medium text-sm w-full "
+ selectedDate={salesDate}
+ setSelectedDate={setSalesDate}
                     />
                 </div>
                 <DropdownCommon
-                    id="status"
-                    name="status"
-                    label="Select Status"
-                    data={status}
-                    value={formData.status?.toString()}
-                    className="h-[2.2rem] bg-transparent"
-                    onChange={handleSelectChange}
+ id="status"
+ name="status"
+ label="Select Status"
+ data={status}
+ value={formData.status?.toString()}
+ className="bg-transparent"
+ onChange={handleSelectChange}
                 />
             </div>
 

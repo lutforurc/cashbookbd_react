@@ -172,10 +172,10 @@ const BankInformation = () => {
           <div>
             <label className={labelClass}>End Date</label>
             <InputDatePicker
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
-              setCurrentDate={setEndDate}
-              className="h-10 rounded-none border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="rounded-none border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
             />
           </div>
         </div>

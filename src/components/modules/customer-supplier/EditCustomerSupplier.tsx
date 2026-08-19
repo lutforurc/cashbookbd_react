@@ -453,13 +453,13 @@ const EditCustomerSupplier = () => {
 
             <div className="text-left flex flex-col">
               <DropdownCommon
-                id="party_type_id"
-                name="party_type_id"
-                label="Select Type"
-                onChange={formik.handleChange}
-                value={formik.values.party_type_id}
-                className="h-[2.4rem] bg-transparent"
-                data={ClientType}
+ id="party_type_id"
+ name="party_type_id"
+ label="Select Type"
+ onChange={formik.handleChange}
+ value={formik.values.party_type_id}
+ className="bg-transparent"
+ data={ClientType}
               />
               {formik.errors.party_type_id && formik.touched.party_type_id && (
                 <div className="text-red-500 text-sm">
@@ -505,13 +505,13 @@ const EditCustomerSupplier = () => {
                 <>
                   <div className="md:col-span-1">
                     <DropdownCommon
-                      id="relation_id"
-                      name="relation_id"
-                      label="Relation"
-                      onChange={formik.handleChange}
-                      value={formik.values.relation_id}
-                      className="h-[2.4rem] bg-transparent"
-                      data={nomineeRelationType}
+ id="relation_id"
+ name="relation_id"
+ label="Relation"
+ onChange={formik.handleChange}
+ value={formik.values.relation_id}
+ className="bg-transparent"
+ data={nomineeRelationType}
                     />
                   </div>
                   <div className="md:col-span-3">
@@ -551,15 +551,15 @@ const EditCustomerSupplier = () => {
             {needSex && (
               <div className="text-left flex flex-col">
                 <DropdownCommon
-                  id="sex"
-                  name="sex"
-                  label="Sex"
-                  onChange={formik.handleChange}
+ id="sex"
+ name="sex"
+ label="Sex"
+ onChange={formik.handleChange}
                   // Controlled, not defaultValue: the customer arrives after the
                   // first render, and an uncontrolled select would never catch up.
-                  value={formik.values.sex ?? ''}
-                  className="h-[2.4rem] bg-transparent"
-                  data={sexType}
+ value={formik.values.sex ?? ''}
+ className="bg-transparent"
+ data={sexType}
                 />
               </div>
             )}
@@ -730,14 +730,14 @@ const EditCustomerSupplier = () => {
             )}
 
             <DropdownCommon
-              id="customerLogin"
-              name="customerLogin"
-              label="Access Customer Login"
-              selectOption="Access Customer Login"
-              onChange={formik.handleChange}
-              value={formik.values.customerLogin.toString()}
-              className="h-[2.4rem] bg-transparent"
-              data={TrueFalse}
+ id="customerLogin"
+ name="customerLogin"
+ label="Access Customer Login"
+ selectOption="Access Customer Login"
+ onChange={formik.handleChange}
+ value={formik.values.customerLogin.toString()}
+ className="bg-transparent"
+ data={TrueFalse}
             />
 
             {/* ================= PORTAL PASSWORD (self-service login) ================= */}
@@ -924,13 +924,13 @@ const EditCustomerSupplier = () => {
                             {fieldError(`nominees.${index}.name`)}
                           </div>
                           <DropdownCommon
-                            id={`nominees.${index}.relation`}
-                            name={`nominees.${index}.relation`}
-                            label="Relation"
-                            onChange={formik.handleChange}
-                            value={n.relation || ''}
-                            className="h-[2.4rem] bg-transparent"
-                            data={nomineeRelationType}
+ id={`nominees.${index}.relation`}
+ name={`nominees.${index}.relation`}
+ label="Relation"
+ onChange={formik.handleChange}
+ value={n.relation || ''}
+ className="bg-transparent"
+ data={nomineeRelationType}
                           />
                           <InputElement
                             name={`nominees.${index}.occupation`}
@@ -1027,13 +1027,13 @@ const EditCustomerSupplier = () => {
                             onChange={formik.handleChange}
                           />
                           <DropdownCommon
-                            id={`nominees.${index}.status`}
-                            name={`nominees.${index}.status`}
-                            label="Status"
-                            onChange={formik.handleChange}
-                            value={n.status || 'active'}
-                            className="h-[2.4rem] bg-transparent"
-                            data={nomineeStatusOptions}
+ id={`nominees.${index}.status`}
+ name={`nominees.${index}.status`}
+ label="Status"
+ onChange={formik.handleChange}
+ value={n.status || 'active'}
+ className="bg-transparent"
+ data={nomineeStatusOptions}
                           />
                           {needNomineePhoto && (
                             <PhotoInput

@@ -215,12 +215,12 @@ const Roles = () => {
 
       <div className="overflow-y-auto">
         <DropdownCommon
-          className="h-10 px-2"
-          name="name"
-          onChange={handleRoleChange}
-          label="Roles"
-          data={roles}
-          value={roleId ? String(roleId) : undefined}
+ className="px-2"
+ name="name"
+ onChange={handleRoleChange}
+ label="Roles"
+ data={roles}
+ value={roleId ? String(roleId) : undefined}
         />
       </div>
 

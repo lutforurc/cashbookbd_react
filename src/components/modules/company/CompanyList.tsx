@@ -172,9 +172,9 @@ const CompanyList = () => {
           <SelectOption onChange={handleSelectChange} />
           <div className='flex'>
             <SearchInput
-            search={search}
-            setSearchValue={setSearchValue}
-            className="text-nowrap h-9"
+ search={search}
+ setSearchValue={setSearchValue}
+ className="text-nowrap "
           />
           <ButtonLoading
             onClick={handleSearchButton}

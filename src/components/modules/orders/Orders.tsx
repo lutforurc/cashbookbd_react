@@ -1125,13 +1125,13 @@ const Orders = () => {
                     </label> */}
                     {/* <OrderTypes onChange={handleOrderChange} className="h-9 w-full" /> */}
                     <DropdownCommon
-                      id="status"
-                      name={'status'}
-                      label="Order Status"
-                      onChange={handleOrderStatus}
-                      className="h-9 bg-transparent"
-                      value={orderStatus}
-                      data={ORDER_STATUS}
+ id="status"
+ name={'status'}
+ label="Order Status"
+ onChange={handleOrderStatus}
+ className="bg-transparent"
+ value={orderStatus}
+ data={ORDER_STATUS}
                     />
                   </div>
 
@@ -1163,13 +1163,13 @@ const Orders = () => {
                       Order Start Date
                     </label>
                     <InputDatePicker
-                      id="order_start_date"
-                      name="order_start_date"
-                      setCurrentDate={handleStartDate}
-                      placeholder="Order Start Date"
-                      className="font-medium text-sm w-full h-9"
-                      selectedDate={startDate ? new Date(startDate) : null}
-                      setSelectedDate={(date) => setStartDate(formatDateValue(date))}
+ id="order_start_date"
+ name="order_start_date"
+ setCurrentDate={handleStartDate}
+ placeholder="Order Start Date"
+ className="font-medium text-sm w-full "
+ selectedDate={startDate ? new Date(startDate) : null}
+ setSelectedDate={(date) => setStartDate(formatDateValue(date))}
                     />
                   </div>
 
@@ -1178,13 +1178,13 @@ const Orders = () => {
                       Order End Date
                     </label>
                     <InputDatePicker
-                      id="order_end_date"
-                      name="order_end_date"
-                      setCurrentDate={handleEndDate}
-                      placeholder="Order End Date"
-                      className="font-medium text-sm w-full h-9"
-                      selectedDate={endDate ? new Date(endDate) : null}
-                      setSelectedDate={(date) => setEndDate(formatDateValue(date))}
+ id="order_end_date"
+ name="order_end_date"
+ setCurrentDate={handleEndDate}
+ placeholder="Order End Date"
+ className="font-medium text-sm w-full "
+ selectedDate={endDate ? new Date(endDate) : null}
+ setSelectedDate={(date) => setEndDate(formatDateValue(date))}
                     />
                   </div>
 
@@ -1193,9 +1193,9 @@ const Orders = () => {
                       Search
                     </label>
                     <SearchInput
-                      search={search}
-                      setSearchValue={setSearchValue}
-                      className="h-9 w-full"
+ search={search}
+ setSearchValue={setSearchValue}
+ className="w-full"
                     />
                   </div>
 
@@ -1236,9 +1236,9 @@ const Orders = () => {
                   Search
                 </label>
                 <SearchInput
-                  search={search}
-                  setSearchValue={setSearchValue}
-                  className="h-9 w-full"
+ search={search}
+ setSearchValue={setSearchValue}
+ className="w-full"
                 />
               </div>
               <ButtonLoading
@@ -1264,24 +1264,24 @@ const Orders = () => {
               </div>
               <div className="shrink-0">
                 <PrintRowsInput
-                  id="printRowsPerPage"
-                  name="printRowsPerPage"
-                  label=""
-                  value={String(printRowsPerPage)}
-                  onChange={handlePrintRowsChange}
-                  type="text"
-                  className="h-9 w-20! px-1 text-center"
+ id="printRowsPerPage"
+ name="printRowsPerPage"
+ label=""
+ value={String(printRowsPerPage)}
+ onChange={handlePrintRowsChange}
+ type="text"
+ className="w-20! px-1 text-center"
                 />
               </div>
               <div className="shrink-0">
                 <PrintFontInput
-                  id="printFontSize"
-                  name="printFontSize"
-                  label=""
-                  value={String(printFontSize)}
-                  onChange={handlePrintFontSizeChange}
-                  type="text"
-                  className="h-9 w-20! px-1 text-center"
+ id="printFontSize"
+ name="printFontSize"
+ label=""
+ value={String(printFontSize)}
+ onChange={handlePrintFontSizeChange}
+ type="text"
+ className="w-20! px-1 text-center"
                 />
               </div>
               <PrintButton
@@ -1305,24 +1305,24 @@ const Orders = () => {
                 </div>
                 <div className="shrink-0">
                   <PrintRowsInput
-                    id="printRowsPerPage"
-                    name="printRowsPerPage"
-                    label=""
-                    value={String(printRowsPerPage)}
-                    onChange={handlePrintRowsChange}
-                    type="text"
-                    className="h-9 w-20! px-1 text-center"
+ id="printRowsPerPage"
+ name="printRowsPerPage"
+ label=""
+ value={String(printRowsPerPage)}
+ onChange={handlePrintRowsChange}
+ type="text"
+ className="w-20! px-1 text-center"
                   />
                 </div>
                 <div className="shrink-0">
                   <PrintFontInput
-                    id="printFontSize"
-                    name="printFontSize"
-                    label=""
-                    value={String(printFontSize)}
-                    onChange={handlePrintFontSizeChange}
-                    type="text"
-                    className="h-9 w-20! px-1 text-center"
+ id="printFontSize"
+ name="printFontSize"
+ label=""
+ value={String(printFontSize)}
+ onChange={handlePrintFontSizeChange}
+ type="text"
+ className="w-20! px-1 text-center"
                   />
                 </div>
                 <PrintButton

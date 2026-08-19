@@ -275,23 +275,23 @@ const SubscriptionPlanForm: React.FC = () => {
           <InputElement id="slug" name="slug" label="Slug" value={form.slug} onChange={handleChange as any} />
 
           <DropdownCommon
-            id="billing_interval"
-            name="billing_interval"
-            label="Billing Interval"
-            value={form.billing_interval}
-            onChange={handleChange as any}
-            className="h-8.5 bg-transparent"
-            data={billingOptions}
+ id="billing_interval"
+ name="billing_interval"
+ label="Billing Interval"
+ value={form.billing_interval}
+ onChange={handleChange as any}
+ className="bg-transparent"
+ data={billingOptions}
           />
 
           <DropdownCommon
-            id="is_active"
-            name="is_active"
-            label="Status"
-            value={form.is_active}
-            onChange={handleChange as any}
-            className="h-8.5 bg-transparent"
-            data={activeOptions}
+ id="is_active"
+ name="is_active"
+ label="Status"
+ value={form.is_active}
+ onChange={handleChange as any}
+ className="bg-transparent"
+ data={activeOptions}
           />
 
           <InputElement

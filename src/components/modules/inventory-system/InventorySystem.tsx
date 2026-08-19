@@ -138,13 +138,13 @@ const InventorySystem = () => {
               Name <span className="text-rose-500">*</span>
             </label>
             <InputElement
-              id="inv-name"
-              name="name"
-              label=""
-              value={form.name}
-              placeholder="e.g. Trading Inventory"
-              className="h-10 w-full!"
-              onChange={(e: any) =>
+ id="inv-name"
+ name="name"
+ label=""
+ value={form.name}
+ placeholder="e.g. Trading Inventory"
+ className="w-full!"
+ onChange={(e: any) =>
                 setForm((f) => ({ ...f, name: e.target.value.slice(0, 128) }))
               }
             />
@@ -153,14 +153,14 @@ const InventorySystem = () => {
           <div>
             <label className={labelClass}>Slug</label>
             <InputElement
-              id="inv-slug"
-              name="slug"
-              label=""
-              value={form.slug}
-              placeholder={form.name ? slugify(form.name) : 'auto from name'}
-              className="h-10 w-full!"
-              disabled={form.isCore}
-              onChange={(e: any) =>
+ id="inv-slug"
+ name="slug"
+ label=""
+ value={form.slug}
+ placeholder={form.name ? slugify(form.name) : 'auto from name'}
+ className="w-full!"
+ disabled={form.isCore}
+ onChange={(e: any) =>
                 setForm((f) => ({ ...f, slug: e.target.value.slice(0, 64) }))
               }
             />

@@ -222,13 +222,13 @@ const AddUser = () => {
         </div>
 
         <InputElement
-          id="lang"
-          value={formData.lang}
-          name="lang"
-          placeholder="Enter Language"
-          label="Language"
-          className="py-2 h-9"
-          onChange={handleOnChange}
+ id="lang"
+ value={formData.lang}
+ name="lang"
+ placeholder="Enter Language"
+ label="Language"
+ className="py-2 "
+ onChange={handleOnChange}
         />
 
         <div>
@@ -249,23 +249,23 @@ const AddUser = () => {
         </div>
 
         <PasswordElement
-          id="password"
-          value={formData.password}
-          name="password"
-          placeholder="Enter Password"
-          label="Password"
-          className="py-2 h-9"
-          onChange={handleOnChange}
+ id="password"
+ value={formData.password}
+ name="password"
+ placeholder="Enter Password"
+ label="Password"
+ className="py-2 "
+ onChange={handleOnChange}
         />
 
         <PasswordElement
-          id="confirmPassword"
-          value={formData.confirmPassword}
-          name="confirmPassword"
-          placeholder="Enter Confirm Password"
-          label="Confirm Password"
-          className="py-2 h-9"
-          onChange={handleOnChange}
+ id="confirmPassword"
+ value={formData.confirmPassword}
+ name="confirmPassword"
+ placeholder="Enter Confirm Password"
+ label="Confirm Password"
+ className="py-2 "
+ onChange={handleOnChange}
         />
 
         <div className="md:col-span-2 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">

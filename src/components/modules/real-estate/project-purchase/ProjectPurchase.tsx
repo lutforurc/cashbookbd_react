@@ -473,23 +473,23 @@ const ProjectPurchase = () => {
               invoice's own number and date then start the next one together,
               which is the order they are read off the supplier's bill in. */}
           <InputElement
-            id="notes"
-            name="notes"
-            label="Notes"
-            placeholder="Notes"
-            className="h-9.5"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+ id="notes"
+ name="notes"
+ label="Notes"
+ placeholder="Notes"
+ className=""
+ value={notes}
+ onChange={(e) => setNotes(e.target.value)}
           />
 
           <InputElement
-            id="invoice_no"
-            name="invoice_no"
-            label="Invoice Number"
-            placeholder="Invoice Number"
-            className="h-9.5"
-            value={invoiceNo}
-            onChange={(e) => setInvoiceNo(e.target.value)}
+ id="invoice_no"
+ name="invoice_no"
+ label="Invoice Number"
+ placeholder="Invoice Number"
+ className=""
+ value={invoiceNo}
+ onChange={(e) => setInvoiceNo(e.target.value)}
           />
 
           <div className="text-left flex flex-col">
@@ -497,46 +497,46 @@ const ProjectPurchase = () => {
               Invoice Date
             </label>
             <InputDatePicker
-              id="invoice_date"
-              name="invoice_date"
-              className="w-full px-3 py-1 h-9.5"
-              selectedDate={invoiceDateOn}
-              setSelectedDate={setInvoiceDateOn}
-              setCurrentDate={handleInvoiceDate}
+ id="invoice_date"
+ name="invoice_date"
+ className="w-full px-3 py-1 "
+ selectedDate={invoiceDateOn}
+ setSelectedDate={setInvoiceDateOn}
+ setCurrentDate={handleInvoiceDate}
             />
           </div>
 
           <InputElement
-            id="vehicle_no"
-            name="vehicle_no"
-            label="Vehicle Number"
-            placeholder="Vehicle Number"
-            className="h-9.5"
-            value={vehicleNo}
-            onChange={(e) => setVehicleNo(e.target.value)}
+ id="vehicle_no"
+ name="vehicle_no"
+ label="Vehicle Number"
+ placeholder="Vehicle Number"
+ className=""
+ value={vehicleNo}
+ onChange={(e) => setVehicleNo(e.target.value)}
           />
 
           <InputElement
-            id="discount"
-            name="discount"
-            type="number"
-            label="Discount Amount"
-            placeholder="0"
-            className="h-9.5"
-            value={discount}
-            onChange={(e) => setDiscount(e.target.value)}
+ id="discount"
+ name="discount"
+ type="number"
+ label="Discount Amount"
+ placeholder="0"
+ className=""
+ value={discount}
+ onChange={(e) => setDiscount(e.target.value)}
           />
 
           <InputElement
-            id="paid"
-            name="paid"
-            type="number"
-            label="Payment Amount"
-            placeholder="0"
-            className="h-9.5"
-            disabled={isCashSupplier}
-            value={paid}
-            onChange={(e) => setPaid(e.target.value)}
+ id="paid"
+ name="paid"
+ type="number"
+ label="Payment Amount"
+ placeholder="0"
+ className=""
+ disabled={isCashSupplier}
+ value={paid}
+ onChange={(e) => setPaid(e.target.value)}
             description={isCashSupplier ? 'A cash purchase is paid in full.' : undefined}
           />
 
@@ -561,13 +561,13 @@ const ProjectPurchase = () => {
             <div className="flex items-end">
               <div className="min-w-0 flex-1">
                 <InputOnly
-                  id="search"
-                  name="search"
-                  value={search}
-                  placeholder="Voucher number"
-                  label=""
-                  className="h-9.5 w-full py-1"
-                  onChange={(e: any) => setSearch(e.target.value)}
+ id="search"
+ name="search"
+ value={search}
+ placeholder="Voucher number"
+ label=""
+ className="w-full py-1"
+ onChange={(e: any) => setSearch(e.target.value)}
                 />
               </div>
               {/* No gap, and -ml-px so the two borders sit on one line -- the
@@ -661,25 +661,25 @@ const ProjectPurchase = () => {
           </div>
 
           <InputElement
-            id="qty"
-            name="qty"
-            type="number"
-            label="Quantity"
-            placeholder="Enter Quantity"
-            className="h-9.5"
-            value={draft.qty}
-            onChange={(e) => setDraft((prev) => ({ ...prev, qty: e.target.value }))}
+ id="qty"
+ name="qty"
+ type="number"
+ label="Quantity"
+ placeholder="Enter Quantity"
+ className=""
+ value={draft.qty}
+ onChange={(e) => setDraft((prev) => ({ ...prev, qty: e.target.value }))}
           />
 
           <InputElement
-            id="price"
-            name="price"
-            type="number"
-            label="Price"
-            placeholder="0"
-            className="h-9.5"
-            value={draft.price}
-            onChange={(e) => setDraft((prev) => ({ ...prev, price: e.target.value }))}
+ id="price"
+ name="price"
+ type="number"
+ label="Price"
+ placeholder="0"
+ className=""
+ value={draft.price}
+ onChange={(e) => setDraft((prev) => ({ ...prev, price: e.target.value }))}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();

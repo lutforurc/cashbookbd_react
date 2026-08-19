@@ -236,13 +236,13 @@ const AddCoaL4 = () => {
           </div>
           <div>
             <DropdownCommon
-              id="reporting_to"
-              name={'reporting_to'}
-              label="Reporting To"
-              onChange={handleOnSelectChange}
-              value={formData?.reporting_to || ''}
-              className="h-[2.1rem] bg-transparent"
-              data={reportToOptions.length > 0 ? reportToOptions : coal4?.data?.reporttos || []}
+ id="reporting_to"
+ name={'reporting_to'}
+ label="Reporting To"
+ onChange={handleOnSelectChange}
+ value={formData?.reporting_to || ''}
+ className="bg-transparent"
+ data={reportToOptions.length > 0 ? reportToOptions : coal4?.data?.reporttos || []}
             />
           </div>
           <div>

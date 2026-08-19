@@ -235,13 +235,13 @@ const AdminNotifications = () => {
               Title <span className="text-rose-500">*</span>
             </label>
             <InputElement
-              id="admin-notif-title"
-              name="title"
-              label=""
-              value={title}
-              placeholder="Short headline (max 200 characters)"
-              className="h-10 w-full!"
-              onChange={(e: any) => setTitle(e.target.value.slice(0, 200))}
+ id="admin-notif-title"
+ name="title"
+ label=""
+ value={title}
+ placeholder="Short headline (max 200 characters)"
+ className="w-full!"
+ onChange={(e: any) => setTitle(e.target.value.slice(0, 200))}
             />
           </div>
 
@@ -333,11 +333,11 @@ const AdminNotifications = () => {
           <div>
             <label className={labelClass}>Expires at (optional)</label>
             <InputDatePicker
-              selectedDate={expiresAt}
-              setSelectedDate={setExpiresAt}
-              setCurrentDate={setExpiresAt}
-              placeholder="Never expires"
-              className="h-10 w-full text-sm font-medium"
+ selectedDate={expiresAt}
+ setSelectedDate={setExpiresAt}
+ setCurrentDate={setExpiresAt}
+ placeholder="Never expires"
+ className="w-full text-sm font-medium"
             />
           </div>
         </div>

@@ -166,12 +166,12 @@ const AddHrmDesignation = () => {
                 Designation Level
               </label>
               <DropdownCommon
-                id="level_id"
-                name="level_id"
-                value={formData.level_id}
-                onChange={handleSelectChange}
-                data={levelOptions}
-                className="h-9"
+ id="level_id"
+ name="level_id"
+ value={formData.level_id}
+ onChange={handleSelectChange}
+ data={levelOptions}
+ className=""
               />
             </div>
 

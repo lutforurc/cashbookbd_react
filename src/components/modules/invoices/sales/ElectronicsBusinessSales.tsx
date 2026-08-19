@@ -986,11 +986,11 @@ const ElectronicsBusinessSales = () => {
                             Installment Start Date
                           </label>
                           <InputDatePicker
-                            setCurrentDate={handleInstallmentDateChange}
-                            className="font-medium text-sm w-full h-8"
-                            selectedDate={startDate}
-                            setSelectedDate={setStartDate}
-                            placeholderText="Select Start Date" // Ã Â¦Â«Ã Â¦Â¾Ã Â¦ÂÃ Â¦â€¢Ã Â¦Â¾ Ã Â¦Â¥Ã Â¦Â¾Ã Â¦â€¢Ã Â¦Â²Ã Â§â€¡ Ã Â¦ÂªÃ Â§ÂÃ Â¦Â²Ã Â§â€¡Ã Â¦Â¸Ã Â¦Â¹Ã Â§â€¹Ã Â¦Â²Ã Â§ÂÃ Â¦Â¡Ã Â¦Â¾Ã Â¦Â° Ã Â¦Â¦Ã Â§â€¡Ã Â¦â€“Ã Â¦Â¾Ã Â¦Â¬Ã Â§â€¡
+ setCurrentDate={handleInstallmentDateChange}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ placeholderText="Select Start Date" // Ã Â¦Â«Ã Â¦Â¾Ã Â¦ÂÃ Â¦â€¢Ã Â¦Â¾ Ã Â¦Â¥Ã Â¦Â¾Ã Â¦â€¢Ã Â¦Â²Ã Â§â€¡ Ã Â¦ÂªÃ Â§ÂÃ Â¦Â²Ã Â§â€¡Ã Â¦Â¸Ã Â¦Â¹Ã Â§â€¹Ã Â¦Â²Ã Â§ÂÃ Â¦Â¡Ã Â¦Â¾Ã Â¦Â° Ã Â¦Â¦Ã Â§â€¡Ã Â¦â€“Ã Â¦Â¾Ã Â¦Â¬Ã Â§â€¡
                           />
                         </div>
 
@@ -1033,10 +1033,10 @@ const ElectronicsBusinessSales = () => {
                               </label>
 
                               <InputDatePicker
-                                setCurrentDate={handleEarlyPaymentDateChange}
-                                className="font-medium text-sm w-full h-8"
-                                selectedDate={earlyPaymentDate ?? null}
-                                setSelectedDate={setEarlyPaymentDate}
+ setCurrentDate={handleEarlyPaymentDateChange}
+ className="font-medium text-sm w-full "
+ selectedDate={earlyPaymentDate ?? null}
+ setSelectedDate={setEarlyPaymentDate}
                               />
                             </div>
                           </>
@@ -1156,12 +1156,12 @@ const ElectronicsBusinessSales = () => {
               <>
                 <div className="mt-2">
                   <DropdownCommon
-                    id="saleType"
-                    name="saleType"
-                    onChange={handleSalesType}
-                    defaultValue={productData?.variance_type || ''}
-                    data={SalesType}
-                    className="w-full h-8.5"
+ id="saleType"
+ name="saleType"
+ onChange={handleSalesType}
+ defaultValue={productData?.variance_type || ''}
+ data={SalesType}
+ className="w-full "
                   />
                 </div>
                 <div className="relative">
@@ -1344,26 +1344,26 @@ const ElectronicsBusinessSales = () => {
               <div className="flex w-full">
                 <div className="mr-2">
                   <PrintRowsInput
-                    id="perPage"
-                    name="perPage"
+ id="perPage"
+ name="perPage"
                     // label="Rows"
-                    title="Rows per page"
-                    value={perPage.toString()}
-                    onChange={handlePerPageChange}
-                    type='text'
-                    className="font-medium text-sm h-9 w-12"
+ title="Rows per page"
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type='text'
+ className="font-medium text-sm w-12"
                   />
                 </div>
                 <div className="mr-2">
                   <PrintFontInput
-                    id="fontSize"
-                    name="fontSize"
+ id="fontSize"
+ name="fontSize"
                     // label="Font"
-                    title="Font Size"
-                    value={fontSize.toString()}
-                    onChange={handleFontSizeChange}
-                    type='text'
-                    className="font-medium text-sm h-9 w-12"
+ title="Font Size"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type='text'
+ className="font-medium text-sm w-12"
                   />
                 </div>
 

@@ -197,15 +197,15 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
 
       <div className="relative">
         <Input
-          id={id || name}
-          name={name}
-          type="text"
-          autoComplete="off"
-          disabled={disabled}
-          value={display}
-          placeholder={placeholder}
-          className={`${FIELD_BASE} h-9 w-full px-3 py-1 pr-14 ${className}`}
-          onChange={(event) => setTyped(event.target.value)}
+ id={id || name}
+ name={name}
+ type="text"
+ autoComplete="off"
+ disabled={disabled}
+ value={display}
+ placeholder={placeholder}
+ className={`${FIELD_BASE} w-full px-3 py-1 pr-14 ${className}`}
+ onChange={(event) => setTyped(event.target.value)}
           onFocus={() => !disabled && setOpen(true)}
           onBlur={commitTyped}
           onKeyDown={(event) => {

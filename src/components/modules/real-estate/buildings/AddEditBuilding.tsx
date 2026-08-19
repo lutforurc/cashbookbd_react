@@ -145,23 +145,23 @@ const AddEditBuilding = () => {
           <ProjectDropdown onSelect={handleProjectSelect} value={projectOption} className="" />
         </div>
         <InputElement
-          id="name"
-          name="name"
-          label="Building Name"
-          placeholder="Enter Building Name"
-          className="h-9.5"
-          value={formData.name}
-          onChange={handleOnChange}
+ id="name"
+ name="name"
+ label="Building Name"
+ placeholder="Enter Building Name"
+ className=""
+ value={formData.name}
+ onChange={handleOnChange}
         />
 
         <InputElement
-          id="floors_count"
-          name="floors_count"
-          label="Total Floors"
-          className="h-9.5"
-          placeholder="0"
-          value={formData.floors_count}
-          onChange={handleOnChange}
+ id="floors_count"
+ name="floors_count"
+ label="Total Floors"
+ className=""
+ placeholder="0"
+ value={formData.floors_count}
+ onChange={handleOnChange}
         />
 
 
@@ -202,22 +202,22 @@ const AddEditBuilding = () => {
         <div className="w-full">
           <label>Start Date</label>
           <InputDatePicker
-            selectedDate={startDate}
-            setSelectedDate={setStartDate}
-            className="w-full h-8"
-            setCurrentDate={handleDate("start_date", setStartDate)}
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ className="w-full "
+ setCurrentDate={handleDate("start_date", setStartDate)}
           />
         </div>
 
         <div>
           <label>Completion Date</label>
           <InputDatePicker
-            selectedDate={completionDate}
-            setSelectedDate={setCompletionDate}
-            className="w-full h-8"
-            setCurrentDate={handleDate(
+ selectedDate={completionDate}
+ setSelectedDate={setCompletionDate}
+ className="w-full "
+ setCurrentDate={handleDate(
               "completion_date",
-              setCompletionDate
+ setCompletionDate
             )}
           />
         </div>
@@ -225,11 +225,11 @@ const AddEditBuilding = () => {
         <div>
           <label>Sale Date</label>
           <InputDatePicker
-            selectedDate={saleDate}
-            setSelectedDate={setSaleDate}
-            className="w-full h-8"
+ selectedDate={saleDate}
+ setSelectedDate={setSaleDate}
+ className="w-full "
 
-            setCurrentDate={handleDate("sale_date", setSaleDate)}
+ setCurrentDate={handleDate("sale_date", setSaleDate)}
           />
         </div>
       </div>
@@ -255,13 +255,13 @@ const AddEditBuilding = () => {
         </div>
         <div className="col-span-1">
           <DropdownCommon
-            id="status"
-            name="status"
-            label="Select Status"
-            data={status}
-            className="h-8.5"
-            value={formData.status?.toString()}
-            onChange={handleSelectChange}
+ id="status"
+ name="status"
+ label="Select Status"
+ data={status}
+ className=""
+ value={formData.status?.toString()}
+ onChange={handleSelectChange}
           />
         </div>
       </div>

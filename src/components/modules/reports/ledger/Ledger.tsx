@@ -642,20 +642,20 @@ const Ledger = (user: any) => {
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
               <InputDatePicker
-                setCurrentDate={handleStartDate}
-                className="font-medium text-sm w-full h-10"
-                selectedDate={startDate}
-                setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
               />
             </div>
 
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
               <InputDatePicker
-                setCurrentDate={handleEndDate}
-                className="font-medium text-sm w-full h-10"
-                selectedDate={endDate}
-                setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="font-medium text-sm w-full "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
               />
             </div>
 
@@ -693,22 +693,22 @@ const Ledger = (user: any) => {
                   className="h-10 px-4"
                 />
                 <PrintRowsInput
-                  id="perPageInline"
-                  name="perPageInline"
-                  label="Rows"
-                  value={perPage.toString()}
-                  onChange={handlePerPageChange}
-                  type='text'
-                  className="font-medium text-sm h-10 w-20! text-center"
+ id="perPageInline"
+ name="perPageInline"
+ label="Rows"
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type='text'
+ className="font-medium text-sm w-20! text-center"
                 />
                 <PrintFontInput
-                  id="fontSizeInline"
-                  name="fontSizeInline"
-                  label="Font"
-                  value={fontSize.toString()}
-                  onChange={handleFontSizeChange}
-                  type='text'
-                  className="font-medium text-sm h-10 w-20! text-center"
+ id="fontSizeInline"
+ name="fontSizeInline"
+ label="Font"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type='text'
+ className="font-medium text-sm w-20! text-center"
                 />
                 <PrintButton
                   onClick={handlePrint}
@@ -728,22 +728,22 @@ const Ledger = (user: any) => {
                 </div>
               ) : null}
               <PrintRowsInput
-                id="perPage"
-                name="perPage"
-                label=""
-                value={perPage.toString()}
-                onChange={handlePerPageChange}
-                type='text'
-                className="font-medium text-sm h-10 w-20! text-center"
+ id="perPage"
+ name="perPage"
+ label=""
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type='text'
+ className="font-medium text-sm w-20! text-center"
               />
               <PrintFontInput
-                id="fontSize"
-                name="fontSize"
-                label=""
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type='text'
-                className="font-medium text-sm h-10 w-20! text-center"
+ id="fontSize"
+ name="fontSize"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type='text'
+ className="font-medium text-sm w-20! text-center"
               />
               <PrintButton
                 onClick={handlePrint}
@@ -772,22 +772,22 @@ const Ledger = (user: any) => {
               </div>
               <div className="flex flex-nowrap items-end gap-2">
                 <PrintRowsInput
-                  id="perPage"
-                  name="perPage"
-                  label="Rows"
-                  value={perPage.toString()}
-                  onChange={handlePerPageChange}
-                  type='text'
-                  className="font-medium text-sm h-10 w-20! text-center"
+ id="perPage"
+ name="perPage"
+ label="Rows"
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type='text'
+ className="font-medium text-sm w-20! text-center"
                 />
                 <PrintFontInput
-                  id="fontSize"
-                  name="fontSize"
-                  label="Font"
-                  value={fontSize.toString()}
-                  onChange={handleFontSizeChange}
-                  type='text'
-                  className="font-medium text-sm h-10 w-20! text-center"
+ id="fontSize"
+ name="fontSize"
+ label="Font"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type='text'
+ className="font-medium text-sm w-20! text-center"
                 />
                 <PrintButton
                   onClick={handlePrint}

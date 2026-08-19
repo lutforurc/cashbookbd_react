@@ -144,10 +144,10 @@ const ProjectSummaryReport = ({ user }: any) => {
               Start Date
             </label>
             <InputDatePicker
-              setCurrentDate={setStartDate}
-              className="font-medium text-sm w-full h-10 min-w-[220px]"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="font-medium text-sm w-full min-w-[220px]"
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
             />
           </div>
 
@@ -156,10 +156,10 @@ const ProjectSummaryReport = ({ user }: any) => {
               End Date
             </label>
             <InputDatePicker
-              setCurrentDate={setEndDate}
-              className="font-medium text-sm w-full h-10 min-w-[220px]"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="font-medium text-sm w-full min-w-[220px]"
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
             />
           </div>
 

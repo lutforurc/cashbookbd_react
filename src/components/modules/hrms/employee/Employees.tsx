@@ -234,13 +234,13 @@ const Employees = ({ user }: any) => {
       render: (row: any) =>
         designation.length > 0 ? (
           <DropdownCommon
-            key={row.id}
-            id={`designation-${row.id}`}
-            name="designation"
-            className="h-[2.1rem]"
-            data={designation}
-            value={row.designation?.toString() ?? ""}
-            onChange={(e) =>
+ key={row.id}
+ id={`designation-${row.id}`}
+ name="designation"
+ className=""
+ data={designation}
+ value={row.designation?.toString() ?? ""}
+ onChange={(e) =>
               handleInputChange(
                 row.id,
                 "designation",
@@ -402,12 +402,12 @@ const Employees = ({ user }: any) => {
           </div>
           <div className='mr-1'>
             <DropdownCommon
-              id="designation"
-              name="designation"
-              label=""
-              onChange={handleOnSelectChange}
-              className="h-[2.4rem] bg-transparent"
-              data={designationAll}
+ id="designation"
+ name="designation"
+ label=""
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ data={designationAll}
             />
           </div>
           <div className="flex">
@@ -427,29 +427,29 @@ const Employees = ({ user }: any) => {
         <div className='flex ml-1'>
           <div className="mr-1">
             <PrintRowsInput
-              id="perPage"
-              name="perPage"
+ id="perPage"
+ name="perPage"
               // label="Rows"
               // Its own wording: on every other screen this box only lays out
               // the printed page, but here the same number is what the list
               // asks the API for, so the shared `for print` would be a half
               // truth.
-              title="Rows per page"
-              value={perPage.toString()}
-              onChange={handlePerPageChange}
-              type='text'
-              className="font-medium text-sm h-9.5 w-12"
+ title="Rows per page"
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type='text'
+ className="font-medium text-sm w-12"
             />
           </div>
           <div className="">
             <PrintFontInput
-              id="fontSize"
-              name="fontSize"
+ id="fontSize"
+ name="fontSize"
               // label="Font"
-              value={fontSize.toString()}
-              onChange={handleFontSizeChange}
-              type='text'
-              className="font-medium text-sm h-9.5 w-12"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type='text'
+ className="font-medium text-sm w-12"
             />
           </div>
           <PrintButton

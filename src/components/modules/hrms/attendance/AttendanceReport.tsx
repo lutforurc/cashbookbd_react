@@ -456,8 +456,8 @@ const AttendanceReport = ({
             className="h-9 w-full font-medium text-sm p-1.5"
           />
         </div>
-        <DropdownCommon id="status" name="status" label="Status" value={filters.status} data={statusOptions} onChange={handleChange(setFilters)} className="h-9" />
-        <DropdownCommon id="approval_status" name="approval_status" label="Approval" value={filters.approval_status} data={approvalOptions} onChange={handleChange(setFilters)} className="h-9" />
+        <DropdownCommon id="status" name="status" label="Status" value={filters.status} data={statusOptions} onChange={handleChange(setFilters)} className="" />
+        <DropdownCommon id="approval_status" name="approval_status" label="Approval" value={filters.approval_status} data={approvalOptions} onChange={handleChange(setFilters)} className="" />
         <div className="flex items-end gap-2">
           <Button type="button" onClick={loadReport} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
             <FiRefreshCcw className="mr-2" />

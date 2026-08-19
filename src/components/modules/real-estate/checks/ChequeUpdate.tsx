@@ -330,23 +330,23 @@ const ChequeUpdate = () => {
                     />
 
                     <DropdownCommon
-                        id="coal4_id"
-                        name="coal4_id"
-                        label="Deposit Bank (COA4)"
-                        onChange={handleOnSelectChange}
-                        value={formData.coal4_id || ""}
-                        className="h-[2.1rem] bg-transparent mt-1"
-                        data={coa4Banks}
+ id="coal4_id"
+ name="coal4_id"
+ label="Deposit Bank (COA4)"
+ onChange={handleOnSelectChange}
+ value={formData.coal4_id || ""}
+ className="bg-transparent mt-1"
+ data={coa4Banks}
                     />
 
                     <DropdownCommon
-                        id="cheque_collect_status"
-                        name="cheque_collect_status"
-                        label="Cheque Status"
-                        onChange={handleOnSelectChange}
-                        value={formData.cheque_collect_status || "PENDING"}
-                        className="h-[2.1rem] bg-transparent mt-1"
-                        data={CHEQUE_COLLECT_STATUSES}
+ id="cheque_collect_status"
+ name="cheque_collect_status"
+ label="Cheque Status"
+ onChange={handleOnSelectChange}
+ value={formData.cheque_collect_status || "PENDING"}
+ className="bg-transparent mt-1"
+ data={CHEQUE_COLLECT_STATUSES}
                     />
                 </div>
 
@@ -394,13 +394,13 @@ const ChequeUpdate = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <DropdownCommon
-                        id="status"
-                        name="status"
-                        label="Overall Status"
-                        onChange={handleOnSelectChange}
-                        value={formData.status || "PENDING"}
-                        className="h-[2.1rem] bg-transparent mt-1"
-                        data={PAYMENT_STATUSES}
+ id="status"
+ name="status"
+ label="Overall Status"
+ onChange={handleOnSelectChange}
+ value={formData.status || "PENDING"}
+ className="bg-transparent mt-1"
+ data={PAYMENT_STATUSES}
                     />
 
                     <InputElement

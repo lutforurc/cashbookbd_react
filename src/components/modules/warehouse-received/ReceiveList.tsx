@@ -299,13 +299,13 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
           <div>
             
             <PrintFontInput
-              id="receiveChallanFont"
-              name="receiveChallanFont"
-              label=""
-              value={String(printFont)}
-              onChange={handlePrintFontChange}
-              type="text"
-              className="h-10 w-20! text-center text-sm font-medium"
+ id="receiveChallanFont"
+ name="receiveChallanFont"
+ label=""
+ value={String(printFont)}
+ onChange={handlePrintFontChange}
+ type="text"
+ className="w-20! text-center text-sm font-medium"
             />
           </div>
         </div>

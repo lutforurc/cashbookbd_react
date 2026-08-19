@@ -173,53 +173,53 @@ const SubscriptionAdmin: React.FC = () => {
         <form onSubmit={handleAssign} className="mt-4">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
             <DropdownCommon
-              id="company_id"
-              name="company_id"
-              label="Company"
-              value={form.company_id}
-              onChange={handleChange}
-              className="h-8.5 bg-transparent"
-              data={companyOptions}
+ id="company_id"
+ name="company_id"
+ label="Company"
+ value={form.company_id}
+ onChange={handleChange}
+ className="bg-transparent"
+ data={companyOptions}
             />
 
             <DropdownCommon
-              id="plan_id"
-              name="plan_id"
-              label="Plan"
-              value={form.plan_id}
-              onChange={handleChange}
-              className="h-8.5 bg-transparent"
-              data={planOptions}
+ id="plan_id"
+ name="plan_id"
+ label="Plan"
+ value={form.plan_id}
+ onChange={handleChange}
+ className="bg-transparent"
+ data={planOptions}
             />
 
             <DropdownCommon
-              id="status"
-              name="status"
-              label="Status"
-              value={form.status}
-              onChange={handleChange}
-              className="h-8.5 bg-transparent"
-              data={statusOptions}
+ id="status"
+ name="status"
+ label="Status"
+ value={form.status}
+ onChange={handleChange}
+ className="bg-transparent"
+ data={statusOptions}
             />
 
             <DropdownCommon
-              id="access_status"
-              name="access_status"
-              label="Access Status"
-              value={form.access_status}
-              onChange={handleChange}
-              className="h-8.5 bg-transparent"
-              data={accessOptions}
+ id="access_status"
+ name="access_status"
+ label="Access Status"
+ value={form.access_status}
+ onChange={handleChange}
+ className="bg-transparent"
+ data={accessOptions}
             />
 
             <div>
               <label className="mb-1 block text-sm text-gray-900 dark:text-white">Start Date</label>
               <InputDatePicker
-                id="start_date"
-                name="start_date"
-                className="h-8.5 w-full text-sm"
-                selectedDate={startDateObj}
-                setSelectedDate={(date: Date | null) => {
+ id="start_date"
+ name="start_date"
+ className="w-full text-sm"
+ selectedDate={startDateObj}
+ setSelectedDate={(date: Date | null) => {
                   setStartDateObj(date);
                   setForm((prev) => ({
                     ...prev,
@@ -239,11 +239,11 @@ const SubscriptionAdmin: React.FC = () => {
             <div>
               <label className="mb-1 block text-sm text-gray-900 dark:text-white">End Date</label>
               <InputDatePicker
-                id="end_date"
-                name="end_date"
-                className="h-8.5 w-full text-sm"
-                selectedDate={endDateObj}
-                setSelectedDate={(date: Date | null) => {
+ id="end_date"
+ name="end_date"
+ className="w-full text-sm"
+ selectedDate={endDateObj}
+ setSelectedDate={(date: Date | null) => {
                   setEndDateObj(date);
                   setForm((prev) => ({
                     ...prev,
@@ -263,11 +263,11 @@ const SubscriptionAdmin: React.FC = () => {
             <div>
               <label className="mb-1 block text-sm text-gray-900 dark:text-white">Trial End</label>
               <InputDatePicker
-                id="trial_end_at"
-                name="trial_end_at"
-                className="h-8.5 w-full text-sm"
-                selectedDate={trialEndDateObj}
-                setSelectedDate={(date: Date | null) => {
+ id="trial_end_at"
+ name="trial_end_at"
+ className="w-full text-sm"
+ selectedDate={trialEndDateObj}
+ setSelectedDate={(date: Date | null) => {
                   setTrialEndDateObj(date);
                   setForm((prev) => ({
                     ...prev,

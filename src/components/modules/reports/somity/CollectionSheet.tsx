@@ -376,11 +376,11 @@ const CollectionSheet = (user: any) => {
           <div>
             <label className={labelClass}>Month</label>
             <InputDatePicker
-              setCurrentDate={handleEndDate}
-              className="font-medium text-sm w-full h-10"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
-              month
+ setCurrentDate={handleEndDate}
+ className="font-medium text-sm w-full "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ month
             />
           </div>
 

@@ -839,20 +839,20 @@ const PurchaseLedger = (user: any) => {
                     <div className="min-w-0">
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                       <InputDatePicker
-                        setCurrentDate={handleStartDate}
-                        className="w-full font-medium text-sm h-10"
-                        selectedDate={startDate}
-                        setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="w-full font-medium text-sm "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
                       />
                     </div>
 
                     <div className="min-w-0">
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                       <InputDatePicker
-                        setCurrentDate={handleEndDate}
-                        className="w-full font-medium text-sm h-10"
-                        selectedDate={endDate}
-                        setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="w-full font-medium text-sm "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
                       />
                     </div>
                   </div>
@@ -862,9 +862,9 @@ const PurchaseLedger = (user: any) => {
                       Search
                     </label>
                     <SearchInput
-                      search={search}
-                      setSearchValue={setSearchValue}
-                      className="h-10 w-full"
+ search={search}
+ setSearchValue={setSearchValue}
+ className="w-full"
                     />
                   </div>
 
@@ -873,10 +873,10 @@ const PurchaseLedger = (user: any) => {
                       <div className="min-w-0 flex-[1.1]">
                         <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                         <InputDatePicker
-                          setCurrentDate={handleEndDate}
-                          className="w-full font-medium text-sm h-10"
-                          selectedDate={endDate}
-                          setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="w-full font-medium text-sm "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
                         />
                       </div>
 
@@ -896,22 +896,22 @@ const PurchaseLedger = (user: any) => {
                           icon ={<FiRotateCcw />}
                         />
                         <PrintRowsInput
-                          id="perPageInline"
-                          name="perPageInline"
-                          label=""
-                          value={perPage.toString()}
-                          onChange={handlePerPageChange}
-                          type="text"
-                          className="font-medium text-sm h-9 w-20! min-w-[80px] text-center"
+ id="perPageInline"
+ name="perPageInline"
+ label=""
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="font-medium text-sm w-20! min-w-[80px] text-center"
                         />
                         <PrintFontInput
-                          id="fontSizeInline"
-                          name="fontSizeInline"
-                          label=""
-                          value={fontSize.toString()}
-                          onChange={handleFontSizeChange}
-                          type="text"
-                          className="font-medium text-sm h-9 w-20! min-w-[80px] text-center"
+ id="fontSizeInline"
+ name="fontSizeInline"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="font-medium text-sm w-20! min-w-[80px] text-center"
                         />
                         <PrintButton
                           onClick={handlePrint}
@@ -946,22 +946,22 @@ const PurchaseLedger = (user: any) => {
                     {!useFilterMenuEnabled && (
                       <>
                         <PrintRowsInput
-                          id="perPageInlineLg"
-                          name="perPageInlineLg"
-                          label=""
-                          value={perPage.toString()}
-                          onChange={handlePerPageChange}
-                          type="text"
-                          className="font-medium text-sm h-9 w-14! text-center"
+ id="perPageInlineLg"
+ name="perPageInlineLg"
+ label=""
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="font-medium text-sm w-14! text-center"
                         />
                         <PrintFontInput
-                          id="fontSizeInlineLg"
-                          name="fontSizeInlineLg"
-                          label=""
-                          value={fontSize.toString()}
-                          onChange={handleFontSizeChange}
-                          type="text"
-                          className="font-medium text-sm h-9 w-14! text-center"
+ id="fontSizeInlineLg"
+ name="fontSizeInlineLg"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="font-medium text-sm w-14! text-center"
                         />
                         {/* Icon only, for want of room beside Apply and Reset --
                             hence the tooltip, which is all the name it has. */}
@@ -981,20 +981,20 @@ const PurchaseLedger = (user: any) => {
                       <div className="min-w-0 flex-[1.15]">
                         <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                         <InputDatePicker
-                          setCurrentDate={handleStartDate}
-                          className="w-full font-medium text-sm h-10"
-                          selectedDate={startDate}
-                          setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="w-full font-medium text-sm "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
                         />
                       </div>
 
                       <div className="min-w-0 flex-[1.15]">
                         <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                         <InputDatePicker
-                          setCurrentDate={handleEndDate}
-                          className="w-full font-medium text-sm h-10"
-                          selectedDate={endDate}
-                          setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="w-full font-medium text-sm "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
                         />
                       </div>
 
@@ -1017,22 +1017,22 @@ const PurchaseLedger = (user: any) => {
 
                       <div className="ml-auto flex items-end gap-2 pt-6">
                         <PrintRowsInput
-                          id="perPageInlineLg"
-                          name="perPageInlineLg"
-                          label=""
-                          value={perPage.toString()}
-                          onChange={handlePerPageChange}
-                          type="text"
-                          className="font-medium text-sm h-10 w-20! min-w-[80px] text-center"
+ id="perPageInlineLg"
+ name="perPageInlineLg"
+ label=""
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="font-medium text-sm w-20! min-w-[80px] text-center"
                         />
                         <PrintFontInput
-                          id="fontSizeInlineLg"
-                          name="fontSizeInlineLg"
-                          label=""
-                          value={fontSize.toString()}
-                          onChange={handleFontSizeChange}
-                          type="text"
-                          className="font-medium text-sm h-10 w-20! min-w-[80px] text-center"
+ id="fontSizeInlineLg"
+ name="fontSizeInlineLg"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="font-medium text-sm w-20! min-w-[80px] text-center"
                         />
                         <PrintButton
                           onClick={handlePrint}
@@ -1065,22 +1065,22 @@ const PurchaseLedger = (user: any) => {
                 </div>
               ) : null}
               <PrintRowsInput
-                id="perPage"
-                name="perPage"
-                label=""
-                value={perPage.toString()}
-                onChange={handlePerPageChange}
-                type="text"
-                className="font-medium text-sm h-10 w-20! min-w-[80px] text-center"
+ id="perPage"
+ name="perPage"
+ label=""
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="font-medium text-sm w-20! min-w-[80px] text-center"
               />
               <PrintFontInput
-                id="fontSize"
-                name="fontSize"
-                label=""
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type="text"
-                className="font-medium text-sm h-10 w-20! min-w-[80px] text-center"
+ id="fontSize"
+ name="fontSize"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="font-medium text-sm w-20! min-w-[80px] text-center"
               />
               <PrintButton
                 onClick={handlePrint}

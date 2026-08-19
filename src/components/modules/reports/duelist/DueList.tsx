@@ -237,10 +237,10 @@ const DueList = (user: any) => {
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
-                      setCurrentDate={handleEndDate}
-                      className="w-full font-medium text-sm h-10"
-                      selectedDate={endDate}
-                      setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="w-full font-medium text-sm "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
                     />
                   </div>
 
@@ -299,22 +299,22 @@ const DueList = (user: any) => {
               </>
             )}
             <PrintRowsInput
-              id="perPage"
-              name="perPage"
-              label="Rows"
-              value={perPage.toString()}
-              onChange={handlePerPageChange}
-              type='text'
-              className="font-medium text-sm h-10 w-20! text-center"
+ id="perPage"
+ name="perPage"
+ label="Rows"
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type='text'
+ className="font-medium text-sm w-20! text-center"
             />
             <PrintFontInput
-              id="fontSize"
-              name="fontSize"
-              label="Font"
-              value={fontSize.toString()}
-              onChange={handleFontSizeChange}
-              type='text'
-              className="font-medium text-sm h-10 w-20! text-center"
+ id="fontSize"
+ name="fontSize"
+ label="Font"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type='text'
+ className="font-medium text-sm w-20! text-center"
             />
             <PrintButton
               onClick={handlePrint}

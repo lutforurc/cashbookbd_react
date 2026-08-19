@@ -216,24 +216,24 @@ export default function BulkImageUpload(user: any): JSX.Element {
         {/* 2. Image Voucher Type Dropdown (wide) */}
         <div className="col-span-1 lg:col-span-2">
           <DropdownCommon
-            id="voucher_type"
-            name="voucher_type"
-            label="Voucher Type"
-            onChange={handleOnSelectChange}
-            className="h-[2.0rem] bg-transparent w-full"
-            data={ImageVoucherType}
+ id="voucher_type"
+ name="voucher_type"
+ label="Voucher Type"
+ onChange={handleOnSelectChange}
+ className="bg-transparent w-full"
+ data={ImageVoucherType}
           />
         </div>
 
         {/* 3. image_type Dropdown (wide) */}
         <div className="col-span-1 lg:col-span-2">
           <DropdownCommon
-            id="image_type"
-            name="image_type"
-            label="Attachment Type"
-            onChange={handleOnSelectChange}
-            className="h-[2.0rem] bg-transparent w-full"
-            data={Attachment}
+ id="image_type"
+ name="image_type"
+ label="Attachment Type"
+ onChange={handleOnSelectChange}
+ className="bg-transparent w-full"
+ data={Attachment}
           />
         </div>
 
@@ -243,10 +243,10 @@ export default function BulkImageUpload(user: any): JSX.Element {
             Start Date
           </label>
           <InputDatePicker
-            setCurrentDate={handleStartDate}
-            className="font-medium text-sm w-full h-8"
-            selectedDate={startDate}
-            setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
           />
         </div>
 
@@ -256,10 +256,10 @@ export default function BulkImageUpload(user: any): JSX.Element {
             End Date
           </label>
           <InputDatePicker
-            setCurrentDate={handleEndDate}
-            className="font-medium text-sm w-full h-8"
-            selectedDate={endDate}
-            setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="font-medium text-sm w-full "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
           />
         </div>
 

@@ -311,11 +311,11 @@ const PaymentSubmit: React.FC = () => {
           <div>
             <label className={labelClassName}>Payment Date</label>
             <InputDatePicker
-              id="paid_at"
-              name="paid_at"
-              className="h-10 w-full text-sm font-medium"
-              selectedDate={paymentDateObj}
-              setSelectedDate={(date: Date | null) => {
+ id="paid_at"
+ name="paid_at"
+ className="w-full text-sm font-medium"
+ selectedDate={paymentDateObj}
+ setSelectedDate={(date: Date | null) => {
                 setPaymentDateObj(date);
                 setForm((prev) => ({
                   ...prev,

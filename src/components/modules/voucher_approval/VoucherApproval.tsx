@@ -107,26 +107,26 @@ const VoucherApproval = () => {
       <div className="grid grid-cols-1 gap-2 w-full md:w-2/3 lg:w-1/2 justify-center mx-auto mt-5 ">
         <div className="w-full mb-1">
           <InputDatePicker
-            id="start_date"
-            name="start_date"
-            label={'Enter Start Date for Approval'}
-            setCurrentDate={handleStartDate}
-            className="font-medium text-sm w-full h-8"
-            selectedDate={startDate}
-            setSelectedDate={setStartDate}
+ id="start_date"
+ name="start_date"
+ label={'Enter Start Date for Approval'}
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
           />
         </div>
 
         {/* endDate, setEndDate */}
         <div className="w-full mb-1">
           <InputDatePicker
-            id="end_date"
-            name="end_date"
-            label={'Enter End Date for Approval'}
-            setCurrentDate={handleEndDate}
-            className="font-medium text-sm w-full h-8"
-            selectedDate={endDate}
-            setSelectedDate={setEndDate}
+ id="end_date"
+ name="end_date"
+ label={'Enter End Date for Approval'}
+ setCurrentDate={handleEndDate}
+ className="font-medium text-sm w-full "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
           />
         </div>
 

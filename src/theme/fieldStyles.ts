@@ -39,6 +39,21 @@ export const FIELD_BASE = [
 export const FIELD_PADDING = 'px-3 py-1';
 
 /**
+ * How tall a field stands.
+ *
+ * One number, because the screens had thirteen: h-10 in a hundred and sixty
+ * places, h-9 in ninety-eight, h-8.5 in seventy-two, and a tail of h-[2.1rem],
+ * h-[2.20rem], h-[2.4rem] chosen a screen at a time. Two fields side by side
+ * were routinely a few pixels apart, and there was nowhere to say what a field
+ * should measure.
+ *
+ * h-10 because it is what most of them already were, and what the toolbar
+ * buttons beside them are -- so a filter row lines up without anyone arranging
+ * it. A field that genuinely needs another size asks for one through `size`.
+ */
+export const FIELD_HEIGHT = 'h-10';
+
+/**
  * Named heights.
  *
  * Call sites had been reaching for `h-8.5`, `h-9`, `h-9.5` and `h-10` in
@@ -66,7 +81,9 @@ export type FieldSize = keyof typeof FIELD_SIZE;
  * border, the background or the focus ring.
  */
 export const fieldClass = (size?: FieldSize, extra = ''): string =>
-  [FIELD_BASE, size ? FIELD_SIZE[size] : FIELD_PADDING, extra].filter(Boolean).join(' ');
+  [FIELD_BASE, size ? FIELD_SIZE[size] : `${FIELD_PADDING} ${FIELD_HEIGHT}`, extra]
+    .filter(Boolean)
+    .join(' ');
 
 /**
  * A field that sits inside a table cell, where a white box on every row would

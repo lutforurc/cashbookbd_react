@@ -184,13 +184,13 @@ const AreaAdd = (user: any) => {
           onChange={handleOnChange}
         />
         <DropdownCommon
-          id="status"
-          name="status"
-          label="Select Status"
-          onChange={handleOnSelectChange}
-          value={formData.status || ''}
-          className="h-[2.1rem] bg-transparent mt-1"
-          data={status}
+ id="status"
+ name="status"
+ label="Select Status"
+ onChange={handleOnSelectChange}
+ value={formData.status || ''}
+ className="bg-transparent mt-1"
+ data={status}
         />
       </div>
 

@@ -215,19 +215,19 @@ const BranchTransferReport = ({ user }: any) => {
           </div>
 
           <InputDatePicker
-            label="Start Date"
-            selectedDate={startDate}
-            setSelectedDate={setStartDate}
-            setCurrentDate={setStartDate}
-            className="h-10 w-full text-sm font-medium"
+ label="Start Date"
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="w-full text-sm font-medium"
           />
 
           <InputDatePicker
-            label="End Date"
-            selectedDate={endDate}
-            setSelectedDate={setEndDate}
-            setCurrentDate={setEndDate}
-            className="h-10 w-full text-sm font-medium"
+ label="End Date"
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="w-full text-sm font-medium"
           />
 
           <InputElement

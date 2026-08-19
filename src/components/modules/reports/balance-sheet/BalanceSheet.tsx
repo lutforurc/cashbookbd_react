@@ -389,10 +389,10 @@ const BalanceSheet = (user: any) => {
                   Start Date
                 </label>
                 <InputDatePicker
-                  selectedDate={startDate}
-                  setSelectedDate={setStartDate}
-                  setCurrentDate={setStartDate}
-                  className="h-10 w-full rounded-sm"
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="w-full rounded-sm"
                 />
               </div>
 
@@ -401,10 +401,10 @@ const BalanceSheet = (user: any) => {
                   End Date
                 </label>
                 <InputDatePicker
-                  selectedDate={endDate}
-                  setSelectedDate={setEndDate}
-                  setCurrentDate={setEndDate}
-                  className="h-10 w-full rounded-sm"
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="w-full rounded-sm"
                 />
               </div>
 

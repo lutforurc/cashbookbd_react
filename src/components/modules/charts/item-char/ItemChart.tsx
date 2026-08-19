@@ -110,10 +110,10 @@ const ItemChart = (user) => {
           <div>
             <label className="text-sm font-medium">Start Date (P1)</label>
             <InputDatePicker
-              setCurrentDate={setP1StartDate}
-              selectedDate={p1StartDate}
-              setSelectedDate={setP1StartDate}
-              className="font-medium text-sm w-full h-9"
+ setCurrentDate={setP1StartDate}
+ selectedDate={p1StartDate}
+ setSelectedDate={setP1StartDate}
+ className="font-medium text-sm w-full "
             />
           </div>
 
@@ -121,10 +121,10 @@ const ItemChart = (user) => {
           <div>
             <label className="text-sm font-medium">End Date (P1)</label>
             <InputDatePicker
-              setCurrentDate={setP1EndDate}
-              selectedDate={p1EndDate}
-              setSelectedDate={setP1EndDate}
-              className="font-medium text-sm w-full h-9"
+ setCurrentDate={setP1EndDate}
+ selectedDate={p1EndDate}
+ setSelectedDate={setP1EndDate}
+ className="font-medium text-sm w-full "
             />
           </div>
 
@@ -132,10 +132,10 @@ const ItemChart = (user) => {
           <div>
             <label className="text-sm font-medium">Start Date (P2)</label>
             <InputDatePicker
-              setCurrentDate={setP2StartDate}
-              selectedDate={p2StartDate}
-              setSelectedDate={setP2StartDate}
-              className="font-medium text-sm w-full h-9"
+ setCurrentDate={setP2StartDate}
+ selectedDate={p2StartDate}
+ setSelectedDate={setP2StartDate}
+ className="font-medium text-sm w-full "
             />
           </div>
 
@@ -143,10 +143,10 @@ const ItemChart = (user) => {
           <div>
             <label className="text-sm font-medium">End Date (P2)</label>
             <InputDatePicker
-              setCurrentDate={setP2EndDate}
-              selectedDate={p2EndDate}
-              setSelectedDate={setP2EndDate}
-              className="font-medium text-sm w-full h-9"
+ setCurrentDate={setP2EndDate}
+ selectedDate={p2EndDate}
+ setSelectedDate={setP2EndDate}
+ className="font-medium text-sm w-full "
             />
           </div>
 

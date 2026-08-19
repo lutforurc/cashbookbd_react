@@ -213,10 +213,10 @@ const LabourLedger = (user: any) => {
                         Start Date
                       </label>
                       <InputDatePicker
-                        setCurrentDate={handleStartDate}
-                        className="font-medium text-sm w-full h-10"
-                        selectedDate={startDate}
-                        setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
                       />
                     </div>
                   )}
@@ -227,10 +227,10 @@ const LabourLedger = (user: any) => {
                         End Date
                       </label>
                       <InputDatePicker
-                        setCurrentDate={handleEndDate}
-                        className="w-full font-medium text-sm h-10"
-                        selectedDate={endDate}
-                        setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="w-full font-medium text-sm "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
                       />
                     </div>
                   )}
@@ -301,10 +301,10 @@ const LabourLedger = (user: any) => {
                     Start Date
                   </label>
                   <InputDatePicker
-                    setCurrentDate={handleStartDate}
-                    className="w-full xl:w-30! font-medium text-sm h-10"
-                    selectedDate={startDate}
-                    setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="w-full xl:w-30! font-medium text-sm "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
                   />
                 </div>
                 <div className="min-w-[220px]">
@@ -312,10 +312,10 @@ const LabourLedger = (user: any) => {
                     End Date
                   </label>
                   <InputDatePicker
-                    setCurrentDate={handleEndDate}
-                    className="w-full xl:w-30! font-medium text-sm h-10"
-                    selectedDate={endDate}
-                    setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="w-full xl:w-30! font-medium text-sm "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
                   />
                 </div>
                 <div className="flex flex-nowrap items-end gap-2">

@@ -381,16 +381,16 @@ const GeneralCashReceived = () => {
                       <div className="min-w-0 flex-1">
                         <label htmlFor="search">Search Received</label>
                         <InputOnly
-                          id="search"
-                          value={search}
-                          name="search"
-                          placeholder="Search Received"
-                          label=""
-                          // h-8.5 everywhere on this form -- the search button
-                          // beside it is already h-8.5, and the fields below
+ id="search"
+ value={search}
+ name="search"
+ placeholder="Search Received"
+ label=""
+                          // everywhere on this form -- the search button
+                          // beside it is already , and the fields below
                           // are only 34px by accident of their padding.
-                          className="h-8.5 w-full py-1"
-                          onChange={(e) => setSearch(e.target.value)}
+ className="w-full py-1"
+ onChange={(e) => setSearch(e.target.value)}
                         />
                       </div>
                       {/* Same flush pairing as Cash Payment -- no gap, and the
@@ -432,16 +432,16 @@ const GeneralCashReceived = () => {
             </div>
 
             <InputElement
-              id="remarks"
-              value={formData.remarks}
-              name="remarks"
-              placeholder={'Enter Remarks'}
-              label={'Enter Remarks'}
-              className="h-8.5"
-              list="general-cash-received-remark-suggestions"
-              autoComplete="off"
-              onChange={handleOnChange}
-              onKeyDown={handleRemarksKeyDown}
+ id="remarks"
+ value={formData.remarks}
+ name="remarks"
+ placeholder={'Enter Remarks'}
+ label={'Enter Remarks'}
+ className=""
+ list="general-cash-received-remark-suggestions"
+ autoComplete="off"
+ onChange={handleOnChange}
+ onKeyDown={handleRemarksKeyDown}
             />
             <datalist id="general-cash-received-remark-suggestions">
               {remarkSuggestions.map((item) => (
@@ -449,15 +449,15 @@ const GeneralCashReceived = () => {
               ))}
             </datalist>
             <InputElement
-              id="amount"
-              value={String(formData.amount)}
-              name="amount"
-              type="number"
-              placeholder="Enter Received Amount"
-              label="Amount (Tk.)"
-              className="h-8.5"
-              onChange={handleOnChange}
-              onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')} //
+ id="amount"
+ value={String(formData.amount)}
+ name="amount"
+ type="number"
+ placeholder="Enter Received Amount"
+ label="Amount (Tk.)"
+ className=""
+ onChange={handleOnChange}
+ onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')} //
             />
             {/* কোনো Product tracked না থাকলে এটি render-ই হয় না */}
             <TrackedProductField

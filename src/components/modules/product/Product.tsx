@@ -630,7 +630,7 @@ const Product = (user: any) => {
               />
             </div>
             <div className="w-full sm:w-64">
-              <SearchInput className="w-full! h-9" search={search} setSearchValue={setSearchValue} />
+              <SearchInput className="w-full! " search={search} setSearchValue={setSearchValue} />
             </div>
             <ButtonLoading label="Search" icon={<FiSearch className="text-gray-500" />}  onClick={handleSearchButton} className="h-9 w-full sm:w-auto" />
           </div>
@@ -638,25 +638,25 @@ const Product = (user: any) => {
           <div className="flex w-full">
             <div className="mr-2">
               <PrintRowsInput
-                id="perPage"
-                name="perPage"
-                label=""
-                value={rowsPerPage.toString()}
-                onChange={handlePerPageChange}
-                type="text"
-                className="font-medium text-sm h-9 w-12"
+ id="perPage"
+ name="perPage"
+ label=""
+ value={rowsPerPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="font-medium text-sm w-12"
               />
             </div>
 
             <div className="mr-2">
               <PrintFontInput
-                id="fontSize"
-                name="fontSize"
-                label=""
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type="text"
-                className="font-medium text-sm h-9 w-12!"
+ id="fontSize"
+ name="fontSize"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="font-medium text-sm w-12!"
               />
             </div>
             <PrintButton onClick={handlePrint} label="Print" className="ml-2 pt-[0.45rem] pb-[0.45rem] h-9" />

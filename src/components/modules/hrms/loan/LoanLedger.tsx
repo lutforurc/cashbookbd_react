@@ -262,44 +262,44 @@ const LoanLedger = (user: any) => {
           <div className="min-w-[150px] flex-1">
             <label htmlFor="">Start Date</label>
             <InputDatePicker
-              setCurrentDate={handleStartDate}
-              className="font-medium text-sm w-full h-9"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
             />
           </div>
 
           <div className="min-w-[150px] flex-1">
             <label htmlFor="">End Date</label>
             <InputDatePicker
-              setCurrentDate={handleEndDate}
-              className="w-full font-medium text-sm h-9"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="w-full font-medium text-sm "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
             />
           </div>
 
           <div className="flex shrink-0 items-end gap-2">
             <div>
               <PrintRowsInput
-                id="perPage"
-                name="perPage"
-                label="Rows"
-                value={perPage.toString()}
-                onChange={handlePerPageChange}
-                type='text'
-                className="font-medium text-sm h-9 w-16"
+ id="perPage"
+ name="perPage"
+ label="Rows"
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type='text'
+ className="font-medium text-sm w-16"
               />
             </div>
             <div>
               <PrintFontInput
-                id="fontSize"
-                name="fontSize"
-                label="Font"
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type='text'
-                className="font-medium text-sm h-9 w-16"
+ id="fontSize"
+ name="fontSize"
+ label="Font"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type='text'
+ className="font-medium text-sm w-16"
               />
             </div>
             <ButtonLoading

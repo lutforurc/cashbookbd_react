@@ -109,20 +109,20 @@ const CustomerStatement: React.FC<CustomerStatementProps> = ({
         )}
         <div className="w-40">
           <InputDatePicker
-            label="From"
-            className="font-medium text-sm w-full h-9"
-            selectedDate={startDate}
-            setSelectedDate={setStartDate}
-            setCurrentDate={setStartDate}
+ label="From"
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
           />
         </div>
         <div className="w-40">
           <InputDatePicker
-            label="To"
-            className="font-medium text-sm w-full h-9"
-            selectedDate={endDate}
-            setSelectedDate={setEndDate}
-            setCurrentDate={setEndDate}
+ label="To"
+ className="font-medium text-sm w-full "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
           />
         </div>
         <Button

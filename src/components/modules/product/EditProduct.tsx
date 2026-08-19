@@ -204,22 +204,22 @@ const EditProduct = () => {
         </div>
 
         <DropdownCommon
-          id="category_id"
-          name="category_id"
-          label="Select Category"
-          onChange={handleOnChange}
-          className="h-[2.20rem]"
-          data={category?.data?.category}
-          value={formData.category_id}
+ id="category_id"
+ name="category_id"
+ label="Select Category"
+ onChange={handleOnChange}
+ className=""
+ data={category?.data?.category}
+ value={formData.category_id}
         />
         <DropdownCommon
-          id="product_type"
-          name="product_type"
-          label="Select Product Type"
-          onChange={handleOnChange}
-          className="h-[2.20rem]"
-          data={category?.data?.product_type}
-          value={formData.product_type}
+ id="product_type"
+ name="product_type"
+ label="Select Product Type"
+ onChange={handleOnChange}
+ className=""
+ data={category?.data?.product_type}
+ value={formData.product_type}
         />
 
         <InputElement
@@ -254,13 +254,13 @@ const EditProduct = () => {
         {category?.data?.branch?.warranty_controll && (
           <>
             <DropdownCommon
-              id="warranty_type"
-              label="Select Waranty/Guaranty Type"
-              name="warranty_type"
-              className="h-[2.20rem] mt-1"
-              data={warrantyTypeOptions}
-              value={String(formData.warranty_type ?? '0')}
-              onChange={handleOnChange}
+ id="warranty_type"
+ label="Select Waranty/Guaranty Type"
+ name="warranty_type"
+ className="mt-1"
+ data={warrantyTypeOptions}
+ value={String(formData.warranty_type ?? '0')}
+ onChange={handleOnChange}
             />
             <InputElement
               id="warranty_days"
@@ -284,13 +284,13 @@ const EditProduct = () => {
         )}
 
         <DropdownCommon
-          id="unit_id"
-          name="unit_id"
-          label="Select Unit"
-          className="h-[2.20rem] mt-1"
-          data={category?.data?.unit}
-          value={formData.unit_id}
-          onChange={handleOnChange}
+ id="unit_id"
+ name="unit_id"
+ label="Select Unit"
+ className="mt-1"
+ data={category?.data?.unit}
+ value={formData.unit_id}
+ onChange={handleOnChange}
         />
         <InputElement
           id="order_level"

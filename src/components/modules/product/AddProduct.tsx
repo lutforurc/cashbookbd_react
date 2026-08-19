@@ -353,13 +353,13 @@ console.log('====================================');
           </div>
         )}
         {/* <DropdownCommon
-          id="category_id"
-          name={'category_id'}
-          label="Select Category"
-          onChange={handleOnChange}
-          className="h-[2.20rem]"
-          data={category?.ddlData?.data?.category}
-          defaultValue={formData?.category_id?.toString() ?? ''}
+ id="category_id"
+ name={'category_id'}
+ label="Select Category"
+ onChange={handleOnChange}
+ className=""
+ data={category?.ddlData?.data?.category}
+ defaultValue={formData?.category_id?.toString() ?? ''}
         /> */}
         <InputElement
           id="name"
@@ -404,13 +404,13 @@ console.log('====================================');
         {settings?.data?.branch?.warranty_controll ? (
           <>
             <DropdownCommon
-              id="warranty_type"
-              label="Select Waranty/Guaranty Type"
-              onChange={handleOnChange}
-              name="warranty_type"
-              className="h-[2.20rem]"
-              data={warrantyTypeOptions}
-              value={formData?.warranty_type?.toString() || '0'}
+ id="warranty_type"
+ label="Select Waranty/Guaranty Type"
+ onChange={handleOnChange}
+ name="warranty_type"
+ className=""
+ data={warrantyTypeOptions}
+ value={formData?.warranty_type?.toString() || '0'}
             />
             <InputElement
               id="warranty_days"
@@ -439,25 +439,25 @@ console.log('====================================');
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           <div className="w-full">
             <DropdownCommon
-              id="product_type"
-              label="Select Product Type"
-              onChange={handleOnChange}
-              name="product_type"
-              className="h-[2.20rem] w-full"
-              data={category?.ddlData?.data?.product_type}
-              value={formData?.product_type?.toString() ?? ''}
+ id="product_type"
+ label="Select Product Type"
+ onChange={handleOnChange}
+ name="product_type"
+ className="w-full"
+ data={category?.ddlData?.data?.product_type}
+ value={formData?.product_type?.toString() ?? ''}
             />
           </div>
 
           <div className="w-full">
             <DropdownCommon
-              id="unit_id"
-              label="Select Unit"
-              onChange={handleOnChange}
-              name="unit_id"
-              className="h-[2.20rem] w-full"
-              data={category?.ddlData?.data?.unit}
-              value={formData?.unit_id?.toString() ?? ''}
+ id="unit_id"
+ label="Select Unit"
+ onChange={handleOnChange}
+ name="unit_id"
+ className="w-full"
+ data={category?.ddlData?.data?.unit}
+ value={formData?.unit_id?.toString() ?? ''}
             />
           </div>
         </div>

@@ -605,10 +605,10 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           />
         </div>
         <div className="min-w-60">
-          <DropdownCommon id="month" name="month" label="Month" value={filters.month} data={monthOptions} onChange={handleChange} className="h-10 font-medium" />
+          <DropdownCommon id="month" name="month" label="Month" value={filters.month} data={monthOptions} onChange={handleChange} className="font-medium" />
         </div>
         <div className="min-w-60">
-          <DropdownCommon id="year" name="year" label="Year" value={filters.year} data={yearOptions} onChange={handleChange} className="h-10 font-medium" />
+          <DropdownCommon id="year" name="year" label="Year" value={filters.year} data={yearOptions} onChange={handleChange} className="font-medium" />
         </div>
         <div className="ml-auto flex items-end gap-2 max-md:ml-0">
           <ButtonLoading

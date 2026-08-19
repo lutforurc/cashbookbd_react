@@ -105,54 +105,54 @@ const AddEditUnitChargeType = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <InputElement
-          label="Charge Type Name"
-          name="name"
-          className="h-8.5"
-          value={form.name}
-          onChange={handleChange}
+ label="Charge Type Name"
+ name="name"
+ className=""
+ value={form.name}
+ onChange={handleChange}
         />
 
         <DropdownCommon
-          label="Effect"
-          name="effect"
-          data={[
+ label="Effect"
+ name="effect"
+ data={[
             { id: "+", name: "(+) Add" },
             { id: "-", name: "(-) Subtract" },
           ]}
-          className="h-8.5"
-          value={form.effect}
-          onChange={handleChange}
+ className=""
+ value={form.effect}
+ onChange={handleChange}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-2 mb-3">
        <InputElement
-          label="Notes"
-          name="notes"
-          value={form.notes ?? ""}
-          onChange={handleChange}
-          className="h-8.5"
+ label="Notes"
+ name="notes"
+ value={form.notes ?? ""}
+ onChange={handleChange}
+ className=""
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <InputElement
-          label="Sort Order"
-          name="sort_order"
-          type="number"
-          value={form.sort_order}
-          onChange={handleChange}
-          className="h-8.5"
+ label="Sort Order"
+ name="sort_order"
+ type="number"
+ value={form.sort_order}
+ onChange={handleChange}
+ className=""
         />
         <DropdownCommon
-          label="Status"
-          name="is_active"
-          data={[
+ label="Status"
+ name="is_active"
+ data={[
             { id: 1, name: "Active" },
             { id: 0, name: "Inactive" },
           ]}
-          value={form.is_active}
-          onChange={handleChange}
-          className="h-8.5"
+ value={form.is_active}
+ onChange={handleChange}
+ className=""
         />
       </div>
 

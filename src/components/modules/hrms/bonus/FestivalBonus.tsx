@@ -398,14 +398,14 @@ const FestivalBonus = ({ user }: any) => {
               
               <div className="">
                 <PrintFontInput
-                  id="print_font_size_inline"
-                  value={String(fontSize)}
-                  name="print_font_size_inline"
-                  placeholder="Font Size"
-                  label=""
-                  className="mt-0 h-10 w-20! text-center"
-                  type="number"
-                  onChange={(e) => setFontSize(Number(e.target.value) || 11)}
+ id="print_font_size_inline"
+ value={String(fontSize)}
+ name="print_font_size_inline"
+ placeholder="Font Size"
+ label=""
+ className="mt-0 w-20! text-center"
+ type="number"
+ onChange={(e) => setFontSize(Number(e.target.value) || 11)}
                 />
               </div>
               <ButtonLoading onClick={handleSearch} label="Search" icon={<FiSearch size={15} />} className="h-10 px-6 bg-meta-4 hover:bg-graydark" />

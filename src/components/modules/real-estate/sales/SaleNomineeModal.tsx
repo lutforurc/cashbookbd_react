@@ -309,14 +309,14 @@ const SaleNomineeModal: React.FC<Props> = ({ unit, onClose, onSaved }) => {
                       <td className="p-2">
                         {pick?.checked ? (
                           <InputElement
-                            id={`sale-nominee-order-${nominee.id}`}
-                            name={`sale-nominee-order-${nominee.id}`}
-                            type="number"
-                            label=""
-                            placeholder="1"
-                            className="h-7 w-full text-center text-xs"
-                            value={pick.priority}
-                            onChange={(e: any) =>
+ id={`sale-nominee-order-${nominee.id}`}
+ name={`sale-nominee-order-${nominee.id}`}
+ type="number"
+ label=""
+ placeholder="1"
+ className="w-full text-center text-xs"
+ value={pick.priority}
+ onChange={(e: any) =>
                               setField(nominee.id, "priority", e.target.value)
                             }
                           />
@@ -325,14 +325,14 @@ const SaleNomineeModal: React.FC<Props> = ({ unit, onClose, onSaved }) => {
                       <td className="p-2">
                         {pick?.checked ? (
                           <InputElement
-                            id={`sale-nominee-share-${nominee.id}`}
-                            name={`sale-nominee-share-${nominee.id}`}
-                            type="number"
-                            label=""
-                            placeholder="%"
-                            className="h-7 w-full text-right text-xs"
-                            value={pick.share}
-                            onChange={(e: any) =>
+ id={`sale-nominee-share-${nominee.id}`}
+ name={`sale-nominee-share-${nominee.id}`}
+ type="number"
+ label=""
+ placeholder="%"
+ className="w-full text-right text-xs"
+ value={pick.share}
+ onChange={(e: any) =>
                               setField(nominee.id, "share", e.target.value)
                             }
                           />

@@ -447,13 +447,13 @@ const ProductStockNormal = ({ user }: any) => {
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Show Rows</label>
                       <PrintRowsInput
-                        id="perPage"
-                        name="perPage"
-                        label=""
-                        value={perPage.toString()}
-                        onChange={handlePerPageChange}
-                        type="text"
-                        className="text-sm h-10 w-20!"
+ id="perPage"
+ name="perPage"
+ label=""
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="text-sm w-20!"
                       />
                     </div>
                   )}
@@ -496,29 +496,29 @@ const ProductStockNormal = ({ user }: any) => {
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
-                      setCurrentDate={handleStartDate}
-                      className="w-full font-medium text-sm h-10"
-                      selectedDate={startDate}
-                      setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="w-full font-medium text-sm "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
                     />
                   </div>
 
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
-                      setCurrentDate={handleEndDate}
-                      className="w-full font-medium text-sm h-10"
-                      selectedDate={endDate}
-                      setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="w-full font-medium text-sm "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
                     />
                   </div>
 
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Search</label>
                     <SearchInput
-                      search={search}
-                      setSearchValue={setSearchValue}
-                      className="text-nowrap h-10 bg-transparent w-full"
+ search={search}
+ setSearchValue={setSearchValue}
+ className="text-nowrap bg-transparent w-full"
                     />
                   </div>
 
@@ -548,22 +548,22 @@ const ProductStockNormal = ({ user }: any) => {
                   {!useFilterMenuEnabled && (
                     <div className="hidden items-end justify-end gap-2 xl:max-[1880px]:flex">
                       <PrintRowsInput
-                        id="perPageToolbar"
-                        name="perPageToolbar"
-                        label="Rows"
-                        value={perPage.toString()}
-                        onChange={handlePerPageChange}
-                        type="text"
-                        className="font-medium text-sm h-10 w-16! sm:w-20!"
+ id="perPageToolbar"
+ name="perPageToolbar"
+ label="Rows"
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="font-medium text-sm w-16! sm:w-20!"
                       />
                       <PrintFontInput
-                        id="fontSizeToolbar"
-                        name="fontSizeToolbar"
-                        label="Font"
-                        value={fontSize.toString()}
-                        onChange={handleFontSizeChange}
-                        type="text"
-                        className="font-medium text-sm h-10 w-16! sm:w-20!"
+ id="fontSizeToolbar"
+ name="fontSizeToolbar"
+ label="Font"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="font-medium text-sm w-16! sm:w-20!"
                       />
 
                       <PrintButton
@@ -605,22 +605,22 @@ const ProductStockNormal = ({ user }: any) => {
 
           <div className={`ml-auto flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:justify-end ${useFilterMenuEnabled ? '' : 'xl:max-[1880px]:hidden'}`}>
             <PrintRowsInput
-              id="perPage"
-              name="perPage"
-              label="Rows"
-              value={perPage.toString()}
-              onChange={handlePerPageChange}
-              type="text"
-              className="font-medium text-sm h-10 w-16! sm:w-20!"
+ id="perPage"
+ name="perPage"
+ label="Rows"
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="font-medium text-sm w-16! sm:w-20!"
             />
             <PrintFontInput
-              id="fontSize"
-              name="fontSize"
-              label="Font"
-              value={fontSize.toString()}
-              onChange={handleFontSizeChange}
-              type="text"
-              className="font-medium text-sm h-10 w-16! sm:w-20!"
+ id="fontSize"
+ name="fontSize"
+ label="Font"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="font-medium text-sm w-16! sm:w-20!"
             />
 
             <PrintButton

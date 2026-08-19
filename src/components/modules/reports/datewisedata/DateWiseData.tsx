@@ -312,20 +312,20 @@ const DateWiseData = (user: any) => {
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
-                      selectedDate={startDate}
-                      setSelectedDate={setStartDate}
-                      setCurrentDate={setStartDate}
-                      className="w-full h-10 text-sm"
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="w-full text-sm"
                     />
                   </div>
 
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
-                      selectedDate={endDate}
-                      setSelectedDate={setEndDate}
-                      setCurrentDate={setEndDate}
-                      className="w-full h-10 text-sm"
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="w-full text-sm"
                     />
                   </div>
 

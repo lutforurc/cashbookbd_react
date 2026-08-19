@@ -440,11 +440,11 @@ const ProductStock = ({ user }: any) => {
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Show Rows</label>
                       <PrintRowsInput
-                        label=""
-                        value={perPage.toString()}
-                        onChange={handlePerPageChange}
-                        type="text"
-                        className="w-20! text-sm h-10"
+ label=""
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="w-20! text-sm "
                       />
                     </div>
                   )}
@@ -492,29 +492,29 @@ const ProductStock = ({ user }: any) => {
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
-                      setCurrentDate={handleStartDate}
-                      className="w-full text-sm h-10"
-                      selectedDate={startDate}
-                      setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="w-full text-sm "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
                     />
                   </div>
 
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
-                      setCurrentDate={handleEndDate}
-                      className="w-full text-sm h-10"
-                      selectedDate={endDate}
-                      setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="w-full text-sm "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
                     />
                   </div>
 
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Search</label>
                     <SearchInput
-                      search={search}
-                      setSearchValue={setSearchValue}
-                      className="w-full text-sm h-10"
+ search={search}
+ setSearchValue={setSearchValue}
+ className="w-full text-sm "
                     />
                   </div>
 
@@ -544,18 +544,18 @@ const ProductStock = ({ user }: any) => {
                   {!useFilterMenuEnabled && (
                     <div className="hidden items-end justify-end gap-2 xl:max-[1880px]:flex">
                       <PrintRowsInput
-                        label="Rows"
-                        value={perPage.toString()}
-                        onChange={handlePerPageChange}
-                        type="text"
-                        className="w-16! text-sm h-10 text-center sm:w-20!"
+ label="Rows"
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="w-16! text-sm text-center sm:w-20!"
                       />
                       <PrintFontInput
-                        label="Font"
-                        value={fontSize.toString()}
-                        onChange={handleFontSizeChange}
-                        type="text"
-                        className="w-16! text-sm h-10 text-center sm:w-20!"
+ label="Font"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="w-16! text-sm text-center sm:w-20!"
                       />
                       <PrintButton onClick={handlePrint} label="" className="h-10 px-4 sm:px-6" />
                     </div>
@@ -594,18 +594,18 @@ const ProductStock = ({ user }: any) => {
 
           <div className={`ml-auto flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:justify-end ${useFilterMenuEnabled ? '' : 'xl:max-[1880px]:hidden'}`}>
             <PrintRowsInput
-              label="Rows"
-              value={perPage.toString()}
-              onChange={handlePerPageChange}
-              type="text"
-              className="w-16! text-sm h-10 text-center sm:w-20!"
+ label="Rows"
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type="text"
+ className="w-16! text-sm text-center sm:w-20!"
             />
             <PrintFontInput
-              label="Font"
-              value={fontSize.toString()}
-              onChange={handleFontSizeChange}
-              type="text"
-              className="w-16! text-sm h-10 text-center sm:w-20!"
+ label="Font"
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="w-16! text-sm text-center sm:w-20!"
             />
             <PrintButton onClick={handlePrint} label="" className="h-10 px-4 sm:px-6" />
           </div>

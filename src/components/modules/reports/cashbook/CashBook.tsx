@@ -463,20 +463,20 @@ const CashBook = (user: any) => {
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
               <InputDatePicker
-                setCurrentDate={handleStartDate}
-                className="font-medium text-sm w-full h-10"
-                selectedDate={startDate}
-                setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
               />
             </div>
 
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
               <InputDatePicker
-                setCurrentDate={handleEndDate}
-                className="font-medium text-sm w-full h-10"
-                selectedDate={endDate}
-                setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="font-medium text-sm w-full "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
               />
             </div>
 
@@ -519,13 +519,13 @@ const CashBook = (user: any) => {
                     Rows
                   </label>
                   <PrintRowsInput
-                    id="perPage"
-                    name="perPage"
-                    label=""
-                    value={perPage.toString()}
-                    onChange={handlePerPageChange}
-                    type='text'
-                    className="font-medium text-sm h-10 w-full! text-center"
+ id="perPage"
+ name="perPage"
+ label=""
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type='text'
+ className="font-medium text-sm w-full! text-center"
                   />
               </div>
 
@@ -534,13 +534,13 @@ const CashBook = (user: any) => {
                     Font
                   </label>
                   <PrintFontInput
-                    id="fontSize"
-                    name="fontSize"
-                    label=""
-                    value={fontSize.toString()}
-                    onChange={handleFontSizeChange}
-                    type='text'
-                    className="font-medium text-sm h-10 w-full! text-center"
+ id="fontSize"
+ name="fontSize"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type='text'
+ className="font-medium text-sm w-full! text-center"
                   />
               </div>
               <PrintButton
@@ -569,26 +569,26 @@ const CashBook = (user: any) => {
               <div>
                     
                     <PrintRowsInput
-                      id="perPage"
-                      name="perPage"
-                      label=""
-                      value={perPage.toString()}
-                      onChange={handlePerPageChange}
-                      type='text'
-                      className="font-medium text-sm h-10 w-20! text-center"
+ id="perPage"
+ name="perPage"
+ label=""
+ value={perPage.toString()}
+ onChange={handlePerPageChange}
+ type='text'
+ className="font-medium text-sm w-20! text-center"
                     />
               </div>
 
               <div>
                     
                     <PrintFontInput
-                      id="fontSize"
-                      name="fontSize"
-                      label=""
-                      value={fontSize.toString()}
-                      onChange={handleFontSizeChange}
-                      type='text'
-                      className="font-medium text-sm h-10 w-20! text-center"
+ id="fontSize"
+ name="fontSize"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type='text'
+ className="font-medium text-sm w-20! text-center"
                     />
               </div>
               <PrintButton

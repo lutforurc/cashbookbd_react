@@ -738,10 +738,10 @@ const ExpenseReport = (user: any) => {
                         Start Date
                       </label>
                       <InputDatePicker
-                        selectedDate={startDate}
-                        setSelectedDate={setStartDate}
-                        setCurrentDate={setStartDate}
-                        className="h-10 w-full rounded-sm"
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="w-full rounded-sm"
                       />
                     </div>
 
@@ -750,10 +750,10 @@ const ExpenseReport = (user: any) => {
                         End Date
                       </label>
                       <InputDatePicker
-                        selectedDate={endDate}
-                        setSelectedDate={setEndDate}
-                        setCurrentDate={setEndDate}
-                        className="h-10 w-full rounded-sm"
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="w-full rounded-sm"
                       />
                     </div>
 
@@ -766,12 +766,12 @@ const ExpenseReport = (user: any) => {
                         Report Type
                       </label>
                       <DropdownCommon
-                        id="view_mode"
-                        name="view_mode"
-                        className="h-10"
-                        value={viewMode}
-                        data={VIEW_MODES}
-                        onChange={(e) => setViewMode(e.target.value as ViewMode)}
+ id="view_mode"
+ name="view_mode"
+ className=""
+ value={viewMode}
+ data={VIEW_MODES}
+ onChange={(e) => setViewMode(e.target.value as ViewMode)}
                       />
                     </div>
 

@@ -165,8 +165,8 @@ const CashBankReceivedPayment = ({ user }: { user: any }) => {
               branchDdl={branches}
             />
           </div>
-          <div><label className={labelClass}>Start Date <span className="text-red-500">*</span></label><InputDatePicker selectedDate={startDate} setSelectedDate={setStartDate} setCurrentDate={setStartDate} className="font-medium text-sm w-full h-10" /></div>
-          <div><label className={labelClass}>End Date <span className="text-red-500">*</span></label><InputDatePicker selectedDate={endDate} setSelectedDate={setEndDate} setCurrentDate={setEndDate} className="font-medium text-sm w-full h-10" /></div>
+          <div><label className={labelClass}>Start Date <span className="text-red-500">*</span></label><InputDatePicker selectedDate={startDate} setSelectedDate={setStartDate} setCurrentDate={setStartDate} className="font-medium text-sm w-full " /></div>
+          <div><label className={labelClass}>End Date <span className="text-red-500">*</span></label><InputDatePicker selectedDate={endDate} setSelectedDate={setEndDate} setCurrentDate={setEndDate} className="font-medium text-sm w-full " /></div>
         </div>
         <div className="grid min-w-max grid-cols-[auto_auto_88px_88px_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
           <ButtonLoading onClick={loadReport} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="h-10 px-5" />

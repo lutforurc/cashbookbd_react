@@ -269,13 +269,13 @@ const MaterialIssue = () => {
       <HelmetTitle title="Material Issue" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-2 mb-4">
         <InputDatePicker
-          id="issueDate"
-          name="issueDate"
-          label="Issue Date"
-          selectedDate={issueDate}
-          setSelectedDate={setIssueDate}
-          setCurrentDate={handleIssueDateChange}
-          className="w-full h-9.5"
+ id="issueDate"
+ name="issueDate"
+ label="Issue Date"
+ selectedDate={issueDate}
+ setSelectedDate={setIssueDate}
+ setCurrentDate={handleIssueDateChange}
+ className="w-full "
         />
         <div>
           <label className="text-black dark:text-white">From Warehouse</label>
@@ -306,22 +306,22 @@ const MaterialIssue = () => {
           </Select>
         </div>
         <InputElement
-          id="receivedBy"
-          name="receivedBy"
-          label="Received By"
-          placeholder="Site engineer / receiver"
-          value={formData.receivedBy}
-          onChange={handleFormInput}
-          className="w-full h-9.5"
+ id="receivedBy"
+ name="receivedBy"
+ label="Received By"
+ placeholder="Site engineer / receiver"
+ value={formData.receivedBy}
+ onChange={handleFormInput}
+ className="w-full "
         />
         <InputElement
-          id="note"
-          name="note"
-          label="Note"
-          placeholder="Issue note"
-          value={formData.note}
-          onChange={handleFormInput}
-          className="w-full h-9.5"
+ id="note"
+ name="note"
+ label="Note"
+ placeholder="Issue note"
+ value={formData.note}
+ onChange={handleFormInput}
+ className="w-full "
         />
 
         <div className="md:col-span-2 mt-2 border-t border-gray-200 dark:border-gray-700 pt-3">
@@ -346,47 +346,47 @@ const MaterialIssue = () => {
             </div>
             <div className="md:col-span-2">
               <InputElement
-                id="quantity"
-                name="quantity"
-                className="h-9.5"
-                type="number"
-                label={`Quantity ${lineItem.unit ? `(${lineItem.unit})` : ''}`}
-                value={lineItem.quantity}
-                placeholder="0"
-                onChange={handleLineItemChange}
+ id="quantity"
+ name="quantity"
+ className=""
+ type="number"
+ label={`Quantity ${lineItem.unit ? `(${lineItem.unit})` : ''}`}
+ value={lineItem.quantity}
+ placeholder="0"
+ onChange={handleLineItemChange}
               />
             </div>
             <div className="md:col-span-2">
               <InputElement
-                id="building"
-                name="building"
-                className="h-9.5"
-                label="Building / Floor"
-                value={lineItem.building}
-                placeholder="e.g. Building A, 3rd floor"
-                onChange={handleLineItemChange}
+ id="building"
+ name="building"
+ className=""
+ label="Building / Floor"
+ value={lineItem.building}
+ placeholder="e.g. Building A, 3rd floor"
+ onChange={handleLineItemChange}
               />
             </div>
             <div className="md:col-span-2">
               <InputElement
-                id="workItem"
-                name="workItem"
-                className="h-9.5"
-                label="Work Item"
-                value={lineItem.workItem}
-                placeholder="e.g. Plaster, Casting"
-                onChange={handleLineItemChange}
+ id="workItem"
+ name="workItem"
+ className=""
+ label="Work Item"
+ value={lineItem.workItem}
+ placeholder="e.g. Plaster, Casting"
+ onChange={handleLineItemChange}
               />
             </div>
             <div className="md:col-span-2">
               <InputElement
-                id="lineNote"
-                name="note"
-                className="h-9.5"
-                label="Line Note"
-                value={lineItem.note}
-                placeholder="Optional"
-                onChange={handleLineItemChange}
+ id="lineNote"
+ name="note"
+ className=""
+ label="Line Note"
+ value={lineItem.note}
+ placeholder="Optional"
+ onChange={handleLineItemChange}
               />
             </div>
           </div>

@@ -230,12 +230,12 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
               Customer Type
             </label>
             <DropdownCommon
-              id="type_id"
-              name="type_id"
-              onChange={handleInputChange}
-              value={formData.type_id}
-              className="h-[2.4rem] bg-transparent"
-              data={ClientType}
+ id="type_id"
+ name="type_id"
+ onChange={handleInputChange}
+ value={formData.type_id}
+ className="bg-transparent"
+ data={ClientType}
             />
             {errors.type_id && (
               <p className="mt-1 text-xs text-red-500">{errors.type_id}</p>

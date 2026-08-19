@@ -159,13 +159,13 @@ const HighlightRules = () => {
               Phrase <span className="text-rose-500">*</span>
             </label>
             <InputElement
-              id="hl-phrase"
-              name="phrase"
-              label=""
-              value={form.phrase}
-              placeholder="e.g. Not Yet Reports"
-              className="h-10 w-full!"
-              onChange={(e: any) =>
+ id="hl-phrase"
+ name="phrase"
+ label=""
+ value={form.phrase}
+ placeholder="e.g. Not Yet Reports"
+ className="w-full!"
+ onChange={(e: any) =>
                 setForm((f) => ({ ...f, phrase: e.target.value.slice(0, 255) }))
               }
             />
@@ -192,14 +192,14 @@ const HighlightRules = () => {
           <div>
             <label className={labelClass}>Priority</label>
             <InputElement
-              id="hl-priority"
-              name="priority"
-              type="number"
-              label=""
-              value={form.priority}
-              placeholder="0"
-              className="h-10 w-full!"
-              onChange={(e: any) =>
+ id="hl-priority"
+ name="priority"
+ type="number"
+ label=""
+ value={form.priority}
+ placeholder="0"
+ className="w-full!"
+ onChange={(e: any) =>
                 setForm((f) => ({ ...f, priority: Number(e.target.value) || 0 }))
               }
             />

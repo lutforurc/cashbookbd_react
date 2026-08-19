@@ -195,20 +195,20 @@ const Requisition = (user: any) => {
           <div className="w-full">
             <label htmlFor="">Start Date</label>
             <InputDatePicker
-              setCurrentDate={handleStartDate}
-              className="font-medium text-sm w-full h-9"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
+ setCurrentDate={handleStartDate}
+ className="font-medium text-sm w-full "
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
             />
           </div>
 
           <div>
             <label htmlFor="">End Date</label>
             <InputDatePicker
-              setCurrentDate={handleEndDate}
-              className="w-full font-medium text-sm h-9"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
+ setCurrentDate={handleEndDate}
+ className="w-full font-medium text-sm "
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
             />
           </div>
 

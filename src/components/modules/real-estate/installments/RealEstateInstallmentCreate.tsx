@@ -656,13 +656,13 @@ export default function RealEstateInstallmentCreate() {
             </div>
             <div className="md:col-span-5">
               <InputElement
-                id="customer_search"
-                name="customer_search"
-                label="Customer / Mobile / Unit"
-                placeholder="Type customer, mobile or unit"
-                className="h-8.5"
-                value={customerSearch}
-                onChange={(e: any) => setCustomerSearch(e.target.value)}
+ id="customer_search"
+ name="customer_search"
+ label="Customer / Mobile / Unit"
+ placeholder="Type customer, mobile or unit"
+ className=""
+ value={customerSearch}
+ onChange={(e: any) => setCustomerSearch(e.target.value)}
               />
             </div>
             <div className="flex items-end md:col-span-2">
@@ -728,33 +728,33 @@ export default function RealEstateInstallmentCreate() {
             </div>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <InputElement
-                id="installment_amount"
-                name="installment_amount"
-                label="Installment Amount"
-                type="number"
-                className="h-8.5"
-                disabled={scheduleLocked}
-                value={installmentAmount}
-                onChange={(e: any) => setInstallmentAmount(e.target.value)}
+ id="installment_amount"
+ name="installment_amount"
+ label="Installment Amount"
+ type="number"
+ className=""
+ disabled={scheduleLocked}
+ value={installmentAmount}
+ onChange={(e: any) => setInstallmentAmount(e.target.value)}
               />
               <InputElement
-                id="number_of_installments"
-                name="number_of_installments"
-                label="Installments No."
-                type="number"
-                className="h-8.5"
-                disabled={scheduleLocked}
-                value={numberOfInstallments}
-                onChange={(e: any) => setNumberOfInstallments(e.target.value)}
+ id="number_of_installments"
+ name="number_of_installments"
+ label="Installments No."
+ type="number"
+ className=""
+ disabled={scheduleLocked}
+ value={numberOfInstallments}
+ onChange={(e: any) => setNumberOfInstallments(e.target.value)}
               />
               <div>
                 <label className="mb-1 block text-sm text-gray-900 dark:text-white">Start Date</label>
                 <InputDatePicker
-                  selectedDate={startDate}
-                  setSelectedDate={setStartDate}
-                  setCurrentDate={setStartDate}
-                  className="font-medium text-sm w-full h-8.5"
-                  disabled={scheduleLocked}
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="font-medium text-sm w-full "
+ disabled={scheduleLocked}
                 />
               </div>
             </div>
@@ -781,24 +781,24 @@ export default function RealEstateInstallmentCreate() {
                   disabled box each get half right. */}
               <div className={earlyPayment ? '' : 'invisible'} aria-hidden={!earlyPayment}>
                 <InputElement
-                  id="early_discount"
-                  name="early_discount"
-                  label="Early Discount"
-                  type="number"
-                  className="h-8.5"
-                  disabled={scheduleLocked}
-                  value={earlyDiscount}
-                  onChange={(e: any) => setEarlyDiscount(e.target.value)}
+ id="early_discount"
+ name="early_discount"
+ label="Early Discount"
+ type="number"
+ className=""
+ disabled={scheduleLocked}
+ value={earlyDiscount}
+ onChange={(e: any) => setEarlyDiscount(e.target.value)}
                 />
               </div>
               <div className={earlyPayment ? '' : 'invisible'} aria-hidden={!earlyPayment}>
                 <label className="mb-1 block text-sm text-gray-900 dark:text-white">Early Payment Date</label>
                 <InputDatePicker
-                  selectedDate={earlyPaymentDate}
-                  setSelectedDate={setEarlyPaymentDate}
-                  setCurrentDate={setEarlyPaymentDate}
-                  className="font-medium text-sm w-full h-8.5"
-                  disabled={scheduleLocked}
+ selectedDate={earlyPaymentDate}
+ setSelectedDate={setEarlyPaymentDate}
+ setCurrentDate={setEarlyPaymentDate}
+ className="font-medium text-sm w-full "
+ disabled={scheduleLocked}
                 />
               </div>
             </div>

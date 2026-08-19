@@ -681,16 +681,16 @@ const AddOrder = (user: any) => {
                 )}
                 <div className="md:col-span-2">
                     <InputElement id="order_number"
-                        value={formData.order_number}
-                        name="order_number"
-                        placeholder={'Enter Order Number'}
-                        label={'Enter Order Number'}
-                        className={'h-10'}
-                        list="order-number-suggestions"
-                        autoComplete="off"
-                        onChange={handleOrderChange}
+ value={formData.order_number}
+ name="order_number"
+ placeholder={'Enter Order Number'}
+ label={'Enter Order Number'}
+ className={''}
+ list="order-number-suggestions"
+ autoComplete="off"
+ onChange={handleOrderChange}
 
-                        onKeyDown={(e) => {
+ onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 focusNextField('delivery_location');
                             }
@@ -705,17 +705,17 @@ const AddOrder = (user: any) => {
                 </datalist>
                 <div className="md:col-span-2">
                     <InputElement id="delivery_location"
-                        value={formData.delivery_location || ''}
+ value={formData.delivery_location || ''}
 
-                        name="delivery_location"
-                        placeholder={'Delivery Location'}
-                        label={'Delivery Location'}
-                        className={'h-10'}
-                        list="order-delivery-location-suggestions"
-                        autoComplete="off"
-                        onChange={handleOrderChange}
+ name="delivery_location"
+ placeholder={'Delivery Location'}
+ label={'Delivery Location'}
+ className={''}
+ list="order-delivery-location-suggestions"
+ autoComplete="off"
+ onChange={handleOrderChange}
 
-                        onKeyDown={(e) => {
+ onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 focusNextField('order_date');
                             }
@@ -731,13 +731,13 @@ const AddOrder = (user: any) => {
                 <div className='w-full md:col-span-2'>
                     <label htmlFor="">Order Date</label>
                     <InputDatePicker
-                        id='order_date'
-                        name='order_date'
-                        setCurrentDate={handleOrderDate}
-                        className=" w-full px-1.5 h-10"
-                        selectedDate={orderDate}
-                        setSelectedDate={setOrderDate}
-                        onKeyDown={(e) => {
+ id='order_date'
+ name='order_date'
+ setCurrentDate={handleOrderDate}
+ className="w-full px-1.5 "
+ selectedDate={orderDate}
+ setSelectedDate={setOrderDate}
+ onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -750,13 +750,13 @@ const AddOrder = (user: any) => {
                 <div className='w-full md:col-span-2'>
                     <label htmlFor="">Last Delivery Date</label>
                     <InputDatePicker
-                        id='last_delivery_date'
-                        name='last_delivery_date'
-                        setCurrentDate={handleLastDeliveryDate}
-                        className=" w-full px-1.5 h-10"
-                        selectedDate={lastDeliveryDate}
-                        setSelectedDate={setLastDeliveryDate}
-                        onKeyDown={(e) => {
+ id='last_delivery_date'
+ name='last_delivery_date'
+ setCurrentDate={handleLastDeliveryDate}
+ className="w-full px-1.5 "
+ selectedDate={lastDeliveryDate}
+ setSelectedDate={setLastDeliveryDate}
+ onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -771,27 +771,27 @@ const AddOrder = (user: any) => {
                     // outer grid rather than sharing one.
                     <>
                         <InputElement id="total_order"
-                            value={formData.total_order || ""}
-                            name="total_order"
-                            placeholder={'Total Order Qty'}
-                            label={'Total Order Qty'}
-                            className={'h-10'}
-                            onChange={handleOrderChange}
-                            onKeyDown={(e) => {
+ value={formData.total_order || ""}
+ name="total_order"
+ placeholder={'Total Order Qty'}
+ label={'Total Order Qty'}
+ className={''}
+ onChange={handleOrderChange}
+ onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     focusNextField('order_rate');
                                 }
                             }}
                         />
                         <InputElement id="order_rate"
-                            type="number"
-                            value={formData.order_rate || ''}
-                            name="order_rate"
-                            placeholder={'Order Rate'}
-                            label={'Order Rate'}
-                            className={'h-10'}
-                            onChange={handleOrderChange}
-                            onKeyDown={(e) => {
+ type="number"
+ value={formData.order_rate || ''}
+ name="order_rate"
+ placeholder={'Order Rate'}
+ label={'Order Rate'}
+ className={''}
+ onChange={handleOrderChange}
+ onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     focusNextField('contract_order_qty');
                                 }
@@ -802,14 +802,14 @@ const AddOrder = (user: any) => {
                 )}
                 {multiProductOrder ? null : (
                     <InputElement id="contract_order_qty"
-                        type="number"
-                        value={formData.contract_order_qty || ""}
-                        name="contract_order_qty"
-                        placeholder={'Contract Order Qty'}
-                        label={'Contract Order Qty'}
-                        className={'h-10'}
-                        onChange={handleOrderChange}
-                        onKeyDown={(e) => {
+ type="number"
+ value={formData.contract_order_qty || ""}
+ name="contract_order_qty"
+ placeholder={'Contract Order Qty'}
+ label={'Contract Order Qty'}
+ className={''}
+ onChange={handleOrderChange}
+ onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 focusNextField('order_type');
                             }
@@ -840,16 +840,16 @@ const AddOrder = (user: any) => {
                 </div>
                 <div className="md:col-span-2">
                     <InputElement
-                        id="notes"
-                        value={formData.notes || ''}
-                        name="notes"
-                        placeholder={'Note'}
-                        label={'Note'}
-                        className={'h-10'}
-                        list="order-note-suggestions"
-                        autoComplete="off"
-                        onChange={handleOrderChange}
-                        onKeyDown={(e) => {
+ id="notes"
+ value={formData.notes || ''}
+ name="notes"
+ placeholder={'Note'}
+ label={'Note'}
+ className={''}
+ list="order-note-suggestions"
+ autoComplete="off"
+ onChange={handleOrderChange}
+ onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -896,14 +896,14 @@ const AddOrder = (user: any) => {
                 </div>
                 <div className="md:col-span-2">
                     <DropdownCommon
-                        id="status"
-                        name={'status'}
-                        label="Order Status"
-                        onChange={handleOnSelectChange}
-                        className="h-10 bg-transparent"
-                        value={formData?.status?.toString() ?? ''}
-                        data={ORDER_STATUS}
-                        onKeyDown={(e) => {
+ id="status"
+ name={'status'}
+ label="Order Status"
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ value={formData?.status?.toString() ?? ''}
+ data={ORDER_STATUS}
+ onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
                                 e.stopPropagation();

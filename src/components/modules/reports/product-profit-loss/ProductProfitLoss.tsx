@@ -575,10 +575,10 @@ const ProductProfitLoss = (user: any) => {
                         Start Date
                       </label>
                       <InputDatePicker
-                        selectedDate={startDate}
-                        setSelectedDate={setStartDate}
-                        setCurrentDate={setStartDate}
-                        className="h-10 w-full"
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="w-full"
                       />
                     </div>
 
@@ -587,10 +587,10 @@ const ProductProfitLoss = (user: any) => {
                         End Date
                       </label>
                       <InputDatePicker
-                        selectedDate={endDate}
-                        setSelectedDate={setEndDate}
-                        setCurrentDate={setEndDate}
-                        className="h-10 w-full"
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="w-full"
                       />
                     </div>
 
@@ -634,23 +634,23 @@ const ProductProfitLoss = (user: any) => {
             {useFilterMenuEnabled ? (
               <div className="ml-auto flex items-end gap-2">
                 <PrintRowsInput
-                  id="rowsPerPage"
-                  name="rowsPerPage"
-                  label=""
-                  value={rowsPerPage.toString()}
-                  onChange={handleRowsPerPageChange}
-                  type="text"
-                  className="h-10 w-20! text-center"
+ id="rowsPerPage"
+ name="rowsPerPage"
+ label=""
+ value={rowsPerPage.toString()}
+ onChange={handleRowsPerPageChange}
+ type="text"
+ className="w-20! text-center"
                 />
 
                 <PrintFontInput
-                  id="fontSize"
-                  name="fontSize"
-                  label=""
-                  value={fontSize.toString()}
-                  onChange={handleFontSizeChange}
-                  type="text"
-                  className="h-10 w-20! text-center"
+ id="fontSize"
+ name="fontSize"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="w-20! text-center"
                 />
 
                 <PrintButton
@@ -681,23 +681,23 @@ const ProductProfitLoss = (user: any) => {
 
                 <div className="flex flex-nowrap items-end gap-2">
                   <PrintRowsInput
-                    id="rowsPerPage"
-                    name="rowsPerPage"
-                    label=""
-                    value={rowsPerPage.toString()}
-                    onChange={handleRowsPerPageChange}
-                    type="text"
-                    className="h-10 w-20! text-center"
+ id="rowsPerPage"
+ name="rowsPerPage"
+ label=""
+ value={rowsPerPage.toString()}
+ onChange={handleRowsPerPageChange}
+ type="text"
+ className="w-20! text-center"
                   />
 
                   <PrintFontInput
-                    id="fontSize"
-                    name="fontSize"
-                    label=""
-                    value={fontSize.toString()}
-                    onChange={handleFontSizeChange}
-                    type="text"
-                    className="h-10 w-20! text-center"
+ id="fontSize"
+ name="fontSize"
+ label=""
+ value={fontSize.toString()}
+ onChange={handleFontSizeChange}
+ type="text"
+ className="w-20! text-center"
                   />
 
                   <PrintButton
