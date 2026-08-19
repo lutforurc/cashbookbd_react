@@ -98,7 +98,7 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
             <button
               onClick={handlePrint}
               disabled={loading || !!error}
-              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
             >
               <FiPrinter /> Print
             </button>

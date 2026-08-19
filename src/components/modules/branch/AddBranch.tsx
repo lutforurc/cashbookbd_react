@@ -1725,7 +1725,7 @@ const AddBranch = () => {
                           buttonLoading={clearingOpening}
                           disabled={clearInFlight}
                           onClick={() => setConfirmClearOpening(true)}
-                          className="h-8.5 whitespace-nowrap rounded bg-danger hover:bg-opacity-90"
+                          className="h-8.5 whitespace-nowrap rounded bg-danger hover:bg-danger/90"
                         />
                       </div>
                     )}
@@ -1743,7 +1743,7 @@ const AddBranch = () => {
                           buttonLoading={clearingTransactions}
                           disabled={clearInFlight}
                           onClick={() => setConfirmClearTransactions(true)}
-                          className="h-8.5 whitespace-nowrap rounded bg-danger hover:bg-opacity-90"
+                          className="h-8.5 whitespace-nowrap rounded bg-danger hover:bg-danger/90"
                         />
                       </div>
                     )}
@@ -2018,7 +2018,7 @@ const AddBranch = () => {
               </>
             }
             confirmLabel="Clear Opening"
-            className="bg-danger hover:bg-opacity-90"
+            className="bg-danger hover:bg-danger/90"
             loading={clearingOpening}
             onCancel={() => setConfirmClearOpening(false)}
             onConfirm={handleClearOpening}
@@ -2044,7 +2044,7 @@ const AddBranch = () => {
               </>
             }
             confirmLabel="Clear Transactions"
-            className="bg-danger hover:bg-opacity-90"
+            className="bg-danger hover:bg-danger/90"
             loading={clearingTransactions}
             onCancel={() => setConfirmClearTransactions(false)}
             onConfirm={handleClearTransactions}

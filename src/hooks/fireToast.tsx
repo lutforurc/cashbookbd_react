@@ -11,7 +11,7 @@ const createToast = (title: string, msg: string, type: number) => {
           : type == '1'
           ? 'bg-[rgb(var(--c-meta-6))]'
           : 'bg-[rgb(var(--c-danger))]'
-      } shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+      } shadow-lg rounded-lg pointer-events-auto flex ring-1/5 ring-black`}
     >
       <div className="flex-1 w-0 p-4 ">
         <div className="flex items-start">

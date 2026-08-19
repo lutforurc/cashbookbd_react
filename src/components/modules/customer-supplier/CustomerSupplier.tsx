@@ -670,7 +670,7 @@ const CustomerSupplier = () => {
       />
 
       {showGuarantorModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-40 pt-50">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-50">
 
           {/* ===== Modal Box ===== */}
           <div
@@ -767,7 +767,7 @@ const CustomerSupplier = () => {
       )}
 
       {showNomineeModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-40 pt-50">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-50">
           <div
             className="
         bg-white dark:bg-gray-800

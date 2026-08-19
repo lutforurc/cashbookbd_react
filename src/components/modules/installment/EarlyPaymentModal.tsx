@@ -72,7 +72,7 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
       <div className="w-full max-w-xl rounded-lg border-2 border-gray-900 bg-white p-6 text-gray-900 shadow-md dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100">
         <h2 className="mb-1 text-lg font-bold">Early Payment</h2>
         <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">

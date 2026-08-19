@@ -117,7 +117,7 @@ const InstallmentDelete = () => {
 
       {/* ================= Confirmation Modal ================= */}
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-gray-900 text-white rounded-lg shadow-lg w-96 p-5">
             <h3 className="text-lg font-semibold mb-4">Confirm Deletion</h3>
             <p className="mb-4">

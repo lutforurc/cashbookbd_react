@@ -350,7 +350,7 @@ const allPayments = paymentList.map((pay: any) => ({
               </button>
               <button
                 onClick={() => dispatch(logout() as any)}
-                className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-opacity-90"
+                className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
               >
                 <FiLogOut />
                 <span>Logout</span>

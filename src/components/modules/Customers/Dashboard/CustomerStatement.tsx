@@ -127,7 +127,7 @@ const CustomerStatement: React.FC<CustomerStatementProps> = ({
         <button
           onClick={fetchStatement}
           disabled={loading}
-          className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-opacity-90 disabled:opacity-60"
+          className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary/90 disabled:opacity-60"
         >
           {loading ? 'Loading...' : 'Show'}
         </button>

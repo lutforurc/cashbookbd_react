@@ -56,7 +56,7 @@ const totalAmount = installments
 
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
       <div className="bg-white dark:bg-gray-800 p-6 rounded shadow-md w-96 text-gray-900 dark:text-gray-100 border-2 border-gray-900 dark:border-gray-400">
         <h2 className="text-lg font-bold mb-4">Installment Details</h2>
 

@@ -231,7 +231,7 @@ const CustomerChangePassword = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-medium text-white transition hover:bg-opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-medium text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isSubmitting ? (
                       <>

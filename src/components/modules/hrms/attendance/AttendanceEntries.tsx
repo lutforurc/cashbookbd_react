@@ -31,10 +31,10 @@ import { chartDate, formatDateUsdToBd, formatLongDateUsdToBd } from '../../../ut
 
 const today = new Date().toISOString().slice(0, 10);
 
-const iconButtonClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-primary text-white transition hover:bg-opacity-90';
-const iconSuccessClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-success text-white transition hover:bg-opacity-90';
-const iconDangerClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-danger text-white transition hover:bg-opacity-90';
-const iconNeutralClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-meta-3 text-white transition hover:bg-opacity-90';
+const iconButtonClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-primary text-white transition hover:bg-primary/90';
+const iconSuccessClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-success text-white transition hover:bg-success/90';
+const iconDangerClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-danger text-white transition hover:bg-danger/90';
+const iconNeutralClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-meta-3 text-white transition hover:bg-meta-3/90';
 const sectionLabelClass = 'mb-1 block text-sm font-medium text-black dark:text-white';
 
 const dateFromString = (value?: string | null) => {

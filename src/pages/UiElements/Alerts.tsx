@@ -8,8 +8,8 @@ const Alerts = () => {
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6 xl:p-9">
         <div className="flex flex-col gap-7.5">
           {/* <!-- Alerts Item --> */}
-          <div className="flex w-full border-l-6 border-warning bg-warning bg-opacity-[15%] px-7 py-8 shadow-md dark:bg-[rgb(var(--c-gray-900))] dark:bg-opacity-30 md:p-9">
-            <div className="mr-5 flex h-9 w-9 items-center justify-center rounded-lg bg-warning bg-opacity-30">
+          <div className="flex w-full border-l-6 border-warning bg-warning/15 px-7 py-8 shadow-md dark:bg-[rgb(var(--c-gray-900))]/30 md:p-9">
+            <div className="mr-5 flex h-9 w-9 items-center justify-center rounded-lg bg-warning/30">
               <svg
                 width="19"
                 height="16"
@@ -35,7 +35,7 @@ const Alerts = () => {
             </div>
           </div>
           {/* <!-- Alerts Item --> */}
-          <div className="flex w-full border-l-6 border-[rgb(var(--c-emerald-400))] bg-[rgb(var(--c-emerald-400))] bg-opacity-[15%] px-7 py-8 shadow-md dark:bg-[rgb(var(--c-gray-900))] dark:bg-opacity-30 md:p-9">
+          <div className="flex w-full border-l-6 border-[rgb(var(--c-emerald-400))] bg-[rgb(var(--c-emerald-400))]/15 px-7 py-8 shadow-md dark:bg-[rgb(var(--c-gray-900))]/30 md:p-9">
             <div className="mr-5 flex h-9 w-full max-w-[36px] items-center justify-center rounded-lg bg-[rgb(var(--c-emerald-400))]">
               <svg
                 width="16"
@@ -62,7 +62,7 @@ const Alerts = () => {
             </div>
           </div>
           {/* <!-- Alerts Item --> */}
-          <div className="flex w-full border-l-6 border-[rgb(var(--c-red-400))] bg-[rgb(var(--c-red-400))] bg-opacity-[15%] px-7 py-8 shadow-md dark:bg-[rgb(var(--c-gray-900))] dark:bg-opacity-30 md:p-9">
+          <div className="flex w-full border-l-6 border-[rgb(var(--c-red-400))] bg-[rgb(var(--c-red-400))]/15 px-7 py-8 shadow-md dark:bg-[rgb(var(--c-gray-900))]/30 md:p-9">
             <div className="mr-5 flex h-9 w-full max-w-[36px] items-center justify-center rounded-lg bg-[rgb(var(--c-red-400))]">
               <svg
                 width="13"

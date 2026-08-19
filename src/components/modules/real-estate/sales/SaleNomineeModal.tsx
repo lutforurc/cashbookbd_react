@@ -239,7 +239,7 @@ const SaleNomineeModal: React.FC<Props> = ({ unit, onClose, onSaved }) => {
   if (!unit) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
       {/* The same corner the report's own cards and tables carry -- a modal
           that rounds itself more than the page behind it reads as a stranger. */}
       <div className="w-full max-w-2xl rounded border-2 border-gray-900 bg-white p-6 text-gray-900 shadow-md dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100">

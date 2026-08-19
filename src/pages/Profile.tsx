@@ -147,7 +147,7 @@ const Profile = () => {
           <div className="absolute bottom-1 right-1 z-10 xsm:bottom-4 xsm:right-4">
             <label
               htmlFor="cover"
-              className="flex cursor-pointer items-center justify-center gap-2 rounded bg-primary py-1 px-2 text-sm font-medium text-white hover:bg-opacity-90 xsm:px-4"
+              className="flex cursor-pointer items-center justify-center gap-2 rounded bg-primary py-1 px-2 text-sm font-medium text-white hover:bg-primary/90 xsm:px-4"
             >
               <input
                 type="file"
@@ -175,7 +175,7 @@ const Profile = () => {
 
             <label
               htmlFor="profile"
-              className="absolute z-50 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-lg hover:bg-opacity-90 bottom-[4px] right-[45px] sm:h-10 sm:w-10"
+              className="absolute z-50 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 bottom-[4px] right-[45px] sm:h-10 sm:w-10"
               title="Change photo"
             >
               <FiCamera />
