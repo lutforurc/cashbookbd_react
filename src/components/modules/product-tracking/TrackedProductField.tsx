@@ -3,6 +3,7 @@ import Select, { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { TrackedProduct } from './useTrackedProducts';
 import { Select as FormSelect } from '../../utils/fields/FormControls';
+import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
 
 interface Props {
   id?: string;
@@ -60,8 +61,8 @@ const TrackedProductField: React.FC<Props> = ({
   const styles: StylesConfig<Option, false> = {
     control: (base, state) => ({
       ...base,
-      minHeight: '2.1rem',
-      height: '2.1rem',
+      minHeight: FIELD_HEIGHT_REM,
+      height: FIELD_HEIGHT_REM,
       borderRadius: '0.0rem',
       borderColor: state.isFocused ? 'rgb(var(--c-blue-500))' : isDark ? 'rgb(var(--c-strokedark))' : 'rgb(var(--c-gray-300))',
       backgroundColor: isDark ? 'rgb(var(--c-form-input))' : 'rgb(var(--c-gray-3))',
@@ -72,8 +73,8 @@ const TrackedProductField: React.FC<Props> = ({
         borderColor: state.isFocused ? 'rgb(var(--c-blue-500))' : isDark ? 'rgb(var(--c-strokedark))' : 'rgb(var(--c-gray-300))',
       },
     }),
-    valueContainer: (base) => ({ ...base, height: '2.1rem', padding: '0 0.5rem' }),
-    indicatorsContainer: (base) => ({ ...base, height: '2.1rem' }),
+    valueContainer: (base) => ({ ...base, height: FIELD_HEIGHT_REM, padding: '0 0.5rem' }),
+    indicatorsContainer: (base) => ({ ...base, height: FIELD_HEIGHT_REM }),
     singleValue: (base) => ({ ...base, color: isDark ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))' }),
     input: (base) => ({ ...base, color: isDark ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))', margin: 0, padding: 0 }),
     placeholder: (base) => ({ ...base, color: isDark ? 'rgb(var(--c-gray-400))' : 'rgb(var(--c-gray-400))' }),

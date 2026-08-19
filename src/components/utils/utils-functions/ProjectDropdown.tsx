@@ -4,6 +4,7 @@ import AsyncSelect from 'react-select/async';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage'; 
 import { fetchProjectDdl } from '../../modules/real-estate/project/projectSlice';
+import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
 
 /* ================= TYPES ================= */
 
@@ -99,7 +100,7 @@ const ProjectDropdown: React.FC<DropdownProps> = ({
       color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))',
       boxShadow: 'none',
       fontSize: '0.9rem',
-      minHeight: '2.1rem',
+      minHeight: FIELD_HEIGHT_REM,
     }),
     option: (base, { isFocused, isSelected }) => ({
       ...base,

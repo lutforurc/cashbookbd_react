@@ -5,6 +5,7 @@ import Select, {
   ValueContainerProps,
 } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
+import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
 
 interface Option {
   value: number | string;
@@ -74,8 +75,8 @@ const MultiSelectDropdown = ({
       ...base,
       display: 'flex',
       alignItems: 'center',
-      minHeight: '2.3rem',
-      height: '2.3rem',
+      minHeight: FIELD_HEIGHT_REM,
+      height: FIELD_HEIGHT_REM,
       borderRadius: '0.125rem',
       borderColor: state.isFocused
         ? 'rgb(var(--c-blue-500))'
@@ -91,7 +92,7 @@ const MultiSelectDropdown = ({
     /* ===== Value Container ===== */
     valueContainer: (base) => ({
   ...base,
-  height: '2.3rem',
+  height: FIELD_HEIGHT_REM,
   display: 'flex',
   alignItems: 'center',
   padding: '0 8px',

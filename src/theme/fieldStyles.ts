@@ -36,6 +36,15 @@
  */
 export const FIELD_HEIGHT = 'h-10';
 
+/**
+ * The same height as a length.
+ *
+ * react-select draws its own control through inline styles and cannot be given
+ * a Tailwind class, so the dropdowns built on it need the number rather than
+ * the name. Kept beside FIELD_HEIGHT so the two cannot drift: h-10 is 2.5rem.
+ */
+export const FIELD_HEIGHT_REM = '2.5rem';
+
 const FIELD_SURFACE = [
   // `form-input rounded-xs` stood here and rendered nothing: the forms plugin is
   // not installed (`plugins: []`), and `rounded-xs` is a Tailwind v4 name in a

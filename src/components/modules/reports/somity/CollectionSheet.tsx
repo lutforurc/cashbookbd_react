@@ -19,6 +19,7 @@ import CollectionSheetPrint, { CollectionSheetRow } from './CollectionSheetPrint
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { Input } from '../../../utils/fields/FormControls';
+import { FIELD_HEIGHT_REM } from '../../../../theme/fieldStyles';
 
 const statusOptions = [
   { id: '1', name: 'Opening' },
@@ -260,8 +261,8 @@ const CollectionSheet = (user: any) => {
   const somitySelectStyles: StylesConfig<SomityOption, false> = {
     control: (provided, state) => ({
       ...provided,
-      minHeight: '2.5rem',
-      height: '2.5rem',
+      minHeight: FIELD_HEIGHT_REM,
+      height: FIELD_HEIGHT_REM,
       borderRadius: 0,
       borderColor: state.isFocused ? 'rgb(var(--c-gray-600))' : darkMode ? 'rgb(var(--c-form-strokedark))' : 'rgb(var(--c-slate-300))',
       backgroundColor: darkMode ? 'rgb(var(--c-form-input))' : 'rgb(var(--c-white))',
@@ -274,7 +275,7 @@ const CollectionSheet = (user: any) => {
     }),
     valueContainer: (provided) => ({
       ...provided,
-      height: '2.5rem',
+      height: FIELD_HEIGHT_REM,
       padding: '0 0.75rem',
     }),
     input: (provided) => ({
@@ -293,7 +294,7 @@ const CollectionSheet = (user: any) => {
     }),
     indicatorsContainer: (provided) => ({
       ...provided,
-      height: '2.5rem',
+      height: FIELD_HEIGHT_REM,
     }),
     indicatorSeparator: (provided) => ({
       ...provided,

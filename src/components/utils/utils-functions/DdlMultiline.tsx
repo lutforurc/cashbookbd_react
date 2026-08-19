@@ -5,6 +5,7 @@ import { getCoal4DdlNext } from '../../modules/chartofaccounts/levelfour/coal4Dd
 import type { AccountTypeFilter } from '../../modules/chartofaccounts/levelfour/coal4DdlSlicer';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { StylesConfig } from 'react-select';
+import { FIELD_HEIGHT_REM } from '../../../theme/fieldStyles';
 
 interface OptionType {
   value: string;
@@ -86,7 +87,10 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   );
   const dispatch = useDispatch();
 
-  const controlHeight = getControlHeightFromClassName(className);
+  // The shared height unless the caller asks for another. It used to fall back
+  // to 2.1rem of its own, which is how this dropdown ended up shorter than the
+  // box beside it once the screens stopped stating a height.
+  const controlHeight = getControlHeightFromClassName(className) || FIELD_HEIGHT_REM;
 
   React.useEffect(() => {
     setInternalSelectedOption(value ?? defaultValue ?? null);
@@ -171,7 +175,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   const customStyles: StylesConfig = {
     control: (provided, state) => ({
       ...provided,
-      minHeight: controlHeight || '2.1rem',
+      minHeight: controlHeight,
       height: controlHeight,
       borderRadius: '0.0rem',
       borderColor: state.isFocused || isControlFocused
