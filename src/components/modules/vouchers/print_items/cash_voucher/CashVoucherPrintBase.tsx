@@ -5,6 +5,7 @@ import thousandSeparator from '../../../../utils/utils-functions/thousandSeparat
 import { chartDateTime } from '../../../../utils/utils-functions/formatDate';
 import { formatMobile, useMobileFormat } from '../../../../utils/utils-functions/mobileFormat';
 import PrintStyles from '../../../../utils/utils-functions/PrintStyles';
+import PrintFooter from '../../../../utils/utils-functions/PrintFooter';
 
 type CashVoucherMode = 'payment' | 'received';
 type CashVoucherVariant = 'a4-portrait' | 'a4-landscape' | 'half-portrait' | 'half-landscape';
@@ -273,6 +274,7 @@ const CashVoucherPrintBase = React.forwardRef<HTMLDivElement, Props>(
             </div>
           )}
         </div>
+        <PrintFooter fixed />
       </div>
     );
   },

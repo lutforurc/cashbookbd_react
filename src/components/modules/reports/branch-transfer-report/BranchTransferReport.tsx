@@ -17,6 +17,7 @@ import Table from '../../../utils/others/Table';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 
 type ReportRow = {
   sl_number: number;
@@ -318,6 +319,7 @@ const BranchTransferReport = ({ user }: any) => {
               </tr>
             </tfoot>
           </table>
+          <PrintFooter fixed />
         </div>
       </div>
     </div>

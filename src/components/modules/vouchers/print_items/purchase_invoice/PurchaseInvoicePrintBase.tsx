@@ -7,6 +7,7 @@ import { chartDateTime } from '../../../../utils/utils-functions/formatDate';
 import numberToWords from '../../../../utils/utils-functions/numberToWords';
 import { formatMobile, useMobileFormat } from '../../../../utils/utils-functions/mobileFormat';
 import PrintStyles from '../../../../utils/utils-functions/PrintStyles';
+import PrintFooter from '../../../../utils/utils-functions/PrintFooter';
 
 type Variant = 'a4-portrait' | 'a4-landscape' | 'half-portrait' | 'half-landscape';
 
@@ -363,6 +364,7 @@ const PurchaseInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>(
             {pageIndex !== pages.length - 1 && <div className="page-break" />}
           </div>
         ))}
+        <PrintFooter fixed />
       </div>
     );
   },

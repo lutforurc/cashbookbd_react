@@ -6,6 +6,7 @@ import { chartDateTime } from '../../../../utils/utils-functions/formatDate';
 import { formatTransportationNumber } from '../../../../utils/utils-functions/formatRoleName';
 import { formatMobile, useMobileFormat } from '../../../../utils/utils-functions/mobileFormat';
 import PrintStyles from '../../../../utils/utils-functions/PrintStyles';
+import PrintFooter from '../../../../utils/utils-functions/PrintFooter';
 
 type Variant = 'a4-portrait' | 'a4-landscape' | 'half-portrait' | 'half-landscape';
 
@@ -170,6 +171,7 @@ const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>
         <div ref={ref} className="print-root">
           <PadPrinting />
           <div className="text-center mt-20 text-sm">No item found in this invoice</div>
+          <PrintFooter fixed />
         </div>
       );
     }
