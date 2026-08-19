@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -36,7 +36,6 @@ type ReportSection = {
 type NormalizedReport = {
   months: string[];
   sections: ReportSection[];
-  html: string;
 };
 
 const reportGroups = [
@@ -63,8 +62,12 @@ const unwrapResponse = (value: any) => {
 
 const normalizeReport = (raw: any, reportGroup: string): NormalizedReport => {
   const data = unwrapResponse(raw);
+  // A string here would be a server this endpoint never shipped on: the JSON
+  // shape and this screen landed in the same hour (api 0036ea2e / 3c77895b),
+  // so the old HTML fallback never served a real deploy. It was also the
+  // app's last dangerouslySetInnerHTML, so nothing may quietly revive it.
   if (typeof data === 'string') {
-    return { months: [], sections: [], html: data };
+    return { months: [], sections: [] };
   }
 
   const months = data?.monthNames ?? data?.month_names ?? [];
@@ -82,14 +85,12 @@ const normalizeReport = (raw: any, reportGroup: string): NormalizedReport => {
   return {
     months: Array.isArray(months) ? months : [],
     sections,
-    html: '',
   };
 };
 
 const mergeReports = (reports: NormalizedReport[]): NormalizedReport => ({
   months: Array.from(new Set(reports.flatMap((report) => report.months))),
   sections: reports.flatMap((report) => report.sections),
-  html: reports.map((report) => report.html).filter(Boolean).join('<br />'),
 });
 
 const amountText = (value: number) => (value > 0 ? thousandSeparator(value) : '-');
@@ -206,7 +207,7 @@ const GroupPurchaseSales = () => {
   const [reportGroup, setReportGroup] = useState('1');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [report, setReport] = useState<NormalizedReport>({ months: [], sections: [], html: '' });
+  const [report, setReport] = useState<NormalizedReport>({ months: [], sections: [] });
   const [loading, setLoading] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(14);
   const [fontSize, setFontSize] = useState(9);
@@ -261,7 +262,7 @@ const GroupPurchaseSales = () => {
       setReport(mergeReports(responses.map((response, index) => normalizeReport(response.data, groups[index]))));
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Unable to load group report.');
-      setReport({ months: [], sections: [], html: '' });
+      setReport({ months: [], sections: [] });
     } finally {
       setLoading(false);
     }
@@ -287,7 +288,7 @@ const GroupPurchaseSales = () => {
     setFontSize(Number.isNaN(value) ? 12 : value);
   };
 
-  const hasReport = Boolean(report.html || report.sections.length);
+  const hasReport = Boolean(report.sections.length);
 
   return (
     <div>
@@ -381,8 +382,6 @@ const GroupPurchaseSales = () => {
       {loading ? <Loader /> : null}
 
       <div className={hasReport ? 'mt-4' : 'hidden'}>
-
-        {report.html ? <div className="overflow-x-auto" dangerouslySetInnerHTML={{ __html: report.html }} /> : null}
 
         {report.sections.map((section) => (
           <GroupReportTable key={section.title} section={section} months={report.months} />
