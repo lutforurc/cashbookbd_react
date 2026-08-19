@@ -15,7 +15,7 @@ import {
 } from '../../components/services/apiRoutes';
 import httpService from '../../components/services/httpService';
 import { storeToken } from '../../features/authReducer';
-import { ButtonLoading } from '../UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../UiElements/CustomButtons';
 import { FIELD_BASE } from '../../theme/fieldStyles';
 
 type RegisterPayload = {
@@ -274,14 +274,14 @@ const PublicRegistrationOtp: React.FC = () => {
             />
           </form>
 
-          <button
+          <Button
             type="button"
             onClick={handleResendOtp}
             disabled={resending}
             className="mt-4 w-full border border-stroke px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-2 disabled:cursor-not-allowed disabled:opacity-60 dark:border-strokedark dark:text-white dark:hover:bg-form-input"
           >
             {resending ? 'Resending...' : 'Resend OTP'}
-          </button>
+          </Button>
 
           <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
             Wrong information?{' '}

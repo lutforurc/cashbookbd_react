@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import InputElement from '../../../utils/fields/InputElement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import Link from '../../../utils/others/Link';
 import {
   FiEdit,
@@ -613,19 +613,19 @@ const GeneralCashPayment = () => {
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20 `}
                   >
-                    <button
+                    <Button
                       onClick={() => handleDelete(row.id)}
                       className="text-red-500 ml-2 text-center"
                     >
                       <FiTrash2 className="cursor-pointer text-center" />
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
                       onClick={() => paymentEditItem(row.id)}
                       className="text-green-500 ml-2 text-center"
                     >
                       <FiEdit2 className="cursor-pointer text-center" />
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}

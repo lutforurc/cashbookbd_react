@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { FiArrowLeft, FiClock, FiList, FiSave } from 'react-icons/fi';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import routes from '../../services/appRoutes';
@@ -412,13 +412,13 @@ const PaymentSubmit: React.FC = () => {
             className="w-full whitespace-nowrap p-2 text-center"
             icon={<FiClock className="text-lg ml-2 mr-2" />}
           />
-          <button
+          <Button
             type="button"
             onClick={() => navigate(routes.my_subscription)}
             className="flex w-full items-center justify-center text-nowrap rounded bg-gray-700 p-2 text-white transition hover:bg-blue-400 dark:hover:bg-blue-400"
           >
             <FiArrowLeft className="mr-2" /> Back
-          </button>
+          </Button>
         </div>
       </form>
     </div>

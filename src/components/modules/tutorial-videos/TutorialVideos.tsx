@@ -15,7 +15,7 @@ import { FaYoutube } from 'react-icons/fa';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Loader from '../../../common/Loader';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import {
   TutorialVideo,
   createTutorialVideo,
@@ -587,7 +587,7 @@ const TutorialVideos = () => {
                         })}
 
                         <td className="px-4 py-2 text-center">
-                          <button
+                          <Button
                             type="button"
                             onClick={() => setEdit(row, { status: shown ? 0 : 1 })}
                             aria-label={shown ? 'Hide this video' : 'Show this video'}
@@ -599,11 +599,11 @@ const TutorialVideos = () => {
                             }`}
                           >
                             {shown ? <FiEye /> : <FiEyeOff />}
-                          </button>
+                          </Button>
                         </td>
 
                         <td className="px-4 py-2 text-center">
-                          <button
+                          <Button
                             type="button"
                             onClick={() => startEdit(row)}
                             aria-label={`Edit ${row.title}`}
@@ -611,11 +611,11 @@ const TutorialVideos = () => {
                             className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary transition hover:bg-primary/20"
                           >
                             <FiEdit2 />
-                          </button>
+                          </Button>
                         </td>
 
                         <td className="px-4 py-2 text-center">
-                          <button
+                          <Button
                             type="button"
                             onClick={() => setRemoveRow(row)}
                             aria-label={`Remove ${row.title}`}
@@ -623,7 +623,7 @@ const TutorialVideos = () => {
                             className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-danger/10 text-danger transition hover:bg-danger/20"
                           >
                             <FiTrash2 />
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                       );

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import Loader from '../../../../common/Loader';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
@@ -297,14 +297,14 @@ const AttendanceSetup = ({ user }: any) => {
         className={`${commandButtonClass} whitespace-nowrap`}
         icon={<FiSave className="mr-2" />}
       />
-      <button
+      <Button
         type="button"
         onClick={reset}
         className={`inline-flex items-center justify-center ${commandButtonClass}`}
       >
         <FiRefreshCcw className="mr-2" />
         Reset
-      </button>
+      </Button>
     </div>
   );
 
@@ -318,9 +318,9 @@ const AttendanceSetup = ({ user }: any) => {
       key: 'action',
       header: 'Action',
       render: (row: any) => (
-        <button type="button" onClick={() => setShiftForm({ ...initialShift, ...row })} className={iconButtonClass}>
+        <Button type="button" onClick={() => setShiftForm({ ...initialShift, ...row })} className={iconButtonClass}>
           <FiEdit2 />
-        </button>
+        </Button>
       ),
     },
   ];
@@ -335,9 +335,9 @@ const AttendanceSetup = ({ user }: any) => {
       key: 'action',
       header: 'Action',
       render: (row: any) => (
-        <button type="button" onClick={() => setPolicyForm({ ...initialPolicy, ...row, default_shift_id: row.default_shift_id || row.shift_id || '' })} className={iconButtonClass}>
+        <Button type="button" onClick={() => setPolicyForm({ ...initialPolicy, ...row, default_shift_id: row.default_shift_id || row.shift_id || '' })} className={iconButtonClass}>
           <FiEdit2 />
-        </button>
+        </Button>
       ),
     },
   ];
@@ -352,7 +352,7 @@ const AttendanceSetup = ({ user }: any) => {
       key: 'action',
       header: 'Action',
       render: (row: any) => (
-        <button
+        <Button
           type="button"
           onClick={() => setRosterForm({
             ...initialRoster,
@@ -363,7 +363,7 @@ const AttendanceSetup = ({ user }: any) => {
           className={iconButtonClass}
         >
           <FiEdit2 />
-        </button>
+        </Button>
       ),
     },
   ];
@@ -377,9 +377,9 @@ const AttendanceSetup = ({ user }: any) => {
       key: 'action',
       header: 'Action',
       render: (row: any) => (
-        <button type="button" onClick={() => setWeeklyForm({ ...initialWeekly, ...row })} className={iconButtonClass}>
+        <Button type="button" onClick={() => setWeeklyForm({ ...initialWeekly, ...row })} className={iconButtonClass}>
           <FiEdit2 />
-        </button>
+        </Button>
       ),
     },
   ];
@@ -398,9 +398,9 @@ const AttendanceSetup = ({ user }: any) => {
       key: 'action',
       header: 'Action',
       render: (row: any) => (
-        <button type="button" onClick={() => setHolidayForm({ ...initialHoliday, ...row })} className={iconButtonClass}>
+        <Button type="button" onClick={() => setHolidayForm({ ...initialHoliday, ...row })} className={iconButtonClass}>
           <FiEdit2 />
-        </button>
+        </Button>
       ),
     },
   ];
@@ -414,9 +414,9 @@ const AttendanceSetup = ({ user }: any) => {
       key: 'action',
       header: 'Action',
       render: (row: any) => (
-        <button type="button" onClick={() => setLeaveTypeForm({ ...initialLeaveType, ...row })} className={iconButtonClass}>
+        <Button type="button" onClick={() => setLeaveTypeForm({ ...initialLeaveType, ...row })} className={iconButtonClass}>
           <FiEdit2 />
-        </button>
+        </Button>
       ),
     },
   ];
@@ -432,7 +432,7 @@ const AttendanceSetup = ({ user }: any) => {
             const Icon = tab.icon;
             const active = activeTab === tab.key;
             return (
-              <button
+              <Button
                 key={tab.key}
                 onClick={() => {
                   setActiveTab(tab.key);
@@ -446,7 +446,7 @@ const AttendanceSetup = ({ user }: any) => {
               >
                 <Icon className="text-base" />
                 {tab.label}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -541,9 +541,9 @@ const AttendanceSetup = ({ user }: any) => {
           </div>
           {renderActions(Boolean(rosterForm.id), () => setRosterForm(initialRoster))}
           <div className="mt-3 flex justify-end">
-            <button type="button" onClick={() => dispatch(fetchShiftRosters(rosterForm.duty_date ? { duty_date: rosterForm.duty_date } : {}))} className={commandButtonClass}>
+            <Button type="button" onClick={() => dispatch(fetchShiftRosters(rosterForm.duty_date ? { duty_date: rosterForm.duty_date } : {}))} className={commandButtonClass}>
               Load Roster
-            </button>
+            </Button>
           </div>
         </form>
       )}

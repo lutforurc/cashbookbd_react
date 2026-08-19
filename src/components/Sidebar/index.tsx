@@ -266,6 +266,7 @@ import routes from '../services/appRoutes';
 import { resolveAssetUrl } from '../services/resolveAssetUrl';
 import { hasMenuPermission } from './hasMenuPermission';
 import DropdownUser from '../Header/DropdownUser';
+import { Button } from '../../pages/UiElements/CustomButtons';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -495,7 +496,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               </span>
             </span>
           </NavLink>
-          <button
+          <Button
             type="button"
             onClick={() => {
               setSidebarCollapsed((current) => !current);
@@ -506,8 +507,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
             aria-label={sidebarCollapsed ? 'Show menu labels' : 'Show icons only'}
           >
             {sidebarCollapsed ? <FiChevronRight size={18} /> : <FiChevronLeft size={18} />}
-          </button>
-          <button
+          </Button>
+          <Button
             ref={trigger}
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-controls="sidebar"
@@ -527,7 +528,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 fill=""
               />
             </svg>
-          </button>
+          </Button>
         </div>
       ) : null}
 

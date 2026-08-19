@@ -20,7 +20,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
 import httpService from '../../../services/httpService';
 
@@ -464,7 +464,7 @@ const TodoCard = memo(({
         <div className="flex shrink-0 gap-1.5">
           {/* One button walks the task forward: start it, finish it, reopen
               it. Three states need no more than that. */}
-          <button
+          <Button
             type="button"
             onClick={() => onAdvanceStatus(todo)}
             disabled={busy}
@@ -482,9 +482,9 @@ const TodoCard = memo(({
             ) : (
               <FiCheck className={NOTE_ICON} strokeWidth={3} />
             )}
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={() => onTogglePin(todo)}
             disabled={busy}
@@ -500,14 +500,14 @@ const TodoCard = memo(({
               strokeWidth={NOTE_ICON_STROKE}
               fill={todo.is_pinned ? 'currentColor' : 'none'}
             />
-          </button>
+          </Button>
 
           {/* What the task *says* belongs to whoever wrote it. The person it
               was handed to moves it along and pins it, and that is all -- a
               button that 403s on click is worse than no button. */}
           {isAuthor ? (
             <>
-              <button
+              <Button
                 type="button"
                 onClick={() => onEdit(todo)}
                 disabled={busy}
@@ -515,9 +515,9 @@ const TodoCard = memo(({
                 title="Edit"
               >
                 <FiEdit2 className={NOTE_ICON} strokeWidth={NOTE_ICON_STROKE} />
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => onDelete(todo)}
                 disabled={busy}
@@ -525,7 +525,7 @@ const TodoCard = memo(({
                 title="Delete"
               >
                 <FiTrash2 className={NOTE_ICON} strokeWidth={NOTE_ICON_STROKE} />
-              </button>
+              </Button>
             </>
           ) : null}
         </div>
@@ -651,7 +651,7 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
             <label className={`${FIELD_LABEL} text-sm`}>Colour</label>
             <div className="flex h-9 items-center gap-1.5">
               {COLORS.map((swatch) => (
-                <button
+                <Button
                   key={swatch}
                   type="button"
                   onClick={() => setColor(swatch)}
@@ -1060,7 +1060,7 @@ export default function MyTasks() {
             />
 
             {FILTERS.map((option) => (
-              <button
+              <Button
                 key={option.key}
                 type="button"
                 onClick={() => setFilter(option.key)}
@@ -1071,7 +1071,7 @@ export default function MyTasks() {
                 }`}
               >
                 {option.label}
-              </button>
+              </Button>
             ))}
           </div>
 

@@ -10,7 +10,7 @@ import {
 } from '../../components/services/apiRoutes';
 import httpService from '../../components/services/httpService';
 import InputElement from '../../components/utils/fields/InputElement';
-import { ButtonLoading } from '../UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../UiElements/CustomButtons';
 import HelmetTitle from '../../components/utils/others/HelmetTitle';
 import { FIELD_BASE, FIELD_TEXTAREA } from '../../theme/fieldStyles';
 
@@ -339,14 +339,14 @@ const PublicRegistration: React.FC = () => {
                     placeholder="Enter password"
                     className={`${FIELD_BASE} w-full px-4 py-2.5 pr-12`}
                   />
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
                     tabIndex={-1}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-primary"
                   >
                     {showPassword ? <FiEyeOff /> : <FiEye />}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -364,14 +364,14 @@ const PublicRegistration: React.FC = () => {
                     className={`${FIELD_BASE} w-full px-4 py-2.5 pr-12`}
                   />
                   {/* className={`text-white bg-gray-700 hover:bg-blue-400 focus:outline-none font-medium text-sm px-5 text-center dark:hover:bg-blue-400 focus:bg-blue-400 inline-flex justify-center items-center ${className}`} */}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
                     tabIndex={-1}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-primary"
                   >
                     {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -400,13 +400,13 @@ const PublicRegistration: React.FC = () => {
               icon={<FiSave className="text-lg ml-2 mr-2" />}
             />
 
-            {/* <button
+            {/* <Button
               type="submit"
               disabled={submitting}
               className="mt-6 w-full bg-primary px-4 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Requesting OTP...' : 'Request OTP'}
-            </button> */}
+            </Button> */}
 
             <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
               Already have an account?{' '}

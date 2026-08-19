@@ -24,6 +24,7 @@ import {
   festivalBonusSheetPrint,
 } from "./bonusSlice";
 import routes from "../../../services/appRoutes";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const FestivalBonus = ({ user }: any) => {
   const dispatch: any = useDispatch();
@@ -214,9 +215,9 @@ const FestivalBonus = ({ user }: any) => {
       key: "bonus_title",
       header: "Bonus Title",
       render: (row: any) => (
-        <button type="button" onClick={() => handleOpenDetails(row, "print")} className="cursor-pointer text-left font-semibold text-blue-600 hover:underline dark:text-blue-400">
+        <Button type="button" onClick={() => handleOpenDetails(row, "print")} className="cursor-pointer text-left font-semibold text-blue-600 hover:underline dark:text-blue-400">
           {row.bonus_title}
-        </button>
+        </Button>
       ),
     },
     { key: "payment_month", header: "Month", render: (row: any) => formatPaymentMonth(row.payment_month) },
@@ -306,7 +307,7 @@ const FestivalBonus = ({ user }: any) => {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="relative" ref={filterMenuRef}>
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
                   className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
@@ -317,14 +318,14 @@ const FestivalBonus = ({ user }: any) => {
                   aria-label="Open filters"
                 >
                   <FiFilter size={16} />
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
                   className="text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-bodydark dark:hover:text-white"
                 >
                   Use the filter
-                </button>
+                </Button>
               </div>
 
               {filterOpen && (
@@ -334,14 +335,14 @@ const FestivalBonus = ({ user }: any) => {
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <span className="text-sm font-semibold text-slate-800 dark:text-white">Filter Menu</span>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setFilterOpen(false)}
                       className="rounded-sm p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-boxdark-2 dark:hover:text-bodydark1"
                       aria-label="Close filter menu"
                     >
                       <FiX />
-                    </button>
+                    </Button>
                   </div>
 
                   <div className="space-y-3">

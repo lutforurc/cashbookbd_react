@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import SelectOption from '../../utils/utils-functions/SelectOption';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { generateUserTemporaryPassword, getUser, toggleUserStatus } from './userSlice';
 import Loader from '../../../common/Loader';
@@ -303,17 +303,17 @@ const UserList = () => {
               />
             </span>
 
-            <button
+            <Button
               type="button"
               onClick={() => handleEditUser(row.user_id)}
               className="text-blue-500"
               title="Edit user"
             >
               <FiEdit2 className="cursor-pointer w-5 h-5" />
-            </button>
+            </Button>
 
             {settings?.data?.user?.id === 1 && (
-              <button
+              <Button
                 type="button"
                 onClick={() => handleGenerateTemporaryPassword(row.user_id)}
                 className="text-blue-500"
@@ -321,7 +321,7 @@ const UserList = () => {
                 disabled={temporaryPasswordLoadingId === row.user_id}
               >
                 <FiKey className={`cursor-pointer w-5 h-5 ${temporaryPasswordLoadingId === row.user_id ? 'opacity-50' : ''}`} />
-              </button>
+              </Button>
             )}
           </div>
         );

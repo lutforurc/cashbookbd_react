@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
-import {
-  ButtonLoading,
-  DeleteButton,
-} from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, DeleteButton } from '../../../pages/UiElements/CustomButtons';
 import { FiHome, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
@@ -200,13 +197,13 @@ const VoucherDelete = () => {
             </div>
 
             <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
-              <button
+              <Button
                 type="button"
                 onClick={() => setAlreadyDeletedMsg('')}
                 className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
               >
                 Cancel
-              </button>
+              </Button>
               <ButtonLoading
                 type="button"
                 onClick={handleForceDelete}

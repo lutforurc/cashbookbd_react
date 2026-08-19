@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { FiMonitor, FiX } from 'react-icons/fi';
 import { ActiveDevice, DeviceLimitBlock, releaseDeviceAtLogin } from '../../../features/authReducer';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 type Props = {
   block: NonNullable<DeviceLimitBlock>;
@@ -49,14 +50,14 @@ const DeviceLimitNotice: React.FC<Props> = ({ block, loginId, password, onReleas
     <div className="rounded-lg border border-warning bg-warning/10 p-4 text-left">
       <div className="mb-2 flex items-start justify-between gap-3">
         <h4 className="font-semibold text-black dark:text-white">Device limit reached</h4>
-        <button
+        <Button
           type="button"
           onClick={onCancel}
           aria-label="Dismiss"
           className="text-body hover:text-black dark:hover:text-white"
         >
           <FiX />
-        </button>
+        </Button>
       </div>
 
       <p className="mb-3 text-sm text-body">
@@ -85,14 +86,14 @@ const DeviceLimitNotice: React.FC<Props> = ({ block, loginId, password, onReleas
               </div>
             </div>
 
-            <button
+            <Button
               type="button"
               disabled={busyId !== null}
               onClick={() => handleSignOut(device)}
               className="shrink-0 rounded bg-danger px-3 py-1 text-xs font-medium text-white disabled:opacity-60"
             >
               {busyId === device.id ? 'Signing out…' : 'Sign out'}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>

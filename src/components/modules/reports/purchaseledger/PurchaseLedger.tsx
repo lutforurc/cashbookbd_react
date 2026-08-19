@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -769,7 +769,7 @@ const PurchaseLedger = (user: any) => {
         <div className="flex flex-wrap items-start gap-3 min-[1750px]:flex-nowrap min-[1750px]:items-end">
           <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'w-full min-w-0'}>
             {useFilterMenuEnabled && (
-              <button
+              <Button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
                 className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${filterOpen
@@ -780,7 +780,7 @@ const PurchaseLedger = (user: any) => {
                 aria-label="Open filters"
               >
                 <FiFilter size={16} />
-              </button>
+              </Button>
             )}
 
             {(useFilterMenuEnabled ? filterOpen : true) && (

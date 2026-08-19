@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import Loader from '../../../../common/Loader';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
@@ -739,7 +739,7 @@ const AttendanceEntries = ({ user }: any) => {
             <span className="text-xs text-slate-500 dark:text-slate-300">{row.remarks || 'Approved leave'}</span>
           ) : (
             <>
-              <button
+              <Button
                 type="button"
                 title={row.approval_status === 'approved' ? 'Approved attendance cannot be changed' : 'Edit'}
                 disabled={row.approval_status === 'approved'}
@@ -760,19 +760,19 @@ const AttendanceEntries = ({ user }: any) => {
                 className={`${iconButtonClass} disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-700 dark:disabled:text-slate-400`}
               >
                 <FiEdit2 />
-              </button>
+              </Button>
               {row.id && row.status === 'rejected' && (
-                <button type="button" title="Cancel rejected" onClick={() => handleApproval(row, 'approved', 'Rejected attendance restored')} className={iconNeutralClass}>
+                <Button type="button" title="Cancel rejected" onClick={() => handleApproval(row, 'approved', 'Rejected attendance restored')} className={iconNeutralClass}>
                   <FiRefreshCcw />
-                </button>
+                </Button>
               )}
               {row.id && row.approval_status !== 'approved' && row.status !== 'rejected' && (
-                <button type="button" title="Approve" onClick={() => handleApproval(row, 'approved')} className={iconSuccessClass}>
+                <Button type="button" title="Approve" onClick={() => handleApproval(row, 'approved')} className={iconSuccessClass}>
                   <FiCheck />
-                </button>
+                </Button>
               )}
               {row.id && row.approval_status !== 'rejected' && (
-                <button
+                <Button
                   type="button"
                   title={row.approval_status === 'approved' ? 'Cancel approval' : 'Reject'}
                   onClick={() =>
@@ -787,12 +787,12 @@ const AttendanceEntries = ({ user }: any) => {
                   className={iconDangerClass}
                 >
                   <FiX />
-                </button>
+                </Button>
               )}
               {row.id && row.approval_status === 'rejected' && (
-                <button type="button" title="Delete attendance" onClick={() => handleDelete(row)} className={iconDangerClass}>
+                <Button type="button" title="Delete attendance" onClick={() => handleDelete(row)} className={iconDangerClass}>
                   <FiTrash2 />
-                </button>
+                </Button>
               )}
             </>
           )}

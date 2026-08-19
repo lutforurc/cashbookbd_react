@@ -12,7 +12,7 @@ import {
 import InlineConfirm, {
   InlineConfirmPosition,
 } from '../../utils/components/InlineConfirm';
-import { ButtonLoading, IconButton } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, IconButton } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
 import PrintFontInput from '../../utils/fields/PrintFontInput';
@@ -234,7 +234,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
         const isOpen = comparedTransferId === id;
 
         return (
-          <button
+          <Button
             type="button"
             title={isOpen ? 'Hide issued vs received' : 'Show issued vs received'}
             onClick={() => toggleComparison(id)}
@@ -247,7 +247,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
             ) : (
               <FiPlus className="cursor-pointer w-4 h-4" />
             )}
-          </button>
+          </Button>
         );
       },
     },

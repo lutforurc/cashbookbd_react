@@ -13,7 +13,7 @@ import {
   printPadHeading,
   status,
 } from '../../utils/fields/DataConstant';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { FiArrowLeft, FiArrowRight, FiCheck, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
@@ -843,7 +843,7 @@ const AddBranch = () => {
                 const isCompleted = index < currentStep;
 
                 return (
-                  <button
+                  <Button
                     key={step}
                     type="button"
                     onClick={() => setCurrentStep(index)}
@@ -870,7 +870,7 @@ const AddBranch = () => {
                       </span>
                       <span className="block text-sm font-medium leading-tight">{step}</span>
                     </span>
-                  </button>
+                  </Button>
                 );
               })}
             </nav>

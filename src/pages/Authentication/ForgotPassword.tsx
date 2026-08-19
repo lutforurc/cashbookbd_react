@@ -11,7 +11,7 @@ import {
   API_FORGOT_PASSWORD_VERIFY_OTP_URL,
 } from '../../components/services/apiRoutes';
 import httpService from '../../components/services/httpService';
-import { ButtonLoading } from '../UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../UiElements/CustomButtons';
 import { FIELD_BASE } from '../../theme/fieldStyles';
 
 type Step = 'request' | 'verify' | 'reset';
@@ -328,7 +328,7 @@ const ForgotPassword: React.FC = () => {
               />
 
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => requestOtp(mobile, true)}
                   disabled={resendingOtp}
@@ -336,16 +336,16 @@ const ForgotPassword: React.FC = () => {
                 >
                   <FiRefreshCcw className="mr-2" />
                   {resendingOtp ? 'Resending...' : 'Resend OTP'}
-                </button>
+                </Button>
 
-                <button
+                <Button
                   type="button"
                   onClick={backToRequestStep}
                   className="inline-flex items-center justify-center rounded border border-stroke px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-2 dark:border-strokedark dark:text-white dark:hover:bg-form-input"
                 >
                   <FiArrowLeft className="mr-2" />
                   Change Mobile
-                </button>
+                </Button>
               </div>
             </form>
           )}
@@ -364,13 +364,13 @@ const ForgotPassword: React.FC = () => {
                     placeholder="Enter new password"
                     className="w-full rounded border border-stroke bg-transparent px-4 py-2.5 pr-12 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
                   />
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-primary"
                   >
                     {showPassword ? <FiEyeOff /> : <FiEye />}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -386,13 +386,13 @@ const ForgotPassword: React.FC = () => {
                     placeholder="Re-enter new password"
                     className="w-full rounded border border-stroke bg-transparent px-4 py-2.5 pr-12 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
                   />
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setShowPasswordConfirmation((prev) => !prev)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-primary"
                   >
                     {showPasswordConfirmation ? <FiEyeOff /> : <FiEye />}
-                  </button>
+                  </Button>
                 </div>
               </div>
 

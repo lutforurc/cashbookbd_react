@@ -3,6 +3,7 @@ import { FiPlus, FiTrash2 } from 'react-icons/fi';
 
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 export type OrderLine = {
   /** Stable row key; the saved line id when editing, a local key otherwise. */
@@ -103,7 +104,7 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
         <label className="font-medium">Products</label>
         {/* Enter on a focused button fires its click, so the row's last field
             hands over to here and this hands over to the new row's product. */}
-        <button
+        <Button
           type="button"
           id="add_product_btn"
           onClick={addLine}
@@ -111,7 +112,7 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
           className="inline-flex items-center gap-1 rounded bg-primary px-3 py-1 text-sm font-semibold text-white disabled:opacity-50"
         >
           <FiPlus /> Add Product
-        </button>
+        </Button>
       </div>
 
       <div className="overflow-x-auto">
@@ -204,7 +205,7 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
                       sent
                     </span>
                   ) : (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => removeLine(line.key)}
                       disabled={disabled}
@@ -212,7 +213,7 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
                       aria-label="Remove product"
                     >
                       <FiTrash2 />
-                    </button>
+                    </Button>
                   )}
                 </td>
               </tr>

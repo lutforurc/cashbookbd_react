@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
@@ -312,13 +312,13 @@ export default function BulkImageUpload(user: any): JSX.Element {
                 />
                 <p className="mt-2 text-sm">{file.name}</p>
 
-                <button
+                <Button
                   className="mt-2 text-red-500 text-3xl absolute top-2 right-4 bg-gray-100 border border-gray-300"
                   onClick={() => handleRemoveFile(index)}
                   type="button"
                 >
                   <FiX />
-                </button>
+                </Button>
               </div>
             ))}
           </div>

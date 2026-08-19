@@ -1,5 +1,6 @@
 import toast from 'react-hot-toast';
 import dataJSON from '../../public/data.json';
+import { Button } from '../pages/UiElements/CustomButtons';
 
 const createToast = (title: string, msg: string, type: number) => {
   toast.custom((t) => (
@@ -22,7 +23,7 @@ const createToast = (title: string, msg: string, type: number) => {
         </div>
       </div>
       <div className="flex">
-        <button
+        <Button
           onClick={() => toast.dismiss(t.id)}
           type="button"
           className="mr-2 box-content rounded-none border-none opacity-100 hover:no-underline hover:opacity-50 focus:opacity-50 focus:shadow-none focus:outline-none text-white"
@@ -45,7 +46,7 @@ const createToast = (title: string, msg: string, type: number) => {
               />
             </svg>
           </span>
-        </button>
+        </Button>
       </div>
     </div>
   ));

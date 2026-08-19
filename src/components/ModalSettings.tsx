@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import dataJSON from '../../public/data.json';
 import { FIELD_BASE } from '../theme/fieldStyles';
+import { Button } from '../pages/UiElements/CustomButtons';
 
 
 
@@ -217,10 +218,10 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
 
 
             <br></br>
-            <button className="btn flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1"
+            <Button className="btn flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1"
               type="submit" onClick={handleSubmit}>
               Submit
-            </button>
+            </Button>
           </form>
         </div>
       </div>

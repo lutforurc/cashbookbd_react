@@ -6,6 +6,7 @@ import { API_DEVICES_URL, API_DEVICE_REVOKE_URL } from '../../services/apiRoutes
 import Breadcrumb from '../../Breadcrumbs/Breadcrumb';
 import { logout } from '../../../features/authReducer';
 import { useDispatch } from 'react-redux';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 type Device = {
   id: number;
@@ -83,13 +84,13 @@ const MyDevices: React.FC = () => {
             </p>
           </div>
 
-          <button
+          <Button
             type="button"
             onClick={() => fetchDevices()}
             className="flex items-center gap-2 rounded border border-stroke px-3 py-2 text-sm hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
           >
             <FiRefreshCw /> Refresh
-          </button>
+          </Button>
         </div>
 
         {loading ? (
@@ -121,14 +122,14 @@ const MyDevices: React.FC = () => {
                   </div>
                 </div>
 
-                <button
+                <Button
                   type="button"
                   disabled={busyId !== null}
                   onClick={() => handleSignOut(device)}
                   className="shrink-0 rounded bg-danger px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
                 >
                   {busyId === device.id ? 'Signing out…' : device.is_current ? 'Sign out' : 'Sign out remotely'}
-                </button>
+                </Button>
               </li>
             ))}
           </ul>

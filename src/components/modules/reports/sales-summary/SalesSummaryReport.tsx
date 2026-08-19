@@ -22,6 +22,7 @@ import {
   SalesSummaryCustomer,
   SalesSummaryUnit,
 } from "./salesSummarySlice";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const cell = "border border-stroke px-3 py-2 dark:border-strokedark";
 
@@ -251,7 +252,7 @@ const SalesSummaryReport: React.FC = () => {
                     {money(customer.due_amount)}
                   </td>
                   <td className={`${cell} text-center align-middle`}>
-                    <button
+                    <Button
                       type="button"
                       title="Payment ledger"
                       aria-label={`Payment ledger of ${customer.customer_name}`}
@@ -259,7 +260,7 @@ const SalesSummaryReport: React.FC = () => {
                       className="text-emerald-600 dark:text-emerald-400"
                     >
                       <FiClipboard />
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))

@@ -8,6 +8,7 @@ import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchHolidays, fetchWeeklyHolidays } from './attendanceSlice';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const now = new Date();
 const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
@@ -254,10 +255,10 @@ const HolidayCalendarReport = ({ user }: any) => {
         </div>
         <DropdownCommon id="type" name="type" label="Type" value={filters.type} data={typeOptions} onChange={handleChange} className="h-9" />
         <div className="flex items-end">
-          <button type="button" onClick={() => loadReport()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
+          <Button type="button" onClick={() => loadReport()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
             <FiRefreshCcw className="mr-2" />
             Load
-          </button>
+          </Button>
         </div>
       </div>
       </div>

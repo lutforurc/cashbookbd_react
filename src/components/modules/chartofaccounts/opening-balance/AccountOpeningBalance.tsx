@@ -19,6 +19,7 @@ import {
   updateAccountOpening,
   type OpeningAccount,
 } from "./accountOpeningSlice";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 /**
  * Opening balances for the money accounts -- cash, the banks, mobile banking.
@@ -236,14 +237,14 @@ const AccountOpeningBalance = () => {
           {/* The voucher this figure sits on. Without it the balance is a
               number nobody can trace; with it the ledger is one click away. */}
           {row.opening_vr_no && (
-            <button
+            <Button
               type="button"
               title={`Journal voucher ${row.opening_vr_no} — open ledger`}
               onClick={() => handleOpenLedger(row)}
               className="font-mono text-[10px] leading-tight text-blue-600 hover:underline dark:text-blue-400"
             >
               {row.opening_vr_no}
-            </button>
+            </Button>
           )}
         </div>
       ),

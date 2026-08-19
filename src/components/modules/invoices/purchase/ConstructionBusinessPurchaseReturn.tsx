@@ -4,7 +4,7 @@ import { FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-i
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../../common/Loader';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
@@ -589,12 +589,12 @@ const ConstructionBusinessPurchaseReturn = () => {
                   {thousandSeparator(Math.floor(Number(row.price) * Number(row.qty)))}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
-                  <button onClick={() => handleDelete(row.id)} className="text-red-500 ml-2 text-center">
+                  <Button onClick={() => handleDelete(row.id)} className="text-red-500 ml-2 text-center">
                     <FiTrash2 className="cursor-pointer text-center" />
-                  </button>
-                  <button onClick={() => editProductItem(row.id)} className="text-green-500 ml-2 text-center">
+                  </Button>
+                  <Button onClick={() => editProductItem(row.id)} className="text-green-500 ml-2 text-center">
                     <FiEdit2 className="cursor-pointer text-center" />
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}

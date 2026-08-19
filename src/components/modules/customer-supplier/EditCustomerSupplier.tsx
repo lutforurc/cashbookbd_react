@@ -41,6 +41,7 @@ import {
   setCustomerPortalPassword,
 } from "./customerSlice";
 import Loader from "../../../common/Loader";
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 /**
  * The API returns guarantor/nominee rows straight from the DB, so optional
@@ -790,7 +791,7 @@ const EditCustomerSupplier = () => {
                     { key: 'guarantor' as const, label: 'Guarantor Details', count: formik.values.guarantors.length },
                     { key: 'nominee' as const, label: 'Nominee Details', count: formik.values.nominees.length },
                   ].map((tab) => (
-                    <button
+                    <Button
                       key={tab.key}
                       type="button"
                       onClick={() => setDetailsTab(tab.key)}
@@ -801,7 +802,7 @@ const EditCustomerSupplier = () => {
                     >
                       {tab.label}
                       {tab.count > 0 ? ` (${tab.count})` : ''}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               ) : (
@@ -871,7 +872,7 @@ const EditCustomerSupplier = () => {
                           </div>
                         </div>
 
-                        <button
+                        <Button
                           type="button"
                           className="text-red-600 mt-2"
                           onClick={() => remove(index)}
@@ -880,7 +881,7 @@ const EditCustomerSupplier = () => {
                             <FiTrash2 />
                             <span className="ml-2 -mt-1">Remove</span>
                           </div>
-                        </button>
+                        </Button>
                       </div>
                     ))}
 
@@ -1054,7 +1055,7 @@ const EditCustomerSupplier = () => {
                           </div>
                         </div>
 
-                        <button
+                        <Button
                           type="button"
                           className="text-red-600 mt-2"
                           onClick={() => remove(index)}
@@ -1063,7 +1064,7 @@ const EditCustomerSupplier = () => {
                             <FiTrash2 />
                             <span className="ml-2 -mt-1">Remove</span>
                           </div>
-                        </button>
+                        </Button>
                       </div>
                     ))}
 

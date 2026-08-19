@@ -1,5 +1,6 @@
 import React from 'react';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 /**
  * What was sent against what arrived, for one challan.
@@ -65,13 +66,13 @@ const ComparisonPanel = ({
             </span>
           )}
         </h3>
-        <button
+        <Button
           type="button"
           onClick={onClose}
           className="text-xs text-blue-500 underline-offset-2 hover:underline"
         >
           Close
-        </button>
+        </Button>
       </div>
 
       <div className="overflow-x-auto">
@@ -110,7 +111,7 @@ const ComparisonPanel = ({
                     <tr>
                       <td className={cell}>
                         {canOpen ? (
-                          <button
+                          <Button
                             type="button"
                             onClick={() => toggle(row.product_id)}
                             className="text-left text-blue-500 underline-offset-2 hover:underline"
@@ -120,7 +121,7 @@ const ComparisonPanel = ({
                             <span className="ml-1 text-xs">
                               ({layers.length} rates {isOpen ? '▴' : '▾'})
                             </span>
-                          </button>
+                          </Button>
                         ) : (
                           row.product_name
                         )}

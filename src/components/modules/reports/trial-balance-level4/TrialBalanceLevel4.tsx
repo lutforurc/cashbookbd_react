@@ -21,6 +21,7 @@ import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchTrialBalanceLevel4 } from "./trialBalanceLevel4Slice";
 import TrialBalanceLevel4Print from "./TrialBalanceLevel4Print";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 type TrialBalanceRow = {
   key: string;
@@ -376,7 +377,7 @@ const TrialBalanceLevel4 = (user: any) => {
           <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-wrap items-end"}`}>
             <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none"}>
               {useFilterMenuEnabled && (
-                <button
+                <Button
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
                   className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
@@ -388,7 +389,7 @@ const TrialBalanceLevel4 = (user: any) => {
                   aria-label="Open filters"
                 >
                   <FiFilter size={16} />
-                </button>
+                </Button>
               )}
 
               {(useFilterMenuEnabled ? filterOpen : true) && (

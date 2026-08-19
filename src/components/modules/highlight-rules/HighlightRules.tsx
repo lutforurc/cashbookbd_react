@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { FiEdit2, FiPlus, FiRefreshCw, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import {
@@ -142,13 +142,13 @@ const HighlightRules = () => {
             {isEditing ? 'Edit Highlight Rule' : 'Add Highlight Rule'}
           </h2>
           {isEditing && (
-            <button
+            <Button
               type="button"
               onClick={resetForm}
               className="inline-flex items-center gap-1 rounded-sm border border-stroke px-3 py-1 text-sm text-slate-600 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
             >
               <FiX /> Cancel
-            </button>
+            </Button>
           )}
         </div>
 
@@ -259,14 +259,14 @@ const HighlightRules = () => {
           <h2 className="text-lg font-bold text-black dark:text-white">
             Highlight Rules
           </h2>
-          <button
+          <Button
             type="button"
             onClick={loadList}
             className="flex h-8 w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
             aria-label="Refresh list"
           >
             <FiRefreshCw className={loadingList ? 'animate-spin' : ''} />
-          </button>
+          </Button>
         </div>
 
         <div className="overflow-x-auto">
@@ -330,15 +330,15 @@ const HighlightRules = () => {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <button
+                        <Button
                           type="button"
                           onClick={() => startEdit(row)}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-sky-500 transition hover:bg-sky-50 dark:hover:bg-sky-900/20"
                           aria-label={`Edit ${row.phrase}`}
                         >
                           <FiEdit2 />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
                           onClick={() => setDeleteConfirmRow(row)}
                           disabled={deletingId === row.id}
@@ -346,7 +346,7 @@ const HighlightRules = () => {
                           aria-label={`Delete ${row.phrase}`}
                         >
                           <FiTrash2 />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>

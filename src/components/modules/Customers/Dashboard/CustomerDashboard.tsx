@@ -28,6 +28,7 @@ import { API_CUSTOMER_SUMMARY_URL } from '../../../services/apiRoutes';
 import CustomerStatement from './CustomerStatement';
 import CustomerDue from './CustomerDue';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 interface CustomerProfile {
   id: number;
@@ -340,21 +341,21 @@ const allPayments = paymentList.map((pay: any) => ({
             </div>
 
             <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
-              <button
+              <Button
                 onClick={() => setColorMode(isDark ? 'light' : 'dark')}
                 title="Toggle theme"
                 aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-strokedark"
               >
                 {isDark ? <FaSun /> : <FaMoon />}
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => dispatch(logout() as any)}
                 className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
               >
                 <FiLogOut />
                 <span>Logout</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -438,7 +439,7 @@ const allPayments = paymentList.map((pay: any) => ({
             ].map((tab) => {
               const active = activeTab === tab.key;
               return (
-                <button
+                <Button
                   key={tab.key}
                   role="tab"
                   aria-selected={active}
@@ -452,7 +453,7 @@ const allPayments = paymentList.map((pay: any) => ({
                 >
                   <span className={active ? 'text-primary' : 'opacity-70'}>{tab.icon}</span>
                   {tab.label}
-                </button>
+                </Button>
               );
             })}
           </nav>
@@ -521,21 +522,21 @@ const allPayments = paymentList.map((pay: any) => ({
                     lie the page was telling. */}
                 <div className="rounded-md border border-dashed border-gray-200 p-4 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
                   Use the{' '}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setActiveTab('statement')}
                     className="font-medium text-primary underline-offset-2 hover:underline"
                   >
                     Statement
-                  </button>{' '}
+                  </Button>{' '}
                   and{' '}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setActiveTab('due')}
                     className="font-medium text-primary underline-offset-2 hover:underline"
                   >
                     Due
-                  </button>{' '}
+                  </Button>{' '}
                   tabs for full details.
                 </div>
               </div>

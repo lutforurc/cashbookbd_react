@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
 import { FaHouse, FaPrint } from 'react-icons/fa6';
 import { FiCheckSquare } from 'react-icons/fi';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
@@ -369,12 +369,12 @@ const GroupPurchaseSales = () => {
             type="text"
             className="h-10 w-full! text-center text-sm font-medium sm:w-20!"
           />
-          <button type="button" onClick={handlePrint} disabled={!hasReport} className="inline-flex h-10 w-full items-center justify-center gap-2 bg-gray-700 px-5 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
+          <Button type="button" onClick={handlePrint} disabled={!hasReport} className="inline-flex h-10 w-full items-center justify-center gap-2 bg-gray-700 px-5 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
             <FaPrint /> Print
-          </button>
-          <button type="button" onClick={() => navigate('/dashboard')} className="col-span-2 inline-flex h-10 w-full items-center justify-center gap-2 bg-gray-700 px-5 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none sm:col-span-1 sm:w-auto">
+          </Button>
+          <Button type="button" onClick={() => navigate('/dashboard')} className="col-span-2 inline-flex h-10 w-full items-center justify-center gap-2 bg-gray-700 px-5 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none sm:col-span-1 sm:w-auto">
             <FaHouse /> Home
-          </button>
+          </Button>
         </div>
       </div>
 

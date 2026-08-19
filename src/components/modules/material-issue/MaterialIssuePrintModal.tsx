@@ -8,6 +8,7 @@ import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import { getMaterialIssueDetails } from './materialIssueSlice';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 type Props = {
   id: number | string;
@@ -69,19 +70,19 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-strokedark">
           <h3 className="text-base font-semibold text-gray-800 dark:text-white">Material Issue</h3>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={handlePrint}
               disabled={loading || !!error}
               className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
             >
               <FiPrinter /> Print
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={onClose}
               className="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-bodydark dark:hover:bg-strokedark"
             >
               <FiX />
-            </button>
+            </Button>
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import userThree from '../images/user/user-03.png';
 import { FIELD_BASE, FIELD_TEXTAREA } from '../theme/fieldStyles';
+import { Button } from './UiElements/CustomButtons';
 
 const Settings = () => {
   return (
@@ -193,18 +194,18 @@ const Settings = () => {
                   </div>
 
                   <div className="flex justify-end gap-4.5">
-                    <button
+                    <Button
                       className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
                       type="submit"
                     >
                       Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-primary/90"
                       type="submit"
                     >
                       Save
-                    </button>
+                    </Button>
                   </div>
                 </form>
               </div>
@@ -228,12 +229,12 @@ const Settings = () => {
                         Edit your photo
                       </span>
                       <span className="flex gap-2.5">
-                        <button className="text-sm hover:text-primary">
+                        <Button className="text-sm hover:text-primary">
                           Delete
-                        </button>
-                        <button className="text-sm hover:text-primary">
+                        </Button>
+                        <Button className="text-sm hover:text-primary">
                           Update
-                        </button>
+                        </Button>
                       </span>
                     </div>
                   </div>
@@ -286,18 +287,18 @@ const Settings = () => {
                   </div>
 
                   <div className="flex justify-end gap-4.5">
-                    <button
+                    <Button
                       className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
                       type="submit"
                     >
                       Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-primary/90"
                       type="submit"
                     >
                       Save
-                    </button>
+                    </Button>
                   </div>
                 </form>
               </div>

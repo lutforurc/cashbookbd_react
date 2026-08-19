@@ -9,7 +9,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import InputOnly from '../../../utils/fields/InputOnly';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import httpService from '../../../services/httpService';
 import {
@@ -758,7 +758,7 @@ const ProjectExpense = () => {
                   </td>
                   <td className="px-2 py-2">
                     <div className="flex items-center justify-center gap-3">
-                      <button
+                      <Button
                         type="button"
                         aria-label="Edit line"
                         title="Edit this line"
@@ -766,8 +766,8 @@ const ProjectExpense = () => {
                         className="text-blue-600 hover:text-blue-700"
                       >
                         <FiEdit2 />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
                         aria-label="Remove line"
                         title="Remove this line"
@@ -775,7 +775,7 @@ const ProjectExpense = () => {
                         className="text-red-600 hover:text-red-700"
                       >
                         <FiTrash2 />
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>

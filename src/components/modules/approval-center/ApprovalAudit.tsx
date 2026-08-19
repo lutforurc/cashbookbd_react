@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
 
 import Loader from '../../../common/Loader';
-import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import httpService from '../../services/httpService';
 import { API_APPROVAL_CENTER_AUDIT_URL } from '../../services/apiRoutes';
 import routes from '../../services/appRoutes';
@@ -273,7 +273,7 @@ const ApprovalAudit = ({ user }: any) => {
             icon={<FiRefreshCcw className="mr-2" />}
           />
           <PrintButton label="Print" onClick={handlePrint} className="h-10" disabled={!rows.length} />
-          <button
+          <Button
             type="button"
             onClick={handleExcelExport}
             disabled={exporting}
@@ -281,7 +281,7 @@ const ApprovalAudit = ({ user }: any) => {
           >
             <FiDownload className="mr-2" />
             Excel
-          </button>
+          </Button>
           <Link
             to={routes.approval_center}
             className="ml-auto inline-flex h-10 items-center gap-2 px-4 text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-200"

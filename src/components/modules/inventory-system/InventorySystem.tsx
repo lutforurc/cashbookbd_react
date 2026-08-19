@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { FiEdit2, FiLock, FiPlus, FiRefreshCw, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import {
   InventorySystem as InventorySystemType,
@@ -121,13 +121,13 @@ const InventorySystem = () => {
             {isEditing ? 'Edit Inventory System' : 'Add Inventory System'}
           </h2>
           {isEditing && (
-            <button
+            <Button
               type="button"
               onClick={resetForm}
               className="inline-flex items-center gap-1 rounded-sm border border-stroke px-3 py-1 text-sm text-slate-600 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
             >
               <FiX /> Cancel
-            </button>
+            </Button>
           )}
         </div>
 
@@ -213,14 +213,14 @@ const InventorySystem = () => {
           <h2 className="text-lg font-bold text-black dark:text-white">
             Inventory Systems
           </h2>
-          <button
+          <Button
             type="button"
             onClick={loadList}
             className="flex h-8 w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
             aria-label="Refresh list"
           >
             <FiRefreshCw className={loadingList ? 'animate-spin' : ''} />
-          </button>
+          </Button>
         </div>
 
         <div className="overflow-x-auto">
@@ -270,14 +270,14 @@ const InventorySystem = () => {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <button
+                        <Button
                           type="button"
                           onClick={() => startEdit(row)}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-sky-500 transition hover:bg-sky-50 dark:hover:bg-sky-900/20"
                           aria-label={`Edit ${row.name}`}
                         >
                           <FiEdit2 />
-                        </button>
+                        </Button>
                         {row.is_core ? (
                           <span
                             className="inline-flex h-8 w-8 items-center justify-center text-slate-300 dark:text-slate-600"
@@ -287,7 +287,7 @@ const InventorySystem = () => {
                             <FiLock />
                           </span>
                         ) : (
-                          <button
+                          <Button
                             type="button"
                             onClick={() => handleDelete(row)}
                             disabled={deletingId === row.id}
@@ -295,7 +295,7 @@ const InventorySystem = () => {
                             aria-label={`Delete ${row.name}`}
                           >
                             <FiTrash2 />
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </td>

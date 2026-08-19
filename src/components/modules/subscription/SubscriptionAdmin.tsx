@@ -4,7 +4,7 @@ import { FiCheck, FiCheckSquare, FiList, FiPlus, FiX } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -402,14 +402,14 @@ const SubscriptionAdmin: React.FC = () => {
                       icon={<FiCheck className="mr-2" />}
                     />
 
-                    <button
+                    <Button
                       type="button"
                       disabled={updatingAdminPayment}
                       onClick={() => dispatch(rejectSubscriptionPayment({ paymentId: payment.id }))}
                       className="flex w-30 items-center justify-center rounded bg-red px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
                     >
                       <FiX className="mr-2" /> Reject
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { FiSave, FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { getDdlArea } from '../../area/areaSlice';
 import { getCoal4DdlNext } from '../../chartofaccounts/levelfour/coal4DdlSlicer';
 import { storeCustomer } from '../../customer-supplier/customerSlice';
@@ -215,13 +215,13 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
               Save {entityLabel.toLowerCase()} and select it instantly for this invoice.
             </p>
           </div>
-          <button
+          <Button
             type="button"
             onClick={handleClose}
             className="rounded-sm p-1 text-gray-500 transition hover:bg-gray-100 hover:text-red-500 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             <FiX className="text-lg" />
-          </button>
+          </Button>
         </div>
         <div className="grid grid-cols-1 gap-3 p-4 md:grid-cols-2">
           <div className="md:col-span-2">
@@ -303,13 +303,13 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
           </div>
         </div>
         <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end dark:border-gray-700">
-          <button
+          <Button
             type="button"
             onClick={handleClose}
             className="rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             Cancel
-          </button>
+          </Button>
           <ButtonLoading
               onClick={handleSave}
             buttonLoading={buttonLoading}

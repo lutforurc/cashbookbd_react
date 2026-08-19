@@ -10,6 +10,7 @@ import routes from '../services/appRoutes';
 import httpService from '../services/httpService';
 import { hasPermission } from '../utils/permissionChecker';
 import { FiGrid, FiCheckSquare } from 'react-icons/fi';
+import { Button } from '../../pages/UiElements/CustomButtons';
 
 
 const DropdownUser = () => {
@@ -276,7 +277,7 @@ const DropdownUser = () => {
               </li>
             )}
           </ul>
-          <button
+          <Button
             onClick={() => dispatch(logout())}
             className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
           >
@@ -298,7 +299,7 @@ const DropdownUser = () => {
               />
             </svg>
             Log Out
-          </button>
+          </Button>
         </div>
       )}
       {/* <!-- Dropdown End --> */}

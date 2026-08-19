@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Loader from '../../../common/Loader';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import ROUTES from '../../services/appRoutes';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -212,15 +212,15 @@ const SmsTemplateList = () => {
       cellClass: 'text-center',
       render: (row: any) => (
         <div className="flex items-center justify-center gap-3">
-          <button
+          <Button
             type="button"
             onClick={() => handlePreview(row)}
             className="text-slate-500 transition hover:text-blue-500"
           >
             <FiEye className="h-4 w-4" />
-          </button>
+          </Button>
           {canEditTemplate ? (
-            <button
+            <Button
               type="button"
               onClick={() =>
                 navigate(ROUTES.sms_template_edit.replace(':id', String(row.id)))
@@ -228,16 +228,16 @@ const SmsTemplateList = () => {
               className="text-slate-500 transition hover:text-emerald-500"
             >
               <FiEdit2 className="h-4 w-4" />
-            </button>
+            </Button>
           ) : null}
           {canDeleteTemplate ? (
-            <button
+            <Button
               type="button"
               onClick={() => handleDeleteClick(row)}
               className="text-slate-500 transition hover:text-red-500"
             >
               <FiTrash2 className="h-4 w-4" />
-            </button>
+            </Button>
           ) : null}
         </div>
       ),

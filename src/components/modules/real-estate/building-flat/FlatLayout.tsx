@@ -25,6 +25,7 @@ import {
   FiX,
   FiXCircle,
 } from "react-icons/fi";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const STATUS_MAP: Record<number, string> = {
   1: "border-teal-200/60 bg-[linear-gradient(135deg,#34d399_0%,#10b981_45%,#0f766e_100%)] shadow-teal-950/30 ring-teal-100/45 hover:bg-[linear-gradient(135deg,#6ee7b7_0%,#10b981_48%,#0d9488_100%)]",
@@ -653,7 +654,7 @@ const FlatLayout = () => {
                 <div className="grid grid-cols-2 gap-2">
                   {flat.units?.length ? (
                     flat.units.map((unit: UnitItem) => (
-                      <button
+                      <Button
                         type="button"
                         key={unit.id ?? `${floor.floor_no}-${flat.flat_name}-${unit.unit_no}`}
                         onClick={(e) => handleUnitClick(unit, e)}
@@ -673,7 +674,7 @@ const FlatLayout = () => {
                           </span>
                         )}
                         {renderUnitTooltip(unit)}
-                      </button>
+                      </Button>
                     ))
                   ) : (
                     <div className="col-span-2 text-center text-gray-400 text-sm">
@@ -735,7 +736,7 @@ const FlatLayout = () => {
         <div className="flex flex-1 flex-wrap content-center gap-2.5 bg-linear-to-b from-slate-300 to-slate-200 px-4 py-4 shadow-inner dark:from-slate-800/50 dark:to-slate-800/10">
           {units.length ? (
             units.map((unit: UnitItem) => (
-              <button
+              <Button
                 type="button"
                 key={unit.id ?? `${floor.floor_no}-${unit.unit_no}`}
                 onClick={(e) => handleUnitClick(unit, e)}
@@ -754,7 +755,7 @@ const FlatLayout = () => {
                   {isParkingUnit(unit) ? "Parking" : STATUS_LABELS[Number(unit.status)] ?? ""}
                 </span>
                 {renderUnitTooltip(unit)}
-              </button>
+              </Button>
             ))
           ) : (
             <span className="self-center text-xs text-gray-400">No units</span>
@@ -878,7 +879,7 @@ const FlatLayout = () => {
 
               <div className="overflow-x-auto">
                 <div className="inline-flex min-w-full gap-1 rounded-lg border border-gray-200 bg-white p-1.5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => changeActiveTab("previous")}
                     disabled={activeTabIndex === 0}
@@ -886,8 +887,8 @@ const FlatLayout = () => {
                     title="Previous tab"
                   >
                     <FiChevronLeft />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setActiveFloor(null)}
                     className={`shrink-0 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
@@ -908,9 +909,9 @@ const FlatLayout = () => {
                         {layoutSummary.units}
                       </span>
                     </span>
-                  </button>
+                  </Button>
                   {sortedFloors.map((floor: FlatLayoutFloor) => (
-                    <button
+                    <Button
                       type="button"
                       key={floor.floor_no}
                       onClick={() => setActiveFloor(Number(floor.floor_no))}
@@ -932,9 +933,9 @@ const FlatLayout = () => {
                           {getFloorUnitCount(floor)}
                         </span>
                       </span>
-                    </button>
+                    </Button>
                   ))}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => changeActiveTab("next")}
                     disabled={activeTabIndex === sortedFloors.length}
@@ -942,7 +943,7 @@ const FlatLayout = () => {
                     title="Next tab"
                   >
                     <FiChevronRight />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -954,7 +955,7 @@ const FlatLayout = () => {
 
           <div className="mb-4 flex items-center justify-end">
             <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-              <button
+              <Button
                 type="button"
                 onClick={() => setViewMode("building")}
                 className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -965,8 +966,8 @@ const FlatLayout = () => {
               >
                 <FiLayers />
                 Building
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setViewMode("grid")}
                 className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -977,7 +978,7 @@ const FlatLayout = () => {
               >
                 <FiGrid />
                 Grid
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -1014,14 +1015,14 @@ const FlatLayout = () => {
                 </h3>
               </div>
 
-              <button
+              <Button
                 type="button"
                 onClick={closeUnitModal}
                 className="rounded-md p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
                 title="Close"
               >
                 <FiX />
-              </button>
+              </Button>
             </div>
 
             <div className="space-y-5 px-5 py-5">
@@ -1100,41 +1101,41 @@ const FlatLayout = () => {
 
               <div className="flex flex-wrap justify-end gap-2 border-t border-gray-100 pt-4 dark:border-gray-700">
                 {Number(selectedUnit.status) === 1 && (
-                  <button
+                  <Button
                     type="button"
                     onClick={goToUnitSale}
                     className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500"
                   >
                     <FiDollarSign />
                     Sale / Booking
-                  </button>
+                  </Button>
                 )}
                 {Number(selectedUnit.status) === 4 && (
-                  <button
+                  <Button
                     type="button"
                     onClick={goToPaymentEntry}
                     className="inline-flex items-center gap-2 rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-cyan-500"
                   >
                     <FiCreditCard />
                     Payment Entry
-                  </button>
+                  </Button>
                 )}
-                <button
+                <Button
                   type="button"
                   onClick={goToUnitEdit}
                   className="inline-flex items-center gap-2 rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 transition hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
                 >
                   <FiEdit2 />
                   Edit Unit
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => navigate(routes.real_estate_floor_unit_list)}
                   className="inline-flex items-center gap-2 rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 transition hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
                 >
                   <FiList />
                   Unit List
-                </button>
+                </Button>
               </div>
             </div>
           </div>

@@ -11,7 +11,7 @@ import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { ClientType, nomineeRelationType, relationType, sexType, TrueFalse } from '../../utils/fields/DataConstant';
 import DdlDynamicMultiline from '../../utils/utils-functions/DdlDynamicMultiline';
 import { getDdlArea } from '../area/areaSlice';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Link from '../../utils/others/Link';
 import { storeCustomer } from './customerSlice';
 import { toast } from 'react-toastify';
@@ -813,7 +813,7 @@ const AddCustomerSupplier = () => {
                     { key: 'guarantor' as const, label: 'Guarantor Details', count: formik.values.guarantors.length },
                     { key: 'nominee' as const, label: 'Nominee Details', count: formik.values.nominees.length },
                   ].map((tab) => (
-                    <button
+                    <Button
                       key={tab.key}
                       type="button"
                       onClick={() => setDetailsTab(tab.key)}
@@ -824,7 +824,7 @@ const AddCustomerSupplier = () => {
                     >
                       {tab.label}
                       {tab.count > 0 ? ` (${tab.count})` : ''}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               ) : (
@@ -848,9 +848,9 @@ const AddCustomerSupplier = () => {
                               <InputElement name={`guarantors.${index}.address`} label="Address" placeholder='Enter Address' value={g.address} onChange={formik.handleChange} />
                             </div>
 
-                            <button type="button" className="text-red-600 mt-2" onClick={() => remove(index)}>
+                            <Button type="button" className="text-red-600 mt-2" onClick={() => remove(index)}>
                               <div className='flex'> <FiTrash2 /> <span className='ml-2 -mt-1'>Remove</span></div>
-                            </button>
+                            </Button>
                           </div>
                         ))}
 
@@ -1007,7 +1007,7 @@ const AddCustomerSupplier = () => {
                               </div>
                             </div>
 
-                            <button
+                            <Button
                               type="button"
                               className="text-red-600 mt-2"
                               onClick={() => remove(index)}
@@ -1016,7 +1016,7 @@ const AddCustomerSupplier = () => {
                                 <FiTrash2 />
                                 <span className="ml-2 -mt-1">Remove</span>
                               </div>
-                            </button>
+                            </Button>
                           </div>
                         ))}
 
@@ -1119,13 +1119,13 @@ const AddCustomerSupplier = () => {
             </div>
 
             <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end dark:border-gray-700">
-              <button
+              <Button
                 type="button"
                 onClick={handleDuplicateCancel}
                 className="rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
               >
                 Cancel
-              </button>
+              </Button>
               <ButtonLoading
                 type="button"
                 onClick={handleDuplicateContinue}

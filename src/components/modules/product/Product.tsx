@@ -2,7 +2,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteProduct, deleteProductOpening, getProduct, updateProductQtyRate } from './productSlice';
 import SelectOption from '../../utils/utils-functions/SelectOption';
-import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
 import { FiBook, FiCheckSquare, FiEdit2, FiRefreshCcw, FiSearch, FiTrash2 } from 'react-icons/fi';
@@ -545,9 +545,9 @@ const Product = (user: any) => {
             <div className="flex justify-center gap-2">
               <FiBook className="cursor-pointer text-blue-500" />
               <FiEdit2 className="cursor-pointer text-blue-500" onClick={() => handleProductEdit(row)} />
-              <button type="button" onClick={() => setDeleteRow(row)} title="Delete">
+              <Button type="button" onClick={() => setDeleteRow(row)} title="Delete">
                 <FiTrash2 className="cursor-pointer text-red-500" />
-              </button>
+              </Button>
             </div>
           );
         },
@@ -721,13 +721,13 @@ const Product = (user: any) => {
             </div>
 
             <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
-              <button
+              <Button
                 type="button"
                 onClick={() => setOpeningDeleteRow(null)}
                 className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
               >
                 Cancel
-              </button>
+              </Button>
               <ButtonLoading
                 type="button"
                 onClick={handleOpeningDeleteConfirm}
@@ -762,13 +762,13 @@ const Product = (user: any) => {
             </div>
 
             <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
-              <button
+              <Button
                 type="button"
                 onClick={() => setDeleteRow(null)}
                 className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
               >
                 Cancel
-              </button>
+              </Button>
               <ButtonLoading
                 type="button"
                 onClick={handleDeleteConfirm}

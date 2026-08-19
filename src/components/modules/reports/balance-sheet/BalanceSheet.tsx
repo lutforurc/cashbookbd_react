@@ -22,6 +22,7 @@ import { fetchBalanceSheet } from "./balanceSheetSlice";
 import BalanceSheetPrint from "./BalanceSheetPrint";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import { formatDate } from "../../../utils/utils-functions/formatDate";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 
 type ReportItem = {
@@ -995,13 +996,13 @@ const GroupDetailsModal = ({
               Clicked summary details are shown here.
             </p>
           </div>
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             Close
-          </button>
+          </Button>
         </div>
 
         <div className="shrink-0 border-b border-stroke bg-slate-50 px-5 py-4 dark:border-strokedark dark:bg-slate-900/40">

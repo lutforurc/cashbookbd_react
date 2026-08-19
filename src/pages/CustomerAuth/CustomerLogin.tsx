@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FiAlertCircle, FiEye, FiEyeOff, FiLock, FiLogIn, FiSmartphone } from "react-icons/fi";
 import { customerLogin } from "../../features/customerAuthReducer";
 import ROUTES from "../../components/services/appRoutes";
+import { Button } from '../UiElements/CustomButtons';
 
 /**
  * Dressed to match the staff sign-in rather than the plain form it replaced:
@@ -155,7 +156,7 @@ const CustomerLogin = () => {
                           placeholder="Enter your password"
                           className={`${fieldClass} pr-12`}
                         />
-                        <button
+                        <Button
                           type="button"
                           onClick={() => setShowPassword((shown) => !shown)}
                           // Out of the tab order: Tab from the password field
@@ -170,7 +171,7 @@ const CustomerLogin = () => {
                           ) : (
                             <FiEye className="h-5 w-5" />
                           )}
-                        </button>
+                        </Button>
                       </div>
                       <ErrorMessage
                         name="password"
@@ -182,7 +183,7 @@ const CustomerLogin = () => {
                       </p>
                     </div>
 
-                    <button
+                    <Button
                       type="submit"
                       disabled={busy}
                       className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-medium text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
@@ -198,7 +199,7 @@ const CustomerLogin = () => {
                           Login
                         </>
                       )}
-                    </button>
+                    </Button>
                   </Form>
                 );
               }}

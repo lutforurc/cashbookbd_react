@@ -14,7 +14,7 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import FilterMenuShell from '../../../utils/components/FilterMenuShell';
-import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
@@ -345,7 +345,7 @@ const ProjectIncomeReport = ({ user }: any) => {
       // receipt will be refused by the API, which is the right answer -- it is
       // not this screen's voucher to edit.
       render: (row: any) => (
-        <button
+        <Button
           type="button"
           aria-label={`Tag voucher ${row.vr_no}`}
           title="Open this voucher and give it a project"
@@ -355,7 +355,7 @@ const ProjectIncomeReport = ({ user }: any) => {
           className="text-blue-600 hover:text-blue-700"
         >
           <FiEdit2 className="mx-auto" />
-        </button>
+        </Button>
       ),
     },
   ];
@@ -479,7 +479,7 @@ const ProjectIncomeReport = ({ user }: any) => {
 
         <div className="flex flex-wrap gap-2 px-1">
           {SECTIONS.map((s) => (
-            <button
+            <Button
               key={s.key}
               type="button"
               onClick={() => handleSection(s.key)}
@@ -496,7 +496,7 @@ const ProjectIncomeReport = ({ user }: any) => {
                   {rows.untagged.length}
                 </span>
               ) : null}
-            </button>
+            </Button>
           ))}
         </div>
 

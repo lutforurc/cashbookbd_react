@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiFilter } from 'react-icons/fi';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 interface FilterMenuShellProps {
   enabled: boolean;
@@ -33,7 +34,7 @@ const FilterMenuShell = ({
   return (
     <>
       <div className="relative shrink-0" ref={containerRef}>
-        <button
+        <Button
           type="button"
           onClick={onToggle}
           className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
@@ -45,7 +46,7 @@ const FilterMenuShell = ({
           aria-label="Open filters"
         >
           <FiFilter size={16} />
-        </button>
+        </Button>
 
         {isOpen && (
           <div

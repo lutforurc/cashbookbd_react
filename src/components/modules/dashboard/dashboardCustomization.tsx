@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { FiChevronDown, FiChevronUp, FiEye, FiEyeOff, FiSettings, FiX } from 'react-icons/fi';
 import { API_USER_DASHBOARD_PREFERENCES_URL } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 export type DashboardDensity = 'comfortable' | 'compact';
 
@@ -252,14 +253,14 @@ const DashboardCustomizeButton = ({
 
   return (
     <div className="relative flex justify-end">
-      <button
+      <Button
         type="button"
         onClick={() => setOpen((current) => !current)}
         className="inline-flex items-center gap-2 rounded-sm border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary hover:text-primary dark:border-slate-700 dark:bg-gray-800 dark:text-slate-100"
       >
         <FiSettings className="text-base" />
         Customize
-      </button>
+      </Button>
 
       {open ? (
         <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-sm border border-slate-200 bg-white shadow-5 dark:border-slate-700 dark:bg-gray-800">
@@ -267,19 +268,19 @@ const DashboardCustomizeButton = ({
             <span className="text-sm font-bold text-slate-800 dark:text-white">
               Dashboard Widgets
             </span>
-            <button
+            <Button
               type="button"
               onClick={() => setOpen(false)}
               className="text-slate-400 transition hover:text-danger"
               aria-label="Close dashboard customization"
             >
               <FiX />
-            </button>
+            </Button>
           </div>
 
           <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
             <div className="grid grid-cols-2 overflow-hidden rounded-sm border border-slate-200 text-xs font-semibold dark:border-slate-700">
-              <button
+              <Button
                 type="button"
                 onClick={() => onDensityChange('comfortable')}
                 className={`px-3 py-2 transition ${
@@ -289,8 +290,8 @@ const DashboardCustomizeButton = ({
                 }`}
               >
                 Expanded
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => onDensityChange('compact')}
                 className={`px-3 py-2 transition ${
@@ -300,7 +301,7 @@ const DashboardCustomizeButton = ({
                 }`}
               >
                 Compact
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -313,7 +314,7 @@ const DashboardCustomizeButton = ({
                   key={widget.id}
                   className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700/50"
                 >
-                  <button
+                  <Button
                     type="button"
                     onClick={() => onToggleWidget(widget.id)}
                     className={`flex h-8 w-8 items-center justify-center rounded-sm border transition ${
@@ -324,11 +325,11 @@ const DashboardCustomizeButton = ({
                     aria-label={visible ? `Hide ${widget.title}` : `Show ${widget.title}`}
                   >
                     {visible ? <FiEye /> : <FiEyeOff />}
-                  </button>
+                  </Button>
                   <span className="min-w-0 flex-1 truncate font-semibold text-slate-700 dark:text-slate-100">
                     {widget.title}
                   </span>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => onMoveWidget(widget.id, 'up')}
                     disabled={index === 0}
@@ -336,8 +337,8 @@ const DashboardCustomizeButton = ({
                     aria-label={`Move ${widget.title} up`}
                   >
                     <FiChevronUp />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => onMoveWidget(widget.id, 'down')}
                     disabled={index === widgets.length - 1}
@@ -345,20 +346,20 @@ const DashboardCustomizeButton = ({
                     aria-label={`Move ${widget.title} down`}
                   >
                     <FiChevronDown />
-                  </button>
+                  </Button>
                 </div>
               );
             })}
           </div>
 
           <div className="border-t border-slate-200 px-4 py-3 dark:border-slate-700">
-            <button
+            <Button
               type="button"
               onClick={onReset}
               className="w-full rounded-sm border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-danger hover:text-danger dark:border-slate-700 dark:text-slate-300"
             >
               Reset Layout
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

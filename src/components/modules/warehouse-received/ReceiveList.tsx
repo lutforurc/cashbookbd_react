@@ -5,7 +5,7 @@ import { FiMinus, FiPlus, FiPrinter, FiSearch } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import httpService from '../../services/httpService';
 import { API_BRANCH_TRANSFER_COMPARISON_URL } from '../../services/apiRoutes';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
 import PrintFontInput from '../../utils/fields/PrintFontInput';
@@ -162,7 +162,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
         const isOpen = comparedReceiveId === id;
 
         return (
-          <button
+          <Button
             type="button"
             title={isOpen ? 'Hide issued vs received' : 'Show issued vs received'}
             onClick={() => toggleComparison(id)}
@@ -175,7 +175,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
             ) : (
               <FiPlus className="cursor-pointer w-4 h-4" />
             )}
-          </button>
+          </Button>
         );
       },
     },
@@ -263,7 +263,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
       cellClass: 'text-center w-24',
       render: (row: any) => (
         <div className="flex items-center justify-center gap-3">
-          <button
+          <Button
             type="button"
             title="Print receive note"
             disabled={printingId === row.id}
@@ -271,7 +271,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
             className="text-primary hover:opacity-80 disabled:opacity-40"
           >
             <FiPrinter className="inline h-4 w-4" />
-          </button>
+          </Button>
         </div>
       ),
     },

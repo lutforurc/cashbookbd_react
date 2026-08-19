@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import Loader from '../../../../common/Loader';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
@@ -145,14 +145,14 @@ const LeaveApplications = ({ user }: any) => {
       render: (row: any) => (
         <div className="flex items-center gap-2">
           {row.approval_status !== 'approved' && (
-            <button type="button" title="Approve" onClick={() => handleApproval(row, 'approved')} className={iconButtonClass}>
+            <Button type="button" title="Approve" onClick={() => handleApproval(row, 'approved')} className={iconButtonClass}>
               <FiCheck />
-            </button>
+            </Button>
           )}
           {row.approval_status !== 'rejected' && (
-            <button type="button" title="Reject" onClick={() => handleApproval(row, 'rejected')} className={iconButtonClass}>
+            <Button type="button" title="Reject" onClick={() => handleApproval(row, 'rejected')} className={iconButtonClass}>
               <FiX />
-            </button>
+            </Button>
           )}
         </div>
       ),
@@ -215,10 +215,10 @@ const LeaveApplications = ({ user }: any) => {
         </div>
         <div className="mt-3 flex gap-2">
           <ButtonLoading type="submit" buttonLoading={buttonLoading} label="Apply" className={commandButtonClass} icon={<FiSave className="mr-2" />} />
-          <button type="button" onClick={reset} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
+          <Button type="button" onClick={reset} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
             <FiRefreshCcw className="mr-2" />
             Reset
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -252,9 +252,9 @@ const LeaveApplications = ({ user }: any) => {
           />
         </div>
         <div className="flex items-end">
-          <button type="button" onClick={() => loadApplications()} className={commandButtonClass}>
+          <Button type="button" onClick={() => loadApplications()} className={commandButtonClass}>
             Load
-          </button>
+          </Button>
         </div>
       </div>
 

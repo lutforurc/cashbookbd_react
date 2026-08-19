@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 declare global {
   interface JQuery {
@@ -103,7 +104,7 @@ const ImagePopup = ({
               Doc {index + 1}
             </a>
             {onRemoveImage && (
-              <button
+              <Button
                 type="button"
                 onClick={() => onRemoveImage(img)}
                 disabled={removingImage === img}
@@ -111,7 +112,7 @@ const ImagePopup = ({
                 aria-label={`Remove ${img}`}
               >
                 {removingImage === img ? '...' : 'x'}
-              </button>
+              </Button>
             )}
           </div>
         ) : isExcel(img) ? (
@@ -126,7 +127,7 @@ const ImagePopup = ({
               Excel {index + 1}
             </a>
             {onRemoveImage && (
-              <button
+              <Button
                 type="button"
                 onClick={() => onRemoveImage(img)}
                 disabled={removingImage === img}
@@ -134,7 +135,7 @@ const ImagePopup = ({
                 aria-label={`Remove ${img}`}
               >
                 {removingImage === img ? '...' : 'x'}
-              </button>
+              </Button>
             )}
           </div>
         ) : (
@@ -152,7 +153,7 @@ const ImagePopup = ({
               />
             </a>
             {onRemoveImage && (
-              <button
+              <Button
                 type="button"
                 onClick={() => onRemoveImage(img)}
                 disabled={removingImage === img}
@@ -160,7 +161,7 @@ const ImagePopup = ({
                 aria-label={`Remove ${img}`}
               >
                 {removingImage === img ? '...' : 'x'}
-              </button>
+              </Button>
             )}
           </div>
         )

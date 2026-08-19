@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import SelectOption from '../../utils/utils-functions/SelectOption';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 import { generateUserTemporaryPassword, getUser } from './userSlice';
@@ -154,16 +154,16 @@ const UserList = () => {
       cellClass: 'text-center w-28',
       render: (row: any) => (
         <div className="flex items-center justify-center gap-2">
-          <button
+          <Button
             type="button"
             onClick={() => handleEditUser(row.user_id)}
             className="text-blue-500"
             title="Edit user"
           >
             <FiEdit2 className="cursor-pointer w-5 h-5" />
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={() => handleGenerateTemporaryPassword(row.user_id)}
             className="text-blue-500"
@@ -175,7 +175,7 @@ const UserList = () => {
                 temporaryPasswordLoadingId === row.user_id ? 'opacity-50' : ''
               }`}
             />
-          </button>
+          </Button>
         </div>
       ),
     },
@@ -378,7 +378,7 @@ const UserList = () => {
               // The Action icons' blue, in a light frame so it reads as a box to
               // press rather than a stray mark beside the serial.
               return (
-                <button
+                <Button
                   type="button"
                   title={isOpen ? "Hide this company's users" : "Show this company's users"}
                   onClick={() => toggleCompany(companyId)}
@@ -391,7 +391,7 @@ const UserList = () => {
                   ) : (
                     <FiPlus className="cursor-pointer w-4 h-4" />
                   )}
-                </button>
+                </Button>
               );
             },
           },
@@ -462,17 +462,17 @@ const UserList = () => {
       render: (row: any) => {
         return (
           <div className="flex items-center justify-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => handleEditUser(row.user_id)}
               className="text-blue-500 ml-2"
               title="Edit user"
             >
               <FiEdit2 className="cursor-pointer w-5 h-5" />
-            </button>
+            </Button>
 
             {isSaasOwnerList && (
-              <button
+              <Button
                 type="button"
                 onClick={() => handleGenerateTemporaryPassword(row.user_id)}
                 className="text-blue-500"
@@ -480,7 +480,7 @@ const UserList = () => {
                 disabled={temporaryPasswordLoadingId === row.user_id}
               >
                 <FiKey className={`cursor-pointer w-5 h-5 ${temporaryPasswordLoadingId === row.user_id ? 'opacity-50' : ''}`} />
-              </button>
+              </Button>
             )}
           </div>
         );
@@ -572,13 +572,13 @@ const UserList = () => {
                       the owner is the row above
                     </span>
                   </h3>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => toggleCompany(expandedCompanyId)}
                     className="text-xs text-blue-500 underline-offset-2 hover:underline"
                   >
                     Close
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="overflow-x-auto rounded border border-stroke dark:border-strokedark">

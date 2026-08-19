@@ -50,6 +50,42 @@ interface ButtonProps {
 export const ROW_ACTION_BUTTON_CLASS = 'h-7 w-full';
 
 /**
+ * The button every button in the app is made of.
+ *
+ * It renders a plain <button> and adds almost nothing: the transition, and the
+ * cursor a disabled control should carry. Everything a call site passes --
+ * classes, handlers, aria, type -- goes straight through, so moving a screen
+ * onto this changes nothing about how it looks.
+ *
+ * What it changes is where the app's buttons are. There were four hundred
+ * hand-written ones, and a change to how a button feels -- a focus ring, a
+ * disabled state, a press animation -- had to be made four hundred times or
+ * not at all. Made here, it reaches all of them.
+ *
+ * `variant` is the way out of bespoke classes: pass one and the shared colours
+ * come with it. A call site that passes none keeps exactly the classes it has.
+ *
+ * `type` is deliberately not defaulted. A <button> inside a form submits it
+ * unless told otherwise, and several forms in this app rely on that.
+ */
+export const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }
+>(({ className = '', variant, children, ...rest }, ref) => (
+  <button
+    ref={ref}
+    className={`transition-colors disabled:cursor-not-allowed ${
+      variant ? BUTTON_VARIANT[variant] : ''
+    } ${className}`}
+    {...rest}
+  >
+    {children}
+  </button>
+));
+
+Button.displayName = 'Button';
+
+/**
  * A single icon that does something: edit a row, print it, close a panel.
  *
  * These were written by hand about a hundred and fifty times, each with its own

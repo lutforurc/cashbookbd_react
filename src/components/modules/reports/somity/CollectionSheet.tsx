@@ -17,6 +17,7 @@ import httpService from '../../../services/httpService';
 import { API_DDL_AREA_LIST_URL, API_SOMITY_COLLECTION_SHEET_URL } from '../../../services/apiRoutes';
 import CollectionSheetPrint, { CollectionSheetRow } from './CollectionSheetPrint';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const statusOptions = [
   { id: '1', name: 'Opening' },
@@ -395,14 +396,14 @@ const CollectionSheet = (user: any) => {
           </div>
 
           <div className="grid min-w-max grid-cols-[auto_auto_64px_64px_auto] items-end gap-2 overflow-x-auto md:col-span-2 xl:col-span-3 xl:ml-auto min-[1881px]:col-span-1">
-            <button type="button" onClick={handleLoad} className={buttonClass}>
+            <Button type="button" onClick={handleLoad} className={buttonClass}>
               <FiCheckSquare size={15} />
               Apply
-            </button>
-            <button type="button" onClick={handleReset} className={buttonClass}>
+            </Button>
+            <Button type="button" onClick={handleReset} className={buttonClass}>
               <FiRefreshCcw size={15} />
               Reset
-            </button>
+            </Button>
 
             <label className="block">
               <span className={labelClass}>Rows</span>
@@ -446,10 +447,10 @@ const CollectionSheet = (user: any) => {
               />
             </label>
 
-            <button type="button" onClick={handlePrint} disabled={rows.length === 0} className={buttonClass}>
+            <Button type="button" onClick={handlePrint} disabled={rows.length === 0} className={buttonClass}>
               <FiPrinter size={15} />
               Print
-            </button>
+            </Button>
           </div>
         </div>
       </div>

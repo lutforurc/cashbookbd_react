@@ -9,6 +9,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchMonthlyAttendanceSummary } from './attendanceSlice';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const monthNames = [
   'January',
@@ -207,10 +208,10 @@ const BranchAttendanceSummaryReport = ({ user }: any) => {
         <DropdownCommon id="month" name="month" label="Month" value={filters.month} data={monthOptions} onChange={handleChange} className="h-10 font-medium" />
         <DropdownCommon id="year" name="year" label="Year" value={filters.year} data={yearOptions} onChange={handleChange} className="h-10 font-medium" />
         <div className="flex items-end">
-          <button type="button" onClick={() => loadReport()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
+          <Button type="button" onClick={() => loadReport()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
             <FiRefreshCcw className="mr-2" />
             Load
-          </button>
+          </Button>
         </div>
       </div>
       </div>

@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 
 import Loader from '../../../../common/Loader';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
@@ -123,14 +123,14 @@ const ImeiStock = () => {
           <div>
             <div className="flex items-center justify-between gap-2">
               <label className={labelClass}>Select Product</label>
-              <button
+              <Button
                 type="button"
                 onClick={() => setSelectedProduct(null)}
                 className="mb-1 text-slate-700 transition hover:text-primary dark:text-slate-200"
                 title="Clear product"
               >
                 
-              </button>
+              </Button>
             </div>
             <ProductDropdown
               value={selectedProduct}

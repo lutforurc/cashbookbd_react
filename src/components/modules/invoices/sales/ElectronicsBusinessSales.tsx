@@ -5,7 +5,7 @@ import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
-import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import { toast } from 'react-toastify';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { useDispatch, useSelector } from 'react-redux';
@@ -1430,18 +1430,18 @@ const ElectronicsBusinessSales = () => {
                       parseFloat((row.price * row.qty).toFixed(2)))}
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
-                    <button
+                    <Button
                       onClick={() => handleDelete(row.id)}
                       className="text-red-500 ml-2 text-center"
                     >
                       <FiTrash2 className="cursor-pointer text-center" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => editProductItem(row.id)}
                       className="text-green-500 ml-2 text-center"
                     >
                       <FiEdit2 className="cursor-pointer text-center" />
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -1562,7 +1562,7 @@ const ElectronicsBusinessSales = () => {
 
                   <div className="pt-2 w-10 ml-10">
                     {installment?.payments?.length <= 0 && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => {
                           const updated = editedInstallments.filter(
@@ -1574,7 +1574,7 @@ const ElectronicsBusinessSales = () => {
                       >
                         {/* Remove */}
                         <FiTrash2 className="text-red-500 text-lg mr-2" />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>

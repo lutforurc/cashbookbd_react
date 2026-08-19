@@ -7,7 +7,7 @@ import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import SearchInput from '../../utils/fields/SearchInput';
-import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Link from '../../utils/others/Link';
@@ -938,13 +938,13 @@ const Orders = () => {
       render: (data: any) => (
         <p>
           {(data.linked_order_count ?? data.linked_orders_count ?? 0) > 0 ? (
-            <button
+            <Button
               type="button"
               className="block text-left hover:underline font-semibold text-green-500 dark:text-yellow-300"
               onClick={() => openLinkedOrdersModal(data)}
             >
               <span className=''> {data.order_number}</span>
-            </button>
+            </Button>
           ) : (
             <span className="block">{data.order_number}</span>
           )}
@@ -1040,7 +1040,7 @@ const Orders = () => {
       headerClass: 'text-center',
       render: (data: any) => (
         <div className="flex justify-center items-center">
-          <button
+          <Button
             type="button"
             onClick={() => void handleOrderTransactionPrint(data)}
             className="text-blue-500 mr-2"
@@ -1048,7 +1048,7 @@ const Orders = () => {
             disabled={printingOrderId === data?.id}
           >
             <FiPrinter className="cursor-pointer h-5 w-5" />
-          </button>
+          </Button>
           <ActionButtons
             row={data}
             showEdit={true}
@@ -1070,7 +1070,7 @@ const Orders = () => {
         <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-end gap-2' : 'flex flex-col'}`}>
           <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
             {useFilterMenuEnabled && (
-              <button
+              <Button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
                 className={`inline-flex h-9 w-10 items-center justify-center rounded border text-sm transition ${
@@ -1082,7 +1082,7 @@ const Orders = () => {
                 aria-label="Open filters"
               >
                 <FiFilter size={16} />
-              </button>
+              </Button>
             )}
 
             {(useFilterMenuEnabled ? filterOpen : true) && (
@@ -1403,14 +1403,14 @@ const Orders = () => {
                   Order No: {selectedLinkedOrder.order_number}
                 </p>
               </div>
-              <button
+              <Button
                 type="button"
                 className="rounded-md p-1.5 text-gray-500 transition hover:bg-red-50 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-200 dark:text-gray-300 dark:hover:bg-red-500/10 dark:hover:text-red-400 dark:focus:ring-red-500/30"
                 aria-label="Close linked orders modal"
                 onClick={closeLinkedOrdersModal}
               >
                 <FiX size={18} />
-              </button>
+              </Button>
             </div>
 
             <div className="bg-slate-50 p-4 dark:bg-slate-800">

@@ -7,7 +7,7 @@ import useCtrlS from '../../../utils/hooks/useCtrlS';
 import { hasPermission } from '../../../utils/permissionChecker';
 import Loader from '../../../../common/Loader';
 import InputOnly from '../../../utils/fields/InputOnly';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
@@ -752,19 +752,19 @@ const BankPayment = () => {
                       {thousandSeparator(Number(t.amount))}
                     </td>
                     <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
-                      <button
+                      <Button
                         onClick={() => handleDelete(Number(t.id))}
                         className="text-red-500 ml-2 text-center"
                       >
                         <FiTrash2 className="cursor-pointer text-center" />
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         onClick={() => paymentEditItem(Number(t.id))}
                         className="text-green-500 ml-2 text-center"
                       >
                         <FiEdit2 className="cursor-pointer text-center" />
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 )),

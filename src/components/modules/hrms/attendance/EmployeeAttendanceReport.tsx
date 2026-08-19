@@ -13,6 +13,7 @@ import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchAttendanceReport, fetchLeaveApplications } from './attendanceSlice';
 import { chartDate } from '../../../utils/utils-functions/formatDate';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
 
@@ -282,10 +283,10 @@ const EmployeeAttendanceReport = ({ user }: any) => {
         </div>
         <DropdownCommon id="status" name="status" label="Status" value={filters.status} data={statusOptions} onChange={handleChange(setFilters)} className="h-9" />
         <div className="flex items-end">
-          <button type="button" onClick={() => loadReport()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
+          <Button type="button" onClick={() => loadReport()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
             <FiRefreshCcw className="mr-2" />
             Load
-          </button>
+          </Button>
         </div>
       </div>
       </div>

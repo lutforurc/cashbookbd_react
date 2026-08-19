@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Button } from '../../pages/UiElements/CustomButtons';
 
 interface Option {
   value: string;
@@ -157,7 +158,7 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
                     )}
                   </div>
                   <div className="flex w-8 items-center py-1 pl-1 pr-1">
-                    <button
+                    <Button
                       type="button"
                       onClick={open}
                       className="h-9 w-6 cursor-pointer outline-none focus:outline-none"
@@ -178,7 +179,7 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
                           ></path>
                         </g>
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

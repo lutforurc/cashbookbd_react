@@ -23,6 +23,7 @@ import {
   API_ATTENDANCE_LEAVE_APPLICATION_LIST_URL,
   API_ATTENDANCE_MONTHLY_SUMMARY_URL,
 } from "../../../services/apiRoutes";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 /* ================= TYPES ================= */
 interface SalaryRow {
@@ -839,14 +840,14 @@ const SalarySheetGenerate = ({ user }: any) => {
       headerClass: "text-center max-w-10",
       cellClass: "text-center",
       render: (row: SalaryRow) => (
-        <button
+        <Button
           type="button"
           title={`Remove ${row.name} from this sheet`}
           onClick={() => setRowToRemove(row)}
           className="text-red-600 hover:text-red-800"
         >
           <FiTrash2 className="block w-4 h-4" />
-        </button>
+        </Button>
       ),
     },
   ];

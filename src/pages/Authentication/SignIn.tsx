@@ -8,7 +8,7 @@ import { login } from '../../features/authReducer';
 import HelmetTitle from '../../components/utils/others/HelmetTitle';
 import { getSettings } from '../../components/modules/settings/settingsSlice';
 import { FiEye, FiEyeOff, FiLogIn, FiBookOpen, FiShoppingCart, FiUsers, FiPieChart, FiSmartphone, FiMail, FiLock } from 'react-icons/fi';
-import { ButtonLoading } from '../UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../UiElements/CustomButtons';
 import { getSignInTitleByHost } from '../../components/services/tenantTitles';
 import DeviceLimitNotice from '../../components/modules/devices/DeviceLimitNotice';
 import { FIELD_BASE, FIELD_LABEL } from '../../theme/fieldStyles';
@@ -297,13 +297,13 @@ const SignIn: React.FC = () => {
                 <div className="w-full text-center">
                   {/* Dev-only, and deliberately not on TEXT_LINK: this one
                       should stand out from the card's muted links. */}
-                  <button
+                  <Button
                     className="text-sm font-medium text-primary hover:underline"
                     onClick={handleSetUser}
                     type="button"
                   >
                     Set User
-                  </button>
+                  </Button>
                 </div>
               ) : null}
 
@@ -348,14 +348,14 @@ const SignIn: React.FC = () => {
                       />
 
                       {/* ✅ Show/Hide Password */}
-                      <button
+                      <Button
                         type="button"
                         onClick={handleCheckPassword}
                         title={checkPassword ? 'Show password' : 'Hide password'}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-body transition-colors hover:text-primary dark:text-bodydark2 dark:hover:text-primary"
                       >
                         {checkPassword ? <FiEye className="h-5 w-5" /> : <FiEyeOff className="h-5 w-5" />}
-                      </button>
+                      </Button>
                     </div>
                   </div>
 

@@ -8,7 +8,7 @@ import Loader from '../../../common/Loader';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import routes from '../../services/appRoutes';
 import InAppMessageView from './InAppMessageView';
 import {
@@ -376,7 +376,7 @@ const AdminInAppMessageForm: React.FC = () => {
               />
             </div>
             <div className="flex items-end">
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   set('bg_color', '');
@@ -386,7 +386,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 className="h-8.5 w-full rounded border border-stroke text-sm dark:border-strokedark"
               >
                 Use app theme colours
-              </button>
+              </Button>
             </div>
 
             <DropdownCommon

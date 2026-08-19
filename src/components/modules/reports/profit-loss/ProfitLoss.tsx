@@ -25,6 +25,7 @@ import ProfitLossReport from "./ProfitLossReport";
 import { API_REPORT_PROFIT_LOSS_EXPENSE_SUMMARY_URL } from "../../../services/apiRoutes";
 import httpService from "../../../services/httpService";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 type TradingRow = {
   coal3_id?: number | string;
@@ -450,7 +451,7 @@ const ProfitLoss = (user: any) => {
         <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-wrap items-end"}`}>
           <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none"}>
             {useFilterMenuEnabled && (
-              <button
+              <Button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
                 className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
@@ -462,7 +463,7 @@ const ProfitLoss = (user: any) => {
                 aria-label="Open filters"
               >
                 <FiFilter size={16} />
-              </button>
+              </Button>
             )}
 
             {(useFilterMenuEnabled ? filterOpen : true) && (
@@ -746,13 +747,13 @@ const ExpenseDetailsModal = ({
               </p>
             </div>
 
-            <button
+            <Button
               type="button"
               onClick={onClose}
               className="rounded-lg border border-stroke px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-strokedark dark:text-slate-200 dark:hover:bg-slate-800"
             >
               Close
-            </button>
+            </Button>
           </div>
 
           <div className="shrink-0 border-b border-stroke bg-slate-50 px-5 py-4 dark:border-strokedark dark:bg-slate-900/40">

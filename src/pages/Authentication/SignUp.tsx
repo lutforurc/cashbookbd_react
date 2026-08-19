@@ -6,6 +6,7 @@ import Logo from '../../images/logo/logo.svg';
 // import ImportElement from '../../components/utils/fields/ImportElement';
 import InputElement from '../../components/utils/fields/InputElement';
 import { FIELD_BASE } from '../../theme/fieldStyles';
+import { Button } from '../UiElements/CustomButtons';
 
 const SignUp: React.FC = () => {
   return (
@@ -300,7 +301,7 @@ const SignUp: React.FC = () => {
                   />
                 </div>
 
-                <button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-gray/50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-gray/50">
+                <Button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-gray/50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-gray/50">
                   <span>
                     <svg
                       width="20"
@@ -335,7 +336,7 @@ const SignUp: React.FC = () => {
                     </svg>
                   </span>
                   Sign up with Google
-                </button>
+                </Button>
 
                 <div className="mt-6 text-center">
                   <p>

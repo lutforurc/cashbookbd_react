@@ -6,7 +6,7 @@ import useCtrlS from '../../../utils/hooks/useCtrlS';
 import { hasPermission } from '../../../utils/permissionChecker';
 import Loader from '../../../../common/Loader';
 import InputOnly from '../../../utils/fields/InputOnly';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import InputElement from '../../../utils/fields/InputElement';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import Link from '../../../utils/others/Link';
@@ -285,13 +285,13 @@ const EmployeeLoan = () => {
                   <span>
                     Editing loan — Vr. No. <strong>{editInfo.vr_no}</strong>
                   </span>
-                  <button
+                  <Button
                     type="button"
                     onClick={resetForm}
                     className="font-medium text-amber-700 underline hover:text-amber-900 dark:text-amber-300"
                   >
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               )}
 

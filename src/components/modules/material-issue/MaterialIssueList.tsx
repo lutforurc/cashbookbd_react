@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiCheckSquare, FiPrinter } from 'react-icons/fi';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
 import Table from '../../utils/others/Table';
@@ -110,14 +110,14 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
       headerClass: 'text-center w-20',
       cellClass: 'text-center w-20',
       render: (row: any) => (
-        <button
+        <Button
           type="button"
           onClick={() => setPrintId(row?.id)}
           title="Print"
           className="text-primary hover:text-blue-700"
         >
           <FiPrinter className="mx-auto cursor-pointer text-lg" />
-        </button>
+        </Button>
       ),
     },
   ];

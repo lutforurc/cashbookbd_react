@@ -5,7 +5,7 @@ import { FiAlertCircle, FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2, FiX } f
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import HelmetTitle from '../../utils/others/HelmetTitle'; 
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons'; 
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons'; 
 import InputElement from '../../utils/fields/InputElement';
 import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionItemsDropdown';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown'; 
@@ -572,14 +572,14 @@ const BranchTransfer = () => {
             Editing issue {editingVrNo || `#${editingId}`}
             {loadingVoucher ? ' — loading…' : ''}
           </span>
-          <button
+          <Button
             type="button"
             onClick={() => navigate(ROUTES.report_branch_transfer_list)}
             className="inline-flex items-center gap-1 rounded-sm border border-amber-400 px-2 py-1 text-xs font-medium text-amber-800 transition hover:bg-amber-100 dark:text-amber-100 dark:hover:bg-amber-900/40"
           >
             <FiX className="h-3.5 w-3.5" />
             Cancel
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -852,18 +852,18 @@ const BranchTransfer = () => {
                   {thousandSeparator(Number(row.quantity) * Number(row.rate))}
                 </td>
                 <td className="px-2 py-2 text-center text-gray-900 dark:text-white">
-                  <button
+                  <Button
                     onClick={() => handleDeleteProduct(row.id)}
                     className="text-red-500 ml-2 text-center"
                   >
                     <FiTrash2 className="cursor-pointer text-center" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => handleEditProduct(row.id)}
                     className="text-green-500 ml-2 text-center"
                   >
                     <FiEdit2 className="cursor-pointer text-center" />
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -916,13 +916,13 @@ const BranchTransfer = () => {
             </div>
 
             <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end dark:border-gray-700">
-              <button
+              <Button
                 type="button"
                 onClick={handleDuplicateCancel}
                 className="rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
               >
                 Cancel
-              </button>
+              </Button>
               <ButtonLoading
                 type="button"
                 onClick={handleDuplicateContinue}
@@ -988,13 +988,13 @@ const BranchTransfer = () => {
             </div>
 
             <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end dark:border-gray-700">
-              <button
+              <Button
                 type="button"
                 onClick={handleStockCancel}
                 className="rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
               >
                 Cancel
-              </button>
+              </Button>
               <ButtonLoading
                 type="button"
                 onClick={handleStockContinue}

@@ -5,7 +5,7 @@ import { FiCheck, FiClock, FiRefreshCcw, FiRotateCcw, FiTrash2, FiX } from 'reac
 import { toast } from 'react-toastify';
 
 import Loader from '../../../common/Loader';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import httpService from '../../services/httpService';
 import { API_APPROVAL_CENTER_ACTION_URL, API_APPROVAL_CENTER_SUMMARY_URL } from '../../services/apiRoutes';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
@@ -346,12 +346,12 @@ const ApprovalCenter = ({ user }: any) => {
       <div className="border border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stroke px-4 py-3 dark:border-strokedark">
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={() => setActiveTab('attendance')} className={`h-9 px-4 text-sm font-semibold ${activeTab === 'attendance' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
+            <Button type="button" onClick={() => setActiveTab('attendance')} className={`h-9 px-4 text-sm font-semibold ${activeTab === 'attendance' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
               Attendance ({data?.counts?.attendance || 0})
-            </button>
-            <button type="button" onClick={() => setActiveTab('voucher')} className={`h-9 px-4 text-sm font-semibold ${activeTab === 'voucher' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
+            </Button>
+            <Button type="button" onClick={() => setActiveTab('voucher')} className={`h-9 px-4 text-sm font-semibold ${activeTab === 'voucher' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
               Vouchers ({data?.counts?.voucher || 0})
-            </button>
+            </Button>
             <Link
               to={routes.approval_center_audit}
               className="flex h-9 items-center gap-2 px-4 text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-200"
@@ -361,20 +361,20 @@ const ApprovalCenter = ({ user }: any) => {
             </Link>
             {activeTab === 'voucher' ? (
               <div className="flex items-center overflow-hidden rounded-sm border border-stroke dark:border-strokedark">
-                <button
+                <Button
                   type="button"
                   onClick={() => changeVoucherStatus('pending')}
                   className={`h-9 px-3 text-xs font-semibold ${filters.voucher_status === 'pending' ? 'bg-primary text-white' : 'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
                 >
                   Pending
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => changeVoucherStatus('approved')}
                   className={`h-9 px-3 text-xs font-semibold ${filters.voucher_status === 'approved' ? 'bg-primary text-white' : 'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
                 >
                   Approved
-                </button>
+                </Button>
               </div>
             ) : null}
           </div>

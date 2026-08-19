@@ -5,7 +5,7 @@ import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi'
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionItemsDropdown';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
@@ -694,18 +694,18 @@ const WarehouseReceived = () => {
                   {thousandSeparator(Number(row.quantity) * Number(row.rate))}
                 </td>
                 <td className="px-2 py-2 text-center text-gray-900 dark:text-white">
-                  <button
+                  <Button
                     onClick={() => handleDeleteProduct(row.id)}
                     className="text-red-500 ml-2 text-center"
                   >
                     <FiTrash2 className="cursor-pointer text-center" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => handleEditProduct(row.id)}
                     className="text-green-500 ml-2 text-center"
                   >
                     <FiEdit2 className="cursor-pointer text-center" />
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}

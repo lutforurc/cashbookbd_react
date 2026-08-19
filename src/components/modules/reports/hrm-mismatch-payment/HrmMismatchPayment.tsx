@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import { FiSearch } from 'react-icons/fi';
 
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -167,7 +167,7 @@ const HrmMismatchPayment = (user: any) => {
         const isDeleting = deletingKey === key;
         return (
           <div className="text-center">
-            <button
+            <Button
               type="button"
               onClick={() => handleDelete(row)}
               disabled={isDeleting || deletingKey !== null}
@@ -175,7 +175,7 @@ const HrmMismatchPayment = (user: any) => {
               title="Keep one, remove duplicate deductions"
             >
               {isDeleting ? 'Clearing...' : 'Clear'}
-            </button>
+            </Button>
           </div>
         );
       },

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 export type InlineConfirmPosition = { top: number; left: number };
 
@@ -73,21 +74,21 @@ const InlineConfirm = ({
           {question}
         </p>
         <div className="flex justify-center gap-3">
-          <button
+          <Button
             type="button"
             ref={yesRef}
             onClick={onConfirm}
             className={`rounded px-4 py-1.5 text-sm text-white ${TONE_CLASS[tone] ?? TONE_CLASS.danger}`}
           >
             {yesLabel}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onCancel}
             className="rounded bg-gray-500 px-4 py-1.5 text-sm text-white hover:bg-gray-600"
           >
             {noLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

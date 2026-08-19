@@ -13,6 +13,7 @@ import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { chartDate } from '../../../utils/utils-functions/formatDate';
 import { fetchAttendanceAuditHistory } from './attendanceSlice';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const today = new Date().toISOString().slice(0, 10);
 const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
@@ -236,11 +237,11 @@ const AttendanceAuditHistory = ({ user }: any) => {
           />
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <button type="button" onClick={() => loadHistory()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
+          <Button type="button" onClick={() => loadHistory()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
             <FiRefreshCcw className="mr-2" />
             Load
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => {
               setEmployeeOption(null);
@@ -260,7 +261,7 @@ const AttendanceAuditHistory = ({ user }: any) => {
           >
             <FiSearch className="mr-2" />
             Reset
-          </button>
+          </Button>
         </div>
       </div>
 

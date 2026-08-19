@@ -20,7 +20,7 @@ import SelectWeightVariance from '../../../utils/utils-functions/SelectWeightVar
 import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
 import Loader from '../../../../common/Loader';
 import Link from '../../../utils/others/Link';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { userCurrentBranch } from '../../branch/branchSlice';
 import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
@@ -1063,7 +1063,7 @@ const TradingCombinedEntry = () => {
                         { value: 'purchase', label: 'Purchase' },
                         { value: 'sales', label: 'Sales' }
                       ].map((item) => (
-                        <button
+                        <Button
                           key={item.value}
                           type="button"
                           onClick={() => handleNotesApplyToChange(item.value as NotesApplyTo)}
@@ -1073,7 +1073,7 @@ const TradingCombinedEntry = () => {
                             }`}
                         >
                           {item.label}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   )}
@@ -1336,20 +1336,20 @@ const TradingCombinedEntry = () => {
                       {thousandSeparator(rowSalesTotal)}
                     </td>
                     <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-white">
-                      <button
+                      <Button
                         onClick={() => handleEdit(row)}
                         className="text-blue-500 text-center"
                         type="button"
                       >
                         <FiEdit2 className="cursor-pointer text-center" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => handleDelete(row.id)}
                         className="text-red-500 ml-2 text-center"
                         type="button"
                       >
                         <FiTrash2 className="cursor-pointer text-center" />
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 );

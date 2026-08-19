@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 interface PaginationProps {
   currentPage: number;
@@ -53,24 +54,24 @@ const Pagination: React.FC<PaginationProps> = ({
   return (
     <div className="pl-30 md:pl-0 flex items-center justify-end space-x-2 mt-4">
       {/* Previous Button */}
-      <button
+      <Button
         className="px-3 py-1 bg-gray-700 rounded-xs hover:bg-blue-500 hover:text-white disabled:bg-gray-400 text-white disabled:text-black"
         disabled={currentPage === 1}
         onClick={() => handlePageChange(currentPage - 1)}
       >
         Previous
-      </button>
+      </Button>
 
       {/* Page Numbers */}
       {getPageNumbers().map((page, index) =>
         typeof page === 'number' ? (
-          <button
+          <Button
             key={index}
             className={`px-3 py-1 rounded-xs text-white ${currentPage === page ? 'bg-blue-500' : 'bg-gray-700 hover:bg-blue-500 '}`}
             onClick={() => handlePageChange(page)}
           >
             {page}
-          </button>
+          </Button>
         ) : (
           <span key={index} className="px-3 py-1">
             ...
@@ -79,13 +80,13 @@ const Pagination: React.FC<PaginationProps> = ({
       )}
 
       {/* Next Button */}
-      <button
+      <Button
         className="px-3 py-1 bg-gray-700 rounded-xs hover:bg-blue-500 hover:text-white disabled:bg-gray-400 text-white"
         disabled={currentPage === totalPages}
         onClick={() => handlePageChange(currentPage + 1)}
       >
         Next
-      </button>
+      </Button>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 type ActionButtonsProps = {
   row: { id: number; [key: string]: any };
@@ -110,7 +111,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
               Are you sure?
             </p>
             <div className="flex justify-center gap-3">
-              <button
+              <Button
                 ref={yesRef}
                 onClick={() => {
                   handleDelete?.(row.id);
@@ -119,13 +120,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                 className="px-4 py-1.5 text-sm text-white bg-red-600 hover:bg-red-700 rounded"
               >
                 Yes
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => setShowConfirmId?.(null)}
                 className="px-4 py-1.5 text-sm bg-gray-500 hover:bg-gray-600 text-white rounded"
               >
                 No
-              </button>
+              </Button>
             </div>
           </div>
         </div>

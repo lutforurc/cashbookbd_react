@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import SelectOption from '../../utils/utils-functions/SelectOption';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
 import { FiPrinter, FiSearch, FiTrash2 } from 'react-icons/fi';
@@ -200,14 +200,14 @@ const Recyclebin = () => {
       key: 'vr_no',
       header: 'Voucher No',
       render: (row: any) => (
-        <button
+        <Button
           type="button"
           className="hover:underline"
           onClick={() => handlePrintRecycle(row)}
           title="Print Preview"
         >
           {row.vr_no}
-        </button>
+        </Button>
       ),
     },
     { key: 'vr_date', header: 'Voucher Date', render: (row: any) => <p>{row.vr_date}</p> },
@@ -248,19 +248,19 @@ const Recyclebin = () => {
       cellClass: 'text-center',
       render: (row: any) => (
         <div className="flex justify-center items-center">
-          <button
+          <Button
             type="button"
             onClick={() => handlePrintRecycle(row)}
             title="Print Preview"
           >
             <FiPrinter className="text-blue-500 text-lg font-bold" />
-          </button>
-          <button onClick={() => handleRestoreRecycle(row)}>
+          </Button>
+          <Button onClick={() => handleRestoreRecycle(row)}>
             <FaRecycle className="text-green-500 text-lg font-bold ml-2" />
-          </button>
-          <button onClick={() => handleRemoveRecycle(row)}>
+          </Button>
+          <Button onClick={() => handleRemoveRecycle(row)}>
             <FiTrash2 className="text-red-500 ml-2 text-lg" />
-          </button>
+          </Button>
         </div>
       ),
     },

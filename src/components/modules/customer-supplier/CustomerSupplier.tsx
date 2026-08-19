@@ -19,6 +19,7 @@ import httpService from "../../services/httpService";
 import { API_CUSTOMER_PROFILE_PDF_URL } from "../../services/apiRoutes";
 import routes from "../../services/appRoutes";
 import { formatMobile, useMobileFormat } from "../../utils/utils-functions/mobileFormat";
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -348,14 +349,14 @@ const CustomerSupplier = () => {
           {/* The voucher this figure sits on. Without it the balance is a
               number nobody can trace; with it the ledger is one click away. */}
           {row.opening_vr_no && (
-            <button
+            <Button
               type="button"
               title={`Journal voucher ${row.opening_vr_no} — open ledger`}
               onClick={() => handleOpenLedger(row)}
               className="font-mono text-[10px] leading-tight text-blue-600 hover:underline dark:text-blue-400"
             >
               {row.opening_vr_no}
-            </button>
+            </Button>
           )}
         </div>
       ),
@@ -492,7 +493,7 @@ const CustomerSupplier = () => {
 	          {/* ===== Guarantor Slot (fixed) ===== */}
           <div className="w-4 flex justify-center">
             {row.guarantors?.length > 0 && (
-              <button
+              <Button
                 title="View guarantors"
                 onClick={() => {
                   setSelectedGuarantors(row.guarantors);
@@ -501,13 +502,13 @@ const CustomerSupplier = () => {
                 className="text-indigo-600 hover:text-indigo-800"
               >
                 <FiUsers size={16} />
-              </button>
+              </Button>
             )}
           </div>
 
           <div className="w-4 flex justify-center">
             {row.nominees?.length > 0 && (
-              <button
+              <Button
                 title="View nominees"
                 onClick={() => {
                   setSelectedNominees(row.nominees);
@@ -516,46 +517,46 @@ const CustomerSupplier = () => {
                 className="text-emerald-600 hover:text-emerald-800"
               >
                 <FiBook size={16} />
-              </button>
+              </Button>
             )}
           </div>
 
           {/* ===== Print Slot ===== */}
           <div className="w-4 flex justify-center">
-            <button
+            <Button
               title="Print profile (PDF)"
               className="text-gray-500 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-300 dark:hover:text-white"
               disabled={printingCustomerId === row.id}
               onClick={() => handlePrintRow(row)}
             >
               <FiPrinter size={15} />
-            </button>
+            </Button>
           </div>
 
           {/* ===== Edit Slot ===== */}
           {canEditCustomer && (
             <div className="w-4 flex justify-center">
-              <button
+              <Button
                 title="Edit"
                 className="text-blue-600 hover:text-blue-800"
                 onClick={() => navigate(`/customer-supplier/edit/${row.id}`)}
               >
                 <FiEdit2 size={15} />
-              </button>
+              </Button>
             </div>
           )}
 
           {/* ===== Delete Slot ===== */}
           {canDeleteCustomer && (
             <div className="w-4 flex justify-center">
-              <button
+              <Button
                 title="Delete"
                 className="text-red-600 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={deletingCustomerId === row.id}
                 onClick={() => handleDeleteRow(row)}
               >
                 <FiTrash2 size={15} />
-              </button>
+              </Button>
             </div>
           )}
 
@@ -697,12 +698,12 @@ const CustomerSupplier = () => {
                 Guarantor Details
               </h2>
 
-              <button
+              <Button
                 onClick={() => setShowGuarantorModal(false)}
                 className="text-gray-600 dark:text-gray-300 hover:text-red-500"
               >
                 <FiX className="text-lg cursor-pointer" />
-              </button>
+              </Button>
             </div>
 
             {/* ===== Body ===== */}
@@ -790,12 +791,12 @@ const CustomerSupplier = () => {
                 Nominee Details
               </h2>
 
-              <button
+              <Button
                 onClick={() => setShowNomineeModal(false)}
                 className="text-gray-600 dark:text-gray-300 hover:text-red-500"
               >
                 <FiX className="text-lg cursor-pointer" />
-              </button>
+              </Button>
             </div>
 
             <div className="overflow-auto max-h-[75vh]">

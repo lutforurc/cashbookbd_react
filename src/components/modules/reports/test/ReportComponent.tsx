@@ -1,5 +1,6 @@
 ﻿import React, { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const ReportComponent: React.FC = () => {
   const componentRef = useRef<HTMLDivElement>(null);
@@ -12,12 +13,12 @@ const ReportComponent: React.FC = () => {
 
   return (
     <div className="p-4">
-      <button
+      <Button
         onClick={handlePrint}
         className="bg-blue-600 text-white px-4 py-2 rounded mb-4"
       >
         ðŸ–¨ï¸ Print Report
-      </button>
+      </Button>
       <div ref={componentRef}>
         <div className='flex justify-center mt-10'>NIBIR NIRMAN</div>
         <div className="p-6 shadow rounded text-xs">

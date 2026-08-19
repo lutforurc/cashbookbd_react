@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Button } from '../../pages/UiElements/CustomButtons';
 
 const DropdownDefault = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -34,7 +35,7 @@ const DropdownDefault = () => {
 
   return (
     <div className="relative flex">
-      <button
+      <Button
         className="text-[rgb(var(--c-bodydark2))] hover:text-body"
         ref={trigger}
         onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -60,7 +61,7 @@ const DropdownDefault = () => {
             fill=""
           />
         </svg>
-      </button>
+      </Button>
       <div
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
@@ -68,7 +69,7 @@ const DropdownDefault = () => {
         className={`absolute right-0 top-full z-40 w-40 space-y-1 rounded-sm border border-stroke bg-white p-1.5 shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? 'block' : 'hidden'
           }`}
       >
-        <button className="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
+        <Button className="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
           <svg
             className="fill-current"
             width="16"
@@ -90,8 +91,8 @@ const DropdownDefault = () => {
             </defs>
           </svg>
           Edit
-        </button>
-        <button className="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
+        </Button>
+        <Button className="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
           <svg
             className="fill-current"
             width="16"
@@ -118,7 +119,7 @@ const DropdownDefault = () => {
             />
           </svg>
           Delete
-        </button>
+        </Button>
       </div>
     </div>
   );

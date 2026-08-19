@@ -4,6 +4,7 @@ import DropdownNotification from './DropdownNotification';
 import DropdownUser from './DropdownUser';
 import LogoIcon from '../../images/logo/logo-icon.svg';
 import GlobalSearch from './GlobalSearch';
+import { Button } from '../../pages/UiElements/CustomButtons';
 
 const Header = (props: {
   sidebarOpen: string | boolean | undefined;
@@ -16,7 +17,7 @@ const Header = (props: {
         <div className="flex items-center gap-2 sm:gap-4 lg:hidden">
           {/* <!-- Hamburger Toggle BTN --> */}
           {props.showSidebarToggle !== false ? (
-            <button
+            <Button
               aria-controls="sidebar"
               onClick={(e) => {
                 e.stopPropagation();
@@ -50,7 +51,7 @@ const Header = (props: {
                   ></span>
                 </span>
               </span>
-            </button>
+            </Button>
           ) : null}
           {/* <!-- Hamburger Toggle BTN --> */}
 

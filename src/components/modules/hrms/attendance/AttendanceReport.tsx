@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 
 import Loader from '../../../../common/Loader';
-import { PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import { Button, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import InputDatePicker from '../../../utils/fields/DatePicker';
@@ -458,10 +458,10 @@ const AttendanceReport = ({
         <DropdownCommon id="status" name="status" label="Status" value={filters.status} data={statusOptions} onChange={handleChange(setFilters)} className="h-9" />
         <DropdownCommon id="approval_status" name="approval_status" label="Approval" value={filters.approval_status} data={approvalOptions} onChange={handleChange(setFilters)} className="h-9" />
         <div className="flex items-end gap-2">
-          <button type="button" onClick={loadReport} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
+          <Button type="button" onClick={loadReport} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
             <FiRefreshCcw className="mr-2" />
             Load
-          </button>
+          </Button>
         </div>
       </div>
       </div>

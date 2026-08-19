@@ -11,7 +11,7 @@ import {
   FiTrash2,
 } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { SIDEBAR_MENUS, SIDEBAR_SUBMENUS } from '../../Sidebar';
 import {
   DIVIDER_LABEL_MAX,
@@ -224,7 +224,7 @@ const MenuArrangement = () => {
                         }}
                         className="min-w-0 flex-1 rounded-sm border border-stroke bg-transparent px-1.5 py-0.5 text-sm font-semibold uppercase tracking-wide text-black outline-none dark:border-strokedark dark:text-white"
                       />
-                      <button
+                      <Button
                         type="button"
                         draggable={false}
                         title="Remove divider"
@@ -235,7 +235,7 @@ const MenuArrangement = () => {
                         className="rounded p-1 text-danger hover:bg-gray-100 dark:hover:bg-meta-4"
                       >
                         <FiTrash2 />
-                      </button>
+                      </Button>
                     </>
                   ) : (
                     <span className="min-w-0 flex-1 truncate text-black dark:text-white">
@@ -249,7 +249,7 @@ const MenuArrangement = () => {
                     </span>
                   ) : null}
 
-                  <button
+                  <Button
                     type="button"
                     draggable={false}
                     title="Move up"
@@ -261,8 +261,8 @@ const MenuArrangement = () => {
                     className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 dark:hover:bg-meta-4"
                   >
                     <FiChevronUp />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     draggable={false}
                     title="Move down"
@@ -274,11 +274,11 @@ const MenuArrangement = () => {
                     className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 dark:hover:bg-meta-4"
                   >
                     <FiChevronDown />
-                  </button>
+                  </Button>
                   {/* Hiding is for menus. A divider that is in the way is
                       deleted, not hidden -- there is nothing behind it to keep. */}
                   {!isDivider(menu.id) ? (
-                    <button
+                    <Button
                       type="button"
                       draggable={false}
                       title={isMenuHidden(menu.id) ? 'Show' : 'Hide'}
@@ -289,7 +289,7 @@ const MenuArrangement = () => {
                       className="rounded p-1 hover:bg-gray-100 dark:hover:bg-meta-4"
                     >
                       {isMenuHidden(menu.id) ? <FiEyeOff /> : <FiEye />}
-                    </button>
+                    </Button>
                   ) : null}
                 </li>
               );
@@ -412,7 +412,7 @@ const MenuArrangement = () => {
                           }}
                           className="min-w-0 flex-1 rounded-sm border border-stroke bg-transparent px-1.5 py-0.5 text-sm font-semibold uppercase tracking-wide text-black outline-none dark:border-strokedark dark:text-white"
                         />
-                        <button
+                        <Button
                           type="button"
                           draggable={false}
                           title="Remove divider"
@@ -420,7 +420,7 @@ const MenuArrangement = () => {
                           className="rounded p-1 text-danger hover:bg-gray-100 dark:hover:bg-meta-4"
                         >
                           <FiTrash2 />
-                        </button>
+                        </Button>
                       </>
                     ) : (
                       <span className="min-w-0 flex-1 truncate text-black dark:text-white">
@@ -428,7 +428,7 @@ const MenuArrangement = () => {
                       </span>
                     )}
 
-                    <button
+                    <Button
                       type="button"
                       draggable={false}
                       title="Move up"
@@ -437,8 +437,8 @@ const MenuArrangement = () => {
                       className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 dark:hover:bg-meta-4"
                     >
                       <FiChevronUp />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       draggable={false}
                       title="Move down"
@@ -447,8 +447,8 @@ const MenuArrangement = () => {
                       className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 dark:hover:bg-meta-4"
                     >
                       <FiChevronDown />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       draggable={false}
                       title={hidden ? 'Show' : 'Hide'}
@@ -456,7 +456,7 @@ const MenuArrangement = () => {
                       className="rounded p-1 hover:bg-gray-100 dark:hover:bg-meta-4"
                     >
                       {hidden ? <FiEyeOff /> : <FiEye />}
-                    </button>
+                    </Button>
                   </li>
                 );
               })}

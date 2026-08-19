@@ -4,7 +4,7 @@ import { FiBook, FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import Table from '../../../utils/others/Table';
 import Loader from '../../../../common/Loader';
 import { getCoal1 } from './coal1Sliders';
@@ -84,15 +84,15 @@ const CoaL1 = () => {
                     <>
                         {1 === 2 ? (
                             <>
-                                <button onClick={() => { }} className="text-blue-500">
+                                <Button onClick={() => { }} className="text-blue-500">
                                     <FiBook className="cursor-pointer" />
-                                </button>
-                                <button onClick={() => { }} className="text-blue-500  ml-2">
+                                </Button>
+                                <Button onClick={() => { }} className="text-blue-500  ml-2">
                                     <FiEdit2 className="cursor-pointer" />
-                                </button>
-                                <button onClick={() => { }} className="text-red-500 ml-2">
+                                </Button>
+                                <Button onClick={() => { }} className="text-red-500 ml-2">
                                     <FiTrash2 className="cursor-pointer" />
-                                </button>
+                                </Button>
                             </>
                         ) : 
                         <>

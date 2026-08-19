@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -142,7 +142,7 @@ const LabourLedger = (user: any) => {
         <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-wrap items-end'}`}>
           <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none'}>
             {useFilterMenuEnabled && (
-              <button
+              <Button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
                 className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
@@ -154,7 +154,7 @@ const LabourLedger = (user: any) => {
                 aria-label="Open filters"
               >
                 <FiFilter size={16} />
-              </button>
+              </Button>
             )}
 
             {(useFilterMenuEnabled ? filterOpen : true) && (

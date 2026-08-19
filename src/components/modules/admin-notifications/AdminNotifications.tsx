@@ -7,7 +7,7 @@ import { FiRefreshCw, FiSend, FiTrash2 } from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Loader from '../../../common/Loader';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
@@ -358,14 +358,14 @@ const AdminNotifications = () => {
           <h2 className="text-lg font-bold text-black dark:text-white">
             Sent Notifications
           </h2>
-          <button
+          <Button
             type="button"
             onClick={loadNotifications}
             className="flex h-8 w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
             aria-label="Refresh list"
           >
             <FiRefreshCw className={loadingList ? 'animate-spin' : ''} />
-          </button>
+          </Button>
         </div>
 
         <div className="overflow-x-auto">
@@ -417,7 +417,7 @@ const AdminNotifications = () => {
                       {row.expires_at ? formatDateTime(row.expires_at) : 'Never'}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <button
+                      <Button
                         type="button"
                         onClick={() => handleDelete(row.id)}
                         disabled={deletingId === row.id}
@@ -425,7 +425,7 @@ const AdminNotifications = () => {
                         aria-label={`Delete ${row.title}`}
                       >
                         <FiTrash2 />
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))

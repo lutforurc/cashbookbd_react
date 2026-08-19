@@ -5,6 +5,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import CustomerVoucherModal from './CustomerVoucherModal';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 type StatementRow = {
   mtm_id: number;
@@ -124,13 +125,13 @@ const CustomerStatement: React.FC<CustomerStatementProps> = ({
             setCurrentDate={setEndDate}
           />
         </div>
-        <button
+        <Button
           onClick={fetchStatement}
           disabled={loading}
           className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary/90 disabled:opacity-60"
         >
           {loading ? 'Loading...' : 'Show'}
-        </button>
+        </Button>
       </div>
 
       {error && <div className="text-red-600 text-sm mb-3">{error}</div>}
@@ -179,14 +180,14 @@ const CustomerStatement: React.FC<CustomerStatementProps> = ({
               <tr key={i} className="border-b border-gray-100 dark:border-strokedark text-gray-700 dark:text-gray-300">
                 <td className="p-2">{r.vr_date}</td>
                 <td className="p-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setVoucherId(r.mtm_id)}
                     className="text-primary hover:underline"
                     title="View voucher"
                   >
                     {r.vr_no}
-                  </button>
+                  </Button>
                 </td>
                 <td className="p-2">
                   <div className="font-medium text-gray-800 dark:text-gray-100">

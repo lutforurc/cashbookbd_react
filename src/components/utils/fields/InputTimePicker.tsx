@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FiClock, FiX } from 'react-icons/fi';
 import { FIELD_BASE, FIELD_LABEL } from '../../../theme/fieldStyles';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 /**
  * A time field that opens a palette instead of the browser's own control.
@@ -221,17 +222,17 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
         />
 
         {value && !disabled ? (
-          <button
+          <Button
             type="button"
             title="Clear"
             className="absolute right-8 top-1/2 -translate-y-1/2 text-body hover:text-danger dark:text-bodydark2"
             onClick={() => emit('')}
           >
             <FiX className="h-4 w-4" />
-          </button>
+          </Button>
         ) : null}
 
-        <button
+        <Button
           type="button"
           tabIndex={-1}
           title="Pick a time"
@@ -240,14 +241,14 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
           onClick={() => setOpen((previous) => !previous)}
         >
           <FiClock className="h-4 w-4" />
-        </button>
+        </Button>
 
         {open && !disabled ? (
           <div className="absolute left-0 top-full z-999 mt-1 w-full min-w-47.5 rounded border border-stroke bg-white shadow-5 dark:border-strokedark dark:bg-boxdark">
             <div ref={columnsRef} className="grid grid-cols-3 divide-x divide-stroke dark:divide-strokedark">
               <div className={columnClass}>
                 {HOURS.map((hour) => (
-                  <button
+                  <Button
                     key={hour}
                     type="button"
                     data-selected={parts?.hour12 === hour}
@@ -255,13 +256,13 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
                     onClick={() => pick({ hour12: hour })}
                   >
                     {pad(hour)}
-                  </button>
+                  </Button>
                 ))}
               </div>
 
               <div className={columnClass}>
                 {MINUTES.map((minute) => (
-                  <button
+                  <Button
                     key={minute}
                     type="button"
                     data-selected={parts?.minute === minute}
@@ -269,13 +270,13 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
                     onClick={() => pick({ minute })}
                   >
                     {pad(minute)}
-                  </button>
+                  </Button>
                 ))}
               </div>
 
               <div className={columnClass}>
                 {MERIDIEMS.map((meridiem) => (
-                  <button
+                  <Button
                     key={meridiem}
                     type="button"
                     data-selected={parts?.meridiem === meridiem}
@@ -283,13 +284,13 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
                     onClick={() => pick({ meridiem })}
                   >
                     {meridiem}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
 
             <div className="flex justify-between border-t border-stroke px-2 py-1.5 dark:border-strokedark">
-              <button
+              <Button
                 type="button"
                 className="text-xs font-medium text-primary hover:underline"
                 onClick={() => {
@@ -299,14 +300,14 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
                 }}
               >
                 Now
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 className="text-xs font-medium text-body hover:underline dark:text-bodydark"
                 onClick={() => setOpen(false)}
               >
                 Done
-              </button>
+              </Button>
             </div>
           </div>
         ) : null}

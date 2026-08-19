@@ -12,7 +12,7 @@ import Table from '../../utils/others/Table';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { hasPermission } from '../../utils/permissionChecker';
 import routes from '../../services/appRoutes';
 import {
@@ -119,19 +119,19 @@ const LabourCategoryList = () => {
       render: (row: LabourCategoryRow) => (
         <div className="flex items-center justify-center">
           {canEdit ? (
-            <button
+            <Button
               type="button"
               title="Edit"
               onClick={() => navigate(`${routes.labour_category_edit}/${row.id}`)}
               className="ml-2 text-blue-500"
             >
               <FiEdit2 className="cursor-pointer" />
-            </button>
+            </Button>
           ) : null}
           {canDelete ? (
-            <button type="button" title="Delete" onClick={() => setRowToDelete(row)} className="ml-2 text-red-500">
+            <Button type="button" title="Delete" onClick={() => setRowToDelete(row)} className="ml-2 text-red-500">
               <FiTrash2 className="cursor-pointer" />
-            </button>
+            </Button>
           ) : null}
         </div>
       ),

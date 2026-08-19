@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { FiAlertCircle, FiCheck, FiEye, FiEyeOff, FiLock, FiShield } from "react-icons/fi";
 import { changeCustomerPassword } from "../../features/customerAuthReducer";
 import ROUTES from "../../components/services/appRoutes";
+import { Button } from '../UiElements/CustomButtons';
 
 // Kept in step with the API's own rule; the hint, the validator and the
 // "matched" tick all read from here.
@@ -136,7 +137,7 @@ const CustomerChangePassword = () => {
                           placeholder="Enter your current password"
                           className={fieldClass}
                         />
-                        <button
+                        <Button
                           type="button"
                           onClick={() => setShowPassword((shown) => !shown)}
                           aria-label={showPassword ? "Hide password" : "Show password"}
@@ -147,7 +148,7 @@ const CustomerChangePassword = () => {
                           ) : (
                             <FiEye className="h-5 w-5" />
                           )}
-                        </button>
+                        </Button>
                       </div>
                       <ErrorMessage
                         name="current_password"
@@ -174,7 +175,7 @@ const CustomerChangePassword = () => {
                         placeholder="Choose a new password"
                         className={fieldClass}
                       />
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setShowPassword((shown) => !shown)}
                         aria-label={showPassword ? "Hide password" : "Show password"}
@@ -185,7 +186,7 @@ const CustomerChangePassword = () => {
                         ) : (
                           <FiEye className="h-5 w-5" />
                         )}
-                      </button>
+                      </Button>
                     </div>
                     <ErrorMessage
                       name="password"
@@ -228,7 +229,7 @@ const CustomerChangePassword = () => {
                     />
                   </div>
 
-                  <button
+                  <Button
                     type="submit"
                     disabled={isSubmitting}
                     className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-medium text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
@@ -244,7 +245,7 @@ const CustomerChangePassword = () => {
                         Save Password
                       </>
                     )}
-                  </button>
+                  </Button>
                 </Form>
               );
             }}

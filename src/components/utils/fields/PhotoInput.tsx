@@ -4,6 +4,7 @@ import { FiTrash2, FiUpload } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
 import { FIELD_FILE_BUTTON, FIELD_LABEL } from '../../../theme/fieldStyles';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 /** Matches the API's limit so an oversized file fails before the upload. */
 const MAX_PHOTO_KB = 150;
@@ -104,7 +105,7 @@ const PhotoInput: React.FC<PhotoInputProps> = ({
 
         {/* Sits beside the preview so it is obvious which photo it clears. */}
         {value ? (
-          <button
+          <Button
             type="button"
             onClick={handleRemove}
             disabled={disabled}
@@ -113,7 +114,7 @@ const PhotoInput: React.FC<PhotoInputProps> = ({
             className="flex h-[2.4rem] w-[2.4rem] shrink-0 items-center justify-center rounded-sm border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20"
           >
             <FiTrash2 size={20} />
-          </button>
+          </Button>
         ) : null}
 
         <input

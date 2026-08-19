@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import routes from '../../../services/appRoutes';
 import AttendanceReport from './AttendanceReport';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const reportTabs = [
   {
@@ -52,7 +53,7 @@ const AttendanceExceptionReports = ({ user }: any) => {
           const active = activeTab.key === tab.key;
 
           return (
-            <button
+            <Button
               key={tab.key}
               type="button"
               onClick={() => navigate(tab.path)}
@@ -64,7 +65,7 @@ const AttendanceExceptionReports = ({ user }: any) => {
             >
               <Icon className="mr-2" />
               {tab.label}
-            </button>
+            </Button>
           );
         })}
       </div>

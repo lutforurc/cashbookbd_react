@@ -9,7 +9,7 @@ import {
   installmentReceived,
 } from './installmentSlice';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import StatusIcon from '../../utils/utils-functions/StatusIcon';
 import InstallmentModal from './InstallmentModal';
@@ -302,7 +302,7 @@ const InstallmentDetails = () => {
       render: (row: any) => (
         <>
           {Array.isArray(row?.payments) && row.payments.length > 0 ? (
-            <button
+            <Button
               type="button"
               onClick={() => handleInstallments(row.payments)}
               title="View payment details"
@@ -311,7 +311,7 @@ const InstallmentDetails = () => {
               <span className="text-blue-600 dark:text-blue-300">#</span>
               <span>{row.installment_no ?? ''}</span>
               <span className="text-[10px] font-medium uppercase text-slate-500 dark:text-slate-300">Details</span>
-            </button>
+            </Button>
           ) : (
             <span className="inline-flex min-w-[38px] justify-center px-3 py-1 text-sm font-semibold text-slate-700 dark:text-slate-100">
               {row.installment_no}

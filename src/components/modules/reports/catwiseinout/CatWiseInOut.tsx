@@ -27,6 +27,7 @@ import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 import CatWiseInOutPrint from "./CatWiseInOutPrint";
 import { useReactToPrint } from "react-to-print";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const CatWiseInOut = (user: any) => {
   const dispatch = useDispatch();
@@ -258,7 +259,7 @@ const CatWiseInOut = (user: any) => {
         <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-wrap items-end"}`}>
           <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none"}>
             {useFilterMenuEnabled && (
-              <button
+              <Button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
                 className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
@@ -270,7 +271,7 @@ const CatWiseInOut = (user: any) => {
                 aria-label="Open filters"
               >
                 <FiFilter size={16} />
-              </button>
+              </Button>
             )}
 
             {(useFilterMenuEnabled ? filterOpen : true) && (

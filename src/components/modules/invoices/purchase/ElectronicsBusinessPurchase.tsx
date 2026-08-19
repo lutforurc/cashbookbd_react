@@ -38,6 +38,7 @@ import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 interface Product {
   id: number;
@@ -1018,18 +1019,18 @@ const ElectronicsBusinessPurchase = () => {
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20 `}
                   >
-                    <button
+                    <Button
                       onClick={() => handleDelete(row.id)}
                       className="text-red-500 ml-2 text-center"
                     >
                       <FiTrash2 className="cursor-pointer text-center" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => editProductItem(row.id)}
                       className="text-green-500 ml-2 text-center"
                     >
                       <FiEdit2 className="cursor-pointer text-center" />
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}

@@ -13,6 +13,7 @@ import {
   storePermission,
   updatePermission,
 } from "./userManagementSlice";
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 interface PermissionItem {
   name: string;
@@ -202,13 +203,13 @@ const AddPermission: React.FC = () => {
                   <label htmlFor="group_name" className="text-black dark:text-white">
                     Group Name
                   </label>
-                  <button
+                  <Button
                     type="button"
                     onClick={handleBackToList}
                     className="text-xs text-primary hover:underline"
                   >
                     Choose from list
-                  </button>
+                  </Button>
                 </div>
                 <InputElement
                   id="group_name"
@@ -294,7 +295,7 @@ const AddPermission: React.FC = () => {
                           }}
                           className="w-28 bg-transparent font-mono text-[11px] text-gray-800 outline-none dark:text-gray-100"
                         />
-                        <button
+                        <Button
                           type="button"
                           onClick={saveEdit}
                           disabled={savingEdit}
@@ -302,15 +303,15 @@ const AddPermission: React.FC = () => {
                           className="text-green-600 hover:text-green-700 disabled:opacity-50"
                         >
                           <FiCheck size={13} />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
                           onClick={cancelEdit}
                           title="Cancel"
                           className="text-red-500 hover:text-red-600"
                         >
                           <FiX size={13} />
-                        </button>
+                        </Button>
                       </li>
                     ) : (
                       <li
@@ -323,14 +324,14 @@ const AddPermission: React.FC = () => {
                         >
                           {perm.name}
                         </span>
-                        <button
+                        <Button
                           type="button"
                           onClick={() => startEdit(perm)}
                           title="Edit permission"
                           className="text-gray-400 hover:text-primary"
                         >
                           <FiEdit2 size={11} />
-                        </button>
+                        </Button>
                       </li>
                     )
                   )}

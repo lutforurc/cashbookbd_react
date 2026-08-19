@@ -7,7 +7,7 @@ import { FaHouse, FaTrash } from 'react-icons/fa6';
 import { FiCheckSquare } from 'react-icons/fi';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import Table from '../../../utils/others/Table';
 import httpService from '../../../services/httpService';
 import { API_REPORT_GROUP_SETUP_URL } from '../../../services/apiRoutes';
@@ -141,7 +141,7 @@ const GroupReportSetup = () => {
       headerClass: 'w-32 text-center',
       cellClass: 'text-center',
       render: (item: GroupItem) => (
-        <button
+        <Button
           type="button"
           onClick={() => handleDelete(item.id)}
           disabled={deletingId === item.id}
@@ -149,7 +149,7 @@ const GroupReportSetup = () => {
           aria-label={`Remove ${item.name}`}
         >
           <FaTrash />
-        </button>
+        </Button>
       ),
     },
   ];

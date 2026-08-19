@@ -4,7 +4,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { toast } from 'react-toastify';
 import { FiEdit2, FiRefreshCcw, FiSave, FiSearch, FiX } from 'react-icons/fi';
 
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
@@ -928,7 +928,7 @@ export default function RealEstateInstallmentCreate() {
                       <td className="p-2 text-center">
                         {isEditing ? (
                           <div className="flex justify-center gap-2">
-                            <button
+                            <Button
                               type="button"
                               onClick={saveInstallmentEdit}
                               disabled={isUpdating}
@@ -936,8 +936,8 @@ export default function RealEstateInstallmentCreate() {
                             >
                               <FiSave />
                               {isUpdating ? 'Saving' : 'Save'}
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                               type="button"
                               onClick={cancelEditInstallment}
                               disabled={isUpdating}
@@ -945,17 +945,17 @@ export default function RealEstateInstallmentCreate() {
                             >
                               <FiX />
                               Cancel
-                            </button>
+                            </Button>
                           </div>
                         ) : (
-                          <button
+                          <Button
                             type="button"
                             onClick={() => startEditInstallment(row)}
                             className="inline-flex h-8 items-center gap-1 bg-gray-700 px-3 text-xs font-semibold text-white hover:bg-blue-500"
                           >
                             <FiEdit2 />
                             Edit
-                          </button>
+                          </Button>
                         )}
                       </td>
                     </tr>

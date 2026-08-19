@@ -17,6 +17,7 @@ import {
   festivalBonusSheetUpdate,
   festivalBonusView,
 } from "./bonusSlice";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 type BonusHistory = {
   id?: number | string;
@@ -462,7 +463,7 @@ const FestivalBonusUpdate = ({ user }: any) => {
       headerClass: "text-center",
       cellClass: "text-center",
       render: (row: UpdateRow) => (
-        <button
+        <Button
           type="button"
           onClick={() => handleRemoveRow(row)}
           disabled={saveLoading || Number(row.payment_amount || 0) > 0}
@@ -470,7 +471,7 @@ const FestivalBonusUpdate = ({ user }: any) => {
           title={Number(row.payment_amount || 0) > 0 ? "Paid bonus cannot be removed" : "Remove bonus row"}
         >
           <FiTrash2 className="text-lg" />
-        </button>
+        </Button>
       ),
     },
   ];

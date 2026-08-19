@@ -8,6 +8,7 @@ import { getVoucherEditTarget } from '../utils/utils-functions/voucherEditNaviga
 import { VoucherPrintRegistry } from '../modules/vouchers/VoucherPrintRegistry';
 import routes from '../services/appRoutes';
 import globalSearchItems, { GlobalSearchItem } from './globalSearchItems';
+import { Button } from '../../pages/UiElements/CustomButtons';
 
 const RESULT_LIMIT = 10;
 const VOUCHER_NO_PATTERN = /^\d+-[\w-]+$/;
@@ -187,13 +188,13 @@ const GlobalSearch = () => {
     <div ref={wrapperRef} className="relative hidden w-full max-w-xl sm:block">
       <form onSubmit={handleSubmit}>
         <div className="relative">
-          <button
+          <Button
             type="submit"
             className="absolute left-0 top-1/2 -translate-y-1/2 text-body hover:text-primary dark:text-bodydark dark:hover:text-primary"
             aria-label="Search"
           >
             <FiSearch size={20} />
-          </button>
+          </Button>
 
           <input
             ref={inputRef}
@@ -217,14 +218,14 @@ const GlobalSearch = () => {
           />
 
           {query ? (
-            <button
+            <Button
               type="button"
               className="absolute right-0 top-1/2 -translate-y-1/2 text-body hover:text-danger dark:text-bodydark"
               onClick={resetSearch}
               aria-label="Clear search"
             >
               <FiX size={18} />
-            </button>
+            </Button>
           ) : (
             <span className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 rounded border border-stroke px-1.5 py-0.5 text-[10px] font-semibold uppercase text-body dark:border-strokedark dark:text-bodydark md:inline-flex">
               Ctrl K
@@ -244,7 +245,7 @@ const GlobalSearch = () => {
               ) : null}
               {voucherTarget ? (
                 <li>
-                  <button
+                  <Button
                     type="button"
                     className="flex w-full items-center justify-between gap-3 border-b border-stroke px-4 py-2.5 text-left text-sm hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
                     onMouseDown={(event) => event.preventDefault()}
@@ -257,12 +258,12 @@ const GlobalSearch = () => {
                       <span className="block truncate text-xs text-body dark:text-bodydark">{query.trim()}</span>
                     </span>
                     <span className="shrink-0 truncate text-xs text-body dark:text-bodydark">Voucher Print</span>
-                  </button>
+                  </Button>
                 </li>
               ) : null}
               {isCustomerMobileSearch ? (
                 <li>
-                  <button
+                  <Button
                     type="button"
                     className="flex w-full items-center justify-between gap-3 border-b border-stroke px-4 py-2.5 text-left text-sm hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
                     onMouseDown={(event) => event.preventDefault()}
@@ -273,12 +274,12 @@ const GlobalSearch = () => {
                       <span className="block truncate text-xs text-body dark:text-bodydark">{query.trim()}</span>
                     </span>
                     <span className="shrink-0 truncate text-xs text-body dark:text-bodydark">List Customers</span>
-                  </button>
+                  </Button>
                 </li>
               ) : null}
               {results.map((item, index) => (
                 <li key={`${item.path}-${item.title}`}>
-                  <button
+                  <Button
                     type="button"
                     className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-2 dark:hover:bg-meta-4 ${
                       activeIndex === index ? 'bg-gray-2 dark:bg-meta-4' : ''
@@ -294,7 +295,7 @@ const GlobalSearch = () => {
                       <span className="block truncate text-xs text-body dark:text-bodydark">{item.group}</span>
                     </span>
                     <span className="shrink-0 truncate text-xs text-body dark:text-bodydark">{item.path}</span>
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>

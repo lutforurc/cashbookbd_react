@@ -1,5 +1,5 @@
 import { FiAlertCircle, FiSave } from 'react-icons/fi';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../utils-functions/thousandSeparator';
 
 export type StockShortageRow = {
@@ -113,13 +113,13 @@ const StockShortageModal = ({
         </div>
 
         <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end dark:border-gray-700">
-          <button
+          <Button
             type="button"
             onClick={onCancel}
             className="rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             {blocked ? 'Close' : 'Cancel'}
-          </button>
+          </Button>
           {/* A blocked sale is shown the figures and nothing else. Offering a
               way on that would be refused anyway is worse than offering none:
               it reads as a choice, and the operator learns the button lies. */}

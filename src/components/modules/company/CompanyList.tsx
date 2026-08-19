@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../../common/Loader';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
@@ -148,7 +148,7 @@ const CompanyList = () => {
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) => (
-        <button
+        <Button
           type="button"
           onClick={() => handleEdit(row)}
           className="inline-flex h-7 w-7 items-center justify-center rounded text-blue-600 transition hover:bg-blue-50 dark:hover:bg-gray-700"
@@ -156,7 +156,7 @@ const CompanyList = () => {
           aria-label="Edit company"
         >
           <FiEdit2 />
-        </button>
+        </Button>
       ),
     },
   ];

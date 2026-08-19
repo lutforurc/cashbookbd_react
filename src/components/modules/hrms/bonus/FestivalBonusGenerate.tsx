@@ -16,6 +16,7 @@ import InputElement from "../../../utils/fields/InputElement";
 import Table from "../../../utils/others/Table";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import ConfirmModal from "../../../utils/components/ConfirmModalProps";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const BONUS_TEMPLATES = [
   { value: "Durga-puja Bonus", label: "Durga-puja Bonus" },
@@ -274,14 +275,14 @@ const FestivalBonusGenerate = ({ user }: any) => {
       headerClass: "text-center",
       cellClass: "text-center",
       render: (row: any) => (
-        <button
+        <Button
           type="button"
           onClick={() => handleDeleteClick(row)}
           className="inline-flex items-center justify-center text-red-600 transition hover:text-red-700"
           title="Remove from bonus list"
         >
           <FiTrash2 className="text-lg" />
-        </button>
+        </Button>
       ),
     },
   ];

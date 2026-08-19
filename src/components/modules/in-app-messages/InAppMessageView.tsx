@@ -2,6 +2,7 @@ import React from 'react';
 import { FiX } from 'react-icons/fi';
 
 import { InAppMessage } from './types';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 type Props = {
   message: InAppMessage;
@@ -38,23 +39,23 @@ const Buttons: React.FC<{
   return (
     <div className={`flex flex-wrap items-center gap-2 ${compact ? '' : 'mt-4'}`}>
       {primaryLabel ? (
-        <button
+        <Button
           type="button"
           onClick={onPrimary}
           style={buttonStyle(message)}
           className="rounded bg-primary px-4 py-1.5 text-sm font-semibold text-white transition hover:opacity-90"
         >
           {primaryLabel}
-        </button>
+        </Button>
       ) : null}
       {message.secondary_label ? (
-        <button
+        <Button
           type="button"
           onClick={onSecondary}
           className="rounded border border-current px-4 py-1.5 text-sm font-semibold opacity-80 transition hover:opacity-100"
         >
           {message.secondary_label}
-        </button>
+        </Button>
       ) : null}
     </div>
   );
@@ -64,14 +65,14 @@ const CloseButton: React.FC<{ onClose: () => void; className?: string }> = ({
   onClose,
   className = '',
 }) => (
-  <button
+  <Button
     type="button"
     onClick={onClose}
     aria-label="Close message"
     className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black/20 text-white transition hover:bg-black/40 ${className}`}
   >
     <FiX />
-  </button>
+  </Button>
 );
 
 /**
@@ -140,13 +141,13 @@ const InAppMessageView: React.FC<Props> = ({
           {closable ? (
             <CloseButton onClose={onClose} className="absolute -right-2 -top-2 z-10" />
           ) : null}
-          <button type="button" onClick={onPrimary} className="block">
+          <Button type="button" onClick={onPrimary} className="block">
             <img
               src={message.image_url || ''}
               alt={message.title}
               className="max-h-[70vh] w-full rounded-lg object-contain shadow-2xl"
             />
-          </button>
+          </Button>
         </div>
       </div>
     );

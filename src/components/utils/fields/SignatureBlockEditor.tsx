@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import { FIELD_BASE, FIELD_LABEL } from '../../../theme/fieldStyles';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 /**
  * The letter signature block, as a form instead of a rich-text editor.
@@ -194,7 +195,7 @@ const SignatureBlockEditor: React.FC<Props> = ({ value, onChange, placeholder })
           rows={4}
           className={`${FIELD_BASE} w-full resize-y px-3 py-2 font-mono text-xs`}
         />
-        <button
+        <Button
           type="button"
           onClick={() => {
             setMode('form');
@@ -203,7 +204,7 @@ const SignatureBlockEditor: React.FC<Props> = ({ value, onChange, placeholder })
           className="mt-2 rounded bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700"
         >
           Discard and start fresh
-        </button>
+        </Button>
       </div>
     );
   }
@@ -255,7 +256,7 @@ const SignatureBlockEditor: React.FC<Props> = ({ value, onChange, placeholder })
               className={`${FIELD_BASE} mb-1 w-full px-2 py-1 text-center text-xs`}
             />
             {signatories.length > 1 ? (
-              <button
+              <Button
                 type="button"
                 title="Remove this signatory"
                 onClick={() =>
@@ -264,19 +265,19 @@ const SignatureBlockEditor: React.FC<Props> = ({ value, onChange, placeholder })
                 className="mx-auto block text-red-500 hover:text-red-700"
               >
                 <FiTrash2 className="h-3.5 w-3.5" />
-              </button>
+              </Button>
             ) : null}
           </div>
         ))}
         {signatories.length < MAX_SIGNATORIES ? (
-          <button
+          <Button
             type="button"
             onClick={() => apply(lead, [...signatories, { label: '', sub: '' }])}
             className="flex w-10 items-center justify-center rounded border border-dashed border-gray-300 text-gray-400 hover:border-primary hover:text-primary dark:border-gray-600"
             title="Add a signatory"
           >
             <FiPlus />
-          </button>
+          </Button>
         ) : null}
       </div>
       <p className="mt-2 text-xs text-gray-500">

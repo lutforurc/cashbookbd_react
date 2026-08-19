@@ -8,6 +8,7 @@ import PurchaseInvoicePrint from '../../vouchers/print_items/PurchaseInvoicePrin
 import ElectronicsSalesInvoicePrint from '../../invoices/sales/ElectronicsSalesInvoicePrint';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 type Props = {
   mtmId: number | string;
@@ -96,19 +97,19 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
             {isInvoice ? invoiceTitle : 'Voucher'}
           </h3>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={handlePrint}
               disabled={loading || !!error}
               className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
             >
               <FiPrinter /> Print
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={onClose}
               className="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-bodydark dark:hover:bg-strokedark"
             >
               <FiX />
-            </button>
+            </Button>
           </div>
         </div>
 

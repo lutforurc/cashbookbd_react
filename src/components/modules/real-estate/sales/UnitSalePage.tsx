@@ -36,6 +36,7 @@ import { UNIT_SALE_PAYMENT_MODES } from "../../../constant/constant/variables";
 import httpService from "../../../services/httpService";
 import { API_UNIT_SALE_CUSTOMER_NOMINEES_URL } from "../../../services/apiRoutes";
 import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 /* ================= TYPES ================= */
 
@@ -871,13 +872,13 @@ export default function UnitSalePage() {
               </div>
             </div>
 
-            <button
+            <Button
               onClick={addCustomCharge}
               className="mt-2 inline-flex items-center gap-2  bg-gray-300 px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-400 transition dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
             >
               <FiPlus className="text-gray-900 dark:text-gray-100" />
               Add Charge
-            </button>
+            </Button>
 
             {/* Who this property is left to. Only shown once a buyer is chosen:
                 the list is theirs, and an empty box before that explains

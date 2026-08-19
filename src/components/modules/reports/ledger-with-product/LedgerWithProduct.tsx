@@ -2,10 +2,7 @@
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
-import {
-  ButtonLoading,
-  PrintButton,
-} from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import Loader from '../../../../common/Loader';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
@@ -812,7 +809,7 @@ const LedgerWithProduct = (user: any) => {
               }
             >
               {useFilterMenuEnabled && (
-                <button
+                <Button
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
                   className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${filterOpen
@@ -823,7 +820,7 @@ const LedgerWithProduct = (user: any) => {
                   aria-label="Open filters"
                 >
                   <FiFilter size={16} />
-                </button>
+                </Button>
               )}
 
               {(useFilterMenuEnabled ? filterOpen : true) && (

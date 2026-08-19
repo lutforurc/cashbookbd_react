@@ -1,4 +1,5 @@
 import { Package } from '../../types/package';
+import { Button } from '../../pages/UiElements/CustomButtons';
 
 const packageData: Package[] = [
   {
@@ -77,7 +78,7 @@ const TableThree = () => {
                 </td>
                 <td className="border-b border-[rgb(var(--c-gray-100))] py-5 px-4 dark:border-strokedark">
                   <div className="flex items-center space-x-3.5">
-                    <button className="hover:text-primary">
+                    <Button className="hover:text-primary">
                       <svg
                         className="fill-current"
                         width="18"
@@ -95,8 +96,8 @@ const TableThree = () => {
                           fill=""
                         />
                       </svg>
-                    </button>
-                    <button className="hover:text-primary">
+                    </Button>
+                    <Button className="hover:text-primary">
                       <svg
                         className="fill-current"
                         width="18"
@@ -122,8 +123,8 @@ const TableThree = () => {
                           fill=""
                         />
                       </svg>
-                    </button>
-                    <button className="hover:text-primary">
+                    </Button>
+                    <Button className="hover:text-primary">
                       <svg
                         className="fill-current"
                         width="18"
@@ -141,7 +142,7 @@ const TableThree = () => {
                           fill=""
                         />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>

@@ -4,7 +4,7 @@ import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
 import { FiCheckSquare, FiFilter, FiRefreshCcw, FiX } from 'react-icons/fi';
 import Loader from '../../../common/Loader';
-import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import httpService from '../../services/httpService';
 import { API_ADMIN_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
@@ -683,7 +683,7 @@ const OrderWithProduct = ({
             >
               {useFilterMenuEnabled && (
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setIsFilterMenuOpen((prev) => !prev)}
                     className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
@@ -694,14 +694,14 @@ const OrderWithProduct = ({
                     aria-label="Toggle filter menu"
                   >
                     <FiFilter className="text-lg" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setIsFilterMenuOpen((prev) => !prev)}
                     className="text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-bodydark dark:hover:text-white"
                   >
                     Use the filter
-                  </button>
+                  </Button>
                 </div>
               )}
 
@@ -716,14 +716,14 @@ const OrderWithProduct = ({
                   {useFilterMenuEnabled && (
                     <div className="mb-3 flex items-center justify-between">
                       <span className="text-sm font-semibold text-slate-800 dark:text-white">Filter Menu</span>
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setIsFilterMenuOpen(false)}
                         className="rounded-sm p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-boxdark-2 dark:hover:text-bodydark1"
                         aria-label="Close filter menu"
                       >
                         <FiX />
-                      </button>
+                      </Button>
                     </div>
                   )}
 
@@ -814,13 +814,13 @@ const OrderWithProduct = ({
                         className="h-10 min-w-[92px] bg-meta-4 px-4 hover:bg-graydark focus:bg-graydark"
                         icon={<FiCheckSquare className="text-base ml-0 mr-0" />}
                       />
-                      <button
+                      <Button
                         type="button"
                         onClick={handleResetFilters}
                         className="inline-flex h-10 min-w-[92px] items-center justify-center bg-meta-4 px-4 text-sm font-medium text-white transition hover:bg-graydark focus:bg-graydark focus:outline-none"
                       >
                           Reset
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>

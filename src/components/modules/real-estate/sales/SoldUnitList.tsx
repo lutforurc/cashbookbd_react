@@ -51,6 +51,7 @@ import {
 import SoldUnitListPrint from "./SoldUnitListPrint";
 import SaleNomineeModal from "./SaleNomineeModal";
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 
 const cellBase = "border border-stroke px-2 py-1.5 dark:border-strokedark";
@@ -903,7 +904,7 @@ const SoldUnitList: React.FC = () => {
                                   {(canEditSale || canCancelSale) && (
                                     <div className="flex w-full items-center justify-center gap-3 border-b border-stroke pb-1 dark:border-strokedark">
                                       {canEditSale && (
-                                        <button
+                                        <Button
                                           type="button"
                                           title="Correct this sale's charges, parking or date"
                                           disabled={busySaleId === unit.sale_id}
@@ -915,11 +916,11 @@ const SoldUnitList: React.FC = () => {
                                           className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
                                         >
                                           <FiEdit2 /> EDIT
-                                        </button>
+                                        </Button>
                                       )}
 
                                       {canCancelSale && (
-                                        <button
+                                        <Button
                                           type="button"
                                           title="Withdraw this sale and put the flat back on the market"
                                           disabled={busySaleId === unit.sale_id}
@@ -927,7 +928,7 @@ const SoldUnitList: React.FC = () => {
                                           className="flex items-center gap-1 text-xs text-danger hover:opacity-80 disabled:opacity-50"
                                         >
                                           <FiSlash /> CANCEL
-                                        </button>
+                                        </Button>
                                       )}
                                     </div>
                                   )}
@@ -958,7 +959,7 @@ const SoldUnitList: React.FC = () => {
                                           key={version}
                                           className="inline-flex items-stretch overflow-hidden rounded border border-stroke bg-white dark:border-strokedark dark:bg-meta-4"
                                         >
-                                          <button
+                                          <Button
                                             type="button"
                                             title={`Print letter L-${version} as it was issued`}
                                             disabled={busySaleId === unit.sale_id}
@@ -966,9 +967,9 @@ const SoldUnitList: React.FC = () => {
                                             className="px-2 py-0.5 text-xs font-semibold text-primary hover:bg-gray-2 disabled:opacity-50 dark:text-secondary dark:hover:bg-form-strokedark"
                                           >
                                             L-{version}
-                                          </button>
+                                          </Button>
                                           {canDeleteLetter && (
-                                            <button
+                                            <Button
                                               type="button"
                                               title={`Withdraw letter L-${version}`}
                                               disabled={busySaleId === unit.sale_id}
@@ -978,14 +979,14 @@ const SoldUnitList: React.FC = () => {
                                               className="border-l border-stroke px-1 text-xs text-danger hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:hover:bg-form-strokedark"
                                             >
                                               <FiX />
-                                            </button>
+                                            </Button>
                                           )}
                                         </span>
                                       ),
                                     )}
                                   </div>
 
-                                  <button
+                                  <Button
                                     type="button"
                                     title="Preview only â€” built from today's data, not saved"
                                     disabled={busySaleId === unit.sale_id}
@@ -993,7 +994,7 @@ const SoldUnitList: React.FC = () => {
                                     className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
                                   >
                                     <FiFileText /> DEMO
-                                  </button>
+                                  </Button>
 
                                   {/* The booking form: the buyer's own papers,
                                       this property, and the nominees standing
@@ -1005,7 +1006,7 @@ const SoldUnitList: React.FC = () => {
                                         booking when the buyer has decided, and
                                         here when they decide later -- which is
                                         most of the time. */}
-                                    <button
+                                    <Button
                                       type="button"
                                       title={
                                         unit.nominee_count
@@ -1024,9 +1025,9 @@ const SoldUnitList: React.FC = () => {
                                     >
                                       <FiUsers />
                                       {unit.nominee_count ? unit.nominee_count : "+"}
-                                    </button>
+                                    </Button>
 
-                                    <button
+                                    <Button
                                       type="button"
                                       title={
                                         unit.nominee_count
@@ -1040,7 +1041,7 @@ const SoldUnitList: React.FC = () => {
                                       className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
                                     >
                                       <FiClipboard /> BOOKING
-                                    </button>
+                                    </Button>
 
                                     {issuedVersions(
                                       unit.booking_form_versions,
@@ -1050,7 +1051,7 @@ const SoldUnitList: React.FC = () => {
                                         key={version}
                                         className="inline-flex items-stretch overflow-hidden rounded border border-stroke bg-white dark:border-strokedark dark:bg-meta-4"
                                       >
-                                        <button
+                                        <Button
                                           type="button"
                                           title={`Print booking form B-${version} as it was issued`}
                                           disabled={busySaleId === unit.sale_id}
@@ -1060,9 +1061,9 @@ const SoldUnitList: React.FC = () => {
                                           className="px-2 py-0.5 text-xs font-semibold text-primary hover:bg-gray-2 disabled:opacity-50 dark:text-secondary dark:hover:bg-form-strokedark"
                                         >
                                           B-{version}
-                                        </button>
+                                        </Button>
                                         {canDeleteBookingForm && (
-                                          <button
+                                          <Button
                                             type="button"
                                             title={`Withdraw booking form B-${version}`}
                                             disabled={busySaleId === unit.sale_id}
@@ -1072,12 +1073,12 @@ const SoldUnitList: React.FC = () => {
                                             className="border-l border-stroke px-1 text-xs text-danger hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:hover:bg-form-strokedark"
                                           >
                                             <FiX />
-                                          </button>
+                                          </Button>
                                         )}
                                       </span>
                                     ))}
 
-                                    <button
+                                    <Button
                                       type="button"
                                       title="Preview the booking form â€” built from today's data, not saved"
                                       disabled={busySaleId === unit.sale_id}
@@ -1085,7 +1086,7 @@ const SoldUnitList: React.FC = () => {
                                       className="text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
                                     >
                                       <FiFileText />
-                                    </button>
+                                    </Button>
                                   </div>
 
                                   {/* The scanned deed and nominee papers. One
@@ -1099,7 +1100,7 @@ const SoldUnitList: React.FC = () => {
                                   <div className="flex items-center gap-2 border-t border-stroke pt-1 dark:border-strokedark">
                                     {unit.has_document ? (
                                       <>
-                                        <button
+                                        <Button
                                           type="button"
                                           title="Open the scanned deed"
                                           disabled={busySaleId === unit.sale_id}
@@ -1107,8 +1108,8 @@ const SoldUnitList: React.FC = () => {
                                           className="flex items-center gap-1 text-xs text-meta-3 hover:opacity-80 disabled:opacity-50"
                                         >
                                           <FiPaperclip /> DEED
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
                                           type="button"
                                           title="Remove the scanned deed"
                                           disabled={busySaleId === unit.sale_id}
@@ -1116,10 +1117,10 @@ const SoldUnitList: React.FC = () => {
                                           className="text-xs text-danger hover:opacity-80 disabled:opacity-50"
                                         >
                                           <FiTrash2 />
-                                        </button>
+                                        </Button>
                                       </>
                                     ) : (
-                                      <button
+                                      <Button
                                         type="button"
                                         title="Attach the scanned deed and nominee papers (PDF, max 1.5 MB)"
                                         disabled={busySaleId === unit.sale_id}
@@ -1127,7 +1128,7 @@ const SoldUnitList: React.FC = () => {
                                         className="text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
                                       >
                                         <FiUpload />
-                                      </button>
+                                      </Button>
                                     )}
                                   </div>
                                 </div>

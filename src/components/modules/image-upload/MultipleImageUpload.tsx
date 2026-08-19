@@ -3,7 +3,7 @@ import { FIELD_FILE_BUTTON } from '../../../theme/fieldStyles';
 import { getVoucherForImage, uploadImage } from './imageUploadSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../common/Loader';
@@ -349,7 +349,7 @@ export default function VoucherUpload(user: any): JSX.Element {
               />
             </div>
 
-            <button
+            <Button
               onClick={() => handleUpload(voucherId)}
               disabled={loading[voucherId]}
               className={`inline-flex h-full min-h-[46px] w-full items-center justify-center rounded-lg px-3 py-2 text-sm font-medium text-white transition ${
@@ -368,7 +368,7 @@ export default function VoucherUpload(user: any): JSX.Element {
               ) : (
                 'Upload'
               )}
-            </button>
+            </Button>
           </div>
 
           {selectedFiles.length > 0 && (
@@ -377,13 +377,13 @@ export default function VoucherUpload(user: any): JSX.Element {
                 <p className="text-xs font-medium text-slate-600">
                   Selected {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''}
                 </p>
-                <button
+                <Button
                   type="button"
                   onClick={() => handleClearSelectedFiles(voucherId)}
                   className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-100"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
               <div className="flex flex-wrap gap-2">
                 {selectedFiles.map((file, index) => (
@@ -408,14 +408,14 @@ export default function VoucherUpload(user: any): JSX.Element {
                     </span>
 
                     {canDeleteVoucherPhoto && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => handleRemoveSelectedFile(voucherId, index)}
                         className="absolute right-1 top-1 rounded px-1 text-xs font-bold text-slate-400 transition hover:bg-slate-100 hover:text-red-500"
                         aria-label={`Remove ${file.name}`}
                       >
                         x
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ))}

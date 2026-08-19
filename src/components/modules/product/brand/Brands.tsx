@@ -11,7 +11,7 @@ import { fetchBrands, updateBrand, deleteBrand } from './brandSlice';
 import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import Link from '../../../utils/others/Link';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import SearchInput from '../../../utils/fields/SearchInput';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import InputElement from '../../../utils/fields/InputElement';
@@ -199,12 +199,12 @@ const Brands = () => {
       cellClass: 'text-center',
       render: (data: any) => (
         <div className="flex justify-center items-center">
-          <button onClick={() => openEdit(data)} className="text-blue-500 ml-2" title="Edit">
+          <Button onClick={() => openEdit(data)} className="text-blue-500 ml-2" title="Edit">
             <FiEdit2 className="cursor-pointer" />
-          </button>
-          <button onClick={() => setDeleteRow(data)} className="text-red-500 ml-2" title="Delete">
+          </Button>
+          <Button onClick={() => setDeleteRow(data)} className="text-red-500 ml-2" title="Delete">
             <FiTrash2 className="cursor-pointer" />
-          </button>
+          </Button>
         </div>
       ),
     },
@@ -269,14 +269,14 @@ const Brands = () => {
           <div className="w-full max-w-md border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark">
             <div className="flex items-center justify-between border-b border-stroke px-5 py-3 dark:border-strokedark">
               <h3 className="text-base font-semibold text-black dark:text-white">Edit Brand</h3>
-              <button
+              <Button
                 type="button"
                 onClick={closeEdit}
                 className="text-slate-400 transition hover:text-slate-700 dark:hover:text-white"
                 aria-label="Close"
               >
                 <FiX />
-              </button>
+              </Button>
             </div>
 
             <div className="space-y-3 p-5">
@@ -287,13 +287,13 @@ const Brands = () => {
             </div>
 
             <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
-              <button
+              <Button
                 type="button"
                 onClick={closeEdit}
                 className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
               >
                 Cancel
-              </button>
+              </Button>
               <ButtonLoading
                 type="button"
                 onClick={handleEditSave}
@@ -327,13 +327,13 @@ const Brands = () => {
             </div>
 
             <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
-              <button
+              <Button
                 type="button"
                 onClick={() => setDeleteRow(null)}
                 className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
               >
                 Cancel
-              </button>
+              </Button>
               <ButtonLoading
                 type="button"
                 onClick={handleDeleteConfirm}

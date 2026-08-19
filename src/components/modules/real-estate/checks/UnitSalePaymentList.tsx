@@ -20,6 +20,7 @@ import { humanizeEnumText } from "../../../utils/hooks/humanizeEnumText";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ActionButtons from "../../../utils/fields/ActionButton";
 import { CHEQUE_STATUSES, PAYMENT_MODES } from "./checkContents";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 
 /* ================= TYPES ================= */
@@ -512,7 +513,7 @@ export default function UnitSalePaymentList() {
           <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200">
             Showing all transactions of
             <strong>{customerName || `Customer #${customerId}`}</strong>
-            <button
+            <Button
               type="button"
               onClick={clearCustomer}
               title="Show every customer"
@@ -520,7 +521,7 @@ export default function UnitSalePaymentList() {
               className="font-bold"
             >
               ×
-            </button>
+            </Button>
           </span>
         </div>
       ) : null}

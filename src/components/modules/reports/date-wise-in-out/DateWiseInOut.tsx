@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import { FiCheckSquare, FiHome, FiRefreshCcw } from 'react-icons/fi';
 import Loader from '../../../../common/Loader';
-import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import {
   API_REPORT_DATE_WISE_IN_OUT_DETAILS_URL,
@@ -288,7 +288,7 @@ const DateWiseInOut = ({ user }: any) => {
         headerClass: 'text-center',
         cellClass: 'text-center',
         render: (row: DateWiseInOutRow) => (
-          <button
+          <Button
             type="button"
             onClick={() => handleDatePrint(row)}
             className="font-medium text-emerald-600 hover:underline disabled:cursor-wait disabled:opacity-70"
@@ -296,7 +296,7 @@ const DateWiseInOut = ({ user }: any) => {
             title="Open React print"
           >
             {row.vr_date}
-          </button>
+          </Button>
         ),
       },
       {
@@ -406,14 +406,14 @@ const DateWiseInOut = ({ user }: any) => {
           <div>
             <div className="mb-1 flex items-center gap-2">
               <label className="block text-sm font-semibold text-slate-800 dark:text-white">Select Item / Product</label>
-              <button
+              <Button
                 type="button"
                 onClick={() => selectedProduct(null)}
                 className="text-slate-600 hover:text-blue-600 dark:text-slate-300"
                 title="Clear product"
               >
                 <FiRefreshCcw size={14} />
-              </button>
+              </Button>
             </div>
             <ProductDropdown
               onSelect={selectedProduct}

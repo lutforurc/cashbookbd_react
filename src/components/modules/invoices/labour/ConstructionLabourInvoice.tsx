@@ -36,6 +36,7 @@ import LabourDropdown from "../../../utils/utils-functions/LabourDropdown";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { voucherTypes } from "../../../utils/fields/DataConstant";
 import useCtrlS from "../../../utils/hooks/useCtrlS";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 /* -------------------------
    Types
@@ -771,12 +772,12 @@ function ConstructionLabourInvoice(): JSX.Element {
                     {thousandSeparator(Number(row.price) * Number(row.qty))}
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
-                    <button onClick={() => removeProduct(row.id)} className="text-red-500 ml-2">
+                    <Button onClick={() => removeProduct(row.id)} className="text-red-500 ml-2">
                       <FiTrash2 />
-                    </button>
-                    <button onClick={() => editProductItem(row.id)} className="text-green-500 ml-2">
+                    </Button>
+                    <Button onClick={() => editProductItem(row.id)} className="text-green-500 ml-2">
                       <FiEdit2 />
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}

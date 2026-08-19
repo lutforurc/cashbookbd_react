@@ -39,6 +39,7 @@ import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 const CONSTRUCTION_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'kpi-row', title: 'Today at a Glance' },
@@ -330,14 +331,14 @@ const ConstructionDashboard = () => {
                     ? dashboard.errors
                     : 'Please try again.'}
                 </p>
-                <button
+                <Button
                   className="mt-5 inline-flex items-center gap-2 rounded-md bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                   onClick={() => dispatch(getDashboard())}
                   type="button"
                 >
                   <FaRedoAlt className="text-xs" />
                   Try again
-                </button>
+                </Button>
               </div>
             ) : null}
 
@@ -542,7 +543,7 @@ const ConstructionDashboard = () => {
                       className="border-b border-slate-100 last:border-b-0 dark:border-gray-700"
                       key={branchKey}
                     >
-                      <button
+                      <Button
                         type="button"
                         onClick={() => toggleBranchDetails(branchKey)}
                         className={`w-full bg-slate-50 px-4 py-2.5 text-left transition hover:bg-slate-100 dark:bg-gray-700/40 dark:hover:bg-gray-700 ${
@@ -566,7 +567,7 @@ const ConstructionDashboard = () => {
                             ) : null}
                           </span>
                         </div>
-                      </button>
+                      </Button>
 
                       {isExpanded && (
                         <div>

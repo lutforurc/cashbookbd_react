@@ -7,6 +7,7 @@ import {
   FiPrinter,
   FiXCircle,
 } from 'react-icons/fi';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 interface VoucherActionButtonsProps {
   row: any;
@@ -131,7 +132,7 @@ const VoucherActionButtons = ({
   return (
     <div className="flex items-center justify-center gap-2">
       {canShowApproveAction && !showApprovedLock ? (
-        <button
+        <Button
           type="button"
           onClick={
             confirmInline
@@ -153,11 +154,11 @@ const VoucherActionButtons = ({
               className={`${approvingId === voucherId ? 'text-amber-500' : 'text-red-500'}`}
             />
           )}
-        </button>
+        </Button>
       ) : null}
 
       {canShowRemoveApprovalAction ? (
-        <button
+        <Button
           type="button"
           onClick={
             confirmInline
@@ -169,29 +170,29 @@ const VoucherActionButtons = ({
           disabled={removingApprovalId === voucherId}
         >
           <FiXCircle className="cursor-pointer" />
-        </button>
+        </Button>
       ) : null}
 
       {canShowPrintAction ? (
-        <button
+        <Button
           type="button"
           onClick={withEventGuard(onPrint)}
           className="text-blue-500"
           title={printTitle}
         >
           <FiPrinter className="cursor-pointer" width="30" height="30" />
-        </button>
+        </Button>
       ) : null}
 
       {canShowEditAction ? (
-        <button
+        <Button
           type="button"
           onClick={withEventGuard(onEdit)}
           className="text-blue-500"
           title={editTitle}
         >
           <FiEdit className="cursor-pointer" />
-        </button>
+        </Button>
       ) : null}
 
       {showApprovedLock ? (
@@ -229,7 +230,7 @@ const VoucherActionButtons = ({
               {pending === 'approve' ? 'Approve this voucher?' : 'Remove approval?'}
             </p>
             <div className="flex justify-center gap-3">
-              <button
+              <Button
                 type="button"
                 ref={yesRef}
                 onClick={confirmAction}
@@ -240,14 +241,14 @@ const VoucherActionButtons = ({
                 }`}
               >
                 Yes
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={closeConfirm}
                 className="px-4 py-1.5 text-sm bg-gray-500 hover:bg-gray-600 text-white rounded"
               >
                 No
-              </button>
+              </Button>
             </div>
           </div>
         </div>

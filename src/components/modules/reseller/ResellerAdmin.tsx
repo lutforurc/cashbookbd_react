@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import InputElement from '../../utils/fields/InputElement';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
@@ -88,9 +88,9 @@ const ResellerAdmin: React.FC = () => {
       key: 'action',
       header: 'Action',
       render: (reseller: Reseller) => (
-        <button type="button" className="text-primary hover:underline" onClick={() => editReseller(reseller)}>
+        <Button type="button" className="text-primary hover:underline" onClick={() => editReseller(reseller)}>
           Edit
-        </button>
+        </Button>
       ),
     },
   ];
@@ -114,7 +114,7 @@ const ResellerAdmin: React.FC = () => {
       key: 'action',
       header: 'Action',
       render: (company: any) => (
-        <button
+        <Button
           type="button"
           onClick={() => unassignCompany(Number(company.id), Number(company.reseller_id))}
           disabled={saving}
@@ -122,7 +122,7 @@ const ResellerAdmin: React.FC = () => {
         >
           <FiUserX />
           Cancel
-        </button>
+        </Button>
       ),
     },
   ];
@@ -410,13 +410,13 @@ const ResellerAdmin: React.FC = () => {
                 className="h-10 w-28 p-2"
               />
               {form.id && (
-                <button
+                <Button
                   type="button"
                   onClick={resetForm}
                   className="h-10 rounded-sm border border-stroke px-4 text-sm text-slate-600 hover:bg-gray-2 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
                 >
                   Cancel
-                </button>
+                </Button>
               )}
             </div>
           </form>

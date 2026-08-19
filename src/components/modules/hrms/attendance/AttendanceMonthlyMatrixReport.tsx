@@ -6,7 +6,7 @@ import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
 
 import Loader from '../../../../common/Loader';
-import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import routes from '../../../services/appRoutes';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
@@ -441,7 +441,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         const holidayName = employee.holidayNames?.[dateKey];
 
         return (
-          <button
+          <Button
             type="button"
             title={
               isMarkedHoliday
@@ -465,7 +465,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
                 {statusGlyph(code)}
               </span>
             ) : null}
-          </button>
+          </Button>
         );
       },
     })),
@@ -626,7 +626,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       {/* Tabs */}
       <div className="mb-4 flex">
         <div className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800/60">
-          <button
+          <Button
             type="button"
             onClick={() => setActiveTab('summary')}
             className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
@@ -637,8 +637,8 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           >
             <FiGrid className="h-4 w-4" />
             Monthly Attendance Summary
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => setActiveTab('matrix')}
             className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
@@ -649,7 +649,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           >
             <FiCalendar className="h-4 w-4" />
             Attendance for the Month of {monthNames[monthIndex]} {year}
-          </button>
+          </Button>
         </div>
       </div>
 

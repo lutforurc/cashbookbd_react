@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 type NetRow = {
   name?: string;
@@ -259,13 +260,13 @@ const ProfitLossReport = ({
             <tr key={`exp-${idx}`} className="border-b dark:border-gray-700 border-gray-200">
               <td className="p-2 pl-6">
                 {onNetExpenseClick ? (
-                  <button
+                  <Button
                     type="button"
                     onClick={() => onNetExpenseClick(r)}
                     className="text-left text-sky-700 underline decoration-dotted underline-offset-4 transition hover:text-sky-900 dark:text-sky-300 dark:hover:text-sky-200"
                   >
                     (-) {r.name}
-                  </button>
+                  </Button>
                 ) : (
                   <> (-) {r.name}</>
                 )}

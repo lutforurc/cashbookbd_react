@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiX } from 'react-icons/fi';
+import { Button } from '../../../pages/UiElements/CustomButtons';
 
 interface SmsTemplatePreviewModalProps {
   open: boolean;
@@ -31,13 +32,13 @@ const SmsTemplatePreviewModal: React.FC<SmsTemplatePreviewModalProps> = ({
       >
         <div className="flex items-center justify-between border-b border-stroke px-5 py-4 dark:border-strokedark">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="rounded-sm border border-slate-300 p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
           >
             <FiX className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-4 px-5 py-5">

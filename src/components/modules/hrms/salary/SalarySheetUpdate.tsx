@@ -16,6 +16,7 @@ import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { salarySheetPrint, salarySheetRowDelete, salarySheetUpdate, salaryView } from "./salarySlice";
 import httpService from "../../../services/httpService";
 import { API_ATTENDANCE_MONTHLY_SUMMARY_URL } from "../../../services/apiRoutes";
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 type SalaryHistory = {
   id?: number | string;
@@ -894,7 +895,7 @@ const SalarySheetUpdate = (user: any) => {
       headerClass: "text-center",
       cellClass: "text-center",
       render: (row: UpdateRow) => (
-        <button
+        <Button
           type="button"
           onClick={() => handleDeleteClick(row)}
           disabled={saveLoading || deleteLoadingId === row.id || Number(row.payment_amount || 0) > 0}
@@ -906,7 +907,7 @@ const SalarySheetUpdate = (user: any) => {
           ) : (
             <FiTrash2 className="text-lg" />
           )}
-        </button>
+        </Button>
       ),
     },
   ];

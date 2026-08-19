@@ -17,6 +17,7 @@ import {
 } from '../services/apiRoutes';
 import { useSelector } from 'react-redux';
 import { hasPermission } from '../utils/permissionChecker';
+import { Button } from '../../pages/UiElements/CustomButtons';
 
 type NotificationTone = 'danger' | 'warning' | 'info' | 'success';
 
@@ -216,7 +217,7 @@ const DropdownNotification = () => {
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
       <li>
-        <button
+        <Button
           type="button"
           onClick={() => setDropdownOpen((current) => !current)}
           className="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border border-stroke bg-gray text-slate-600 transition hover:border-primary hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
@@ -228,7 +229,7 @@ const DropdownNotification = () => {
               {totalCount > 99 ? '99+' : totalCount}
             </span>
           ) : null}
-        </button>
+        </Button>
 
         {dropdownOpen ? (
           <div className="absolute -right-20 mt-2.5 flex w-80 flex-col overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-96">
@@ -241,14 +242,14 @@ const DropdownNotification = () => {
                   {totalCount > 0 ? `${totalCount} item(s) need attention` : 'Everything looks clear'}
                 </p>
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={loadNotifications}
                 className="flex h-8 w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
                 aria-label="Refresh notifications"
               >
                 <FiRefreshCw className={loading ? 'animate-spin' : ''} />
-              </button>
+              </Button>
             </div>
 
             <ul className="max-h-96 overflow-y-auto">
@@ -308,14 +309,14 @@ const DropdownNotification = () => {
                           ) : null}
                         </span>
                       </Link>
-                      <button
+                      <Button
                         type="button"
                         onClick={(event) => handleDismissClick(event, item)}
                         className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-sm text-slate-400 transition hover:bg-slate-100 hover:text-danger dark:hover:bg-slate-700"
                         aria-label={`Dismiss ${item.title}`}
                       >
                         <FiX />
-                      </button>
+                      </Button>
                     </div>
                   </li>
                 ))
