@@ -15,7 +15,7 @@ import { fetchAttendanceReport, fetchLeaveApplications } from './attendanceSlice
 import { chartDate } from '../../../utils/utils-functions/formatDate';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 
-const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
+const commandButtonClass = 'min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
 
 const statusOptions = [
   { id: '', name: 'All Status' },

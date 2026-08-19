@@ -894,7 +894,7 @@ const TradingCombinedEntry = () => {
         <HelmetTitle title={editingCombinedNumber ? 'Edit Combined Invoice' : 'Combined Invoice'} screen="combined-entry.trading" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
-        <div className="self-start md:self-auto">
+        <div className="min-w-0 self-start md:self-auto">
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div>
@@ -1052,13 +1052,17 @@ const TradingCombinedEntry = () => {
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')}
               />
               <div>
-                <div className="mb-1 flex items-center justify-between gap-2">
+                {/* Wraps rather than clips. The column is a third of the form
+                    wide, and the label plus the three-way strip do not always fit
+                    on one line -- flex-wrap drops the strip under the label rather
+                    than letting overflow-hidden eat "Sales". */}
+                <div className="mb-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
                   <label htmlFor="notes" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Notes
                   </label>
 
                   {showCombinedInvoiceNote && (
-                    <div className="inline-flex h-5 overflow-hidden rounded border border-slate-500 bg-slate-100 text-[10px] font-semibold leading-none dark:border-slate-600 dark:bg-slate-800">
+                    <div className="inline-flex h-5 shrink-0 overflow-hidden rounded border border-slate-500 bg-slate-100 text-[10px] font-semibold leading-none dark:border-slate-600 dark:bg-slate-800">
                       {[
                         { value: 'both', label: 'Both' },
                         { value: 'purchase', label: 'Purchase' },
@@ -1068,7 +1072,10 @@ const TradingCombinedEntry = () => {
                           key={item.value}
                           type="button"
                           onClick={() => handleNotesApplyToChange(item.value as NotesApplyTo)}
-                          className={`px-2 transition ${formData.notesApplyTo === item.value
+                          // h-full!, because this strip is 20px and a button now
+                          // stands at the shared control height unless it says
+                          // otherwise -- see BUTTON_HEIGHT in theme/buttonStyles.
+                          className={`h-full! shrink-0 whitespace-nowrap px-1.5 transition ${formData.notesApplyTo === item.value
                               ? 'bg-blue-600 text-white'
                               : 'text-slate-700 hover:bg-slate-200 dark:text-slate-200 dark:hover:bg-slate-700'
                             }`}
@@ -1134,7 +1141,7 @@ const TradingCombinedEntry = () => {
             </div>
           </div>
         </div>
-        <div className="">
+        <div className="min-w-0">
           {warehouse.isLoading ? <Loader /> : null}
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 gap-2">
@@ -1247,7 +1254,7 @@ const TradingCombinedEntry = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-x-1 gap-y-1 mt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-1 gap-y-1 mt-2">
               <ButtonLoading
                 id="addProduct"
                 onClick={addProduct}
@@ -1285,7 +1292,11 @@ const TradingCombinedEntry = () => {
           </div>
         </div>
 
-        <div className="mt-4 col-span-2 overflow-x-auto">
+        {/* col-span-full, not col-span-2. Below md this grid has ONE column, and
+                    asking to span two made the browser invent a second one -- which is
+                    what squeezed the two panels into slivers and stacked them on top of
+                    each other on a narrow screen. */}
+        <div className="mt-4 col-span-full overflow-x-auto">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-300 dark:bg-gray-700 dark:text-gray-200">
               <tr>

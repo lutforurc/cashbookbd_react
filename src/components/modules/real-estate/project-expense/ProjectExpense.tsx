@@ -72,7 +72,6 @@ const CASH_COA4_ID = 17;
 const SELECT_CLASS = `${FIELD_SELECT} ${FIELD_SIZE.md} w-full`;
 
 /** The same 38px, for the text boxes that sit between the dropdowns. */
-const FIELD_HEIGHT = 'h-9.5';
 
 const focusField = (id: string) => {
   window.setTimeout(() => document.getElementById(id)?.focus(), 0);
@@ -518,7 +517,7 @@ const ProjectExpense = () => {
                     value={search}
                     placeholder="Voucher number"
                     label=""
-                  className={`w-full py-1 ${FIELD_HEIGHT}`}
+                  className={`w-full py-1`}
                   onChange={(e: any) => setSearch(e.target.value)}
                   onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (e.key === 'Enter') {
@@ -534,7 +533,7 @@ const ProjectExpense = () => {
                   onClick={() => handleSearch()}
                   buttonLoading={searching}
                   label=" "
-                  className={`-ml-px w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20 ${FIELD_HEIGHT}`}
+                  className={`-ml-px w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20`}
                   icon={<FiSearch className="ml-2 text-lg" />}
                 />
               </div>

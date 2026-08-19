@@ -16,7 +16,7 @@ import { fetchAttendanceAuditHistory } from './attendanceSlice';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const today = new Date().toISOString().slice(0, 10);
-const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
+const commandButtonClass = 'min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
 
 const actionOptions = [
   { id: '', name: 'All Actions' },
