@@ -290,6 +290,22 @@ SQL ইনজেকশন নয় — মানটি বাইন্ডিং
 
 সিদ্ধান্ত দরকার: পদবি কি ইচ্ছাকৃতভাবেই সব টেন্যান্টের সাধারণ, নাকি এটি বাদ পড়া?
 
+**tenant কলামহীন টেবিল — একই সমস্যার আরও দুটি (Hrms ব্যাচে পাওয়া)**
+
+| টেবিল | সারি | যেসব মেথড আটকে গেল |
+|---|---|---|
+| `hrm_designation` | ৫২ | `DesignationController::update`, `DesignationManagementController::designationUpdate`, `designationDelete` |
+| `designation_levels` | ৬ | `DesignationManagementController::designationLevelEdit`, `designationLevelUpdate`, `designationLevelDelete` |
+| `hrm_payment_list` | ৬ | `PaymentListController::edit`, `update`, `SalarySetupController::store` |
+
+তিনটিরই একই কথা — `company_id`ও নেই, `branch_id`ও নেই, তাই lookup-এ স্কোপ বসানোর
+কিছু নেই। মোট **৯টি মেথড** এই কারণে বাকি।
+
+এগুলো একসাথে একটাই সিদ্ধান্ত: পদবি, পদবির স্তর ও বেতনের পেমেন্ট-তালিকা — এই তিনটি
+তালিকা কি ইচ্ছাকৃতভাবেই সব কোম্পানির সাধারণ (যেমন জেলা বা থানার তালিকা), নাকি
+টেন্যান্টপ্রতি হওয়ার কথা ছিল? সাধারণ হলে কিছু করার নেই; টেন্যান্টপ্রতি হলে তিন
+টেবিলেই `company_id` যোগ করে backfill করতে হবে।
+
 **`Reports/ReportsController.php` — `cashBookUpdate`**
 
 `acc_transaction_details`-এ কোনো tenant কলাম নেই; স্কোপ করতে হলে
@@ -378,17 +394,18 @@ PDF দলিলগুলো URL দিয়ে নামানো যাবে
 - [x] ১.৩ — `labourLedgerData` এ `branchScope()` — `997f6262`
 - [x] ১.৪ — `get_hash()`-এর মান কাঁচা SQL-এ: `(int)` কাস্ট ও বাইন্ডিং, ২টি জায়গায়
 - [x] ১.৫ — `PartyController::update` এ কোম্পানি স্কোপ ও null-গার্ড
-- [ ] ১.৬ — `NioHash`-এর চাবি CSRF টোকেন থেকে সরিয়ে `APP_KEY`-তে নেওয়া (বাকি ১০৭টি `get_hash()` কলের ভিত্তি)
+- [x] ১.৬ — `NioHash` এখন `APP_KEY` থেকে চাবি নেয়, MAC যাচাই করে, base64url দেয়। `get_hash()`-এর ফেরত মান এখন বিশ্বাসযোগ্য
 
 **এর পরে:**
 
 - [x] ২.২ — ব্যাংক রিপোর্টের `LIKE` সরানো — `6bdea6c4`। নির্দিষ্ট ব্রাঞ্চের অঙ্ক কমবে; সেটিই সংশোধন
-- [~] ২.৩ — স্কোপড lookup। ব্যাচ ১ (৯টি) — `ca459d47`; ব্যাচ ২ (Party) — নিচে ১.৪/১.৫ দেখুন। স্ক্যানে মোট **৮৫টি** মেথড বাকি, মডিউল ধরে ধরে
-- [ ] ২.১ — `branchInReach()`/`branchScope()`। স্ক্যানে **৮৪টি** মেথড কাঁচা `branch_id` পড়ে (ডকে লেখা ৬২-র চেয়ে বেশি; ইতিমধ্যে ৬২ জায়গায় হেল্পার ব্যবহৃত)
+- [~] ২.৩ — স্কোপড lookup। ব্যাচ ১ (৯টি) `ca459d47`; ব্যাচ ২ Party (১.৪/১.৫) `ebfef457`; ব্যাচ ৩ Hrms (১৩টি)। মডিউল ধরে ধরে চলছে
+- [~] ২.১ — `branchInReach()`/`branchScope()`। স্ক্যানে ৮৪ → **২৯** মেথড বাকি; বাকিগুলোর বেশিরভাগ `findScopedBranch()` বা কোম্পানি ফিল্টার দিয়ে ইতিমধ্যেই সুরক্ষিত
 
 **হাইজিন:**
 
-- [ ] ৩.১ — মৃত রুট মুছে ফেলা
+- [x] ৩.১ — মৃত রুট `routes/api.php:124` মুছে ফেলা হয়েছে (`testPdf` মেথডটি কমেন্ট করা অবস্থাতেই রইল)
 - [ ] ৩.২ — nginx সার্ভারে আপলোড ফোল্ডার ব্লক করা
 - [ ] ৩.৩ — প্রতিটি সার্ভারের `.env`-এ `APP_DEBUG=false` যাচাই
-- [ ] `composer audit` ও `npm audit` চালিয়ে প্যাকেজের CVE দেখা
+- [x] `composer audit` — `league/commonmark` 2.8.3-এ ৬টি advisory (৪টি high) ছিল, Laravel-এর transitive নির্ভরতা। 2.10.0-এ তোলা হয়েছে; lock-এ ঐ একটি প্যাকেজই বদলেছে, audit এখন পরিষ্কার
+- [ ] `npm audit` — **চালানো যায়নি**: এই মেশিনে npm 11.16.0 Node v25.2.1-এর সাথে ভাঙা (`Class extends value undefined`)। অন্য মেশিনে বা CI-তে চালাতে হবে
