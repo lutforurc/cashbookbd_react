@@ -2,7 +2,7 @@
 import { FIELD_FILE } from '../../../theme/fieldStyles';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
-import SignatureBlockEditor from '../../utils/fields/SignatureBlockEditor';
+import RichTextEditor from '../../utils/fields/RichTextEditor';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import {
@@ -1173,7 +1173,7 @@ const AddBranch = () => {
                     <label className="text-black dark:text-white">
                       Letter Signature Block
                     </label>
-                    <SignatureBlockEditor
+                    <RichTextEditor
                       value={formData.letter_signature || ''}
                       placeholder="Authorized Signatory and Company Seal"
                       onChange={(html) =>
