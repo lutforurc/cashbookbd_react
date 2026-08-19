@@ -337,3 +337,18 @@ determinism, URL safety, tampering, পুরোনো CSRF-চাবির forg
    ও unescaped আউটপুটও সারানো হয়েছে (§৩খ)
 ৬. ✅ **মোবাইল অ্যাপ যাচাই** (§৬-এর শেষ সারি) — রুটটি পুরোনোভাবে ব্যবহার করত বলে
    approve বোতাম ভাঙা ছিল; সারানো হয়েছে (mobileapp `257e8db`)
+
+---
+
+## ৯. ২০২৬-০৮-১৯ রাত — দুই npm-সিদ্ধান্তই মিটে গেছে (deps-latest ব্রাঞ্চ)
+
+- **vite ৪→৮ হয়েছে** (esbuild-দুর্বলতা শেষ), আর তার ওপরে **সব প্যাকেজ সর্বশেষে**:
+  React 19, Tailwind 4, antd 6, apexcharts 6, react-datepicker 9, react-to-print 3
+  (৫৮টি প্রিন্ট-সাইট নতুন API-তে) ইত্যাদি।
+- **quill/react-quill সম্পূর্ণ বাদ** — Letter Signature Block এখন কাঠামোবদ্ধ ফর্ম
+  (SignatureBlockEditor), পুরনো ব্লক অক্ষত থাকে ও আগের মতোই ছাপে। XSS advisory শেষ।
+- অব্যবহৃত sort-by (দূষিত object-path টানত) বাদ। **npm audit: শূন্য দুর্বলতা।**
+- jquery ৩.৭.১-এ ইচ্ছাকৃতভাবে রাখা: ভাউচার-ছবির লাইটবক্স magnific-popup-নির্ভর
+  (পরিত্যক্ত, jquery 4-সামঞ্জস্য অনিশ্চিত); jquery 3.7.1-এ কোনো advisory নেই।
+- সবটাই deps-latest ব্রাঞ্চে, বিল্ড সবুজ — **মার্জের আগে প্রতিটি পর্দার
+  চেহারা-যাচাই আবশ্যক** (React 19 + Tailwind 4 একসাথে, ডিফ সব পর্দা ছুঁয়েছে)।
