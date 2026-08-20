@@ -173,12 +173,12 @@ const CustomerStatement: React.FC<CustomerStatementProps> = ({
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-gray-100 dark:border-strokedark font-medium">
+            <tr className="border-b border-[rgb(var(--c-border))] font-medium">
               <td className="p-2" colSpan={5}>Opening Balance</td>
               <td className="p-2 text-right">{summary ? money(summary.opening_balance) : '-'}</td>
             </tr>
             {rows.map((r, i) => (
-              <tr key={i} className="border-b border-gray-100 dark:border-strokedark text-gray-700 dark:text-gray-300">
+              <tr key={i} className="border-b border-[rgb(var(--c-border))] text-gray-700 dark:text-gray-300">
                 <td className="p-2">{r.vr_date}</td>
                 <td className="p-2">
                   <Button

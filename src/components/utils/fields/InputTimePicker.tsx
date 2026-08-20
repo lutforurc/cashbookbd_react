@@ -245,7 +245,7 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
         </Button>
 
         {open && !disabled ? (
-          <div className="absolute left-0 top-full z-999 mt-1 w-full min-w-47.5 rounded border border-stroke bg-[rgb(var(--c-surface))] shadow-5 dark:border-strokedark">
+          <div className="absolute left-0 top-full z-999 mt-1 w-full min-w-47.5 rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-5">
             <div ref={columnsRef} className="grid grid-cols-3 divide-x divide-stroke dark:divide-strokedark">
               <div className={columnClass}>
                 {HOURS.map((hour) => (
@@ -290,7 +290,7 @@ const InputTimePicker: React.FC<InputTimePickerProps> = ({
               </div>
             </div>
 
-            <div className="flex justify-between border-t border-stroke px-2 py-1.5 dark:border-strokedark">
+            <div className="flex justify-between border-t border-[rgb(var(--c-border))] px-2 py-1.5">
               <Button
                 type="button"
                 className="text-xs font-medium text-primary hover:underline"

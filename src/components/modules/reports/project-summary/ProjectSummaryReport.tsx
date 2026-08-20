@@ -206,7 +206,7 @@ const ProjectSummaryReport = ({ user }: any) => {
               <th className="w-[110px] px-3 py-3 text-right font-semibold">P&L</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+          <tbody className="divide-y divide-gray-200 bg-[rgb(var(--c-table-body))] dark:divide-gray-700">
             {projectData.length ? (
               projectData.map((project, idx) => {
                 const pl = project.total_income - project.total_expense;

@@ -786,7 +786,7 @@ const EditCustomerSupplier = () => {
           {(guarantorEnabled || nomineeEnabled) && (
             <div className="mt-4">
               {showDetailsTabs ? (
-                <div className="flex flex-wrap gap-1 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex flex-wrap gap-1 border-b border-[rgb(var(--c-border))]">
                   {[
                     { key: 'guarantor' as const, label: 'Guarantor Details', count: formik.values.guarantors.length },
                     { key: 'nominee' as const, label: 'Nominee Details', count: formik.values.nominees.length },

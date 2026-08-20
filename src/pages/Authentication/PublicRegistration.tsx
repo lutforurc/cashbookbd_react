@@ -205,7 +205,7 @@ const PublicRegistration: React.FC = () => {
     <div className="fixed inset-0 overflow-y-auto bg-[rgb(var(--c-surface))]">
       
       <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-8">
-        <div className="w-full max-w-3xl rounded-xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark sm:p-8">
+        <div className="w-full max-w-3xl rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-sm sm:p-8">
           <div className="mb-6">
             <div className="flex flex-wrap items-center gap-2">
               

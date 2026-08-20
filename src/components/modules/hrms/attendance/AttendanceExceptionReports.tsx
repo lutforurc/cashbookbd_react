@@ -47,7 +47,7 @@ const AttendanceExceptionReports = ({ user }: any) => {
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-700">
+      <div className="mb-3 flex flex-wrap gap-2 border-b border-[rgb(var(--c-border))]">
         {reportTabs.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab.key === tab.key;

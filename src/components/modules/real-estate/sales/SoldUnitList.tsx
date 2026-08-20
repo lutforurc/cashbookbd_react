@@ -705,7 +705,7 @@ const SoldUnitList: React.FC = () => {
         ].map((card) => (
           <div
             key={card.label}
-            className="rounded border border-stroke bg-[rgb(var(--c-surface))] px-3 py-2 dark:border-strokedark"
+            className="rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-2"
           >
             <div className="text-xs text-gray-500 dark:text-gray-400">
               {card.label}
@@ -903,7 +903,7 @@ const SoldUnitList: React.FC = () => {
                                       about this sale is wrong â€” and which one
                                       applies depends on what is wrong. */}
                                   {(canEditSale || canCancelSale) && (
-                                    <div className="flex w-full items-center justify-center gap-3 border-b border-stroke pb-1 dark:border-strokedark">
+                                    <div className="flex w-full items-center justify-center gap-3 border-b border-[rgb(var(--c-border))] pb-1">
                                       {canEditSale && (
                                         <Button
                                           type="button"
@@ -958,7 +958,7 @@ const SoldUnitList: React.FC = () => {
                                       (version) => (
                                         <span
                                           key={version}
-                                          className="inline-flex items-stretch overflow-hidden rounded border border-stroke bg-white dark:border-strokedark dark:bg-meta-4"
+                                          className="inline-flex items-stretch overflow-hidden rounded border border-[rgb(var(--c-border))] bg-white dark:bg-meta-4"
                                         >
                                           <Button
                                             type="button"
@@ -977,7 +977,7 @@ const SoldUnitList: React.FC = () => {
                                               onClick={() =>
                                                 setConfirmWithdraw({ unit, kind: "LETTER", version })
                                               }
-                                              className="border-l border-stroke px-1 text-xs text-danger hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:hover:bg-form-strokedark"
+                                              className="border-l border-[rgb(var(--c-border))] px-1 text-xs text-danger hover:bg-gray-2 disabled:opacity-50 dark:hover:bg-form-strokedark"
                                             >
                                               <FiX />
                                             </Button>
@@ -1002,7 +1002,7 @@ const SoldUnitList: React.FC = () => {
                                       against it. Its own B-n series, because a
                                       sale can be on its third form and its
                                       first letter. */}
-                                  <div className="flex flex-wrap items-center justify-center gap-1 border-t border-stroke pt-1 dark:border-strokedark">
+                                  <div className="flex flex-wrap items-center justify-center gap-1 border-t border-[rgb(var(--c-border))] pt-1">
                                     {/* Who this property is left to. Named at
                                         booking when the buyer has decided, and
                                         here when they decide later -- which is
@@ -1050,7 +1050,7 @@ const SoldUnitList: React.FC = () => {
                                     ).map((version) => (
                                       <span
                                         key={version}
-                                        className="inline-flex items-stretch overflow-hidden rounded border border-stroke bg-white dark:border-strokedark dark:bg-meta-4"
+                                        className="inline-flex items-stretch overflow-hidden rounded border border-[rgb(var(--c-border))] bg-white dark:bg-meta-4"
                                       >
                                         <Button
                                           type="button"
@@ -1071,7 +1071,7 @@ const SoldUnitList: React.FC = () => {
                                             onClick={() =>
                                               setConfirmWithdraw({ unit, kind: "BOOKING", version })
                                             }
-                                            className="border-l border-stroke px-1 text-xs text-danger hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:hover:bg-form-strokedark"
+                                            className="border-l border-[rgb(var(--c-border))] px-1 text-xs text-danger hover:bg-gray-2 disabled:opacity-50 dark:hover:bg-form-strokedark"
                                           >
                                             <FiX />
                                           </Button>
@@ -1098,7 +1098,7 @@ const SoldUnitList: React.FC = () => {
                                       an upload icon sitting next to the deed
                                       that is already there reads as "add
                                       another", which the sale cannot hold. */}
-                                  <div className="flex items-center gap-2 border-t border-stroke pt-1 dark:border-strokedark">
+                                  <div className="flex items-center gap-2 border-t border-[rgb(var(--c-border))] pt-1">
                                     {unit.has_document ? (
                                       <>
                                         <Button

@@ -293,7 +293,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
       {(loading || searchLoading) && <Loader />}
 
       <div className="space-y-2">
-        <div className="border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="border border-[rgb(var(--c-border))] bg-white shadow-sm dark:bg-slate-800">
           <div className="flex flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
@@ -305,7 +305,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
               </p>
               
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+                <div className="rounded-sm border-[rgb(var(--c-border))]">
                   <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Bonus % of Basic</label>
                   <InputElement
                     value={bonusPercent}
@@ -330,17 +330,17 @@ const FestivalBonusGenerate = ({ user }: any) => {
 
             </div>
             <div className="grid grid-cols-3 gap-3 text-sm md:min-w-[320px]">
-              <div className="relative overflow-hidden border border-slate-200 bg-slate-50 px-4 py-3 pl-5 dark:border-slate-700 dark:bg-slate-900">
+              <div className="relative overflow-hidden border border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 pl-5 dark:bg-slate-900">
                 <span className="absolute inset-y-0 left-0 w-1 bg-indigo-500" />
                 <div className="text-xs text-slate-500 dark:text-slate-400">Total Basic Salary</div>
                 <div className="mt-1 text-2xl font-bold text-indigo-600 dark:text-indigo-400">{thousandSeparator(totalBasic)}</div>
               </div>
-              <div className="relative overflow-hidden border border-slate-200 bg-slate-50 px-4 py-3 pl-5 dark:border-slate-700 dark:bg-slate-900">
+              <div className="relative overflow-hidden border border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 pl-5 dark:bg-slate-900">
                 <span className="absolute inset-y-0 left-0 w-1 bg-emerald-500" />
                 <div className="text-xs text-slate-500 dark:text-slate-400">Eligible Employees</div>
                 <div className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{totalEmployees}</div>
               </div>
-              <div className="relative overflow-hidden border border-slate-200 bg-slate-50 px-4 py-3 pl-5 dark:border-slate-700 dark:bg-slate-900">
+              <div className="relative overflow-hidden border border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 pl-5 dark:bg-slate-900">
                 <span className="absolute inset-y-0 left-0 w-1 bg-blue-500" />
                 <div className="text-xs text-slate-500 dark:text-slate-400">Projected Bonus</div>
                 <div className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">{thousandSeparator(totalBonus)}</div>
@@ -349,9 +349,9 @@ const FestivalBonusGenerate = ({ user }: any) => {
           </div>
         </div>
 
-        <div className="border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="border border-[rgb(var(--c-border))] bg-white p-5 shadow-sm dark:bg-slate-800">
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+            <div className="rounded-sm border-[rgb(var(--c-border))]">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Branch</label>
               <BranchDropdown
                 defaultValue={branchId?.toString()}
@@ -364,7 +364,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
               />
             </div>
 
-            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+            <div className="rounded-sm border-[rgb(var(--c-border))]">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Bonus Month</label>
               <MonthDropdown
                 id="bonus_month_id"
@@ -375,7 +375,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
               />
             </div>
 
-            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+            <div className="rounded-sm border-[rgb(var(--c-border))]">
               <DropdownCommon
                 id="bonus_title"
                 name="bonus_title"
@@ -386,7 +386,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
                 data={bonusTitleOptions}
               />
             </div>
-            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+            <div className="rounded-sm border-[rgb(var(--c-border))]">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Designation Level</label>
               <MultiSelectDropdown
  options={designationLevelOptions}
@@ -400,7 +400,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
           </div>
 
           {bonusTitle === "Other" && (
-            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+            <div className="rounded-sm border-[rgb(var(--c-border))]">
               <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Custom Bonus Title</label>
               <InputElement value={customBonusTitle} onChange={(e) => setCustomBonusTitle(e.target.value)} className="w-full" />
             </div>
@@ -412,7 +412,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
 
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-3 rounded-sm border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 md:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-3 rounded-sm border border-dashed border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:bg-slate-900 dark:text-slate-200 md:grid-cols-3">
             <div>
               <span className="text-slate-500 dark:text-slate-400">Bonus Title</span>
               <div className="font-semibold text-slate-900 dark:text-slate-100">{resolvedBonusTitle || "Not selected"}</div>
@@ -431,21 +431,21 @@ const FestivalBonusGenerate = ({ user }: any) => {
         {employees.length > 0 && (
           <>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {/* <div className="border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              {/* <div className="border border-[rgb(var(--c-border))] bg-white px-5 py-4 shadow-sm dark:bg-slate-800">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Total Basic Salary</div>
                 <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{thousandSeparator(totalBasic)}</div>
               </div> */}
-              {/* <div className="border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              {/* <div className="border border-[rgb(var(--c-border))] bg-white px-5 py-4 shadow-sm dark:bg-slate-800">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Total Bonus Amount</div>
                 <div className="mt-2 text-2xl font-bold text-blue-600 dark:text-blue-400">{thousandSeparator(totalBonus)}</div>
               </div> */}
-              {/* <div className="border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              {/* <div className="border border-[rgb(var(--c-border))] bg-white px-5 py-4 shadow-sm dark:bg-slate-800">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Employees in Batch</div>
                 <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{totalEmployees}</div>
               </div> */}
             </div>
 
-            <div className="border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="border border-[rgb(var(--c-border))] bg-white p-5 shadow-sm dark:bg-slate-800">
               <Table columns={columns} data={employees} perPage={20} />
             </div>
           </>

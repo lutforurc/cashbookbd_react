@@ -256,15 +256,15 @@ const DashboardCustomizeButton = ({
       <Button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="inline-flex items-center gap-2 rounded-sm border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary hover:text-primary dark:border-slate-700 dark:bg-gray-800 dark:text-slate-100"
+        className="inline-flex items-center gap-2 rounded-sm border border-[rgb(var(--c-border))] bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary hover:text-primary dark:bg-gray-800 dark:text-slate-100"
       >
         <FiSettings className="text-base" />
         Customize
       </Button>
 
       {open ? (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-sm border border-slate-200 bg-white shadow-5 dark:border-slate-700 dark:bg-gray-800">
-          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-white shadow-5 dark:bg-gray-800">
+          <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
             <span className="text-sm font-bold text-slate-800 dark:text-[rgb(var(--c-text))]">
               Dashboard Widgets
             </span>
@@ -278,8 +278,8 @@ const DashboardCustomizeButton = ({
             </Button>
           </div>
 
-          <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
-            <div className="grid grid-cols-2 overflow-hidden rounded-sm border border-slate-200 text-xs font-semibold dark:border-slate-700">
+          <div className="border-b border-[rgb(var(--c-border))] px-4 py-3">
+            <div className="grid grid-cols-2 overflow-hidden rounded-sm border border-[rgb(var(--c-border))] text-xs font-semibold">
               <Button
                 type="button"
                 onClick={() => onDensityChange('comfortable')}
@@ -319,7 +319,7 @@ const DashboardCustomizeButton = ({
                     onClick={() => onToggleWidget(widget.id)}
                     className={`flex w-8 items-center justify-center rounded-sm border transition ${
  visible
- ?'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300':'border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-900/30'}`}
+ ?'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300':'border-[rgb(var(--c-border))] bg-slate-50 text-slate-400 dark:bg-slate-900/30'}`}
                     aria-label={visible ? `Hide ${widget.title}` : `Show ${widget.title}`}
                   >
                     {visible ? <FiEye /> : <FiEyeOff />}
@@ -331,7 +331,7 @@ const DashboardCustomizeButton = ({
                     type="button"
                     onClick={() => onMoveWidget(widget.id, 'up')}
                     disabled={index === 0}
-                    className="flex w-8 items-center justify-center rounded-sm border border-slate-200 text-slate-500 transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300"
+                    className="flex w-8 items-center justify-center rounded-sm border border-[rgb(var(--c-border))] text-slate-500 transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-300"
                     aria-label={`Move ${widget.title} up`}
                   >
                     <FiChevronUp />
@@ -340,7 +340,7 @@ const DashboardCustomizeButton = ({
                     type="button"
                     onClick={() => onMoveWidget(widget.id, 'down')}
                     disabled={index === widgets.length - 1}
-                    className="flex w-8 items-center justify-center rounded-sm border border-slate-200 text-slate-500 transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300"
+                    className="flex w-8 items-center justify-center rounded-sm border border-[rgb(var(--c-border))] text-slate-500 transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-300"
                     aria-label={`Move ${widget.title} down`}
                   >
                     <FiChevronDown />
@@ -350,11 +350,11 @@ const DashboardCustomizeButton = ({
             })}
           </div>
 
-          <div className="border-t border-slate-200 px-4 py-3 dark:border-slate-700">
+          <div className="border-t border-[rgb(var(--c-border))] px-4 py-3">
             <Button
               type="button"
               onClick={onReset}
-              className="w-full rounded-sm border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-danger hover:text-danger dark:border-slate-700 dark:text-slate-300"
+              className="w-full rounded-sm border border-[rgb(var(--c-border))] px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-danger hover:text-danger dark:text-slate-300"
             >
               Reset Layout
             </Button>

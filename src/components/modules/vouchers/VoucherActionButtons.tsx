@@ -224,8 +224,8 @@ const VoucherActionButtons = ({
             }
           }}
         >
-          <div className="relative bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-md rounded-md px-4 py-3">
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-gray-800 border-l border-t border-gray-300 dark:border-gray-700 rotate-45"></div>
+          <div className="relative bg-white dark:bg-gray-800 border border-[rgb(var(--c-border))] shadow-md rounded-md px-4 py-3">
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-gray-800 border-l border-t border-[rgb(var(--c-border))] rotate-45"></div>
             <p className="text-sm text-black-900 dark:text-gray-200 mb-3 text-center whitespace-nowrap">
               {pending === 'approve' ? 'Approve this voucher?' : 'Remove approval?'}
             </p>

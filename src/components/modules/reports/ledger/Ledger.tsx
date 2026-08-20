@@ -723,7 +723,7 @@ const Ledger = (user: any) => {
           {useFilterMenuEnabled ? (
             <div className="ml-auto flex items-end gap-2">
               {selectedLedgerName ? (
-                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-[rgb(var(--c-border))] bg-white px-3 text-sm font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-100">
                   <span className="truncate" title={selectedLedgerName}>{selectedLedgerName}</span>
                 </div>
               ) : null}

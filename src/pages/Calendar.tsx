@@ -6,7 +6,7 @@ const Calendar = () => {
       <Breadcrumb pageName="Calendar" />
 
       {/* <!-- ====== Calendar Section Start ====== --> */}
-      <div className="w-full max-w-full rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
+      <div className="w-full max-w-full rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
         <table className="w-full">
           <thead>
             <tr className="grid grid-cols-7 rounded-t-sm bg-primary text-white">
@@ -43,7 +43,7 @@ const Calendar = () => {
           <tbody>
             {/* <!-- Line 1 --> */}
             <tr className="grid grid-cols-7">
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   1
                 </span>
@@ -61,32 +61,32 @@ const Calendar = () => {
                   </div>
                 </div>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   2
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   3
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   4
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   5
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   6
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   7
                 </span>
@@ -95,37 +95,37 @@ const Calendar = () => {
             {/* <!-- Line 1 --> */}
             {/* <!-- Line 2 --> */}
             <tr className="grid grid-cols-7">
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   8
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   9
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   10
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   11
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   12
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   13
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   14
                 </span>
@@ -134,37 +134,37 @@ const Calendar = () => {
             {/* <!-- Line 2 --> */}
             {/* <!-- Line 3 --> */}
             <tr className="grid grid-cols-7">
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   15
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   16
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   17
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   18
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   19
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   20
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   21
                 </span>
@@ -173,22 +173,22 @@ const Calendar = () => {
             {/* <!-- Line 3 --> */}
             {/* <!-- Line 4 --> */}
             <tr className="grid grid-cols-7">
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   22
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   23
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   24
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   25
                 </span>
@@ -206,17 +206,17 @@ const Calendar = () => {
                   </div>
                 </div>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   26
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   27
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   28
                 </span>
@@ -225,37 +225,37 @@ const Calendar = () => {
             {/* <!-- Line 4 --> */}
             {/* <!-- Line 5 --> */}
             <tr className="grid grid-cols-7">
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   29
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   30
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   31
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   1
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   2
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   3
                 </span>
               </td>
-              <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray dark:border-strokedark dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
+              <td className="ease relative h-20 cursor-pointer border border-[rgb(var(--c-border))] p-2 transition duration-500 hover:bg-gray dark:hover:bg-meta-4 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   4
                 </span>

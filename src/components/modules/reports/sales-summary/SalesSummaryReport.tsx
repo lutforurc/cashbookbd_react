@@ -234,7 +234,7 @@ const SalesSummaryReport: React.FC = () => {
               <th className={`${cell} w-32 text-center`}>Action</th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-800">
+          <tbody className="bg-[rgb(var(--c-table-body))]">
             {customers.length ? (
               customers.map((customer, index) => (
                 <tr key={customer.customer_id} className="hover:bg-indigo-50 dark:hover:bg-gray-700">

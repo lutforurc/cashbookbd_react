@@ -96,10 +96,10 @@ const PhotoInput: React.FC<PhotoInputProps> = ({
           <img
             src={previewUrl}
             alt={label}
-            className="h-[2.4rem] w-[2.4rem] shrink-0 rounded-sm border border-gray-300 object-cover dark:border-gray-600"
+            className="h-[2.4rem] w-[2.4rem] shrink-0 rounded-sm border border-[rgb(var(--c-border))] object-cover"
           />
         ) : (
-          <div className="flex h-[2.4rem] w-[2.4rem] shrink-0 items-center justify-center rounded-sm border border-dashed border-gray-300 text-gray-400 dark:border-gray-600">
+          <div className="flex h-[2.4rem] w-[2.4rem] shrink-0 items-center justify-center rounded-sm border border-dashed border-[rgb(var(--c-border))] text-gray-400">
             <FiUpload />
           </div>
         )}

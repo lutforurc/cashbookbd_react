@@ -207,7 +207,7 @@ const FestivalBonusPaymentSelectionModal = ({
           </div>
         )}
 
-        <div className="overflow-x-auto border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="overflow-x-auto border border-[rgb(var(--c-border))] bg-white shadow-sm dark:bg-slate-800">
           <table className="min-w-full text-sm">
             <thead className="bg-[rgb(var(--c-table-head))] text-slate-700 dark:text-slate-100">
               <tr>
@@ -229,7 +229,7 @@ const FestivalBonusPaymentSelectionModal = ({
                 return (
                   <tr
                     key={row.id}
-                    className="border-t border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700/40"
+                    className="border-t border-[rgb(var(--c-border))] text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700/40"
                   >
                     <td className="px-3 py-2 align-top">
                       <Checkbox
@@ -278,7 +278,7 @@ const FestivalBonusPaymentSelectionModal = ({
                         type="number"
                         inputMode="decimal"
                         disabled={dueAmount <= 0}
-                        className="ml-auto w-32 border-slate-300 bg-white text-right dark:border-slate-600 dark:bg-slate-900"
+                        className="ml-auto w-32 border-[rgb(var(--c-border))] bg-white text-right dark:bg-slate-900"
                       />
                     </td>
                   </tr>
@@ -288,7 +288,7 @@ const FestivalBonusPaymentSelectionModal = ({
           </table>
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-3 border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="mt-4 flex items-center justify-between gap-3 border border-[rgb(var(--c-border))] bg-white px-4 py-3 shadow-sm dark:bg-slate-800">
           <div className="text-sm text-slate-600 dark:text-slate-300">
             Tick selected employees for partial or full bonus payment.
           </div>

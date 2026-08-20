@@ -675,24 +675,20 @@ const CustomerSupplier = () => {
 
           {/* ===== Modal Box ===== */}
           <div
-            className="
-        bg-white dark:bg-gray-800
-        rounded-sm
-        w-[800px] max-h-[85vh]
-        overflow-hidden
-        shadow-xl
-        border border-gray-300 dark:border-gray-600
-      "
+            className="bg-white dark:bg-gray-800
+ rounded-sm
+ w-[800px] max-h-[85vh]
+ overflow-hidden
+ shadow-xl
+ border border-[rgb(var(--c-border))]"
           >
 
             {/* ===== Header ===== */}
             <div
-              className="
-          flex justify-between items-center
-          px-4 py-3
-          bg-gray-300 dark:bg-gray-700
-          border-b border-gray-300 dark:border-gray-600
-        "
+              className="flex justify-between items-center
+ px-4 py-3
+ bg-gray-300 dark:bg-gray-700
+ border-b border-[rgb(var(--c-border))]"
             >
               <h2 className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-200">
                 Guarantor Details
@@ -712,12 +708,10 @@ const CustomerSupplier = () => {
 
                 {/* ===== Table Head ===== */}
                 <thead
-                  className="
-              text-xs uppercase
-              bg-gray-200 dark:bg-gray-700
-              text-gray-800 dark:text-gray-300
-              border-b border-gray-300 dark:border-gray-600
-            "
+                  className="text-xs uppercase
+ bg-gray-200 dark:bg-gray-700
+ text-gray-800 dark:text-gray-300
+ border-b border-[rgb(var(--c-border))]"
                 >
                   <tr>
                     <th className="px-3 py-2">Name</th>
@@ -730,10 +724,8 @@ const CustomerSupplier = () => {
 
                 {/* ===== Table Body ===== */}
                 <tbody
-                  className="
-              bg-white dark:bg-gray-800
-              divide-y divide-gray-200 dark:divide-gray-700
-            "
+                  className="bg-[rgb(var(--c-table-body))] 
+ divide-y divide-gray-200 dark:divide-gray-700"
                 >
                   {selectedGuarantors.length > 0 ? (
                     selectedGuarantors.map((g, index) => (
@@ -770,22 +762,18 @@ const CustomerSupplier = () => {
       {showNomineeModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-50">
           <div
-            className="
-        bg-white dark:bg-gray-800
-        rounded-sm
-        w-[1100px] max-h-[85vh]
-        overflow-hidden
-        shadow-xl
-        border border-gray-300 dark:border-gray-600
-      "
+            className="bg-white dark:bg-gray-800
+ rounded-sm
+ w-[1100px] max-h-[85vh]
+ overflow-hidden
+ shadow-xl
+ border border-[rgb(var(--c-border))]"
           >
             <div
-              className="
-          flex justify-between items-center
-          px-4 py-3
-          bg-gray-300 dark:bg-gray-700
-          border-b border-gray-300 dark:border-gray-600
-        "
+              className="flex justify-between items-center
+ px-4 py-3
+ bg-gray-300 dark:bg-gray-700
+ border-b border-[rgb(var(--c-border))]"
             >
               <h2 className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-200">
                 Nominee Details
@@ -802,12 +790,10 @@ const CustomerSupplier = () => {
             <div className="overflow-auto max-h-[75vh]">
               <table className="min-w-full table-fixed text-sm text-left text-gray-700 dark:text-gray-300">
                 <thead
-                  className="
-              text-xs uppercase
-              bg-gray-200 dark:bg-gray-700
-              text-gray-800 dark:text-gray-300
-              border-b border-gray-300 dark:border-gray-600
-            "
+                  className="text-xs uppercase
+ bg-gray-200 dark:bg-gray-700
+ text-gray-800 dark:text-gray-300
+ border-b border-[rgb(var(--c-border))]"
                 >
                   <tr>
                     <th className="px-3 py-2">Name</th>
@@ -822,10 +808,8 @@ const CustomerSupplier = () => {
                 </thead>
 
                 <tbody
-                  className="
-              bg-white dark:bg-gray-800
-              divide-y divide-gray-200 dark:divide-gray-700
-            "
+                  className="bg-[rgb(var(--c-table-body))] 
+ divide-y divide-gray-200 dark:divide-gray-700"
                 >
                   {selectedNominees.length > 0 ? (
                     selectedNominees.map((n, index) => (

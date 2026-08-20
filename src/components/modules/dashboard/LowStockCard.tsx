@@ -37,7 +37,7 @@ const LowStockCard: React.FC<LowStockCardProps> = ({ lowStock, isLoading }) => {
 
   return (
     <div className="flex flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700">
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-gray-700">
+      <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
         <span className="truncate text-sm font-bold text-slate-700 dark:text-slate-100">
           {byThreshold ? 'Reorder Now' : 'Lowest Stock'}
         </span>

@@ -242,7 +242,7 @@ const PublicRegistrationOtp: React.FC = () => {
   return (
     <div className="fixed inset-0 overflow-y-auto bg-[rgb(var(--c-surface))]">
       <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-8">
-        <div className="w-full max-w-md rounded-xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark sm:p-8">
+        <div className="w-full max-w-md rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-sm sm:p-8">
           <h2 className="text-2xl font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Verify OTP</h2>
           <p className="mt-2 text-sm text-[rgb(var(--c-text))]/60 dark:text-[rgb(var(--c-text))]/60">
             OTP sent to {maskedMobile || mobile}. Enter it to complete registration.
@@ -280,7 +280,7 @@ const PublicRegistrationOtp: React.FC = () => {
             type="button"
             onClick={handleResendOtp}
             disabled={resending}
-            className="mt-4 w-full border border-stroke px-4 py-3 text-sm font-medium text-[rgb(var(--c-text))] transition hover:bg-gray-2 disabled:cursor-not-allowed disabled:opacity-60 dark:border-strokedark dark:text-[rgb(var(--c-text))] dark:hover:bg-form-input"
+            className="mt-4 w-full border border-[rgb(var(--c-border))] px-4 py-3 text-sm font-medium text-[rgb(var(--c-text))] transition hover:bg-gray-2 disabled:cursor-not-allowed disabled:opacity-60 dark:text-[rgb(var(--c-text))] dark:hover:bg-form-input"
           >
             {resending ? 'Resending...' : 'Resend OTP'}
           </Button>

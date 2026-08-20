@@ -30,8 +30,8 @@ const renderValue = (value: number) => {
 };
 
 const OvertimeReportMatrix: React.FC<Props> = ({ title, dates, rows, dayTotals, grandTotal }) => (
-  <div className="border border-slate-200 bg-[rgb(var(--c-surface))] shadow-sm dark:border-slate-700">
-    <div className="border-b border-slate-200 bg-slate-50 px-3 py-2.5 text-center text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
+  <div className="border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
+    <div className="border-b border-[rgb(var(--c-border))] bg-slate-50 px-3 py-2.5 text-center text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-100">
       {title}
     </div>
 

@@ -51,7 +51,7 @@ const BillingHistory: React.FC = () => {
       key: 'payment_status',
       header: 'Status',
       render: (row: any) => (
-        <span className="rounded border border-gray-300 bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+        <span className="rounded border border-[rgb(var(--c-border))] bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-100">
           {row.payment_status || '-'}
         </span>
       ),
@@ -62,7 +62,7 @@ const BillingHistory: React.FC = () => {
     <div className="space-y-6">
       <HelmetTitle title="Billing History" />
 
-      <div className="border-stroke bg-[rgb(var(--c-surface))] pl-3 pt-6 pb-6 shadow-sm dark:border-strokedark">
+      <div className="border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] pl-3 pt-6 pb-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           Billing History
         </h1>

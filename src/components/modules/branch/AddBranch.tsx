@@ -843,10 +843,10 @@ const AddBranch = () => {
             {/* Viewport-tall column so the action bar lands in the same spot on
                 every step, however short that step's content is. */}
             <div className="flex min-h-[calc(100vh-7rem)] min-w-0 flex-col">
-              <div className="mb-4 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
+              <div className="mb-4 rounded border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-transparent">
               {/* Ruled off, so the step's own heading reads apart from the
                   fields under it rather than as the first line of them. */}
-              <div className="mb-3 border-b border-gray-200 pb-1.5 dark:border-strokedark">
+              <div className="mb-3 border-b border-[rgb(var(--c-border))] pb-1.5">
                 <h2 className="text-base font-semibold leading-tight text-gray-800 dark:text-[rgb(var(--c-text))]">
                   {steps[currentStep]}
                 </h2>
@@ -1012,7 +1012,7 @@ const AddBranch = () => {
                   </div>
 
                   {/* ---------- Pad Head ---------- */}
-                  <h4 className="mb-2 mt-4 border-t border-gray-200 pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:border-strokedark dark:text-gray-400">
+                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Pad Head
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -1289,7 +1289,7 @@ const AddBranch = () => {
                   </div>
 
                   {/* ---------- Stock ---------- */}
-                  <h4 className="mb-2 mt-4 border-t border-gray-200 pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:border-strokedark dark:text-gray-400">
+                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Stock
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -1453,7 +1453,7 @@ const AddBranch = () => {
                   </div>
 
                   {/* ---------- Nominee & Guarantor ---------- */}
-                  <div className="mt-4 border-t border-gray-200 pt-3 dark:border-gray-700">
+                  <div className="mt-4 border-t border-[rgb(var(--c-border))] pt-3">
                     <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       Nominee &amp; Guarantor
                     </h4>
@@ -1508,7 +1508,7 @@ const AddBranch = () => {
                   </div>
 
                   {/* ---------- Stock ---------- */}
-                  <h4 className="mb-2 mt-4 border-t border-gray-200 pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:border-strokedark dark:text-gray-400">
+                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Stock
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -1551,7 +1551,7 @@ const AddBranch = () => {
               {currentStep === stepIndex('Real Estate Setup') && (
                 <>
                   {/* ---------- Allotment Letter ---------- */}
-                  <h4 className="mb-2 mt-4 border-t border-gray-200 pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:border-strokedark dark:text-gray-400">
+                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Allotment Letter
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -1779,7 +1779,7 @@ const AddBranch = () => {
                           the wording of these messages is set is worth saying
                           here, because nothing on this screen shows it and a
                           branch looking for it would search this panel first. */}
-                      <div className="mb-2 mt-4 border-t border-gray-200 pt-4 dark:border-strokedark">
+                      <div className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4">
                         <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                           SMS Services
                         </h4>
@@ -1897,7 +1897,7 @@ const AddBranch = () => {
               </div>
 
               {/* Kept within reach on the long steps, so Save needs no scrolling back. */}
-              <div className="sticky bottom-0 z-20 mt-auto mb-2 rounded border border-gray-200 bg-[rgb(var(--c-surface))]/95 px-3 py-2.5 shadow-lg backdrop-blur dark:border-strokedark /95">
+              <div className="sticky bottom-0 z-20 mt-auto mb-2 rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]/95 px-3 py-2.5 shadow-lg backdrop-blur /95">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="mr-1 whitespace-nowrap text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -1905,7 +1905,7 @@ const AddBranch = () => {
                     </span>
                     <Link
                       to="/branch/branch-list"
-                      className="inline-flex items-center whitespace-nowrap rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-600 transition hover:border-blue-400 hover:text-blue-500 dark:border-gray-600 dark:text-gray-300"
+                      className="inline-flex items-center whitespace-nowrap rounded border border-[rgb(var(--c-border))] px-3 py-1.5 text-sm text-gray-600 transition hover:border-blue-400 hover:text-blue-500 dark:text-gray-300"
                     >
                       <FiArrowLeft className="mr-2" /> Back
                     </Link>

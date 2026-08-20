@@ -26,7 +26,7 @@ const MySubscription: React.FC = () => {
     <div className="space-y-6">
       <HelmetTitle title="My Subscription" />
 
-      <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
+      <div className="rounded-2xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           My Subscription
         </h1>
@@ -37,7 +37,7 @@ const MySubscription: React.FC = () => {
 
       {hasRenderableSubscription ? (
         <div className="grid gap-5 lg:grid-cols-3">
-          <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark lg:col-span-2">
+          <div className="rounded-2xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-sm lg:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
@@ -49,13 +49,13 @@ const MySubscription: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <span className="rounded border border-gray-300 bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+              <span className="rounded border border-[rgb(var(--c-border))] bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-100">
                 Access: {current.access_status || '-'}
               </span>
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <div className="rounded border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/30">
+              <div className="rounded border border-[rgb(var(--c-border))] bg-gray-50 p-4 dark:bg-gray-900/30">
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                   Start Date
                 </p>
@@ -63,7 +63,7 @@ const MySubscription: React.FC = () => {
                   {current.start_date || '-'}
                 </p>
               </div>
-              <div className="rounded border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/30">
+              <div className="rounded border border-[rgb(var(--c-border))] bg-gray-50 p-4 dark:bg-gray-900/30">
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                   End Date
                 </p>
@@ -71,7 +71,7 @@ const MySubscription: React.FC = () => {
                   {current.end_date || '-'}
                 </p>
               </div>
-              <div className="rounded border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/30">
+              <div className="rounded border border-[rgb(var(--c-border))] bg-gray-50 p-4 dark:bg-gray-900/30">
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                   Trial Ends
                 </p>
@@ -79,7 +79,7 @@ const MySubscription: React.FC = () => {
                   {current.trial_end_at || '-'}
                 </p>
               </div>
-              <div className="rounded border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/30">
+              <div className="rounded border border-[rgb(var(--c-border))] bg-gray-50 p-4 dark:bg-gray-900/30">
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                   Next Billing Date
                 </p>
@@ -97,7 +97,7 @@ const MySubscription: React.FC = () => {
                 {(current.features || []).map((feature) => (
                   <span
                     key={feature.feature_key}
-                    className="border border-gray-300 bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100"
+                    className="border border-[rgb(var(--c-border))] bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-100"
                   >
                     {feature.feature_name}
                   </span>
@@ -111,7 +111,7 @@ const MySubscription: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
+          <div className="rounded-2xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Need Renewal?
             </h3>
@@ -145,13 +145,13 @@ const MySubscription: React.FC = () => {
         </div>
       ) : (
         <div className="grid gap-5 lg:grid-cols-3">
-          <div className="rounded-xl border border-dashed border-stroke p-8 text-center text-sm text-bodydark2 dark:border-strokedark lg:col-span-2">
+          <div className="rounded-xl border border-dashed border-[rgb(var(--c-border))] p-8 text-center text-sm text-bodydark2 lg:col-span-2">
             {loadingCurrent
               ? 'Loading subscription details...'
               : 'No subscription data found yet. You can still choose a plan and submit a manual payment request.'}
           </div>
 
-          <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
+          <div className="rounded-2xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Manual Subscription
             </h3>

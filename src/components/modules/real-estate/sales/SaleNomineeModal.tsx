@@ -280,7 +280,7 @@ const SaleNomineeModal: React.FC<Props> = ({ unit, onClose, onSaved }) => {
                   return (
                     <tr
                       key={nominee.id}
-                      className="border-b border-gray-200 last:border-0 dark:border-gray-700"
+                      className="border-b border-[rgb(var(--c-border))] last:border-0"
                     >
                       <td className="p-2">
                         <Input

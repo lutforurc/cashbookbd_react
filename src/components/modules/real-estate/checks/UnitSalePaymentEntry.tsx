@@ -604,11 +604,11 @@ export default function UnitSalePaymentEntry() {
 
         <div className="bg-white dark:bg-gray-800 rounded border border-gray-300 p-3 mb-3">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
-            <div className="rounded border border-gray-200 dark:border-gray-700 p-2">
+            <div className="rounded border border-[rgb(var(--c-border))] p-2">
               <div className="text-xs text-gray-500">Receipt No</div>
               <div className="font-medium">{form.receipt_no || "-"}</div>
             </div>
-            <div className="rounded border border-gray-200 dark:border-gray-700 p-2">
+            <div className="rounded border border-[rgb(var(--c-border))] p-2">
               <div className="text-xs text-gray-500">Booking</div>
               <div className="font-medium">
                 {summaryLoading ? "Loading..." : saleSummary?.booking?.unit_label || ""}
@@ -617,7 +617,7 @@ export default function UnitSalePaymentEntry() {
                 {summaryLoading ? "..." : saleSummary?.booking?.parking_label || ""}
               </div>
             </div>
-            <div className="rounded border border-gray-200 dark:border-gray-700 p-2">
+            <div className="rounded border border-[rgb(var(--c-border))] p-2">
               <div className="text-xs text-gray-500">Customer</div>
               <div className="font-medium">
                 {summaryLoading ? "Loading..." : saleSummary?.customer?.name || "-"}
@@ -626,7 +626,7 @@ export default function UnitSalePaymentEntry() {
                 {summaryLoading ? "..." : formatMobile(saleSummary?.customer?.mobile, mobileFormat) || "-"}
               </div>
             </div>
-            <div className="rounded border border-gray-200 dark:border-gray-700 p-2">
+            <div className="rounded border border-[rgb(var(--c-border))] p-2">
               <div className="text-xs text-gray-500">Issued Amount</div>
               <div className="font-medium">
                 {saleSummary?.amounts?.due_amount !== undefined &&
@@ -641,7 +641,7 @@ export default function UnitSalePaymentEntry() {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded border border-gray-300 p-3">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 border-b border-[rgb(var(--c-border))] pb-3 mb-3">
             <div className="w-full">
               <label className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 block mb-1">
                 Payment Date
@@ -771,7 +771,7 @@ export default function UnitSalePaymentEntry() {
           </div>
 
           {isCheque ? (
-            <div className="mt-4 border-t border-gray-300 dark:border-gray-700 pt-3">
+            <div className="mt-4 border-t border-[rgb(var(--c-border))] pt-3">
               <h3 className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 font-semibold mb-2">
                 Cheque Deposit Information
               </h3>

@@ -103,7 +103,7 @@ const CompanyList = () => {
             src={logoUrl}
             alt={row?.name || 'Company logo'}
             title="Light mode logo"
-            className="mx-auto h-10 w-16 rounded border border-slate-200 bg-white object-contain p-1 dark:border-gray-700"
+            className="mx-auto h-10 w-16 rounded border border-[rgb(var(--c-border))] bg-white object-contain p-1"
           />
         ) : (
           '-'
@@ -126,7 +126,7 @@ const CompanyList = () => {
             src={logoDarkUrl}
             alt={row?.name ? `${row.name} (dark mode)` : 'Company logo (dark mode)'}
             title="Dark mode logo"
-            className="mx-auto h-10 w-16 rounded border border-slate-200 bg-slate-800 object-contain p-1 dark:border-gray-600"
+            className="mx-auto h-10 w-16 rounded border border-[rgb(var(--c-border))] bg-slate-800 object-contain p-1"
           />
         ) : (
           '-'

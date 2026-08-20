@@ -676,10 +676,10 @@ const Orders = () => {
                 <div
                   key={item.key}
                   className={`min-w-[140px] rounded border px-3 py-2 text-left shadow-sm ${
-                    item.highlight
-                      ? 'border-amber-400 bg-amber-50 text-amber-900 dark:border-amber-400/70 dark:bg-amber-400/10 dark:text-amber-200'
-                      : 'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
-                  }`}
+ item.highlight
+ ? 'border-amber-400 bg-amber-50 text-amber-900 dark:border-amber-400/70 dark:bg-amber-400/10 dark:text-amber-200'
+ : 'border-[rgb(var(--c-border))] bg-white text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+ }`}
                 >
                   <div className="text-[11px] font-semibold uppercase tracking-wide opacity-80">
                     {item.label}
@@ -1075,7 +1075,7 @@ const Orders = () => {
                 onClick={() => setFilterOpen((prev) => !prev)}
                 className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
  filterOpen
- ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-slate-300 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'}`}
+ ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-[rgb(var(--c-border))] bg-white text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'}`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -1391,8 +1391,8 @@ const Orders = () => {
             }
           }}
         >
-          <div className="w-full max-w-3xl border border-slate-200 bg-slate-50 shadow-2xl ring-1 ring-black/5 dark:border-slate-600 dark:bg-slate-800 dark:ring-white/10">
-            <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-600 dark:bg-slate-700">
+          <div className="w-full max-w-3xl border border-[rgb(var(--c-border))] bg-slate-50 shadow-2xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10">
+            <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] bg-white px-4 py-3 dark:bg-slate-700">
               <div>
                 <h3 className="text-base font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
                   Linked Orders
@@ -1420,7 +1420,7 @@ const Orders = () => {
                   0)}
               </div>
 
-              <div className="overflow-x-auto border border-slate-200 bg-white shadow-sm dark:border-slate-600 dark:bg-slate-900">
+              <div className="overflow-x-auto border border-[rgb(var(--c-border))] bg-white shadow-sm dark:bg-slate-900">
                 <table className="w-full text-sm text-left text-gray-700 dark:text-gray-300">
                   <thead className="bg-gray-200 text-xs uppercase dark:bg-gray-700">
                     <tr>
@@ -1438,7 +1438,7 @@ const Orders = () => {
                       selectedLinkedOrder.linked_orders.map((item: any, index: number) => (
                         <tr
                           key={item.id ?? index}
-                          className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
+                          className="border-b bg-[rgb(var(--c-table-body))] dark:border-gray-700"
                         >
                           <td className="px-3 py-2 text-center">
                             {item.serial ?? index + 1}

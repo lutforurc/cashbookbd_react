@@ -23,8 +23,8 @@ const FormElements = () => {
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-2">
         <div className="flex flex-col gap-9">
           {/* <!-- Input Fields --> */}
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-            <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+            <div className="border-b border-[rgb(var(--c-border))] py-4 px-6.5">
               <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Input Fields
               </h3>
@@ -67,8 +67,8 @@ const FormElements = () => {
           </div>
 
           {/* <!-- Toggle switch input --> */}
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-            <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+            <div className="border-b border-[rgb(var(--c-border))] py-4 px-6.5">
               <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Toggle switch input
               </h3>
@@ -82,8 +82,8 @@ const FormElements = () => {
           </div>
 
           {/* <!-- Time and date --> */}
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-            <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+            <div className="border-b border-[rgb(var(--c-border))] py-4 px-6.5">
               <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Time and date
               </h3>
@@ -95,8 +95,8 @@ const FormElements = () => {
           </div>
 
           {/* <!-- File upload --> */}
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-            <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+            <div className="border-b border-[rgb(var(--c-border))] py-4 px-6.5">
               <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 File upload
               </h3>
@@ -108,7 +108,7 @@ const FormElements = () => {
                 </label>
                 <Input
  type="file"
- className="w-full cursor-pointer border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:py-3 file:px-5 file:hover:bg-primary/10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
+ className="w-full cursor-pointer border-[1.5px] border-[rgb(var(--c-border))] bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:py-3 file:px-5 file:hover:bg-primary/10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
                 />
               </div>
 
@@ -118,7 +118,7 @@ const FormElements = () => {
                 </label>
                 <Input
  type="file"
- className="w-full border border-stroke p-3 outline-none transition file:mr-4 file: file:border-[0.5px] file:border-stroke file:bg-[rgb(var(--c-gray-100))] file:py-1 file:px-2.5 file:text-sm focus:border-primary file:focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-strokedark dark:file:bg-white/30 dark:file:text-white"
+ className="w-full border border-[rgb(var(--c-border))] p-3 outline-none transition file:mr-4 file: file:border-[0.5px] file:border-stroke file:bg-[rgb(var(--c-gray-100))] file:py-1 file:px-2.5 file:text-sm focus:border-primary file:focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:bg-form-input dark:file:border-strokedark dark:file:bg-white/30 dark:file:text-white"
                 />
               </div>
             </div>
@@ -127,8 +127,8 @@ const FormElements = () => {
 
         <div className="flex flex-col gap-9">
           {/* <!-- Textarea Fields --> */}
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-            <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+            <div className="border-b border-[rgb(var(--c-border))] py-4 px-6.5">
               <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Textarea Fields
               </h3>
@@ -171,8 +171,8 @@ const FormElements = () => {
           </div>
 
           {/* <!-- Checkbox and radio --> */}
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-            <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+            <div className="border-b border-[rgb(var(--c-border))] py-4 px-6.5">
               <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Checkbox and radio
               </h3>
@@ -187,8 +187,8 @@ const FormElements = () => {
           </div>
 
           {/* <!-- Select input --> */}
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-            <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+            <div className="border-b border-[rgb(var(--c-border))] py-4 px-6.5">
               <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Select input
               </h3>

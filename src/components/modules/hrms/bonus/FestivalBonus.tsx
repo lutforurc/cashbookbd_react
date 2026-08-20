@@ -330,7 +330,7 @@ const FestivalBonus = ({ user }: any) => {
               {filterOpen && (
                 <form
                   onSubmit={handleApplyFilters}
-                  className="absolute left-0 top-full z-30 mt-2 w-[min(320px,calc(100vw-2rem))] rounded-md border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-2xl dark:border-form-strokedark"
+                  className="absolute left-0 top-full z-30 mt-2 w-[min(320px,calc(100vw-2rem))] rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-2xl"
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <span className="text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">Filter Menu</span>
@@ -416,7 +416,7 @@ const FestivalBonus = ({ user }: any) => {
           </div>
         </div>
 
-        <div className="border border-slate-200 bg-[rgb(var(--c-surface))] dark:border-slate-700">
+        <div className="border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
           <Table columns={columns} data={tableData} perPage={10} />
         </div>
       </div>

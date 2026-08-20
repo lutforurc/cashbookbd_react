@@ -207,7 +207,7 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
   return (
     <div className="fixed inset-0 z-1001 flex items-center justify-center bg-black/50 px-3 py-6">
       <div className="w-full max-w-2xl rounded-sm bg-white shadow-xl dark:bg-gray-800">
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+        <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
           <div>
             <h3 className="text-base font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
               Add New {entityLabel}
@@ -303,11 +303,11 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
             )}
           </div>
         </div>
-        <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end dark:border-gray-700">
+        <div className="flex flex-col gap-2 border-t border-[rgb(var(--c-border))] px-4 py-3 sm:flex-row sm:justify-end">
           <Button
             type="button"
             onClick={handleClose}
-            className="rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="rounded-sm border border-[rgb(var(--c-border))] px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             Cancel
           </Button>

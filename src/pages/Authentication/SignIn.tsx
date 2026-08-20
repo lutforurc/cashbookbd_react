@@ -311,7 +311,7 @@ const SignIn: React.FC = () => {
               {/* The card sits on a page painted the same white/boxdark, so
                   without a stroke it had no edge at all -- the shadow alone
                   disappears in dark mode. */}
-              <div className="rounded-xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-default dark:border-strokedark">
+              <div className="rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-default">
                 <form onSubmit={handleLogin}>
                   <div className="mb-4">
                     <label className={`mb-2.5 block font-medium ${FIELD_LABEL}`}>

@@ -591,7 +591,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       <HelmetTitle title="Monthly Attendance Report" />
       {attendance.loading && <Loader />}
 
-      <div className="mb-3 border border-slate-200 bg-[rgb(var(--c-surface))] p-3 dark:border-slate-700">
+      <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
@@ -625,7 +625,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
 
       {/* Tabs */}
       <div className="mb-4 flex">
-        <div className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800/60">
+        <div className="inline-flex flex-wrap gap-1 rounded-xl border border-[rgb(var(--c-border))] bg-slate-100 p-1 dark:bg-slate-800/60">
           <Button
             type="button"
             onClick={() => setActiveTab('summary')}
@@ -653,8 +653,8 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         </div>
       </div>
 
-      <div className={`mb-3 border border-slate-200 bg-[rgb(var(--c-surface))] shadow-sm dark:border-slate-700 ${activeTab === 'summary' ? '' : 'hidden'}`}>
-        <div className="border-b border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
+      <div className={`mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm ${activeTab === 'summary' ? '' : 'hidden'}`}>
+        <div className="border-b border-[rgb(var(--c-border))] bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-100">
           Monthly Attendance Summary
         </div>
         <Table
@@ -668,7 +668,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         />
       </div>
 
-      <div className={`attendance-monthly-screen border border-slate-200 bg-[rgb(var(--c-surface))] shadow-sm dark:border-slate-700 ${activeTab === 'matrix' ? '' : 'hidden'}`}>
+      <div className={`attendance-monthly-screen border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm ${activeTab === 'matrix' ? '' : 'hidden'}`}>
         <PrintStyles />
         <style>
           {`
@@ -904,7 +904,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             }
           `}
         </style>
-        <div className="report-heading flex w-full items-center justify-center gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2.5 text-center text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
+        <div className="report-heading flex w-full items-center justify-center gap-3 border-b border-[rgb(var(--c-border))] bg-slate-50 px-3 py-2.5 text-center text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-100">
           <div>Attendance for the Month of <span>{monthNames[monthIndex]} {year}</span></div>
         </div>
         <Table
@@ -917,7 +917,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           tableClassName="text-sm"
         />
 
-        <div className="print-legend flex flex-wrap items-center border-t border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
+        <div className="print-legend flex flex-wrap items-center border-t border-[rgb(var(--c-border))] bg-slate-50 px-3 py-2.5 text-xs font-medium text-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
           <span className="legend-chip"><span className="legend-mark status-present">{statusGlyph('âœ“')}</span> Present</span>
           <span className="legend-chip"><span className="legend-mark status-late">{statusGlyph('!')}</span> Late</span>
           <span className="legend-chip"><span className="legend-mark status-weekly">W</span> Weekly holiday</span>

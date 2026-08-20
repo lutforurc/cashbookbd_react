@@ -208,7 +208,7 @@ const AddCoaL4 = () => {
     <div>
       <HelmetTitle title={isEditMode ? 'Edit Chart of Accounts (L-4)' : 'New Chart of Accounts (L-4)'} />
 
-      <div className="mx-auto max-w-4xl rounded-sm border border-gray-300  p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="mx-auto max-w-4xl rounded-sm border border-[rgb(var(--c-border))] p-4 shadow-sm dark:bg-gray-800">
         <h1 className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-100">
           {isEditMode ? 'Edit Chart of Accounts (L-4)' : 'New Chart of Accounts (L-4)'}
         </h1>

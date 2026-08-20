@@ -149,7 +149,7 @@ const GroupReportTable = ({ section, months }: { section: ReportSection; months:
               <th className="px-3 py-3 text-center font-semibold">{rightHeader}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+          <tbody className="divide-y divide-gray-200 bg-[rgb(var(--c-table-body))] dark:divide-gray-700">
             {rowEntries.map(([name, entries], index) => {
               let rowLeft = 0;
               let rowRight = 0;

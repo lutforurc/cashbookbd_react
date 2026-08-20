@@ -137,7 +137,7 @@ const Profile = () => {
     <>
       <Breadcrumb pageName="Profile" />
 
-      <div className="overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
+      <div className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
         <div className="relative z-20 h-35 md:h-65">
           {/* <img
             src={me.profile_photo || coverPreview}

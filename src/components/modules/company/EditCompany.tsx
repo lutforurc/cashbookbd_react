@@ -219,7 +219,7 @@ const EditCompany = () => {
 
         {/* Boxed off the way the product form boxes its opening stock: the two
             uploads belong together and neither is required to save. */}
-        <div className="mt-4 rounded border border-stroke p-3 dark:border-strokedark">
+        <div className="mt-4 rounded border border-[rgb(var(--c-border))] p-3">
           <h4 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Company Logo
           </h4>
@@ -239,9 +239,9 @@ const EditCompany = () => {
                 <img
                   src={logoPreview || undefined}
                   alt="Company logo"
-                  className={`h-[2.4rem] w-[4.2rem] shrink-0 rounded-sm border border-gray-300 bg-white object-contain p-0.5 dark:border-gray-600 ${
-                    logoPreview ? '' : 'hidden'
-                  }`}
+                  className={`h-[2.4rem] w-[4.2rem] shrink-0 rounded-sm border border-[rgb(var(--c-border))] bg-white object-contain p-0.5 ${
+ logoPreview ? '' : 'hidden'
+ }`}
                 />
                 <Input
                   id="company_logo"
@@ -264,9 +264,9 @@ const EditCompany = () => {
                 <img
                   src={logoDarkPreview || undefined}
                   alt="Company logo (dark mode)"
-                  className={`h-[2.4rem] w-[4.2rem] shrink-0 rounded-sm border border-gray-300 bg-slate-800 object-contain p-0.5 dark:border-gray-600 ${
-                    logoDarkPreview ? '' : 'hidden'
-                  }`}
+                  className={`h-[2.4rem] w-[4.2rem] shrink-0 rounded-sm border border-[rgb(var(--c-border))] bg-slate-800 object-contain p-0.5 ${
+ logoDarkPreview ? '' : 'hidden'
+ }`}
                 />
                 <Input
                   id="company_logo_dark"

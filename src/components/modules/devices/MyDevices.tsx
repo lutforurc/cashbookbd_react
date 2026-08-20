@@ -73,7 +73,7 @@ const MyDevices: React.FC = () => {
     <>
       <Breadcrumb pageName="My Devices" />
 
-      <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] px-5 pb-5 pt-6 shadow-default dark:border-strokedark">
+      <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-5 pb-5 pt-6 shadow-default">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Signed-in devices</h3>
@@ -87,7 +87,7 @@ const MyDevices: React.FC = () => {
           <Button
             type="button"
             onClick={() => fetchDevices()}
-            className="flex items-center gap-2 rounded border border-stroke px-3 py-2 text-sm hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
+            className="flex items-center gap-2 rounded border border-[rgb(var(--c-border))] px-3 py-2 text-sm hover:bg-gray-2 dark:hover:bg-meta-4"
           >
             <FiRefreshCw /> Refresh
           </Button>
@@ -102,7 +102,7 @@ const MyDevices: React.FC = () => {
             {devices.map((device) => (
               <li
                 key={device.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded border border-stroke px-4 py-3 dark:border-strokedark"
+                className="flex flex-wrap items-center justify-between gap-3 rounded border border-[rgb(var(--c-border))] px-4 py-3"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <FiMonitor className="shrink-0 text-[rgb(var(--c-text-muted))]" />

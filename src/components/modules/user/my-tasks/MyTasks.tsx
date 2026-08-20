@@ -594,8 +594,8 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg overflow-hidden rounded-lg border border-stroke bg-white text-slate-800 shadow-2xl dark:border-form-strokedark dark:bg-graydark dark:text-[rgb(var(--c-text))]">
-        <h3 className="border-b border-stroke px-5 py-3 text-lg font-semibold text-[rgb(var(--c-text))] dark:border-form-strokedark dark:text-[rgb(var(--c-text))]">
+      <div className="w-full max-w-lg overflow-hidden rounded-lg border border-[rgb(var(--c-border))] bg-white text-slate-800 shadow-2xl dark:bg-graydark dark:text-[rgb(var(--c-text))]">
+        <h3 className="border-b border-[rgb(var(--c-border))] px-5 py-3 text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           {isNew ? 'New Task' : 'Edit Task'}
         </h3>
 
@@ -658,10 +658,10 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
                   onClick={() => setColor(swatch)}
                   title="Use this colour"
                   className={`h-6 w-6 rounded-sm border transition-colors ${
-                    color === swatch
-                      ? 'border-primary ring-1 ring-primary'
-                      : 'border-stroke dark:border-strokedark'
-                  }`}
+ color === swatch
+ ? 'border-primary ring-1 ring-primary'
+ : 'border-[rgb(var(--c-border))] '
+ }`}
                   style={{ backgroundColor: swatch }}
                 />
               ))}
@@ -669,7 +669,7 @@ const TodoFormModal = ({ todo, saving, people, onCancel, onSave }: TodoFormModal
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-stroke px-5 py-4 dark:border-form-strokedark">
+        <div className="flex justify-end gap-3 border-t border-[rgb(var(--c-border))] px-5 py-4">
           <ButtonLoading
             onClick={onCancel}
             label="Cancel"
@@ -1067,7 +1067,7 @@ export default function MyTasks() {
                 onClick={() => setFilter(option.key)}
                 className={`flex items-center rounded-sm border px-3 text-xs font-medium transition-colors ${
  filter === option.key
- ?'border-primary bg-primary text-white':'border-stroke bg-[rgb(var(--c-surface))] text-[rgb(var(--c-text-muted))] hover:border-primary hover:text-primary dark:border-strokedark dark:text-[rgb(var(--c-text-muted))]'}`}
+ ?'border-primary bg-primary text-white':'border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] text-[rgb(var(--c-text-muted))] hover:border-primary hover:text-primary dark:text-[rgb(var(--c-text-muted))]'}`}
               >
                 {option.label}
               </Button>
@@ -1117,7 +1117,7 @@ export default function MyTasks() {
                 onClick={clearSearch}
                 label="Clear"
                 variant="ghost"
-                className="whitespace-nowrap border border-stroke dark:border-strokedark"
+                className="whitespace-nowrap border border-[rgb(var(--c-border))]"
                 icon={<FiX className="mr-2 text-base" />}
               />
             ) : null}
@@ -1158,7 +1158,7 @@ export default function MyTasks() {
             )}
 
             {isEmpty && (
-              <div className="rounded-sm border border-dashed border-stroke py-14 text-center dark:border-strokedark">
+              <div className="rounded-sm border border-dashed border-[rgb(var(--c-border))] py-14 text-center">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {searching
                     ? `No data found ${rangeLabel ? `for ${rangeLabel}` : 'for those dates'}.`

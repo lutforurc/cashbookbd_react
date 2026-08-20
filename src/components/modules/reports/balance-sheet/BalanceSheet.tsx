@@ -504,13 +504,13 @@ const BalanceSheet = (user: any) => {
         </div>
 
         {balanceSheetState?.loading && (
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-8 shadow-default dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-8 shadow-default">
             <Loader />
           </div>
         )}
 
         {!balanceSheetState?.loading && !hasReportData && (
-          <div className="rounded-sm border border-dashed border-slate-300 bg-[rgb(var(--c-surface))] px-6 py-12 text-center shadow-default dark:border-slate-700">
+          <div className="rounded-sm border border-dashed border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-6 py-12 text-center shadow-default">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               No balance sheet loaded yet
             </h3>
@@ -608,7 +608,7 @@ const BalanceSheet = (user: any) => {
               </div>
             </div>
 
-            <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-5 shadow-default dark:border-strokedark">
+            <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-5 shadow-default">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h4 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
@@ -892,14 +892,14 @@ const SectionCard = ({
   const visibleRows = rows.slice(0, Math.max(perPage, rows.length));
 
   return (
-    <div className="overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
+    <div className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
       <div className={`bg-linear-to-r ${accent} px-5 py-4 text-white`}>
         <h3 className="text-lg font-bold">{title}</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full">
           <thead>
-            <tr className="border-b border-stroke dark:border-strokedark">
+            <tr className="border-b border-[rgb(var(--c-border))]">
               <th className="px-5 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
                 Particulars
               </th>
@@ -919,7 +919,7 @@ const SectionCard = ({
               <tr
                 key={row.key}
                 onClick={() => onGroupClick(row.rawGroup)}
-                className="cursor-pointer border-b border-stroke bg-slate-50 transition hover:bg-slate-100 last:border-b-0 dark:border-strokedark dark:bg-slate-800/50 dark:hover:bg-slate-800"
+                className="cursor-pointer border-b border-[rgb(var(--c-border))] bg-slate-50 transition hover:bg-slate-100 last:border-b-0 dark:bg-slate-800/50 dark:hover:bg-slate-800"
               >
                 <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-100">
                   <div className="flex items-center justify-between gap-3">
@@ -942,7 +942,7 @@ const SectionCard = ({
             ))}
           </tbody>
           <tfoot>
-            <tr className="border-t-2 border-slate-300 dark:border-slate-600">
+            <tr className="border-t-2 border-[rgb(var(--c-border))]">
               <td className="px-5 py-4 font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {totalLabel}
               </td>
@@ -986,8 +986,8 @@ const GroupDetailsModal = ({
       }}
     >
       <div className="mx-auto flex min-h-full w-full max-w-5xl items-start justify-center">
-      <div className="my-2 flex max-h-[92vh] w-full flex-col overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-stroke bg-[rgb(var(--c-surface))] px-5 py-4 dark:border-strokedark">
+      <div className="my-2 flex max-h-[92vh] w-full flex-col overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-5 py-4">
           <div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
               {title}: {group.group_name || "Details"}
@@ -999,13 +999,13 @@ const GroupDetailsModal = ({
           <Button
             type="button"
             onClick={onClose}
-            className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="rounded-sm border border-[rgb(var(--c-border))] px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             Close
           </Button>
         </div>
 
-        <div className="shrink-0 border-b border-stroke bg-slate-50 px-5 py-4 dark:border-strokedark dark:bg-slate-900/40">
+        <div className="shrink-0 border-b border-[rgb(var(--c-border))] bg-slate-50 px-5 py-4 dark:bg-slate-900/40">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <ModalStat label="Opening" value={toNum(group.opening)} />
             <ModalStat label="Movement" value={toNum(group.movement)} />
@@ -1017,7 +1017,7 @@ const GroupDetailsModal = ({
         <div className="flex-1 overflow-y-auto px-5 pb-5">
           <table className="min-w-full">
             <thead>
-              <tr className="sticky top-0 z-20 border-b border-stroke bg-[rgb(var(--c-surface))] shadow-sm dark:border-strokedark">
+              <tr className="sticky top-0 z-20 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
                 <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
                   Particular
                 </th>
@@ -1037,7 +1037,7 @@ const GroupDetailsModal = ({
                 items.map((item, index) => (
                   <tr
                     key={`${item.coa4_id || index}-${item.name || "item"}`}
-                    className="border-b border-stroke last:border-b-0 dark:border-strokedark"
+                    className="border-b border-[rgb(var(--c-border))] last:border-b-0"
                   >
                     <td className="px-4 py-3 text-slate-800 dark:text-slate-100">
                       {item.name || "-"}
@@ -1081,7 +1081,7 @@ const ModalStat = ({
   value: number;
   isCount?: boolean;
 }) => (
-  <div className="rounded-sm border border-slate-200 bg-[rgb(var(--c-surface))] p-4 dark:border-slate-700">
+  <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
       {label}
     </p>

@@ -39,6 +39,11 @@ const PER_MODE_VARS: Array<[string, string]> = [
   ['card_color', '--c-surface'],
   // The band across the top of a table.
   ['table_header_color', '--c-table-head'],
+  // And the rows under it.
+  ['table_body_color', '--c-table-body'],
+  // The line around things -- cards, rules, table cells. Fields take the same
+  // colour through --c-border-strong, set alongside it below.
+  ['border_color', '--c-border'],
   ['sidebar_color', '--c-sidebar'],
   ['header_color', '--c-header'],
   ['page_bg_color', '--c-page'],
@@ -108,6 +113,11 @@ export const applyUserTheme = (theme?: UserTheme | null, dark?: boolean): void =
   PER_MODE_VARS.forEach(([name, variable]) => {
     setVar(variable, hexToChannels(theme?.[`theme_${name}${suffix}`]));
   });
+
+  // A field's edge is a step stronger than a card's, and shipped that way; but
+  // once a user names a border colour they mean all of them, so the strong step
+  // follows rather than staying grey beside their choice.
+  setVar('--c-border-strong', hexToChannels(theme?.[`theme_border_color${suffix}`]));
 
   applyChartPalette(theme?.[`theme_chart_palette${suffix}`]);
 

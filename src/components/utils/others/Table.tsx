@@ -132,7 +132,7 @@ const Table: React.FC<TableProps> = ({
           )}
         </thead>
 
-        <tbody className={`divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800 ${tbodyClassName || ""}`}>
+        <tbody className={`divide-y divide-gray-200 bg-[rgb(var(--c-table-body))] dark:divide-gray-700 ${tbodyClassName || ""}`}>
           {Array.isArray(visibleData) && visibleData.length > 0 ? (
             visibleData.map((row, rowIndex) => {
               const absoluteIndex = startIndex + rowIndex;
@@ -207,7 +207,7 @@ const Table: React.FC<TableProps> = ({
         </table>
       </div>
       {pageSize > 0 && totalRows > pageSize ? (
-        <div className="border-t border-gray-200 bg-white px-3 py-3 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+        <div className="border-t border-[rgb(var(--c-border))] bg-white px-3 py-3 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">
           {/* <span>
             Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, totalRows)} of {totalRows}
           </span> */}

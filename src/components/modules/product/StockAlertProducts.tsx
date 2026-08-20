@@ -514,9 +514,9 @@ const StockAlertProducts = ({ alertType }: Props) => {
             rows.map((row: any, index: number) => (
               <div
                 key={row?.id ?? row?.product_id ?? index}
-                className={`rounded-sm border bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800 ${
-                  isHighlighted(row) ? meta.highlightClass : 'border-gray-200'
-                }`}
+                className={`rounded-sm border bg-white p-3 shadow-sm dark:bg-gray-800 ${
+ isHighlighted(row) ? meta.highlightClass : 'border-[rgb(var(--c-border))]'
+ }`}
               >
                 <div className="mb-2 flex items-start justify-between gap-3">
                   <div>
@@ -596,7 +596,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
               </div>
             ))
           ) : (
-            <div className="rounded-sm border border-gray-200 bg-white px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+            <div className="rounded-sm border border-[rgb(var(--c-border))] bg-white px-4 py-8 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
               {meta.empty}
             </div>
           )}

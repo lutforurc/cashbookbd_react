@@ -135,7 +135,7 @@ const UserList = () => {
       render: (row: any) => {
         const roleName = getPrimaryRoleName(row);
         return roleName ? (
-          <span className="rounded border border-stroke px-2 py-0.5 text-xs dark:border-strokedark">
+          <span className="rounded border border-[rgb(var(--c-border))] px-2 py-0.5 text-xs">
             {roleName}
           </span>
         ) : (
@@ -448,7 +448,7 @@ const UserList = () => {
         const roleName = getPrimaryRoleName(row);
         if (!roleName) return <span>-</span>;
         return (
-          <span className="inline-flex items-center rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+          <span className="inline-flex items-center rounded-md border border-[rgb(var(--c-border))] bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-100">
             {roleName}
           </span>
         );
@@ -581,7 +581,7 @@ const UserList = () => {
                   </Button>
                 </div>
 
-                <div className="overflow-x-auto rounded border border-stroke dark:border-strokedark">
+                <div className="overflow-x-auto rounded border border-[rgb(var(--c-border))]">
                   <Table
                     columns={expandedColumns}
                     data={expandedUsers}

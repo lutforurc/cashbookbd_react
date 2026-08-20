@@ -71,6 +71,24 @@
      no theme could reach. */
   --c-table-head: var(--c-gray-300);
 
+  /* And the rows under it. Named apart from the surface a card is made of,
+     because a table sitting on a card is two surfaces and a reader tells
+     them apart by exactly this difference. */
+  --c-table-body: var(--c-white);
+
+  /* The line around things: a card, a field, a table cell, the rule under a
+     heading. 643 class lists drew it twice -- `border-stroke` for the light
+     screen and `dark:border-strokedark` for the dark one, or one of nine
+     other spellings of the same idea -- which left the theme able to
+     recolour a card but not its edge. */
+  --c-border: var(--c-stroke);
+
+  /* The same line, but around something you type in. A field wants a little
+     more presence than a card -- on a dark screen a box edged in the card
+     colour nearly disappears -- so it has its own step, and the user theme
+     moves both together when a border colour is chosen. */
+  --c-border-strong: var(--c-stroke);
+
   /* What words are written in.
      
      Its own variable because the token it used to borrow does double
@@ -452,6 +470,9 @@ html.dark {
   --c-page: var(--c-boxdark-2);
   --c-surface: var(--c-boxdark);
   --c-table-head: var(--c-gray-700);
+  --c-table-body: var(--c-gray-800);
+  --c-border: var(--c-strokedark);
+  --c-border-strong: var(--c-gray-600);
   --c-text: var(--c-white);
   --c-text-muted: var(--c-bodydark);
 

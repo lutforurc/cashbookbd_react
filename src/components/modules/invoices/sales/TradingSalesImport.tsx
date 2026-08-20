@@ -501,7 +501,7 @@ const TradingSalesImport = () => {
                   icon={<FiEdit2 className="" />}
                 />
               </div>
-              <div className="mb-3 overflow-x-auto rounded border border-stroke dark:border-form-strokedark">
+              <div className="mb-3 overflow-x-auto rounded border border-[rgb(var(--c-border))]">
                 <table className="w-full min-w-[900px] text-left text-sm">
                   <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-700 dark:text-gray-200">
                     <tr>
@@ -548,7 +548,7 @@ const TradingSalesImport = () => {
                     setPreview(null);
                   }}
                   placeholder="Paste Excel rows here"
-                  className="h-40 w-full rounded border border-stroke bg-white p-3 text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-[rgb(var(--c-text))]"
+                  className="h-40 w-full rounded border border-[rgb(var(--c-border))] bg-white p-3 text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:bg-form-input dark:text-[rgb(var(--c-text))]"
                 />
               )}
               <div className="mt-3 grid grid-cols-2 gap-2">
@@ -632,7 +632,7 @@ const TradingSalesImport = () => {
                   {preview?.rows.map((row, index) => (
                     <tr
                       key={`${row.product}-${index}`}
-                      className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
+                      className="border-b bg-[rgb(var(--c-table-body))] dark:border-gray-700"
                     >
                       <td className="px-2 py-2">{row.slNo || index + 1}</td>
                       <td className="px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">

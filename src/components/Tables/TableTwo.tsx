@@ -41,14 +41,14 @@ const productData: Product[] = [
 
 const TableTwo = () => {
   return (
-    <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
+    <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
       <div className="py-6 px-4 md:px-6 xl:px-7.5">
         <h4 className="text-xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           Top Products
         </h4>
       </div>
 
-      <div className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
+      <div className="grid grid-cols-6 border-t border-[rgb(var(--c-border))] py-4.5 px-4 sm:grid-cols-8 md:px-6 2xl:px-7.5">
         <div className="col-span-3 flex items-center">
           <p className="font-medium">Product Name</p>
         </div>
@@ -68,7 +68,7 @@ const TableTwo = () => {
 
       {productData.map((product, key) => (
         <div
-          className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
+          className="grid grid-cols-6 border-t border-[rgb(var(--c-border))] py-4.5 px-4 sm:grid-cols-8 md:px-6 2xl:px-7.5"
           key={key}
         >
           <div className="col-span-3 flex items-center">

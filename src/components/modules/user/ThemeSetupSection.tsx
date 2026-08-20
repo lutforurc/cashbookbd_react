@@ -132,7 +132,7 @@ const Group: React.FC<{ title: string; note: string; children: React.ReactNode }
   note,
   children,
 }) => (
-  <div className="mt-4 border-t border-gray-200 pt-4 first:mt-0 first:border-0 first:pt-0 dark:border-strokedark">
+  <div className="mt-4 border-t border-[rgb(var(--c-border))] pt-4 first:mt-0 first:border-0 first:pt-0">
     <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
       {title}
     </h4>
@@ -162,7 +162,7 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({
   );
 
   return (
-    <div className="md:col-span-2 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
+    <div className="md:col-span-2 rounded border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-transparent">
       <div className="mb-4">
         <h3 className="text-base font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
           Color and Theme Setup
@@ -190,7 +190,7 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({
             <Button
               type="button"
               variant="ghost"
-              className="border border-gray-300 px-4 text-xs dark:border-gray-600"
+              className="border border-[rgb(var(--c-border))] px-4 text-xs"
               onClick={() => onChangeMany(clearedThemeValues())}
             >
               Clear all
@@ -231,10 +231,14 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({
           'The bar across the top. Follows the sidebar unless set.')}
         {pair('page_bg_color', 'Page Background',
           'The paper the cards sit on.')}
+        {pair('border_color', 'Borders',
+          'The line around a card, a field, a table cell.')}
         {pair('card_color', 'Card / Panel',
           'The boxes the work sits in -- and the list a dropdown opens.')}
         {pair('table_header_color', 'Table Header',
           'The band across the top of a table.')}
+        {pair('table_body_color', 'Table Rows',
+          'The rows under the head.')}
       </Group>
 
       <Group

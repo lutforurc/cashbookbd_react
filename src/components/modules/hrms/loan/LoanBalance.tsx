@@ -271,7 +271,7 @@ const LoanBalance = (user: any) => {
           </div>
           <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="rounded-xs border border-stroke px-3 py-1.5 text-sm font-semibold text-[rgb(var(--c-text))] dark:border-strokedark dark:text-[rgb(var(--c-text))]">
+              <div className="rounded-xs border border-[rgb(var(--c-border))] px-3 py-1.5 text-sm font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Total Balance: {thousandSeparator(grandTotalBalance)}
               </div>
             </div>

@@ -225,7 +225,7 @@ const Roles = () => {
       </div>
 
       <div className="text-sm mt-6">
-        <div className="mb-4 flex items-center justify-between border-b pb-2 border-gray-300 dark:border-gray-700">
+        <div className="mb-4 flex items-center justify-between border-b pb-2 border-[rgb(var(--c-border))]">
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
             Permissions
           </h2>
@@ -268,7 +268,7 @@ const Roles = () => {
               key={group}
               className="mb-5 p-4 rounded-xl border shadow-sm bg-white dark:bg-gray-800 dark:border-gray-600"
             >
-              <div className="flex items-center justify-between mb-3 border-b pb-2 border-gray-300 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-3 border-b pb-2 border-[rgb(var(--c-border))]">
                 <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">
                   {group}
                 </h3>

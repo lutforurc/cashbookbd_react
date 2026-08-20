@@ -48,7 +48,7 @@ const FilterMenuShell = ({
 
         {isOpen && (
           <div
-            className={`absolute left-0 top-full z-1000 mt-2 rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800 ${menuWidthClassName}`}
+            className={`absolute left-0 top-full z-1000 mt-2 rounded-md border border-[rgb(var(--c-border))] bg-white p-4 shadow-2xl dark:bg-slate-800 ${menuWidthClassName}`}
           >
             <div className="space-y-3">{children}</div>
           </div>

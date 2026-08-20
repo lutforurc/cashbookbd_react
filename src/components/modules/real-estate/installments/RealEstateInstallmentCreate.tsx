@@ -688,29 +688,29 @@ export default function RealEstateInstallmentCreate() {
           <div className="rounded border border-gray-300 bg-white p-3 dark:bg-gray-800 lg:col-span-5">
             <h3 className="mb-2 text-sm font-semibold">Sale Summary</h3>
             <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-              <div className="rounded border border-gray-200 p-2 dark:border-gray-700">
+              <div className="rounded border border-[rgb(var(--c-border))] p-2">
                 <div className="text-xs text-gray-500">Customer</div>
                 <div className="font-medium">{summaryLoading ? 'Loading...' : summary?.customer?.name || '-'}</div>
                 <div className="text-xs text-gray-500">{summary?.customer?.mobile || '-'}</div>
               </div>
-              <div className="rounded border border-gray-200 p-2 dark:border-gray-700">
+              <div className="rounded border border-[rgb(var(--c-border))] p-2">
                 <div className="text-xs text-gray-500">Unit</div>
                 <div className="font-medium">{summary?.booking?.unit_label || '-'}</div>
                 <div className="text-xs text-gray-500">{summary?.booking?.parking_label || '-'}</div>
               </div>
-              <div className="rounded border border-gray-200 p-2 text-right dark:border-gray-700">
+              <div className="rounded border border-[rgb(var(--c-border))] p-2 text-right">
                 <div className="text-xs text-gray-500">Total Sale</div>
                 <div className="font-semibold">{formatAmount(totalAmount)}</div>
               </div>
-              <div className="rounded border border-gray-200 p-2 text-right dark:border-gray-700">
+              <div className="rounded border border-[rgb(var(--c-border))] p-2 text-right">
                 <div className="text-xs text-gray-500">Booking Money</div>
                 <div className="font-semibold">{formatAmount(bookingAmount)}</div>
               </div>
-              <div className="rounded border border-gray-200 p-2 text-right dark:border-gray-700">
+              <div className="rounded border border-[rgb(var(--c-border))] p-2 text-right">
                 <div className="text-xs text-gray-500">Down Payment</div>
                 <div className="font-semibold">{formatAmount(downPaymentAmount)}</div>
               </div>
-              <div className="rounded border border-gray-200 p-2 text-right dark:border-gray-700">
+              <div className="rounded border border-[rgb(var(--c-border))] p-2 text-right">
                 <div className="text-xs text-gray-500">Installment Base</div>
                 <div className="font-semibold">{formatAmount(scheduleBaseAmount)}</div>
               </div>
@@ -838,7 +838,7 @@ export default function RealEstateInstallmentCreate() {
                 </tr>
               ) : previewRows.length > 0 ? (
                 previewRows.map((row) => (
-                  <tr key={`${row.installment_no}-${row.due_date}`} className="border-t border-gray-200 dark:border-gray-700">
+                  <tr key={`${row.installment_no}-${row.due_date}`} className="border-t border-[rgb(var(--c-border))]">
                     <td className="p-2 text-center">{row.installment_no}</td>
                     <td className="p-2">{row.due_date}</td>
                     <td className="p-2 text-right">{formatAmount(row.amount)}</td>
@@ -856,7 +856,7 @@ export default function RealEstateInstallmentCreate() {
                   const isFirstRow = index === 0;
 
                   return (
-                    <tr key={`${rowKey}-${row.due_date}`} className="border-t border-gray-200 dark:border-gray-700">
+                    <tr key={`${rowKey}-${row.due_date}`} className="border-t border-[rgb(var(--c-border))]">
                       <td className="p-2 text-center">{row.installment_no}</td>
                       <td className="p-2">
                         {isEditing ? (

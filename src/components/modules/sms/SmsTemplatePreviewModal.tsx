@@ -27,15 +27,15 @@ const SmsTemplatePreviewModal: React.FC<SmsTemplatePreviewModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark"
+        className="w-full max-w-3xl rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-stroke px-5 py-4 dark:border-strokedark">
+        <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-5 py-4">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">{title}</h3>
           <Button
             type="button"
             onClick={onClose}
-            className="rounded-sm border border-slate-300 p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
+            className="rounded-sm border border-[rgb(var(--c-border))] p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
           >
             <FiX className="h-4 w-4" />
           </Button>
@@ -43,7 +43,7 @@ const SmsTemplatePreviewModal: React.FC<SmsTemplatePreviewModalProps> = ({
 
         <div className="space-y-4 px-5 py-5">
           {loading ? (
-            <div className="rounded-sm border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            <div className="rounded-sm border border-dashed border-[rgb(var(--c-border))] bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-300">
               Preview loading...
             </div>
           ) : error ? (
@@ -52,7 +52,7 @@ const SmsTemplatePreviewModal: React.FC<SmsTemplatePreviewModalProps> = ({
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+              <div className="rounded-2xl border border-[rgb(var(--c-border))] bg-slate-50 p-4 dark:bg-slate-800">
                 <div className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                   Rendered Message
                 </div>

@@ -297,7 +297,7 @@ const allPayments = paymentList.map((pay: any) => ({
           sideways on a screen with room to spare. */}
       <div className="mx-auto w-full max-w-(--breakpoint-2xl) space-y-4 px-3 py-4 sm:space-y-5 sm:px-6 sm:py-6">
         {/* ===== Hero header ===== */}
-        <div className="rounded-lg border border-gray-200 bg-[rgb(var(--c-surface))] p-4 shadow-sm dark:border-strokedark sm:p-6">
+        <div className="rounded-lg border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-sm sm:p-6">
           {/* Wraps rather than truncates on a phone: the address is the line
               that used to be cut, and it is the one worth reading. */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -345,7 +345,7 @@ const allPayments = paymentList.map((pay: any) => ({
                 onClick={() => setColorMode(isDark ? 'light' : 'dark')}
                 title="Toggle theme"
                 aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-                className="flex w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-100 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-strokedark"
+                className="flex w-9 items-center justify-center rounded-full border border-[rgb(var(--c-border))] text-gray-600 transition-colors hover:bg-gray-100 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-strokedark"
               >
                 {isDark ? <FaSun /> : <FaMoon />}
               </Button>
@@ -366,7 +366,7 @@ const allPayments = paymentList.map((pay: any) => ({
             wider on a large screen and set larger, with the other two reading as
             the workings behind it. */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-          <div className="rounded-lg border border-gray-200 bg-[rgb(var(--c-surface))] p-4 shadow-sm dark:border-strokedark">
+          <div className="rounded-lg border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-sm">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm text-gray-500 dark:text-[rgb(var(--c-text-muted))]">Total Received</span>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
@@ -376,7 +376,7 @@ const allPayments = paymentList.map((pay: any) => ({
             <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-[rgb(var(--c-text))]">৳ {money(totalDebit)}</p>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-[rgb(var(--c-surface))] p-4 shadow-sm dark:border-strokedark">
+          <div className="rounded-lg border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-sm">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm text-gray-500 dark:text-[rgb(var(--c-text-muted))]">Total Payment</span>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
@@ -390,7 +390,7 @@ const allPayments = paymentList.map((pay: any) => ({
             className={`rounded-lg border bg-[rgb(var(--c-surface))] p-4 shadow-sm sm:col-span-2 ${
  balance > 0
  ? 'border-rose-200 dark:border-rose-900/60'
- : 'border-gray-200 dark:border-strokedark'
+ : 'border-[rgb(var(--c-border))] '
  }`}
           >
             <div className="flex items-center justify-between gap-2">
@@ -423,13 +423,13 @@ const allPayments = paymentList.map((pay: any) => ({
         </div>
 
         {/* Tabs */}
-        <div className="rounded-lg border border-gray-200 bg-[rgb(var(--c-surface))] shadow-sm dark:border-strokedark">
+        <div className="rounded-lg border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
           {/* The row scrolls on a phone rather than wrapping into two rows that
               push the content down. */}
           <nav
             role="tablist"
             aria-label="Account sections"
-            className="flex gap-1 overflow-x-auto border-b border-gray-200 px-2 dark:border-strokedark sm:gap-2 sm:px-3"
+            className="flex gap-1 overflow-x-auto border-b border-[rgb(var(--c-border))] px-2 sm:gap-2 sm:px-3"
           >
             {[
               { key: 'overview', label: 'Overview', icon: <FiGrid /> },
@@ -492,10 +492,10 @@ const allPayments = paymentList.map((pay: any) => ({
                         <div
                           key={s.label}
                           className={`flex items-center gap-3 rounded-md border p-3 ${
-                            raised
-                              ? 'border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-900/10'
-                              : 'border-gray-100 bg-gray-50 dark:border-strokedark dark:bg-gray-700/40'
-                          }`}
+ raised
+ ? 'border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-900/10'
+ : 'border-[rgb(var(--c-border))] bg-gray-50 dark:bg-gray-700/40'
+ }`}
                         >
                           <span
                             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg ${s.ring} ${s.tone}`}
@@ -521,7 +521,7 @@ const allPayments = paymentList.map((pay: any) => ({
                 {/* These two read as links, so now they behave as them. Text
                     painted link-blue that does nothing when tapped is a small
                     lie the page was telling. */}
-                <div className="rounded-md border border-dashed border-gray-200 p-4 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
+                <div className="rounded-md border border-dashed border-[rgb(var(--c-border))] p-4 text-center text-sm text-gray-500 dark:text-gray-400">
                   Use the{' '}
                   <Button
                     type="button"

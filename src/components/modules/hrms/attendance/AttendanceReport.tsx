@@ -425,7 +425,7 @@ const AttendanceReport = ({
       <HelmetTitle title={reportTitle} />
       {(attendance.loading || employeeState.loading) && <Loader />}
 
-      <div className="mb-3 border border-slate-200 bg-[rgb(var(--c-surface))] p-3 dark:border-slate-700">
+      <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
       <div className="grid grid-cols-1 gap-2 md:grid-cols-6">
         <InputDatePicker
           id="date_from"
@@ -471,7 +471,7 @@ const AttendanceReport = ({
         {cards.map((card) => {
           const tone = cardTone(card.label);
           return (
-            <div key={card.label} className="relative overflow-hidden border border-slate-200 bg-[rgb(var(--c-surface))] p-3 pl-4 dark:border-slate-700">
+            <div key={card.label} className="relative overflow-hidden border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3 pl-4">
               <span className={`absolute inset-y-0 left-0 w-1 ${tone.bar}`} />
               <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-300">
                 <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
@@ -492,7 +492,7 @@ const AttendanceReport = ({
               }}
               onBlur={() => setOvertimeRowsPerPage(String(Math.max(1, Number(overtimeRowsPerPage) || 12)))}
               title="Rows per page for print"
-              className="w-20 border border-stroke bg-[rgb(var(--c-surface))] px-3 text-center text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:border-strokedark dark:text-[rgb(var(--c-text))]"
+              className="w-20 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-center text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:text-[rgb(var(--c-text))]"
             />
             <Input
               type="text"
@@ -503,7 +503,7 @@ const AttendanceReport = ({
               }}
               onBlur={() => setOvertimePrintFontSize(String(Math.max(6, Number(overtimePrintFontSize) || 12)))}
               title="Font Size for print"
-              className="w-20 border border-stroke bg-[rgb(var(--c-surface))] px-3 text-center text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:border-strokedark dark:text-[rgb(var(--c-text))]"
+              className="w-20 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-center text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:text-[rgb(var(--c-text))]"
             />
             <PrintButton
               label="Print"
@@ -538,7 +538,7 @@ const AttendanceReport = ({
           </div>
         </>
       ) : (
-        <div className="border border-slate-200 bg-[rgb(var(--c-surface))] dark:border-slate-700">
+        <div className="border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
           <Table columns={columns} data={displayRows} />
         </div>
       )}

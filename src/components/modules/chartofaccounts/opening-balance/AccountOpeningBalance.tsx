@@ -315,7 +315,7 @@ const AccountOpeningBalance = () => {
     return (
       <>
         <HelmetTitle title="Account Opening Balance" />
-        <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-6 text-center text-slate-600 shadow-default dark:border-strokedark dark:text-slate-300">
+        <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 text-center text-slate-600 shadow-default dark:text-slate-300">
           Opening balances are switched off for this branch. Turn them on in the
           branch settings to record what cash and the bank accounts started with.
         </div>
@@ -327,8 +327,8 @@ const AccountOpeningBalance = () => {
     <>
       <HelmetTitle title="Account Opening Balance" />
 
-      <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stroke px-4 py-4 dark:border-strokedark">
+      <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[rgb(var(--c-border))] px-4 py-4">
           <div>
             <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Account Opening Balance
@@ -392,7 +392,7 @@ const AccountOpeningBalance = () => {
               </div>
             ))}
 
-            <div className="flex justify-end border-t border-stroke pt-3 text-sm font-semibold text-slate-800 dark:border-strokedark dark:text-slate-100">
+            <div className="flex justify-end border-t border-[rgb(var(--c-border))] pt-3 text-sm font-semibold text-slate-800 dark:text-slate-100">
               Total opening&nbsp;<span className="font-mono">{money(totalOpening)}</span>
             </div>
           </div>

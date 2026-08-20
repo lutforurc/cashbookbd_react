@@ -12,7 +12,7 @@ import { Input } from '../../components/utils/fields/FormControls';
 const SignUp: React.FC = () => {
   return (
     <>
-      <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
+      <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
         <div className="flex flex-wrap items-center">
           <div className="hidden w-full xl:block xl:w-1/2">
             <div className="py-17.5 px-26 text-center">
@@ -150,7 +150,7 @@ const SignUp: React.FC = () => {
             </div>
           </div>
 
-          <div className="w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
+          <div className="w-full border-[rgb(var(--c-border))] xl:w-1/2 xl:border-l-2">
             <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
               <span className="mb-1.5 block font-medium">Start for free</span>
               <h2 className="mb-9 text-2xl font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] sm:text-title-xl2">
@@ -302,7 +302,7 @@ const SignUp: React.FC = () => {
                   />
                 </div>
 
-                <Button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-gray/50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-gray/50">
+                <Button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-[rgb(var(--c-border))] bg-gray p-4 hover:bg-gray/50 dark:bg-meta-4 dark:hover:bg-gray/50">
                   <span>
                     <svg
                       width="20"

@@ -968,14 +968,14 @@ const LedgerWithProduct = (user: any) => {
             {useFilterMenuEnabled ? (
               <div className="ml-auto flex items-end gap-2">
                 {partyLabel ? (
-                  <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                  <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-[rgb(var(--c-border))] bg-white px-3 text-sm font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-100">
                     <span className="truncate" title={partyLabel}>
                       {partyLabel}
                     </span>
                   </div>
                 ) : null}
                 {selectedProductOption?.label ? (
-                  <div className="flex h-10 min-w-[180px] max-w-[280px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                  <div className="flex h-10 min-w-[180px] max-w-[280px] items-center rounded border border-[rgb(var(--c-border))] bg-white px-3 text-sm font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-100">
                     <span
                       className="truncate"
                       title={selectedProductOption.label}
@@ -1093,13 +1093,13 @@ const LedgerWithProduct = (user: any) => {
         </div>
 
         {statementState?.loading ? (
-          <div className="rounded-sm border border-slate-200 bg-white p-8 shadow-default dark:border-slate-700 dark:bg-[rgb(var(--c-boxdark))]">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-white p-8 shadow-default dark:bg-[rgb(var(--c-boxdark))]">
             <Loader />
           </div>
         ) : null}
 
         {!statementState?.loading && !hasLoaded ? (
-          <div className="rounded-sm border border-slate-200 bg-white px-6 py-12 text-center shadow-default dark:border-slate-700 dark:bg-[rgb(var(--c-boxdark))]">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-white px-6 py-12 text-center shadow-default dark:bg-[rgb(var(--c-boxdark))]">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               No statement loaded yet
             </h3>
@@ -1111,7 +1111,7 @@ const LedgerWithProduct = (user: any) => {
         ) : null}
 
         {!statementState?.loading && hasLoaded ? (
-          <div className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-default dark:border-slate-700 dark:bg-[rgb(var(--c-boxdark))]">
+          <div className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-white shadow-default dark:bg-[rgb(var(--c-boxdark))]">
             <Table
               columns={columns}
               data={rows}

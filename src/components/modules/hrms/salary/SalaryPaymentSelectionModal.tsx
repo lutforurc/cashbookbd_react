@@ -156,8 +156,8 @@ const SalaryPaymentSelectionModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/55 px-4 py-6 backdrop-blur-[2px] md:px-6 md:py-8">
-      <div className="h-full w-full max-w-6xl overflow-y-auto border border-slate-200 bg-slate-50 p-5 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-        <div className="mb-4 flex items-start justify-between gap-4  border border-slate-200 bg-white/95 px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/95">
+      <div className="h-full w-full max-w-6xl overflow-y-auto border border-[rgb(var(--c-border))] bg-slate-50 p-5 shadow-2xl dark:bg-slate-900">
+        <div className="mb-4 flex items-start justify-between gap-4 border border-[rgb(var(--c-border))] bg-white/95 px-5 py-4 shadow-sm dark:bg-slate-800/95">
           <div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
               Salary Payment
@@ -186,7 +186,7 @@ const SalaryPaymentSelectionModal = ({
           </div>
         </div>
 
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border border-[rgb(var(--c-border))] bg-white px-4 py-3 shadow-sm dark:bg-slate-800">
           <Checkbox
             id="salary_select_all"
             name="salary_select_all"
@@ -214,7 +214,7 @@ const SalaryPaymentSelectionModal = ({
           </div>
         )}
 
-        <div className="overflow-x-auto border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="overflow-x-auto border border-[rgb(var(--c-border))] bg-white shadow-sm dark:bg-slate-800">
           <table className="min-w-full text-sm">
             <thead className="bg-[rgb(var(--c-table-head))] text-slate-700 dark:text-slate-100">
               <tr>
@@ -237,7 +237,7 @@ const SalaryPaymentSelectionModal = ({
                 return (
                   <tr
                     key={row.id}
-                    className="border-t border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700/40"
+                    className="border-t border-[rgb(var(--c-border))] text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700/40"
                   >
                     <td className="px-3 py-2 align-top item-center ">
                       <Checkbox
@@ -291,7 +291,7 @@ const SalaryPaymentSelectionModal = ({
                         type="number"
                         inputMode="decimal"
                         disabled={dueAmount <= 0}
-                        className="ml-auto w-32 border-slate-300 bg-white text-right dark:border-slate-600 dark:bg-slate-900"
+                        className="ml-auto w-32 border-[rgb(var(--c-border))] bg-white text-right dark:bg-slate-900"
                       />
                     </td>
                   </tr>
@@ -301,7 +301,7 @@ const SalaryPaymentSelectionModal = ({
           </table>
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-3 border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="mt-4 flex items-center justify-between gap-3 border border-[rgb(var(--c-border))] bg-white px-4 py-3 shadow-sm dark:bg-slate-800">
           <div className="text-sm text-slate-600 dark:text-slate-300">
             Select specific employees using the tick mark, or use ‘Select All Payable’.
           </div>

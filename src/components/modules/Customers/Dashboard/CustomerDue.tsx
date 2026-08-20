@@ -113,7 +113,7 @@ const CustomerDue: React.FC = () => {
           </thead>
           <tbody>
             {dues.map((d, i) => (
-              <tr key={i} className="border-b border-gray-100 dark:border-strokedark text-gray-700 dark:text-gray-300">
+              <tr key={i} className="border-b border-[rgb(var(--c-border))] text-gray-700 dark:text-gray-300">
                 <td className="p-2">{d.invoice_no}</td>
                 <td className="p-2 text-center">{d.installment_no}</td>
                 <td className="p-2">{d.due_date}</td>

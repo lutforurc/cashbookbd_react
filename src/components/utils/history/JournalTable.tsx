@@ -7,7 +7,7 @@ const JournalTable = ({ details, coaNameMap, tableKey }) => {
   return (
     <table
       key={tableKey}
-      className="w-full text-sm border mb-3 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+      className="w-full text-sm border mb-3 border-[rgb(var(--c-border))] bg-white dark:bg-gray-900"
     >
       <thead className="bg-[rgb(var(--c-table-head))]">
         <tr>

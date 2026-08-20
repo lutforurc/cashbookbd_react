@@ -322,7 +322,7 @@ const ResellerAdmin: React.FC = () => {
     <div className="space-y-4">
       <HelmetTitle title="Reseller Admin" />
 
-      <section className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-5 shadow-default dark:border-strokedark">
+      <section className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-5 shadow-default">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Reseller Admin</h1>
@@ -351,7 +351,7 @@ const ResellerAdmin: React.FC = () => {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[420px_1fr]">
-        <section className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-5 shadow-default dark:border-strokedark">
+        <section className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-5 shadow-default">
           <h2 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             {form.id ? 'Edit Reseller' : 'New Reseller'}
           </h2>
@@ -415,7 +415,7 @@ const ResellerAdmin: React.FC = () => {
                 <Button
                   type="button"
                   onClick={resetForm}
-                  className="rounded-sm border border-stroke px-4 text-sm text-slate-600 hover:bg-gray-2 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
+                  className="rounded-sm border border-[rgb(var(--c-border))] px-4 text-sm text-slate-600 hover:bg-gray-2 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
                 >
                   Cancel
                 </Button>
@@ -424,8 +424,8 @@ const ResellerAdmin: React.FC = () => {
           </form>
         </section>
 
-        <section className="overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-          <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
+        <section className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+          <div className="border-b border-[rgb(var(--c-border))] px-5 py-4">
             <h2 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Reseller List</h2>
           </div>
           <Table
@@ -438,7 +438,7 @@ const ResellerAdmin: React.FC = () => {
         </section>
       </div>
 
-      <section className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-5 shadow-default dark:border-strokedark">
+      <section className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-5 shadow-default">
         <h2 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Assign Company</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
           <SelectField
@@ -472,7 +472,7 @@ const ResellerAdmin: React.FC = () => {
         </div>
       </section>
 
-      <section className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-5 shadow-default dark:border-strokedark">
+      <section className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-5 shadow-default">
         <h2 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Pay Reseller Commission</h2>
         <form onSubmit={handlePayCommission} className="mt-4 grid gap-3 xl:grid-cols-4">
           <SelectField
@@ -548,7 +548,7 @@ const ResellerAdmin: React.FC = () => {
             {...tableClassNames}
           />
           {(commissionLedgerPagination?.last_page || 1) > 1 ? (
-            <div className="border-t border-gray-200 bg-[rgb(var(--c-surface))] px-3 py-3 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-300">
+            <div className="border-t border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-3 text-sm text-gray-600 dark:text-gray-300">
               {/* <span>
                 Showing {(((commissionLedgerPagination?.current_page || 1) - 1) * (commissionLedgerPagination?.per_page || 10)) + 1}
                 -{Math.min((commissionLedgerPagination?.current_page || 1) * (commissionLedgerPagination?.per_page || 10), commissionLedgerPagination?.total || 0)}
@@ -583,7 +583,7 @@ const paymentMethodLabel = (method?: string | null) => {
 const formatDate = (value?: string | null) => (value ? new Date(value).toLocaleDateString('en-GB') : '-');
 
 const StatCard = ({ label, value }: { label: string; value: number | string }) => (
-  <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-5 shadow-default dark:border-strokedark">
+  <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-5 shadow-default">
     <p className="text-sm font-medium text-slate-500 dark:text-bodydark2">{label}</p>
     <p className="mt-2 text-title-sm font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">{value}</p>
   </div>
@@ -618,8 +618,8 @@ const SelectField = ({ label, options, ...props }: any) => (
 );
 
 const TableSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <section className="overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-    <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
+  <section className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+    <div className="border-b border-[rgb(var(--c-border))] px-5 py-4">
       <h2 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">{title}</h2>
     </div>
     {children}

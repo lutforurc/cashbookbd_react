@@ -240,7 +240,7 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
 		          <div className="overtime-pad">
 		            <PadPrinting />
 		          </div>
-		          <div className="report-heading flex w-full items-center justify-center gap-3 border-b border-gray-200 px-3 py-2 text-center text-sm font-medium text-slate-800 dark:border-gray-700 dark:text-slate-100">
+		          <div className="report-heading flex w-full items-center justify-center gap-3 border-b border-[rgb(var(--c-border))] px-3 py-2 text-center text-sm font-medium text-slate-800 dark:text-slate-100">
 		            <div>{title}</div>
 		          </div>
 		          {renderTable(pageRows, pageIndex, pageIndex === pages.length - 1)}

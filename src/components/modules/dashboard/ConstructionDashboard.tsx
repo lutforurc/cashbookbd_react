@@ -348,7 +348,7 @@ const ConstructionDashboard = () => {
               className={`group relative flex min-w-0 flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700 ${dashboardCardHeightClass}`}
               style={{ order: widgetOrder('summary') }}
             >
-              <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+              <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] bg-white px-4 py-3 dark:bg-gray-800">
                 <span className="truncate text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   {dashboard?.data &&
                     !dashboard.isLoading &&
@@ -457,11 +457,11 @@ const ConstructionDashboard = () => {
 
             {!dashboard.errors && isWidgetVisible('top-purchase') && dashboard?.data?.topProductsPurchase?.length > 0 && (
               <div
-                className="relative flex min-w-0 flex-col overflow-hidden border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-[rgb(var(--c-gray-800))]"
+                className="relative flex min-w-0 flex-col overflow-hidden border border-[rgb(var(--c-border))] bg-white shadow-sm dark:bg-[rgb(var(--c-gray-800))]"
                 style={{ order: widgetOrder('top-purchase') }}
               >
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3.5 dark:border-slate-600">
+                <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3.5">
                   <span className="truncate text-base font-bold tracking-wide text-slate-700 dark:text-slate-100">
                     Top Purchase
                   </span>
@@ -514,7 +514,7 @@ const ConstructionDashboard = () => {
             style={{ order: widgetOrder('receive-details') }}
           >
             <div className="flex h-full w-full min-w-0 flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700">
-              <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+              <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] bg-white px-4 py-3 dark:bg-gray-800">
                 <span className="min-w-0 flex-1 truncate pr-2 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   {!dashboard.isLoading && dashboard?.data?.transactionText}
                 </span>
@@ -540,7 +540,7 @@ const ConstructionDashboard = () => {
 
                   return (
                     <div
-                      className="border-b border-slate-100 last:border-b-0 dark:border-gray-700"
+                      className="border-b border-[rgb(var(--c-border))] last:border-b-0"
                       key={branchKey}
                     >
                       <Button
@@ -579,7 +579,7 @@ const ConstructionDashboard = () => {
 
                             return (
                               <div
-                                className={`flex items-center gap-3 border-t border-slate-100 transition hover:bg-sky-50/50 dark:border-gray-700 dark:hover:bg-gray-700/40 ${receiveDetailsRowClass}`}
+                                className={`flex items-center gap-3 border-t border-[rgb(var(--c-border))] transition hover:bg-sky-50/50 dark:hover:bg-gray-700/40 ${receiveDetailsRowClass}`}
                                 key={`${branchKey}-${itemKey}-${index}`}
                               >
                                 <div className="w-6 shrink-0 text-center text-xs font-semibold tabular-nums text-slate-500 dark:text-slate-300">
@@ -639,7 +639,7 @@ const ConstructionDashboard = () => {
                 className={`flex min-w-0 flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700 ${dashboardCardHeightClass}`}
                 style={{ order: widgetOrder('receive-details') }}
               >
-                <div className="border-b border-slate-200 px-4 py-3 text-sm font-bold tracking-wide text-slate-700 dark:border-gray-700 dark:text-slate-100">
+                <div className="border-b border-[rgb(var(--c-border))] px-4 py-3 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   Received Details
                 </div>
                 <div className="flex flex-1 flex-col items-center justify-center px-6 text-center text-slate-400">
@@ -688,7 +688,7 @@ const ConstructionDashboard = () => {
                 className="min-w-0 animate-pulse overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700"
                 key={cardIndex}
               >
-                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3.5 dark:border-gray-700">
+                <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3.5">
                   <div className="h-4 w-32 rounded bg-slate-200 dark:bg-gray-700" />
                   <div className="h-7 w-20 rounded-full bg-slate-100 dark:bg-gray-700" />
                 </div>

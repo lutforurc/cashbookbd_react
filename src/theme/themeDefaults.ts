@@ -41,6 +41,13 @@ export const THEME_DEFAULTS: Record<string, ThemeDefault> = {
   // The band across the top of a table.
   table_header_color: { light: '#CBD3DE', dark: '#2F3844' },
 
+  // The rows under the head.
+  table_body_color: { light: '#FFFFFF', dark: '#212932' },
+
+  // The line around things. A field's own edge is a step stronger and follows
+  // this when it is set -- see userTheme.
+  border_color: { light: '#E1E7EE', dark: '#2F3844' },
+
   sidebar_color: { light: '#FFFFFF', dark: '#212932' },
   header_color: { light: '#FFFFFF', dark: '#212932' },
   page_bg_color: { light: '#F4F7FA', dark: '#171D25' },

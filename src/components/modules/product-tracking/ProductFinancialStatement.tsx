@@ -229,7 +229,7 @@ const ProductFinancialStatement = () => {
 
       {/* ------------------ report ------------------ */}
       {data ? (
-        <div ref={printRef} className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-4 dark:border-strokedark">
+        <div ref={printRef} className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
           <div className="mb-3 text-center">
             <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Product Financial Statement</h2>
             <p className="text-sm">
@@ -256,23 +256,23 @@ const ProductFinancialStatement = () => {
           </p>
 
           <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="rounded-sm border border-stroke p-3 text-sm dark:border-strokedark">
+            <div className="rounded-sm border border-[rgb(var(--c-border))] p-3 text-sm">
               <h3 className="mb-2 font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Receivable (Sales)</h3>
               {cell('Opening Receivable', s!.opening_receivable)}
               {cell('Sales Bill', s!.sales_bill)}
               {cell('Sales Return', -s!.sales_return)}
               {cell('Cash Received', -s!.cash_received)}
-              <hr className="my-1 border-stroke dark:border-strokedark" />
+              <hr className="my-1 border-[rgb(var(--c-border))]" />
               {cell('Closing Receivable', s!.closing_receivable, true)}
             </div>
 
-            <div className="rounded-sm border border-stroke p-3 text-sm dark:border-strokedark">
+            <div className="rounded-sm border border-[rgb(var(--c-border))] p-3 text-sm">
               <h3 className="mb-2 font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Payable (Purchase)</h3>
               {cell('Opening Payable', s!.opening_payable)}
               {cell('Purchase Bill', s!.purchase_bill)}
               {cell('Purchase Return', -s!.purchase_return)}
               {cell('Cash Payment', -s!.cash_payment)}
-              <hr className="my-1 border-stroke dark:border-strokedark" />
+              <hr className="my-1 border-[rgb(var(--c-border))]" />
               {cell('Closing Payable', s!.closing_payable, true)}
             </div>
           </div>
@@ -307,7 +307,7 @@ const ProductFinancialStatement = () => {
                 {data.rows.map((row: StatementRow, index: number) => (
                   <tr
                     key={`${row.main_trx_id}-${row.line_type}-${index}`}
-                    className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
+                    className="border-b bg-[rgb(var(--c-table-body))] dark:border-gray-700"
                   >
                     <td className="whitespace-nowrap px-2 py-1">{row.vr_date}</td>
                     <td className="whitespace-nowrap px-2 py-1">{row.vr_no}</td>

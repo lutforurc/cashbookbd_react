@@ -747,13 +747,13 @@ const TrialBalanceLevel3 = (user: any) => {
         </div>
 
         {trialBalanceState?.loading && (
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
             <Loader />
           </div>
         )}
 
         {!trialBalanceState?.loading && !hasReportData && (
-          <div className="rounded-sm border border-dashed border-slate-300 bg-[rgb(var(--c-surface))] px-6 py-12 text-center shadow-default dark:border-slate-700">
+          <div className="rounded-sm border border-dashed border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-6 py-12 text-center shadow-default">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               No trial balance loaded yet
             </h3>
@@ -942,8 +942,8 @@ const TrialBalanceLevel3 = (user: any) => {
             </div>
             )}
 
-            <div className="overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-              <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
+            <div className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+              <div className="border-b border-[rgb(var(--c-border))] px-5 py-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
@@ -976,8 +976,8 @@ const TrialBalanceLevel3 = (user: any) => {
 	                />
 
                   {expandedL3Id && (
-                    <div className="rounded-sm border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/30">
-                      <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-slate-700">
+                    <div className="rounded-sm border border-[rgb(var(--c-border))] bg-slate-50 dark:bg-slate-900/30">
+                      <div className="flex flex-col gap-2 border-b border-[rgb(var(--c-border))] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <h4 className="font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                             {selectedLevel3Row?.name || "COA L3"} Details
@@ -1018,7 +1018,7 @@ const TrialBalanceLevel3 = (user: any) => {
                                 <th className="w-32 px-3 py-3 text-right">Closing Cr</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-gray-800">
+                            <tbody className="divide-y divide-slate-200 bg-[rgb(var(--c-table-body))] dark:divide-slate-700">
                               {selectedLevel4Rows.map((row, index) => (
                                 <tr key={row.key}>
                                   <td className="px-3 py-2 text-center">{index + 1}</td>

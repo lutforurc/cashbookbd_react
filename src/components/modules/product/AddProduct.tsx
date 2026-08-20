@@ -476,7 +476,7 @@ console.log('====================================');
       {/* Only while creating: an existing product's opening is corrected from
           the list, where the stock it already carries is in view. */}
       {isOpeningEnabled && !id && (
-        <div className="mt-4 rounded border border-stroke p-3 dark:border-strokedark">
+        <div className="mt-4 rounded border border-[rgb(var(--c-border))] p-3">
           <h4 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Opening Stock
           </h4>

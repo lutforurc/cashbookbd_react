@@ -740,11 +740,11 @@ const HeadOfficeCashReceived = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <tbody className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
               {tableData.map((row) => (
                 <tr
                   key={row.id}
-                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                  className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700"
                 >
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] `}
@@ -792,7 +792,7 @@ const HeadOfficeCashReceived = () => {
                   </td>
                 </tr>
               ))}
-              <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+              <tr className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
                 <td
                   className={`px-2 py-2 font-bold text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] `}
                   colSpan={3}

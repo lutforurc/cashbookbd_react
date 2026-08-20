@@ -12,8 +12,8 @@ const Settings = () => {
 
         <div className="grid grid-cols-5 gap-8">
           <div className="col-span-5 xl:col-span-3">
-            <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-              <div className="border-b border-stroke py-4 px-7 dark:border-strokedark">
+            <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+              <div className="border-b border-[rgb(var(--c-border))] py-4 px-7">
                 <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Personal Information
                 </h3>
@@ -196,7 +196,7 @@ const Settings = () => {
 
                   <div className="flex justify-end gap-4.5">
                     <Button
-                      className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-[rgb(var(--c-text))] hover:shadow-1 dark:border-strokedark dark:text-[rgb(var(--c-text))]"
+                      className="flex justify-center rounded border border-[rgb(var(--c-border))] py-2 px-6 font-medium text-[rgb(var(--c-text))] hover:shadow-1 dark:text-[rgb(var(--c-text))]"
                       type="submit"
                     >
                       Cancel
@@ -214,8 +214,8 @@ const Settings = () => {
             </div>
           </div>
           <div className="col-span-5 xl:col-span-2">
-            <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-              <div className="border-b border-stroke py-4 px-7 dark:border-strokedark">
+            <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+              <div className="border-b border-[rgb(var(--c-border))] py-4 px-7">
                 <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Your Photo
                 </h3>
@@ -251,7 +251,7 @@ const Settings = () => {
                       className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
                     />
                     <div className="flex flex-col items-center justify-center space-y-3">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full border border-stroke bg-[rgb(var(--c-surface))] dark:border-strokedark">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
                         <svg
                           width="16"
                           height="16"
@@ -290,7 +290,7 @@ const Settings = () => {
 
                   <div className="flex justify-end gap-4.5">
                     <Button
-                      className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-[rgb(var(--c-text))] hover:shadow-1 dark:border-strokedark dark:text-[rgb(var(--c-text))]"
+                      className="flex justify-center rounded border border-[rgb(var(--c-border))] py-2 px-6 font-medium text-[rgb(var(--c-text))] hover:shadow-1 dark:text-[rgb(var(--c-text))]"
                       type="submit"
                     >
                       Cancel

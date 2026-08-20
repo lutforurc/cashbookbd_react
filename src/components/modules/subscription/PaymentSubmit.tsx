@@ -184,7 +184,7 @@ const PaymentSubmit: React.FC = () => {
     <div>
       <HelmetTitle title="Submit Payment" />
 
-      <div className="mb-4 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
+      <div className="mb-4 rounded border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-transparent">
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
             Subscription Payment Submit
@@ -195,7 +195,7 @@ const PaymentSubmit: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="rounded border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-transparent">
+          <div className="rounded border border-[rgb(var(--c-border))] bg-gray-50 p-3 dark:bg-transparent">
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
               Payment Process
             </p>
@@ -203,7 +203,7 @@ const PaymentSubmit: React.FC = () => {
               Select plan, enter transaction details, and submit for admin approval.
             </p>
           </div>
-          <div className="rounded border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-transparent">
+          <div className="rounded border border-[rgb(var(--c-border))] bg-gray-50 p-3 dark:bg-transparent">
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
               Accepted Methods
             </p>
@@ -211,7 +211,7 @@ const PaymentSubmit: React.FC = () => {
               bKash, Nagad, Bank Transfer, or Cash reference.
             </p>
           </div>
-          <div className="rounded border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-transparent">
+          <div className="rounded border border-[rgb(var(--c-border))] bg-gray-50 p-3 dark:bg-transparent">
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
               Status
             </p>
@@ -224,7 +224,7 @@ const PaymentSubmit: React.FC = () => {
 
       <form
         onSubmit={handleSubmit}
-        className="rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent"
+        className="rounded border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-transparent"
       >
         <div className="mb-4">
           <h3 className="text-base font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">

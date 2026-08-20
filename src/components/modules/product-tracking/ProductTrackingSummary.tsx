@@ -241,7 +241,7 @@ const ProductTrackingSummary = () => {
       {data ? (
         <div
           ref={printRef}
-          className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-4 dark:border-strokedark"
+          className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4"
         >
           <div className="mb-3 text-center">
             <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
@@ -299,7 +299,7 @@ const ProductTrackingSummary = () => {
                 {data.rows.map((row) => (
                   <tr
                     key={row.product_id}
-                    className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
+                    className="border-b bg-[rgb(var(--c-table-body))] dark:border-gray-700"
                   >
                     <td className="whitespace-nowrap px-2 py-1 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       <Link to={statementLink(row.product_id)} className="hover:underline">

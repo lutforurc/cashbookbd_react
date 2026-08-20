@@ -68,8 +68,8 @@ const InlineConfirm = ({
         }
       }}
     >
-      <div className="relative rounded-md border border-gray-300 bg-white px-4 py-3 shadow-md dark:border-gray-700 dark:bg-gray-800">
-        <div className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-800"></div>
+      <div className="relative rounded-md border border-[rgb(var(--c-border))] bg-white px-4 py-3 shadow-md dark:bg-gray-800">
+        <div className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-[rgb(var(--c-border))] bg-white dark:bg-gray-800"></div>
         <p className="mb-3 whitespace-nowrap text-center text-sm text-black-900 dark:text-gray-200">
           {question}
         </p>

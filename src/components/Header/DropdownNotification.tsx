@@ -220,7 +220,7 @@ const DropdownNotification = () => {
         <Button
           type="button"
           onClick={() => setDropdownOpen((current) => !current)}
-          className="relative flex w-8.5 items-center justify-center rounded-full border border-stroke bg-gray text-slate-600 transition hover:border-primary hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-[rgb(var(--c-text))]"
+          className="relative flex w-8.5 items-center justify-center rounded-full border border-[rgb(var(--c-border))] bg-gray text-slate-600 transition hover:border-primary hover:text-primary dark:bg-meta-4 dark:text-[rgb(var(--c-text))]"
           aria-label="Notification center"
         >
           <FiBell className="text-lg" />
@@ -232,8 +232,8 @@ const DropdownNotification = () => {
         </Button>
 
         {dropdownOpen ? (
-          <div className="absolute -right-20 mt-2.5 flex w-80 flex-col overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark sm:right-0 sm:w-96">
-            <div className="flex items-center justify-between border-b border-stroke px-4 py-3 dark:border-strokedark">
+          <div className="absolute -right-20 mt-2.5 flex w-80 flex-col overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default sm:right-0 sm:w-96">
+            <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
               <div>
                 <h5 className="text-sm font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   Notification Center
@@ -245,7 +245,7 @@ const DropdownNotification = () => {
               <Button
                 type="button"
                 onClick={loadNotifications}
-                className="flex w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
+                className="flex w-8 items-center justify-center rounded-sm border border-[rgb(var(--c-border))] text-slate-500 transition hover:border-primary hover:text-primary dark:text-slate-300"
                 aria-label="Refresh notifications"
               >
                 <FiRefreshCw className={loading ? 'animate-spin' : ''} />
@@ -260,7 +260,7 @@ const DropdownNotification = () => {
               ) : items.length > 0 ? (
                 items.map((item) => (
                   <li key={item.id}>
-                    <div className="relative border-b border-stroke transition hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4">
+                    <div className="relative border-b border-[rgb(var(--c-border))] transition hover:bg-gray-2 dark:hover:bg-meta-4">
                       <Link
                         className="flex items-start gap-3 px-4 py-3 pr-11"
                         to={item.to}

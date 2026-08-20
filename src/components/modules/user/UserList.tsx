@@ -263,7 +263,7 @@ const UserList = () => {
         const roleName = getPrimaryRoleName(row);
         if (!roleName) return <span>-</span>;
         return (
-          <span className="inline-flex items-center rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+          <span className="inline-flex items-center rounded-md border border-[rgb(var(--c-border))] bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-100">
             {roleName}
           </span>
         );

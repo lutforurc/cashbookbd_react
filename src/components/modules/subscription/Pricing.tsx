@@ -24,7 +24,7 @@ const Pricing: React.FC = () => {
     <div className="space-y-6">
       <HelmetTitle title="Subscription Pricing" />
 
-      <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
+      <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           Subscription Plans
         </h1>
@@ -38,7 +38,7 @@ const Pricing: React.FC = () => {
         {plans.map((plan: any) => (
           <div
             key={plan.id}
-            className="flex h-full flex-col rounded-sm border border-slate-200 bg-[rgb(var(--c-surface))] p-6 shadow-lg shadow-slate-200/60 dark:border-strokedark dark:shadow-none"
+            className="flex h-full flex-col rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-lg shadow-slate-200/60 dark:shadow-none"
           >
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-xl font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
@@ -58,7 +58,7 @@ const Pricing: React.FC = () => {
               </p>
             </div>
 
-            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/20">
+            <div className="mt-5 rounded-2xl border border-[rgb(var(--c-border))] bg-slate-50/80 p-4 dark:bg-slate-900/20">
               <ul className="space-y-3 text-sm text-slate-700 dark:text-bodydark2">
                 <li className="flex items-start justify-between gap-4">
                   <span className="font-medium text-slate-500 dark:text-slate-300">Employees</span>
@@ -110,7 +110,7 @@ const Pricing: React.FC = () => {
             </p>
 
             {getEnabledFeatures(plan).length > 0 && (
-              <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-transparent">
+              <div className="mt-5 rounded-2xl border border-[rgb(var(--c-border))] bg-white p-4 dark:bg-transparent">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-300">
                   Included Features
                 </p>
@@ -148,7 +148,7 @@ const Pricing: React.FC = () => {
       </div>
 
       {!loadingPlans && plans.length === 0 && (
-        <div className="rounded-xl border border-dashed border-stroke p-8 text-center text-sm text-bodydark2 dark:border-strokedark">
+        <div className="rounded-xl border border-dashed border-[rgb(var(--c-border))] p-8 text-center text-sm text-bodydark2">
           No plans found yet. Connect the subscription API to show live pricing.
         </div>
       )}

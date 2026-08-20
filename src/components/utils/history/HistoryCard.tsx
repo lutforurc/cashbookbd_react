@@ -36,7 +36,7 @@ const HistoryCard = ({ item, coaNameMap }) => {
   const newPurchase = newData?.purchase_master;
 
   return (
-    <div className="border rounded-lg p-4 mb-4 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+    <div className="border rounded-lg p-4 mb-4 bg-white dark:bg-gray-900 border-[rgb(var(--c-border))]">
       {/* History Header with title, action by user, and created date */}
       <HistoryHeader
         title={title}

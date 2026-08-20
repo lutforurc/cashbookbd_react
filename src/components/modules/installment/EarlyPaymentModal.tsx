@@ -52,10 +52,10 @@ const SummaryRow = ({
 }) => (
   <div
     className={`flex items-center justify-between gap-3 rounded-sm border px-3 py-2 ${
-      highlight
-        ? 'border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-100'
-        : 'border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200'
-    }`}
+ highlight
+ ? 'border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-100'
+ : 'border-[rgb(var(--c-border))] bg-gray-50 text-gray-700 dark:bg-gray-900 dark:text-gray-200'
+ }`}
   >
     <span className="text-sm font-medium">{label}</span>
     <span className="text-sm font-semibold">{value}</span>
@@ -81,7 +81,7 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
 
         {summary ? (
           <div className="space-y-3">
-            <div className="rounded-sm border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900">
+            <div className="rounded-sm border border-[rgb(var(--c-border))] bg-gray-50 p-3 dark:bg-gray-900">
               <div className="text-sm">
                 <span className="font-medium">Invoice:</span> {summary.invoiceNo || '-'}
               </div>

@@ -717,8 +717,8 @@ const ProductProfitLoss = (user: any) => {
         </div>
 
         <div className="mt-2">
-          <div className="grid grid-cols-2 gap-3 border-b border-slate-200 pb-3 sm:grid-cols-2 xl:grid-cols-4 dark:border-strokedark">
-            <div className="rounded border border-slate-200 bg-[rgb(var(--c-surface))] px-3 py-3 shadow-sm dark:border-strokedark">
+          <div className="grid grid-cols-2 gap-3 border-b border-[rgb(var(--c-border))] pb-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-3 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
                 Qty.
               </p>
@@ -727,7 +727,7 @@ const ProductProfitLoss = (user: any) => {
               </p>
             </div>
 
-            <div className="rounded border border-slate-200 bg-[rgb(var(--c-surface))] px-3 py-3 shadow-sm dark:border-strokedark">
+            <div className="rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-3 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
                 Purchase
               </p>
@@ -736,7 +736,7 @@ const ProductProfitLoss = (user: any) => {
               </p>
             </div>
 
-            <div className="rounded border border-slate-200 bg-[rgb(var(--c-surface))] px-3 py-3 shadow-sm dark:border-strokedark">
+            <div className="rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-3 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
                 Sales
               </p>

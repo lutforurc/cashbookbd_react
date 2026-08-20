@@ -281,7 +281,7 @@ const ClosingStockReport = ({ user }: any) => {
               <th className="w-[150px] px-3 py-3 text-right font-semibold">Total (Tk.)</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+          <tbody className="divide-y divide-gray-200 bg-[rgb(var(--c-table-body))] dark:divide-gray-700">
             {groups.length ? (
               groups.map((group) => (
                 <Fragment key={group.brand}>

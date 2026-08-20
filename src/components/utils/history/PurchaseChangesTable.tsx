@@ -10,7 +10,7 @@ const PurchaseChangesTable = ({ summary }) => {
         Purchase Summary Changes
       </h4>
 
-      <table className="w-full text-sm border mb-4 border-gray-200 dark:border-gray-700">
+      <table className="w-full text-sm border mb-4 border-[rgb(var(--c-border))]">
         <thead className="bg-[rgb(var(--c-table-head))]">
           <tr>
             <th className="border px-2 py-1 dark:border-gray-700">Field</th>

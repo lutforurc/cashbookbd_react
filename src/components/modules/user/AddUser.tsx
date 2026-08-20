@@ -56,6 +56,10 @@ const initialFormData = {
   theme_card_color_dark: '',
   theme_table_header_color_light: '',
   theme_table_header_color_dark: '',
+  theme_border_color_light: '',
+  theme_border_color_dark: '',
+  theme_table_body_color_light: '',
+  theme_table_body_color_dark: '',
   theme_sidebar_color_light: '',
   theme_sidebar_color_dark: '',
   theme_header_color_light: '',
@@ -303,7 +307,7 @@ const AddUser = () => {
  onChange={handleOnChange}
         />
 
-        <div className="md:col-span-2 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
+        <div className="md:col-span-2 rounded border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-transparent">
           <div className="mb-4">
             <h3 className="text-base font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
               User Features

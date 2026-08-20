@@ -982,7 +982,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       <HelmetTitle title="Salary Generate" />
 
       {/* ===== Top Bar ===== */}
-      <div className="mb-3 border border-slate-200 bg-[rgb(var(--c-surface))] p-3 dark:border-slate-700">
+      <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
       <div className="flex flex-wrap justify-between items-center gap-2">
         <div className="max-w-280 flex ">
           <BranchDropdown
@@ -1062,7 +1062,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       {loading && <Loader />}
 
       {/* ===== TABLE ===== */}
-      <div className="border border-slate-200 bg-[rgb(var(--c-surface))] dark:border-slate-700">
+      <div className="border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
       <Table
         columns={columns}
         data={searched ? employees : []}
@@ -1092,7 +1092,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       />
 
       {/* ===== FOOTER ===== */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 p-3 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
         <div>
           Total Employees: <span className="font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">{employees.length}</span>
         </div>

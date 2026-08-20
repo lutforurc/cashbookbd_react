@@ -41,7 +41,7 @@ const MapOne = () => {
   });
 
   return (
-    <div className="col-span-12 rounded-sm border border-stroke bg-[rgb(var(--c-surface))] py-6 px-7.5 shadow-default dark:border-strokedark xl:col-span-7">
+    <div className="col-span-12 rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] py-6 px-7.5 shadow-default xl:col-span-7">
       <h4 className="mb-2 text-xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
         Region labels
       </h4>

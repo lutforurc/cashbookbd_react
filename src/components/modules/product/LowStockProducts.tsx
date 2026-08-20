@@ -378,9 +378,9 @@ const LowStockProducts = () => {
               return (
                 <div
                   key={row?.id ?? row?.product_id ?? index}
-                  className={`rounded-sm border bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800 ${
-                    isOut ? 'border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/30' : 'border-gray-200'
-                  }`}
+                  className={`rounded-sm border bg-white p-3 shadow-sm dark:bg-gray-800 ${
+ isOut ? 'border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/30' : 'border-[rgb(var(--c-border))]'
+ }`}
                 >
                   <div className="mb-2 flex items-start justify-between gap-3">
                     <div>
@@ -434,7 +434,7 @@ const LowStockProducts = () => {
               );
             })
           ) : (
-            <div className="rounded-sm border border-gray-200 bg-white px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+            <div className="rounded-sm border border-[rgb(var(--c-border))] bg-white px-4 py-8 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
               No low stock product found
             </div>
           )}

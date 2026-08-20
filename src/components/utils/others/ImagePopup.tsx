@@ -99,7 +99,7 @@ const ImagePopup = ({
               target={openPdfInNewTab ? '_blank' : undefined}
               rel={openPdfInNewTab ? 'noopener noreferrer' : undefined}
               data-pdf="true"
-              className="inline-flex h-6 items-center rounded border border-slate-200 bg-white px-2 text-xs font-medium text-primary shadow-sm transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary dark:border-slate-600 dark:bg-slate-800 dark:text-blue-300 dark:shadow-none dark:hover:border-blue-400/50 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+              className="inline-flex h-6 items-center rounded border border-[rgb(var(--c-border))] bg-white px-2 text-xs font-medium text-primary shadow-sm transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary dark:bg-slate-800 dark:text-blue-300 dark:shadow-none dark:hover:border-blue-400/50 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
             >
               Doc {index + 1}
             </a>
@@ -149,7 +149,7 @@ const ImagePopup = ({
                 src={`${imageUrl}/thumbnail/${img}`}
                 alt={`Voucher ${index + 1}`}
                 width={30}
-                className="h-8 w-8 rounded-sm border border-slate-200 bg-white object-cover p-0.5 shadow-sm transition hover:border-primary/50 hover:shadow-md dark:border-slate-600 dark:bg-slate-800 dark:shadow-none dark:hover:border-blue-400/60"
+                className="h-8 w-8 rounded-sm border border-[rgb(var(--c-border))] bg-white object-cover p-0.5 shadow-sm transition hover:border-primary/50 hover:shadow-md dark:bg-slate-800 dark:shadow-none dark:hover:border-blue-400/60"
               />
             </a>
             {onRemoveImage && (

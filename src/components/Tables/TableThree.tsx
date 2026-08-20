@@ -30,7 +30,7 @@ const packageData: Package[] = [
 
 const TableThree = () => {
   return (
-    <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark sm:px-7.5 xl:pb-1">
+    <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-5 pt-6 pb-2.5 shadow-default sm:px-7.5 xl:pb-1">
       <div className="max-w-full overflow-x-auto">
         <table className="w-full table-auto">
           <thead>

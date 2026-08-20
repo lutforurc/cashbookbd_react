@@ -137,7 +137,7 @@ const SubscriptionAdmin: React.FC = () => {
     <div className="space-y-6">
       <HelmetTitle title="Subscription Admin" />
 
-      <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
+      <div className="rounded-2xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-sm">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Subscription Admin</h1>
@@ -164,7 +164,7 @@ const SubscriptionAdmin: React.FC = () => {
         <StatCard label="Trialing" value={adminOverview?.trial_subscriptions ?? 0} />
       </div>
 
-      <section className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
+      <section className="rounded-2xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Assign Subscription</h2>
         <p className="mt-2 text-sm text-bodydark2">
           Payment ছাড়া direct plan assign বা renew করতে এখানে company এবং plan select করুন।
@@ -311,8 +311,8 @@ const SubscriptionAdmin: React.FC = () => {
       </section>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <section className="overflow-hidden rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] shadow-sm dark:border-strokedark">
-          <div className="border-b border-stroke px-6 py-4 dark:border-strokedark">
+        <section className="overflow-hidden rounded-2xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
+          <div className="border-b border-[rgb(var(--c-border))] px-6 py-4">
             <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Subscriptions</h2>
           </div>
 
@@ -331,7 +331,7 @@ const SubscriptionAdmin: React.FC = () => {
                 {adminTenants.map((tenant: any) => (
                   <tr
                     key={tenant.id}
-                    className="border-t border-gray-200 text-sm text-gray-800 dark:border-gray-700 dark:text-[rgb(var(--c-text))]"
+                    className="border-t border-[rgb(var(--c-border))] text-sm text-gray-800 dark:text-[rgb(var(--c-text))]"
                   >
                     <td className="px-4 py-3">{tenant.company_name || '-'}</td>
                     <td className="px-4 py-3">{tenant.plan_name || '-'}</td>
@@ -353,8 +353,8 @@ const SubscriptionAdmin: React.FC = () => {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] shadow-sm dark:border-strokedark">
-          <div className="border-b border-stroke px-6 py-4 dark:border-strokedark">
+        <section className="overflow-hidden rounded-2xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
+          <div className="border-b border-[rgb(var(--c-border))] px-6 py-4">
             <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Payment Requests</h2>
           </div>
 
@@ -362,7 +362,7 @@ const SubscriptionAdmin: React.FC = () => {
             {adminPayments.map((payment: any) => (
               <div
                 key={payment.id}
-                className="rounded border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/30"
+                className="rounded border border-[rgb(var(--c-border))] bg-gray-50 p-4 dark:bg-gray-900/30"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -416,7 +416,7 @@ const SubscriptionAdmin: React.FC = () => {
             ))}
 
             {adminPayments.length === 0 && (
-              <div className="rounded border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700">
+              <div className="rounded border border-dashed border-[rgb(var(--c-border))] p-6 text-center text-sm text-gray-500">
                 No payment requests found.
               </div>
             )}
@@ -428,7 +428,7 @@ const SubscriptionAdmin: React.FC = () => {
 };
 
 const StatCard = ({ label, value }: { label: string; value: number }) => (
-  <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
+  <div className="rounded-2xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-sm">
     <p className="text-sm text-bodydark2">{label}</p>
     <p className="mt-2 text-2xl font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">{value}</p>
   </div>

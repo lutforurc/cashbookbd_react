@@ -740,7 +740,7 @@ const OrderWithProduct = ({
                       <BranchDropdown
                         id="branch_id"
                         onChange={(e: any) => setBranchId(e?.target?.value ?? '')}
-                        className="h-10 w-full border-stroke bg-white font-medium text-sm dark:border-form-strokedark dark:bg-boxdark-2"
+                        className="h-10 w-full border-[rgb(var(--c-border))] bg-white font-medium text-sm dark:bg-boxdark-2"
                         branchDdl={dropdownData}
                         defaultValue={String(branchId || '')}
                         value={String(branchId || '')}
@@ -791,7 +791,7 @@ const OrderWithProduct = ({
                           onChange={() => {}}
                           placeholder="Select Order"
                           label=""
-                          className="border-stroke bg-white dark:border-form-strokedark dark:bg-boxdark-2"
+                          className="border-[rgb(var(--c-border))] bg-white dark:bg-boxdark-2"
                           disabled
                         />
                       )}
@@ -839,7 +839,7 @@ const OrderWithProduct = ({
                     onChange={(e) => setPerPage(Number(e.target.value) || 12)}
                     placeholder="Rows"
                     label=""
-                    className="w-full! border-stroke bg-[rgb(var(--c-surface))] text-center dark:border-form-strokedark"
+                    className="w-full! border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] text-center"
                   />
                 </div>
 
@@ -855,7 +855,7 @@ const OrderWithProduct = ({
                     onChange={(e) => setFontSize(Number(e.target.value) || 12)}
                     placeholder="Font"
                     label=""
-                    className="w-full! border-stroke bg-[rgb(var(--c-surface))] text-center dark:border-form-strokedark"
+                    className="w-full! border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] text-center"
                   />
                 </div>
               </div>

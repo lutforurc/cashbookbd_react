@@ -125,9 +125,9 @@ const DropdownUser = () => {
       {/* <!-- Dropdown Start --> */}
       {dropdownOpen && (
         <div
-          className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark`}
+          className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default`}
         >
-          <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
+          <ul className="flex flex-col gap-5 border-b border-[rgb(var(--c-border))] px-6 py-7.5">
             <li>
               <Link
                 to={routes.dashboard}

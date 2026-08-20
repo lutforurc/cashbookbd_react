@@ -504,7 +504,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               setSidebarCollapsed((current) => !current);
               setOpenMenu(null);
             }}
-            className={`hidden w-9 items-center justify-center rounded-sm border border-stroke bg-[rgb(var(--c-surface))] text-slate-600 shadow-sm transition hover:bg-gray-100 hover:text-slate-900 dark:border-strokedark dark:text-slate-300 dark:hover:bg-meta-4 lg:flex ${sidebarCollapsed ?'lg: lg:w-8 lg:flex-none':''}`}
+            className={`hidden w-9 items-center justify-center rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] text-slate-600 shadow-sm transition hover:bg-gray-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-meta-4 lg:flex ${sidebarCollapsed ?'lg: lg:w-8 lg:flex-none':''}`}
             title={sidebarCollapsed ? 'Show menu labels' : 'Show icons only'}
             aria-label={sidebarCollapsed ? 'Show menu labels' : 'Show icons only'}
           >

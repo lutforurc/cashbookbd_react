@@ -137,7 +137,7 @@ const HighlightRules = () => {
       <HelmetTitle title="Highlight Rules" />
 
       {/* Form */}
-      <div className="mb-6 rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-default dark:border-strokedark sm:p-6">
+      <div className="mb-6 rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-default sm:p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             {isEditing ? 'Edit Highlight Rule' : 'Add Highlight Rule'}
@@ -146,7 +146,7 @@ const HighlightRules = () => {
             <Button
               type="button"
               onClick={resetForm}
-              className="inline-flex items-center gap-1 rounded-sm border border-stroke px-3 py-1 text-sm text-slate-600 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
+              className="inline-flex items-center gap-1 rounded-sm border border-[rgb(var(--c-border))] px-3 py-1 text-sm text-slate-600 transition hover:border-primary hover:text-primary dark:text-slate-300"
             >
               <FiX /> Cancel
             </Button>
@@ -238,7 +238,7 @@ const HighlightRules = () => {
               }
               rows={2}
               placeholder="Optional note about this rule"
-              className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-[rgb(var(--c-text))] outline-none focus:border-blue-500 dark:border-form-strokedark dark:bg-transparent dark:text-[rgb(var(--c-text))]"
+              className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-white px-3 py-2 text-sm text-[rgb(var(--c-text))] outline-none focus:border-blue-500 dark:bg-transparent dark:text-[rgb(var(--c-text))]"
             />
           </div>
         </div>
@@ -255,15 +255,15 @@ const HighlightRules = () => {
       </div>
 
       {/* List */}
-      <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-        <div className="flex items-center justify-between border-b border-stroke px-4 py-3 dark:border-strokedark">
+      <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+        <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
           <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             Highlight Rules
           </h2>
           <Button
             type="button"
             onClick={loadList}
-            className="flex w-8 items-center justify-center rounded-sm border border-stroke text-slate-500 transition hover:border-primary hover:text-primary dark:border-strokedark dark:text-slate-300"
+            className="flex w-8 items-center justify-center rounded-sm border border-[rgb(var(--c-border))] text-slate-500 transition hover:border-primary hover:text-primary dark:text-slate-300"
             aria-label="Refresh list"
           >
             <FiRefreshCw className={loadingList ? 'animate-spin' : ''} />

@@ -73,7 +73,7 @@ const DeviceLimitNotice: React.FC<Props> = ({ block, loginId, password, onReleas
         {block.devices.map((device) => (
           <li
             key={device.id}
-            className="flex items-center justify-between gap-3 rounded border border-stroke bg-[rgb(var(--c-surface))] px-3 py-2 dark:border-strokedark"
+            className="flex items-center justify-between gap-3 rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-2"
           >
             <div className="flex min-w-0 items-center gap-2">
               <FiMonitor className="shrink-0 text-[rgb(var(--c-text-muted))]" />

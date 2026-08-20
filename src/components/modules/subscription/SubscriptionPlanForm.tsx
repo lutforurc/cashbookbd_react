@@ -257,7 +257,7 @@ const SubscriptionPlanForm: React.FC = () => {
     <div className="space-y-4">
       <HelmetTitle title={isEdit ? 'Update Subscription Plan' : 'Entry Subscription Plan'} />
 
-      <div className="rounded border border-gray-400 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="rounded border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-gray-800">
         <h1 className="text-lg font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
           {isEdit ? 'Update Subscription Plan' : 'New Subscription Plan'}
         </h1>
@@ -268,7 +268,7 @@ const SubscriptionPlanForm: React.FC = () => {
 
       <form
         onSubmit={handleSubmit}
-        className="rounded border border-gray-400 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+        className="rounded border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-gray-800"
       >
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           <InputElement id="name" name="name" label="Plan Name" value={form.name} onChange={handleChange as any} />
@@ -428,7 +428,7 @@ const SubscriptionPlanForm: React.FC = () => {
               {FEATURE_DEFINITIONS.map((feature) => (
                 <label
                   key={feature.feature_key}
-                  className="flex items-center justify-between gap-3 rounded border border-gray-300 px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:text-[rgb(var(--c-text))]"
+                  className="flex items-center justify-between gap-3 rounded border border-[rgb(var(--c-border))] px-3 py-2 text-sm text-gray-700 dark:text-[rgb(var(--c-text))]"
                 >
                   <span>{feature.feature_name}</span>
                   <span

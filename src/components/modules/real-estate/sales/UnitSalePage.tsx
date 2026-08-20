@@ -820,7 +820,7 @@ export default function UnitSalePage() {
               {isEdit ? "Customer" : "Select Customer"}
             </label>
             {isEdit ? (
-              <div className="mb-1 rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-700/40 dark:text-gray-200">
+              <div className="mb-1 rounded border border-[rgb(var(--c-border))] bg-gray-100 px-3 py-2 text-sm text-gray-700 dark:bg-gray-700/40 dark:text-gray-200">
                 {selectedCustomer?.label || "—"}
               </div>
             ) : (
@@ -833,7 +833,7 @@ export default function UnitSalePage() {
                   {isEdit ? "Unit" : "Select Unit"}
                 </label>
                 {isEdit ? (
-                  <div className="rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-700/40 dark:text-gray-200">
+                  <div className="rounded border border-[rgb(var(--c-border))] bg-gray-100 px-3 py-2 text-sm text-gray-700 dark:bg-gray-700/40 dark:text-gray-200">
                     {selectedUnit?.label || "—"}
                   </div>
                 ) : (
@@ -886,7 +886,7 @@ export default function UnitSalePage() {
                 nothing. People are added on the customer screen -- this screen
                 only decides which of them stand against THIS property. */}
             {!isEdit && selectedCustomer && (
-              <div className="mt-3 border-t border-gray-300 pt-2 dark:border-gray-700">
+              <div className="mt-3 border-t border-[rgb(var(--c-border))] pt-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-semibold">Nominee for this property</label>
                   {pickedNominees.length > 0 && (
@@ -1009,7 +1009,7 @@ export default function UnitSalePage() {
                 </div>
               </div>
 
-              <div className="mt-2 space-y-1 border-t border-gray-300 pt-2 text-xs dark:border-gray-700">
+              <div className="mt-2 space-y-1 border-t border-[rgb(var(--c-border))] pt-2 text-xs">
                 <p className="text-gray-600 dark:text-gray-300">
                   Received so far:{" "}
                   <span className="font-semibold">

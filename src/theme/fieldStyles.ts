@@ -191,9 +191,11 @@ const FIELD_SURFACE = [
   // v3.4 project -- neither emits a single rule. Fields have therefore always
   // been square, and `rounded-none` is that, said out loud. A caller asking for
   // `rounded-sm` still wins, because tailwind emits the radii in that order.
-  `${FIELD_RADIUS} border outline-none transition`,
+  // The edge reads from --c-border-strong rather than naming a grey per mode:
+  // one line for both, and it follows the border colour a user chooses.
+  `${FIELD_RADIUS} border border-[rgb(var(--c-border-strong))] outline-none transition`,
   'bg-white text-gray-700 placeholder-gray-400',
-  'dark:bg-boxdark dark:border-gray-600 dark:text-white dark:placeholder-gray-500',
+  'dark:bg-boxdark dark:text-white dark:placeholder-gray-500',
   'focus:outline-none focus:border-blue-500 dark:focus:border-blue-400',
   'disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500',
   'dark:disabled:bg-form-input dark:disabled:text-bodydark2',

@@ -279,7 +279,7 @@ const AddPermission: React.FC = () => {
           </div>
 
           {!isNewGroup && formData.group_name && (
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-meta-4/40">
+            <div className="rounded-lg border border-[rgb(var(--c-border))] bg-gray-50 p-3 dark:bg-meta-4/40">
               <p className="mb-2 text-xs font-medium text-gray-700 dark:text-gray-200">
                 Permissions in “{formData.group_name}” ({permissionsInGroup.length})
               </p>
@@ -322,7 +322,7 @@ const AddPermission: React.FC = () => {
                     ) : (
                       <li
                         key={perm.id}
-                        className="group flex items-center gap-1 rounded border border-gray-200 bg-[rgb(var(--c-surface))] px-2 py-0.5 dark:border-gray-600"
+                        className="group flex items-center gap-1 rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-2 py-0.5"
                       >
                         <span
                           title={formatRoleNameForCashBook(perm.name)}

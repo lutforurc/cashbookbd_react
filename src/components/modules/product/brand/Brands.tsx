@@ -266,8 +266,8 @@ const Brands = () => {
 
       {editOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-stroke bg-[rgb(var(--c-surface))] shadow-xl dark:border-strokedark">
-            <div className="flex items-center justify-between border-b border-stroke px-5 py-3 dark:border-strokedark">
+          <div className="w-full max-w-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-xl">
+            <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-5 py-3">
               <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Edit Brand</h3>
               <Button
                 type="button"
@@ -286,11 +286,11 @@ const Brands = () => {
               <InputElement id="contacts" name="contacts" label="Contact" placeholder="Contact" value={editForm.contacts} onChange={handleEditChange} />
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
+            <div className="flex justify-end gap-2 border-t border-[rgb(var(--c-border))] px-5 py-3">
               <Button
                 type="button"
                 onClick={closeEdit}
-                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
+                className="border border-[rgb(var(--c-border))] px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>
@@ -310,8 +310,8 @@ const Brands = () => {
 
       {deleteRow && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-stroke bg-[rgb(var(--c-surface))] shadow-xl dark:border-strokedark">
-            <div className="flex items-center gap-3 border-b border-stroke px-5 py-3 dark:border-strokedark">
+          <div className="w-full max-w-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-xl">
+            <div className="flex items-center gap-3 border-b border-[rgb(var(--c-border))] px-5 py-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 text-red-500">
                 <FiTrash2 />
               </span>
@@ -326,11 +326,11 @@ const Brands = () => {
               </p>
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
+            <div className="flex justify-end gap-2 border-t border-[rgb(var(--c-border))] px-5 py-3">
               <Button
                 type="button"
                 onClick={() => setDeleteRow(null)}
-                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
+                className="border border-[rgb(var(--c-border))] px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>

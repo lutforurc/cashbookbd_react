@@ -13,8 +13,8 @@ const FormLayout = () => {
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-2">
         <div className="flex flex-col gap-9">
           {/* <!-- Contact Form --> */}
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-            <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+            <div className="border-b border-[rgb(var(--c-border))] py-4 px-6.5">
               <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Contact Form
               </h3>
@@ -91,8 +91,8 @@ const FormLayout = () => {
 
         <div className="flex flex-col gap-9">
           {/* <!-- Sign In Form --> */}
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-            <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+            <div className="border-b border-[rgb(var(--c-border))] py-4 px-6.5">
               <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Sign In Form
               </h3>
@@ -129,7 +129,7 @@ const FormLayout = () => {
                         id="formCheckbox"
                         className="taskCheckbox sr-only"
                       />
-                      <div className="box mr-3 flex h-5 w-5 items-center justify-center rounded border border-stroke dark:border-strokedark">
+                      <div className="box mr-3 flex h-5 w-5 items-center justify-center rounded border border-[rgb(var(--c-border))]">
                         <span className="text-white opacity-0">
                           <svg
                             className="fill-current"
@@ -166,8 +166,8 @@ const FormLayout = () => {
           </div>
 
           {/* <!-- Sign Up Form --> */}
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
-            <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+            <div className="border-b border-[rgb(var(--c-border))] py-4 px-6.5">
               <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                 Sign Up Form
               </h3>

@@ -165,7 +165,7 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
       {smsState?.templateDetailsLoading ? <Loader /> : null}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-5 shadow-default dark:border-strokedark">
+        <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-5 shadow-default">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <InputElement

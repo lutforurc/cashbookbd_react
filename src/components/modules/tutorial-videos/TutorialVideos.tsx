@@ -336,7 +336,7 @@ const TutorialVideos = () => {
           the exception -- most screens arrive and stay correct on their own --
           so it stays folded away until asked for. */}
       {showForm ? (
-        <div className="mb-4 border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-gray-800">
+        <div className="mb-4 border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-gray-800">
           <h3 className="mb-1 text-sm font-bold text-slate-700 dark:text-slate-100">
             {editingId ? 'Edit screen' : 'Add a screen'}
           </h3>
@@ -468,7 +468,7 @@ const TutorialVideos = () => {
           single fixed layout gives every row the same column edges, and the
           group names become bands inside it. */}
       {!loading && rows.length ? (
-        <div className="overflow-hidden border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-gray-800">
+        <div className="overflow-hidden border border-[rgb(var(--c-border))] bg-white shadow-sm dark:bg-gray-800">
           <div className="overflow-x-auto">
             <table className="w-full min-w-6xl table-fixed text-sm">
               <colgroup>
@@ -482,7 +482,7 @@ const TutorialVideos = () => {
               </colgroup>
 
               <thead>
-                <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-400 dark:border-slate-700">
+                <tr className="border-b border-[rgb(var(--c-border))] text-left text-xs uppercase tracking-wide text-slate-400">
                   <th className="px-4 py-2 text-right font-semibold">Sl.</th>
                   <th className="px-4 py-2 font-semibold">Screen</th>
                   <th className="px-4 py-2 font-semibold">Web URL</th>
@@ -564,7 +564,7 @@ const TutorialVideos = () => {
                                   onChange={(e) =>
                                     setEdit(row, { [field]: e.target.value })
                                   }
-                                  className="w-full rounded border border-slate-300 bg-transparent px-3 py-1.5 text-sm outline-none transition focus:border-primary dark:border-slate-600 dark:text-[rgb(var(--c-text))]"
+                                  className="w-full rounded border border-[rgb(var(--c-border))] bg-transparent px-3 py-1.5 text-sm outline-none transition focus:border-primary dark:text-[rgb(var(--c-text))]"
                                 />
                                 {url ? (
                                   <a

@@ -808,7 +808,7 @@ const AddCustomerSupplier = () => {
           {(guarantorEnabled || nomineeEnabled) && (
             <div className="mt-4">
               {showDetailsTabs ? (
-                <div className="flex flex-wrap gap-1 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex flex-wrap gap-1 border-b border-[rgb(var(--c-border))]">
                   {[
                     { key: 'guarantor' as const, label: 'Guarantor Details', count: formik.values.guarantors.length },
                     { key: 'nominee' as const, label: 'Nominee Details', count: formik.values.nominees.length },
@@ -1099,11 +1099,11 @@ const AddCustomerSupplier = () => {
               </p>
 
               {duplicateWarning.items.length > 0 ? (
-                <div className="mt-3 max-h-48 overflow-y-auto rounded-sm border border-gray-200 dark:border-gray-700">
+                <div className="mt-3 max-h-48 overflow-y-auto rounded-sm border border-[rgb(var(--c-border))]">
                   {duplicateWarning.items.map((item: any) => (
                     <div
                       key={item?.id ?? item?.coa4_id ?? `${item?.name}-${item?.mobile}`}
-                      className="border-b border-gray-100 px-3 py-2 text-sm last:border-b-0 dark:border-gray-700"
+                      className="border-b border-[rgb(var(--c-border))] px-3 py-2 text-sm last:border-b-0"
                     >
                       <div className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                         {item?.name || '-'}
@@ -1118,11 +1118,11 @@ const AddCustomerSupplier = () => {
               ) : null}
             </div>
 
-            <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end dark:border-gray-700">
+            <div className="flex flex-col gap-2 border-t border-[rgb(var(--c-border))] px-4 py-3 sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 onClick={handleDuplicateCancel}
-                className="rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                className="rounded-sm border border-[rgb(var(--c-border))] px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
               >
                 Cancel
               </Button>

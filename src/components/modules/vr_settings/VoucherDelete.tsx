@@ -102,9 +102,9 @@ const VoucherDelete = () => {
       <HelmetTitle title="Voucher Delete" />
 
       <div className="mx-auto mt-6 w-full max-w-md">
-        <div className="border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
+        <div className="border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
           {/* Header */}
-          <div className="flex items-center gap-3 border-b border-stroke px-5 py-3.5 dark:border-strokedark">
+          <div className="flex items-center gap-3 border-b border-[rgb(var(--c-border))] px-5 py-3.5">
             <span className="flex h-10 w-10 items-center justify-center rounded-md bg-red-500/10 text-red-500">
               <FiTrash2 className="h-5 w-5" />
             </span>
@@ -182,7 +182,7 @@ const VoucherDelete = () => {
       {/* ========== Already-Deleted Confirmation (continue anyway) ========== */}
       {alreadyDeletedMsg && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-stroke bg-[rgb(var(--c-surface))] shadow-xl dark:border-strokedark">
+          <div className="w-full max-w-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-xl">
             <div className="border-b border-amber-300 bg-amber-50 px-5 py-3 dark:border-amber-700/50 dark:bg-amber-500/10">
               <h3 className="text-base font-semibold text-amber-700 dark:text-amber-400">Voucher Already Deleted</h3>
               <p className="mt-0.5 text-sm text-amber-700/90 dark:text-amber-400/90">{alreadyDeletedMsg}</p>
@@ -190,17 +190,17 @@ const VoucherDelete = () => {
 
             <div className="px-5 py-4 text-sm text-slate-600 dark:text-[rgb(var(--c-text-muted))]">
               You can continue and delete it again, or cancel.
-              <div className="mt-2 border border-stroke px-3 py-2 dark:border-strokedark">
+              <div className="mt-2 border border-[rgb(var(--c-border))] px-3 py-2">
                 <div className="font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Voucher: {voucherNo}</div>
                 <div className="text-xs text-slate-400">{settings?.data?.branch?.name}</div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
+            <div className="flex justify-end gap-2 border-t border-[rgb(var(--c-border))] px-5 py-3">
               <Button
                 type="button"
                 onClick={() => setAlreadyDeletedMsg('')}
-                className="border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
+                className="border border-[rgb(var(--c-border))] px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
               >
                 Cancel
               </Button>

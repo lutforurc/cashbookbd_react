@@ -651,7 +651,7 @@ const ProfitLoss = (user: any) => {
           onNetExpenseClick={handleExpenseRowClick}
         />
       ) : (
-        <div className="rounded border border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+        <div className="rounded border border-dashed border-[rgb(var(--c-border))] bg-white p-6 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-300">
           {profitLossState?.loading
             ? "Profit/Loss report loading..."
             : "Click Apply to view the report. Once the data is loaded, the Profit/Loss Report will be displayed here."}
@@ -732,10 +732,10 @@ const ExpenseDetailsModal = ({
     >
       <div className="mx-auto flex min-h-full w-full max-w-5xl items-start justify-center mt-25">
         <div
-          className="my-2 flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark"
+          className="my-2 flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="sticky top-0 z-10 flex items-start justify-between border-b border-stroke bg-[rgb(var(--c-surface))] px-5 py-4 dark:border-strokedark">
+          <div className="sticky top-0 z-10 flex items-start justify-between border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-5 py-4">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {detail.name}
@@ -748,13 +748,13 @@ const ExpenseDetailsModal = ({
             <Button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-stroke px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-strokedark dark:text-slate-200 dark:hover:bg-slate-800"
+              className="rounded-lg border border-[rgb(var(--c-border))] px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               Close
             </Button>
           </div>
 
-          <div className="shrink-0 border-b border-stroke bg-slate-50 px-5 py-4 dark:border-strokedark dark:bg-slate-900/40">
+          <div className="shrink-0 border-b border-[rgb(var(--c-border))] bg-slate-50 px-5 py-4 dark:bg-slate-900/40">
             <div className="grid gap-3 sm:grid-cols-3">
             <ModalStat label="Debit" value={detail.debit} />
             <ModalStat label="Credit" value={detail.credit} />
@@ -765,7 +765,7 @@ const ExpenseDetailsModal = ({
           <div className="flex-1 overflow-y-auto px-5 pb-5">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="sticky top-0 z-20 border-b border-stroke bg-[rgb(var(--c-surface))] shadow-sm dark:border-strokedark dark:text-slate-300">
+                <tr className="sticky top-0 z-20 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm dark:text-slate-300">
                   <th className="px-3 py-3 text-left font-semibold">Particular</th>
                   <th className="px-3 py-3 text-right font-semibold">Debit</th>
                   <th className="px-3 py-3 text-right font-semibold">Credit</th>
@@ -796,7 +796,7 @@ const ExpenseDetailsModal = ({
                     {rows.map((row) => (
                       <tr
                         key={row.key}
-                        className="border-b border-stroke/70 text-slate-800 dark:border-strokedark dark:text-slate-100"
+                        className="border-b border-[rgb(var(--c-border))]/70 text-slate-800 dark:text-slate-100"
                       >
                         <td className="px-3 py-3">{row.name}</td>
                         <td className="px-3 py-3 text-right">
@@ -810,7 +810,7 @@ const ExpenseDetailsModal = ({
                         </td>
                       </tr>
                     ))}
-                    <tr className="border-t border-stroke font-semibold text-slate-900 dark:border-strokedark dark:text-[rgb(var(--c-text))]">
+                    <tr className="border-t border-[rgb(var(--c-border))] font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                       <td className="px-3 py-3">Total</td>
                       <td className="px-3 py-3 text-right">
                         {thousandSeparator(totalMovementDebit)}
@@ -850,7 +850,7 @@ const ModalStat = ({
   value: number;
 }) => {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/40">
+    <div className="rounded-xl border border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 dark:bg-slate-900/40">
       <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
         {label}
       </p>

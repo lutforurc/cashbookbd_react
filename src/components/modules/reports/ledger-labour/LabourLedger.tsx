@@ -274,12 +274,12 @@ const LabourLedger = (user: any) => {
           {useFilterMenuEnabled ? (
             <div className="ml-auto flex items-end gap-2">
               {selectedLedgerLabel ? (
-                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-[rgb(var(--c-border))] bg-white px-3 text-sm font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-100">
                   <span className="truncate" title={selectedLedgerLabel}>{selectedLedgerLabel}</span>
                 </div>
               ) : null}
               {selectedLabourOption?.label ? (
-                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-[rgb(var(--c-border))] bg-white px-3 text-sm font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-100">
                   <span className="truncate" title={selectedLabourOption.label}>{selectedLabourOption.label}</span>
                 </div>
               ) : null}
@@ -371,7 +371,7 @@ const LabourLedger = (user: any) => {
                       <h3 className="mb-2 text-md font-semibold text-gray-700 dark:text-gray-300">
                         {groupName}
                       </h3>
-                      <div className="overflow-x-auto rounded-md border border-gray-200 shadow-sm dark:border-gray-700">
+                      <div className="overflow-x-auto rounded-md border border-[rgb(var(--c-border))] shadow-sm">
                         <div className="min-w-[640px]">
                           <div className="flex bg-gray-100 text-xs font-semibold uppercase text-gray-600 dark:bg-gray-700 dark:text-gray-300 sm:text-sm">
                             <div className="w-1/6 px-3 py-3 text-center">SL</div>
@@ -418,7 +418,7 @@ const LabourLedger = (user: any) => {
                               </div>
                             ))}
 
-                            <div className="flex border-t border-gray-200 bg-gray-50 text-sm font-semibold dark:border-gray-700 dark:bg-gray-900">
+                            <div className="flex border-t border-[rgb(var(--c-border))] bg-gray-50 text-sm font-semibold dark:bg-gray-900">
                               <div className="w-4/5 px-3 py-2 text-right">Total:</div>
                               <div className="w-1/5 px-3 py-2 text-right">
                                 {thousandSeparator(groupTotal)}
@@ -443,7 +443,7 @@ const LabourLedger = (user: any) => {
             );
           })
         ) : !ledgerData.isLoading ? (
-          <div className="mt-4 overflow-x-auto rounded-md border border-gray-200 shadow-sm dark:border-gray-700">
+          <div className="mt-4 overflow-x-auto rounded-md border border-[rgb(var(--c-border))] shadow-sm">
             <div className="min-w-[640px] bg-white dark:bg-gray-800">
               <div className="flex h-20 items-center justify-center text-sm text-gray-500 dark:text-gray-400">
                 No data found

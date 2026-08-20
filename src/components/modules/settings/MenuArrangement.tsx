@@ -107,7 +107,7 @@ const MenuArrangement = () => {
           reach on a laptop. */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* ---------------- main menus ---------------- */}
-        <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-default dark:border-strokedark">
+        <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-default">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Main menu
@@ -127,7 +127,7 @@ const MenuArrangement = () => {
                   addDivider(newDivider);
                   setNewDivider('');
                 }}
-                className="w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
+                className="w-40 rounded-sm border border-[rgb(var(--c-border))] px-2 text-xs outline-none dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
               />
               <ButtonLoading
                 onClick={() => {
@@ -223,7 +223,7 @@ const MenuArrangement = () => {
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                         }}
-                        className="min-w-0 flex-1 rounded-sm border border-stroke bg-transparent px-1.5 py-0.5 text-sm font-semibold uppercase tracking-wide text-[rgb(var(--c-text))] outline-none dark:border-strokedark dark:text-[rgb(var(--c-text))]"
+                        className="min-w-0 flex-1 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1.5 py-0.5 text-sm font-semibold uppercase tracking-wide text-[rgb(var(--c-text))] outline-none dark:text-[rgb(var(--c-text))]"
                       />
                       <Button
                         type="button"
@@ -301,7 +301,7 @@ const MenuArrangement = () => {
               questions the page actually raises -- how do I move something, and
               does this affect anyone else -- and is worth a line for a screen
               most people meet once. */}
-          <p className="mt-3 border-t border-stroke pt-3 text-xs leading-snug text-slate-500 dark:border-strokedark dark:text-slate-400">
+          <p className="mt-3 border-t border-[rgb(var(--c-border))] pt-3 text-xs leading-snug text-slate-500 dark:text-slate-400">
             Drag a menu where you want it, or use the arrows. Hide anything you
             never open. This is yours alone and follows you to any computer you
             log in from -- nobody else's menu changes.
@@ -309,7 +309,7 @@ const MenuArrangement = () => {
         </div>
 
         {/* ---------------- the chosen menu's entries ---------------- */}
-        <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-default dark:border-strokedark">
+        <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-default">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               {selectedMenu
@@ -331,7 +331,7 @@ const MenuArrangement = () => {
                     addSubDivider(selectedMenu, declared, newSubDivider);
                     setNewSubDivider('');
                   }}
-                  className="w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
+                  className="w-40 rounded-sm border border-[rgb(var(--c-border))] px-2 text-xs outline-none dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
                 />
                 <ButtonLoading
                   onClick={() => {
@@ -411,7 +411,7 @@ const MenuArrangement = () => {
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                           }}
-                          className="min-w-0 flex-1 rounded-sm border border-stroke bg-transparent px-1.5 py-0.5 text-sm font-semibold uppercase tracking-wide text-[rgb(var(--c-text))] outline-none dark:border-strokedark dark:text-[rgb(var(--c-text))]"
+                          className="min-w-0 flex-1 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1.5 py-0.5 text-sm font-semibold uppercase tracking-wide text-[rgb(var(--c-text))] outline-none dark:text-[rgb(var(--c-text))]"
                         />
                         <Button
                           type="button"

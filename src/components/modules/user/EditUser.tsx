@@ -102,6 +102,10 @@ const EditUser = (user: any) => {
         theme_card_color_dark: '',
         theme_table_header_color_light: '',
         theme_table_header_color_dark: '',
+        theme_border_color_light: '',
+        theme_border_color_dark: '',
+        theme_table_body_color_light: '',
+        theme_table_body_color_dark: '',
         theme_sidebar_color_light: '',
         theme_sidebar_color_dark: '',
         theme_header_color_light: '',
@@ -161,6 +165,10 @@ const EditUser = (user: any) => {
                 theme_card_color_dark: String(showUser.editData.theme_card_color_dark || ''),
                 theme_table_header_color_light: String(showUser.editData.theme_table_header_color_light || ''),
                 theme_table_header_color_dark: String(showUser.editData.theme_table_header_color_dark || ''),
+                theme_border_color_light: String(showUser.editData.theme_border_color_light || ''),
+                theme_border_color_dark: String(showUser.editData.theme_border_color_dark || ''),
+                theme_table_body_color_light: String(showUser.editData.theme_table_body_color_light || ''),
+                theme_table_body_color_dark: String(showUser.editData.theme_table_body_color_dark || ''),
                 theme_sidebar_color_light: String(showUser.editData.theme_sidebar_color_light || ''),
                 theme_sidebar_color_dark: String(showUser.editData.theme_sidebar_color_dark || ''),
                 theme_header_color_light: String(showUser.editData.theme_header_color_light || ''),
@@ -375,7 +383,7 @@ const EditUser = (user: any) => {
                     </>
                 ) : null}
 
-                <div className="md:col-span-2 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
+                <div className="md:col-span-2 rounded border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-transparent">
                     <div className="mb-4">
                         <h3 className="text-base font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
                             User Features

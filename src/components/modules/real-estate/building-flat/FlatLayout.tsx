@@ -605,9 +605,9 @@ const FlatLayout = () => {
     return (
       <div
         key={floor.floor_no}
-        className="relative rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800/90"
+        className="relative rounded-lg border border-[rgb(var(--c-border))] bg-white shadow-sm dark:bg-gray-800/90"
       >
-        <div className="border-b border-gray-100 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/35">
+        <div className="border-b border-[rgb(var(--c-border))] bg-gray-50 px-4 py-3 dark:bg-gray-900/35">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
@@ -710,7 +710,7 @@ const FlatLayout = () => {
       >
         <div
           title={floorTitle}
-          className="flex w-24 shrink-0 flex-col items-center justify-center gap-1.5 border-r border-slate-300 bg-slate-700 px-2 py-3 text-center dark:border-slate-700 dark:bg-slate-800"
+          className="flex w-24 shrink-0 flex-col items-center justify-center gap-1.5 border-r border-[rgb(var(--c-border))] bg-slate-700 px-2 py-3 text-center dark:bg-slate-800"
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-base font-bold text-white ring-1 ring-white/25">
             {floor.floor_no}
@@ -811,7 +811,7 @@ const FlatLayout = () => {
     <>
       <HelmetTitle title={viewLayout?.building ?? "Building Layout"} />
 
-      <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="mb-6 rounded-lg border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-gray-800">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
@@ -857,7 +857,7 @@ const FlatLayout = () => {
                   return (
                     <div
                       key={card.key}
-                      className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                      className="rounded-lg border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-gray-800"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
@@ -878,7 +878,7 @@ const FlatLayout = () => {
               </div>
 
               <div className="overflow-x-auto">
-                <div className="inline-flex min-w-full gap-1 rounded-lg border border-gray-200 bg-white p-1.5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div className="inline-flex min-w-full gap-1 rounded-lg border border-[rgb(var(--c-border))] bg-white p-1.5 shadow-sm dark:bg-gray-800">
                   <Button
                     type="button"
                     onClick={() => changeActiveTab("previous")}
@@ -954,7 +954,7 @@ const FlatLayout = () => {
           )}
 
           <div className="mb-4 flex items-center justify-end">
-            <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div className="inline-flex rounded-lg border border-[rgb(var(--c-border))] bg-white p-1 shadow-sm dark:bg-gray-800">
               <Button
                 type="button"
                 onClick={() => setViewMode("building")}
@@ -1004,8 +1004,8 @@ const FlatLayout = () => {
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800">
-            <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-5 py-4 dark:border-gray-700">
+          <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-[rgb(var(--c-border))] bg-white shadow-2xl dark:bg-gray-800">
+            <div className="flex items-start justify-between gap-4 border-b border-[rgb(var(--c-border))] px-5 py-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
                   Unit Details
@@ -1042,7 +1042,7 @@ const FlatLayout = () => {
               </div>
 
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+                <div className="rounded-lg border border-[rgb(var(--c-border))] p-4">
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
                     <FiUser className="text-cyan-500" />
                     Customer
@@ -1063,7 +1063,7 @@ const FlatLayout = () => {
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+                <div className="rounded-lg border border-[rgb(var(--c-border))] p-4">
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
                     <FiDollarSign className="text-emerald-500" />
                     Pricing
@@ -1099,7 +1099,7 @@ const FlatLayout = () => {
                 </div>
               </div>
 
-              <div className="flex flex-wrap justify-end gap-2 border-t border-gray-100 pt-4 dark:border-gray-700">
+              <div className="flex flex-wrap justify-end gap-2 border-t border-[rgb(var(--c-border))] pt-4">
                 {Number(selectedUnit.status) === 1 && (
                   <Button
                     type="button"

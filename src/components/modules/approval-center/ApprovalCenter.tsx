@@ -267,7 +267,7 @@ const ApprovalCenter = ({ user }: any) => {
       <HelmetTitle title="Approval Center" />
       {(loading || actionLoading) && <Loader />}
 
-      <div className="mb-3 border border-stroke bg-[rgb(var(--c-surface))] p-3 dark:border-strokedark">
+      <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
         <div className="grid grid-cols-1 gap-2 md:grid-cols-4 xl:grid-cols-6">
           <InputDatePicker
             id="date_from"
@@ -337,15 +337,15 @@ const ApprovalCenter = ({ user }: any) => {
 
       <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-4">
         {summaryCards.map((card) => (
-          <div key={card.label} className="border border-stroke bg-[rgb(var(--c-surface))] px-4 py-3 dark:border-strokedark">
+          <div key={card.label} className="border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-4 py-3">
             <div className="text-xs font-semibold uppercase text-slate-500">{card.label}</div>
             <div className="mt-1 text-xl font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">{card.value}</div>
           </div>
         ))}
       </div>
 
-      <div className="border border-stroke bg-[rgb(var(--c-surface))] dark:border-strokedark">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stroke px-4 py-3 dark:border-strokedark">
+      <div className="border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[rgb(var(--c-border))] px-4 py-3">
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" onClick={() => setActiveTab('attendance')} className={`px-4 text-sm font-semibold ${activeTab ==='attendance'?'bg-primary text-white':'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
               Attendance ({data?.counts?.attendance || 0})
@@ -361,7 +361,7 @@ const ApprovalCenter = ({ user }: any) => {
               Audit History
             </Link>
             {activeTab === 'voucher' ? (
-              <div className="flex items-center overflow-hidden rounded-sm border border-stroke dark:border-strokedark">
+              <div className="flex items-center overflow-hidden rounded-sm border border-[rgb(var(--c-border))]">
                 <Button
                   type="button"
                   onClick={() => changeVoucherStatus('pending')}
@@ -424,7 +424,7 @@ const ApprovalCenter = ({ user }: any) => {
           data={activeTab === 'attendance' ? attendanceRows : voucherRows}
           noDataMessage={activeTab === 'voucher' && filters.voucher_status === 'approved' ? 'No approved vouchers found' : 'No pending approvals found'}
         />
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stroke px-4 py-3 text-sm dark:border-strokedark">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[rgb(var(--c-border))] px-4 py-3 text-sm">
           <div className="font-medium text-slate-600 dark:text-slate-300">
             Page {activePage} of {activeLastPage} | {activeTotal} item(s)
           </div>
@@ -456,7 +456,7 @@ const ApprovalCenter = ({ user }: any) => {
                   rows={3}
                   maxLength={255}
                   placeholder={`Reason / note for this ${confirmAction?.action}`}
-                  className="block w-full rounded-xs border border-gray-300 bg-[rgb(var(--c-surface))] p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:text-[rgb(var(--c-text))]"
+                  className="block w-full rounded-xs border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-2 text-sm text-gray-900 outline-none dark:text-[rgb(var(--c-text))]"
                 />
               </span>
             ) : null}

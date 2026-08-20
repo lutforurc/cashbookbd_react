@@ -69,8 +69,8 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
       }}
     >
 
-      <div className="modal rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark overflow-auto">
-        <div className="border-b border-stroke py-4 px-7 dark:border-strokedark">
+      <div className="modal rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default overflow-auto">
+        <div className="border-b border-[rgb(var(--c-border))] py-4 px-7">
           <div className="w-full flex justify-end">
             <strong className="text-xl align-center cursor-pointer "
               onClick={closeModal}
@@ -87,9 +87,9 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
 
               <div className="form-group ">
                 <label className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="para">Parameter</label>
-                <div className="relative z-20 w-full rounded border border-stroke p-1.5 pr-8 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input">
+                <div className="relative z-20 w-full rounded border border-[rgb(var(--c-border))] p-1.5 pr-8 font-medium outline-none transition focus:border-primary active:border-primary dark:bg-form-input">
                   <div className="flex flex-wrap items-center"></div>
-                  <span className="m-1.5 flex items-center justify-center rounded border-[.5px] border-stroke bg-gray py-1.5 px-2.5 text-sm font-medium dark:border-strokedark dark:bg-white/30">
+                  <span className="m-1.5 flex items-center justify-center rounded border-[.5px] border-[rgb(var(--c-border))] bg-gray py-1.5 px-2.5 text-sm font-medium dark:bg-white/30">
                     {formState.para}
 
 
@@ -130,9 +130,9 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
 
               <div className="form-group">
                 <label className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="criterion">Criterion</label>
-                <div className="relative z-20 w-full rounded border border-stroke p-1.5 pr-8 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input">
+                <div className="relative z-20 w-full rounded border border-[rgb(var(--c-border))] p-1.5 pr-8 font-medium outline-none transition focus:border-primary active:border-primary dark:bg-form-input">
                   <div className="flex flex-wrap items-center"></div>
-                  <span className="m-1.5 flex items-center justify-center rounded border-[.5px] border-stroke bg-gray py-1.5 px-2.5 text-sm font-medium dark:border-strokedark dark:bg-white/30">
+                  <span className="m-1.5 flex items-center justify-center rounded border-[.5px] border-[rgb(var(--c-border))] bg-gray py-1.5 px-2.5 text-sm font-medium dark:bg-white/30">
                     {formState.criterion == 0 ? "goes down by" : formState.criterion == 1 ? "goes up by" : formState.criterion == 2 ? "is smaller than" : formState.criterion == 3 ? "is greater than" : "is equal to"}
                   </span>
                   <Select
@@ -176,9 +176,9 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
 
               <div className="form-group">
                 <label className="mb-3 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="type">Alert Type</label>
-                <div className="relative z-20 w-full rounded border border-stroke p-1.5 pr-8 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input">
+                <div className="relative z-20 w-full rounded border border-[rgb(var(--c-border))] p-1.5 pr-8 font-medium outline-none transition focus:border-primary active:border-primary dark:bg-form-input">
                   <div className="flex flex-wrap items-center"></div>
-                  <span className={`${formState.type == 0 ? "bg-[rgb(var(--c-success))]" : formState.type == 1 ? "bg-[rgb(var(--c-meta-6))]" : "bg-[rgb(var(--c-danger))]"} m-1.5 flex items-center justify-center rounded border-[.5px] border-stroke py-1.5 px-2.5 text-white font-medium dark:border-strokedark`}>
+                  <span className={`${formState.type == 0 ? "bg-[rgb(var(--c-success))]" : formState.type == 1 ? "bg-[rgb(var(--c-meta-6))]" : "bg-[rgb(var(--c-danger))]"} m-1.5 flex items-center justify-center rounded border-[.5px] border-[rgb(var(--c-border))] py-1.5 px-2.5 text-white font-medium`}>
                     {formState.type == 0 ? "Info" : formState.type == 1 ? "Warning" : "Alert"}
 
 

@@ -427,7 +427,7 @@ const AttendanceSetup = ({ user }: any) => {
       {attendance.loading && <Loader />}
 
       <div className="flex flex-col md:flex-row md:gap-4">
-        <div className="flex flex-row flex-wrap gap-1 self-start rounded border border-slate-200 bg-slate-50 p-2 shadow-sm md:w-56 md:shrink-0 md:flex-col md:flex-nowrap dark:border-slate-700 dark:bg-boxdark">
+        <div className="flex flex-row flex-wrap gap-1 self-start rounded border border-[rgb(var(--c-border))] bg-slate-50 p-2 shadow-sm md:w-56 md:shrink-0 md:flex-col md:flex-nowrap dark:bg-boxdark">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.key;
@@ -449,7 +449,7 @@ const AttendanceSetup = ({ user }: any) => {
           })}
         </div>
 
-        <div className="flex-1 rounded border border-slate-200 bg-[rgb(var(--c-surface))] p-4 shadow-sm dark:border-slate-700">
+        <div className="flex-1 rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-sm">
 
       {activeTab === 'shift' && (
         <form
@@ -634,7 +634,7 @@ const AttendanceSetup = ({ user }: any) => {
         </div>
       </div>
 
-      <div className="mt-4 border border-slate-200 bg-[rgb(var(--c-surface))] shadow-sm dark:border-slate-700">
+      <div className="mt-4 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
         {activeTab === 'shift' && <Table columns={shiftColumns} data={shifts} />}
         {activeTab === 'policy' && <Table columns={policyColumns} data={policies} />}
         {activeTab === 'roster' && <Table columns={rosterColumns} data={rosters} />}

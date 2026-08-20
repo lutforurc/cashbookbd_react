@@ -92,7 +92,7 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
     <div className="fixed inset-0 z-1001 flex items-center justify-center bg-black/50 px-3 py-6" onClick={onClose}>
       <div className="w-full max-w-3xl rounded-xl bg-[rgb(var(--c-surface))] shadow-xl" onClick={(e) => e.stopPropagation()}>
         {/* Toolbar (not printed) */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-strokedark">
+        <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
           <h3 className="text-base font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
             {isInvoice ? invoiceTitle : 'Voucher'}
           </h3>

@@ -113,12 +113,12 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
           <div className="relative z-20 inline-block w-full">
             <div className="relative flex flex-col items-center">
               <div ref={trigger} onClick={open} className="w-full">
-                <div className="mb-2 flex rounded border border-stroke py-2 pl-3 pr-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input">
+                <div className="mb-2 flex rounded border border-[rgb(var(--c-border))] py-2 pl-3 pr-3 outline-none transition focus:border-primary active:border-primary dark:bg-form-input">
                   <div className="flex flex-auto flex-wrap gap-3">
                     {selected.map((index) => (
                       <div
                         key={index}
-                        className="my-1.5 flex items-center justify-center rounded border-[.5px] border-stroke bg-gray px-2.5 py-1.5 text-sm font-medium dark:border-strokedark dark:bg-white/30"
+                        className="my-1.5 flex items-center justify-center rounded border-[.5px] border-[rgb(var(--c-border))] bg-gray px-2.5 py-1.5 text-sm font-medium dark:bg-white/30"
                       >
                         <div className="max-w-full flex-initial">
                           {options[index].text}
@@ -197,7 +197,7 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
                     {options.map((option, index) => (
                       <div key={index}>
                         <div
-                          className="w-full cursor-pointer rounded-t border-b border-stroke hover:bg-primary/5 dark:border-form-strokedark"
+                          className="w-full cursor-pointer rounded-t border-b border-[rgb(var(--c-border))] hover:bg-primary/5"
                           onClick={(event) => select(index, event)}
                         >
                           <div

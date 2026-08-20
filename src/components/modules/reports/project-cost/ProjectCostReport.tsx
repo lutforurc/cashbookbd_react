@@ -548,13 +548,13 @@ const ProjectCostReport = ({ user }: any) => {
         ) : null}
 
         {loading ? (
-          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
+          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
             <Loader />
           </div>
         ) : null}
 
         {!loading && !hasData ? (
-          <div className="rounded-sm border border-dashed border-slate-300 bg-[rgb(var(--c-surface))] px-6 py-12 text-center shadow-default dark:border-slate-700">
+          <div className="rounded-sm border border-dashed border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-6 py-12 text-center shadow-default">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               {loaded[section] ? 'Nothing to show' : 'No report loaded yet'}
             </h3>

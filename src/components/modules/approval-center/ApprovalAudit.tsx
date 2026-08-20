@@ -194,7 +194,7 @@ const ApprovalAudit = ({ user }: any) => {
       <HelmetTitle title="Approval Audit" />
       {(loading || exporting) && <Loader />}
 
-      <div className="mb-3 border border-stroke bg-[rgb(var(--c-surface))] p-3 dark:border-strokedark">
+      <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
         <div className="grid grid-cols-1 gap-2 md:grid-cols-4 xl:grid-cols-6">
           <InputDatePicker
             id="date_from"
@@ -294,15 +294,15 @@ const ApprovalAudit = ({ user }: any) => {
         </div>
       </div>
 
-      <div className="border border-stroke bg-[rgb(var(--c-surface))] dark:border-strokedark">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stroke px-4 py-3 dark:border-strokedark">
+      <div className="border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[rgb(var(--c-border))] px-4 py-3">
           <h5 className="text-sm font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Attendance Approval Audit</h5>
           <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{total} record(s)</span>
         </div>
 
         <Table columns={columns} data={rows} noDataMessage="No audit records found" />
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stroke px-4 py-3 text-sm dark:border-strokedark">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[rgb(var(--c-border))] px-4 py-3 text-sm">
           <div className="font-medium text-slate-600 dark:text-slate-300">
             Page {page} of {lastPage} | {total} record(s)
           </div>

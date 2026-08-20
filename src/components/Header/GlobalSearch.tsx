@@ -228,7 +228,7 @@ const GlobalSearch = () => {
               <FiX size={18} />
             </Button>
           ) : (
-            <span className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 rounded border border-stroke px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[rgb(var(--c-text-muted))] dark:border-strokedark dark:text-[rgb(var(--c-text-muted))] md:inline-flex">
+            <span className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 rounded border border-[rgb(var(--c-border))] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))] md:inline-flex">
               Ctrl K
             </span>
           )}
@@ -236,7 +236,7 @@ const GlobalSearch = () => {
       </form>
 
       {open ? (
-        <div className="absolute left-0 top-full z-999 mt-3 w-full overflow-hidden rounded border border-stroke bg-[rgb(var(--c-surface))] shadow-5 dark:border-strokedark">
+        <div className="absolute left-0 top-full z-999 mt-3 w-full overflow-hidden rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-5">
           {voucherTarget || isCustomerMobileSearch || results.length > 0 ? (
             <ul className="max-h-96 overflow-y-auto py-2">
               {!query.trim() && results.length > 0 ? (
@@ -248,7 +248,7 @@ const GlobalSearch = () => {
                 <li>
                   <Button
                     type="button"
-                    className="flex w-full items-center justify-between gap-3 border-b border-stroke px-4 py-2.5 text-left text-sm hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
+                    className="flex w-full items-center justify-between gap-3 border-b border-[rgb(var(--c-border))] px-4 py-2.5 text-left text-sm hover:bg-gray-2 dark:hover:bg-meta-4"
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={printVoucher}
                   >
@@ -266,7 +266,7 @@ const GlobalSearch = () => {
                 <li>
                   <Button
                     type="button"
-                    className="flex w-full items-center justify-between gap-3 border-b border-stroke px-4 py-2.5 text-left text-sm hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
+                    className="flex w-full items-center justify-between gap-3 border-b border-[rgb(var(--c-border))] px-4 py-2.5 text-left text-sm hover:bg-gray-2 dark:hover:bg-meta-4"
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={goToCustomerSearch}
                   >
