@@ -70,13 +70,37 @@ const SendSms = (user: any) => {
   const columns = [
     { key: 'serial_no', header: 'Sl.', headerClass: 'text-center', cellClass: 'text-center' },
     {
+      key: 'recipient_name',
+      header: 'Name',
+      // Narrow and wrapping, like the message. A customer name can run to forty
+      // characters -- "Newhope Animal Feed Mill Ltd-(Unit-3)" -- and on one line
+      // it pushed everything after it off the screen.
+      cellClass: 'w-[13%] min-w-[8rem] whitespace-normal! break-words align-top',
+      // Ahead of the number, because that is the question being asked of this
+      // screen: not "what number was texted" but "did the mill get their
+      // receipt". The server fills it from the party the message was about, or
+      // from the customer list when the number belongs to exactly one customer;
+      // where it can vouch for neither it sends nothing, and a dash is honester
+      // than a guess.
+      render: (row: any) => <div>{row?.recipient_name || '-'}</div>,
+    },
+    {
       key: 'mobile',
       header: 'Mobile',
       // The log is read, not dialled -- the number the gateway was given is
       // stored as it was sent and only its reading changes here.
       render: (row: any) => <div>{formatMobile(row?.mobile, mobileFormat) || '-'}</div>,
     },
-    { key: 'message', header: 'Message' },
+    {
+      key: 'message',
+      header: 'Message',
+      // Held to a third of the table and allowed to wrap. A message is a
+      // sentence, and the shared table truncates every cell to one line -- so
+      // this column alone was 90 characters wide, pushing status and dates off
+      // the right edge and leaving the row unreadable anyway.
+      cellClass: 'w-[34%] min-w-[16rem] whitespace-normal! break-words align-top',
+      headerClass: 'text-left',
+    },
     { key: 'provider', header: 'Provider', headerClass: 'text-center', cellClass: 'text-center' },
     { key: 'status', header: 'Status', headerClass: 'text-center', cellClass: 'text-center' },
     { key: 'attempts', header: 'Attempts', headerClass: 'text-center', cellClass: 'text-center' },
