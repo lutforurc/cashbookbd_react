@@ -700,7 +700,7 @@ const HeadOfficeCashPayment = () => {
             </div>
           </div>
         </div>
-        <div className="col-span-2 overflow-x-auto lg:mt-6">
+        <div className="lg:col-span-2 overflow-x-auto lg:mt-6">
           {cashPayment.isLoading ? <Loader /> : null}
           <table
             className={`w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400`}

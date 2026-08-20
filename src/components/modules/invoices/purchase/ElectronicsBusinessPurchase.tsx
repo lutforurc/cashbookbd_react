@@ -953,7 +953,7 @@ const ElectronicsBusinessPurchase = () => {
           </div>
         </div>
       </div>
-      <div className="mt-6 col-span-2 overflow-x-auto ">
+      <div className="mt-6 col-span-full overflow-x-auto ">
         {/* {cashPayment.isLoading ? <Loader /> : null} */}
         <table
           className={`w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400`}

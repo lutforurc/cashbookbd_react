@@ -859,7 +859,7 @@ export default function UnitSalePaymentEntry() {
                     />
                   </div>
 
-                  <div className="w-full col-span-3">
+                  <div className="w-full md:col-span-3">
                     <InputElement
  id="cheque_return_reason"
  name="cheque_return_reason"

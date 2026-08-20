@@ -1292,10 +1292,10 @@ const TradingCombinedEntry = () => {
           </div>
         </div>
 
-        {/* col-span-full, not col-span-2. Below md this grid has ONE column, and
-                    asking to span two made the browser invent a second one -- which is
-                    what squeezed the two panels into slivers and stacked them on top of
-                    each other on a narrow screen. */}
+        {/* col-span-full, not col-span-2. Below md this grid has ONE column,
+            and asking to span two made the browser invent a second -- which is
+            what squeezed the two panels into slivers and stacked them over each
+            other on a narrow screen. */}
         <div className="mt-4 col-span-full overflow-x-auto">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-300 dark:bg-gray-700 dark:text-gray-200">

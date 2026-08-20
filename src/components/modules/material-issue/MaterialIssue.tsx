@@ -434,7 +434,7 @@ const MaterialIssue = () => {
         />
       </div>
 
-      <div className="mt-3 col-span-2 overflow-x-auto mb-5">
+      <div className="mt-3 overflow-x-auto mb-5">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-300 dark:bg-gray-700 dark:text-gray-200">
             <tr>
