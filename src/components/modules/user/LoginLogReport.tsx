@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 import { FiRefreshCcw, FiSearch } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
-import Loader from '../../../common/Loader';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import httpService from '../../services/httpService';
@@ -262,10 +261,12 @@ const LoginLogReport: React.FC = () => {
           </div>
         ) : null}
 
-        <div className="mt-2">
-          {loading ? (
-            <Loader />
-          ) : (
+        {/* The rows stay while the next page comes, under a wash and a spinner.
+            Swapping the table out for the spinner cost the reader their place
+            every time they paged -- and an empty table is also how this screen
+            says there is nothing to show. */}
+        <div className="relative mt-2">
+          <div className={loading ? 'pointer-events-none opacity-40 transition-opacity' : 'transition-opacity'}>
             <Table
               columns={columns}
               data={rows}
@@ -274,7 +275,12 @@ const LoginLogReport: React.FC = () => {
                 loadError ? 'Nothing could be loaded' : 'No login recorded for this period'
               }
             />
-          )}
+          </div>
+          {loading ? (
+            <div className="absolute inset-0 flex items-start justify-center pt-10">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent" />
+            </div>
+          ) : null}
         </div>
 
         {totalPages > 1 ? (
