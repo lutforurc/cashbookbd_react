@@ -59,6 +59,12 @@
      move one variable, not know which of the two the mode is using. */
   --c-page: var(--c-whiten);
 
+  /* A raised surface: a card, a modal, the list a dropdown opens. One step
+     nearer the reader than the page, and the colour a dropdown menu has to
+     take -- react-select draws its own menu and would otherwise paint it
+     white on a dark screen. */
+  --c-surface: var(--c-white);
+
   /* What words are written in.
      
      Its own variable because the token it used to borrow does double
@@ -438,6 +444,7 @@ html.dark {
   --c-sidebar: var(--c-boxdark);
   --c-header: var(--c-sidebar);
   --c-page: var(--c-boxdark-2);
+  --c-surface: var(--c-boxdark);
   --c-text: var(--c-white);
   --c-text-muted: var(--c-bodydark);
 

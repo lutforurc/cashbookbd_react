@@ -70,6 +70,11 @@ export const FIELD_HEIGHT_REM = 'var(--control-height)';
  * It wraps rather than replaces: a dropdown's own colours, borders and focus
  * rings run first and this lands on top of the result, so the only thing a call
  * site gives up is the argument about how tall it is.
+ *
+ * It also fills in a readable menu where a dropdown never said what colour its
+ * options should be. react-select's own default is a dark grey, which on a dark
+ * screen renders a list of near-invisible rows -- which is what the bank account
+ * list looked like. Anything a dropdown does state about its menu is untouched.
  */
 export const withFieldHeight = (
   styles: any = {},
@@ -78,8 +83,64 @@ export const withFieldHeight = (
   const run = (key: string) => (base: any, state: any) =>
     typeof styles[key] === 'function' ? styles[key](base, state) : base;
 
+  // Fill a colour in only where the dropdown has no opinion of its own. Several
+  // of them describe their menus in detail and those are left exactly as they
+  // are; the ones that describe only a background are the problem this closes.
+  // react-select's own default text colour is a dark grey, which on a dark menu
+  // is all but invisible -- the bank account list read as empty rows.
+  const fill = (key: string, defaults: any) => (base: any, state: any) => {
+    const own = run(key)(base, state);
+    const out = { ...own };
+
+    Object.entries(defaults).forEach(([prop, value]) => {
+      if (own[prop] === undefined || own[prop] === base[prop]) {
+        out[prop] = value;
+      }
+    });
+
+    return out;
+  };
+
+  const text = 'rgb(var(--c-text))';
+  const muted = 'rgb(var(--c-text-muted))';
+  const surface = 'rgb(var(--c-surface))';
+
   return {
     ...styles,
+    menu: fill('menu', { backgroundColor: surface, color: text }),
+    menuList: fill('menuList', { backgroundColor: surface }),
+    // The option needs its background as well as its ink, and it needs both by
+    // state. react-select paints the row under the pointer its own pale blue
+    // (#DEEBFF) from an emotion class that outranks any Tailwind `dark:bg-*` a
+    // dropdown writes -- so on a dark screen the hovered row came out
+    // near-white text on near-white blue, which is how the bank list read as a
+    // blank row following the mouse.
+    option: (base: any, state: any) => {
+      const own = run('option')(base, state);
+      const chosen = (prop: string) => own[prop] !== undefined && own[prop] !== base[prop];
+
+      const background = state.isSelected
+        ? 'rgb(var(--c-primary))'
+        : state.isFocused
+          ? 'rgb(var(--c-page))'
+          : 'transparent';
+
+      return {
+        ...own,
+        backgroundColor: chosen('backgroundColor') ? own.backgroundColor : background,
+        color: chosen('color')
+          ? own.color
+          : state.isSelected
+            ? 'rgb(var(--c-white))'
+            : text,
+        ':active': {
+          ...(own[':active'] || {}),
+          backgroundColor: 'rgb(var(--c-page))',
+        },
+      };
+    },
+    singleValue: fill('singleValue', { color: text }),
+    placeholder: fill('placeholder', { color: muted }),
     control: (base: any, state: any) => ({
       ...run('control')(base, state),
       minHeight: height,
