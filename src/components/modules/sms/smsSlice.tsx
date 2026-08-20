@@ -431,10 +431,14 @@ const smsSlice = createSlice({
   },
   extraReducers: builder => {
     builder
+      // The rows that are on screen stay there while the next page is fetched.
+      // Clearing them here is what made the table blink empty on every Next --
+      // the reader lost their place for as long as the request took, and an
+      // empty table is also how "there is nothing here" is said, so for a moment
+      // it said something untrue.
       .addCase(getSmsLogs.pending, state => {
         state.loading = true;
         state.error = null;
-        state.logs = [];
       })
       .addCase(getSmsLogs.fulfilled, (state, action) => {
         state.loading = false;
@@ -442,6 +446,9 @@ const smsSlice = createSlice({
         state.pagination = action.payload.pagination;
         state.transactionDate = action.payload.transaction_date;
       })
+      // A refusal does clear them: the commonest one is the server saying this
+      // page holds no logs, and an empty table carrying its own "No data found"
+      // is the honest answer to that.
       .addCase(getSmsLogs.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to load SMS logs';

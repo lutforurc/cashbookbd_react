@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import Loader from '../../../common/Loader';
 import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { chartDateTime } from '../../utils/utils-functions/formatDate';
@@ -168,9 +167,18 @@ const SendSms = (user: any) => {
           </div>
         </div>
 
+        {/* The old rows stay legible under a wash while the next page comes, so
+            the reader keeps their place; the table says "No data found" itself
+            once the answer is in and there is nothing in it. */}
         <div className="relative">
-          {smsState?.loading ? <Loader /> : ''}
-          <Table columns={columns} data={tableData} />
+          <div className={smsState?.loading ? 'pointer-events-none opacity-40 transition-opacity' : 'transition-opacity'}>
+            <Table columns={columns} data={tableData} />
+          </div>
+          {smsState?.loading ? (
+            <div className="absolute inset-0 flex items-start justify-center pt-10">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent" />
+            </div>
+          ) : null}
         </div>
         {totalPages > 1 ? (
           <Pagination
