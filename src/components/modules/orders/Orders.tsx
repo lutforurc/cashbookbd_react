@@ -304,6 +304,12 @@ const Orders = () => {
   const [perPage, setPerPage] = useState(Number(persistedOrdersListState.perPage ?? 10));
   const [printRowsPerPage, setPrintRowsPerPage] = useState(Number(persistedOrdersListState.printRowsPerPage ?? 12));
   const [printFontSize, setPrintFontSize] = useState(Number(persistedOrdersListState.printFontSize ?? 10));
+  // Bumped by Apply so the list is fetched again even when nothing in the
+  // filters has changed. The screen remembers its filters between visits, so
+  // coming back with a term already in the box and pressing Apply set the same
+  // value on the same state -- React saw no change, the effect never ran, and
+  // the button looked broken.
+  const [reloadToken, setReloadToken] = useState(0);
   const [search, setSearchValue] = useState(persistedOrdersListState.search ?? '');
   const [searchFilter, setSearchFilter] = useState(persistedOrdersListState.searchFilter ?? '');
   const [startDate, setStartDate] = useState(persistedOrdersListState.startDate ?? '');
@@ -365,7 +371,7 @@ const Orders = () => {
         endDate,
       }),
     );
-  }, [dispatch, page, perPage, searchFilter, orderType, selectedLedger?.value, selectedProductOption?.value, startDate, endDate, orderStatus]);
+  }, [dispatch, page, perPage, searchFilter, orderType, selectedLedger?.value, selectedProductOption?.value, startDate, endDate, orderStatus, reloadToken]);
 
   useEffect(() => {
     if (!orders?.isLoading) {
@@ -378,6 +384,7 @@ const Orders = () => {
     setPage(1);
     setSearchFilter(search);
     setFilterOpen(false);
+    setReloadToken((token) => token + 1);
   };
   const clearPendingListPrint = () => {
     if (listPrintTimeoutRef.current !== null) {
