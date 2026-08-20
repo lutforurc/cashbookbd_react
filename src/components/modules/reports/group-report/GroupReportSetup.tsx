@@ -196,7 +196,10 @@ const GroupReportSetup = () => {
               })}
               classNames={{
                 control: (state) =>
-                  `min-h-10! rounded-none! border-stroke! bg-transparent! text-sm! shadow-none! dark:border-strokedark! dark:bg-form-input! ${
+                  // No height here: `min-h-10!` stood where the shared one now
+                  // does, and an !important min-height beats an inline height, so
+                  // this dropdown alone stood 40px beside 34px neighbours.
+                  `rounded-none! border-stroke! bg-transparent! text-sm! shadow-none! dark:border-strokedark! dark:bg-form-input! ${
                     state.isFocused ? 'border-blue-500! dark:border-blue-400!' : ''
                   }`,
                 valueContainer: () => 'px-3! py-0!',

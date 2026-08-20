@@ -256,8 +256,9 @@ const CollectionSheet = (user: any) => {
   };
 
   const labelClass = 'mb-1 block text-sm font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]';
-  const controlClass = 'h-10 w-full rounded-none border! border-slate-300! bg-white! px-3 text-sm font-semibold text-slate-900! outline-none focus:border-slate-500! dark:border-[rgb(var(--c-form-strokedark))]! dark:bg-[rgb(var(--c-form-input))]! dark:text-[rgb(var(--c-text))]! dark:focus:border-[rgb(var(--c-gray-600))]!';
-  const buttonClass = 'inline-flex h-10 items-center justify-center gap-2 rounded-none bg-slate-800 px-6 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[rgb(var(--c-form-strokedark))] dark:hover:bg-[rgb(var(--c-gray-600))]';
+  // Height comes from the shared one, as everywhere else.
+  const controlClass = 'w-full rounded-none border! border-slate-300! bg-white! px-3 text-sm font-semibold text-slate-900! outline-none focus:border-slate-500! dark:border-[rgb(var(--c-form-strokedark))]! dark:bg-[rgb(var(--c-form-input))]! dark:text-[rgb(var(--c-text))]! dark:focus:border-[rgb(var(--c-gray-600))]!';
+  const buttonClass = 'inline-flex items-center justify-center gap-2 rounded-none bg-slate-800 px-6 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[rgb(var(--c-form-strokedark))] dark:hover:bg-[rgb(var(--c-gray-600))]';
   const somitySelectStyles: StylesConfig<SomityOption, false> = {
     control: (provided, state) => ({
       ...provided,
