@@ -202,10 +202,10 @@ const PublicRegistration: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-white dark:bg-boxdark">
+    <div className="fixed inset-0 overflow-y-auto bg-[rgb(var(--c-surface))]">
       
       <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-8">
-        <div className="w-full max-w-3xl rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-8">
+        <div className="w-full max-w-3xl rounded-xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark sm:p-8">
           <div className="mb-6">
             <div className="flex flex-wrap items-center gap-2">
               
@@ -404,7 +404,8 @@ const PublicRegistration: React.FC = () => {
             {/* <Button
               type="submit"
               disabled={submitting}
-              className="mt-6 w-full bg-primary px-4 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              variant="primary"
+              className="mt-6 w-full px-4 py-3 text-sm font-medium transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Requesting OTP...' : 'Request OTP'}
             </Button> */}

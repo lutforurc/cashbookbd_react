@@ -79,6 +79,16 @@ export const BUTTON_VARIANT = {
   /** Something is removed, cancelled or withdrawn. */
   danger: 'text-white bg-danger hover:bg-danger/90 focus-visible:bg-danger/90',
 
+  /**
+   * Careful -- not wrong yet. Withdrawing an approval, forcing a recount:
+   * things worth looking at twice without being told they are dangerous.
+   *
+   * Screens had been reaching for amber-600 by hand for exactly this, which put
+   * the colour outside the palette -- so a user changing their warning colour
+   * on the theme form changed every warning in the software except the buttons.
+   */
+  warning: 'text-white bg-warning hover:bg-warning/90 focus-visible:bg-warning/90',
+
   /** A quiet action beside a loud one -- Cancel next to Delete. */
   ghost:
     'text-body hover:bg-gray-100 focus-visible:bg-gray-100 dark:text-bodydark dark:hover:bg-meta-4 dark:focus-visible:bg-meta-4',

@@ -688,7 +688,7 @@ const OrderWithProduct = ({
                     onClick={() => setIsFilterMenuOpen((prev) => !prev)}
                     className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
  isFilterMenuOpen
- ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-boxdark dark:text-blue-300 dark:hover:bg-boxdark-2'}`}
+ ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-blue-500 bg-[rgb(var(--c-surface))] text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-boxdark-2'}`}
                     aria-label="Toggle filter menu"
                   >
                     <FiFilter className="text-lg" />
@@ -839,7 +839,7 @@ const OrderWithProduct = ({
                     onChange={(e) => setPerPage(Number(e.target.value) || 12)}
                     placeholder="Rows"
                     label=""
-                    className="w-full! border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
+                    className="w-full! border-stroke bg-[rgb(var(--c-surface))] text-center dark:border-form-strokedark"
                   />
                 </div>
 
@@ -855,7 +855,7 @@ const OrderWithProduct = ({
                     onChange={(e) => setFontSize(Number(e.target.value) || 12)}
                     placeholder="Font"
                     label=""
-                    className="w-full! border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
+                    className="w-full! border-stroke bg-[rgb(var(--c-surface))] text-center dark:border-form-strokedark"
                   />
                 </div>
               </div>

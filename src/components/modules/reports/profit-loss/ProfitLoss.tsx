@@ -732,10 +732,10 @@ const ExpenseDetailsModal = ({
     >
       <div className="mx-auto flex min-h-full w-full max-w-5xl items-start justify-center mt-25">
         <div
-          className="my-2 flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark"
+          className="my-2 flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="sticky top-0 z-10 flex items-start justify-between border-b border-stroke bg-white px-5 py-4 dark:border-strokedark dark:bg-boxdark">
+          <div className="sticky top-0 z-10 flex items-start justify-between border-b border-stroke bg-[rgb(var(--c-surface))] px-5 py-4 dark:border-strokedark">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {detail.name}
@@ -765,7 +765,7 @@ const ExpenseDetailsModal = ({
           <div className="flex-1 overflow-y-auto px-5 pb-5">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="sticky top-0 z-20 border-b border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark dark:text-slate-300">
+                <tr className="sticky top-0 z-20 border-b border-stroke bg-[rgb(var(--c-surface))] shadow-sm dark:border-strokedark dark:text-slate-300">
                   <th className="px-3 py-3 text-left font-semibold">Particular</th>
                   <th className="px-3 py-3 text-right font-semibold">Debit</th>
                   <th className="px-3 py-3 text-right font-semibold">Credit</th>

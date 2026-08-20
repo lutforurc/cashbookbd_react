@@ -607,7 +607,8 @@ const TutorialVideos = () => {
                             onClick={() => startEdit(row)}
                             aria-label={`Edit ${row.title}`}
                             title="Edit this screen's name, group or key"
-                            className="inline-flex w-8 items-center justify-center rounded-md bg-primary/10 text-primary transition hover:bg-primary/20"
+                            variant="primary"
+                            className="inline-flex w-8 items-center justify-center rounded-md text-primary transition"
                           >
                             <FiEdit2 />
                           </Button>
@@ -619,7 +620,8 @@ const TutorialVideos = () => {
                             onClick={() => setRemoveRow(row)}
                             aria-label={`Remove ${row.title}`}
                             title="Remove this screen from the list"
-                            className="inline-flex w-8 items-center justify-center rounded-md bg-danger/10 text-danger transition hover:bg-danger/20"
+                            variant="danger"
+                            className="inline-flex w-8 items-center justify-center rounded-md text-danger transition"
                           >
                             <FiTrash2 />
                           </Button>

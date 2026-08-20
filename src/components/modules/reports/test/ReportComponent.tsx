@@ -15,7 +15,8 @@ const ReportComponent: React.FC = () => {
     <div className="p-4">
       <Button
         onClick={handlePrint}
-        className="bg-blue-600 text-white px-4 py-2 rounded mb-4"
+        variant="primary"
+        className="px-4 py-2 rounded mb-4"
       >
         ðŸ–¨ï¸ Print Report
       </Button>

@@ -416,7 +416,8 @@ const PaymentSubmit: React.FC = () => {
           <Button
             type="button"
             onClick={() => navigate(routes.my_subscription)}
-            className="flex w-full items-center justify-center text-nowrap rounded bg-gray-700 p-2 text-white transition hover:bg-blue-400 dark:hover:bg-blue-400"
+            variant="default"
+            className="flex w-full items-center justify-center text-nowrap rounded p-2 transition"
           >
             <FiArrowLeft className="mr-2" /> Back
           </Button>

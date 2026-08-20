@@ -224,7 +224,7 @@ const SalesSummaryReport: React.FC = () => {
 
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-sm text-gray-700 dark:text-gray-300">
-          <thead className="bg-gray-300 text-xs uppercase text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+          <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300">
             <tr>
               <th className={`${cell} w-20 text-center`}>Sl. No</th>
               <th className={cell}>Customer Name</th>

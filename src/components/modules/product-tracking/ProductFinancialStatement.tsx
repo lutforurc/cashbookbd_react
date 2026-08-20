@@ -229,7 +229,7 @@ const ProductFinancialStatement = () => {
 
       {/* ------------------ report ------------------ */}
       {data ? (
-        <div ref={printRef} className="rounded-sm border border-stroke bg-white p-4 dark:border-strokedark dark:bg-boxdark">
+        <div ref={printRef} className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-4 dark:border-strokedark">
           <div className="mb-3 text-center">
             <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Product Financial Statement</h2>
             <p className="text-sm">
@@ -279,7 +279,7 @@ const ProductFinancialStatement = () => {
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-gray-600 dark:text-gray-300">
-              <thead className="bg-gray-300 uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+              <thead className="bg-[rgb(var(--c-table-head))] uppercase text-gray-700 dark:text-gray-200">
                 <tr>
                   <th className="px-2 py-2">Date</th>
                   <th className="px-2 py-2">Voucher</th>

@@ -73,7 +73,7 @@ const DeviceLimitNotice: React.FC<Props> = ({ block, loginId, password, onReleas
         {block.devices.map((device) => (
           <li
             key={device.id}
-            className="flex items-center justify-between gap-3 rounded border border-stroke bg-white px-3 py-2 dark:border-strokedark dark:bg-boxdark"
+            className="flex items-center justify-between gap-3 rounded border border-stroke bg-[rgb(var(--c-surface))] px-3 py-2 dark:border-strokedark"
           >
             <div className="flex min-w-0 items-center gap-2">
               <FiMonitor className="shrink-0 text-[rgb(var(--c-text-muted))]" />
@@ -90,7 +90,8 @@ const DeviceLimitNotice: React.FC<Props> = ({ block, loginId, password, onReleas
               type="button"
               disabled={busyId !== null}
               onClick={() => handleSignOut(device)}
-              className="shrink-0 rounded bg-danger px-3 py-1 text-xs font-medium text-white disabled:opacity-60"
+              variant="danger"
+              className="shrink-0 rounded px-3 py-1 text-xs font-medium disabled:opacity-60"
             >
               {busyId === device.id ? 'Signing out…' : 'Sign out'}
             </Button>

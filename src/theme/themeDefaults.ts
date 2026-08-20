@@ -35,6 +35,12 @@ export const THEME_DEFAULTS: Record<string, ThemeDefault> = {
   // The quieter grey under it: help text, captions, the line explaining a field.
   text_secondary_color: { light: '#59636F', dark: '#A3ADB9' },
 
+  // A card, a modal, the list a dropdown opens -- one step nearer than the page.
+  card_color: { light: '#FFFFFF', dark: '#212932' },
+
+  // The band across the top of a table.
+  table_header_color: { light: '#CBD3DE', dark: '#2F3844' },
+
   sidebar_color: { light: '#FFFFFF', dark: '#212932' },
   header_color: { light: '#FFFFFF', dark: '#212932' },
   page_bg_color: { light: '#F4F7FA', dark: '#171D25' },

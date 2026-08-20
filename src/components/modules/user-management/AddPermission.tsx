@@ -289,7 +289,7 @@ const AddPermission: React.FC = () => {
                     editingId === perm.id ? (
                       <li
                         key={perm.id}
-                        className="flex items-center gap-1 rounded border border-blue-400 bg-white px-1 py-0.5 dark:bg-boxdark"
+                        className="flex items-center gap-1 rounded border border-blue-400 bg-[rgb(var(--c-surface))] px-1 py-0.5"
                       >
                         <Input
                           value={editingName}
@@ -322,7 +322,7 @@ const AddPermission: React.FC = () => {
                     ) : (
                       <li
                         key={perm.id}
-                        className="group flex items-center gap-1 rounded border border-gray-200 bg-white px-2 py-0.5 dark:border-gray-600 dark:bg-boxdark"
+                        className="group flex items-center gap-1 rounded border border-gray-200 bg-[rgb(var(--c-surface))] px-2 py-0.5 dark:border-gray-600"
                       >
                         <span
                           title={formatRoleNameForCashBook(perm.name)}

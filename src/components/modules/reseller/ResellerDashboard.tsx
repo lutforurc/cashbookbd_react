@@ -85,7 +85,7 @@ const ResellerDashboard: React.FC = () => {
     <div className="space-y-4">
       <HelmetTitle title="Reseller" />
 
-      <section className="border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
+      <section className="border border-stroke bg-[rgb(var(--c-surface))] p-5 shadow-default dark:border-strokedark">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/10 text-primary">
@@ -119,7 +119,7 @@ const ResellerDashboard: React.FC = () => {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <section className="overflow-hidden border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <section className="overflow-hidden border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
           <div className="flex items-center gap-3 border-b border-stroke px-5 py-3.5 dark:border-strokedark">
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-indigo-500/10 text-indigo-500">
               <FiUsers className="h-4 w-4" />
@@ -137,7 +137,7 @@ const ResellerDashboard: React.FC = () => {
           />
         </section>
 
-        <section className="overflow-hidden border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <section className="overflow-hidden border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
           <div className="flex items-center gap-3 border-b border-stroke px-5 py-3.5 dark:border-strokedark">
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-violet-500/10 text-violet-500">
               <FiTrendingUp className="h-4 w-4" />
@@ -156,7 +156,7 @@ const ResellerDashboard: React.FC = () => {
         </section>
       </div>
 
-      <section className="overflow-hidden border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <section className="overflow-hidden border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
         <div className="flex items-center gap-3 border-b border-stroke px-5 py-3.5 dark:border-strokedark">
           <span className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-500">
             <FiCreditCard className="h-4 w-4" />
@@ -189,7 +189,7 @@ const STAT_TONES: Record<string, { bar: string; value: string }> = {
 const StatCard = ({ label, value }: { label: string; value: number | string }) => {
   const tone = STAT_TONES[label] || { bar: 'bg-slate-400', value: 'text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]' };
   return (
-    <div className="relative overflow-hidden border border-stroke bg-white p-5 shadow-default transition hover:shadow-lg dark:border-strokedark dark:bg-boxdark">
+    <div className="relative overflow-hidden border border-stroke bg-[rgb(var(--c-surface))] p-5 shadow-default transition hover:shadow-lg dark:border-strokedark">
       <span className={`absolute inset-y-0 left-0 w-1 ${tone.bar}`} />
       <p className="text-sm font-medium text-slate-500 dark:text-bodydark2">{label}</p>
       <p className={`mt-2 text-title-sm font-bold ${tone.value}`}>{value}</p>

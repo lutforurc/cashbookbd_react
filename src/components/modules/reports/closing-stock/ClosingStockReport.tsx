@@ -271,7 +271,7 @@ const ClosingStockReport = ({ user }: any) => {
       <div className="overflow-x-auto">
         {loading ? <Loader /> : null}
         <table className="min-w-full table-fixed border-collapse text-left text-sm text-gray-700 dark:text-gray-300">
-          <thead className="bg-gray-300 text-xs uppercase text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+          <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300">
             <tr>
               <th className="w-[80px] px-3 py-3 text-center font-semibold">Sl. No</th>
               <th className="px-3 py-3 text-center font-semibold">Product Details</th>

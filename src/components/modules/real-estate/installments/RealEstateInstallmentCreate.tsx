@@ -933,7 +933,8 @@ export default function RealEstateInstallmentCreate() {
                               type="button"
                               onClick={saveInstallmentEdit}
                               disabled={isUpdating}
-                              className="inline-flex items-center gap-1 bg-gray-700 px-3 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-60"
+                              variant="default"
+                              className="inline-flex items-center gap-1 px-3 text-xs font-semibold disabled:opacity-60"
                             >
                               <FiSave />
                               {isUpdating ? 'Saving' : 'Save'}
@@ -952,7 +953,8 @@ export default function RealEstateInstallmentCreate() {
                           <Button
                             type="button"
                             onClick={() => startEditInstallment(row)}
-                            className="inline-flex items-center gap-1 bg-gray-700 px-3 text-xs font-semibold text-white hover:bg-blue-500"
+                            variant="default"
+                            className="inline-flex items-center gap-1 px-3 text-xs font-semibold"
                           >
                             <FiEdit2 />
                             Edit

@@ -560,7 +560,7 @@ const ConstructionBusinessPurchaseReturn = () => {
       </div>
       <div className="mt-6 col-span-full overflow-x-auto ">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-300 dark:bg-gray-700 dark:text-gray-200">
+          <thead className="text-xs text-gray-700 uppercase bg-[rgb(var(--c-table-head))] dark:text-gray-200">
             <tr className="bg-black-700">
               <th scope="col" className="px-2 py-2 text-center">Sl. No.</th>
               <th scope="col" className="px-2 py-2">Product Name</th>

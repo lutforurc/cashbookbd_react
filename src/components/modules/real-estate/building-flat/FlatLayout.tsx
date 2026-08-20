@@ -1104,7 +1104,8 @@ const FlatLayout = () => {
                   <Button
                     type="button"
                     onClick={goToUnitSale}
-                    className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500"
+                    variant="success"
+                    className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition"
                   >
                     <FiDollarSign />
                     Sale / Booking

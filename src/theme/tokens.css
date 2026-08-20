@@ -65,6 +65,12 @@
      white on a dark screen. */
   --c-surface: var(--c-white);
 
+  /* The band across the top of a table. Its own variable because a table
+     head is the one part of a grid people recolour on purpose -- and
+     because 22 tables said `bg-gray-300 dark:bg-gray-700` by hand, which
+     no theme could reach. */
+  --c-table-head: var(--c-gray-300);
+
   /* What words are written in.
      
      Its own variable because the token it used to borrow does double
@@ -445,6 +451,7 @@ html.dark {
   --c-header: var(--c-sidebar);
   --c-page: var(--c-boxdark-2);
   --c-surface: var(--c-boxdark);
+  --c-table-head: var(--c-gray-700);
   --c-text: var(--c-white);
   --c-text-muted: var(--c-bodydark);
 

@@ -92,7 +92,7 @@ const CustomerChangePassword = () => {
           )}
         </div>
 
-        <div className="rounded-xl bg-white p-6 shadow-default dark:bg-boxdark sm:p-7">
+        <div className="rounded-xl bg-[rgb(var(--c-surface))] p-6 shadow-default sm:p-7">
           {formError && (
             <div
               role="alert"
@@ -232,7 +232,8 @@ const CustomerChangePassword = () => {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-medium text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                    variant="primary"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg py-3 font-medium transition disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isSubmitting ? (
                       <>

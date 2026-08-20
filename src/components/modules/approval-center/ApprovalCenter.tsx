@@ -267,7 +267,7 @@ const ApprovalCenter = ({ user }: any) => {
       <HelmetTitle title="Approval Center" />
       {(loading || actionLoading) && <Loader />}
 
-      <div className="mb-3 border border-stroke bg-white p-3 dark:border-strokedark dark:bg-boxdark">
+      <div className="mb-3 border border-stroke bg-[rgb(var(--c-surface))] p-3 dark:border-strokedark">
         <div className="grid grid-cols-1 gap-2 md:grid-cols-4 xl:grid-cols-6">
           <InputDatePicker
             id="date_from"
@@ -337,14 +337,14 @@ const ApprovalCenter = ({ user }: any) => {
 
       <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-4">
         {summaryCards.map((card) => (
-          <div key={card.label} className="border border-stroke bg-white px-4 py-3 dark:border-strokedark dark:bg-boxdark">
+          <div key={card.label} className="border border-stroke bg-[rgb(var(--c-surface))] px-4 py-3 dark:border-strokedark">
             <div className="text-xs font-semibold uppercase text-slate-500">{card.label}</div>
             <div className="mt-1 text-xl font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">{card.value}</div>
           </div>
         ))}
       </div>
 
-      <div className="border border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
+      <div className="border border-stroke bg-[rgb(var(--c-surface))] dark:border-strokedark">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stroke px-4 py-3 dark:border-strokedark">
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" onClick={() => setActiveTab('attendance')} className={`px-4 text-sm font-semibold ${activeTab ==='attendance'?'bg-primary text-white':'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
@@ -365,14 +365,14 @@ const ApprovalCenter = ({ user }: any) => {
                 <Button
                   type="button"
                   onClick={() => changeVoucherStatus('pending')}
-                  className={`px-3 text-xs font-semibold ${filters.voucher_status ==='pending'?'bg-primary text-white':'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
+                  className={`px-3 text-xs font-semibold ${filters.voucher_status ==='pending'?'bg-primary text-white':'bg-[rgb(var(--c-surface))] text-slate-700 dark:text-slate-200'}`}
                 >
                   Pending
                 </Button>
                 <Button
                   type="button"
                   onClick={() => changeVoucherStatus('approved')}
-                  className={`px-3 text-xs font-semibold ${filters.voucher_status ==='approved'?'bg-primary text-white':'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
+                  className={`px-3 text-xs font-semibold ${filters.voucher_status ==='approved'?'bg-primary text-white':'bg-[rgb(var(--c-surface))] text-slate-700 dark:text-slate-200'}`}
                 >
                   Approved
                 </Button>
@@ -395,7 +395,8 @@ const ApprovalCenter = ({ user }: any) => {
                 label="Remove Approval"
                 disabled={!selectedVouchers.length}
                 onClick={() => openConfirm({ type: 'voucher', action: 'remove' })}
-                className="min-w-[150px] whitespace-nowrap bg-amber-600 px-4 hover:bg-amber-700"
+                variant="warning"
+                className="min-w-[150px] whitespace-nowrap px-4"
                 icon={<FiRotateCcw className="mr-2" />}
               />
             ) : null}
@@ -455,7 +456,7 @@ const ApprovalCenter = ({ user }: any) => {
                   rows={3}
                   maxLength={255}
                   placeholder={`Reason / note for this ${confirmAction?.action}`}
-                  className="block w-full rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
+                  className="block w-full rounded-xs border border-gray-300 bg-[rgb(var(--c-surface))] p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:text-[rgb(var(--c-text))]"
                 />
               </span>
             ) : null}

@@ -62,7 +62,7 @@ const BillingHistory: React.FC = () => {
     <div className="space-y-6">
       <HelmetTitle title="Billing History" />
 
-      <div className="border-stroke bg-white pl-3 pt-6 pb-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+      <div className="border-stroke bg-[rgb(var(--c-surface))] pl-3 pt-6 pb-6 shadow-sm dark:border-strokedark">
         <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           Billing History
         </h1>

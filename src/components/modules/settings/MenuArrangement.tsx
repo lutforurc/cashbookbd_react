@@ -107,7 +107,7 @@ const MenuArrangement = () => {
           reach on a laptop. */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* ---------------- main menus ---------------- */}
-        <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-default dark:border-strokedark">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Main menu
@@ -309,7 +309,7 @@ const MenuArrangement = () => {
         </div>
 
         {/* ---------------- the chosen menu's entries ---------------- */}
-        <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-default dark:border-strokedark">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               {selectedMenu

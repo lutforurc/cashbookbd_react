@@ -236,7 +236,7 @@ const GlobalSearch = () => {
       </form>
 
       {open ? (
-        <div className="absolute left-0 top-full z-999 mt-3 w-full overflow-hidden rounded border border-stroke bg-white shadow-5 dark:border-strokedark dark:bg-boxdark">
+        <div className="absolute left-0 top-full z-999 mt-3 w-full overflow-hidden rounded border border-stroke bg-[rgb(var(--c-surface))] shadow-5 dark:border-strokedark">
           {voucherTarget || isCustomerMobileSearch || results.length > 0 ? (
             <ul className="max-h-96 overflow-y-auto py-2">
               {!query.trim() && results.length > 0 ? (

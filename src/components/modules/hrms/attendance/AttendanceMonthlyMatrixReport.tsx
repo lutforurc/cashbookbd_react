@@ -591,7 +591,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       <HelmetTitle title="Monthly Attendance Report" />
       {attendance.loading && <Loader />}
 
-      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+      <div className="mb-3 border border-slate-200 bg-[rgb(var(--c-surface))] p-3 dark:border-slate-700">
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
@@ -653,7 +653,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         </div>
       </div>
 
-      <div className={`mb-3 border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark ${activeTab === 'summary' ? '' : 'hidden'}`}>
+      <div className={`mb-3 border border-slate-200 bg-[rgb(var(--c-surface))] shadow-sm dark:border-slate-700 ${activeTab === 'summary' ? '' : 'hidden'}`}>
         <div className="border-b border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
           Monthly Attendance Summary
         </div>
@@ -668,7 +668,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         />
       </div>
 
-      <div className={`attendance-monthly-screen border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark ${activeTab === 'matrix' ? '' : 'hidden'}`}>
+      <div className={`attendance-monthly-screen border border-slate-200 bg-[rgb(var(--c-surface))] shadow-sm dark:border-slate-700 ${activeTab === 'matrix' ? '' : 'hidden'}`}>
         <PrintStyles />
         <style>
           {`

@@ -946,7 +946,8 @@ const SalarySheetUpdate = (user: any) => {
             disabled={addEmployeeLoading || !selectedEmployeeId}
             label="Add Employee"
             icon={<FiPlus className="mr-1 font-bold" />}
-            className="whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 px-5 py-1"
+            variant="success"
+            className="whitespace-nowrap px-5 py-1"
           />
           <ButtonLoading
             onClick={() =>
@@ -965,7 +966,8 @@ const SalarySheetUpdate = (user: any) => {
             buttonLoading={saveLoading}
             disabled={saveLoading || rows.length === 0}
             label="Update Salary"
-            className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 px-6 py-1"
+            variant="primary"
+            className="whitespace-nowrap px-6 py-1"
             icon={<FiCheckSquare />}
           />
         </div>

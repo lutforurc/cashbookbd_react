@@ -73,7 +73,7 @@ const MyDevices: React.FC = () => {
     <>
       <Breadcrumb pageName="My Devices" />
 
-      <div className="rounded-sm border border-stroke bg-white px-5 pb-5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] px-5 pb-5 pt-6 shadow-default dark:border-strokedark">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Signed-in devices</h3>
@@ -126,7 +126,8 @@ const MyDevices: React.FC = () => {
                   type="button"
                   disabled={busyId !== null}
                   onClick={() => handleSignOut(device)}
-                  className="shrink-0 rounded bg-danger px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
+                  variant="danger"
+                  className="shrink-0 rounded px-3 py-1.5 text-sm font-medium disabled:opacity-60"
                 >
                   {busyId === device.id ? 'Signing out…' : device.is_current ? 'Sign out' : 'Sign out remotely'}
                 </Button>

@@ -238,7 +238,7 @@ const HolidayCalendarReport = ({ user }: any) => {
       <HelmetTitle title="Holiday Calendar Report" />
       {attendance.loading && <Loader />}
 
-      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+      <div className="mb-3 border border-slate-200 bg-[rgb(var(--c-surface))] p-3 dark:border-slate-700">
       <div className="grid grid-cols-1 gap-2 md:grid-cols-5">
         <DropdownCommon id="month" name="month" label="Month" value={filters.month} data={monthOptions} onChange={handleChange} className="" />
         <DropdownCommon id="year" name="year" label="Year" value={filters.year} data={yearOptions} onChange={handleChange} className="" />
@@ -267,7 +267,7 @@ const HolidayCalendarReport = ({ user }: any) => {
         {cards.map((card) => {
           const tone = cardTone(card.label);
           return (
-            <div key={card.label} className="relative overflow-hidden border border-slate-200 bg-white p-3 pl-4 dark:border-slate-700 dark:bg-boxdark">
+            <div key={card.label} className="relative overflow-hidden border border-slate-200 bg-[rgb(var(--c-surface))] p-3 pl-4 dark:border-slate-700">
               <span className={`absolute inset-y-0 left-0 w-1 ${tone.bar}`} />
               <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-300">
                 <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
@@ -279,7 +279,7 @@ const HolidayCalendarReport = ({ user }: any) => {
         })}
       </div>
 
-      <div className="overflow-hidden border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark">
+      <div className="overflow-hidden border border-slate-200 bg-[rgb(var(--c-surface))] shadow-sm dark:border-slate-700">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-3 py-3 dark:border-slate-700">
           <div>
             <h3 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
@@ -313,7 +313,7 @@ const HolidayCalendarReport = ({ user }: any) => {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 bg-white dark:bg-boxdark">
+        <div className="grid grid-cols-7 bg-[rgb(var(--c-surface))]">
           {calendarDays.map((day, index) => {
             const dateKey = day ? dateToString(new Date(year, monthIndex, day)) : '';
             const events = dateKey ? eventsByDate.get(dateKey) || [] : [];

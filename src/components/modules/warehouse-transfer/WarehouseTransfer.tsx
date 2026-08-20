@@ -819,7 +819,7 @@ const BranchTransfer = () => {
 
       <div className="mt-3 overflow-x-auto mb-5">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-300 dark:bg-gray-700 dark:text-gray-200">
+          <thead className="text-xs text-gray-700 uppercase bg-[rgb(var(--c-table-head))] dark:text-gray-200">
             <tr>
               <th className="px-2 py-2 text-center">Sl</th>
               <th className="px-2 py-2">Product</th>

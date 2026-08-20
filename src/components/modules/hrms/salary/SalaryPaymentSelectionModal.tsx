@@ -180,7 +180,8 @@ const SalaryPaymentSelectionModal = ({
               onClick={onClose}
               label="Back"
               icon={<FiArrowLeft className="h-4 w-4" />}
-              className="whitespace-nowrap bg-blue-600 px-4 py-2 hover:bg-blue-700"
+              variant="primary"
+              className="whitespace-nowrap px-4 py-2"
             />
           </div>
         </div>
@@ -215,7 +216,7 @@ const SalaryPaymentSelectionModal = ({
 
         <div className="overflow-x-auto border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-100">
+            <thead className="bg-[rgb(var(--c-table-head))] text-slate-700 dark:text-slate-100">
               <tr>
                 <th className="px-3 py-3 text-center w-6">Mark</th>
                 <th className="px-3 py-3 text-center w-6">SL</th>
@@ -321,7 +322,8 @@ const SalaryPaymentSelectionModal = ({
               // as "next" on what is the last step. A tick says what pressing
               // this actually does: confirm the marked rows and pay them.
               icon={<FiCheckCircle className="h-4 w-4" />}
-              className="whitespace-nowrap bg-emerald-600 px-4 py-2 hover:bg-emerald-700"
+              variant="success"
+              className="whitespace-nowrap px-4 py-2"
             />
           </div>
         </div>

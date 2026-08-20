@@ -170,7 +170,7 @@ const ProductTrackingSettings = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* ------------------ Add / Edit ------------------ */}
-        <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-default dark:border-strokedark">
           <h3 className="mb-3 text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             {editingId ? 'Edit Setting' : 'Add New Product'}
           </h3>
@@ -202,7 +202,7 @@ const ProductTrackingSettings = () => {
               <DdlMultiline
  id="coa4_id"
  name="coa4_id"
- className="bg-white! dark:bg-boxdark! border-gray-300! dark:border-gray-600!"
+ className="bg-[rgb(var(--c-surface))]! ! border-gray-300! dark:border-gray-600!"
  placeholder="For all parties"
  value={form.coa4_id ? { value: String(form.coa4_id), label: partyName } : null}
  onSelect={(selected) => {
@@ -278,7 +278,7 @@ const ProductTrackingSettings = () => {
         </div>
 
         {/* ------------------ List ------------------ */}
-        <div className="lg:col-span-2 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="lg:col-span-2 rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-default dark:border-strokedark">
           <div className="mb-3 flex items-center justify-between gap-2">
             <h3 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Tracked Products ({settings.length})
@@ -309,7 +309,7 @@ const ProductTrackingSettings = () => {
           {settings.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-                <thead className="bg-gray-300 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-700 dark:text-gray-200">
                   <tr>
                     <th className="px-2 py-2">Customer / Supplier</th>
                     <th className="px-2 py-2">Product</th>

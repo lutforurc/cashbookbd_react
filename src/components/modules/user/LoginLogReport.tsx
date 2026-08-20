@@ -186,7 +186,7 @@ const LoginLogReport: React.FC = () => {
     <div>
       <HelmetTitle title="Login History" />
 
-      <div className="rounded border border-stroke bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
+      <div className="rounded border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-sm dark:border-strokedark">
         <div className="mb-3">
           <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Login History</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -229,7 +229,8 @@ const LoginLogReport: React.FC = () => {
               onClick={handleSearch}
               buttonLoading={loading}
               label="Search"
-              className="flex-1 bg-primary text-sm text-white"
+              variant="primary"
+              className="flex-1 text-sm"
               icon={<FiSearch />}
             />
             <ButtonLoading

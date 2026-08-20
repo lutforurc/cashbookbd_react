@@ -35,18 +35,14 @@ const PER_MODE_VARS: Array<[string, string]> = [
   // The quieter half: help text, captions, the line under a field. Separate
   // because darkening the headings rarely means darkening those too.
   ['text_secondary_color', '--c-text-muted'],
+  // A raised surface: a card, a modal, the list a dropdown opens.
+  ['card_color', '--c-surface'],
+  // The band across the top of a table.
+  ['table_header_color', '--c-table-head'],
   ['sidebar_color', '--c-sidebar'],
   ['header_color', '--c-header'],
   ['page_bg_color', '--c-page'],
 ];
-
-/**
- * Stored, not yet worn: nothing central draws a card or a table head, so
- * choosing one of these would change nothing. They are listed here so the next
- * person can see they were meant, not forgotten. Text used to be among them
- * until `text-black` and `dark:text-white` were swept onto --c-text.
- */
-const NOT_WIRED_YET = ['card_color', 'table_header_color'];
 
 export type UserTheme = Record<string, string | number | null | undefined>;
 
@@ -190,4 +186,4 @@ export const useUserTheme = (user?: UserTheme | null): void => {
   }, [signature, dark]);
 };
 
-export { NOT_WIRED_YET, PER_MODE_VARS };
+export { PER_MODE_VARS };

@@ -137,7 +137,7 @@ const SubscriptionAdmin: React.FC = () => {
     <div className="space-y-6">
       <HelmetTitle title="Subscription Admin" />
 
-      <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+      <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Subscription Admin</h1>
@@ -164,7 +164,7 @@ const SubscriptionAdmin: React.FC = () => {
         <StatCard label="Trialing" value={adminOverview?.trial_subscriptions ?? 0} />
       </div>
 
-      <section className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+      <section className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
         <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Assign Subscription</h2>
         <p className="mt-2 text-sm text-bodydark2">
           Payment ছাড়া direct plan assign বা renew করতে এখানে company এবং plan select করুন।
@@ -311,7 +311,7 @@ const SubscriptionAdmin: React.FC = () => {
       </section>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <section className="overflow-hidden rounded-2xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+        <section className="overflow-hidden rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] shadow-sm dark:border-strokedark">
           <div className="border-b border-stroke px-6 py-4 dark:border-strokedark">
             <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Subscriptions</h2>
           </div>
@@ -353,7 +353,7 @@ const SubscriptionAdmin: React.FC = () => {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+        <section className="overflow-hidden rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] shadow-sm dark:border-strokedark">
           <div className="border-b border-stroke px-6 py-4 dark:border-strokedark">
             <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Payment Requests</h2>
           </div>
@@ -428,7 +428,7 @@ const SubscriptionAdmin: React.FC = () => {
 };
 
 const StatCard = ({ label, value }: { label: string; value: number }) => (
-  <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+  <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
     <p className="text-sm text-bodydark2">{label}</p>
     <p className="mt-2 text-2xl font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">{value}</p>
   </div>

@@ -449,7 +449,7 @@ const AttendanceSetup = ({ user }: any) => {
           })}
         </div>
 
-        <div className="flex-1 rounded border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-boxdark">
+        <div className="flex-1 rounded border border-slate-200 bg-[rgb(var(--c-surface))] p-4 shadow-sm dark:border-slate-700">
 
       {activeTab === 'shift' && (
         <form
@@ -634,7 +634,7 @@ const AttendanceSetup = ({ user }: any) => {
         </div>
       </div>
 
-      <div className="mt-4 border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark">
+      <div className="mt-4 border border-slate-200 bg-[rgb(var(--c-surface))] shadow-sm dark:border-slate-700">
         {activeTab === 'shift' && <Table columns={shiftColumns} data={shifts} />}
         {activeTab === 'policy' && <Table columns={policyColumns} data={policies} />}
         {activeTab === 'roster' && <Table columns={rosterColumns} data={rosters} />}

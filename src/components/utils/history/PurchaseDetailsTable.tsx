@@ -9,7 +9,7 @@ const PurchaseDetailsTable = ({ details }) => {
 
   return (
     <table className="w-full text-sm border border-gray-200 dark:border-gray-700">
-      <thead className="bg-gray-100 dark:bg-gray-800">
+      <thead className="bg-[rgb(var(--c-table-head))]">
         <tr>
           <th className="border px-2 py-1 dark:border-gray-700 text-left">Product</th>
           <th className="border px-2 py-1 dark:border-gray-700 text-right">Qty</th>

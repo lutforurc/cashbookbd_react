@@ -58,7 +58,7 @@ const CustomerDue: React.FC = () => {
   const money = (n: number) => thousandSeparator(Number(n || 0).toFixed(2));
 
   return (
-    <div className="bg-white dark:bg-boxdark dark:border dark:border-strokedark shadow rounded p-4 transition-colors">
+    <div className="bg-[rgb(var(--c-surface))] dark:border dark:border-strokedark shadow rounded p-4 transition-colors">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Outstanding Dues</h2>
         <div className="text-right">

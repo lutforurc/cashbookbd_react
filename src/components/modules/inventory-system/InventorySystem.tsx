@@ -116,7 +116,7 @@ const InventorySystem = () => {
       <HelmetTitle title="Inventory Systems" />
 
       {/* Form */}
-      <div className="mb-6 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark sm:p-6">
+      <div className="mb-6 rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-default dark:border-strokedark sm:p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             {isEditing ? 'Edit Inventory System' : 'Add Inventory System'}
@@ -209,7 +209,7 @@ const InventorySystem = () => {
       </div>
 
       {/* List */}
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
         <div className="flex items-center justify-between border-b border-stroke px-4 py-3 dark:border-strokedark">
           <h2 className="text-lg font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
             Inventory Systems

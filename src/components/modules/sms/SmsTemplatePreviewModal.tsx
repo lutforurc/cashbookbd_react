@@ -27,7 +27,7 @@ const SmsTemplatePreviewModal: React.FC<SmsTemplatePreviewModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark"
+        className="w-full max-w-3xl rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-stroke px-5 py-4 dark:border-strokedark">

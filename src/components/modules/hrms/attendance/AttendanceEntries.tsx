@@ -813,7 +813,7 @@ const AttendanceEntries = ({ user }: any) => {
 
       {attendance.loading && <Loader />}
 
-      <div className="mb-3 border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="mb-3 border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
         <div className="flex items-center gap-3 border-b border-stroke px-4 py-2.5 dark:border-strokedark sm:px-6">
           <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <FiEdit2 className="h-5 w-5" />
@@ -921,7 +921,7 @@ const AttendanceEntries = ({ user }: any) => {
         </div>
       </div>
 
-      <div className="mb-3 border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="mb-3 border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
         <div className="flex items-center gap-3 border-b border-stroke px-4 py-2.5 dark:border-strokedark sm:px-6">
           <span className="flex h-9 w-9 items-center justify-center rounded-md bg-meta-3/10 text-meta-3">
             <FiSearch className="h-5 w-5" />
@@ -995,7 +995,7 @@ const AttendanceEntries = ({ user }: any) => {
         </div>
       </div>
 
-      <div className="border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
         <div className="flex items-center justify-between border-b border-stroke px-4 py-2.5 dark:border-strokedark sm:px-6">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">

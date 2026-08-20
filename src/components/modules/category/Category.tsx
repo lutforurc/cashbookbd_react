@@ -227,7 +227,7 @@ const Category = () => {
 
       {editOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark">
+          <div className="w-full max-w-md border border-stroke bg-[rgb(var(--c-surface))] shadow-xl dark:border-strokedark">
             <div className="flex items-center justify-between border-b border-stroke px-5 py-3 dark:border-strokedark">
               <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Edit Category</h3>
               <Button
@@ -287,7 +287,7 @@ const Category = () => {
 
       {deleteRow && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark">
+          <div className="w-full max-w-md border border-stroke bg-[rgb(var(--c-surface))] shadow-xl dark:border-strokedark">
             <div className="flex items-center gap-3 border-b border-stroke px-5 py-3 dark:border-strokedark">
               <span className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 text-red-500">
                 <FiTrash2 />
@@ -318,7 +318,8 @@ const Category = () => {
                 disabled={deleteLoading}
                 label="Delete"
                 icon={<FiTrash2 className="mr-2" />}
-                className="bg-red-600 px-6 hover:bg-red-700"
+                variant="danger"
+                className="px-6"
               />
             </div>
           </div>

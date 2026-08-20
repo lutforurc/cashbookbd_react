@@ -208,7 +208,7 @@ const AdminInAppMessages: React.FC = () => {
         />
       </div>
 
-      <div className="bg-white dark:bg-boxdark">
+      <div className="bg-[rgb(var(--c-surface))]">
         <Table columns={columns} data={rows || []} />
       </div>
     </>

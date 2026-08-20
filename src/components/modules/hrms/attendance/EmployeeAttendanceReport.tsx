@@ -234,7 +234,7 @@ const EmployeeAttendanceReport = ({ user }: any) => {
       <HelmetTitle title="Employee Attendance Report" />
       {attendance.loading && <Loader />}
 
-      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+      <div className="mb-3 border border-slate-200 bg-[rgb(var(--c-surface))] p-3 dark:border-slate-700">
       <div className="grid grid-cols-1 gap-2 md:grid-cols-6">
         <div className="md:col-span-2">
           <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Employee</label>
@@ -295,7 +295,7 @@ const EmployeeAttendanceReport = ({ user }: any) => {
         {cards.map((card) => {
           const tone = cardTone(card.label);
           return (
-            <div key={card.label} className="relative overflow-hidden border border-slate-200 bg-white p-3 pl-4 dark:border-slate-700 dark:bg-boxdark">
+            <div key={card.label} className="relative overflow-hidden border border-slate-200 bg-[rgb(var(--c-surface))] p-3 pl-4 dark:border-slate-700">
               <span className={`absolute inset-y-0 left-0 w-1 ${tone.bar}`} />
               <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-300">
                 <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
@@ -307,7 +307,7 @@ const EmployeeAttendanceReport = ({ user }: any) => {
         })}
       </div>
 
-      <div className="border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
+      <div className="border border-slate-200 bg-[rgb(var(--c-surface))] dark:border-slate-700">
         <Table columns={columns} data={displayRows} />
       </div>
     </div>

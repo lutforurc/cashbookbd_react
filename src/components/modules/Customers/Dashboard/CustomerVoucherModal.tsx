@@ -90,7 +90,7 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-1001 flex items-center justify-center bg-black/50 px-3 py-6" onClick={onClose}>
-      <div className="w-full max-w-3xl rounded-xl bg-white shadow-xl dark:bg-boxdark" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-3xl rounded-xl bg-[rgb(var(--c-surface))] shadow-xl" onClick={(e) => e.stopPropagation()}>
         {/* Toolbar (not printed) */}
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-strokedark">
           <h3 className="text-base font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
@@ -100,7 +100,8 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
             <Button
               onClick={handlePrint}
               disabled={loading || !!error}
-              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+              variant="primary"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium disabled:opacity-50"
             >
               <FiPrinter /> Print
             </Button>

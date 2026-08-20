@@ -232,7 +232,7 @@ const DropdownNotification = () => {
         </Button>
 
         {dropdownOpen ? (
-          <div className="absolute -right-20 mt-2.5 flex w-80 flex-col overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-96">
+          <div className="absolute -right-20 mt-2.5 flex w-80 flex-col overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark sm:right-0 sm:w-96">
             <div className="flex items-center justify-between border-b border-stroke px-4 py-3 dark:border-strokedark">
               <div>
                 <h5 className="text-sm font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">

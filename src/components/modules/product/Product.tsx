@@ -449,7 +449,8 @@ const Product = (user: any) => {
               {row.opening_vr_no && canDeleteVoucher && (
                 <ButtonLoading
                   icon={<FiTrash2 />}
-                  className="py-1 px-2 bg-red-600 hover:bg-red-700"
+                  variant="danger"
+                  className="py-1 px-2"
                   label="Delete"
                   type="button"
                   buttonLoading={openingDeleteLoading && openingDeleteRow?.product_id === row.product_id}
@@ -694,7 +695,7 @@ const Product = (user: any) => {
           check it is the right product. */}
       {openingDeleteRow && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark">
+          <div className="w-full max-w-md border border-stroke bg-[rgb(var(--c-surface))] shadow-xl dark:border-strokedark">
             <div className="flex items-center gap-3 border-b border-stroke px-5 py-3 dark:border-strokedark">
               <span className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 text-red-500">
                 <FiTrash2 />
@@ -736,7 +737,8 @@ const Product = (user: any) => {
                 disabled={openingDeleteLoading}
                 label="Delete"
                 icon={<FiTrash2 className="mr-2" />}
-                className="bg-red-600 px-6 hover:bg-red-700"
+                variant="danger"
+                className="px-6"
               />
             </div>
           </div>
@@ -745,7 +747,7 @@ const Product = (user: any) => {
 
       {deleteRow && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark">
+          <div className="w-full max-w-md border border-stroke bg-[rgb(var(--c-surface))] shadow-xl dark:border-strokedark">
             <div className="flex items-center gap-3 border-b border-stroke px-5 py-3 dark:border-strokedark">
               <span className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 text-red-500">
                 <FiTrash2 />
@@ -777,7 +779,8 @@ const Product = (user: any) => {
                 disabled={deleteLoading}
                 label="Delete"
                 icon={<FiTrash2 className="mr-2" />}
-                className="bg-red-600 px-6 hover:bg-red-700"
+                variant="danger"
+                className="px-6"
               />
             </div>
           </div>

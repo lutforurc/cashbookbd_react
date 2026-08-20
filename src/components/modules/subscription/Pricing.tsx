@@ -24,7 +24,7 @@ const Pricing: React.FC = () => {
     <div className="space-y-6">
       <HelmetTitle title="Subscription Pricing" />
 
-      <div className="rounded-sm border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+      <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
         <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           Subscription Plans
         </h1>
@@ -38,7 +38,7 @@ const Pricing: React.FC = () => {
         {plans.map((plan: any) => (
           <div
             key={plan.id}
-            className="flex h-full flex-col rounded-sm border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/60 dark:border-strokedark dark:bg-boxdark dark:shadow-none"
+            className="flex h-full flex-col rounded-sm border border-slate-200 bg-[rgb(var(--c-surface))] p-6 shadow-lg shadow-slate-200/60 dark:border-strokedark dark:shadow-none"
           >
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-xl font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">

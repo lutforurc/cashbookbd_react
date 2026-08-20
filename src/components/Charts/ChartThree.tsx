@@ -66,7 +66,7 @@ const ChartThree: React.FC = () => {
   handleReset;
 
   return (
-    <div className="sm:px-7.5 col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-5">
+    <div className="sm:px-7.5 col-span-12 rounded-sm border border-stroke bg-[rgb(var(--c-surface))] px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark xl:col-span-5">
       <div className="mb-3 justify-between gap-4 sm:flex">
         <div>
           <h5 className="text-xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">

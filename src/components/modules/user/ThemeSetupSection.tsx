@@ -231,6 +231,10 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({
           'The bar across the top. Follows the sidebar unless set.')}
         {pair('page_bg_color', 'Page Background',
           'The paper the cards sit on.')}
+        {pair('card_color', 'Card / Panel',
+          'The boxes the work sits in -- and the list a dropdown opens.')}
+        {pair('table_header_color', 'Table Header',
+          'The band across the top of a table.')}
       </Group>
 
       <Group

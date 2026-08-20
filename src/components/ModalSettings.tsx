@@ -69,7 +69,7 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
       }}
     >
 
-      <div className="modal rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark overflow-auto">
+      <div className="modal rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark overflow-auto">
         <div className="border-b border-stroke py-4 px-7 dark:border-strokedark">
           <div className="w-full flex justify-end">
             <strong className="text-xl align-center cursor-pointer "
@@ -219,8 +219,12 @@ export const Modal = ({ closeModal, onSubmit, defaultValue }) => {
 
 
             <br></br>
-            <Button className="btn flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1"
-              type="submit" onClick={handleSubmit}>
+            <Button
+              variant="primary"
+              className="btn flex justify-center rounded py-2 px-6 font-medium hover:shadow-1"
+              type="submit"
+              onClick={handleSubmit}
+            >
               Submit
             </Button>
           </form>

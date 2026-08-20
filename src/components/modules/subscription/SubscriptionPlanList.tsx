@@ -23,7 +23,7 @@ const SubscriptionPlanList: React.FC = () => {
     <div className="space-y-6">
       <HelmetTitle title="Subscription Plan List" />
 
-      <div className="flex flex-col gap-3 rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Subscription Plans</h1>
           <p className="mt-2 text-sm text-bodydark2">
@@ -46,7 +46,7 @@ const SubscriptionPlanList: React.FC = () => {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+      <div className="overflow-hidden rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] shadow-sm dark:border-strokedark">
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-gray-100 dark:bg-gray-900/40">

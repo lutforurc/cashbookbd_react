@@ -1690,7 +1690,8 @@ const AddBranch = () => {
                           buttonLoading={clearingOpening}
                           disabled={clearInFlight}
                           onClick={() => setConfirmClearOpening(true)}
-                          className="whitespace-nowrap rounded bg-danger hover:bg-danger/90"
+                          variant="danger"
+                          className="whitespace-nowrap rounded"
                         />
                       </div>
                     )}
@@ -1708,7 +1709,8 @@ const AddBranch = () => {
                           buttonLoading={clearingTransactions}
                           disabled={clearInFlight}
                           onClick={() => setConfirmClearTransactions(true)}
-                          className="whitespace-nowrap rounded bg-danger hover:bg-danger/90"
+                          variant="danger"
+                          className="whitespace-nowrap rounded"
                         />
                       </div>
                     )}
@@ -1895,7 +1897,7 @@ const AddBranch = () => {
               </div>
 
               {/* Kept within reach on the long steps, so Save needs no scrolling back. */}
-              <div className="sticky bottom-0 z-20 mt-auto mb-2 rounded border border-gray-200 bg-white/95 px-3 py-2.5 shadow-lg backdrop-blur dark:border-strokedark dark:bg-boxdark/95">
+              <div className="sticky bottom-0 z-20 mt-auto mb-2 rounded border border-gray-200 bg-[rgb(var(--c-surface))]/95 px-3 py-2.5 shadow-lg backdrop-blur dark:border-strokedark /95">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="mr-1 whitespace-nowrap text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -1938,7 +1940,8 @@ const AddBranch = () => {
                         onClick={goToNextStep}
                         buttonLoading={false}
                         label="Next"
-                        className="whitespace-nowrap rounded bg-blue-600! px-6 py-1.5 hover:bg-blue-700!"
+                        variant="primary"
+                        className="whitespace-nowrap rounded px-6 py-1.5"
                         icon={<FiArrowRight className="text-base mr-2" />}
                       />
                     ) : branchEditData.editData?.branch ? (
@@ -1946,7 +1949,8 @@ const AddBranch = () => {
                         onClick={handleBranchUpdate}
                         buttonLoading={buttonLoading}
                         label="Update"
-                        className="whitespace-nowrap rounded bg-blue-600! px-6 py-1.5 hover:bg-blue-700!"
+                        variant="primary"
+                        className="whitespace-nowrap rounded px-6 py-1.5"
                         icon={<FiSave className="text-base mr-2" />}
                       />
                     ) : (
@@ -1954,7 +1958,8 @@ const AddBranch = () => {
                         onClick={handleBranchSave}
                         buttonLoading={buttonLoading}
                         label="Save"
-                        className="whitespace-nowrap rounded bg-blue-600! px-6 py-1.5 hover:bg-blue-700!"
+                        variant="primary"
+                        className="whitespace-nowrap rounded px-6 py-1.5"
                         icon={<FiSave className="text-base mr-2" />}
                       />
                     )}

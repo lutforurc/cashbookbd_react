@@ -705,7 +705,7 @@ const SoldUnitList: React.FC = () => {
         ].map((card) => (
           <div
             key={card.label}
-            className="rounded border border-stroke bg-white px-3 py-2 dark:border-strokedark dark:bg-boxdark"
+            className="rounded border border-stroke bg-[rgb(var(--c-surface))] px-3 py-2 dark:border-strokedark"
           >
             <div className="text-xs text-gray-500 dark:text-gray-400">
               {card.label}
@@ -718,7 +718,7 @@ const SoldUnitList: React.FC = () => {
       </div>
 
       {/* CUSTOMER WISE TABLE */}
-      <div className="overflow-x-auto bg-white dark:bg-boxdark">
+      <div className="overflow-x-auto bg-[rgb(var(--c-surface))]">
         <table className="w-full min-w-[960px] border-collapse">
           <thead>
             <tr className="bg-gray-2 text-left text-sm dark:bg-meta-4">

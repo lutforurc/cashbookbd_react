@@ -505,7 +505,8 @@ const FestivalBonusUpdate = ({ user }: any) => {
             disabled={addEmployeeLoading || !selectedEmployeeId}
             label="Add Employee"
             icon={<FiPlus className="mr-1 font-bold" />}
-            className="whitespace-nowrap bg-emerald-600 px-5 py-1 hover:bg-emerald-700"
+            variant="success"
+            className="whitespace-nowrap px-5 py-1"
           />
           <ButtonLoading
             onClick={() =>
@@ -524,7 +525,8 @@ const FestivalBonusUpdate = ({ user }: any) => {
             buttonLoading={saveLoading}
             disabled={saveLoading || rows.length === 0}
             label="Update Bonus"
-            className="whitespace-nowrap bg-blue-600 px-6 py-1 hover:bg-blue-700"
+            variant="primary"
+            className="whitespace-nowrap px-6 py-1"
             icon={<FiCheckSquare />}
           />
         </div>

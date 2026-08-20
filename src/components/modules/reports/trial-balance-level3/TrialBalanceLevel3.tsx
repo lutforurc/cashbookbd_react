@@ -747,13 +747,13 @@ const TrialBalanceLevel3 = (user: any) => {
         </div>
 
         {trialBalanceState?.loading && (
-          <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
             <Loader />
           </div>
         )}
 
         {!trialBalanceState?.loading && !hasReportData && (
-          <div className="rounded-sm border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-default dark:border-slate-700 dark:bg-boxdark">
+          <div className="rounded-sm border border-dashed border-slate-300 bg-[rgb(var(--c-surface))] px-6 py-12 text-center shadow-default dark:border-slate-700">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               No trial balance loaded yet
             </h3>
@@ -799,7 +799,7 @@ const TrialBalanceLevel3 = (user: any) => {
               </div>
 
               <div className="grid grid-cols-1 gap-4 px-5 py-5 lg:grid-cols-3">
-                <div className="rounded-sm border border-amber-200 bg-white p-4 dark:border-amber-500/20 dark:bg-boxdark">
+                <div className="rounded-sm border border-amber-200 bg-[rgb(var(--c-surface))] p-4 dark:border-amber-500/20">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Totals Gap
                   </p>
@@ -825,7 +825,7 @@ const TrialBalanceLevel3 = (user: any) => {
                   </div>
                 </div>
 
-                <div className="rounded-sm border border-amber-200 bg-white p-4 dark:border-amber-500/20 dark:bg-boxdark">
+                <div className="rounded-sm border border-amber-200 bg-[rgb(var(--c-surface))] p-4 dark:border-amber-500/20">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Totals vs Rows
                   </p>
@@ -869,7 +869,7 @@ const TrialBalanceLevel3 = (user: any) => {
                   </div>
                 </div>
 
-                <div className="rounded-sm border border-amber-200 bg-white p-4 dark:border-amber-500/20 dark:bg-boxdark">
+                <div className="rounded-sm border border-amber-200 bg-[rgb(var(--c-surface))] p-4 dark:border-amber-500/20">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Row Integrity
                   </p>
@@ -942,7 +942,7 @@ const TrialBalanceLevel3 = (user: any) => {
             </div>
             )}
 
-            <div className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+            <div className="overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
               <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -1006,7 +1006,7 @@ const TrialBalanceLevel3 = (user: any) => {
                       {selectedLevel4Rows.length > 0 && (
                         <div className="overflow-x-auto">
                           <table className="min-w-full table-fixed text-left text-sm text-slate-700 dark:text-slate-200">
-                            <thead className="bg-gray-300 text-xs uppercase text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                            <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300">
                               <tr>
                                 <th className="w-16 px-3 py-3 text-center">Sl. No</th>
                                 <th className="w-80 px-3 py-3">COA L4 Name</th>

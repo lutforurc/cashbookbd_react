@@ -729,7 +729,7 @@ const ProjectLabour = () => {
       {/* ------------------------------------------------------------ table */}
       <div className="mt-4 overflow-x-auto">
         <table className="min-w-[760px] w-full text-left text-sm text-gray-500 dark:text-gray-400">
-          <thead className="bg-gray-300 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+          <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-700 dark:text-gray-200">
             <tr>
               <th scope="col" className="w-16 px-2 py-2">SL No.</th>
               <th scope="col" className="px-2 py-2">Item Name</th>

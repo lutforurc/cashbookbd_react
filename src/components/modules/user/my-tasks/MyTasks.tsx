@@ -1067,7 +1067,7 @@ export default function MyTasks() {
                 onClick={() => setFilter(option.key)}
                 className={`flex items-center rounded-sm border px-3 text-xs font-medium transition-colors ${
  filter === option.key
- ?'border-primary bg-primary text-white':'border-stroke bg-white text-[rgb(var(--c-text-muted))] hover:border-primary hover:text-primary dark:border-strokedark dark:bg-boxdark dark:text-[rgb(var(--c-text-muted))]'}`}
+ ?'border-primary bg-primary text-white':'border-stroke bg-[rgb(var(--c-surface))] text-[rgb(var(--c-text-muted))] hover:border-primary hover:text-primary dark:border-strokedark dark:text-[rgb(var(--c-text-muted))]'}`}
               >
                 {option.label}
               </Button>

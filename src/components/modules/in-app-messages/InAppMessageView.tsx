@@ -43,7 +43,8 @@ const Buttons: React.FC<{
           type="button"
           onClick={onPrimary}
           style={buttonStyle(message)}
-          className="rounded bg-primary px-4 py-1.5 text-sm font-semibold text-white transition hover:opacity-90"
+          variant="primary"
+          className="rounded px-4 py-1.5 text-sm font-semibold transition hover:opacity-90"
         >
           {primaryLabel}
         </Button>
@@ -100,7 +101,7 @@ const InAppMessageView: React.FC<Props> = ({
       <div className={position}>
         <div
           style={surfaceStyle(message)}
-          className="mx-auto flex max-w-(--breakpoint-xl) items-center gap-3 border border-stroke bg-white px-4 py-3 shadow-lg dark:border-strokedark dark:bg-boxdark"
+          className="mx-auto flex max-w-(--breakpoint-xl) items-center gap-3 border border-stroke bg-[rgb(var(--c-surface))] px-4 py-3 shadow-lg dark:border-strokedark"
         >
           {message.image_url ? (
             <img
@@ -159,7 +160,7 @@ const InAppMessageView: React.FC<Props> = ({
         <div
           style={surfaceStyle(message)}
           onClick={(event) => event.stopPropagation()}
-          className="relative flex w-full max-w-xl gap-4 rounded-lg border border-stroke bg-white p-4 shadow-2xl dark:border-strokedark dark:bg-boxdark"
+          className="relative flex w-full max-w-xl gap-4 rounded-lg border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-2xl dark:border-strokedark"
         >
           {closable ? (
             <CloseButton onClose={onClose} className="absolute right-2 top-2 bg-black/10 text-current!" />
@@ -189,7 +190,7 @@ const InAppMessageView: React.FC<Props> = ({
       <div
         style={surfaceStyle(message)}
         onClick={(event) => event.stopPropagation()}
-        className="relative w-full max-w-md overflow-hidden rounded-lg border border-stroke bg-white shadow-2xl dark:border-strokedark dark:bg-boxdark"
+        className="relative w-full max-w-md overflow-hidden rounded-lg border border-stroke bg-[rgb(var(--c-surface))] shadow-2xl dark:border-strokedark"
       >
         {closable ? (
           <CloseButton onClose={onClose} className="absolute right-2 top-2 z-10" />

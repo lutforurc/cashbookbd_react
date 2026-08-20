@@ -91,7 +91,7 @@ const CustomerStatement: React.FC<CustomerStatementProps> = ({
   const money = (n: number) => `Tk. ${thousandSeparator(Number(n || 0).toFixed(2))}`;
 
   return (
-    <div className="bg-white dark:bg-boxdark dark:border dark:border-strokedark shadow rounded p-4 transition-colors">
+    <div className="bg-[rgb(var(--c-surface))] dark:border dark:border-strokedark shadow rounded p-4 transition-colors">
       <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3">Account Statement</h2>
 
       {/* Date range filter */}
@@ -128,7 +128,8 @@ const CustomerStatement: React.FC<CustomerStatementProps> = ({
         <Button
           onClick={fetchStatement}
           disabled={loading}
-          className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary/90 disabled:opacity-60"
+          variant="primary"
+          className="px-4 py-2 rounded text-sm disabled:opacity-60"
         >
           {loading ? 'Loading...' : 'Show'}
         </Button>

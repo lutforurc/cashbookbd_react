@@ -26,7 +26,7 @@ const MySubscription: React.FC = () => {
     <div className="space-y-6">
       <HelmetTitle title="My Subscription" />
 
-      <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+      <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
         <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
           My Subscription
         </h1>
@@ -37,7 +37,7 @@ const MySubscription: React.FC = () => {
 
       {hasRenderableSubscription ? (
         <div className="grid gap-5 lg:grid-cols-3">
-          <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark lg:col-span-2">
+          <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark lg:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
@@ -111,7 +111,7 @@ const MySubscription: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+          <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
             <h3 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Need Renewal?
             </h3>
@@ -151,7 +151,7 @@ const MySubscription: React.FC = () => {
               : 'No subscription data found yet. You can still choose a plan and submit a manual payment request.'}
           </div>
 
-          <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+          <div className="rounded-2xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark">
             <h3 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Manual Subscription
             </h3>

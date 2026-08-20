@@ -194,7 +194,7 @@ const ApprovalAudit = ({ user }: any) => {
       <HelmetTitle title="Approval Audit" />
       {(loading || exporting) && <Loader />}
 
-      <div className="mb-3 border border-stroke bg-white p-3 dark:border-strokedark dark:bg-boxdark">
+      <div className="mb-3 border border-stroke bg-[rgb(var(--c-surface))] p-3 dark:border-strokedark">
         <div className="grid grid-cols-1 gap-2 md:grid-cols-4 xl:grid-cols-6">
           <InputDatePicker
             id="date_from"
@@ -278,7 +278,8 @@ const ApprovalAudit = ({ user }: any) => {
             type="button"
             onClick={handleExcelExport}
             disabled={exporting}
-            className="inline-flex items-center justify-center whitespace-nowrap bg-emerald-700 px-5 text-sm font-medium text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-400"
+            variant="success"
+            className="inline-flex items-center justify-center whitespace-nowrap px-5 text-sm font-medium disabled:cursor-not-allowed disabled:bg-emerald-400"
           >
             <FiDownload className="mr-2" />
             Excel
@@ -293,7 +294,7 @@ const ApprovalAudit = ({ user }: any) => {
         </div>
       </div>
 
-      <div className="border border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
+      <div className="border border-stroke bg-[rgb(var(--c-surface))] dark:border-strokedark">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stroke px-4 py-3 dark:border-strokedark">
           <h5 className="text-sm font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Attendance Approval Audit</h5>
           <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{total} record(s)</span>

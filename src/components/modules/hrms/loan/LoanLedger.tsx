@@ -227,7 +227,7 @@ const LoanLedger = (user: any) => {
   return (
     <div className="">
       <HelmetTitle title={'Loan Ledger'} />
-      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+      <div className="mb-3 border border-slate-200 bg-[rgb(var(--c-surface))] p-3 dark:border-slate-700">
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-[180px] flex-1">
             <div>
@@ -317,7 +317,7 @@ const LoanLedger = (user: any) => {
           </div>
         </div>
       </div>
-      <div className="overflow-y-auto border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
+      <div className="overflow-y-auto border border-slate-200 bg-[rgb(var(--c-surface))] dark:border-slate-700">
         {ledgerData.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} />{' '}
 

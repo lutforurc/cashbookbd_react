@@ -110,7 +110,8 @@ const OrderItemsGrid: React.FC<Props> = ({ lines, onChange, disabled, focusNextF
           id="add_product_btn"
           onClick={addLine}
           disabled={disabled}
-          className="inline-flex items-center gap-1 rounded bg-primary px-3 py-1 text-sm font-semibold text-white disabled:opacity-50"
+          variant="primary"
+          className="inline-flex items-center gap-1 rounded px-3 py-1 text-sm font-semibold disabled:opacity-50"
         >
           <FiPlus /> Add Product
         </Button>

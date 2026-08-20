@@ -297,7 +297,7 @@ const allPayments = paymentList.map((pay: any) => ({
           sideways on a screen with room to spare. */}
       <div className="mx-auto w-full max-w-(--breakpoint-2xl) space-y-4 px-3 py-4 sm:space-y-5 sm:px-6 sm:py-6">
         {/* ===== Hero header ===== */}
-        <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-6">
+        <div className="rounded-lg border border-gray-200 bg-[rgb(var(--c-surface))] p-4 shadow-sm dark:border-strokedark sm:p-6">
           {/* Wraps rather than truncates on a phone: the address is the line
               that used to be cut, and it is the one worth reading. */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -351,7 +351,8 @@ const allPayments = paymentList.map((pay: any) => ({
               </Button>
               <Button
                 onClick={() => dispatch(logout() as any)}
-                className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+                variant="primary"
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
               >
                 <FiLogOut />
                 <span>Logout</span>
@@ -365,7 +366,7 @@ const allPayments = paymentList.map((pay: any) => ({
             wider on a large screen and set larger, with the other two reading as
             the workings behind it. */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-          <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
+          <div className="rounded-lg border border-gray-200 bg-[rgb(var(--c-surface))] p-4 shadow-sm dark:border-strokedark">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm text-gray-500 dark:text-[rgb(var(--c-text-muted))]">Total Received</span>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
@@ -375,7 +376,7 @@ const allPayments = paymentList.map((pay: any) => ({
             <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-[rgb(var(--c-text))]">৳ {money(totalDebit)}</p>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
+          <div className="rounded-lg border border-gray-200 bg-[rgb(var(--c-surface))] p-4 shadow-sm dark:border-strokedark">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm text-gray-500 dark:text-[rgb(var(--c-text-muted))]">Total Payment</span>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
@@ -386,11 +387,11 @@ const allPayments = paymentList.map((pay: any) => ({
           </div>
 
           <div
-            className={`rounded-lg border bg-white p-4 shadow-sm dark:bg-boxdark sm:col-span-2 ${
-              balance > 0
-                ? 'border-rose-200 dark:border-rose-900/60'
-                : 'border-gray-200 dark:border-strokedark'
-            }`}
+            className={`rounded-lg border bg-[rgb(var(--c-surface))] p-4 shadow-sm sm:col-span-2 ${
+ balance > 0
+ ? 'border-rose-200 dark:border-rose-900/60'
+ : 'border-gray-200 dark:border-strokedark'
+ }`}
           >
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm text-gray-500 dark:text-[rgb(var(--c-text-muted))]">
@@ -422,7 +423,7 @@ const allPayments = paymentList.map((pay: any) => ({
         </div>
 
         {/* Tabs */}
-        <div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+        <div className="rounded-lg border border-gray-200 bg-[rgb(var(--c-surface))] shadow-sm dark:border-strokedark">
           {/* The row scrolls on a phone rather than wrapping into two rows that
               push the content down. */}
           <nav

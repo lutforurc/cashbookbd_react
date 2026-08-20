@@ -178,7 +178,8 @@ const FestivalBonusPaymentSelectionModal = ({
               onClick={onClose}
               label="Back"
               icon={<FiArrowLeft className="h-4 w-4" />}
-              className="whitespace-nowrap bg-blue-600 px-4 py-2 hover:bg-blue-700"
+              variant="primary"
+              className="whitespace-nowrap px-4 py-2"
             />
           </div>
         </div>
@@ -208,7 +209,7 @@ const FestivalBonusPaymentSelectionModal = ({
 
         <div className="overflow-x-auto border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-100">
+            <thead className="bg-[rgb(var(--c-table-head))] text-slate-700 dark:text-slate-100">
               <tr>
                 <th className="w-6 px-3 py-3 text-center">Mark</th>
                 <th className="w-6 px-3 py-3 text-center">SL</th>
@@ -306,7 +307,8 @@ const FestivalBonusPaymentSelectionModal = ({
               label="Pay Selected"
               // Same tick as the salary modal -- it is the same last step.
               icon={<FiCheckCircle className="h-4 w-4" />}
-              className="whitespace-nowrap bg-emerald-600 px-4 py-2 hover:bg-emerald-700"
+              variant="success"
+              className="whitespace-nowrap px-4 py-2"
             />
           </div>
         </div>

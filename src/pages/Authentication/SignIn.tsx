@@ -122,7 +122,7 @@ const SignIn: React.FC = () => {
     <>
       {isLoading && <Loader />}
 
-      <div className="fixed inset-0 bg-white shadow-default dark:bg-boxdark overflow-y-auto xl:overflow-hidden">
+      <div className="fixed inset-0 bg-[rgb(var(--c-surface))] shadow-default overflow-y-auto xl:overflow-hidden">
 
         <div className="grid h-full grid-cols-1 xl:grid-cols-2">
 
@@ -311,7 +311,7 @@ const SignIn: React.FC = () => {
               {/* The card sits on a page painted the same white/boxdark, so
                   without a stroke it had no edge at all -- the shadow alone
                   disappears in dark mode. */}
-              <div className="rounded-xl border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark">
+              <div className="rounded-xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-default dark:border-strokedark">
                 <form onSubmit={handleLogin}>
                   <div className="mb-4">
                     <label className={`mb-2.5 block font-medium ${FIELD_LABEL}`}>

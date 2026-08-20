@@ -167,7 +167,7 @@ const RichTextEditor: React.FC<Props> = ({
     // theme too, and the colours for both come from tokens.css by way of the
     // .rich-text-editor rules in style.css.
     <div
-      className="rich-text-editor rounded-lg border border-gray-300 bg-white dark:border-gray-600 dark:bg-boxdark"
+      className="rich-text-editor rounded-lg border border-gray-300 bg-[rgb(var(--c-surface))] dark:border-gray-600"
       style={{ '--rte-height': `${height}px` } as React.CSSProperties}
     >
       <ReactQuill

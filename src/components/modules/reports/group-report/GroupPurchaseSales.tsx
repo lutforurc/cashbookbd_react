@@ -370,10 +370,12 @@ const GroupPurchaseSales = () => {
  type="text"
  className="w-full! text-center text-sm font-medium sm:w-20!"
           />
-          <Button type="button" onClick={handlePrint} disabled={!hasReport} className="inline-flex w-full items-center justify-center gap-2 bg-gray-700 px-5 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
+          <Button type="button" onClick={handlePrint} disabled={!hasReport} variant="default"
+ className="inline-flex w-full items-center justify-center gap-2 px-5 text-center text-sm font-medium focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
             <FaPrint /> Print
           </Button>
-          <Button type="button" onClick={() => navigate('/dashboard')} className="col-span-2 inline-flex w-full items-center justify-center gap-2 bg-gray-700 px-5 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none sm:col-span-1 sm:w-auto">
+          <Button type="button" onClick={() => navigate('/dashboard')} variant="default"
+ className="col-span-2 inline-flex w-full items-center justify-center gap-2 px-5 text-center text-sm font-medium focus:outline-none sm:col-span-1 sm:w-auto">
             <FaHouse /> Home
           </Button>
         </div>

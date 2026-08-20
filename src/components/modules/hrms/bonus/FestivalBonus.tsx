@@ -313,7 +313,7 @@ const FestivalBonus = ({ user }: any) => {
                   onClick={() => setFilterOpen((prev) => !prev)}
                   className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
  filterOpen
- ?"border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300":"border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-boxdark dark:text-blue-300 dark:hover:bg-boxdark-2"}`}
+ ?"border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300":"border-blue-500 bg-[rgb(var(--c-surface))] text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-boxdark-2"}`}
                   aria-label="Open filters"
                 >
                   <FiFilter size={16} />
@@ -330,7 +330,7 @@ const FestivalBonus = ({ user }: any) => {
               {filterOpen && (
                 <form
                   onSubmit={handleApplyFilters}
-                  className="absolute left-0 top-full z-30 mt-2 w-[min(320px,calc(100vw-2rem))] rounded-md border border-stroke bg-white p-4 shadow-2xl dark:border-form-strokedark dark:bg-boxdark"
+                  className="absolute left-0 top-full z-30 mt-2 w-[min(320px,calc(100vw-2rem))] rounded-md border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-2xl dark:border-form-strokedark"
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <span className="text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">Filter Menu</span>
@@ -416,7 +416,7 @@ const FestivalBonus = ({ user }: any) => {
           </div>
         </div>
 
-        <div className="border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
+        <div className="border border-slate-200 bg-[rgb(var(--c-surface))] dark:border-slate-700">
           <Table columns={columns} data={tableData} perPage={10} />
         </div>
       </div>

@@ -503,7 +503,7 @@ const TradingPurchaseImport = () => {
               </div>
               <div className="mb-3 overflow-x-auto rounded border border-stroke dark:border-form-strokedark">
                 <table className="w-full min-w-[900px] text-left text-sm">
-                  <thead className="bg-gray-300 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                  <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-700 dark:text-gray-200">
                     <tr>
                       {importColumns.map((column) => (
                         <th key={column} className="px-3 py-2">
@@ -612,7 +612,7 @@ const TradingPurchaseImport = () => {
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-                <thead className="bg-gray-300 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-700 dark:text-gray-200">
                   <tr>
                     <th className="px-2 py-2">Sl</th>
                     <th className="px-2 py-2">Supplier</th>

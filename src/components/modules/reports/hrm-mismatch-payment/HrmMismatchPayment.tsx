@@ -171,7 +171,8 @@ const HrmMismatchPayment = (user: any) => {
               type="button"
               onClick={() => handleDelete(row)}
               disabled={isDeleting || deletingKey !== null}
-              className="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              variant="danger"
+              className="rounded px-3 py-1 text-xs font-medium disabled:opacity-50"
               title="Keep one, remove duplicate deductions"
             >
               {isDeleting ? 'Clearing...' : 'Clear'}

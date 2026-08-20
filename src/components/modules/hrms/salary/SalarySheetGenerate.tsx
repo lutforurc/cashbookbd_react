@@ -982,7 +982,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       <HelmetTitle title="Salary Generate" />
 
       {/* ===== Top Bar ===== */}
-      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+      <div className="mb-3 border border-slate-200 bg-[rgb(var(--c-surface))] p-3 dark:border-slate-700">
       <div className="flex flex-wrap justify-between items-center gap-2">
         <div className="max-w-280 flex ">
           <BranchDropdown
@@ -1062,7 +1062,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       {loading && <Loader />}
 
       {/* ===== TABLE ===== */}
-      <div className="border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
+      <div className="border border-slate-200 bg-[rgb(var(--c-surface))] dark:border-slate-700">
       <Table
         columns={columns}
         data={searched ? employees : []}

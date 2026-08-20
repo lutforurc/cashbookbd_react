@@ -504,13 +504,13 @@ const BalanceSheet = (user: any) => {
         </div>
 
         {balanceSheetState?.loading && (
-          <div className="rounded-sm border border-stroke bg-white p-8 shadow-default dark:border-strokedark dark:bg-boxdark">
+          <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-8 shadow-default dark:border-strokedark">
             <Loader />
           </div>
         )}
 
         {!balanceSheetState?.loading && !hasReportData && (
-          <div className="rounded-sm border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-default dark:border-slate-700 dark:bg-boxdark">
+          <div className="rounded-sm border border-dashed border-slate-300 bg-[rgb(var(--c-surface))] px-6 py-12 text-center shadow-default dark:border-slate-700">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               No balance sheet loaded yet
             </h3>
@@ -608,7 +608,7 @@ const BalanceSheet = (user: any) => {
               </div>
             </div>
 
-            <div className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
+            <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-5 shadow-default dark:border-strokedark">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h4 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
@@ -685,7 +685,7 @@ const DebugCard = ({
   const toneClass = highlight ? "text-amber-700 dark:text-amber-200" : "";
 
   return (
-    <div className="rounded-sm border border-amber-200 bg-white p-4 dark:border-amber-500/20 dark:bg-boxdark">
+    <div className="rounded-sm border border-amber-200 bg-[rgb(var(--c-surface))] p-4 dark:border-amber-500/20">
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         {title}
       </p>
@@ -779,7 +779,7 @@ const NetProfitDebugPanel = ({
       </div>
 
       <div className="grid grid-cols-1 gap-4 px-5 py-5 xl:grid-cols-3">
-        <div className="rounded-sm border border-sky-200 bg-white p-4 dark:border-sky-500/20 dark:bg-boxdark">
+        <div className="rounded-sm border border-sky-200 bg-[rgb(var(--c-surface))] p-4 dark:border-sky-500/20">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Balance Sheet Stock
           </p>
@@ -790,7 +790,7 @@ const NetProfitDebugPanel = ({
           </div>
         </div>
 
-        <div className="rounded-sm border border-sky-200 bg-white p-4 dark:border-sky-500/20 dark:bg-boxdark">
+        <div className="rounded-sm border border-sky-200 bg-[rgb(var(--c-surface))] p-4 dark:border-sky-500/20">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Net Profit Posting
           </p>
@@ -804,7 +804,7 @@ const NetProfitDebugPanel = ({
           </div>
         </div>
 
-        <div className="rounded-sm border border-sky-200 bg-white p-4 dark:border-sky-500/20 dark:bg-boxdark xl:col-span-1">
+        <div className="rounded-sm border border-sky-200 bg-[rgb(var(--c-surface))] p-4 dark:border-sky-500/20 xl:col-span-1">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Profit Loss Components
           </p>
@@ -892,7 +892,7 @@ const SectionCard = ({
   const visibleRows = rows.slice(0, Math.max(perPage, rows.length));
 
   return (
-    <div className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+    <div className="overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
       <div className={`bg-linear-to-r ${accent} px-5 py-4 text-white`}>
         <h3 className="text-lg font-bold">{title}</h3>
       </div>
@@ -986,8 +986,8 @@ const GroupDetailsModal = ({
       }}
     >
       <div className="mx-auto flex min-h-full w-full max-w-5xl items-start justify-center">
-      <div className="my-2 flex max-h-[92vh] w-full flex-col overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-stroke bg-white px-5 py-4 dark:border-strokedark dark:bg-boxdark">
+      <div className="my-2 flex max-h-[92vh] w-full flex-col overflow-hidden rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-stroke bg-[rgb(var(--c-surface))] px-5 py-4 dark:border-strokedark">
           <div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
               {title}: {group.group_name || "Details"}
@@ -1017,7 +1017,7 @@ const GroupDetailsModal = ({
         <div className="flex-1 overflow-y-auto px-5 pb-5">
           <table className="min-w-full">
             <thead>
-              <tr className="sticky top-0 z-20 border-b border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+              <tr className="sticky top-0 z-20 border-b border-stroke bg-[rgb(var(--c-surface))] shadow-sm dark:border-strokedark">
                 <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
                   Particular
                 </th>
@@ -1081,7 +1081,7 @@ const ModalStat = ({
   value: number;
   isCount?: boolean;
 }) => (
-  <div className="rounded-sm border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-boxdark">
+  <div className="rounded-sm border border-slate-200 bg-[rgb(var(--c-surface))] p-4 dark:border-slate-700">
     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
       {label}
     </p>

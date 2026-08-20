@@ -268,9 +268,9 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-white dark:bg-boxdark">
+    <div className="fixed inset-0 overflow-y-auto bg-[rgb(var(--c-surface))]">
       <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-8">
-        <div className="w-full max-w-md rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-8">
+        <div className="w-full max-w-md rounded-xl border border-stroke bg-[rgb(var(--c-surface))] p-6 shadow-sm dark:border-strokedark sm:p-8">
           <h2 className="text-2xl font-bold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Forgot Password</h2>
           <p className="mt-2 text-sm text-[rgb(var(--c-text))]/60 dark:text-[rgb(var(--c-text))]/60">
             {step === 'request' && 'Enter your mobile number to receive a password reset OTP.'}
@@ -296,7 +296,8 @@ const ForgotPassword: React.FC = () => {
                 buttonLoading={requestingOtp}
                 label={requestingOtp ? 'Sending OTP...' : 'Send OTP'}
                 disabled={requestingOtp}
-                className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center bg-primary hover:bg-primary focus:bg-primary disabled:cursor-not-allowed disabled:opacity-60"
+                variant="primary"
+                className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center disabled:cursor-not-allowed disabled:opacity-60"
                 icon={<FiSend className="text-lg ml-2 mr-2" />}
               />
             </form>
@@ -324,7 +325,8 @@ const ForgotPassword: React.FC = () => {
                 buttonLoading={verifyingOtp}
                 label={verifyingOtp ? 'Verifying...' : 'Verify OTP'}
                 disabled={verifyingOtp}
-                className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center bg-primary hover:bg-primary focus:bg-primary disabled:cursor-not-allowed disabled:opacity-60"
+                variant="primary"
+                className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center disabled:cursor-not-allowed disabled:opacity-60"
                 icon={<FiSave className="text-lg ml-2 mr-2" />}
               />
 
@@ -402,7 +404,8 @@ const ForgotPassword: React.FC = () => {
                 buttonLoading={resettingPassword}
                 label={resettingPassword ? 'Updating Password...' : 'Update Password'}
                 disabled={resettingPassword}
-                className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center bg-primary hover:bg-primary focus:bg-primary disabled:cursor-not-allowed disabled:opacity-60"
+                variant="primary"
+                className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center disabled:cursor-not-allowed disabled:opacity-60"
                 icon={<FiSave className="text-lg ml-2 mr-2" />}
               />
             </form>

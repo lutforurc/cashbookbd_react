@@ -102,7 +102,7 @@ const Table: React.FC<TableProps> = ({
             ))}
           </colgroup>
 
-        <thead className={`bg-gray-300 text-xs uppercase text-gray-800 dark:bg-gray-700 dark:text-gray-300 ${theadClassName || ""}`}>
+        <thead className={`bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300 ${theadClassName || ""}`}>
           {headerRows && headerRows.length > 0 ? (
             headerRows.map((row, rowIndex) => (
               <tr key={rowIndex}>

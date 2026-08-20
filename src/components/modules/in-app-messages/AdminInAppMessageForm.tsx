@@ -253,7 +253,7 @@ const AdminInAppMessageForm: React.FC = () => {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
         {/* ---------------- FORM ---------------- */}
-        <div className="rounded border border-stroke bg-white p-4 dark:border-strokedark dark:bg-boxdark">
+        <div className="rounded border border-stroke bg-[rgb(var(--c-surface))] p-4 dark:border-strokedark">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div className="md:col-span-2">
               <InputElement
@@ -273,7 +273,7 @@ const AdminInAppMessageForm: React.FC = () => {
                 rows={3}
                 value={form.body}
                 onChange={(e) => set('body', e.target.value)}
-                className="w-full rounded-xs border border-gray-300 bg-white p-2 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
+                className="w-full rounded-xs border border-gray-300 bg-[rgb(var(--c-surface))] p-2 text-sm outline-none dark:border-gray-600 dark:text-[rgb(var(--c-text))]"
                 placeholder="What you want the user to read"
               />
             </div>
@@ -513,7 +513,7 @@ const AdminInAppMessageForm: React.FC = () => {
         {/* ---------------- LIVE PREVIEW ---------------- */}
         <div className="rounded border border-stroke bg-gray-100 p-4 dark:border-strokedark dark:bg-meta-4">
           <div className="mb-2 text-sm font-semibold">Preview</div>
-          <div className="rounded bg-white p-3 dark:bg-boxdark">
+          <div className="rounded bg-[rgb(var(--c-surface))] p-3">
             <InAppMessageView
               preview
               message={previewMessage}

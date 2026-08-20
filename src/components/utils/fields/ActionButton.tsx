@@ -117,7 +117,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                   handleDelete?.(row.id);
                   setShowConfirmId?.(null);
                 }}
-                className="px-4 py-1.5 text-sm text-white bg-red-600 hover:bg-red-700 rounded"
+                variant="danger"
+                className="px-4 py-1.5 text-sm rounded"
               >
                 Yes
               </Button>

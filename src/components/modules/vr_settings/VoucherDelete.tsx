@@ -102,7 +102,7 @@ const VoucherDelete = () => {
       <HelmetTitle title="Voucher Delete" />
 
       <div className="mx-auto mt-6 w-full max-w-md">
-        <div className="border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
           {/* Header */}
           <div className="flex items-center gap-3 border-b border-stroke px-5 py-3.5 dark:border-strokedark">
             <span className="flex h-10 w-10 items-center justify-center rounded-md bg-red-500/10 text-red-500">
@@ -182,7 +182,7 @@ const VoucherDelete = () => {
       {/* ========== Already-Deleted Confirmation (continue anyway) ========== */}
       {alreadyDeletedMsg && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark">
+          <div className="w-full max-w-md border border-stroke bg-[rgb(var(--c-surface))] shadow-xl dark:border-strokedark">
             <div className="border-b border-amber-300 bg-amber-50 px-5 py-3 dark:border-amber-700/50 dark:bg-amber-500/10">
               <h3 className="text-base font-semibold text-amber-700 dark:text-amber-400">Voucher Already Deleted</h3>
               <p className="mt-0.5 text-sm text-amber-700/90 dark:text-amber-400/90">{alreadyDeletedMsg}</p>

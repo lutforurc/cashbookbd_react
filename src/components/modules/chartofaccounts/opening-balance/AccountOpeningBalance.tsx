@@ -294,7 +294,8 @@ const AccountOpeningBalance = () => {
               {row.opening_vr_no && canDeleteVoucher ? (
                 <ButtonLoading
                   icon={<FiTrash2 size={14} />}
-                  className={`${ROW_ACTION_BUTTON_CLASS} bg-red-600 hover:bg-red-700`}
+                  variant="danger"
+                  className={ROW_ACTION_BUTTON_CLASS}
                   size="sm"
                   label="Delete"
                   type="button"
@@ -314,7 +315,7 @@ const AccountOpeningBalance = () => {
     return (
       <>
         <HelmetTitle title="Account Opening Balance" />
-        <div className="rounded-sm border border-stroke bg-white p-6 text-center text-slate-600 shadow-default dark:border-strokedark dark:bg-boxdark dark:text-slate-300">
+        <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] p-6 text-center text-slate-600 shadow-default dark:border-strokedark dark:text-slate-300">
           Opening balances are switched off for this branch. Turn them on in the
           branch settings to record what cash and the bank accounts started with.
         </div>
@@ -326,7 +327,7 @@ const AccountOpeningBalance = () => {
     <>
       <HelmetTitle title="Account Opening Balance" />
 
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="rounded-sm border border-stroke bg-[rgb(var(--c-surface))] shadow-default dark:border-strokedark">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stroke px-4 py-4 dark:border-strokedark">
           <div>
             <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
@@ -422,7 +423,8 @@ const AccountOpeningBalance = () => {
         }
         cancelLabel="Cancel"
         confirmLabel="Delete"
-        className="bg-red-600 hover:bg-red-700 min-w-[128px]"
+        variant="danger"
+        className="min-w-[128px]"
         loading={deletingId === deleteRow?.id}
         onCancel={() => setDeleteRow(null)}
         onConfirm={handleDeleteConfirmed}

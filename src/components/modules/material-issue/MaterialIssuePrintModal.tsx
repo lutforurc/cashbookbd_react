@@ -63,7 +63,7 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl rounded-xl bg-white shadow-xl dark:bg-boxdark"
+        className="w-full max-w-3xl rounded-xl bg-[rgb(var(--c-surface))] shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Toolbar (not printed) */}
@@ -73,7 +73,8 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
             <Button
               onClick={handlePrint}
               disabled={loading || !!error}
-              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+              variant="primary"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium disabled:opacity-50"
             >
               <FiPrinter /> Print
             </Button>

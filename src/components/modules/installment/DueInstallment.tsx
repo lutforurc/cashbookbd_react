@@ -397,7 +397,8 @@ const DueInstallment = (user: any) => {
           </div>
           <div className="min-w-0 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between md:col-span-2 md:self-end">
             <div className="w-full sm:w-auto">
-              <PrintButton onClick={handlePrint} className='mt-0 w-full bg-gray-700 text-white sm:w-auto' />
+              <PrintButton onClick={handlePrint} variant="default"
+ className='mt-0 w-full sm:w-auto' />
             </div>
             <div className="min-w-0 w-full sm:w-auto flex justify-start sm:justify-end">
               <ToggleSwitch
