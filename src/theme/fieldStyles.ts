@@ -151,11 +151,20 @@ export const withFieldHeight = (
       height,
       padding: '0 0.5rem',
     }),
-    input: (base: any, state: any) => ({
-      ...run('input')(base, state),
-      margin: 0,
-      padding: 0,
-    }),
+    // The box you type in. Its colour matters more than it looks: these
+    // dropdowns are searchable, and react-select inks the typed text in its own
+    // #333 unless told otherwise -- so on a dark screen you could type and see
+    // nothing come out, which reads as "this list cannot be searched".
+    input: (base: any, state: any) => {
+      const own = run('input')(base, state);
+
+      return {
+        ...own,
+        margin: 0,
+        padding: 0,
+        color: own.color !== undefined && own.color !== base.color ? own.color : text,
+      };
+    },
     indicatorsContainer: (base: any, state: any) => ({
       ...run('indicatorsContainer')(base, state),
       height,
