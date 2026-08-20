@@ -432,10 +432,46 @@
 /* @layer components {
 } */
 
-.Toastify__toast-theme--light {
-  /* .cash-react-select-container {
-  } */
-  @apply bg-gray-800!;
+/* ---------------------------------------------------------------------------
+   The little messages in the corner.
+   
+   They used to be dark in both modes, and for a plain reason: the light theme's
+   own class was overridden with `bg-gray-800!`. So "saved" looked the same at
+   noon as at midnight, and on a light screen it was the only dark thing on the
+   page.
+   
+   react-toastify draws itself from its own variables, so rather than fighting
+   its classes, its variables are pointed at ours. Both modes are described
+   here, and the ToastContainer is told which mode it is in -- see main.tsx.
+   The success, danger, warning and info colours are the palette's own, so a
+   user who chooses their own red sees it on the message that reports a failure.
+   
+   `:root:root` rather than `:root`, and the doubling is load-bearing: the
+   library declares these same variables on :root, and a dozen screens import
+   its stylesheet after this one, so at equal specificity theirs would win and
+   the text would stay the library's grey. Two pseudo-classes settle it whatever
+   the import order turns out to be.
+   --------------------------------------------------------------------------- */
+:root:root {
+  --toastify-color-light: rgb(var(--c-surface));
+  --toastify-text-color-light: rgb(var(--c-text));
+  --toastify-color-dark: rgb(var(--c-surface));
+  --toastify-text-color-dark: rgb(var(--c-text));
+
+  --toastify-color-success: rgb(var(--c-success));
+  --toastify-color-error: rgb(var(--c-danger));
+  --toastify-color-warning: rgb(var(--c-warning));
+  --toastify-color-info: rgb(var(--c-meta-5));
+
+  --toastify-icon-color-success: var(--toastify-color-success);
+  --toastify-icon-color-error: var(--toastify-color-error);
+  --toastify-icon-color-warning: var(--toastify-color-warning);
+  --toastify-icon-color-info: var(--toastify-color-info);
+
+  --toastify-color-progress-success: var(--toastify-color-success);
+  --toastify-color-progress-error: var(--toastify-color-error);
+  --toastify-color-progress-warning: var(--toastify-color-warning);
+  --toastify-color-progress-info: var(--toastify-color-info);
 }
 
 .cash-react-select-container {

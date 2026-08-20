@@ -3,6 +3,7 @@ import { FiRotateCcw } from 'react-icons/fi';
 import { fieldClass, FIELD_COLOR, FIELD_LABEL, FIELD_SELECT } from '../../../theme/fieldStyles';
 import { Input, Select } from '../../utils/fields/FormControls';
 import { Button, IconButton } from '../../../pages/UiElements/CustomButtons';
+import ThemePreview from './ThemePreview';
 import {
   CONTROL_HEIGHT_DEFAULT,
   CONTROL_RADIUS_DEFAULT,
@@ -197,6 +198,8 @@ const ThemeSetupSection: React.FC<ThemeSetupSectionProps> = ({
             </Button>
           </div>
         ) : null}
+
+        <ThemePreview values={values} />
       </div>
 
       <Group

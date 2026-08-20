@@ -155,7 +155,7 @@ const applyDefaultMode = (mode?: string | number | null) => {
  * event for it, so the class is watched. Without this the colours would be
  * right until someone flipped the switch and then be a mode behind.
  */
-const useIsDarkMode = (): boolean => {
+export const useIsDarkMode = (): boolean => {
   const read = () =>
     typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
   const [dark, setDark] = useState(read);
