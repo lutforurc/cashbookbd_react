@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { useNavigate, useParams } from 'react-router-dom';
 import { warrantyType } from '../../utils/fields/DataConstant';
 import { editProduct, updateProduct } from './productSlice';
+import { isBranchSettingOn } from '../../utils/userFeatureSettings';
 
 const parseWarrantyDetails = (warrantyDays: unknown, fallbackType?: unknown) => {
   if (warrantyDays && typeof warrantyDays === 'object' && !Array.isArray(warrantyDays)) {
@@ -40,6 +41,7 @@ const EditProduct = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // product ID from URL
   const category = useSelector((state) => state.category);
+  const settings = useSelector((state) => state.settings);
   const product = useSelector((state) => state.product);
   const productTypeOptions = category?.data?.product_type || [];
   const unitOptions = category?.data?.unit || [];
@@ -251,7 +253,10 @@ const EditProduct = () => {
           onChange={handleOnChange}
         />
 
-        {category?.data?.branch?.warranty_controll && (
+        {/* branch settings, not the category list -- this asked state.category,
+            which has no branch, so the warranty fields never appeared here
+            while Add Product showed them to everybody */}
+        {isBranchSettingOn(settings, 'warranty_controll') && (
           <>
             <DropdownCommon
  id="warranty_type"

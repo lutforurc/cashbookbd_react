@@ -24,6 +24,7 @@ import ProductPrint from './ProductPrint';
 import { useReactToPrint } from 'react-to-print';
 import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
 import { Textarea } from '../../utils/fields/FormControls';
+import { isBranchSettingOn } from '../../utils/userFeatureSettings';
 
 const isGroupRow = (row: any) => row?.__type === 'CAT_HEADER';
 
@@ -505,7 +506,9 @@ const Product = (user: any) => {
           );
         },
       },
-      !settings?.data?.branch?.is_opening && {
+      // Read as text, '0' is true and its negation is false -- which is why the
+      // Category column was missing from every branch that has opening off.
+      !isBranchSettingOn(settings, 'is_opening') && {
         key: 'category',
         header: 'Category',
         render: (row: any) => (isGroupRow(row) ? '' : row.category),

@@ -5,6 +5,7 @@ import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { useSelector } from "react-redux";
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+import { isBranchSettingOn } from '../../../utils/userFeatureSettings';
 
 
 type DueRow = {
@@ -40,6 +41,10 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
     const fs = fontSize;
     const settings = useSelector((state: any) => state.settings);
     const mobileFormat = useMobileFormat();
+
+    // The setting is text: '0' is what "off" looks like, and a bare `&&` reads
+    // that as true. Asked properly, so the printed report matches the screen.
+    const showAddress = isBranchSettingOn(settings, 'due_list_with_address');
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
@@ -82,8 +87,8 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
 
                       {/* Member Info */}
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
-                        <div className={settings?.data?.branch?.due_list_with_address ? `font-semibold` : ``}>{row.coa4_name}</div>
-                        {settings?.data?.branch?.due_list_with_address && (row.mobile?.length ?? 0) > 10 && (
+                        <div className={showAddress ? `font-semibold` : ``}>{row.coa4_name}</div>
+                        {showAddress && (row.mobile?.length ?? 0) > 10 && (
                           <>
                             <div className="text-xs">{formatMobile(row.mobile, mobileFormat)}</div>
                             <div className="text-xs">{row.manual_address}</div>

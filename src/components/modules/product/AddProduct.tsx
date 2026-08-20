@@ -18,6 +18,7 @@ import { fetchBrandDdl } from './brand/brandSlice';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
 import { Textarea } from '../../utils/fields/FormControls';
+import { isBranchSettingOn } from '../../utils/userFeatureSettings';
 
 interface productItem {
   id: string | number;
@@ -401,7 +402,8 @@ console.log('====================================');
           onChange={handleOnChange}
         />
 
-        {settings?.data?.branch?.warranty_controll ? (
+        {/* the text '0' is truthy, so this has to be asked, not assumed */}
+        {isBranchSettingOn(settings, 'warranty_controll') ? (
           <>
             <DropdownCommon
  id="warranty_type"

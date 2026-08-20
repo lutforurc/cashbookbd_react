@@ -16,7 +16,7 @@ import DueListPrint from './DueListPrint';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { useReactToPrint } from 'react-to-print';
-import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import { isBranchSettingOn, isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 
 
@@ -29,6 +29,11 @@ const DueList = (user: any) => {
   const dueList = useSelector((state) => state.dueList);
   const settings = useSelector((state: any) => state.settings);
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
+
+  // Off means off. The setting arrives as the text '0', which a bare `&&` reads
+  // as true -- which is why the mobile number and address were on the report
+  // with the branch switch turned off.
+  const showAddress = isBranchSettingOn(settings, 'due_list_with_address');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
@@ -107,7 +112,7 @@ const DueList = (user: any) => {
       render: (row: any) => (
         <>
           <p>{row.coa4_name}</p>
-          {settings?.data?.branch?.due_list_with_address && (
+          {showAddress && (
             <>
               <p className="text-sm text-gray-500">{(row.mobile?.length ?? 0) > 10 && <div className="text-xs">{formatMobile(row.mobile, mobileFormat)}</div>}</p>
               <p className="text-sm text-gray-500">{row.manual_address}</p>
