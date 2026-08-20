@@ -263,6 +263,8 @@ import { hasPermission } from '../utils/permissionChecker';
 import { useSelector } from 'react-redux';
 import './Sidebar.css';
 import routes from '../services/appRoutes';
+import { isMenuActive } from './menuRoutes';
+import { subMenuLinkClass } from './sidebarStyles';
 import { resolveAssetUrl } from '../services/resolveAssetUrl';
 import { hasMenuPermission } from './hasMenuPermission';
 import DropdownUser from '../Header/DropdownUser';
@@ -502,7 +504,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               setSidebarCollapsed((current) => !current);
               setOpenMenu(null);
             }}
-            className={`hidden w-9 items-center justify-center rounded-sm border border-stroke bg-white text-slate-600 shadow-sm transition hover:bg-gray-100 hover:text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-slate-300 dark:hover:bg-meta-4 lg:flex ${sidebarCollapsed ?'lg: lg:w-8 lg:flex-none':''}`}
+            className={`hidden w-9 items-center justify-center rounded-sm border border-stroke bg-[rgb(var(--c-surface))] text-slate-600 shadow-sm transition hover:bg-gray-100 hover:text-slate-900 dark:border-strokedark dark:text-slate-300 dark:hover:bg-meta-4 lg:flex ${sidebarCollapsed ?'lg: lg:w-8 lg:flex-none':''}`}
             title={sidebarCollapsed ? 'Show menu labels' : 'Show icons only'}
             aria-label={sidebarCollapsed ? 'Show menu labels' : 'Show icons only'}
           >
@@ -590,9 +592,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/* Dashboard */}
               {!isTopbar ? (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/dashboard' || pathname.includes('dashboard')
-                  }
+                  activeCondition={isMenuActive('dashboard', pathname)}
                   menuId="dashboard"
                   style={menuSlot('dashboard')}
                   open={openMenu === 'dashboard'}
@@ -602,7 +602,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="/dashboard"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/' || pathname.includes('dashboard')) && 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'}`}
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('dashboard', pathname) && 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'}`}
                         onClick={(e) => {
                           // e.preventDefault();
                           sidebarExpanded
@@ -635,10 +635,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         <li style={subSlot('dashboard', 'dashboard')}>
                           <NavLink
                             to="/dashboard"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                            }
+                            className={subMenuLinkClass}
                           >
                             Dashboard
                           </NavLink>
@@ -665,18 +662,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/* Transaction */}
               {hasMenuPermission(permissions, 'transaction') && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/accounts/cash/receive' ||
-                    pathname === '/accounts/cash/payment' ||
-                    pathname === '/accounts/bank/receive' ||
-                    pathname === '/accounts/bank/payment' ||
-                    pathname === routes.employee_loan ||
-
-                    pathname === '/accounts/journal' ||
-
-
-                    pathname.includes('forms')
-                  }
+                  activeCondition={isMenuActive('transaction', pathname)}
                   menuId="transaction"
                   style={menuSlot('transaction')}
                   open={openMenu === 'transaction'}
@@ -686,14 +672,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/accounts/cash/receive' ||
-                          pathname === '/accounts/cash/payment' ||
-                          pathname === '/admin/installment-details' ||
-                          pathname === '/accounts/bank/receive' ||
-                          pathname === '/accounts/bank/payment' ||
-                          pathname === '/accounts/employee-loan' ||
-                          pathname === '/accounts/journal' ||
-                          pathname.includes('/accounts/cash/receive')) &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('transaction', pathname) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                           }`}
                         onClick={(e) => {
@@ -729,10 +708,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('transaction', 'cash_receive')}>
                               <NavLink
                                 to={routes.cash_receive}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Cash Received
                               </NavLink>
@@ -744,10 +720,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('transaction', 'accounts/cash/payment')}>
                               <NavLink
                                 to="/accounts/cash/payment"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Cash Payment
                               </NavLink>
@@ -757,10 +730,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('transaction', 'accounts/bank/receive')}>
                               <NavLink
                                 to="/accounts/bank/receive"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Bank Received
                               </NavLink>
@@ -770,10 +740,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('transaction', 'accounts/bank/payment')}>
                               <NavLink
                                 to="/accounts/bank/payment"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Bank Payment
                               </NavLink>
@@ -784,10 +751,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('transaction', 'installment_list')}>
                               <NavLink
                                 to={routes.installment_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Installments
                               </NavLink>
@@ -797,10 +761,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('transaction', 'employee_loan')}>
                               <NavLink
                                 to={routes.employee_loan}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Employee Loan
                               </NavLink>
@@ -811,10 +772,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('transaction', 'accounts/journal')}>
                               <NavLink
                                 to="/accounts/journal"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Journal
                               </NavLink>
@@ -830,13 +788,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/* Invoice */}
               {hasMenuPermission(permissions, 'invoice') && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === routes.inv_trading_combined ||
-                    pathname === '/invoice/purchase' ||
-                    pathname === routes.inv_purchase_import ||
-                    pathname === '/invoice/sales' ||
-                    pathname.includes('forms')
-                  }
+                  activeCondition={isMenuActive('invoice', pathname)}
                   menuId="invoice"
                   style={menuSlot('invoice')}
                   open={openMenu === 'invoice'}
@@ -846,14 +798,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/invoice/purchase' ||
-                          pathname === routes.inv_trading_combined ||
-                          pathname === '/invoice/purchase-return' ||
-                          pathname === routes.inv_purchase_import ||
-                          pathname === '/invoice/sales' ||
-                          pathname === '/invoice/sales-return' ||
-                          pathname === '/invoice/labour-invoice' ||
-                          pathname.includes('/invoice/sales')) &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('invoice', pathname) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                           }`}
                         onClick={(e) => {
@@ -889,10 +834,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('invoice', 'invoice/purchase')}>
                               <NavLink
                                 to="/invoice/purchase"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Purchase
                               </NavLink>
@@ -902,10 +844,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('invoice', 'inv_purchase_import')}>
                               <NavLink
                                 to={routes.inv_purchase_import}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Purchase Import
                               </NavLink>
@@ -916,10 +855,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('invoice', 'invoice/sales')}>
                               <NavLink
                                 to="/invoice/sales"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Sales
                               </NavLink>
@@ -929,10 +865,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('invoice', 'inv_sales_import')}>
                               <NavLink
                                 to={routes.inv_sales_import}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Sales Import
                               </NavLink>
@@ -942,10 +875,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('invoice', 'inv_purchase_return')}>
                               <NavLink
                                 to={routes.inv_purchase_return}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Purchase Return
                               </NavLink>
@@ -955,10 +885,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('invoice', 'inv_sales_return')}>
                               <NavLink
                                 to={routes.inv_sales_return}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Sales Return
                               </NavLink>
@@ -970,10 +897,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('invoice', 'invoice/labour-invoice')}>
                               <NavLink
                                 to="/invoice/labour-invoice"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Labour Invoice
                               </NavLink>
@@ -986,10 +910,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('invoice', 'inv_trading_combined')}>
                                 <NavLink
                                   to={routes.inv_trading_combined}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Combined Invoice
                                 </NavLink>
@@ -1014,14 +935,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 hasPermission(permissions, 'inventory.received.create') ||
                 hasPermission(permissions, 'product.received.create')) && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === routes.branch_transfer ||
-                    pathname === routes.branch_received ||
-                    pathname === routes.material_issue ||
-                    pathname.includes(routes.report_branch_transfer) ||
-                    pathname.includes(routes.report_branch_receive) ||
-                    pathname.includes(routes.report_branch_stock)
-                  }
+                  activeCondition={isMenuActive('branch-transfer', pathname)}
                   menuId="branch-transfer"
                   style={menuSlot('branch-transfer')}
                   open={openMenu === 'branch-transfer'}
@@ -1031,12 +945,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === routes.branch_transfer ||
-                          pathname === routes.branch_received ||
-                          pathname === routes.material_issue ||
-                          pathname.includes(routes.report_branch_transfer) ||
-                          pathname.includes(routes.report_branch_receive) ||
-                          pathname.includes(routes.report_branch_stock)) &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('branch-transfer', pathname) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                           }`}
                         onClick={(e) => {
@@ -1077,10 +986,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('branch-transfer', 'branch_transfer')}>
                               <NavLink
                                 to={routes.branch_transfer}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Branch Issue
                               </NavLink>
@@ -1092,10 +998,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('branch-transfer', 'branch_received')}>
                                 <NavLink
                                   to={routes.branch_received}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Branch Receive
                                 </NavLink>
@@ -1109,10 +1012,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('branch-transfer', 'report_branch_transfer_list')}>
                               <NavLink
                                 to={routes.report_branch_transfer_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Transfer List
                               </NavLink>
@@ -1124,10 +1024,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('branch-transfer', 'report_branch_receive_list')}>
                                 <NavLink
                                   to={routes.report_branch_receive_list}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Receive List
                                 </NavLink>
@@ -1137,10 +1034,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('branch-transfer', 'report_branch_transfer')}>
                               <NavLink
                                 to={routes.report_branch_transfer}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Issue Report
                               </NavLink>
@@ -1150,10 +1044,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('branch-transfer', 'report_branch_receive')}>
                               <NavLink
                                 to={routes.report_branch_receive}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Receive Report
                               </NavLink>
@@ -1163,10 +1054,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('branch-transfer', 'report_branch_stock')}>
                               <NavLink
                                 to={routes.report_branch_stock}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Branch Stock
                               </NavLink>
@@ -1176,10 +1064,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('branch-transfer', 'material_issue')}>
                               <NavLink
                                 to={routes.material_issue}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Material Issue
                               </NavLink>
@@ -1195,37 +1080,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/* Reports */}
               {hasMenuPermission(permissions, 'reports') && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/reports/cashbook' ||
-                    pathname === routes.cash_bank_received_payment ||
-                    pathname === routes.profit_loss || //'/reports/profit-loss' ||
-                    pathname === routes.product_profit_loss ||
-                    pathname === routes.bank_information ||
-                    pathname === routes.connected_member ||
-                    pathname === routes.balance_sheet ||
-                    pathname === routes.trial_balance_level3 ||
-                    pathname === routes.trial_balance_level4 ||
-                    pathname === routes.expense_report ||
-                    pathname === routes.customer_supplier_statement ||
-                    pathname === routes.product_ledger_data ||
-                    pathname === '/reports/employee-installment' ||
-                    pathname === '/reports/ledger' ||
-                    pathname === '/reports/due-installments' ||
-                    pathname === '/reports/date-wise-total-data' ||
-                    pathname === routes.report_date_wise_in_out ||
-                    pathname === routes.report_closing_stock ||
-                    pathname === routes.somity_stock_details ||
-                    pathname === routes.report_imei_stock ||
-                    pathname === routes.report_godown_stock ||
-                    pathname === '/reports/due-list' ||
-                    pathname === '/reports/purchase-ledger' ||
-                    pathname === '/reports/sales-ledger' ||
-                    pathname === '/reports/group-report' ||
-                    pathname === routes.somity_collection_sheet ||
-                    pathname === routes.somity_monthly_report ||
-                    pathname === '/reports/mitch-match' ||
-                    pathname.includes('forms')
-                  }
+                  activeCondition={isMenuActive('reports', pathname)}
                   menuId="reports"
                   style={menuSlot('reports')}
                   open={openMenu === 'reports'}
@@ -1235,36 +1090,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/reports/date-wise-total-data' ||
-                          pathname.includes('reports/cashbook') ||
-                          pathname === '/reports/employee-installment' ||
-                          pathname === '/reports/due-installments' ||
-                          pathname.includes('/reports/due-list') ||
-                          pathname.includes('/reports/product/stock') ||
-                          pathname.includes(routes.report_closing_stock) ||
-                          pathname.includes(routes.somity_stock_details) ||
-                          pathname.includes(routes.report_imei_stock) ||
-                          pathname.includes(routes.report_godown_stock) ||
-                          pathname.includes(routes.report_date_wise_in_out) ||
-                          pathname.includes('/reports/cat-wise/in-out') ||
-                          pathname.includes('/reports/purchase-ledger') ||
-                          pathname.includes('/reports/sales-ledger') ||
-                          pathname === routes.group_report ||
-                          pathname.includes(routes.somity_collection_sheet) ||
-                          pathname.includes(routes.somity_monthly_report) ||
-                          pathname.includes('/reports/labour/ledger') ||
-                          pathname.includes('/reports/mitch-match') ||
-                          pathname.includes(routes.profit_loss) ||
-                          pathname.includes(routes.product_profit_loss) ||
-                          pathname.includes(routes.bank_information) ||
-                          pathname.includes(routes.connected_member) ||
-                          pathname.includes(routes.balance_sheet) ||
-                          pathname.includes(routes.trial_balance_level3) ||
-                          pathname.includes(routes.trial_balance_level4) ||
-                          pathname.includes(routes.expense_report) ||
-                          pathname.includes(routes.customer_supplier_statement) ||
-                          pathname.includes(routes.product_ledger_data) ||
-                          pathname.includes('reports/ledger')) &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('reports', pathname) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                           }`}
                         onClick={(e) => {
@@ -1300,10 +1126,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'reports/cashbook')}>
                               <NavLink
                                 to="/reports/cashbook"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Cash Book
                               </NavLink>
@@ -1314,10 +1137,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'report_bankbook')}>
                               <NavLink
                                 to={routes.report_bankbook}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Bank Book
                               </NavLink>
@@ -1328,10 +1148,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'cash_bank_received_payment')}>
                               <NavLink
                                 to={routes.cash_bank_received_payment}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Cash &amp; Bank Summary
                               </NavLink>
@@ -1343,10 +1160,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'profit_loss')}>
                               <NavLink
                                 to={routes.profit_loss} //"/reports/profit-loss"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Profit Loss
                               </NavLink>
@@ -1357,10 +1171,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'product_profit_loss')}>
                               <NavLink
                                 to={routes.product_profit_loss}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Product Profit Loss
                               </NavLink>
@@ -1371,10 +1182,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'bank_information')}>
                               <NavLink
                                 to={routes.bank_information}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Bank Information
                               </NavLink>
@@ -1385,10 +1193,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'connected_member')}>
                               <NavLink
                                 to={routes.connected_member}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Connected Member
                               </NavLink>
@@ -1399,10 +1204,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'balance_sheet')}>
                               <NavLink
                                 to={routes.balance_sheet}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Balance Sheet
                               </NavLink>
@@ -1413,10 +1215,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'trial_balance_level3')}>
                               <NavLink
                                 to={routes.trial_balance_level3}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Trial Balance Group
                               </NavLink>
@@ -1426,10 +1225,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'trial_balance_level4')}>
                               <NavLink
                                 to={routes.trial_balance_level4}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Trial Balance Details
                               </NavLink>
@@ -1439,10 +1235,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'expense_report')}>
                               <NavLink
                                 to={routes.expense_report}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Expense Report
                               </NavLink>
@@ -1452,10 +1245,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'reports/due-installments')}>
                               <NavLink
                                 to="/reports/due-installments"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Due Installments
                               </NavLink>
@@ -1465,10 +1255,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'reports/employee-installment')}>
                               <NavLink
                                 to="/reports/employee-installment"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Employee Installments
                               </NavLink>
@@ -1479,10 +1266,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('reports', 'reports/ledger')}>
                                 <NavLink
                                   to="/reports/ledger"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Ledger
                                 </NavLink>
@@ -1495,10 +1279,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'customer_supplier_statement')}>
                               <NavLink
                                 to={routes.customer_supplier_statement}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Ledger Details
                               </NavLink>
@@ -1508,10 +1289,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'product_ledger_data')}>
                               <NavLink
                                 to={routes.product_ledger_data}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Product In Out
                               </NavLink>
@@ -1521,10 +1299,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'report_date_wise_in_out')}>
                               <NavLink
                                 to={routes.report_date_wise_in_out}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Date-wise In/Out
                               </NavLink>
@@ -1535,10 +1310,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'reports/labour/ledger')}>
                               <NavLink
                                 to="/reports/labour/ledger"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Labour Ledger
                               </NavLink>
@@ -1548,10 +1320,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'reports/due-list')}>
                               <NavLink
                                 to="/reports/due-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Due List
                               </NavLink>
@@ -1561,10 +1330,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'somity_collection_sheet')}>
                               <NavLink
                                 to={routes.somity_collection_sheet}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Collection Sheet
                               </NavLink>
@@ -1574,10 +1340,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'somity_monthly_report')}>
                               <NavLink
                                 to={routes.somity_monthly_report}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Monthly Report
                               </NavLink>
@@ -1587,10 +1350,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'reports/date-wise-total-data')}>
                               <NavLink
                                 to="/reports/date-wise-total-data"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Datewise Cash Total
                               </NavLink>
@@ -1600,10 +1360,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'reports/product/stock')}>
                               <NavLink
                                 to="/reports/product/stock"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Product Stock
                               </NavLink>
@@ -1613,10 +1370,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'somity_stock_details')}>
                               <NavLink
                                 to={routes.somity_stock_details}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Stock Details
                               </NavLink>
@@ -1628,10 +1382,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'report_imei_stock')}>
                               <NavLink
                                 to={routes.report_imei_stock}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 IMEI Stock
                               </NavLink>
@@ -1642,10 +1393,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'report_godown_stock')}>
                               <NavLink
                                 to={routes.report_godown_stock}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Godown Stock
                               </NavLink>
@@ -1656,10 +1404,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'reports/cat-wise/in-out')}>
                               <NavLink
                                 to="/reports/cat-wise/in-out"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Cat-wise In/Out
                               </NavLink>
@@ -1669,10 +1414,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'reports/purchase-ledger')}>
                               <NavLink
                                 to="/reports/purchase-ledger"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Purchase Ledger
                               </NavLink>
@@ -1682,10 +1424,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'reports/sales-ledger')}>
                               <NavLink
                                 to="/reports/sales-ledger"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Sales Ledger
                               </NavLink>
@@ -1696,10 +1435,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <NavLink
                                 to="/reports/group-report"
                                 end
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Group Report
                               </NavLink>
@@ -1710,10 +1446,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('reports', 'reports/mitch-match')}>
                               <NavLink
                                 to="/reports/mitch-match"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Mismatch
                               </NavLink>
@@ -1735,11 +1468,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                   the sidebar. They are one subject, and now one menu. */}
               {hasMenuPermission(permissions, 'product_tracking') && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === routes.product_tracking_settings ||
-                    pathname === routes.product_financial_statement ||
-                    pathname === routes.product_tracking_summary
-                  }
+                  activeCondition={isMenuActive('product_tracking', pathname)}
                   menuId="product_tracking"
                   style={menuSlot('product_tracking')}
                   open={openMenu === 'product_tracking'}
@@ -1749,10 +1478,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
-                          pathname === routes.product_tracking_settings ||
-                          pathname === routes.product_financial_statement ||
-                          pathname === routes.product_tracking_summary) &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('product_tracking', pathname) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                           }`}
                         onClick={(e) => {
@@ -1788,10 +1514,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('product_tracking', 'product_tracking_settings')}>
                               <NavLink
                                 to={routes.product_tracking_settings}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Tracking
                               </NavLink>
@@ -1801,10 +1524,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('product_tracking', 'product_financial_statement')}>
                               <NavLink
                                 to={routes.product_financial_statement}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Statement
                               </NavLink>
@@ -1814,10 +1534,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('product_tracking', 'product_tracking_summary')}>
                               <NavLink
                                 to={routes.product_tracking_summary}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Receivable & Payable
                               </NavLink>
@@ -1832,11 +1549,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
               {hasMenuPermission(permissions, 'requisition') && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/requisition/comparison' ||
-                    pathname === '/requisition/create' ||
-                    pathname.includes('forms')
-                  }
+                  activeCondition={isMenuActive('requisition', pathname)}
                   menuId="requisition"
                   style={menuSlot('requisition')}
                   open={openMenu === 'requisition'}
@@ -1846,11 +1559,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
-                          pathname === '/requisitions' ||
-                          pathname === '/requisition/create' ||
-                          pathname === '/requisition/comparison' ||
-                          pathname.includes('/requisition/comparison')) &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('requisition', pathname) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                           }`}
 
@@ -1887,10 +1596,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('requisition', 'requisition')}>
                               <NavLink
                                 to={routes.requisition}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Requisitions
                               </NavLink>
@@ -1900,10 +1606,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('requisition', 'requisition_create')}>
                               <NavLink
                                 to={routes.requisition_create}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Create
                               </NavLink>
@@ -1913,10 +1616,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('requisition', 'requisition_comparison')}>
                               <NavLink
                                 to={routes.requisition_comparison}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Comparison
                               </NavLink>
@@ -1934,22 +1634,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {settings?.data?.branch?.business_type_id == 9 &&
                 hasMenuPermission(permissions, 'real_estate') && (
                   <SidebarLinkGroup
-                    activeCondition={
-                      pathname === '/real-estate/add-area' ||
-                      pathname === '/real-estate/area-list' ||
-                      pathname === '/real-estate/project-activities' ||
-                      pathname === '/real-estate/flat-layout' ||
-                      pathname === '/real-estate/unit-sales' ||
-                      pathname === routes.real_estate_sold_units ||
-                      pathname === routes.report_sales_summary ||
-                      pathname === routes.real_estate_installment_create ||
-                      pathname === routes.real_estate_project_expense ||
-                      pathname === routes.real_estate_project_purchase ||
-                      pathname === routes.real_estate_project_labour ||
-                      pathname === routes.real_estate_project_summary_report ||
-                      pathname === routes.real_estate_project_cost_report ||
-                      pathname.includes('forms')
-                    }
+                    activeCondition={isMenuActive('real-estate', pathname)}
                     menuId="real-estate"
                   style={menuSlot('real-estate')}
                     open={openMenu === 'real-estate'}
@@ -1960,33 +1645,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         <NavLink
                           to="#"
                           className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 
-                        ${(
-                              pathname === '/real-estate/area-list' ||
-                              pathname === '/real-estate/project-activities' ||
-                              pathname === '/real-estate/buildings' ||
-                              pathname === '/real-estate/flat-layout' ||
-                              pathname === '/real-estate/building/floor' ||
-                              pathname === '/real-estate/add-unit' ||
-                              pathname === '/real-estate/unit-sales' ||
-                              pathname === routes.real_estate_sold_units ||
-                      pathname === routes.report_sales_summary ||
-                              pathname === routes.real_estate_installment_create ||
-                              pathname === routes.real_estate_project_expense ||
-                              pathname === routes.real_estate_project_purchase ||
-                              pathname === routes.real_estate_project_labour ||
-                              pathname === routes.real_estate_project_cost_report ||
-                      pathname === routes.real_estate_project_cost_report ||
-                      pathname === routes.real_estate_project_purchase ||
-                      pathname === routes.real_estate_project_cost_report ||
-                              pathname === routes.real_estate_unit_types_create ||
-                              pathname === routes.real_estate_buildings_list ||
-                              pathname === routes.real_estate_floor_list ||
-                              pathname === routes.real_estate_unit_types_list ||
-                              pathname === routes.real_estate_floor_unit_list ||
-                              pathname === routes.unit_payment_list ||
-                              pathname === routes.real_estate_floor_unit_list ||
-                              pathname === '/real-estate/project-list' ||
-                              pathname.includes('/real-estate/add-area')) &&
+                        ${isMenuActive('real-estate', pathname) &&
                             'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                             }`}
                           onClick={(e) => {
@@ -2024,10 +1683,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 <NavLink
                                   // to="/admin/check-register"
                                   to={routes.unit_payment_list}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Check Register
                                 </NavLink>
@@ -2037,10 +1693,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('real-estate', 'real-estate/area-list')}>
                               <NavLink
                                 to="/real-estate/area-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Location
                               </NavLink>
@@ -2049,10 +1702,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_project_list')}>
                                 <NavLink
                                   to={routes.real_estate_project_list}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Projects
                                 </NavLink>
@@ -2062,10 +1712,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_buildings_list')}>
                                 <NavLink
                                   to={routes.real_estate_buildings_list}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Buildings
                                 </NavLink>
@@ -2076,10 +1723,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_floor_list')}>
                                 <NavLink
                                   to={routes.real_estate_floor_list}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Floor List
                                 </NavLink>
@@ -2089,10 +1733,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_floor_unit_list')}>
                                 <NavLink
                                   to={routes.real_estate_floor_unit_list}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Unit List
                                 </NavLink>
@@ -2102,10 +1743,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_unit_types_list')}>
                                 <NavLink
                                   to={routes.real_estate_unit_types_list}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Chareges
                                 </NavLink>
@@ -2116,10 +1754,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real-estate/flat-layout')}>
                                 <NavLink
                                   to="/real-estate/flat-layout"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Layout
                                 </NavLink>
@@ -2130,10 +1765,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real-estate/unit-sales')}>
                                 <NavLink
                                   to="/real-estate/unit-sales"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Unit Sales
                                 </NavLink>
@@ -2143,10 +1775,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_sold_units')}>
                                 <NavLink
                                   to={routes.real_estate_sold_units}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Sold Units
                                 </NavLink>
@@ -2156,10 +1785,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'report_sales_summary')}>
                                 <NavLink
                                   to={routes.report_sales_summary}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Sales Summary
                                 </NavLink>
@@ -2168,10 +1794,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('real-estate', 'real_estate_installment_create')}>
                               <NavLink
                                 to={routes.real_estate_installment_create}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Installment Create
                               </NavLink>
@@ -2180,10 +1803,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_project_expense')}>
                                 <NavLink
                                   to={routes.real_estate_project_expense}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Project Expense
                                 </NavLink>
@@ -2193,10 +1813,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_project_income')}>
                                 <NavLink
                                   to={routes.real_estate_project_income}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Project Income
                                 </NavLink>
@@ -2206,10 +1823,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_project_purchase')}>
                                 <NavLink
                                   to={routes.real_estate_project_purchase}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Project Purchase
                                 </NavLink>
@@ -2219,10 +1833,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_project_labour')}>
                                 <NavLink
                                   to={routes.real_estate_project_labour}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Project Labour
                                 </NavLink>
@@ -2232,10 +1843,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_project_summary_report')}>
                                 <NavLink
                                   to={routes.real_estate_project_summary_report}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Project Summary
                                 </NavLink>
@@ -2245,10 +1853,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_project_cost_report')}>
                                 <NavLink
                                   to={routes.real_estate_project_cost_report}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Project Cost Report
                                 </NavLink>
@@ -2258,10 +1863,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('real-estate', 'real_estate_project_income_report')}>
                                 <NavLink
                                   to={routes.real_estate_project_income_report}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Project Income Report
                                 </NavLink>
@@ -2279,21 +1881,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/* Products */}
               {hasMenuPermission(permissions, 'products') && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/category/category-list' ||
-                    pathname === '/category/edit' ||
-                    pathname === '/product/product-list' ||
-                    pathname === routes.product_low_stock ||
-                    pathname === routes.product_negative_stock ||
-                    pathname === routes.product_slow_moving ||
-                    pathname === routes.product_warehouse_difference ||
-                    pathname === '/brand/brand-list' ||
-                    pathname === routes.product_unit_list ||
-                    pathname === routes.product_unit_create ||
-                    pathname.includes('/product-unit/unit-edit/') ||
-                    pathname === '/product/edit' ||
-                    pathname.includes('forms')
-                  }
+                  activeCondition={isMenuActive('products', pathname)}
                   menuId="products"
                   style={menuSlot('products')}
                   open={openMenu === 'products'}
@@ -2304,17 +1892,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       <NavLink
                         to="#"
                         className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 
-                          ${(
-                            pathname === '/product/product-list' ||
-                            pathname === routes.product_low_stock ||
-                            pathname === routes.product_negative_stock ||
-                            pathname === routes.product_slow_moving ||
-                            pathname === routes.product_warehouse_difference ||
-                            pathname === '/brand/brand-list' ||
-                            pathname === routes.product_unit_list ||
-                            pathname === routes.product_unit_create ||
-                            pathname.includes('/product-unit/unit-edit/') ||
-                            pathname === '/category/category-list') &&
+                          ${isMenuActive('products', pathname) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                           }`}
                         onClick={(e) => {
@@ -2350,10 +1928,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('products', 'brand/brand-list')}>
                               <NavLink
                                 to="/brand/brand-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Brand List
                               </NavLink>
@@ -2364,10 +1939,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('products', 'category/category-list')}>
                               <NavLink
                                 to="/category/category-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Category List
                               </NavLink>
@@ -2377,10 +1949,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('products', 'product/product-list')}>
                               <NavLink
                                 to="/product/product-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Product List
                               </NavLink>
@@ -2390,10 +1959,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('products', 'product_low_stock')}>
                               <NavLink
                                 to={routes.product_low_stock}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Low Stock
                               </NavLink>
@@ -2403,10 +1969,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('products', 'product_negative_stock')}>
                               <NavLink
                                 to={routes.product_negative_stock}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Negative Stock
                               </NavLink>
@@ -2416,10 +1979,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('products', 'product_slow_moving')}>
                               <NavLink
                                 to={routes.product_slow_moving}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Slow Moving
                               </NavLink>
@@ -2429,10 +1989,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('products', 'product_warehouse_difference')}>
                               <NavLink
                                 to={routes.product_warehouse_difference}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Warehouse Difference
                               </NavLink>
@@ -2442,10 +1999,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('products', 'product_unit_list')}>
                               <NavLink
                                 to={routes.product_unit_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Product Unit
                               </NavLink>
@@ -2465,7 +2019,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                   every day. */}
               {hasMenuPermission(permissions, 'labour_items') && (
                 <SidebarLinkGroup
-                  activeCondition={pathname.includes('/labour-items')}
+                  activeCondition={isMenuActive('labour_items', pathname)}
                   menuId="labour_items"
                   style={menuSlot('labour_items')}
                   open={openMenu === 'labour_items'}
@@ -2508,10 +2062,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('labour_items', 'labour_category')}>
                               <NavLink
                                 to={routes.labour_category}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Category
                               </NavLink>
@@ -2522,10 +2073,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('labour_items', 'labour_item')}>
                               <NavLink
                                 to={routes.labour_item}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Item
                               </NavLink>
@@ -2541,24 +2089,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/* Admin */}
               {hasMenuPermission(permissions, 'admin') && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/branch/branch-list' ||
-                    pathname === '/user/user-list' ||
-                    pathname === routes.online_users ||
-                    pathname === routes.company_user_list ||
-                    pathname === routes.reseller_admin ||
-                    pathname === routes.roles ||
-                    pathname === routes.add_role ||
-                    pathname === routes.add_permission ||
-                    pathname === routes.group_report_setup ||
-                    pathname === '/admin/dayclose' ||
-                    pathname === '/order/order-list' ||
-                    pathname === routes.sms_send ||
-                    pathname === routes.sms_template_list ||
-                    pathname === routes.sms_template_create ||
-                    pathname.includes('/sms/templates/edit/') ||
-                    pathname.includes('forms')
-                  }
+                  activeCondition={isMenuActive('admin', pathname)}
                   menuId="admin"
                   style={menuSlot('admin')}
                   open={openMenu === 'admin'}
@@ -2568,33 +2099,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/branch/branch-list' ||
-                          pathname === routes.company_list ||
-                          pathname.includes('/company/company-edit/') ||
-                          pathname === '/user/user-list' ||
-                          pathname === routes.online_users ||
-                          pathname === routes.company_user_list ||
-                          pathname === routes.reseller_admin ||
-                          pathname === routes.roles ||
-                          pathname === routes.add_role ||
-                          pathname === routes.add_permission ||
-                          pathname === routes.group_report_setup ||
-                          pathname === '/admin/dayclose' ||
-                          pathname === '/order/order-list' ||
-                          pathname === '/admin/voucher-approval' ||
-                          pathname === routes.approval_center ||
-                          pathname === '/admin/remove-approval' ||
-                          pathname === '/admin/voucher/type-change' ||
-                          pathname === '/admin/image-upload' ||
-                          pathname === '/admin/bulk-upload' ||
-                          pathname === routes.sms_send ||
-                          pathname === routes.sms_template_list ||
-                          pathname === routes.sms_template_create ||
-                          pathname.includes('/sms/templates/edit/') ||
-                          pathname === '/admin/jumpdate' ||
-                          pathname === '/orders/avg-price' ||
-                          pathname === routes.order_with_transaction ||
-                          pathname.includes('/branch/branch-list')) &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('admin', pathname) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                           }`}
                         onClick={(e) => {
@@ -2631,10 +2136,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'company_list')}>
                               <NavLink
                                 to={routes.company_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Company List
                               </NavLink>
@@ -2645,10 +2147,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'branch/branch-list')}>
                               <NavLink
                                 to="/branch/branch-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Branch List
                               </NavLink>
@@ -2660,10 +2159,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'software_info')}>
                               <NavLink
                                 to={routes.software_info}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Software Information
                               </NavLink>
@@ -2675,10 +2171,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           <li style={subSlot('admin', 'menu_arrangement')}>
                             <NavLink
                               to={routes.menu_arrangement}
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                              }
+                              className={subMenuLinkClass}
                             >
                               Arrange Menu
                             </NavLink>
@@ -2688,10 +2181,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'user_list')}>
                               <NavLink
                                 to={routes.user_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 User List
                               </NavLink>
@@ -2701,10 +2191,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'online_users')}>
                               <NavLink
                                 to={routes.online_users}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Online Users
                               </NavLink>
@@ -2714,10 +2201,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'user_login_log')}>
                               <NavLink
                                 to={routes.user_login_log}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Login History
                               </NavLink>
@@ -2727,10 +2211,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'company_user_list')}>
                               <NavLink
                                 to={routes.company_user_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Company User
                               </NavLink>
@@ -2742,10 +2223,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('admin', 'reseller_admin')}>
                                 <NavLink
                                   to={routes.reseller_admin}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Resellers
                                 </NavLink>
@@ -2757,10 +2235,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('admin', 'admin_notifications')}>
                                 <NavLink
                                   to={routes.admin_notifications}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Admin Notifications
                                 </NavLink>
@@ -2772,10 +2247,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('admin', 'admin_in_app_messages')}>
                                 <NavLink
                                   to={routes.admin_in_app_messages}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   In-App Messages
                                 </NavLink>
@@ -2787,10 +2259,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('admin', 'inventory_systems')}>
                                 <NavLink
                                   to={routes.inventory_systems}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Inventory Systems
                                 </NavLink>
@@ -2802,10 +2271,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('admin', 'tutorial_videos')}>
                                 <NavLink
                                   to={routes.tutorial_videos}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Tutorial Videos
                                 </NavLink>
@@ -2815,10 +2281,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'highlight_rules')}>
                               <NavLink
                                 to={routes.highlight_rules}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Highlight Rules
                               </NavLink>
@@ -2828,10 +2291,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'roles')}>
                               <NavLink
                                 to={routes.roles}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Roles
                               </NavLink>
@@ -2841,10 +2301,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'add_role')}>
                               <NavLink
                                 to={routes.add_role}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Add Roles
                               </NavLink>
@@ -2854,10 +2311,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'add_permission')}>
                               <NavLink
                                 to={routes.add_permission}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Add Permission
                               </NavLink>
@@ -2867,10 +2321,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'admin/dayclose')}>
                               <NavLink
                                 to="/admin/dayclose"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Day Close
                               </NavLink>
@@ -2880,10 +2331,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'group_report_setup')}>
                               <NavLink
                                 to={routes.group_report_setup}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Add Group Report
                               </NavLink>
@@ -2893,10 +2341,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'order/order-list')}>
                               <NavLink
                                 to="/order/order-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Orders
                               </NavLink>
@@ -2906,10 +2351,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'order_with_transaction')}>
                               <NavLink
                                 to={routes.order_with_transaction}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Order With Transaction
                               </NavLink>
@@ -2920,10 +2362,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'orders/avg-price')}>
                               <NavLink
                                 to="/orders/avg-price"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Average Price
                               </NavLink>
@@ -2934,10 +2373,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'approval_center')}>
                               <NavLink
                                 to={routes.approval_center}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Approval Center
                               </NavLink>
@@ -2947,10 +2383,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'admin/voucher-approval')}>
                               <NavLink
                                 to="/admin/voucher-approval"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Voucher Approval
                               </NavLink>
@@ -2961,10 +2394,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'admin/remove-approval')}>
                               <NavLink
                                 to="/admin/remove-approval"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Approval Remove
                               </NavLink>
@@ -2975,10 +2405,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'admin/voucher/type-change')}>
                               <NavLink
                                 to="/admin/voucher/type-change"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Change Voucher Type
                               </NavLink>
@@ -2990,10 +2417,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'admin/image-upload')}>
                               <NavLink
                                 to="/admin/image-upload"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Voucher Upload
                               </NavLink>
@@ -3004,10 +2428,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'admin/bulk-upload')}>
                               <NavLink
                                 to="/admin/bulk-upload"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Bulk Upload
                               </NavLink>
@@ -3018,10 +2439,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'sms_send')}>
                               <NavLink
                                 to={routes.sms_send}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 SMS Logs
                               </NavLink>
@@ -3032,10 +2450,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('admin', 'sms_template_list')}>
                               <NavLink
                                 to={routes.sms_template_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 SMS Templates
                               </NavLink>
@@ -3053,11 +2468,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/* VR Settings */}
               {hasMenuPermission(permissions, 'voucher_settings') && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/vr-settings/voucher-delete' ||
-                    pathname === '/admin/voucher/date-change' ||
-                    pathname.includes('forms')
-                  }
+                  activeCondition={isMenuActive('vr_settings', pathname)}
                   menuId="vr_settings"
                   style={menuSlot('vr_settings')}
                   open={openMenu === 'vr_settings'}
@@ -3068,15 +2479,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
-                          pathname === '/vr-settings/voucher-delete' ||
-                          pathname === '/vr-settings/installment-delete' ||
-                          pathname === '/admin/voucher/date-change' ||
-                          pathname === '/vr-settings/recyclebin' ||
-                          pathname === '/vr-settings/voucher-history' ||
-                          pathname === '/vr-settings/voucher-activity' ||
-                          pathname.includes('/vr-settings/voucher-delete')
-                        ) &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('vr_settings', pathname) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                           }`}
                         onClick={(e) => {
@@ -3112,10 +2515,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('vr_settings', 'vr-settings/voucher-delete')}>
                               <NavLink
                                 to="/vr-settings/voucher-delete"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Voucher Delete
                               </NavLink>
@@ -3125,10 +2525,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('vr_settings', 'vr-settings/installment-delete')}>
                               <NavLink
                                 to="/vr-settings/installment-delete"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Installment Delete
                               </NavLink>
@@ -3139,10 +2536,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('vr_settings', 'admin_change_date')}>
                               <NavLink
                                 to={routes.admin_change_date}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Voucher Date Change
                               </NavLink>
@@ -3153,10 +2547,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('vr_settings', 'recyclebin')}>
                               <NavLink
                                 to={routes.recyclebin}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Recycle Bin
                               </NavLink>
@@ -3167,10 +2558,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('vr_settings', 'voucher_history')}>
                               <NavLink
                                 to={routes.voucher_history}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 History
                               </NavLink>
@@ -3180,10 +2568,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('vr_settings', 'voucher_activity')}>
                               <NavLink
                                 to={routes.voucher_activity}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
 
                                 Log Changes
@@ -3199,17 +2584,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/* HRM */}
               {hasMenuPermission(permissions, 'hrm') && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/hrms/employees' ||
-                    pathname.includes('/hrms/designation-levels') ||
-                    pathname.includes('/hrms/designations') ||
-                    pathname.includes('/hrms/attendance') ||
-                    pathname === '/hrms/salary/salary-generate' ||
-                    pathname === routes.employee_loan_balance ||
-                    pathname.includes('/hrms/salary-sheet') ||
-                    pathname === routes.hrms_festival_bonus_generate ||
-                    pathname.includes('/hrms/festival-bonus')
-                  }
+                  activeCondition={isMenuActive('hrm', pathname)}
                   menuId="hrm"
                   style={menuSlot('hrm')}
                   open={openMenu === 'hrm'}
@@ -3219,18 +2594,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
-                          pathname === '/hrms/employees' ||
-                          pathname.includes('/hrms/designation-levels') ||
-                          pathname.includes('/hrms/designations') ||
-                          pathname.includes('/hrms/attendance') ||
-                          pathname === '/hrms/salary/salary-generate' ||
-                          pathname === routes.employee_loan_balance ||
-                          pathname === routes.employee_loan_ledger ||
-                          pathname.includes('/hrms/salary-sheet') ||
-                          pathname === routes.hrms_festival_bonus_generate ||
-                          pathname.includes('/hrms/festival-bonus')
-                        ) &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('hrm', pathname) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                           }`}
                         onClick={(e) => {
@@ -3264,10 +2628,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms/employees')}>
                               <NavLink
                                 to="/hrms/employees"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Employees
                               </NavLink>
@@ -3277,10 +2638,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_designation_level_list')}>
                               <NavLink
                                 to={routes.hrms_designation_level_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Designation Levels
                               </NavLink>
@@ -3290,10 +2648,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_designation_list')}>
                               <NavLink
                                 to={routes.hrms_designation_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Designations
                               </NavLink>
@@ -3303,10 +2658,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_attendance_entries')}>
                               <NavLink
                                 to={routes.hrms_attendance_entries}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Manual Attendance
                               </NavLink>
@@ -3316,10 +2668,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_attendance_report')}>
                               <NavLink
                                 to={routes.hrms_attendance_report}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Attendance Report
                               </NavLink>
@@ -3329,10 +2678,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_attendance_audit_history')}>
                               <NavLink
                                 to={routes.hrms_attendance_audit_history}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Audit History
                               </NavLink>
@@ -3342,10 +2688,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_overtime_report')}>
                               <NavLink
                                 to={routes.hrms_overtime_report}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Overtime Report
                               </NavLink>
@@ -3355,10 +2698,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_attendance_monthly_report')}>
                               <NavLink
                                 to={routes.hrms_attendance_monthly_report}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Monthly Attendance
                               </NavLink>
@@ -3386,10 +2726,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_employee_attendance_report')}>
                               <NavLink
                                 to={routes.hrms_employee_attendance_report}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Employee Attendance
                               </NavLink>
@@ -3399,10 +2736,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_branch_attendance_summary')}>
                               <NavLink
                                 to={routes.hrms_branch_attendance_summary}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Branch Attendance
                               </NavLink>
@@ -3412,10 +2746,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_holiday_calendar_report')}>
                               <NavLink
                                 to={routes.hrms_holiday_calendar_report}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Holiday Calendar
                               </NavLink>
@@ -3425,10 +2756,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_leave_applications')}>
                               <NavLink
                                 to={routes.hrms_leave_applications}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Leave Applications
                               </NavLink>
@@ -3438,10 +2766,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_attendance_setup')}>
                               <NavLink
                                 to={routes.hrms_attendance_setup}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Attendance Setup
                               </NavLink>
@@ -3451,10 +2776,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms/salary/salary-generate')}>
                               <NavLink
                                 to="/hrms/salary/salary-generate"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Salary Generate
                               </NavLink>
@@ -3464,10 +2786,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_festival_bonus_generate')}>
                               <NavLink
                                 to={routes.hrms_festival_bonus_generate}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Bonus Generate
                               </NavLink>
@@ -3477,10 +2796,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'employee_loan_balance')}>
                               <NavLink
                                 to={routes.employee_loan_balance}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Loan Balance
                               </NavLink>
@@ -3490,10 +2806,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'employee_loan_ledger')}>
                               <NavLink
                                 to={routes.employee_loan_ledger}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Loan Ledger
                               </NavLink>
@@ -3503,10 +2816,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms/salary-sheet')}>
                               <NavLink
                                 to="/hrms/salary-sheet"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Salary Reports
                               </NavLink>
@@ -3516,10 +2826,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrm_mismatch_payment')}>
                               <NavLink
                                 to={routes.hrm_mismatch_payment}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Salary Mismatch
                               </NavLink>
@@ -3529,10 +2836,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('hrm', 'hrms_festival_bonus_list')}>
                               <NavLink
                                 to={routes.hrms_festival_bonus_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Bonus Reports
                               </NavLink>
@@ -3549,15 +2853,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {hasMenuPermission(permissions, 'customer') && (
                 <>
                   <SidebarLinkGroup
-                    activeCondition={
-                      pathname === '/customer-supplier/list' ||
-                      pathname === '/coal1/coal1-list' ||
-                      pathname === '/coal2/coal2-list' ||
-                      pathname === '/coal3/coal3-list' ||
-                      pathname === '/coal4/coal4-list' ||
-                      pathname === '/coal4/opening-balance' ||
-                      pathname.includes('forms')
-                    }
+                    activeCondition={isMenuActive('customer-supplier', pathname)}
                     menuId="customer-supplier"
                   style={menuSlot('customer-supplier')}
                     open={openMenu === 'customer-supplier'}
@@ -3567,14 +2863,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       <React.Fragment>
                         <NavLink
                           to="#"
-                          className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/customer-supplier/list' ||
-                            pathname.includes('/customer-supplier/list') ||
-                            pathname === '/coal1/coal1-list' ||
-                            pathname === '/coal2/coal2-list' ||
-                            pathname === '/coal3/coal3-list' ||
-                            pathname === '/coal4/coal4-list' ||
-                            pathname === '/coal4/opening-balance' ||
-                            pathname.includes('/coal4/coal4-list')) &&
+                          className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('customer-supplier', pathname) &&
                             'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                             }`}
                           onClick={(e) => {
@@ -3610,10 +2899,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('customer-supplier', 'customer-supplier/list')}>
                                 <NavLink
                                   to="/customer-supplier/list"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Customers
                                 </NavLink>
@@ -3623,10 +2909,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('customer-supplier', 'coal1/coal1-list')}>
                                 <NavLink
                                   to="/coal1/coal1-list"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   CoA L1
                                 </NavLink>
@@ -3636,10 +2919,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('customer-supplier', 'coal2/coal2-list')}>
                                 <NavLink
                                   to="/coal2/coal2-list"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   CoA L2
                                 </NavLink>
@@ -3649,10 +2929,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('customer-supplier', 'coal3/coal3-list')}>
                                 <NavLink
                                   to="/coal3/coal3-list"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   CoA L3
                                 </NavLink>
@@ -3662,10 +2939,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('customer-supplier', 'coal4/coal4-list')}>
                                 <NavLink
                                   to="/coal4/coal4-list"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   CoA L4
                                 </NavLink>
@@ -3681,10 +2955,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('customer-supplier', 'coal4/opening-balance')}>
                                 <NavLink
                                   to="/coal4/opening-balance"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                  }
+                                  className={subMenuLinkClass}
                                 >
                                   Bank Opening
                                 </NavLink>
@@ -3702,9 +2973,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/* Analytics */}
               {hasMenuPermission(permissions, 'analytics') && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/item/item-chart' || pathname.includes('forms')
-                  }
+                  activeCondition={isMenuActive('al-charts', pathname)}
                   menuId="al-charts"
                   style={menuSlot('al-charts')}
                   open={openMenu === 'al-charts'}
@@ -3714,10 +2983,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
-                          pathname === '/item/item-chart' ||
-                          pathname.includes('/item/item-chart')
-                        ) &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('al-charts', pathname) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                           }`}
                         onClick={(e) => {
@@ -3753,10 +3019,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('al-charts', 'item/item-chart')}>
                               <NavLink
                                 to="/item/item-chart"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]')
-                                }
+                                className={subMenuLinkClass}
                               >
                                 Comparison
                               </NavLink>
