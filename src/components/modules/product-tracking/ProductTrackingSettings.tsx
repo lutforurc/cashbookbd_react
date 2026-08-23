@@ -178,8 +178,26 @@ const ProductTrackingSettings = () => {
       row.branch_id === 0 ? 'All Branch' : row.branch_name ?? `Branch ${row.branch_id}`,
     ].join(' • ');
 
+  /**
+   * A tick or a cross for one of the five switches on a row.
+   *
+   * Five columns of the word "Yes" read as a wall of text, and the eye has to
+   * spell each one out to find the row where something is off. A mark is read
+   * at a glance, and the odd one out shows itself.
+   *
+   * The word stays in the title and for a screen reader: a tick alone tells
+   * somebody who cannot see the colour nothing, and red-green is the pair
+   * colour blindness takes first -- so the two marks differ in shape as well.
+   */
   const flag = (on: boolean) => (
-    <span className={on ? 'text-green-600' : 'text-gray-400'}>{on ? 'Yes' : 'No'}</span>
+    <span
+      className={`inline-flex ${on ? 'text-green-600' : 'text-gray-400'}`}
+      title={on ? 'Yes' : 'No'}
+      aria-label={on ? 'Yes' : 'No'}
+      role="img"
+    >
+      {on ? <FiCheck size={16} strokeWidth={3} /> : <FiX size={16} strokeWidth={3} />}
+    </span>
   );
 
   return (
