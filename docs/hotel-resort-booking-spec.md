@@ -7,6 +7,12 @@
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
 > working document** — start here when work resumes.
+>
+> **Since the first draft:** rooms can now be sold by the seat as well as whole —
+> a new architecture decision at §2.5, four client answers at §6.1, six open
+> questions at §6.2. And phase 0 is bigger than it looked: the financial-year
+> findings in §3.2 were re-checked against the database and three of them were
+> wrong or understated.
 
 ---
 
@@ -72,7 +78,44 @@ against `acc_financial_years`. Reason: the app has a `change_date` module, so a
 voucher's date can be edited — a stored FY id would go stale and strand the
 voucher in the wrong year.
 
-### 2.5 Advance money is a liability, not income
+### 2.5 A room may be sold whole or by the seat — the seat is the bookable thing
+
+*(Added 2026-08-23. Not in the original design; raised by the client.)*
+
+A room is one of two kinds, and a property runs both at once:
+
+| | Whole room | Seat-wise (dormitory) |
+|---|---|---|
+| Sold to | One guest or party | Several unrelated guests |
+| Used by | Families, couples | Students, workers, lone travellers, pilgrims |
+| Occupancy risk | Empty room earns nothing | Two guests in a four-bed room still earn |
+
+**The decision: model the seat as the bookable resource, never the room.** A room with
+four beds is four `booking_resources` rows, each pointing at its room through a
+`parent_id`. A single-occupancy room is one row.
+
+Everything else follows from that and needs no further machinery:
+
+- **Selling a whole room** is booking all of its seats in one booking. No second code
+  path, no second table.
+- **The two availabilities cannot drift apart.** Whole-room availability *is* "all
+  seats free". Counting rooms and seats separately would be two numbers to keep in
+  step, and the day they disagree is a double booking.
+- **The overlap lock of §2.1 is unchanged.** Every seat is `exclusive`. Rooms never
+  need `capacity` mode — that stays what it was meant for, tickets.
+- **The gender rule becomes one query** — who else is in this seat's `parent_id` on
+  these nights (see §6.2).
+
+Cost: more rows. Twenty four-bed rooms are 80 resource rows rather than 20. That is
+nothing to a database, and it buys away every synchronisation problem above.
+
+**Seat rows are deactivated, never deleted.** A stay recorded in July against "seat 3"
+must still read as seat 3 after the room is converted in September. Deleting the row
+would break the old booking, its bill and its police register entry. Reducing a room
+from four seats to two deactivates two rows; going back to four revives the same
+seat numbers rather than inventing new ones.
+
+### 2.6 Advance money is a liability, not income
 
 ```
 On receipt:        Dr Cash/Bank            Cr Advance Against Booking  (liability)
@@ -108,10 +151,27 @@ These were checked directly. They do not need re-investigating.
   `start_date` = 2021-04-06, `end_date` = 2018-12-30 (end before start). Must be
   cleaned before anything depends on it.
   Columns: `id, company_id, financial_year_type_id, start_date, end_date, display_name, status`.
-- **`acc_financial_year_types`** — 3 rows, fine.
-- **`'financial_year_id' => 1` is hardcoded in 20+ controllers** (`app/Helpers/helpers.php`,
-  `CommonFunction/AccountsTransaction.php`, `ReturnTransaction.php`, all the Inventory
-  controllers). Decide what happens to these before touching FY.
+- **`acc_financial_year_types` — the name and the contents do not match.** Its 3 rows
+  are `Active`, `Inactive`, `Process` — statuses, not year types. Nothing in it says
+  "July–June" or "Jan–Dec", which is what §7 item 8 has to be answered into. The
+  table's purpose has to be settled, not just its data.
+- **`'financial_year_id' => 1` is hardcoded in 83 places across 20 files** — counted,
+  not estimated (`app/Helpers/helpers.php`, `CommonFunction/AccountsTransaction.php`,
+  `ReturnTransaction.php`, every Inventory controller, the Realestate controllers,
+  `Tourism/TourismVisitorController.php`, `Products/ItemUploadController.php`).
+- **The design in §2.4 and the schema disagree.** §2.4 says FY is never stored on the
+  transaction. `main_trx_master` indeed has no such column — but
+  **`acc_transaction_master` does**, and that is the column those 83 writes fill with
+  `1`. So "derive it" is not the whole answer: something has to be decided about the
+  column that already exists.
+- **No existing voucher falls inside the one FY row.** Checked on the dev database:
+  7,219 vouchers, dated 2026-03-16 to 2026-08-21; the FY row covers 2021-04-06 to
+  2018-12-30. **Zero** fall inside it. Turning on a derived-FY lookup today would
+  leave every voucher with no year at all, so phase 0 has to decide what happens to
+  the vouchers already recorded — not only fix one row.
+  *(Counted on `cashbookbdeworlddb`, the local dev database. The client's own figures
+  will differ; the corrupt row and the 83 hardcodes are code and schema, so they
+  hold either way.)*
 - **`business_type`** — 8 rows (General Business, LP Gas, Auto Rice Mill, Computer &
   Accessories, Tourism, Commission Agent, Construction, Trade). **No Hotel, no Resort.**
 
@@ -171,7 +231,7 @@ Legend: 🆕 new · ✅ exists · 🔧 exists, needs change
 | Table | | Holds |
 |---|---|---|
 | `booking_resource_types` | 🆕 | room / hall / community centre / ticketed item |
-| `booking_resources` | 🆕 | **Central list of everything bookable**, incl. `allocation_mode` |
+| `booking_resources` | 🆕 | **Central list of everything bookable**, incl. `allocation_mode`, and — per §2.5 — a `parent_id` so a seat can point at its room, a sold-whole-or-by-seat flag on the room, and an active flag (seats are deactivated, never deleted) |
 | `hotel_room_types` | 🆕 | Standard/Deluxe/Suite, capacity, base rate |
 | `hotel_floors` | 🆕 | Floor list (for the floor-plan view) |
 | `booking_slots` | 🆕 | Morning/afternoon/evening slots for halls & centres |
@@ -199,7 +259,7 @@ Legend: 🆕 new · ✅ exists · 🔧 exists, needs change
 | `hotel_housekeeping_status` | 🆕 | Current state per room |
 | `hotel_housekeeping_logs` | 🆕 | Cleaning history, assigned staff |
 | `hotel_amenity_kits` | 🆕 | Standard kit per room type (header) |
-| `hotel_amenity_kit_items` | 🆕 | Which product, how many, per kit |
+| `hotel_amenity_kit_items` | 🆕 | Which product, how many, per kit — plus whether the quantity is **per room or per guest** (§6.1) |
 | `material_issue_master` | 🔧 | ✅ exists — add a floor/department reference column |
 | `material_issue_details` | ✅ | Unchanged, use as-is |
 
@@ -302,6 +362,32 @@ and net book value separately.
 - **Resort has no weddings/events** — the `event_*` and `catering_*` modules ship
   but stay toggled off on that site.
 
+**Seat-wise rooms** *(client decisions, 2026-08-23 — see §2.5 for the model)*
+
+- **A room can be converted between whole-room and seat-wise at any time, but not
+  while it is booked.** Management is not tied to a season calendar; the block is a
+  booking, not a date. *(What exactly "booked" locks is still open — §6.2.)*
+- **Amenity kits carry both bases.** Every kit item is either per-room (tissue box,
+  curtain wash) or per-guest (soap, towel, comb). Expected use for a night is
+  `room items × 1 + guest items × guests that night`.
+  Occupancy in a dormitory changes from night to night, so the phase-5 variance
+  report must compute this **per night**, not once per stay — a three-night booking
+  with four guests one night and two the next will not otherwise reconcile.
+- **Housekeeping status stays at room level**, with a "partial" state added: some
+  seats turned over, others still occupied.
+  *Noted for the build:* "partial" is an occupancy fact, not a cleaning one — a room
+  can be partly occupied *and* dirty at once. What the housekeeper actually needs is
+  **which seats changed hands**, and that is already in the booking data. Consider
+  keeping the status column as it is and answering that question on the work list
+  instead of widening the column.
+- **A room-level charge is split across the guests in that room.** Damage, an extra
+  blanket, room service billed "to the room".
+  Four things this forces: the charge needs **a date** (it splits across whoever was
+  there *that night*); a **rounding rule** for the remainder (100 ÷ 3); a rule for a
+  charge arriving **after somebody has settled and left**; and the split should be the
+  **default rather than the only option** — at the desk, damage is usually put on one
+  person's name.
+
 ### 6.2 Not yet known — needed before schema work
 
 - **VAT and service charge** — hotels in Bangladesh typically charge 15% VAT + 10%
@@ -312,6 +398,36 @@ and net book value separately.
 - **Check-in / check-out times** and early/late charges.
 - **The client's actual COA heads** — do "Room Rent Income" etc. exist, or must they
   be created?
+
+**Seat-wise rooms — open, and each one blocks schema work** *(2026-08-23)*
+
+- **Gender segregation.** Strangers share a dormitory room. Once one guest of one
+  gender holds a seat for a night, the other seats in that room are closed to the
+  other gender for that night. This is not a policy note to write down — it is a rule
+  that has to refuse a booking, or the desk finds out at check-in.
+  **Asked twice, not yet answered. In a dormitory this is the most important rule
+  there is.**
+- **What "booked" locks, and for how long.** Three readings, all defensible:
+  ever-booked locks forever (too hard); any future booking locks the room until it
+  passes (safe, explains itself to staff, but one December booking locks a room from
+  August); only the booked dates are locked (flexible, but the mode then needs a
+  "from when", which is the season calendar coming back through the side door).
+  *Recommendation: the middle one to start. Loosening it later is easy; tightening is
+  not.*
+- **The two directions are not equally risky, and one rule may not fit both.**
+  Whole-room → seat-wise is safe: an existing whole-room booking is simply all the
+  seats. Seat-wise → whole-room is not: a guest who paid for one seat would either be
+  handed the whole room or be sitting in a room the desk now thinks is private.
+  *Worth considering: leave whole → seat-wise always open, and lock only seat-wise →
+  whole.*
+- **What a conversion actually changes** — the selling rule, or the furniture? A
+  four-bed room sold to one family is not the same thing as a room with one bed in
+  it, and they do not price the same.
+- **Does a guest book a seat, or a kind of seat?** Nobody asks for "seat 3" — they ask
+  for "a seat in the women's dormitory". This is the same question as the one on rooms
+  above (§7 has it as a room question), and it wants the same answer for both.
+- **Rate structure.** A seat rate is not the room rate divided by the seats. Both
+  rates are needed, and the relationship between them is a commercial decision.
 
 ---
 
@@ -373,6 +489,8 @@ resort site.
 | Risk | Impact | Mitigation |
 |---|---|---|
 | **Double booking** | Guest conflict, reputational damage | DB-level `SELECT … FOR UPDATE` inside the transaction. A PHP-only check passes both concurrent requests. This is the single most important correctness requirement in the project. |
+| **Counting rooms and seats separately** | A second route to double booking, and a silent one | Seats are the only inventory (§2.5). Whole-room availability is derived from them, never stored beside them. Two counters would eventually disagree, and nothing on screen would say which was right. |
+| **Two strangers of different genders in one room** | A complaint at the desk, at best | The engine has to refuse the booking, not the policy document (§6.2) |
 | **Forking the code for the resort** | Two divergent products within months | Differences via settings only. Never copy the repo. |
 | **Schema drift between the two databases** | The installs silently diverge | The project changes schema with **raw SQL, not migrations** (see §10). With two installs, every change must run in both. A tracking method is needed before the second install exists. |
 | Advance treated as income | Year-end P&L wrong | Liability head, converted on service |
@@ -409,11 +527,16 @@ Learned from this codebase — ignoring these causes real breakage.
 
 ## 11. Next steps
 
-1. Answer §6.2 (especially **VAT / service charge**) and the open items in §7,
-   including **OPEN-3** (resort restaurant).
-2. Produce the technical design for phases 0–3 — full columns, indexes and
+1. Answer §6.2 (especially **VAT / service charge** and **gender segregation**, which
+   has now been asked twice) and the open items in §7, including **OPEN-3** (resort
+   restaurant).
+2. **Re-estimate phase 0.** It is costed at 7 days, which was set before §3.2 was
+   re-checked. It now also has to settle what `acc_financial_year_types` is for,
+   decide the fate of 83 hardcoded writes, and place 7,000+ existing vouchers into
+   years that do not yet exist. Phase 1 (4 days) sits on top of it.
+3. Produce the technical design for phases 0–3 — full columns, indexes and
    `CREATE TABLE` SQL for the ~22 tables involved. Not all 44 at once: the design
    will shift once the first phase is actually built.
-3. Update the client `.docx` to cover both sites and ticketing, if the client needs
-   the wider scope on paper.
-4. **Wait for an explicit go-ahead before writing any code.**
+4. Update the client `.docx` to cover both sites and ticketing, if the client needs
+   the wider scope on paper. It does not mention seat-wise rooms either.
+5. **Wait for an explicit go-ahead before writing any code.**
