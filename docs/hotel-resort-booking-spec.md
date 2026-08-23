@@ -13,6 +13,19 @@
 > gender rule that governs a dormitory, and the questions still open at §6.2.
 > And phase 0 is bigger than it looked: the financial-year findings in §3.2 were
 > re-checked against the database and three of them were wrong or understated.
+>
+> **2026-08-24:** four more things settled — where a room physically lives (§2.7,
+> §6.6: buildings and floors, **never** branches), the booking form and the
+> **two-stage** flow that fills it (§6.5: brief at booking, guest details at
+> allotment), how children are counted, and what the **first working release**
+> actually is (§8.1 — six screens, thirteen tables, not forty-seven).
+>
+> **Newest (2026-08-23, later the same day):** billing and booking type are settled
+> as an approved **standard** — §6.3 and §6.4. Two tables were added for them (§4.2,
+> count now 46), and §5 gained the entries they imply. The one thing that cannot be
+> standardised, because it is a matter of law rather than preference — whether VAT
+> falls due when an advance is received — is now **OPEN-12** in §7 and **blocks
+> billing code**.
 
 ---
 
@@ -125,6 +138,42 @@ On service given:  Dr Advance Against Bkg  Cr Room Rent / Hall Rent Income
 Getting this wrong makes every year-end P&L wrong — advance taken on 30 June for a
 5 July stay would land in the wrong year.
 
+### 2.7 A building is a location, never a branch
+
+*(Added 2026-08-24, on the client's answers: buildings and floors are open-ended and
+will grow; the books are **not** kept separately per building.)*
+
+```
+branch = the hotel/property     (no table -- the branch already is this)
+ └─ building                    hotel_buildings
+     └─ floor      (optional)   hotel_floors
+         └─ room                booking_resources
+             └─ seat            booking_resources, via parent_id (§2.5)
+```
+
+**The top two levels are locations and are never bookable; the bottom two are the
+inventory.** Keeping them in separate tables is the point: a building can then never
+leak into an availability query, which it could if locations shared
+`booking_resources` and one query forgot the filter.
+
+**No project level.** The Realestate module's `Project → Building → Floor → Unit`
+was only ever a shape to borrow. A hotel has no project above its buildings — the
+branch is the property. A second hotel would be a second branch (or a second
+install), not a second building.
+
+**The floor is optional.** A resort's scattered cottages have no floors; there the
+building row is a zone and the floor is left empty. Same table, same code — no
+invented floors.
+
+**Buildings must not be modelled as branches.** The temptation is real, because
+branches already exist. But a branch carries its own accounting, its own financial
+year and its own vouchers, so one hotel's books would split in two. The client has
+said the books stay together.
+
+Nothing is lost by this: because every room records its building, building-wise
+occupancy and income come out as report filters, at no cost. *Not keeping separate
+books is not the same as not being able to see them separately.*
+
 ---
 
 ## 3. Codebase findings (verified against the dev DB, not assumed)
@@ -193,6 +242,14 @@ Tables: `projects`, `buildings`, `flats`, `building_units`, `garages`,
 **But do not copy its sale semantics.** A flat is sold once; a room is booked
 repeatedly over date ranges. Real estate's "this unit is sold" flag does not apply.
 
+**And drop the project level** — see §2.7. The mapping above is a shape to borrow,
+not a hierarchy to reproduce: the branch is the property, and buildings hang off it
+directly.
+
+*Worth telling whoever builds this:* in the Realestate schema `flats` is the **floor**
+level, not a flat (`buildings → flats → building_units`). The name misleads. The
+hotel tables say `hotel_floors`, which does not.
+
 The React screen `real-estate/flat-layout` already renders a unit grid and is a
 usable starting point for the floor-plan view.
 
@@ -231,23 +288,26 @@ Legend: 🆕 new · ✅ exists · 🔧 exists, needs change
 | Table | | Holds |
 |---|---|---|
 | `booking_resource_types` | 🆕 | room / hall / community centre / ticketed item |
-| `booking_resources` | 🆕 | **Central list of everything bookable**, incl. `allocation_mode`, and — per §2.5 — a `parent_id` so a seat can point at its room, a sold-whole-or-by-seat flag on the room, and an active flag (seats are deactivated, never deleted) |
-| `hotel_room_types` | 🆕 | Standard/Deluxe/Suite, capacity, base rate |
-| `hotel_floors` | 🆕 | Floor list (for the floor-plan view) |
+| `booking_resources` | 🆕 | **Central list of everything bookable**, incl. `allocation_mode`, and — per §2.5 — a `parent_id` so a seat can point at its room, a sold-whole-or-by-seat flag on the room, and an active flag (seats are deactivated, never deleted). Also `building_id` (required) and `floor_id` (optional) — where the room is, per §2.7. Both are held because the floor is optional; a save must check the two agree |
+| `hotel_room_types` | 🆕 | Standard/Deluxe/Suite, capacity, base rate. Where a second building prices differently, that is a room type of its own — no extra machinery (§6.6) |
+| `hotel_buildings` | 🆕 | Buildings, or zones on a resort, under the branch — §2.7. Unlimited: adding one is a row, never a schema change |
+| `hotel_floors` | 🆕 | Floors within a building — **optional**, for the floor-plan view. Scattered cottages have none |
 | `booking_slots` | 🆕 | Morning/afternoon/evening slots for halls & centres |
 | `booking_rate_plans` | 🆕 | Season / holiday / corporate rate cards |
 | `booking_rate_details` | 🆕 | Date-wise rates inside a plan |
 | `booking_charge_types` | 🆕 | Extra charge types + their COA head |
+| `booking_tax_rates` | 🆕 | VAT and service-charge rate per charge type, **with an effective date range** — see §6.3. Rates move; a single stored number reprints old bills wrongly |
 
 **Transactions**
 
 | Table | | Holds |
 |---|---|---|
-| `booking_master` | 🆕 | Guest, dates, status, `main_trx_id` |
-| `booking_resource_details` | 🆕 | Which resource, from when to when — ⚠️ **overlap lock lives here** |
-| `booking_guests` | 🆕 | NID/passport + address (police guest register) |
+| `booking_master` | 🆕 | Guest, dates, status, `main_trx_id`. Also — per §6.4 — `booking_type`, `billed_to_party_id` (who owes, which is not always who stays), `payment_terms`, and `hold_until` for a tentative hold. Per §6.5 it also carries the **stated** counts taken at booking — rooms, adults, children — kept apart from what was actually allocated |
+| `booking_resource_details` | 🆕 | Which resource, from when to when — ⚠️ **overlap lock lives here**. For a group seat booking it holds the **counts by gender** (§6.1), names arriving later |
+| `booking_guests` | 🆕 | NID/passport + address (police guest register). May be empty at booking time and filled at check-in — a rooming list usually arrives late |
 | `booking_payments` | 🆕 | Advance, instalments, final settlement |
-| `booking_folio_details` | 🆕 | Bill lines — rent, restaurant, laundry, VAT, service charge |
+| `booking_folio_details` | 🆕 | Bill lines — rent, restaurant, laundry, VAT, service charge. Each line stores **the rate, the base amount and the tax amount as applied** (§6.3); a bill is read back, never recomputed |
+| `booking_bill_transfers` | 🆕 | One row per time a bill is moved to another party — from, to, amount, voucher, by whom, when (§6.4) |
 | `booking_cancellations` | 🆕 | Cancellation, refund, retained charge |
 | `booking_status_logs` | 🆕 | Status history — who, when |
 | `booking_night_audit_runs` | 🆕 | Per-night auto-posting record (idempotency guard) |
@@ -319,7 +379,11 @@ and a separate attractions table (merged into `ticket_items`).
 | Guest / organiser records | Existing party/customer master |
 | Warehouse, requisition, vouchers | All already exist |
 
-**Count:** 44 new · 2 modified · 8+ reused.
+**Count:** 47 new · 2 modified · 8+ reused.
+
+*(Was 44. `booking_tax_rates` and `booking_bill_transfers` came with the §6.3 / §6.4
+standard on 2026-08-23; `hotel_buildings` with §2.7 on 2026-08-24. All three names
+were checked against the dev database — 203 tables, no collision.)*
 
 ---
 
@@ -338,7 +402,15 @@ and a separate attractions table (merged into `ticket_items`).
 | Amenity issued / used | Guest Supplies Expense | Guest Supplies Stock |
 | Decoration / subcontract | Event Operating Cost | Supplier / Cash |
 | Monthly depreciation | Depreciation Expense | Accumulated Depreciation |
+| Service charge on a bill | Customer | Service Charge Income *(§6.3 — income, not a sum held for staff)* |
+| VAT on a bill | Customer | VAT Payable *(liability — never an income head)* |
+| Bill moved to another payer | New payer (e.g. the company) | Original payer (the guest) |
 | Booking cancelled | Advance Against Booking | Cash (refund) + Cancellation Income |
+
+The bill-transfer entry moves **the outstanding balance only** — money already received
+stays credited to whoever paid it (§6.4). It is a voucher, not an `UPDATE`: without one,
+a receivable vanishes from one party's ledger and appears in another's with nothing on
+any screen saying why.
 
 Accumulated depreciation is a **separate contra-asset head** — never reduce the
 asset head directly, so the balance sheet can show cost, accumulated depreciation
@@ -419,9 +491,12 @@ and net book value separately.
 
 ### 6.2 Not yet known — needed before schema work
 
-- **VAT and service charge** — hotels in Bangladesh typically charge 15% VAT + 10%
-  service charge. On the rent or on the total? What rate on catering? On tickets?
-  **This becomes a number in the code — getting it wrong makes every bill wrong.**
+- **VAT and service charge — the structure is now settled (§6.3); the rates are not.**
+  This entry used to say *"this becomes a number in the code"*, and that was the wrong
+  instinct — see §6.3 for why a rate table with effective dates replaced it. What is
+  still missing is the rates themselves, and they have to come from the client's VAT
+  registration rather than from a general figure. The remaining questions are listed
+  at the end of §6.3; one of them, **OPEN-12**, blocks billing code outright.
 - **Rate card rules** — weekend, wedding season, holiday, corporate rates?
 - **Cancellation percentages** — how much is refundable at 30 / 15 / 7 days.
 - **Check-in / check-out times** and early/late charges.
@@ -475,6 +550,234 @@ and net book value separately.
 
 ---
 
+### 6.3 Billing standard — VAT, service charge, rounding
+
+*(Approved by the client 2026-08-23. This is the default the system ships with; a
+client who wants something else changes the settings marked below. The rates are
+still missing — the shape they go into is not.)*
+
+**Rates live in a table, not in a setting.** `booking_tax_rates` holds one row per
+charge type per rate, **with an effective date range**. The reason is that these
+rates move — hotel and restaurant rates in Bangladesh have changed more than once
+in recent years, sometimes mid-year. A single stored number means a bill reprinted
+next August comes out carrying today's rate, which is the first thing an audit finds.
+
+**A bill line stores what was applied, not a pointer to it.** Every
+`booking_folio_details` row carries the rate, the base amount and the tax amount as
+they stood when the bill was made. Bills are read back, never recomputed.
+
+**Order of calculation:**
+
+```
+service charge = rent × SC%
+VAT            = (rent + service charge) × VAT%
+total          = rent + service charge + VAT
+```
+
+Rent 1,000 at 10% service charge and 15% VAT is **1,265**, not 1,250 — the service
+charge is part of the hotel's own takings, so VAT falls on it too. *(Confirm with the
+client's VAT consultant; this is the common practice, not a certainty.)*
+
+| | Standard | |
+|---|---|---|
+| Rate card prices | Quoted **VAT-exclusive** — tax is its own line on the bill | setting |
+| Service charge | **Income**, to its own head. If it is later distributed to staff that is a separate expense, not a reduction of income | setting |
+| VAT | **Liability** — `VAT Payable`. Never an income head | rule |
+| Rounding | Once, on the bill total, to the nearest 1 taka | setting |
+| Rates as shipped | **Zero, with a setup warning** — not 15% | rule |
+
+That last row is deliberate. A guessed rate prints wrong bills silently; a zero rate
+is visible on the first bill and somebody asks.
+
+**⚠️ The one thing that cannot be standardised.** Whether VAT falls due when an
+**advance is received** or when the **service is given** is a matter of law, not of
+preference. The standard assumes *at service*, which agrees with §2.6 — but if the
+law says otherwise, the advance receipt needs a `Cr VAT Payable` line of its own, and
+getting it wrong makes both the monthly return and the year-end P&L wrong. Tracked as
+**OPEN-12** in §7. **Billing code should not be written before this is answered.**
+
+**Still needed from the client** *(their VAT consultant, not their manager — a manager
+will say "15%", and the question is 15% of what)*:
+
+1. VAT registration number and service codes — accommodation, restaurant and tickets
+   may not share one.
+2. The rate for each head: accommodation / catering / restaurant / hall rent /
+   tickets / laundry.
+3. Service charge percentage, and which heads it applies to.
+4. Confirmation of the calculation order above.
+5. **OPEN-12** — VAT on advance, or on service.
+6. Is a মূসক ৬.৩ (Mushak 6.3) VAT challan required? Is there an EFD/SDC machine?
+   If so the bill *is* that challan, with a mandated format and an unbroken serial —
+   separate work, not a print tweak.
+7. Is VAT deducted at source on corporate and government bookings (VDS)? If so the
+   hotel receives less than it billed, and receivables will never reconcile without it.
+8. Is input VAT (rebate) claimed? If so purchase vouchers must separate VAT too, not
+   only sales.
+9. On a cancellation refund, does the VAT come back?
+10. Do `Room Rent Income`, `VAT Payable`, `Service Charge Income` and
+    `Advance Against Booking` exist in the client's COA, or must they be created?
+
+### 6.4 Booking type standard
+
+*(Approved by the client 2026-08-23.)*
+
+Three types: **Individual**, **Group**, **Corporate**. A booking is exactly one of
+them — the client ruled out a booking being Corporate *and* Group at once. The type
+**drives behaviour**; it is not a display label. So what it drives has to be written
+down, or it will spread:
+
+| | Individual | Group | Corporate |
+|---|---|---|---|
+| Bill in whose name | The guest | Whoever booked | **The company** |
+| Credit | No | No | **Yes, no limit — pays when it likes** |
+| Default advance % | setting | setting (higher) | setting (or none) |
+| Cancellation terms | setting | setting (stricter) | Per contract |
+| Hold offered | Yes | Yes | Yes |
+
+**Group and Individual run the same code path.** After the client's answers nothing
+behavioural is left between them: both are billed to one person, both settle in cash
+or advance, both produce one bill. They differ in two *settings* — default advance and
+cancellation terms — and in appearing separately on reports. The number of rooms is a
+fact about the booking, not a type.
+
+**Corporate is the real division**, because that is where the bill goes to a company
+and the money comes later.
+
+**No credit limit** (client's decision). A corporate booking is never blocked for
+outstanding balance. That makes the **company-wise ageing report** the only thing
+standing between the business and an unnoticed pile of receivables — it is not
+optional.
+
+**All charges go on the company's bill** (client's decision) — room, tax, laundry,
+minibar, everything. No master/incidental split, so no second folio structure. Lines
+stay itemised so the company can see what it is paying for. *(If a split is ever
+wanted, the cheap route is a `payer_party_id` on the folio line rather than a second
+folio — one list, printed two ways. Not being built now.)*
+
+**Moving a bill to another payer**
+
+Required, including at check-out — *"bill it to my office"* is normal at the desk.
+It is not a field edit: the money owed moves from one party to another.
+
+| | Standard | |
+|---|---|---|
+| Money already received | **Stays with whoever paid it.** Only the outstanding balance moves. 5,000 advance on a 15,000 bill → the company owes 10,000 | rule |
+| Re-pricing | **None.** A stay at rack rate stays at rack rate even if the company has a contract rate. What changes is who pays, not what it cost | rule |
+| Direction | Both ways. Not because a company will refuse to pay — the client says that will not happen — but because the desk will sometimes pick the wrong company, and without a way back the whole bill has to be cancelled and re-entered | rule |
+| Trail | A **voucher** plus a `booking_bill_transfers` row, every time | rule |
+| Permission | New: **`booking.bill.transfer`** — manager and above, not the desk | setting |
+| VAT challan already printed | See §6.3 item 6 — a printed Mushak 6.3 cannot be reissued in another name; it needs a credit note. Rule pending that answer | open |
+
+Re-pricing is a rule rather than a setting on purpose: allowed, it becomes the back
+door for discounts, and the discount appears nowhere in the books.
+
+The permission matters more than it looks. With no credit limit, one click turns a
+bill that was going to be settled in cash into an open-ended receivable — that
+permission is the only guard left.
+
+**Tentative holds**
+
+| | Standard |
+|---|---|
+| Default | **7 days**, editable per booking |
+| Maximum | 90 days |
+| On expiry | The resource is released; the record stays as **expired**, never deleted |
+| On advance | A hold with money against it becomes **confirmed** automatically |
+| Work list | "Holds expiring within 3 days" — chasing them is the point of the feature |
+| On screen | A colour of its own, distinct from a confirmed booking |
+
+Not deleting an expired hold is deliberate: a hold confirmed by telephone but never
+entered would otherwise disappear with nothing to show it had existed.
+
+### 6.5 The booking form, and the two stages that fill it
+
+*(Agreed 2026-08-24.)*
+
+A booking and its guest list are **not captured at the same time**. The client raised
+this and it matches how the desk actually works:
+
+| Stage | When | What is taken |
+|---|---|---|
+| **Booking** | On the telephone, days or months ahead | Who is booking · who is billed · dates · **how many rooms** · **how many people** (adults / children) · room type |
+| **Allotment** | The day the guests arrive | Each guest's name, mobile, NID (optional) · which room · gender, in a dormitory |
+
+It is **one booking record opened twice**, not two mechanisms — which is why
+`booking_guests` was already specified as fillable later (§4.2).
+
+**A stated count still holds real rooms.** "5 rooms" makes the system reserve five
+*specific* rooms straight away; the clerk never picks them and can change them later.
+
+The alternative — holding a count and allocating rooms later — puts availability in
+two places: free resources *minus* pending counts. That is the §2.5 argument again,
+and it ends the same way: the day the two disagree, an 18-room hotel sells 20. The
+guest asks by **type**; the system holds a **specific room**. Both are true at once.
+
+**At allotment:**
+
+- **At least one identified guest per room** — ID required for that one, optional for
+  the rest. Fully optional endangers the police register; requiring it from everyone
+  stops a family of five at the desk for the sake of a rule aimed at one person.
+- **One mobile per room** is enough. Twelve numbers for twelve workers will not be
+  given, and a required field that cannot be filled gets filled with rubbish.
+- **Allotment is piecemeal.** Three of five rooms today, two tomorrow. The screen has
+  to show what is still outstanding.
+- **The dormitory gender rule is enforced here**, not at booking — the booking held
+  counts by gender (§6.1), the allotment matches real people to them.
+- **Counts that do not match warn, never block.** Booked for 12, 10 arrive. Keep both
+  numbers: what was stated, and what actually came. Amenities and food are computed
+  from the actual figure. Same shape as guaranteed vs actual plates.
+
+**A guest is not a customer account.** ⚠️ Guest details live with the booking
+(`booking_guests`); the party master is only for whoever **money is owed by** — here
+the company, not the twelve workers. Auto-creating a party per guest would bury the
+receivables list under thousands of dead accounts within a year. An existing party can
+be *linked* when one is found by mobile or NID; none is ever created silently.
+
+**Counting adults and children**
+
+- Store **adults and children; the total is derived.** Storing all three invites the
+  day they disagree.
+- **What counts as a child is a setting**, not a constant — without an age boundary
+  one clerk's child is another's adult and no two reports compare.
+- **Children count as guests for amenities.** A child uses a towel and soap, and
+  §6.1's per-guest kit items are computed per night; leave children out and the
+  variance report carries an unexplained gap forever.
+- **Catering does not use this count at all** — plates are their own number. A wedding
+  is 400 plates and no room guests.
+- **Over capacity warns, never blocks.** The desk knows about the infant and the extra
+  mattress. Block it and the clerk enters a smaller number to get the booking saved —
+  which destroys the very figure the count was kept for.
+- **An extra bed is a charge line**, never a silent consequence of the child count,
+  so the money stays visible.
+
+Child rates, free-under-five and similar tiers are **not being built** — the same call
+as ticket pricing tiers (§6.1). Recording each child's age in the guest list at
+check-in, which the register is being filled in anyway, keeps that door open: tiers
+then become a rate rule rather than a schema change, and old bookings can be read
+under the new rule.
+
+### 6.6 Where a room lives — buildings and floors in practice
+
+*(Agreed 2026-08-24. The decision itself is §2.7; these are its consequences.)*
+
+- **Room numbers stop being unique.** Two buildings both have a 101. Store the room's
+  own number and **build the display name from its location** — "Annexe / 101". Do not
+  type "A-101" into the number field.
+- **Availability needs a building filter** — "a room in the main block" is a real
+  request at the desk.
+- **The floor plan becomes two steps** — choose a building, then see that floor's grid.
+- **Housekeeping and material issue follow the building**, not the floor: separate
+  store, separate staff. §4.3 says `material_issue_master` gains a floor reference —
+  make it a **location** reference instead.
+- **A different price in the annexe is a different room type.** Simplest possible
+  answer, and it needs nothing new.
+- **Growth costs nothing.** A new building, a new floor, more rooms — all rows. No
+  schema change, which is what the client asked for.
+- **A closed floor is deactivated, never deleted** — the §2.5 rule again. Delete it
+  and last year's bookings, bills and register entries become unreadable.
+
+---
+
 ## 7. Open decisions
 
 | # | Question | Recommendation |
@@ -488,7 +791,9 @@ and net book value separately.
 | 7 | Cancellation refund policy | Configurable in settings |
 | 8 | FY start date — 1 July / 1 January / other? | Client's existing practice |
 | **OPEN-3** | **Does the resort have a restaurant, or is food inside the stay package?** | **Unanswered.** If a restaurant, reuse the existing sales module — no new tables |
-| **OPEN-9** | Do walk-in gate ticket sales go through `booking_master`, or their own tables? | Hybrid: shared master data and capacity check; walk-in cash sale in `ticket_sales_*` (it behaves like POS); advance group booking (e.g. a school booking 300 for Friday) through `booking_master` |
+| **OPEN-9** | Do walk-in gate ticket sales go through `booking_master`, or their own tables? | Hybrid: shared master data and capacity check; walk-in cash sale in `ticket_sales_*` (it behaves like POS); advance group booking (e.g. a school booking 300 for Friday) through `booking_master` — note that such a booking is a **Group** booking under §6.4, so booking type spans tickets, not only rooms |
+| 13 | Up to what age is a guest a child? | A setting, not a constant (§6.5) — the client's own practice. Until it is answered no two occupancy reports compare |
+| **OPEN-12** | **Is VAT due when an advance is received, or when the service is given?** | **Unanswered — blocks billing code.** A matter of law, not preference. The §6.3 standard assumes *at service*, agreeing with §2.6; if the law says at receipt, the advance entry needs its own `Cr VAT Payable` line. Wrong either way makes the monthly return and the year-end P&L wrong together. Client's VAT consultant, not their manager |
 
 ---
 
@@ -519,12 +824,59 @@ frontend and internal testing.
 
 QR scanning, if added later: **+4 days**.
 
+**Phase 3 was costed before §6.4 existed.** It now also carries bill transfer (with
+its voucher and permission), tentative holds with expiry and a chasing list, and the
+per-charge-type tax table of §6.3. Those are not free; the 17 days needs revisiting
+alongside phase 0 (see §11).
+
 Two developers in parallel: roughly 13–15 weeks. Phases 0 and 2 must still finish
 first — everything else depends on them, so it does not halve.
 
 **Release plan:** R1 = phases 0–4 (46 d, first usable release) · R2 = phases 5–7
 (23 d) · R3 = phases 8–9 (16 d) · R4 = phases 10–11 (15 d) · then T1–T3 for the
 resort site.
+
+### 8.1 The first working release — six screens, thirteen tables
+
+*(Written 2026-08-24. The 47-table design is what the system becomes, not what gets
+built first; holding all of it in mind at once is neither possible nor necessary. The
+whole design was done up front for one reason only — so that nothing has to be torn
+up in month three.)*
+
+Of the 47 tables, the first release needs **13**:
+
+| | Table | |
+|---|---|---|
+| 1–3 | `hotel_buildings`, `hotel_floors`, `hotel_room_types` | Where rooms are, and what kind |
+| 4 | `booking_resource_types` | Room / seat / hall |
+| 5 | `booking_resources` | Every bookable thing — rooms and seats |
+| 6 | `booking_master` | The booking |
+| 7 | `booking_resource_details` | ⚠️ **the overlap lock lives here** |
+| 8 | `booking_guests` | Filled at allotment (§6.5) |
+| 9 | `booking_payments` | Advance and settlement |
+| 10 | `booking_folio_details` | Bill lines |
+| 11 | `booking_tax_rates` | VAT and service charge (§6.3) |
+| 12 | `booking_status_logs` | Hold → confirmed → checked in |
+| 13 | `booking_cancellations` | Cancellation and refund |
+
+Close behind, not needed to open the doors: `booking_charge_types`,
+`booking_bill_transfers`, `booking_rate_plans` / `_details`. The three financial-year
+tables are phase 0 and sit outside this count.
+
+Six screens, and **the order is also the build order** — each one leaves the previous
+ones working:
+
+| | Screen | Notes |
+|---|---|---|
+| 1 | Rooms and seats (master) | Set up once. Quick. |
+| 2 | What is free on these dates | No new tables — it only reads |
+| 3 | **Booking form** | ⚠️ The big one. The double-booking lock is here, and it has to be a database lock: a PHP-only check lets both concurrent requests through (§9) |
+| 4 | Allotment / check-in | The same booking reopened (§6.5) |
+| 5 | Advance and bill | ⚠️ **Cannot be finished without OPEN-12.** The other five are not blocked by it |
+| 6 | Check-out | Settle, or move the balance to the company |
+
+Deliberately absent: catering, events, tickets, recipes, amenities, housekeeping,
+assets, depreciation, dashboard. Not dropped — later, and separately.
 
 ---
 
@@ -571,17 +923,29 @@ Learned from this codebase — ignoring these causes real breakage.
 
 ## 11. Next steps
 
-1. Answer §6.2 — **VAT / service charge** above all, and now also **whether a seat
-   booking may be taken without the guest's gender**, since the rule agreed in §6.1
-   cannot work on the data as it stands. Then the open items in §7, including
+1. **Get the ten answers at the end of §6.3 from the client's VAT consultant** —
+   **OPEN-12** first, because billing code cannot be written without it. The structure
+   is settled, so this is data collection now rather than design.
+2. Then the rest of §6.2 — **whether a seat booking may be taken without the guest's
+   gender**, since the rule agreed in §6.1 cannot work on the data as it stands
+   *(partly eased by §6.4: a group books by gender count, so names and genders arrive
+   at check-in rather than at booking)*. Then the open items in §7, including
    **OPEN-3** (resort restaurant).
-2. **Re-estimate phase 0.** It is costed at 7 days, which was set before §3.2 was
-   re-checked. It now also has to settle what `acc_financial_year_types` is for,
-   decide the fate of 83 hardcoded writes, and place 7,000+ existing vouchers into
-   years that do not yet exist. Phase 1 (4 days) sits on top of it.
-3. Produce the technical design for phases 0–3 — full columns, indexes and
-   `CREATE TABLE` SQL for the ~22 tables involved. Not all 44 at once: the design
-   will shift once the first phase is actually built.
-4. Update the client `.docx` to cover both sites and ticketing, if the client needs
-   the wider scope on paper. It does not mention seat-wise rooms either.
-5. **Wait for an explicit go-ahead before writing any code.**
+3. **Re-estimate phase 0 — and now phase 3 too.** Phase 0 is costed at 7 days, set
+   before §3.2 was re-checked; it also has to settle what `acc_financial_year_types`
+   is for, decide the fate of 83 hardcoded writes, and place 7,000+ existing vouchers
+   into years that do not yet exist. Phase 1 (4 days) sits on top of it. Phase 3's 17
+   days predates §6.4 — see the note under §8.
+4. Produce the technical design for **the thirteen tables of §8.1** — full columns,
+   indexes and `CREATE TABLE` SQL. Not all 47 at once: the design will shift once the
+   first screens are actually built, and §8.1 is the list to work from.
+5. Update the client `.docx` to cover both sites and ticketing, if the client needs
+   the wider scope on paper. As of v1.2 it carries modules 13–18 (booking type, billing,
+   seat-wise rooms, holds, the two-stage form, buildings) but still describes site 1
+   only — the resort and its ticketing are not in it.
+
+   ⚠️ **The two documents disagree on effort.** The `.docx` prices site 1 at 126 days
+   after modules 13–18; §8 above still shows the original 100-day table with a note
+   that phases 0 and 3 need re-costing. Reconcile them before either goes to the
+   client again.
+6. **Wait for an explicit go-ahead before writing any code.**
