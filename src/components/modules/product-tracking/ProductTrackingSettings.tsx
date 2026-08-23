@@ -10,6 +10,8 @@ import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
+import Pagination from '../../utils/utils-functions/Pagination';
+import SelectOption from '../../utils/utils-functions/SelectOption';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import {
   SettingPayload,
@@ -45,8 +47,24 @@ const emptyForm: SettingPayload = {
  * list while its money stayed in the ledger.
  */
 const ProductTrackingSettings = () => {
-  const { settings, loading, saving, error, search, setSearch, create, update, toggle, remove } =
-    useProductTrackingSettings();
+  const {
+    settings,
+    loading,
+    saving,
+    error,
+    search,
+    setSearch,
+    page,
+    setPage,
+    perPage,
+    setPerPage,
+    total,
+    lastPage,
+    create,
+    update,
+    toggle,
+    remove,
+  } = useProductTrackingSettings();
 
   const dispatch = useDispatch();
   const branchDdl = useSelector((state: any) => state.branchDdl);
@@ -281,14 +299,25 @@ const ProductTrackingSettings = () => {
         <div className="lg:col-span-2 rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-default">
           <div className="mb-3 flex items-center justify-between gap-2">
             <h3 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
-              Tracked Products ({settings.length})
+              {/* The whole count, not this page's. It answers "how many are
+                  set up", which does not change as the pages turn. */}
+              Tracked Products ({total})
             </h3>
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search product"
-              className="w-56 rounded-xs border border-[rgb(var(--c-border))] p-1 text-sm outline-none dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
-            />
+            <div className="flex items-center gap-2">
+              {/* "All" sends an empty per_page; the endpoint then falls back to
+                  its own default rather than returning everything, which is the
+                  safer reading of a blank. */}
+              <SelectOption
+                onChange={(e) => setPerPage(Number(e.target.value) || 10)}
+                className="w-20"
+              />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search product"
+                className="w-56 rounded-xs border border-[rgb(var(--c-border))] p-1 text-sm outline-none dark:bg-boxdark dark:text-[rgb(var(--c-text))]"
+              />
+            </div>
           </div>
 
           {error ? (
@@ -370,6 +399,18 @@ const ProductTrackingSettings = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          ) : null}
+
+          {/* Only once there is more than a page of them. A single page of
+              settings gets no page buttons to read past. */}
+          {!error && lastPage > 1 ? (
+            <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+              <Pagination
+                currentPage={page}
+                totalPages={lastPage}
+                handlePageChange={setPage}
+              />
             </div>
           ) : null}
         </div>

@@ -46,26 +46,45 @@ export type SettingPayload = {
  * Deliberately not in Redux: only one screen reads this list, so component
  * local state is enough and the store stays light.
  */
+/** Rows a page, when nobody says otherwise. */
+const DEFAULT_PER_PAGE = 10;
+
 export function useProductTrackingSettings() {
   const [settings, setSettings] = useState<TrackingSetting[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  /**
+   * The endpoint has always paginated -- 25 a page by default. This screen
+   * asked for one page and drew whatever came back, so a company past that
+   * many settings simply stopped seeing the rest, with nothing on screen to
+   * say so.
+   */
+  const [page, setPageState] = useState(1);
+  const [perPage, setPerPageState] = useState(DEFAULT_PER_PAGE);
+  const [total, setTotal] = useState(0);
+  const [lastPage, setLastPage] = useState(1);
 
   const load = useCallback(() => {
     setLoading(true);
     setError(null);
 
     httpService
-      .get(API_PRODUCT_TRACKING_SETTINGS_URL, { params: { search: search || undefined } })
+      .get(API_PRODUCT_TRACKING_SETTINGS_URL, {
+        params: { search: search || undefined, page, per_page: perPage },
+      })
       .then((response) => {
         // the paginate() wrapper sits inside data.data.data
         const payload = response?.data?.data?.data;
         setSettings(payload?.data ?? []);
+        setTotal(Number(payload?.total ?? 0));
+        setLastPage(Math.max(1, Number(payload?.last_page ?? 1)));
       })
       .catch((e) => {
         setSettings([]);
+        setTotal(0);
+        setLastPage(1);
         setError(
           e?.response?.status === 403
             ? 'You are not allowed to view this screen (product.tracking.settings.view).'
@@ -73,11 +92,23 @@ export function useProductTrackingSettings() {
         );
       })
       .finally(() => setLoading(false));
-  }, [search]);
+  }, [search, page, perPage]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  // Searching or resizing the page starts the list again from the top. Staying
+  // on page four of a list that has just become one page long shows nothing.
+  const setSearchAndReset = useCallback((value: string) => {
+    setSearch(value);
+    setPageState(1);
+  }, []);
+
+  const setPerPage = useCallback((value: number) => {
+    setPerPageState(value);
+    setPageState(1);
+  }, []);
 
   const create = useCallback(
     async (payload: SettingPayload) => {
@@ -139,7 +170,16 @@ export function useProductTrackingSettings() {
       setSaving(true);
       try {
         const response = await httpService.delete(`${API_PRODUCT_TRACKING_SETTINGS_URL}/${id}`);
-        load();
+
+        // Deleting the only row on the last page leaves that page empty, and
+        // reloading it would show an empty table with page buttons above it.
+        // Step back instead, so the list ends where the rows do.
+        if (settings.length === 1 && page > 1) {
+          setPageState(page - 1);
+        } else {
+          load();
+        }
+
         return { ok: response?.data?.success === true, message: response?.data?.message ?? '' };
       } catch (e: any) {
         return { ok: false, message: e?.response?.data?.message ?? 'Could not be deleted.' };
@@ -147,7 +187,9 @@ export function useProductTrackingSettings() {
         setSaving(false);
       }
     },
-    [load],
+    // settings and page as well as load: the step-back above reads both, and a
+    // stale closure would step back from the wrong page.
+    [load, settings, page],
   );
 
   return {
@@ -156,7 +198,13 @@ export function useProductTrackingSettings() {
     saving,
     error,
     search,
-    setSearch,
+    setSearch: setSearchAndReset,
+    page,
+    setPage: setPageState,
+    perPage,
+    setPerPage,
+    total,
+    lastPage,
     reload: load,
     create,
     update,
