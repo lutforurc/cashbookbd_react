@@ -9,10 +9,10 @@
 > working document** — start here when work resumes.
 >
 > **Since the first draft:** rooms can now be sold by the seat as well as whole —
-> a new architecture decision at §2.5, four client answers at §6.1, six open
-> questions at §6.2. And phase 0 is bigger than it looked: the financial-year
-> findings in §3.2 were re-checked against the database and three of them were
-> wrong or understated.
+> a new architecture decision at §2.5, five client answers at §6.1 including the
+> gender rule that governs a dormitory, and the questions still open at §6.2.
+> And phase 0 is bigger than it looked: the financial-year findings in §3.2 were
+> re-checked against the database and three of them were wrong or understated.
 
 ---
 
@@ -364,6 +364,35 @@ and net book value separately.
 
 **Seat-wise rooms** *(client decisions, 2026-08-23 — see §2.5 for the model)*
 
+- **A room carries no gender of its own. The first guest of a night sets it, and
+  every other seat that night must match.** When they all leave, it is free again.
+
+  Nothing is stored on the room — the rule is answered from the bookings each time,
+  so a cancellation releases it with no cleanup. "Others" needs no rule of its own:
+  everyone matches the first, whatever the first is.
+
+  Three things this forces:
+
+  **It is asked per night, not per room.** A guest on the 15th–17th and a guest on
+  the 16th–18th share only two nights; on the 18th the second guest is the first
+  occupant and sets the gender. So the check runs over **every night of the range
+  asked for**, not the first — otherwise a three-night booking clears on night one
+  and collides on night three.
+
+  **Whole-room bookings are exempt.** A husband and wife, or a family, take the whole
+  room and are mixed inside it. The rule applies only where seats are sold
+  separately. Left unsaid, the code will turn families away.
+
+  **Unknown gender blocks everything.** Under "match the first", unknown is not male
+  and not female, so one unknown guest closes the room for that night to everyone.
+  All 197 parties on the dev database have `sex` NULL, and the branch switch
+  `need_customer_sex` is `'0'` — the field is not even on the form. Switched on as it
+  stands, every dormitory room would shut after its first seat. See §6.2.
+
+  Where the gender comes from is the party record, as the client asked. Note that
+  **the booker and the occupant are not always the same person** — a father books
+  three seats for three students. The rule has to read the occupant's gender from
+  `booking_guests` (which exists for the police register), not the booking's payer.
 - **A room can be converted between whole-room and seat-wise at any time, but not
   while it is booked.** Management is not tied to a season calendar; the block is a
   booking, not a date. *(What exactly "booked" locks is still open — §6.2.)*
@@ -401,12 +430,21 @@ and net book value separately.
 
 **Seat-wise rooms — open, and each one blocks schema work** *(2026-08-23)*
 
-- **Gender segregation.** Strangers share a dormitory room. Once one guest of one
-  gender holds a seat for a night, the other seats in that room are closed to the
-  other gender for that night. This is not a policy note to write down — it is a rule
-  that has to refuse a booking, or the desk finds out at check-in.
-  **Asked twice, not yet answered. In a dormitory this is the most important rule
-  there is.**
+- **Is the guest's gender required before a seat can be booked?** The rule itself is
+  settled (§6.1) — but it only works if the gender is known, and today none of it is:
+  `cust_party_infos.sex` is NULL on all 197 rows, and `need_customer_sex` is `'0'` on
+  the branch, so the field is not on the form at all.
+  *Recommendation: required for a seat booking, not for a whole room* — a family
+  taking a room does not need it, and requiring it everywhere would obstruct the rest
+  of the system for a rule that only applies to dormitories. The branch switch has to
+  go on for the hotel branch either way.
+  Unknown then never arises in a dormitory, and the separate colour the client asked
+  for is what marks the old records and the whole-room bookings.
+- **How the seat map is read.** The client asked for a colour for unknown gender.
+  The map needs at least six states — free, male, female, other, unknown, blocked for
+  maintenance. Six colours side by side are hard to tell apart, and red-green is the
+  first pair colour blindness takes; a letter or a mark beside the colour makes it
+  readable at a glance and survives being printed.
 - **What "booked" locks, and for how long.** Three readings, all defensible:
   ever-booked locks forever (too hard); any future booking locks the room until it
   passes (safe, explains itself to staff, but one December booking locks a room from
@@ -426,6 +464,12 @@ and net book value separately.
 - **Does a guest book a seat, or a kind of seat?** Nobody asks for "seat 3" — they ask
   for "a seat in the women's dormitory". This is the same question as the one on rooms
   above (§7 has it as a room question), and it wants the same answer for both.
+  **Sharper now that the gender rule is settled:** since a room has no gender of its
+  own until somebody is in it, there is no such thing as "the women's dormitory" to
+  ask for. An empty room is neither. So either the desk searches for *a room that is
+  already female for those nights, or empty*, or some rooms carry a standing label
+  after all — which the client has ruled out. Worth confirming this is understood
+  before the availability screen is designed.
 - **Rate structure.** A seat rate is not the room rate divided by the seats. Both
   rates are needed, and the relationship between them is a commercial decision.
 
@@ -490,7 +534,7 @@ resort site.
 |---|---|---|
 | **Double booking** | Guest conflict, reputational damage | DB-level `SELECT … FOR UPDATE` inside the transaction. A PHP-only check passes both concurrent requests. This is the single most important correctness requirement in the project. |
 | **Counting rooms and seats separately** | A second route to double booking, and a silent one | Seats are the only inventory (§2.5). Whole-room availability is derived from them, never stored beside them. Two counters would eventually disagree, and nothing on screen would say which was right. |
-| **Two strangers of different genders in one room** | A complaint at the desk, at best | The engine has to refuse the booking, not the policy document (§6.2) |
+| **Two strangers of different genders in one room** | A complaint at the desk, at best | The rule is in §6.1: the first guest of a night sets the room, the rest must match, and it is checked on every night of the range. The engine refuses the booking — a policy document cannot. **It is only as good as the gender data, which is empty today** (§6.2). |
 | **Forking the code for the resort** | Two divergent products within months | Differences via settings only. Never copy the repo. |
 | **Schema drift between the two databases** | The installs silently diverge | The project changes schema with **raw SQL, not migrations** (see §10). With two installs, every change must run in both. A tracking method is needed before the second install exists. |
 | Advance treated as income | Year-end P&L wrong | Liability head, converted on service |
@@ -527,9 +571,10 @@ Learned from this codebase — ignoring these causes real breakage.
 
 ## 11. Next steps
 
-1. Answer §6.2 (especially **VAT / service charge** and **gender segregation**, which
-   has now been asked twice) and the open items in §7, including **OPEN-3** (resort
-   restaurant).
+1. Answer §6.2 — **VAT / service charge** above all, and now also **whether a seat
+   booking may be taken without the guest's gender**, since the rule agreed in §6.1
+   cannot work on the data as it stands. Then the open items in §7, including
+   **OPEN-3** (resort restaurant).
 2. **Re-estimate phase 0.** It is costed at 7 days, which was set before §3.2 was
    re-checked. It now also has to settle what `acc_financial_year_types` is for,
    decide the fate of 83 hardcoded writes, and place 7,000+ existing vouchers into
