@@ -1,9 +1,10 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { formatDate } from '../../utils/utils-functions/formatDate';
+import { formatDate, formatDayMonthYear } from '../../utils/utils-functions/formatDate';
 import { formatTransportationNumber } from '../../utils/utils-functions/formatRoleName';
 
 type Primitive = string | number | null | undefined;
@@ -199,6 +200,21 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     ref,
   ) => {
     const fs = Number.isFinite(fontSize) ? fontSize : 12;
+    // The branch's reference heading, read exactly as OrderTransactionPrint
+    // reads it, so the two order papers are headed alike.
+    const printReferenceNo =
+      useSelector((state: any) => state.settings?.data?.branch?.print_letter_ref) != 0;
+    const referencePrefix = String(
+      useSelector((state: any) => state.settings?.data?.branch?.letter_ref_prefix) ?? '',
+    ).trim();
+    const referenceDate = String(
+      useSelector((state: any) => state.settings?.data?.branch?.letter_ref_date) ?? '',
+    ).trim();
+    // Built from the local calendar rather than toISOString(), which is UTC and
+    // would date a report printed before 6am with yesterday.
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const referenceHeadingDate = formatDayMonthYear(referenceDate || today);
     const computedOrderAmount =
       toNumber(payload?.order_amount) || (toNumber(payload?.total_order) * toNumber(payload?.order_rate));
     const rowTotalAmount = rows.reduce((sum, row) => sum + toNumber(row.total), 0);
@@ -257,6 +273,15 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
         {(pages.length > 0 ? pages : [[]]).map((pageRows, pageIndex) => (
           <div key={pageIndex} className="print-page order-with-transaction-print-page">
             <PadPrinting />
+
+            {/* Between the pad and the title, on every page. A branch that has
+                set no prefix gets the date alone rather than an empty "Ref:". */}
+            {printReferenceNo && (
+              <div className="mb-2 flex items-baseline justify-between text-xs leading-4">
+                <span>{referencePrefix ? `Ref: ${referencePrefix}` : ''}</span>
+                <span>Date: {referenceHeadingDate}</span>
+              </div>
+            )}
 
             <div className="mb-2 text-center text-2xl font-bold">{title}</div>
 

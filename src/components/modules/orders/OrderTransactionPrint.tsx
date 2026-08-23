@@ -5,6 +5,7 @@ import PrintFooter from '../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { formatTransportationNumber } from '../../utils/utils-functions/formatRoleName';
+import { formatDayMonthYear } from '../../utils/utils-functions/formatDate';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 
 type OrderRow = {
@@ -155,6 +156,20 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
     const fs = Number.isFinite(fontSize) ? fontSize : 11;
     // Name of the logged-in user who prints the report → shown under "Prepared by".
     const preparedByName = useSelector((state: any) => state.settings?.data?.user?.name) || '';
+    // The branch's reference heading, the same three settings the allotment
+    // letter is headed with. Off, or unread because the settings have not
+    // arrived yet, the report prints exactly as it always has -- straight from
+    // the pad head into the party block.
+    const printReferenceNo =
+      useSelector((state: any) => state.settings?.data?.branch?.print_letter_ref) != 0;
+    const referencePrefix = String(
+      useSelector((state: any) => state.settings?.data?.branch?.letter_ref_prefix) ?? '',
+    ).trim();
+    // Unset, the report is dated the day it is printed -- which is what the
+    // allotment letter does with the same blank setting.
+    const referenceDate = String(
+      useSelector((state: any) => state.settings?.data?.branch?.letter_ref_date) ?? '',
+    ).trim();
     const mobileFormat = useMobileFormat();
     const orderTypeLabel = getOrderTypeLabel(order?.order_type);
     const partyLabel = orderTypeLabel === 'Purchase' ? 'Supplier Name' : 'Customer Name';
@@ -182,6 +197,12 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
 
       const receivedOrPaymentText = orderTypeLabel === 'Purchase' ? 'Payment' : 'Received';
 
+    // Built from the local calendar rather than toISOString(), which is UTC and
+    // would date a report printed before 6am with yesterday.
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const referenceHeadingDate = formatDayMonthYear(referenceDate || today);
+
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
@@ -195,6 +216,19 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
           return (
           <div key={pageIndex} className="print-page">
             <PadPrinting />
+
+            {/* The branch's reference heading, between the pad and the party
+                block. On every page, not only the first: a sheet that gets
+                separated from the rest still has to say which paper it is.
+                The reference itself is only as much as the branch has written
+                -- nothing is added to it -- so a branch that has set no prefix
+                gets the date alone rather than an empty "Ref:". */}
+            {printReferenceNo && (
+              <div className="mt-3 flex items-baseline justify-between text-xs leading-4 md:text-sm">
+                <span>{referencePrefix ? `Ref: ${referencePrefix}` : ''}</span>
+                <span>Date: {referenceHeadingDate}</span>
+              </div>
+            )}
 
             <div className="mt-5 grid grid-cols-[auto_200px] items-start justify-between gap-x-6 text-xs leading-4 md:text-sm">
               <div className="min-w-0 space-y-1 text-left">

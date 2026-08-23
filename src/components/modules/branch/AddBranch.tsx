@@ -136,6 +136,12 @@ interface branchItem {
    */
   letter_ref_prefix: string;
   /**
+   * Whether the letter carries its reference number at all. Off, the Ref No
+   * line is left off the page -- for an office that numbers its letters by
+   * hand on the printed sheet, or does not number them.
+   */
+  print_letter_ref: boolean;
+  /**
    * The date the branch's allotment letters carry, as YYYY-MM-DD. Left empty,
    * the screen issuing a letter offers today. Either way it is only what the
    * clerk is shown -- they can write another date over it before issuing.
@@ -384,6 +390,8 @@ const AddBranch = () => {
     down_payment_base: defaultDownPaymentBase,
     delay_charge_percent: defaultDelayChargePercent,
     letter_ref_prefix: '',
+    // On, because every letter printed so far has carried its reference.
+    print_letter_ref: true,
     letter_ref_date: '',
     registration_alert: false,
     registration_alert_sms: false,
@@ -632,6 +640,9 @@ const AddBranch = () => {
         down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
         delay_charge_percent: metaNumberOr(b.delay_charge_percent, defaultDelayChargePercent),
         letter_ref_prefix: metaTextOr(b.letter_ref_prefix, ''),
+        // The API resolves this one itself, answering 1 for a branch that has
+        // never been asked -- so an old branch keeps printing its reference.
+        print_letter_ref: toBooleanFlag(b.print_letter_ref),
         // Held as YYYY-MM-DD whatever the picker shows, so a stored value that
         // came with a time on it is cut back to the day.
         letter_ref_date: metaTextOr(b.letter_ref_date, '').slice(0, 10),
@@ -1609,6 +1620,15 @@ const AddBranch = () => {
                         charged for the actual number of days of delay.
                       </p>
                     </div>
+
+                    {/* Stands beside the two reference fields, because it is
+                        what decides whether either of them reaches the paper. */}
+                    <FormToggleField
+                      label="Print Reference Number?"
+                      description="The letter carries a Ref No line. Off, it prints without one, for an office that numbers its letters on the sheet by hand."
+                      checked={Boolean(formData.print_letter_ref)}
+                      onChange={(checked) => handleToggleFieldChange('print_letter_ref', checked)}
+                    />
 
                     <div>
                       <InputElement

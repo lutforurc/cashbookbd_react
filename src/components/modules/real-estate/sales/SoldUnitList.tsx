@@ -75,6 +75,11 @@ const SoldUnitList: React.FC = () => {
   const letterRefPrefix = String(
     useSelector((state: any) => state.settings?.data?.branch?.letter_ref_prefix) ?? ""
   ).trim();
+  // Whether the letter carries a reference at all. Off, there is nothing to
+  // ask for -- the branch numbers its letters on the printed sheet. The booking
+  // form is not covered by it and keeps asking either way.
+  const printLetterRef =
+    useSelector((state: any) => state.settings?.data?.branch?.print_letter_ref) != 0;
   // The date the branch dates its letters. Unset, a letter is offered the day it
   // is being issued.
   const letterRefDate = String(
@@ -1227,6 +1232,7 @@ const SoldUnitList: React.FC = () => {
             {/* Both head the letter, and both are written here rather than
                 derived, because only the office knows what its register says
                 and which day the letter is going out on. */}
+            {(confirmKind === "BOOKING" || printLetterRef) && (
             <span className="mt-3 block">
               <label className="block text-sm" htmlFor="letter_ref_no">
                 Reference No
@@ -1249,6 +1255,7 @@ const SoldUnitList: React.FC = () => {
                 }
               />
             </span>
+            )}
 
             <span className="mt-2 block">
               <label className="block text-sm">
