@@ -33,6 +33,7 @@ import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSea
 import TrackedProductField from '../../product-tracking/TrackedProductField';
 import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import { hasPermission } from '../../../utils/permissionChecker';
+import resolveOrderParty from '../../../utils/utils-functions/resolveOrderParty';
 
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)
@@ -241,11 +242,37 @@ const TradingCashPayment = () => {
     setTableData(tableData.filter((row) => row.id !== id));
   };
 
-  const selectedOrderOptionHandler = (option: any) => {
+  /**
+   * Picking an order also says who the money is for.
+   *
+   * The order number on screen already names the party, so asking the operator
+   * to find the same party again in the account box was work the screen could
+   * do itself -- and work it does do, on the purchase invoice.
+   *
+   * Clearing the order leaves the account alone. By then it may have been
+   * typed over deliberately, and emptying it would undo that.
+   */
+  const selectedOrderOptionHandler = async (option: any) => {
+    if (!option) {
+      setFormData((prevState) => ({
+        ...prevState,
+        purchaseOrderNumber: '',
+        purchaseOrderText: '',
+      }));
+      return;
+    }
+
+    const party = await resolveOrderParty(option);
+
     setFormData((prevState) => ({
       ...prevState,
       purchaseOrderNumber: option?.value || '',
       purchaseOrderText: option?.label || '',
+      // Only when the order knows the party. An order without one leaves the
+      // box as it was rather than blanking a choice already made.
+      ...(party.name
+        ? { account: party.id || '', accountName: party.name }
+        : {}),
     }));
   };
 
@@ -437,6 +464,10 @@ const TradingCashPayment = () => {
               <div>
                 <label htmlFor="">Select Order (Optional) </label>
                 <OrderDropdown
+                  /* Purchase and stock only. Money going out never answers to
+                     a sales order, and offering all three is offering the two
+                     that cannot be right. */
+                  orderType={['1', '3']}
                   onSelect={selectedOrderOptionHandler}
                   defaultValue={
                     formData.purchaseOrderNumber

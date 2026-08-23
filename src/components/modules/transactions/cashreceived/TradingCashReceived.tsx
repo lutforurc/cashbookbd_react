@@ -35,6 +35,7 @@ import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSea
 import TrackedProductField from '../../product-tracking/TrackedProductField';
 import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import { extractVoucherNo } from '../extractVoucherNo';
+import resolveOrderParty from '../../../utils/utils-functions/resolveOrderParty';
 
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)
@@ -255,11 +256,35 @@ const TradingCashReceived = () => {
   const handleDelete = (id: number) => {
     setTableData(tableData.filter((row) => row.id !== id));
   };
-  const selectedOrderOptionHandler = (option: any) => {
+  /**
+   * Picking an order also says who the money came from.
+   *
+   * Same as the cash payment screen next door, and the purchase invoice before
+   * it: the order number already names the party, so the account box fills
+   * itself rather than asking for the name a second time.
+   *
+   * Clearing the order leaves the account alone -- it may have been chosen on
+   * purpose by then.
+   */
+  const selectedOrderOptionHandler = async (option: any) => {
+    if (!option) {
+      setFormData((prevState) => ({
+        ...prevState,
+        purchaseOrderNumber: '',
+        purchaseOrderText: '',
+      }));
+      return;
+    }
+
+    const party = await resolveOrderParty(option);
+
     setFormData((prevState) => ({
       ...prevState,
       purchaseOrderNumber: option?.value || '',
       purchaseOrderText: option?.label || '',
+      ...(party.name
+        ? { account: party.id || '', accountName: party.name }
+        : {}),
     }));
   };
 
@@ -429,6 +454,8 @@ const TradingCashReceived = () => {
               <div>
                 <label htmlFor="">Select Order (Optional) </label>
                 <OrderDropdown
+                  /* Sales only: money coming in answers to a sale. */
+                  orderType="2"
                   onSelect={selectedOrderOptionHandler}
                   defaultValue={
                     formData.purchaseOrderNumber

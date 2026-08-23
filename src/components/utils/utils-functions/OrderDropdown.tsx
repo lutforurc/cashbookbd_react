@@ -91,8 +91,9 @@ interface DropdownProps {
     defaultValue?: { value: any, label: any } | null
     value: { value: any, label: any } | null
     onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void; // Optional onKeyDown prop
-    orderType?: string;
-    order_type?: string;
+    /** One order type, or several: "1", "1,3", or ['1', '3']. */
+    orderType?: string | string[];
+    order_type?: string | string[];
     excludeId?: string | number;
     refDirection?: 'reference' | 'linked';
     isDisabled?: boolean;
@@ -120,6 +121,21 @@ const OrderDropdown: React.FC<DropdownProps> = ({
     const dispatch = useDispatch();
     const selectRef = React.useRef<any>(null);
     const resolvedOrderType = orderType ?? order_type;
+
+    // Normalised once, so the request and the client-side filter below are
+    // both reading the same list rather than each parsing the prop their own
+    // way. Accepts "1", "1,3", or ['1', '3'].
+    const orderTypeList = React.useMemo(() => {
+        if (!resolvedOrderType) {
+            return [];
+        }
+
+        const values = Array.isArray(resolvedOrderType)
+            ? resolvedOrderType
+            : String(resolvedOrderType).split(',');
+
+        return values.map((type) => String(type).trim()).filter(Boolean);
+    }, [resolvedOrderType]);
     const isDarkMode =
         typeof document !== 'undefined' &&
         document.documentElement.classList.contains('dark');
@@ -140,7 +156,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                 // Dispatch the action and wait for the fetched data
                 const response: any = await dispatch(
                     getDdlOrders(inputValue, {
-                        orderType: resolvedOrderType,
+                        orderType: orderTypeList,
                         excludeId,
                         refDirection,
                     }),
@@ -151,8 +167,13 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                         (item: any) => item?.order_type !== undefined && item?.order_type !== null,
                     );
 
-                    const filteredPayload = resolvedOrderType && hasOrderTypeInPayload
-                        ? response.payload.filter((item: any) => String(item.order_type) === String(resolvedOrderType))
+                    // The API filters on type already; this is the second line
+                    // for a payload that still carries the field, and it reads
+                    // the same list rather than a single value.
+                    const filteredPayload = orderTypeList.length && hasOrderTypeInPayload
+                        ? response.payload.filter((item: any) =>
+                            orderTypeList.includes(String(item.order_type)),
+                        )
                         : response.payload;
 
                     const formattedOptions: OptionType[] = filteredPayload.map((item: any) => ({

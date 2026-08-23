@@ -30,7 +30,13 @@ import { getToken } from '../../../features/authReducer';
 
 
 interface OrderSearchFilters {
-  orderType?: string;
+  /**
+   * One order type, or several.
+   *
+   * The cash screens ask for more than one: money paid out answers to a
+   * purchase or a stock order, money taken in to a sale.
+   */
+  orderType?: string | string[];
   excludeId?: string | number;
   refDirection?: 'reference' | 'linked';
 }
@@ -44,8 +50,14 @@ export const getDdlOrders =
     const params = new URLSearchParams();
     params.set('q', search);
 
-    if (filters.orderType) {
-      params.set('order_type', filters.orderType);
+    // Comma-separated, which the API reads as a list. A single type still goes
+    // over the wire exactly as it always did.
+    const orderTypes = Array.isArray(filters.orderType)
+      ? filters.orderType.filter(Boolean).join(',')
+      : filters.orderType;
+
+    if (orderTypes) {
+      params.set('order_type', orderTypes);
     }
 
     const response = await fetch(`${API_ORDERS_DDL_URL}?${params.toString()}`,
