@@ -12,7 +12,7 @@ import Link from "../../utils/others/Link";
 import { deleteCustomer, deleteCustomerOpening, getCustomer, updateCustomerFromUI } from "./customerSlice";
 import InputElement from "../../utils/fields/InputElement";
 import { toast } from "react-toastify";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import ConfirmModal from "../../utils/components/ConfirmModalProps";
 import { hasPermission } from "../../utils/permissionChecker";
 import httpService from "../../services/httpService";
@@ -27,9 +27,54 @@ const CustomerSupplier = () => {
   const mobileFormat = useMobileFormat();
   const dispatch = useDispatch();
 
-  const [search, setSearchValue] = useState("");
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
+  /**
+   * Where the list is -- in the address bar, not only in this component.
+   *
+   * Editing a customer leaves this screen, and coming back built it again from
+   * scratch: page 1, no search, ten rows. Somebody correcting the fortieth
+   * name on page four was returned to the top of the list each time and had to
+   * walk back down to where they had been.
+   *
+   * Held in the query string rather than in a variable that dies with the
+   * component, so the browser's own Back restores it, a refresh keeps it, and
+   * the address can be handed to somebody else as it is.
+   */
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const readNumber = (key: string, fallback: number) => {
+    const value = Number(searchParams.get(key));
+    return Number.isFinite(value) && value > 0 ? value : fallback;
+  };
+
+  const search = searchParams.get("search") ?? "";
+  const page = readNumber("page", 1);
+  const perPage = readNumber("per_page", 10);
+
+  /** Writes one part of the list's position, leaving the others as they are. */
+  const setListParams = (next: Record<string, string | number | null>) => {
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+
+        Object.entries(next).forEach(([key, value]) => {
+          // An empty search or a first page is the default; leaving it out
+          // keeps the address readable.
+          if (value === null || value === "" || value === 0) {
+            params.delete(key);
+          } else {
+            params.set(key, String(value));
+          }
+        });
+
+        return params;
+      },
+      { replace: true },
+    );
+  };
+
+  const setSearchValue = (value: string) => setListParams({ search: value, page: null });
+  const setPage = (value: number) => setListParams({ page: value === 1 ? null : value });
+  const setPerPage = (value: number) => setListParams({ per_page: value === 10 ? null : value, page: null });
   const [editedRows, setEditedRows] = useState<Record<number, any>>({});
   const [buttonLoading, setButtonLoading] = useState(false);
   const [showGuarantorModal, setShowGuarantorModal] = useState(false);
@@ -63,9 +108,14 @@ const CustomerSupplier = () => {
       return;
     }
 
-    setSearchValue(customerSearch);
-    setPage(1);
-    navigate(location.pathname, { replace: true, state: null });
+    // One navigate, not a setSearchValue followed by a navigate that drops the
+    // query string it had just written. The term goes into the address, the
+    // page is left out (absent means the first), and the one-shot state that
+    // brought us here is cleared in the same step.
+    navigate(`${location.pathname}?search=${encodeURIComponent(customerSearch)}`, {
+      replace: true,
+      state: null,
+    });
   }, [location.pathname, location.state, navigate]);
 
 
@@ -539,7 +589,14 @@ const CustomerSupplier = () => {
               <Button
                 title="Edit"
                 className="text-blue-600 hover:text-blue-800"
-                onClick={() => navigate(`/customer-supplier/edit/${row.id}`)}
+                onClick={() =>
+                  navigate(`/customer-supplier/edit/${row.id}`, {
+                    // Where to come back to once the edit is saved. Cancel uses
+                    // the browser's own Back and finds this address anyway;
+                    // saving navigates forward, and needs telling.
+                    state: { returnTo: `${location.pathname}${location.search}` },
+                  })
+                }
               >
                 <FiEdit2 size={15} />
               </Button>

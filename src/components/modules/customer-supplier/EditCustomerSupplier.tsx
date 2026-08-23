@@ -15,7 +15,7 @@ import {
   FiSave,
   FiTrash2,
 } from "react-icons/fi";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import InputElement from "../../utils/fields/InputElement";
@@ -76,6 +76,18 @@ const EditCustomerSupplier = () => {
   ];
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  /**
+   * The list as it was when this edit was opened -- its page, its search.
+   *
+   * Saving used to go to the bare list path, so an operator correcting a name
+   * on page four was put back on page one. The list carries its position in the
+   * query string now and hands it over on the way in; this is that address
+   * coming back. Reached some other way -- a bookmark, a pasted link -- there
+   * is nothing to return to, so the plain list stands in.
+   */
+  const returnTo = (location.state as any)?.returnTo ?? "/customer-supplier/list";
   const dispatch = useDispatch<any>();
 
   const area = useSelector((state: any) => state.area);
@@ -355,7 +367,7 @@ const EditCustomerSupplier = () => {
         ).unwrap();
 
         toast.success(res?.message || "Customer updated successfully!");
-        navigate("/customer-supplier/list");
+        navigate(returnTo);
       } catch (error: any) {
         toast.error(error?.message || "Failed to update customer");
       }
@@ -417,7 +429,8 @@ const EditCustomerSupplier = () => {
 
       <div className="flex justify-between mb-1">
         <div />
-        <Link to="/customer-supplier/list" className="pt-2 pb-2">
+        {/* Back to the list where it was left, not to the top of it. */}
+        <Link to={returnTo} className="pt-2 pb-2">
           Customer List
         </Link>
       </div>
