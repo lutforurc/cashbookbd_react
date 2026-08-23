@@ -18,6 +18,16 @@ interface Props {
    * different sentence, so the caller supplies it.
    */
   helpText?: string;
+  /**
+   * Keep the box on the form when there is nothing to choose.
+   *
+   * The voucher screens pass the branch's "Product Tracking?" switch. Without
+   * it the field came and went as the operator changed the party -- present
+   * for a customer with a tracked product, absent for the next one -- and a
+   * form whose fields move is a form people stop trusting. A branch that has
+   * turned tracking on gets an empty box instead of no box.
+   */
+  alwaysShow?: boolean;
 }
 
 type Option = { value: string; label: string };
@@ -30,7 +40,8 @@ type Option = { value: string; label: string };
  * <FormSelect> looked different and left the form feeling half-finished.
  *
  * With no tracked product it renders nothing, so a company not using this
- * feature keeps exactly the form it had before.
+ * feature keeps exactly the form it had before -- unless the branch has asked
+ * for the box to stay put, which is what `alwaysShow` carries.
  *
  * The name is `trackedProductId` -- not to be confused with the form's existing
  * `currentProduct` field, which is an account suggestion object, not a product.
@@ -43,11 +54,12 @@ const TrackedProductField: React.FC<Props> = ({
   onKeyDown,
   label = 'Select Product (Optional)',
   helpText = 'Which product this money is against. Left empty, the figures stay as they were.',
+  alwaysShow = false,
 }) => {
   const [darkMode] = useLocalStorage('color-theme', 'light');
   const isDark = darkMode === 'dark';
 
-  if (products.length === 0) {
+  if (products.length === 0 && !alwaysShow) {
     return null;
   }
 

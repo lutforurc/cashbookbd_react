@@ -79,6 +79,15 @@ const TradingCashPayment = () => {
   // এই Company-তে কোনো Product tracked না থাকলে খালি তালিকা আসে এবং
   // dropdown render-ই হয় না — form তখন হুবহু আগের মতো।
   const { products: trackedProducts } = useTrackedProducts('payment', undefined, false, formData.account);
+  // Unless the branch tracks products at all, in which case the box stays on
+  // the form for every party -- showing "-- No Product --" where that party
+  // has nothing tracked, rather than appearing and vanishing as the account
+  // changes. A field that moves is a field people stop trusting.
+  //
+  // The branch's own "Product Tracking?" switch decides it. Turning the
+  // feature on is the same thing as wanting its box, so there is no second
+  // switch to find.
+  const alwaysShowProductField = Boolean(Number(settings?.data?.branch?.product_tracking));
 
   const [tableData, setTableData] = useState<PaymentItem[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -516,15 +525,34 @@ const TradingCashPayment = () => {
                 }
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    const nextElement = document.getElementById('remarks');
+                    // Past the product box when it is on the form, straight to
+                    // the remarks when it is not -- tracking off leaves nothing
+                    // between the two, and Enter should not land on nothing.
+                    const nextElement =
+                      document.getElementById('trackedProductId') ??
+                      document.getElementById('remarks');
                     if (nextElement) {
                       nextElement.focus();
                     }
                   }
                 }}
-                acType={''} 
+                acType={''}
               />
             </div>
+
+            {/* Under the account, because the account is what fills it: the
+                products offered are the ones tracked for that party. Above it
+                the list could only be read after picking the account below,
+                which is backwards. */}
+            <TrackedProductField
+              value={formData.trackedProductId}
+              products={trackedProducts}
+              alwaysShow={alwaysShowProductField}
+              onChange={(productId) =>
+                setFormData((prev) => ({ ...prev, trackedProductId: productId }))
+              }
+              onKeyDown={(e) => handleInputKeyDown(e, 'remarks')}
+            />
 
             <InputElement
               id="remarks"
@@ -553,15 +581,6 @@ const TradingCashPayment = () => {
               className={''}
               onChange={handleOnChange}
               onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')} //
-            />
-            {/* কোনো Product tracked না থাকলে এটি render-ই হয় না */}
-            <TrackedProductField
-              value={formData.trackedProductId}
-              products={trackedProducts}
-              onChange={(productId) =>
-                setFormData((prev) => ({ ...prev, trackedProductId: productId }))
-              }
-              onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')}
             />
             <div className="grid grid-cols-1 gap-1 sm:grid-cols-3">
               {isUpdating ? (
