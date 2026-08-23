@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
-import { chartDateTime } from './formatDate';
 import { PrintBranch, hasPrintBranch, usePrintBranch } from './printBranch';
 import { formatMobile, useMobileFormat } from './mobileFormat';
 
@@ -202,13 +201,9 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
       )}
       {/* The rule belongs to the letterhead, so printed stationery draws it. */}
       {!usesPreprintedPad && <div className='border-t-2 border-gray-900 -mt-4'></div>}
-      <div className='flex justify-between'>
-       <div></div>
-        <div >
-          <span className="text-xs">Printed At:</span>{' '}
-          <span className="text-xs">{chartDateTime(new Date().toISOString())}</span>
-        </div>
-      </div>
+      {/* A row held the print time on its right, with an empty div on the left
+          to push it there. The time is in the footer now, beside the page
+          count, so the row had nothing left to hold. */}
     </div>
   );
 };

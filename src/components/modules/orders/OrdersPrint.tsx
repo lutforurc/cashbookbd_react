@@ -294,7 +294,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                 </table>
               ) : null}
 
-              <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} className="text-xs" />
+              <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} />
 
               {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
             </div>

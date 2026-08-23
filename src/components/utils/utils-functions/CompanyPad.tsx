@@ -1,6 +1,5 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { chartDateTime } from './formatDate';
 import { PrintBranch, hasPrintBranch, usePrintBranch } from './printBranch';
 import { formatMobile, useMobileFormat } from './mobileFormat';
 
@@ -41,12 +40,11 @@ const CompanyPad: React.FC<Props> = ({ branch }) => {
         </div>
       </div>
       <div className="border-t-2 border-gray-900"></div>
+      {/* The print time used to sit on the right of this row, level with the
+          report's own figures. It is in the footer now, beside the page count,
+          where the rest of the facts about the sheet live. */}
       <div className='flex justify-between'>
         <h3 className="text-xs"> Branch: <span className='font-bold text-xs'>{branchName}</span></h3>
-        <div >
-          <span className="text-xs">Printed At:</span>{' '}
-          <span className="text-xs">{chartDateTime(new Date().toISOString())}</span>
-        </div>
       </div>
       <div className="-mt-1 text-xs">Address: <span className='font-bold text-xs'>{branchAddress}</span></div>
     </div>

@@ -73,7 +73,7 @@ const ReportFooter: React.FC<ReportFooterProps> = ({ fontSize, className, inline
       <div
         style={style}
         className={
-          'report-software-footer mt-2 border-t border-gray-400 pt-1 text-center text-[10px] text-gray-600 ' +
+          'report-software-footer mt-2 border-t border-gray-400 pt-1 text-center text-[10px] text-black ' +
           (className || '')
         }
       >

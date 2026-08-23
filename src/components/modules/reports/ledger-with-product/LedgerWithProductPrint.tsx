@@ -318,7 +318,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               of the page. mt-auto holds it at the bottom of the flex column, so
               it keeps the same spot on every page and the rows stop above it.
             */}
-            <PrintFooter page={pageIndex + 1} total={pages.length} className="text-xs" />
+            <PrintFooter page={pageIndex + 1} total={pages.length} />
           </div>
         ))}
       </div>

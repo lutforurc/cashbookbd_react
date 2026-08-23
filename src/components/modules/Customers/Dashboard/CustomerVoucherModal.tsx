@@ -155,9 +155,6 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
                   <div><b>Branch:</b> {branch?.name}</div>
                   <div><b>Address:</b> {branch?.address}</div>
                 </div>
-                <div className="text-right">
-                  <span>Printed At: {nowStamp()}</span>
-                </div>
               </div>
 
               {/* Title */}
@@ -217,7 +214,15 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
                 </div>
               </div>
 
-              <div className="mt-4 text-xs text-gray-600">* This voucher is system generated.</div>
+              {/* Facts about the slip rather than about the payment, so they
+                  sit together at the foot -- the print time used to be at the
+                  top right, level with the voucher's own figures. This screen
+                  draws its own footer and does not use PrintFooter, which is
+                  why the line is written out here. */}
+              <div className="mt-4 flex justify-between text-xs text-black">
+                <span>* This voucher is system generated.</span>
+                <span>Printed: {nowStamp()}</span>
+              </div>
             </div>
           )}
         </div>
