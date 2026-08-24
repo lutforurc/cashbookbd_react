@@ -266,6 +266,28 @@ const TradingCashReceived = () => {
     setTableData(tableData.filter((row) => row.id !== id));
   };
   /**
+   * While an order is chosen, the account is the order's own party and cannot
+   * be changed here.
+   *
+   * Without this the two could be saved disagreeing -- money received against
+   * one order but posted to another party's ledger -- and neither the order's
+   * due nor the ledger would say which of them was right.
+   *
+   * Clearing the order unlocks the box and leaves the name in it: the next
+   * receipt is usually from the same party, just not against a numbered order.
+   *
+   * The account itself has to be filled for the lock to apply, not just the
+   * order. resolveOrderParty() deliberately returns a name with no id when the
+   * order's party cannot be matched exactly -- it would rather leave the box
+   * empty than put a plausible wrong account in it. Locking an empty box would
+   * turn that into a dead end, with nothing the operator could do but start
+   * over.
+   */
+  const isAccountLockedByOrder = Boolean(
+    formData.purchaseOrderNumber && formData.account,
+  );
+
+  /**
    * Picking an order also says who the money came from.
    *
    * Same as the cash payment screen next door, and the purchase invoice before
@@ -491,6 +513,7 @@ const TradingCashReceived = () => {
  id="account"
  name="account"
  className=""
+ isDisabled={isAccountLockedByOrder}
  onSelect={selectedLedgerOptionHandler}
  value={
  formData.account
@@ -511,6 +534,12 @@ const TradingCashReceived = () => {
                   }
                 }}
               />
+              {isAccountLockedByOrder && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  The order names the party, so this cannot be changed here.
+                  Clear the order above to choose another account.
+                </p>
+              )}
             </div>
 
             {/* Under the account, because the account is what fills it: the

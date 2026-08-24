@@ -252,6 +252,28 @@ const TradingCashPayment = () => {
   };
 
   /**
+   * While an order is chosen, the account is the order's own party and cannot
+   * be changed here. Same rule as the cash received screen next door.
+   *
+   * Without it the two could be saved disagreeing -- money paid against one
+   * order but posted to another party's ledger -- and neither the order's due
+   * nor the ledger would say which of them was right.
+   *
+   * Clearing the order unlocks the box and leaves the name in it: the next
+   * payment is usually to the same party, just not against a numbered order.
+   *
+   * The account itself has to be filled for the lock to apply, not just the
+   * order. resolveOrderParty() deliberately returns a name with no id when the
+   * order's party cannot be matched exactly -- it would rather leave the box
+   * empty than put a plausible wrong account in it. Locking an empty box would
+   * turn that into a dead end, with nothing the operator could do but start
+   * over.
+   */
+  const isAccountLockedByOrder = Boolean(
+    formData.purchaseOrderNumber && formData.account,
+  );
+
+  /**
    * Picking an order also says who the money is for.
    *
    * The order number on screen already names the party, so asking the operator
@@ -506,6 +528,7 @@ const TradingCashPayment = () => {
               <DdlMultiline
                 id="account"
                 name='account'
+                isDisabled={isAccountLockedByOrder}
                 onSelect={selectedLedgerOptionHandler}
                 defaultValue={
                   formData.account
@@ -538,6 +561,12 @@ const TradingCashPayment = () => {
                 }}
                 acType={''}
               />
+              {isAccountLockedByOrder && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  The order names the party, so this cannot be changed here.
+                  Clear the order above to choose another account.
+                </p>
+              )}
             </div>
 
             {/* Under the account, because the account is what fills it: the

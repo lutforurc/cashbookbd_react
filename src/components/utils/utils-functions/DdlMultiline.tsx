@@ -40,6 +40,13 @@ interface DropdownProps {
   minChars?: number;
   /** Fill the menu before anything is typed. Only worth it on a short list. */
   defaultOptions?: boolean;
+  /**
+   * Locked, because something else decides the answer -- an order that already
+   * names its party, for one. The control is styled to look locked as well as
+   * behave locked: a box that ignores a click while looking ordinary reads as
+   * broken, and gets reported as a bug.
+   */
+  isDisabled?: boolean;
 }
 
 const ACTION_OPTION_VALUE = '__ddl_multiline_action__';
@@ -75,6 +82,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   fetchOptions,
   minChars,
   defaultOptions,
+  isDisabled,
 }) => {
   const [isSelected, setIsSelected] = React.useState(false);
   const [isControlFocused, setIsControlFocused] = React.useState(false);
@@ -183,10 +191,15 @@ const DdlMultiline: React.FC<DropdownProps> = ({
         : darkMode
           ? 'rgb(var(--c-strokedark))'
           : 'rgb(var(--c-gray-300))',
-      backgroundColor: darkMode ? 'rgb(var(--c-form-input))' : 'rgb(var(--c-gray-3))',
+      backgroundColor: isDisabled
+        ? (darkMode ? 'rgb(var(--c-graydark))' : 'rgb(var(--c-gray-200))')
+        : (darkMode ? 'rgb(var(--c-form-input))' : 'rgb(var(--c-gray-3))'),
       color: darkMode ? 'rgb(var(--c-white))' : 'rgb(var(--c-black-2))',
       boxShadow: state.isFocused || isControlFocused ? '0 0 0 1px rgb(var(--c-blue-500))' : '',
       fontSize: '0.9rem',
+      // The cursor is what tells a mouse user the box is not theirs to change
+      // before they click it; the shade alone is easy to read as a theme.
+      cursor: isDisabled ? 'not-allowed' : 'default',
       '&:hover': {
         borderColor: state.isFocused || isControlFocused
           ? 'rgb(var(--c-blue-500))'
@@ -296,6 +309,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
         }}
         loadOptions={loadOptions}
         defaultOptions={defaultOptions}
+        isDisabled={isDisabled}
         onChange={(selected) => {
           if (selected?.isAction) {
             onActionSelect?.(inputValue.trim());
