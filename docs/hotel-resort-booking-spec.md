@@ -14,6 +14,13 @@
 > And phase 0 is bigger than it looked: the financial-year findings in §3.2 were
 > re-checked against the database and three of them were wrong or understated.
 >
+> **2026-08-24 (later):** **recipes are dropped** — catering is sold as a service, not
+> costed dish by dish (§4.5, §6.7). Four tables and phase 7 go with them; the count
+> falls to **43**. The kitchen is still the client's own, so material is issued by hand
+> through the existing module, and one nullable column on that module — which event an
+> issue was for — keeps per-event cost available without any recipe. That column is the
+> only part of this that cannot be added later.
+>
 > **2026-08-24:** four more things settled — where a room physically lives (§2.7,
 > §6.6: buildings and floors, **never** branches), the booking form and the
 > **two-stage** flow that fills it (§6.5: brief at booking, guest details at
@@ -320,7 +327,7 @@ Legend: 🆕 new · ✅ exists · 🔧 exists, needs change
 | `hotel_housekeeping_logs` | 🆕 | Cleaning history, assigned staff |
 | `hotel_amenity_kits` | 🆕 | Standard kit per room type (header) |
 | `hotel_amenity_kit_items` | 🆕 | Which product, how many, per kit — plus whether the quantity is **per room or per guest** (§6.1) |
-| `material_issue_master` | 🔧 | ✅ exists — add a floor/department reference column |
+| `material_issue_master` | 🔧 | ✅ exists — add a **location** reference (§6.6), and a **nullable booking reference** so a kitchen issue can say which event it was for (§6.7). The table already carries `project_id` for construction; the booking is a second, separate reference, not a reuse of that one |
 | `material_issue_details` | ✅ | Unchanged, use as-is |
 
 ### 4.4 Events / community centre — phase 6 *(motel site only)*
@@ -332,17 +339,28 @@ Legend: 🆕 new · ✅ exists · 🔧 exists, needs change
 | `event_service_details` | 🆕 | Decoration, stage, sound — supplier and cost |
 | `event_asset_usages` | 🆕 | Chairs/tables/generator used, and return check |
 
-### 4.5 Catering — phase 7 *(motel site only)*
+### 4.5 Catering *(motel site only)*
 
 | Table | | Holds |
 |---|---|---|
 | `catering_packages` | 🆕 | Package and per-plate rate |
 | `catering_menu_items` | 🆕 | Dishes — kacchi, borhani, jorda |
 | `catering_package_items` | 🆕 | Which dishes in which package |
-| `catering_recipes` | 🆕 | Recipe header (per how many plates) |
-| `catering_recipe_items` | 🆕 | Raw material and quantity per dish |
-| `catering_event_plans` | 🆕 | Estimated raw material = recipe × plates |
-| `catering_consumptions` | 🆕 | Actual consumption and cost posting |
+
+**Recipes were dropped on 2026-08-24** — the client's decision: catering is sold as a
+service, not costed dish by dish. Four tables went with them (`catering_recipes`,
+`catering_recipe_items`, `catering_event_plans`, `catering_consumptions`) and phase 7
+went with those. The three left are what it takes to price a package and print what
+is in it.
+
+The kitchen is the client's own, so raw material still has to reach cost — see §4.3.
+Material is issued by hand into the kitchen through the module that already exists; no
+recipe is involved. What is lost is only the **expected** figure: how much *should*
+have been used. The **actual** figure is not lost, provided each issue records the
+event it was for (§6.7).
+
+Recipes are self-contained — a later change of mind costs the same nine days it would
+have cost now, and nothing already built has to be undone.
 
 ### 4.6 Ticketing — resort site only
 
@@ -379,11 +397,13 @@ and a separate attractions table (merged into `ticket_items`).
 | Guest / organiser records | Existing party/customer master |
 | Warehouse, requisition, vouchers | All already exist |
 
-**Count:** 47 new · 2 modified · 8+ reused.
+**Count:** 43 new · 2 modified · 8+ reused.
 
-*(Was 44. `booking_tax_rates` and `booking_bill_transfers` came with the §6.3 / §6.4
-standard on 2026-08-23; `hotel_buildings` with §2.7 on 2026-08-24. All three names
-were checked against the dev database — 203 tables, no collision.)*
+*(44 at first draft. `booking_tax_rates` and `booking_bill_transfers` came with the
+§6.3 / §6.4 standard on 2026-08-23 and `hotel_buildings` with §2.7 on 2026-08-24,
+taking it to 47; the four recipe tables were then dropped on 2026-08-24 (§4.5),
+bringing it to 43. All three added names were checked against the dev database —
+203 tables, no collision.)*
 
 ---
 
@@ -397,7 +417,7 @@ were checked against the dev database — 203 tables, no collision.)*
 | Ticket sold | Cash / Customer | Ticket Income (per `ticket_items` head) |
 | Raw material purchased | Raw Material Stock | Supplier / Cash |
 | Transfer to kitchen | Kitchen Stock | Main Store Stock |
-| Raw material consumed | Catering Production Cost | Kitchen Stock |
+| Raw material consumed | Catering Production Cost | Kitchen Stock *(posted at manual issue — no recipe, §6.7)* |
 | Amenity purchased | Guest Supplies Stock | Supplier / Cash |
 | Amenity issued / used | Guest Supplies Expense | Guest Supplies Stock |
 | Decoration / subcontract | Event Operating Cost | Supplier / Cash |
@@ -776,6 +796,48 @@ under the new rule.
 - **A closed floor is deactivated, never deleted** — the §2.5 rule again. Delete it
   and last year's bookings, bills and register entries become unreadable.
 
+### 6.7 Catering without recipes
+
+*(Agreed 2026-08-24. Tables at §4.5.)*
+
+Catering is sold as a service: a package, a per-plate rate, a number of plates. No
+dish is costed against a recipe. The kitchen is the client's own, so raw material is
+still bought into a kitchen store and **issued by hand** through the existing material
+issue module — cost reaches the books at issue, as a period expense.
+
+**A recipe was never what produced the actual cost.** A recipe says how much *should*
+have been used; the issue says how much *was*. So per-event food cost — and with it
+per-event margin — is available with no recipes at all, on one condition:
+
+> **Each kitchen issue records which event it was for.** One nullable column on
+> `material_issue_master`.
+
+| | Without recipes, if issues name the event | Needs recipes |
+|---|---|---|
+| Actual food cost per event | ✅ | |
+| Margin per event | ✅ | |
+| Expected vs actual — waste, theft | | ⏳ |
+| Planning the raw material for 400 guests | | ⏳ |
+
+**The column is the one part that cannot wait.** Recipes added in a year cost the same
+nine days whenever they are added; an untagged year of issues can never be costed
+afterwards, because the fact was never written down. Cheap now, unrecoverable later —
+the same shape as recording a child's age at check-in (§6.5).
+
+Two conditions, or the number will mislead:
+
+- **It must be optional.** Not all kitchen material goes to an event — room guests'
+  breakfast, staff meals, general use. Made mandatory, a clerk picks any event to get
+  the form saved, and wrong data is worse than an empty field.
+- **Reports must say how much was tagged** — *"kitchen issues this month 4,20,000;
+  78% assigned to an event"*. Without that line, a half-filled figure reads as
+  complete and every event looks cheaper than it was.
+
+**The human risk outweighs the technical one.** Manual issue means somebody must
+remember. Forgotten for a month, kitchen stock and profit both inflate — together,
+silently, with nothing on screen to show it. Two cheap guards: issue at least monthly,
+and reconcile kitchen stock against what is physically there.
+
 ---
 
 ## 7. Open decisions
@@ -786,7 +848,7 @@ under the new rule.
 | 2 | Room rent posted per night, or once at check-out? | Per night — daily/monthly income stays correct |
 | 3 | Amenities: auto per check-in, or periodic batch issue? | Batch issue primary; kit is only the yardstick for variance |
 | 4 | Depreciation: straight-line, reducing balance, or both? | Both — NBR tax filing needs reducing balance |
-| 5 | Recipes/BOM in phase 1 or later? | Later — keeps the first release close |
+| 5 | ~~Recipes/BOM in phase 1 or later?~~ | **Settled 2026-08-24: not at all.** Catering is sold as a service; the four recipe tables and phase 7 are dropped (§4.5, §6.7). Reversible later at the same cost |
 | 6 | FY stored on the transaction, or derived from `vr_date`? | Derived (see §2.4) |
 | 7 | Cancellation refund policy | Configurable in settings |
 | 8 | FY start date — 1 July / 1 January / other? | Client's existing practice |
@@ -811,7 +873,7 @@ frontend and internal testing.
 | 4 | Visual views — floor grid, timeline, month calendar | 9 | 8–10 |
 | 5 | Amenity issue, kits, variance report | 5 | 10–11 |
 | 6 | Event management + catering booking | 9 | 11–12 |
-| 7 | Recipes + planned-vs-actual analysis | 9 | 13–14 |
+| ~~7~~ | ~~Recipes + planned-vs-actual analysis~~ — **dropped 2026-08-24 (§6.7)** | ~~9~~ | — |
 | 8 | Asset register + categories | 7 | 14–16 |
 | 9 | Depreciation + monthly run | 9 | 16–17 |
 | 10 | Dashboard + KPIs (occupancy, ADR, RevPAR) | 5 | 18 |
@@ -944,8 +1006,10 @@ Learned from this codebase — ignoring these causes real breakage.
    seat-wise rooms, holds, the two-stage form, buildings) but still describes site 1
    only — the resort and its ticketing are not in it.
 
-   ⚠️ **The two documents disagree on effort.** The `.docx` prices site 1 at 126 days
-   after modules 13–18; §8 above still shows the original 100-day table with a note
-   that phases 0 and 3 need re-costing. Reconcile them before either goes to the
-   client again.
+   ⚠️ **The two documents disagree on effort.** As of v1.3 the `.docx` prices site 1 at
+   **117 days / 24 weeks** — the original 100, plus 26 for modules 13–18, less the 9 of
+   the dropped recipe phase — with its phases renumbered 0–16 and their week ranges
+   recomputed. §8 above still shows the original 100-day table with phase 7 struck
+   through and a note that phases 0 and 3 need re-costing. Reconcile them before
+   either goes to the client again; the `.docx` table is the fuller of the two.
 6. **Wait for an explicit go-ahead before writing any code.**
