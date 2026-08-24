@@ -23,10 +23,14 @@ import LayoutTab from './LayoutTab';
  *            +- room
  *                +- seat      one bed; the thing a booking actually locks
  *
- * Four tabs rather than four screens, and the order is the order they have to
- * be filled in: a floor needs a building, a room needs both. Setup is one
+ * Five tabs rather than five screens, and the first four are ordered by what
+ * depends on what: a floor needs a building, a room needs both. Setup is one
  * sitting, done once, and sending somebody back to the sidebar between each
  * step of it would be four navigations for one job.
+ *
+ * The fifth, Layout, is the drawing rather than a step -- so it sits last in
+ * the row, where the sequence ends, but it is the one that OPENS. After the
+ * property has been described once, the screen is opened to look at it.
  *
  * The branch chooser at the top is not a filter. In this module the branch IS
  * the property: a company running two hotels keeps two sets of buildings and
@@ -59,14 +63,31 @@ const HotelSetup = ({ user }: any) => {
   // a link pasted to somebody, comes back to the same place.
   const [params, setParams] = useSearchParams();
 
+  /**
+   * Layout is what opens.
+   *
+   * The tabs are still ordered by what depends on what -- a floor needs a
+   * building, a room needs both -- but that is the order of a job done once.
+   * Afterwards the screen is opened to look at the property, not to describe it
+   * again, so the drawing is the sensible thing to land on.
+   *
+   * It is a safe landing even on a property with nothing in it: the grid has an
+   * empty state that says so and points at the Buildings tab, which is a better
+   * first screen than an empty table.
+   */
+  const DEFAULT_TAB: TabKey = 'layout';
+
   const tab: TabKey = TAB_KEYS.includes(params.get('tab') as TabKey)
     ? (params.get('tab') as TabKey)
-    : 'buildings';
+    : DEFAULT_TAB;
 
   const setTab = (next: TabKey) => {
-    // replace, not push: flicking through four tabs must not put four entries
+    // The default tab carries no query string -- a bare /hotel/setup is it, so
+    // the URL only says anything when it has something to add.
+    //
+    // replace, not push: flicking through five tabs must not put five entries
     // in the history for Back to walk out of one at a time.
-    setParams(next === 'buildings' ? {} : { tab: next }, { replace: true });
+    setParams(next === DEFAULT_TAB ? {} : { tab: next }, { replace: true });
   };
   const [branchId, setBranchId] = useState<number | ''>(user?.branch_id ?? '');
 
