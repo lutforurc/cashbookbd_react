@@ -477,7 +477,11 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
               </div>
             ) : null}
 
-            <PrintFooter page={pageIndex + 1} total={printablePages.length} fontSize={fs} />
+            {/* No print time on this one: the sheet is already dated at the head,
+                and a second date a few lines below it -- a different date, since
+                one is the paper's date and the other the moment it came off the
+                printer -- is read as a discrepancy rather than as two facts. */}
+            <PrintFooter page={pageIndex + 1} total={printablePages.length} fontSize={fs} hidePrintedAt />
 
 		            {pageIndex !== printablePages.length - 1 ? <div className="page-break" /> : null}
 	          </div>
