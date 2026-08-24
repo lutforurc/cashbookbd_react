@@ -408,20 +408,48 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
 
     const SignatureBlock: React.FC<{ band: SignatureBand }> = ({ band }) => {
       if (!band.items.length) return null;
+
+      // Whether a line has to be kept for the name at all.
+      //
+      // Only when some column carries one. A block of plain "Receiver
+      // Signature" rules should sit tight under its rules; it is the presence
+      // of a name in ONE column that forces the others to reserve the same
+      // line, or that column's label would sit lower than its neighbours'.
+      const anyNamed = band.items.some(
+        (item) => item.field && !blank(value(item.field)),
+      );
+
       return (
+        // Top-aligned, so the rules agree even where one column's label runs to
+        // two lines. Bottom-aligning them let the tallest column push its own
+        // rule up, and three signature lines sat at two heights on one sheet.
         <div
-          className="flex items-end justify-between gap-8"
+          className="flex items-start justify-between gap-8"
           style={{ marginTop: `${band.space}px` }}
         >
-          {band.items.map((item, index) => (
-            <div key={`${item.label}-${index}`} className="flex-1 text-center">
-              {/* The name sits above the rule, so a signature can go on it. */}
-              <div className="min-h-[1.2em]">{item.field ? value(item.field) : ''}</div>
-              <div className="mx-auto w-4/5 border-t border-gray-800 pt-0.5">
-                {item.label}
+          {band.items.map((item, index) => {
+            const name = item.field ? value(item.field) : '';
+
+            return (
+              <div key={`${item.label}-${index}`} className="flex-1 text-center">
+                {/* Nothing above the rule -- that is what somebody signs on,
+                    and the room to do it is the space this band carries on its
+                    top. Under it goes who signed and in what capacity, which is
+                    the order the paper is read in: the signature first, then
+                    the name that explains it.
+
+                    A hard space where there is no name, not an empty box. A
+                    line of real text is as tall as the page's line-height, so a
+                    column carrying a name would otherwise stand a line taller
+                    than its neighbours and drop its label out of line with
+                    theirs. */}
+                <div className="mx-auto w-4/5 border-t border-gray-800 pt-0.5">
+                  {anyNamed ? <div>{name || ' '}</div> : null}
+                  <div>{item.label}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       );
     };
@@ -559,8 +587,17 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
 
     let consumed = 0;
 
+    // No background of its own, here or on the pages below.
+    //
+    // A document is printed onto paper that is already the colour it is, so a
+    // fill painted underneath it can only be wrong -- white no less than any
+    // other colour: a browser asked to print backgrounds lays toner over the
+    // whole sheet for nothing, and on screen a white page painted by the
+    // renderer hid where the sheet actually ended. The designer's preview
+    // paints the white sheet behind this instead, which is where a sheet of
+    // paper belongs.
     return (
-      <div ref={ref} className="print-root bg-white text-black">
+      <div ref={ref} className="print-root text-black">
         <PrintStyles orientation={template.orientation} />
 
         {/*
@@ -605,7 +642,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
             <div
               key={pageIndex}
               className={
-                'print-page relative flex flex-col bg-white text-black ' +
+                'print-page relative flex flex-col text-black ' +
                 (pageIndex < pages.length - 1 ? 'page-break ' : '') +
                 // Only in the designer. On screen the print stylesheet is
                 // asleep, so without this a two-page challan previews as one
