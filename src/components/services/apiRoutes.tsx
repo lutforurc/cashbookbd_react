@@ -848,3 +848,18 @@ export const API_LABOUR_ITEM_STORE_URL = `${API_BASE_URL}/labour-setup/items/sto
 export const API_LABOUR_ITEM_UPDATE_URL = `${API_BASE_URL}/labour-setup/items/update`;
 export const API_LABOUR_ITEM_DELETE_URL = `${API_BASE_URL}/labour-setup/items/delete`;
 export const API_LABOUR_ITEM_STATUS_URL = `${API_BASE_URL}/labour-setup/items/status`;
+
+
+// Hotel setup — buildings, floors, room types, and the rooms and seats inside
+// them. One stem per table; the screens suffix /ddl, /store, /update/{id},
+// /delete/{id} and /edit/{id} onto it, the way the labour setup screens do.
+export const API_HOTEL_BUILDING_URL = `${API_BASE_URL}/hotel-setup/buildings`;
+export const API_HOTEL_FLOOR_URL = `${API_BASE_URL}/hotel-setup/floors`;
+export const API_HOTEL_ROOM_TYPE_URL = `${API_BASE_URL}/hotel-setup/room-types`;
+// Also the stem for /types (the kinds a resource may be), /{id}/seats, and
+// /seats/update/{id} — where one bed is priced on its own.
+export const API_HOTEL_RESOURCE_URL = `${API_BASE_URL}/hotel-setup/resources`;
+// The whole property in one answer, for the elevation grid. Its own endpoint
+// because the resources list paginates at ten, and a floor plan cannot be read
+// ten rooms at a time.
+export const API_HOTEL_LAYOUT_URL = `${API_BASE_URL}/hotel-setup/layout`;

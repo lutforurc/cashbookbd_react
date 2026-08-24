@@ -345,6 +345,10 @@ const ROUTES = {
 
   item_chart: '/item/item-chart',
 
+  // Hotel. One screen with four tabs, because buildings, floors, room types
+  // and rooms are one sitting of setup rather than four errands.
+  hotel_setup: '/hotel/setup',
+
   notFound: '*',
 };
 

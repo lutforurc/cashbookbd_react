@@ -132,6 +132,7 @@ import LabourCategoryList from './components/modules/labour/LabourCategoryList';
 import LabourCategoryAdd from './components/modules/labour/LabourCategoryAdd';
 import LabourItemList from './components/modules/labour/LabourItemList';
 import LabourItemAdd from './components/modules/labour/LabourItemAdd';
+import HotelSetup from './components/modules/hotel/HotelSetup';
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
@@ -508,6 +509,28 @@ function App() {
               <Route path={routes.labour_item} element={<LabourItemList />} />
               <Route path={routes.labour_item_create} element={<LabourItemAdd />} />
               <Route path={`${routes.labour_item_edit}/:id`} element={<LabourItemAdd />} />
+            </Route>
+            {/*
+              Hotel setup. Any one of the four opens the screen, because the
+              tabs inside it check nothing further -- holding only
+              hotel.room.type.view has to be enough to reach the tab it gates,
+              or that permission names a screen its holder can never see.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={[
+                    'hotel.building.view',
+                    'hotel.floor.view',
+                    'hotel.room.type.view',
+                    'hotel.resource.view',
+                  ]}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_setup} element={<HotelSetup user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
               <Route path={routes.journal} element={<Journal />} />

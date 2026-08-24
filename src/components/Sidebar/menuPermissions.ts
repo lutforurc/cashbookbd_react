@@ -140,6 +140,20 @@ export const MENU_PERMISSIONS = {
     'real.estate.project.cost.view',
     'real.estate.project.income.report.view',
   ],
+  // Hotel. Any one of the four opens the menu -- the setup screen's four tabs
+  // are one screen, and a role given only the room types still has to be able
+  // to reach it.
+  //
+  // The SQL that creates these grants them to nobody, so this menu does not
+  // appear anywhere until a hotel is actually set up and somebody hands them
+  // out. That is deliberate: fifteen sites run this software and none of them
+  // is a hotel.
+  hotel: [
+    'hotel.building.view',
+    'hotel.floor.view',
+    'hotel.room.type.view',
+    'hotel.resource.view',
+  ],
   reseller: ['reseller.dashboard.view'],
   subscription_history: ['subscription.view', 'subscription.history'],
   customer_dashboard: ['customer.dashboard'],
