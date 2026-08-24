@@ -9,7 +9,7 @@ import { fieldClass, FIELD_TRANSPARENT } from '../../../theme/fieldStyles';
 
 import { seatSave } from './hotelSetupSlice';
 import { HotelResource } from './types';
-import { money, numberOrNull } from './setupHelpers';
+import { numberOrNull } from './setupHelpers';
 
 /**
  * The beds inside one room, priced one at a time.
@@ -78,14 +78,26 @@ const SeatEditor: React.FC<SeatEditorProps> = ({ seats, onSaved }) => {
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div>
+      {/*
+        Three columns, not five.
+
+        "Current" was one of them and had nothing of its own to say: the rent
+        box is filled with the seat's current rent, so the column repeated it
+        except in the seconds between typing and saving. "State" was another --
+        a whole column to write "In use" on nearly every row. Both are gone: the
+        state now rides beside the seat's name, and only when it is not the
+        ordinary one.
+
+        Five columns did not fit, so the table scrolled sideways. Dropping the
+        two that were not earning their width is the fix; widening the dialog
+        would only have moved the same question to a smaller screen.
+      */}
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-stroke text-left text-xs uppercase text-gray-500 dark:border-strokedark dark:text-gray-400">
             <th className="py-1.5 pr-2">Seat</th>
             <th className="py-1.5 pr-2">Rent per night</th>
-            <th className="py-1.5 pr-2">Current</th>
-            <th className="py-1.5 pr-2">State</th>
             <th className="py-1.5" />
           </tr>
         </thead>
@@ -99,32 +111,34 @@ const SeatEditor: React.FC<SeatEditorProps> = ({ seats, onSaved }) => {
                 key={seat.id}
                 className={`border-b border-stroke dark:border-strokedark ${off ? 'opacity-60' : ''}`}
               >
-                <td className="py-1.5 pr-2 font-medium text-black dark:text-white">
+                <td className="whitespace-nowrap py-1.5 pr-2 font-medium text-black dark:text-white">
                   {seat.name ? `${seat.code} · ${seat.name}` : `Seat ${seat.code}`}
+                  {/* Said only when it is not the ordinary answer. A column
+                      that reads "In use" on every row is a column of noise. */}
+                  {off ? (
+                    <span
+                      className="ml-1.5 text-xs font-normal text-gray-400"
+                      title="Kept so that older bookings still read. Raise the bed count to bring it back."
+                    >
+                      switched off
+                    </span>
+                  ) : null}
                 </td>
                 <td className="py-1.5 pr-2">
                   <Input
                     type="number"
                     min={0}
                     value={rentOf(seat)}
+                    // The box already holds what the bed costs now, which is
+                    // why there is no "current" column beside it.
                     placeholder="—"
                     onChange={(e) =>
                       setDrafts((prev) => ({ ...prev, [seat.id!]: e.target.value }))
                     }
-                    className={fieldClass('sm', `w-32 ${FIELD_TRANSPARENT}`)}
+                    className={fieldClass('sm', `w-full min-w-20 ${FIELD_TRANSPARENT}`)}
                   />
                 </td>
-                <td className="py-1.5 pr-2 text-gray-500 dark:text-gray-400">{money(seat.rent)}</td>
-                <td className="py-1.5 pr-2">
-                  {off ? (
-                    <span className="text-gray-400" title="Kept so that older bookings still read. Raise the bed count to bring it back.">
-                      Switched off
-                    </span>
-                  ) : (
-                    <span className="text-success">In use</span>
-                  )}
-                </td>
-                <td className="py-1.5">
+                <td className="py-1.5 text-right">
                   <ButtonLoading
                     onClick={() => handleSave(seat)}
                     buttonLoading={savingId === seat.id}

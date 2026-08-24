@@ -139,8 +139,11 @@ const LayoutTab = ({ branchId }: { branchId: number }) => {
   }
 
   return (
-    <div className="flex gap-3">
-      <div className="min-w-0 flex-1">
+    // The grid keeps the full width now. The room detail opens as a dialog over
+    // it rather than as a column beside it, so nothing has to be given up to
+    // make room for something that is only shown on a click.
+    <div>
+      <div>
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2 print:hidden">
           <div className="w-56">
             <DropdownCommon
@@ -254,7 +257,15 @@ const BuildingCard = ({
         </div>
       </div>
 
-      <div className="p-2">
+      {/* One gap, stated once, and it governs both directions.
+
+          The floors used to space themselves with `py-1` and a bottom border
+          while the tiles inside a floor used `gap-1` -- two rules in two files
+          for what the eye reads as one grid, so the space between 501 and 502
+          was never the space between 501 and 401. Saying it here, as the flex
+          gap of the column, leaves the rows exactly as far apart as the tiles
+          are: change this number and both move together. */}
+      <div className="flex flex-col gap-1 p-2">
         {stacked.map((floor) => (
           <FloorRow
             key={floor.id}
@@ -309,7 +320,13 @@ const FloorRow = ({
   onSelect: (room: LayoutRoom) => void;
   dimmed?: boolean;
 }) => (
-  <div className={`flex items-center gap-2 border-b border-stroke/60 py-1 last:border-b-0 dark:border-strokedark/60 ${dimmed ? 'opacity-50' : ''}`}>
+  // No padding and no rule of its own. The column above spaces these, so a
+  // row that also padded itself would add to that space on one axis only --
+  // which is exactly how the rows came to sit further apart than the tiles.
+  // The dividing line went with it: it drew a fourth horizontal edge into a
+  // grid already made of bordered tiles, and the floor chip names the row far
+  // better than a hairline separates it.
+  <div className={`flex items-center gap-2 ${dimmed ? 'opacity-50' : ''}`}>
     {/* The floor marker: large and bold, and carrying no colour of its own.
         Big enough to find the third floor on a five-storey card at a glance,
         which the old grey whisper in the margin was not.
