@@ -5,6 +5,7 @@ import {
   FiLock,
   FiLogIn,
   FiPrinter,
+  FiTruck,
   FiXCircle,
 } from 'react-icons/fi';
 import { Button } from '../../../pages/UiElements/CustomButtons';
@@ -20,6 +21,12 @@ interface VoucherActionButtonsProps {
   canShowEditAction?: boolean;
   canShowPrintAction?: boolean;
   /**
+   * A second paper off the same voucher -- the delivery challan. Off unless a
+   * screen asks for it, so the four other ledgers that share these buttons keep
+   * the row of icons they have.
+   */
+  canShowChallanAction?: boolean;
+  /**
    * Whether this user may edit vouchers at all. Callers hide the edit button on
    * approved rows, which leaves an empty cell that reads like "nothing to do
    * here". With this on, such a row shows a lock instead: editing is blocked by
@@ -30,9 +37,11 @@ interface VoucherActionButtonsProps {
   onRemoveApproval?: (row: any) => void;
   onEdit?: (row: any) => void;
   onPrint?: (row: any) => void;
+  onChallan?: (row: any) => void;
   stopPropagation?: boolean;
   printTitle?: string;
   editTitle?: string;
+  challanTitle?: string;
   /** Show a compact confirm right beside the button instead of a centered modal. */
   confirmInline?: boolean;
 }
@@ -47,14 +56,17 @@ const VoucherActionButtons = ({
   canShowRemoveApprovalAction = false,
   canShowEditAction = false,
   canShowPrintAction = false,
+  canShowChallanAction = false,
   canEditVoucher = false,
   onApprove,
   onRemoveApproval,
   onEdit,
   onPrint,
+  onChallan,
   stopPropagation = false,
   printTitle = 'Print Voucher',
   editTitle = 'Edit Voucher',
+  challanTitle = 'Print Delivery Challan',
   confirmInline = false,
 }: VoucherActionButtonsProps) => {
   const [pending, setPending] = useState<null | 'approve' | 'remove'>(null);
@@ -181,6 +193,21 @@ const VoucherActionButtons = ({
           title={printTitle}
         >
           <FiPrinter className="cursor-pointer" width="30" height="30" />
+        </Button>
+      ) : null}
+
+      {/* The challan sits beside the invoice rather than replacing it: they are
+          two papers off one sale, and a driver leaving the gate needs the one
+          the printer icon does not give him. A lorry, not a second printer --
+          two printers side by side say nothing about which prints what. */}
+      {canShowChallanAction ? (
+        <Button
+          type="button"
+          onClick={withEventGuard(onChallan)}
+          className="text-emerald-600 dark:text-emerald-400"
+          title={challanTitle}
+        >
+          <FiTruck className="cursor-pointer" />
         </Button>
       ) : null}
 

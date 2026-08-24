@@ -278,6 +278,16 @@ export const API_REPORT_PURCHASE_LEDGER_URL = `${API_BASE_URL}/reports/purchase/
 // Sales Ledger url
 export const API_REPORT_SALES_LEDGER_URL = `${API_BASE_URL}/reports/sales/ledger`;
 
+// Names the driver on a sale before its delivery challan is printed. Writes
+// two columns the accounts never read, so it is allowed to whoever may open
+// the ledger rather than to whoever may edit a sale.
+export const API_SALES_CHALLAN_DRIVER_URL = `${API_BASE_URL}/sales/challan-driver`;
+// The challan itself, rendered. Trailing slash: the raw main_trx_id goes on
+// the end. HTML rather than PDF -- the template lays out with flexbox and
+// pulls Bootstrap from a CDN, neither of which DomPDF does, so a PDF of it
+// would be a working download of a broken-looking paper.
+export const API_SALES_CHALLAN_URL = `${API_BASE_URL}/sales/challan/`;
+
 // Stock Product url
 export const API_REPORT_PRODUCT_STOCK_URL = `${API_BASE_URL}/reports/product-stock`;
 export const API_REPORT_BRANCH_TRANSFER_URL = `${API_BASE_URL}/reports/branch-transfer`;

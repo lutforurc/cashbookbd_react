@@ -32,7 +32,11 @@ import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { toast } from 'react-toastify';
 import httpService from '../../../services/httpService';
-import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
+import {
+  API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL,
+  API_SALES_CHALLAN_DRIVER_URL,
+  API_SALES_CHALLAN_URL,
+} from '../../../services/apiRoutes';
 import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
 import { hasPermission } from '../../../utils/permissionChecker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
@@ -44,6 +48,7 @@ import {
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import routes from '../../../services/appRoutes';
 import SearchInput from '../../../utils/fields/SearchInput';
+import ChallanDriverDialog from './ChallanDriverDialog';
 import OrderTypes from '../../../utils/utils-functions/OrderTypes';
 
 const SALES_LEDGER_FILTER_STORAGE_KEY = 'sales-ledger-filter-state';
@@ -133,6 +138,14 @@ const SalesLedger = (user: any) => {
     'cash.received.edit',
     'cash.payment.edit',
   ]);
+
+  // Raising a delivery challan. The row is held rather than an id, because the
+  // dialog opens with what that row already knows -- the driver, the vehicle
+  // and the challan number -- and none of it is worth a second trip to the
+  // server for a paper somebody is waiting at the gate for.
+  const canPrintChallan = hasPermission(userPermissions, 'ledger.details');
+  const [challanRow, setChallanRow] = useState<any>(null);
+  const [savingChallan, setSavingChallan] = useState(false);
 
   // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Rows + Font controls (like your screenshot)
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);
@@ -418,6 +431,97 @@ const SalesLedger = (user: any) => {
     }
 
     handleVoucherPrint(printableRow);
+  };
+
+  const handleChallanClick = (row: any) => {
+    setChallanRow(row);
+  };
+
+  /**
+   * Saves the driver, then opens the printed challan.
+   *
+   * In that order, and only that order: a challan showing a driver the sale
+   * does not hold would be a document nothing in the system can account for
+   * afterwards. If the save fails the paper does not open -- the driver is the
+   * one thing the person at the gate came here to record.
+   *
+   * The paper is fetched with the bearer token and written into a tab, not
+   * linked to. `challan_url` on the row addresses a Laravel *web* route behind
+   * the session `auth` guard, and this app never signs in to that guard --
+   * `POST /api/login` only calls `createToken()`, and in production the app and
+   * the API are different hosts (app.cashbookbd.com vs my.cashbookbd.com), so
+   * there is no cookie to carry either. Linking there lands on the login page,
+   * always. `api/sales/challan/{id}` is the same paper behind auth:sanctum.
+   *
+   * It comes back as HTML rather than PDF on purpose: the template lays out
+   * with flexbox and pulls Bootstrap from a CDN, and DomPDF does neither, so a
+   * PDF would be a working download of a broken-looking challan.
+   */
+  const handleChallanConfirm = async (driverName: string, driverMobile: string) => {
+    const row = challanRow;
+
+    // The raw id, which the endpoint scopes by company and branch before it
+    // writes or reads anything -- `mtmid` and `smtm_id` are the same value.
+    const mainTrxId = Number(row?.mtmid ?? row?.smtm_id ?? row?.id ?? 0);
+
+    if (!mainTrxId) {
+      toast.error('Voucher not found for this row.');
+      return;
+    }
+
+    // Opened on the click, before anything is awaited. A tab opened after the
+    // round trip is not tied to a gesture any more and the popup blocker eats
+    // it -- the same reason the customer profile PDF opens its tab up here.
+    const printTab = window.open('', '_blank');
+
+    setSavingChallan(true);
+
+    try {
+      await httpService.post(API_SALES_CHALLAN_DRIVER_URL, {
+        main_trx_id: mainTrxId,
+        driver_name: driverName,
+        driver_mobile: driverMobile,
+      });
+
+      // Held on the row as well, so reopening the dialog before the next
+      // reload shows what was just typed rather than what the list was
+      // fetched with.
+      row.driver_name = driverName || null;
+      row.driver_mobile = driverMobile || null;
+      setChallanRow(null);
+
+      const response = await httpService.get(`${API_SALES_CHALLAN_URL}${mainTrxId}`, {
+        responseType: 'blob',
+      });
+
+      const fileUrl = URL.createObjectURL(
+        new Blob([response.data], { type: 'text/html' }),
+      );
+
+      if (printTab) {
+        printTab.location.href = fileUrl;
+      } else {
+        // The blocker took the tab anyway. A downloaded challan opens and
+        // prints the same, which is better than an error and no paper for
+        // somebody standing at the gate.
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.download = `challan-${row?.challan_no || mainTrxId}.html`;
+        link.click();
+      }
+
+      // Long enough for the tab to have loaded it.
+      setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
+    } catch (error: any) {
+      printTab?.close();
+      toast.error(
+        error?.response?.data?.message ||
+        error?.message ||
+        'The challan could not be printed.',
+      );
+    } finally {
+      setSavingChallan(false);
+    }
   };
 
   const columns = [
@@ -742,6 +846,7 @@ const SalesLedger = (user: any) => {
             canShowApproveAction={canShowApproveAction}
             canShowRemoveApprovalAction={canShowRemoveApprovalAction}
             canShowPrintAction={canEditVoucher}
+            canShowChallanAction={canPrintChallan}
             canShowEditAction={canEditVoucher && !isApproved}
             canEditVoucher={canEditVoucher}
             stopPropagation
@@ -751,6 +856,7 @@ const SalesLedger = (user: any) => {
             onApprove={handleApproveClick}
             onRemoveApproval={handleRemoveApprovalClick}
             onPrint={handlePrintVoucher}
+            onChallan={handleChallanClick}
             onEdit={(actionRow) => handleEditVoucher(buildVoucherActionRow(actionRow))}
           />
         );
@@ -1147,6 +1253,23 @@ const SalesLedger = (user: any) => {
           fontSize={fontSize}
         />
       </div>
+
+      {/* Outside the `hidden` block above, not inside it. That div is
+          display:none so the print components can be measured without being
+          seen, and display:none on an ancestor hides everything beneath it --
+          position:fixed included. A dialog put in there mounts, holds its
+          state and paints nothing, which on screen is indistinguishable from a
+          button that does not work. */}
+      <ChallanDriverDialog
+        show={!!challanRow}
+        driverName={challanRow?.driver_name}
+        driverMobile={challanRow?.driver_mobile}
+        challanNo={challanRow?.challan_no}
+        vehicleNo={challanRow?.sales_master?.vehicle_no}
+        saving={savingChallan}
+        onCancel={() => setChallanRow(null)}
+        onConfirm={handleChallanConfirm}
+      />
     </div>
   );
 };
