@@ -32,6 +32,10 @@ import LayoutTab from './LayoutTab';
  * the property: a company running two hotels keeps two sets of buildings and
  * rooms, and everything below reads and writes against whichever is chosen.
  * That is why it sits above the tabs rather than inside one.
+ *
+ * It is drawn only where there is more than one property. A dropdown holding a
+ * single option is a question with one answer -- but the answer is still needed,
+ * so a lone property is selected rather than merely assumed.
  */
 
 type TabKey = 'buildings' | 'floors' | 'room-types' | 'rooms' | 'layout';
@@ -86,30 +90,51 @@ const HotelSetup = ({ user }: any) => {
     [branches, branchId],
   );
 
+  /**
+   * A company with one property is not asked which one.
+   *
+   * The chooser only earns its place when there is a choice; a dropdown holding
+   * a single option is a question with one answer, and it takes up the room and
+   * the reading time of a real one.
+   */
+  const choosable = branches.length > 1;
+
+  /**
+   * Hiding the chooser does not excuse the screen from choosing.
+   *
+   * branchId starts from the signed-in user's own branch, which covers almost
+   * everybody -- but an account without one (a platform administrator looking
+   * at a tenant) would land on '' with the chooser gone, and every tab below
+   * would sit waiting for a selection the screen no longer offers. So when
+   * there is exactly one property, it is taken.
+   */
+  useEffect(() => {
+    if (branchId === '' && branches.length === 1) {
+      setBranchId(Number(branches[0].id));
+    }
+  }, [branchId, branches]);
+
   return (
     <div>
       <HelmetTitle title="Hotel Setup" />
 
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h2 className="text-lg font-semibold text-black dark:text-white">Hotel Setup</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Describe the property once: its buildings, its floors, the kinds of room it has, and
-            then the rooms themselves.
-          </p>
+      {/* Drawn only where there is a choice to make. The whole row goes with it
+          rather than just the field -- an empty row still carries its own
+          margin, and would leave a gap above the tabs that reads as a mistake. */}
+      {choosable ? (
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div className="w-64">
+            <label className="text-sm text-black dark:text-white">Property</label>
+            <BranchDropdown
+              value={branchId === '' ? '' : String(branchId)}
+              defaultValue={branchId === '' ? '' : String(branchId)}
+              onChange={(e: any) => setBranchId(e.target.value === '' ? '' : Number(e.target.value))}
+              className="w-full text-sm"
+              branchDdl={branches}
+            />
+          </div>
         </div>
-
-        <div className="w-64">
-          <label className="text-sm text-black dark:text-white">Property</label>
-          <BranchDropdown
-            value={branchId === '' ? '' : String(branchId)}
-            defaultValue={branchId === '' ? '' : String(branchId)}
-            onChange={(e: any) => setBranchId(e.target.value === '' ? '' : Number(e.target.value))}
-            className="w-full text-sm"
-            branchDdl={branches}
-          />
-        </div>
-      </div>
+      ) : null}
 
       {/* The tabs. Their order is the order the tables depend on each other. */}
       <div className="mb-3 flex flex-wrap gap-1 border-b border-stroke dark:border-strokedark">
@@ -139,8 +164,14 @@ const HotelSetup = ({ user }: any) => {
         // Not an error and not empty rows -- a property has to be chosen before
         // any of this means anything, and saying so is better than a blank grid
         // that looks like a hotel with nothing in it.
+        //
+        // Which sentence depends on whether there is in fact anything above to
+        // choose from: with the chooser hidden, "choose a property above" sends
+        // the reader looking for a field that is not there.
         <div className="rounded border border-stroke p-8 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
-          Choose a property above to set up its rooms.
+          {choosable
+            ? 'Choose a property above to set up its rooms.'
+            : 'No property is available for this account to set up.'}
         </div>
       ) : (
         <>
