@@ -64,6 +64,91 @@ const SUMMARY_ROW_ALLOWANCE = 1;
  * are carried onto a page of their own instead of pushing the foot down the
  * sheet and printing over it.
  */
+/*
+  Filling a page by measuring is not open to us: the print block is mounted
+  inside a `hidden` div, so every element measures zero until the browser is
+  already printing it. So the height is worked out from what the markup is
+  known to produce.
+
+  The numbers below are deliberately generous. Under-filling a page costs a
+  finger of white at the foot; over-filling costs a sheet that carries rows
+  past the paper edge with no letterhead and no footer, and the operator
+  cannot tell it happened. The letterhead allowance is the loosest of them,
+  because a branch may print an image one.
+*/
+const MM_PX = 96 / 25.4;
+/** Landscape A4 less the page margins -- the same figure --print-page-height carries. */
+const PAGE_PX = 198 * MM_PX;
+/** .print-page's own top padding. */
+const PAGE_PADDING_PX = 8 * MM_PX;
+/** The letterhead, whether it is drawn or an uploaded image. */
+const LETTERHEAD_PX = 120;
+/** The title and the two columns of party and report detail under it. */
+const HEADING_PX = 110;
+const LINE_RATIO = 1.15;
+/** py-[2px] top and bottom, and the cell border. */
+const ROW_CHROME_PX = 5;
+
+/**
+ * Lines the description column takes -- the tallest cell in the row, and so
+ * the one that sets its height.
+ */
+const rowLineCount = (row: any) =>
+  1 + (row?.remarks ? 1 : 0) + (row?.order_number ? 1 : 0);
+
+const rowHeightPx = (row: any, fs: number) =>
+  ROW_CHROME_PX + rowLineCount(row) * fs * LINE_RATIO;
+
+/**
+ * As many rows as the sheet will hold, rather than a number somebody chose.
+ *
+ * A fixed count has to be set for the worst row on the report -- a three-line
+ * description -- so a ledger of one-line entries printed ten rows to a sheet
+ * and left two thirds of the paper empty, over twenty-four sheets.
+ */
+const fitRows = <T,>(data: T[], fs: number): T[][] => {
+  if (!Array.isArray(data) || data.length === 0) return [[]];
+
+  const footPx = Math.min(fs, 10) * 1.2 + 6;
+  const theadPx = fs * LINE_RATIO + 18;
+  const summaryPx = Math.min(fs, 10) * LINE_RATIO + 10;
+  const budget = PAGE_PX - PAGE_PADDING_PX - LETTERHEAD_PX - HEADING_PX - theadPx - footPx;
+
+  const pages: T[][] = [];
+  let page: T[] = [];
+  let used = 0;
+
+  for (const row of data) {
+    const height = rowHeightPx(row, fs);
+    // At least one row per page, however tall it is: a page of none would
+    // loop for ever and print nothing.
+    if (page.length > 0 && used + height > budget) {
+      pages.push(page);
+      page = [];
+      used = 0;
+    }
+    page.push(row);
+    used += height;
+  }
+  if (page.length > 0) pages.push(page);
+
+  // The summary bar rides on the last page and takes a row's worth of room
+  // with it, so what no longer fits moves to a sheet of its own.
+  const last = pages[pages.length - 1];
+  if (pages.length > 0 && last.length > 1) {
+    let tail = last.reduce((sum, row) => sum + rowHeightPx(row, fs), 0);
+    const carried: T[] = [];
+    while (last.length > 1 && tail + summaryPx > budget) {
+      const moved = last.pop() as T;
+      tail -= rowHeightPx(moved, fs);
+      carried.unshift(moved);
+    }
+    if (carried.length > 0) pages.push(carried);
+  }
+
+  return pages;
+};
+
 const paginateRows = <T,>(data: T[], size: number): T[][] => {
   const chunks = chunkRows(data, size);
   if (size <= 0) return chunks;
@@ -99,8 +184,10 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     },
     ref,
   ) => {
-    const pages = paginateRows(rows, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? fontSize : 9;
+    // A number in the Rows box is an instruction and is obeyed exactly.
+    // Left empty, the sheet decides -- see fitRows.
+    const pages = rowsPerPage > 0 ? paginateRows(rows, rowsPerPage) : fitRows(rows, fs);
     const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
     const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
     const printablePartyName = partyName || '-';
@@ -140,7 +227,19 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
           */
           .print-page {
             box-sizing: border-box;
-            min-height: var(--print-page-height) !important;
+            /*
+              The foot of the page stands a quarter inch above the edge of the
+              paper -- 6.35mm, stated here rather than left to fall out of the
+              shared height, which reaches 6.00mm by way of a 1mm rounding
+              allowance and says nothing about where the footer lands.
+
+              The page block is the sheet less the 6mm top margin and that
+              quarter inch. --print-page-height is the sheet less 6mm, 5mm and
+              1mm, so it is 0.35mm too tall for this: taking that back off is
+              the whole difference, and it keeps working if the sheet or the
+              orientation ever changes.
+            */
+            min-height: calc(var(--print-page-height) - 0.35mm) !important;
           }
 
           .print-page.ledger-break-after {

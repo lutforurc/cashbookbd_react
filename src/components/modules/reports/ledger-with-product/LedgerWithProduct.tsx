@@ -114,7 +114,11 @@ const LedgerWithProduct = (user: any) => {
   const [productId, setProductId] = useState<number | null>(null);
   const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   const [transactionType, setTransactionType] = useState('');
-  const [rowsPerPage, setRowsPerPage] = useState<string>('10');
+  // Empty by default, which now means the sheet decides how many rows it
+  // holds. Ten was set for the tallest row a ledger can carry -- three
+  // lines of description -- so a statement of one-line entries printed a
+  // third of a page and ran to twenty-four sheets.
+  const [rowsPerPage, setRowsPerPage] = useState<string>('');
   const [fontSize, setFontSize] = useState<string>('10');
   const [filterOpen, setFilterOpen] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -990,7 +994,7 @@ const LedgerWithProduct = (user: any) => {
                   type="number"
                   id="cs-statement-rows"
                   label=""
-                  title="Rows per print page â€” leave empty to print every row in one run"
+                  title="Rows per print page — leave empty to let each sheet hold as many as it fits"
                   placeholder="All"
                   value={rowsPerPage}
                   onChange={(e: any) => setRowsPerPage(e.target.value)}
@@ -1051,7 +1055,7 @@ const LedgerWithProduct = (user: any) => {
                     type="number"
                     id="cs-statement-rows"
                     label=""
-                    title="Rows per print page â€” leave empty to print every row in one run"
+                    title="Rows per print page — leave empty to let each sheet hold as many as it fits"
                     placeholder="All"
                     value={rowsPerPage}
                     onChange={(e: any) => setRowsPerPage(e.target.value)}
