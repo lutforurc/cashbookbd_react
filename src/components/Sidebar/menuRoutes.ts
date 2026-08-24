@@ -143,6 +143,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
   'admin': [
     routes.company_list,
     '/branch/branch-list',
+    routes.print_template_designer,
     routes.software_info,
     routes.menu_arrangement,
     routes.user_list,

@@ -287,6 +287,14 @@ export const API_SALES_CHALLAN_DRIVER_URL = `${API_BASE_URL}/sales/challan-drive
 // pulls Bootstrap from a CDN, neither of which DomPDF does, so a PDF of it
 // would be a working download of a broken-looking paper.
 export const API_SALES_CHALLAN_URL = `${API_BASE_URL}/sales/challan/`;
+// The same challan as data rather than as a rendered page, so the React
+// renderer can lay it out the way the branch's saved template says. Trailing
+// slash: the raw main_trx_id goes on the end.
+export const API_SALES_CHALLAN_DATA_URL = `${API_BASE_URL}/sales/challan-data/`;
+
+// A branch's saved print layout. GET `${url}/{docType}?branch_id=` reads one,
+// POST writes one, DELETE puts the branch back on the built-in default.
+export const API_PRINT_TEMPLATE_URL = `${API_BASE_URL}/print-templates`;
 
 // Stock Product url
 export const API_REPORT_PRODUCT_STOCK_URL = `${API_BASE_URL}/reports/product-stock`;

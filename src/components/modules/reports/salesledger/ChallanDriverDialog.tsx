@@ -3,17 +3,29 @@ import { FiTruck, FiX } from 'react-icons/fi';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import InputElement from '../../../utils/fields/InputElement';
 
+/** What the dialog collects, and what the sale is updated with. */
+export type ChallanDetails = {
+  driverName: string;
+  driverMobile: string;
+  accName: string;
+  truckFare: string;
+};
+
 interface ChallanDriverDialogProps {
   show: boolean;
-  /** What the sale already holds. Either may be null -- most sales hold neither. */
+  /** What the sale already holds. Any may be null -- most sales hold none. */
   driverName?: string | null;
   driverMobile?: string | null;
+  /** Which account the goods are billed to -- the "হিসাব হবে" line. */
+  accName?: string | null;
+  /** What the lorry is being paid. Held as text so an empty box stays empty. */
+  truckFare?: string | number | null;
   /** The challan number, so the person at the gate can see which paper this is. */
   challanNo?: string | null;
   vehicleNo?: string | null;
   saving?: boolean;
   onCancel: () => void;
-  onConfirm: (driverName: string, driverMobile: string) => void;
+  onConfirm: (details: ChallanDetails) => void;
 }
 
 /**
@@ -34,6 +46,8 @@ const ChallanDriverDialog: React.FC<ChallanDriverDialogProps> = ({
   show,
   driverName,
   driverMobile,
+  accName,
+  truckFare,
   challanNo,
   vehicleNo,
   saving = false,
@@ -42,6 +56,11 @@ const ChallanDriverDialog: React.FC<ChallanDriverDialogProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
+  const [account, setAccount] = useState('');
+  // Text, not a number. A number state turns an emptied box into 0, and 0 is a
+  // fare of nothing rather than a fare nobody agreed -- the challan prints
+  // those two differently and must be able to send the difference.
+  const [fare, setFare] = useState('');
   const nameRef = useRef<HTMLDivElement>(null);
 
   // Seeded when the dialog opens rather than on every render: typing into it
@@ -51,8 +70,14 @@ const ChallanDriverDialog: React.FC<ChallanDriverDialogProps> = ({
     if (show) {
       setName(driverName ?? '');
       setMobile(driverMobile ?? '');
+      setAccount(accName ?? '');
+      setFare(
+        truckFare === null || truckFare === undefined || truckFare === ''
+          ? ''
+          : String(truckFare),
+      );
     }
-  }, [show, driverName, driverMobile]);
+  }, [show, driverName, driverMobile, accName, truckFare]);
 
   // The cursor starts in the name box -- the field somebody opened this to fill.
   useEffect(() => {
@@ -66,7 +91,12 @@ const ChallanDriverDialog: React.FC<ChallanDriverDialogProps> = ({
 
   const submit = () => {
     if (saving) return;
-    onConfirm(name.trim(), mobile.trim());
+    onConfirm({
+      driverName: name.trim(),
+      driverMobile: mobile.trim(),
+      accName: account.trim(),
+      truckFare: fare.trim(),
+    });
   };
 
   return (
@@ -131,6 +161,37 @@ const ChallanDriverDialog: React.FC<ChallanDriverDialogProps> = ({
             value={mobile}
             inputMode="tel"
             onChange={(event) => setMobile(event.target.value)}
+            className=""
+          />
+
+          {/* The other two the gate settles, and the sale cannot know.
+              Which account the consignment is charged against is often a third
+              name -- not the customer the invoice was made out to -- and the
+              lorry's fare is agreed with the driver standing in the yard, after
+              the invoice was raised. Both optional, like the driver above. */}
+          <InputElement
+            id="challan_acc_name"
+            name="acc_name"
+            label="Account (A/C)"
+            placeholder="Which account the goods are billed to"
+            description="Leave it empty if the invoice's own customer is the account."
+            value={account}
+            onChange={(event) => setAccount(event.target.value)}
+            className=""
+          />
+
+          <InputElement
+            id="challan_truck_fare"
+            name="truck_fare"
+            label="Truck Fare"
+            placeholder="What the lorry is paid"
+            description="Leave it empty if no fare was agreed — the challan then prints a blank line to write on."
+            value={fare}
+            type="number"
+            min={0}
+            step="0.01"
+            inputMode="decimal"
+            onChange={(event) => setFare(event.target.value)}
             className=""
           />
         </div>

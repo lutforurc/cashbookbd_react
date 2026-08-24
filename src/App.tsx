@@ -24,6 +24,7 @@ import CompanyList from './components/modules/company/CompanyList';
 import EditCompany from './components/modules/company/EditCompany';
 import SoftwareInfo from './components/modules/settings/SoftwareInfo';
 import MenuArrangement from './components/modules/settings/MenuArrangement';
+import PrintTemplateDesigner from './components/modules/settings/print-designer/PrintTemplateDesigner';
 import ProductTrackingSettings from './components/modules/product-tracking/ProductTrackingSettings';
 import ProductFinancialStatement from './components/modules/product-tracking/ProductFinancialStatement';
 import ProductTrackingSummary from './components/modules/product-tracking/ProductTrackingSummary';
@@ -387,6 +388,13 @@ function App() {
                 <Route path={routes.branch_add} element={<AddBranch />} />
                 <Route path={routes.branch_edit} element={<AddBranch />} />
                 <Route path={routes.company_edit} element={<EditCompany />} />
+                {/* The challan layout belongs to a branch, the same as its pad
+                    heading and its paper size -- so whoever may see a branch may
+                    lay out its paper. */}
+                <Route
+                  path={routes.print_template_designer}
+                  element={<PrintTemplateDesigner />}
+                />
               </Route>
               {/* The sidebar offers these two on their own permissions, so the
                   guard has to take them or the menu entry only led to

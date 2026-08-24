@@ -34,9 +34,16 @@ import { toast } from 'react-toastify';
 import httpService from '../../../services/httpService';
 import {
   API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL,
+  API_SALES_CHALLAN_DATA_URL,
   API_SALES_CHALLAN_DRIVER_URL,
-  API_SALES_CHALLAN_URL,
 } from '../../../services/apiRoutes';
+import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
+import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
+import {
+  defaultTemplate,
+  normalizeTemplate,
+} from '../../../utils/print-designer/printTemplate';
+import type { PrintTemplate } from '../../../utils/print-designer/printTemplate';
 import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
 import { hasPermission } from '../../../utils/permissionChecker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
@@ -49,6 +56,7 @@ import { formatTransportationNumber } from '../../../utils/utils-functions/forma
 import routes from '../../../services/appRoutes';
 import SearchInput from '../../../utils/fields/SearchInput';
 import ChallanDriverDialog from './ChallanDriverDialog';
+import type { ChallanDetails } from './ChallanDriverDialog';
 import OrderTypes from '../../../utils/utils-functions/OrderTypes';
 
 const SALES_LEDGER_FILTER_STORAGE_KEY = 'sales-ledger-filter-state';
@@ -147,6 +155,15 @@ const SalesLedger = (user: any) => {
   const [challanRow, setChallanRow] = useState<any>(null);
   const [savingChallan, setSavingChallan] = useState(false);
 
+  // The challan about to be printed: the branch's own layout, and the voucher
+  // to draw with it. Held together because they arrive together and are useless
+  // apart -- and cleared after printing, so a second challan cannot go out
+  // carrying the first one's lines if its fetch fails.
+  const [challanDoc, setChallanDoc] = useState<{
+    template: PrintTemplate;
+    data: DocumentData;
+  } | null>(null);
+
   // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Rows + Font controls (like your screenshot)
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(10);
@@ -161,6 +178,28 @@ const SalesLedger = (user: any) => {
     contentRef: printRef,
     documentTitle: 'Sales Ledger',
   });
+
+  const challanPrintRef = useRef<HTMLDivElement>(null);
+  const printChallanDoc = useReactToPrint({
+    contentRef: challanPrintRef,
+    documentTitle: 'Delivery Challan',
+    onAfterPrint: () => setChallanDoc(null),
+  });
+
+  /**
+   * Prints once the challan is actually on the page.
+   *
+   * react-to-print copies what is in the DOM at the moment it is called, so
+   * calling it in the same breath as setChallanDoc would copy the previous
+   * challan -- or nothing at all on the first one. An effect runs after React
+   * has committed, and the short wait after that is for the letterhead image,
+   * which BranchPad loads rather than renders inline.
+   */
+  useEffect(() => {
+    if (!challanDoc) return undefined;
+    const timer = setTimeout(() => printChallanDoc(), 250);
+    return () => clearTimeout(timer);
+  }, [challanDoc]);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -438,27 +477,33 @@ const SalesLedger = (user: any) => {
   };
 
   /**
-   * Saves the driver, then opens the printed challan.
+   * Saves the driver, then prints the challan.
    *
    * In that order, and only that order: a challan showing a driver the sale
    * does not hold would be a document nothing in the system can account for
-   * afterwards. If the save fails the paper does not open -- the driver is the
+   * afterwards. If the save fails the paper does not print -- the driver is the
    * one thing the person at the gate came here to record.
    *
-   * The paper is fetched with the bearer token and written into a tab, not
-   * linked to. `challan_url` on the row addresses a Laravel *web* route behind
-   * the session `auth` guard, and this app never signs in to that guard --
-   * `POST /api/login` only calls `createToken()`, and in production the app and
-   * the API are different hosts (app.cashbookbd.com vs my.cashbookbd.com), so
-   * there is no cookie to carry either. Linking there lands on the login page,
-   * always. `api/sales/challan/{id}` is the same paper behind auth:sanctum.
+   * The paper itself is drawn here rather than fetched as a rendered page.
+   * There is a Blade challan and it still answers on `api/sales/challan/{id}`,
+   * but it is one fixed arrangement of one fixed set of fields, and this is
+   * multi-tenant software where no two customers' challans look alike. The
+   * data endpoint answers with the facts and the branch's saved layout, and
+   * DocumentPrint lays it out -- so a customer who wants a weight column, or
+   * their labels in Bengali, or no prices on the paper, is a layout saved in
+   * the designer rather than a template file of their own.
    *
-   * It comes back as HTML rather than PDF on purpose: the template lays out
-   * with flexbox and pulls Bootstrap from a CDN, and DomPDF does neither, so a
-   * PDF would be a working download of a broken-looking challan.
+   * A branch that never opened the designer has no layout and gets the
+   * built-in default, which is why this changed nobody's challan on the day it
+   * went in.
+   *
+   * Printing in the page also retires the popup tab this used to open: nothing
+   * is fetched into a new window any more, so there is no blocker to lose the
+   * challan to and no blob URL to revoke.
    */
-  const handleChallanConfirm = async (driverName: string, driverMobile: string) => {
+  const handleChallanConfirm = async (details: ChallanDetails) => {
     const row = challanRow;
+    const { driverName, driverMobile, accName, truckFare } = details;
 
     // The raw id, which the endpoint scopes by company and branch before it
     // writes or reads anything -- `mtmid` and `smtm_id` are the same value.
@@ -469,11 +514,6 @@ const SalesLedger = (user: any) => {
       return;
     }
 
-    // Opened on the click, before anything is awaited. A tab opened after the
-    // round trip is not tied to a gesture any more and the popup blocker eats
-    // it -- the same reason the customer profile PDF opens its tab up here.
-    const printTab = window.open('', '_blank');
-
     setSavingChallan(true);
 
     try {
@@ -481,6 +521,12 @@ const SalesLedger = (user: any) => {
         main_trx_id: mainTrxId,
         driver_name: driverName,
         driver_mobile: driverMobile,
+        acc_name: accName,
+        // null, not 0, for a box nobody filled. The server stores the
+        // difference and the challan prints it: an agreed fare of nothing is a
+        // zero on the paper, while no fare agreed is a blank line for the gate
+        // to write on.
+        truck_fare: truckFare === '' ? null : truckFare,
       });
 
       // Held on the row as well, so reopening the dialog before the next
@@ -488,32 +534,29 @@ const SalesLedger = (user: any) => {
       // fetched with.
       row.driver_name = driverName || null;
       row.driver_mobile = driverMobile || null;
+      row.acc_name = accName || null;
+      row.truck_fare = truckFare === '' ? null : truckFare;
       setChallanRow(null);
 
-      const response = await httpService.get(`${API_SALES_CHALLAN_URL}${mainTrxId}`, {
-        responseType: 'blob',
-      });
+      const response = await httpService.get(`${API_SALES_CHALLAN_DATA_URL}${mainTrxId}`);
+      const payload = response?.data?.data?.data;
 
-      const fileUrl = URL.createObjectURL(
-        new Blob([response.data], { type: 'text/html' }),
-      );
-
-      if (printTab) {
-        printTab.location.href = fileUrl;
-      } else {
-        // The blocker took the tab anyway. A downloaded challan opens and
-        // prints the same, which is better than an error and no paper for
-        // somebody standing at the gate.
-        const link = document.createElement('a');
-        link.href = fileUrl;
-        link.download = `challan-${row?.challan_no || mainTrxId}.html`;
-        link.click();
+      if (!payload?.basic) {
+        toast.error('Challan data not found for this voucher.');
+        return;
       }
 
-      // Long enough for the tab to have loaded it.
-      setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
+      setChallanDoc({
+        template: payload.layout ? normalizeTemplate(payload.layout) : defaultTemplate(),
+        data: {
+          basic: payload.basic,
+          products: payload.products ?? [],
+          // The voucher's branch, not the reader's: a head-office user printing
+          // a depot's challan must head the paper with the depot.
+          branch: payload.branch ?? undefined,
+        },
+      });
     } catch (error: any) {
-      printTab?.close();
       toast.error(
         error?.response?.data?.message ||
         error?.message ||
@@ -1252,6 +1295,18 @@ const SalesLedger = (user: any) => {
           rowsPerPage={rowsPerPage}
           fontSize={fontSize}
         />
+
+        {/* Mounted only while a challan is being printed. Left standing it
+            would draw a whole document on every render of a screen that
+            re-renders on every keystroke in the search box -- and there is
+            nothing to draw between challans anyway. */}
+        {challanDoc ? (
+          <DocumentPrint
+            ref={challanPrintRef}
+            template={challanDoc.template}
+            data={challanDoc.data}
+          />
+        ) : null}
       </div>
 
       {/* Outside the `hidden` block above, not inside it. That div is
@@ -1264,6 +1319,12 @@ const SalesLedger = (user: any) => {
         show={!!challanRow}
         driverName={challanRow?.driver_name}
         driverMobile={challanRow?.driver_mobile}
+        // The ledger row carries the sale's own columns at the top level after
+        // a save, and under sales_master when it came from the list -- so both
+        // are read, or reopening the dialog before a reload would show empty
+        // boxes for what was just typed.
+        accName={challanRow?.acc_name ?? challanRow?.sales_master?.acc_name}
+        truckFare={challanRow?.truck_fare ?? challanRow?.sales_master?.truck_fare}
         challanNo={challanRow?.challan_no}
         vehicleNo={challanRow?.sales_master?.vehicle_no}
         saving={savingChallan}

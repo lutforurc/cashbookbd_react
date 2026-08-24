@@ -44,6 +44,7 @@ const ROUTES = {
   calendar: '/calendar',
   profile: '/profile',
   menu_arrangement: '/settings/menu-arrangement',
+  print_template_designer: '/settings/challan-layout',
   my_devices: '/my-devices',
   my_tasks: '/my-tasks',
   formElements: '/forms/form-elements',

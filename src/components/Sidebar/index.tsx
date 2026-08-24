@@ -141,6 +141,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   'admin': [
     { id: 'company_list', title: "Company List" },
     { id: 'branch/branch-list', title: "Branch List" },
+    { id: 'print_template_designer', title: "Challan Layout" },
     { id: 'software_info', title: "Software Information" },
     { id: 'menu_arrangement', title: "Arrange Menu" },
     { id: 'user_list', title: "User List" },
@@ -2190,6 +2191,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Branch List
+                              </NavLink>
+                            </li>
+                          )}
+                          {/* Where a branch lays out its own delivery challan.
+                              On branch.view, the same as the branch screens it
+                              belongs with -- the layout is a branch setting,
+                              like its pad heading and its paper size. */}
+                          {hasPermission(permissions, 'branch.view') && (
+                            <li style={subSlot('admin', 'print_template_designer')}>
+                              <NavLink
+                                to={routes.print_template_designer}
+                                className={subMenuLinkClass}
+                              >
+                                Challan Layout
                               </NavLink>
                             </li>
                           )}
