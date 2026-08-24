@@ -1,6 +1,7 @@
 import React from 'react';
 import { LayoutRoom } from './types';
 import { ColourMode, lookOf } from './layoutPalette';
+import { useTooltip } from '../../utils/others/useTooltip';
 
 /**
  * One room in the elevation.
@@ -52,11 +53,19 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, on
     .filter(Boolean)
     .join(' · ');
 
+  // The app's own bubble rather than the browser's `title=`, which draws a pale
+  // system box in its own font, half a second late, wherever the pointer is.
+  // It is portalled into the body -- see useTooltip -- because this tile sits in
+  // a row that scrolls, and a bubble laid out beside it would be clipped by the
+  // same overflow that once shaved the top off the selection ring.
+  const { anchorProps, tooltip } = useTooltip<HTMLButtonElement>(title);
+
   return (
+    <>
     <button
       type="button"
       onClick={() => onSelect(room)}
-      title={title}
+      {...anchorProps}
       className={`
         relative flex w-24 shrink-0 flex-col items-start gap-1 rounded border px-2.5 py-3
         text-left transition
@@ -103,6 +112,9 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, on
         )}
       </div>
     </button>
+
+    {tooltip}
+    </>
   );
 };
 
