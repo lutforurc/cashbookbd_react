@@ -1,8 +1,18 @@
 # Hotel / Motel + Resort Booking & Ticketing — Working Spec
 
-> **Status:** Design agreed, **no code written yet**. The user has said three times
-> that nothing is to be built until they explicitly say so — advice and documents
-> only. Last updated: 2026-08-23.
+> **Status: building. Step 1 is done.** The go-ahead was given on **2026-08-24**
+> and the five master tables of §8.1 — `hotel_buildings`, `hotel_floors`,
+> `hotel_room_types`, `booking_resource_types`, `booking_resources` — are built,
+> along with their API and a four-tab setup screen. See **§12** for exactly what
+> exists and what was deliberately left out.
+>
+> **Phase 0 (financial year) was NOT done first**, against the order in §11.
+> The reasoning is in §12: phase 0 is a refactor of code running on fifteen live
+> sites, the hotel module does not depend on it, and starting a new module with
+> the riskiest change in the project buys nothing.
+>
+> **Rent lives on the room, not on the room type** — the client's instruction of
+> 2026-08-24. It changes §4.2 and §6.6 and is written up as **§2.8**.
 >
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
@@ -181,6 +191,72 @@ Nothing is lost by this: because every room records its building, building-wise
 occupancy and income come out as report filters, at no cost. *Not keeping separate
 books is not the same as not being able to see them separately.*
 
+### 2.8 Rent lives on the row that is sold
+
+*(The client's instruction, 2026-08-24: **"একেকটি রুম বা সিট এর ভাড়া দেয়া থাকবে"** —
+each room, and each seat, carries its own rent. It supersedes what §4.2 and §6.6
+said, and both now point here.)*
+
+**The rent that is charged is `booking_resources.rent`** — one number per row,
+meaning what *that row* costs for one unit of its type's rate unit.
+
+| Row | What its `rent` means |
+|---|---|
+| Room | The **whole room**, for one night |
+| Seat | **That bed**, for one night |
+| Hall / centre | One **slot** |
+
+Room 101 and room 102 can both be "Deluxe" and cost different money. Before this,
+a difference in price meant inventing a room type to hold it (§6.6); it no longer
+does.
+
+**A room has two rents, not one — and they live on different rows.** §6.2 already
+said a seat rate is not the room rate divided by the beds: both are commercial
+decisions and the client makes each separately. Keeping them on separate rows is
+what stops anybody summing one into the other. Which of the two is required
+follows the room's `sale_mode`:
+
+| `sale_mode` | Room row's rent | Seat rows' rent |
+|---|---|---|
+| `whole` | **required** | empty |
+| `seat` | empty | **required** |
+| `both` | **required** | **required** |
+
+The unused one is left **NULL, never zero**. A dormitory that is never let whole
+has no whole-room price, and a zero would read as *free* on the first bill that
+used it — and print as one.
+
+**`hotel_room_types` keeps rents, renamed `default_*`.** They are read in exactly
+one place: filling the room form in when a type is chosen. Editing "Deluxe" from
+3,000 to 3,500 moves **no existing room**. That is the point rather than a
+limitation — a type whose rent *was* the price would silently reprice a hotel the
+moment somebody corrected a typo in it, and every bill already printed against
+those rooms would stop reconciling. The save says so out loud, because whoever
+edits that number is very often trying to do the thing it will not do.
+
+**The rate unit is a fact about the kind, not the room** — a room is priced by the
+night and a hall by the slot. It sits on `booking_resource_types.rate_unit`, so
+the booking engine never has to guess and no room has to repeat it.
+
+**Nothing here is what a bill is built from.** The §6.3 rule holds unchanged: a
+booking stores the rent it was confirmed at, and a folio line stores the rate, the
+base and the tax as applied. Raising a room's rent tomorrow must not reprint last
+month's bill at the new figure. This table is the default for the **next** booking.
+
+**⚠️ Open — which rent a future booking gets.** A booking taken in June for a
+December stay: the rent as it stood at confirmation, or as it stands on the night?
+*Recommendation: locked at confirmation*, because that is what the guest was told,
+and a rate rise between the two must not follow them. Seasonal properties do run
+the other way, so the client should confirm it. Not blocking: it is a rule the
+booking engine applies, not a column.
+
+**Season, holiday and corporate rates (`booking_rate_plans`) still sit on top**,
+as an override, with the room's own rent as the fallback. No schema change when
+they arrive.
+
+**An extra bed is a charge line, never part of the rent** (§6.5), so the money
+stays visible.
+
 ---
 
 ## 3. Codebase findings (verified against the dev DB, not assumed)
@@ -296,7 +372,7 @@ Legend: 🆕 new · ✅ exists · 🔧 exists, needs change
 |---|---|---|
 | `booking_resource_types` | 🆕 | room / hall / community centre / ticketed item |
 | `booking_resources` | 🆕 | **Central list of everything bookable**, incl. `allocation_mode`, and — per §2.5 — a `parent_id` so a seat can point at its room, a sold-whole-or-by-seat flag on the room, and an active flag (seats are deactivated, never deleted). Also `building_id` (required) and `floor_id` (optional) — where the room is, per §2.7. Both are held because the floor is optional; a save must check the two agree |
-| `hotel_room_types` | 🆕 | Standard/Deluxe/Suite, capacity, base rate. Where a second building prices differently, that is a room type of its own — no extra machinery (§6.6) |
+| `hotel_room_types` | 🆕 | Standard/Deluxe/Suite, capacity, and **suggested** rents. ⚠️ **Superseded in part by §2.8:** the rent that is charged now lives on the room, so these are `default_*` columns that fill the room form in and are read nowhere else. A second building pricing differently no longer *needs* to be a room type of its own, though it may still be one |
 | `hotel_buildings` | 🆕 | Buildings, or zones on a resort, under the branch — §2.7. Unlimited: adding one is a row, never a schema change |
 | `hotel_floors` | 🆕 | Floors within a building — **optional**, for the floor-plan view. Scattered cottages have none |
 | `booking_slots` | 🆕 | Morning/afternoon/evening slots for halls & centres |
@@ -789,8 +865,10 @@ under the new rule.
 - **Housekeeping and material issue follow the building**, not the floor: separate
   store, separate staff. §4.3 says `material_issue_master` gains a floor reference —
   make it a **location** reference instead.
-- **A different price in the annexe is a different room type.** Simplest possible
-  answer, and it needs nothing new.
+- ~~**A different price in the annexe is a different room type.**~~ ⚠️ **Superseded
+  by §2.8 (2026-08-24).** The rent now sits on the room itself, so an annexe that
+  charges more is simply a room with a different number in it. Making it a room
+  type of its own is still allowed — it is just no longer the only way.
 - **Growth costs nothing.** A new building, a new floor, more rooms — all rows. No
   schema change, which is what the client asked for.
 - **A closed floor is deactivated, never deleted** — the §2.5 rule again. Delete it
@@ -1006,6 +1084,8 @@ Learned from this codebase — ignoring these causes real breakage.
    seat-wise rooms, holds, the two-stage form, buildings) but still describes site 1
    only — the resort and its ticketing are not in it.
 
+   ⚠️ *Step 4 above is now partly done — see §12.*
+
    ⚠️ **The two documents disagree on effort.** As of v1.3 the `.docx` prices site 1 at
    **117 days / 24 weeks** — the original 100, plus 26 for modules 13–18, less the 9 of
    the dropped recipe phase — with its phases renumbered 0–16 and their week ranges
@@ -1013,3 +1093,259 @@ Learned from this codebase — ignoring these causes real breakage.
    through and a note that phases 0 and 3 need re-costing. Reconcile them before
    either goes to the client again; the `.docx` table is the fuller of the two.
 6. **Wait for an explicit go-ahead before writing any code.**
+
+---
+
+## 12. What is built — step 1, 2026-08-24
+
+*(Written the day it was built. Everything below exists, runs, and is checked.)*
+
+### Why not phase 0 first
+
+§11 puts the financial year first and §8 costs it at 7 days. It was deliberately
+**not** done first, and the reasoning should be on the record:
+
+- Phase 0 is a **refactor of code already running on fifteen production sites** —
+  83 hardcoded `financial_year_id => 1` writes across 20 files, one corrupt row,
+  and 7,000+ vouchers that fall inside no year at all (§3.2).
+- **The hotel module does not depend on it.** A booking voucher will write the
+  financial year the same way every other module already does. Fixing the year
+  later touches no hotel table.
+- So starting there would have meant taking the largest risk in the project before
+  producing anything the client can look at. Phase 0 is still needed; it is its
+  own piece of work, and it is not a prerequisite for this one.
+
+The masters below are the opposite kind of change: **entirely additive**. No
+existing table is altered, no existing row is written, no existing code path is
+touched.
+
+### The five tables
+
+`database/sql/2026_08_24_hotel_room_and_seat_masters.sql` — raw SQL, per §10.
+Idempotent: every `CREATE` is `IF NOT EXISTS`, every seed is guarded, and it has
+been run twice against the dev database to prove it.
+
+| Table | |
+|---|---|
+| `booking_resource_types` | The five kinds, **shipped** as `company_id = 0` rows: room, seat, hall, community_centre, ticketed_item. Not a vocabulary a tenant edits — the code branches on these codes. Carries `rate_unit` (§2.8) |
+| `hotel_buildings` | Blocks and zones under the branch (§2.7) |
+| `hotel_floors` | Optional (§2.7) |
+| `hotel_room_types` | Categories, with `default_*` rents that fill a form in (§2.8) |
+| `booking_resources` | Rooms **and** seats. `parent_id` = 0 on a room, the room's id on a seat |
+
+Also: `Hotel / Motel` and `Resort` rows in `business_type`, and four permissions
+in the `Hotel` group.
+
+**Two decisions inside the schema worth knowing:**
+
+- **`parent_id` is `0`, not `NULL`.** The unique key
+  `(company_id, branch_id, building_id, parent_id, code)` is what stops two 101s
+  in one building — and MySQL counts NULLs as **distinct** inside a unique index,
+  which would have switched that guard off for exactly the rows that need it.
+  So 0 means "no parent", and there is no foreign key on it because there is no
+  row 0 to point at. The controller checks the parent instead.
+- **`building_id` is on every row, seats included; `floor_id` is optional.** Both
+  are held so that an availability query can filter on either without a join that
+  would drop the floorless rows. The database cannot express that the two must
+  agree — the controller does, and a room that moves takes its seats with it.
+
+### The API
+
+`app/Http/Controllers/Hotel/` — four controllers, one `ScopesToProperty` trait,
+27 routes under `api/hotel-setup/`. Models in `app/Models/Hotel/`.
+
+Every endpoint checks its own permission **in the controller**, not through route
+middleware, so a route added later cannot arrive ungated by being one line short.
+`denyUnlessPermitted()` rather than `can()`, per §10.
+
+Two lines are drawn on every query: the company, and the branch. In this module
+**the branch is the property**, so a company running two hotels cannot have one
+desk reach the other's rooms by counting upwards through the ids.
+
+**The seat reconciliation is the piece that matters.** Saving a room writes its
+beds with it, in one transaction — there is no way to end up with a room the
+availability query cannot see. Changing the bed count:
+
+- a missing bed is **created**
+- a switched-off bed is **switched back on**, keeping its number and its rent
+- a bed above the new count is **deactivated, never deleted**
+
+The third rule is the one that would have been got wrong. Deleting is the obvious
+thing: it is also what breaks the July stay recorded against "seat 3" once the
+room is cut to two beds in September — and going back to four would then invent a
+*new* seat 3 that the old bill and the old register entry do not point at.
+
+*(The reconciliation compares `CAST(code AS UNSIGNED)`, not the text. Cutting a
+twelve-bed room to nine has to switch off 10, 11 and 12 — by text order it would
+have switched off 1 and 2, which is not a mistake that announces itself.)*
+
+### The screen
+
+`/hotel/setup` — one route, four tabs: Buildings · Floors · Room Types ·
+Rooms & Seats. Tabs rather than four screens because setup is one sitting and the
+tab order is the order the tables depend on each other.
+
+The form sits above the table and stays open after a save, keeping the building,
+floor and type and clearing only the number — rooms are added in a run of 101,
+102, 103, and a page turn between each one triples the job.
+
+Reopening a room shows its beds, each priced on its own. The room form's seat rent
+is what a *new* bed starts at; the window bed that costs more is set in that list,
+and the room form never overwrites it.
+
+The sidebar entry is gated on **permission alone**, not on a business type. Real
+Estate above it checks `business_type_id == 9` — and that id is auto-increment, so
+"Hotel / Motel" is 9 in one tenant's database and 11 in another's. *(On the dev
+database it landed on 9, which is the Real Estate id. That is a pre-existing
+fragility in that menu, not a new one — but it is the reason this one avoids the
+pattern.)*
+
+### Checked
+
+`hotel_setup_check.php --write` — 43 assertions, all passing. It refuses to run
+without the flag and refuses outright on production, because it writes.
+
+What it pins down, beyond the plain CRUD: two 101s in one building refused and
+101 in two buildings allowed; a floor from another building refused; a room sold
+whole with no whole-room rent refused, and a dormitory with no seat rent refused;
+the four-to-two-to-four bed cycle keeping the same rows and the same per-seat
+rents; twelve-to-nine switching off the right three; a room moving taking its beds
+with it; a building, floor or room type still in use refusing to delete; and a
+room type's default rent changing **nothing** about the rooms already of that type.
+
+The four permissions were also confirmed to answer **403** when not granted —
+which is their state on every site until somebody hands them out.
+
+### Deliberately not built
+
+The availability screen, the booking form, the overlap lock, allotment, billing,
+check-out. Screens 2–6 of §8.1, in that order. The lock in screen 3 is the single
+most important correctness requirement in the project (§9) and wants its own
+sitting; screen 5 is still blocked by **OPEN-12**.
+
+Also absent by design: `booking_slots`, `booking_rate_plans` / `_details`,
+`booking_charge_types`. §2.8 leaves room for all three without a schema change.
+
+### To deploy
+
+1. Run the SQL on the target database.
+2. `php artisan route:clear` and `php artisan permission:cache-reset` (§10).
+3. Grant the four `Hotel` permissions to the roles that should hold them. Until
+   then the menu does not exist for anybody — which is the correct state for the
+   fifteen sites that are not hotels.
+
+### Demo data
+
+`database/seeds/HotelDemoPropertySeeder.php` (API repo) — one five-storey block
+and two three-storey blocks, four rooms to a floor: **44 rooms, 104 beds**.
+
+    php artisan db:seed --class=Database\Seeders\HotelDemoPropertySeeder
+
+Deliberately **not** wired into `DatabaseSeeder` — a plain `db:seed` sets up roles
+and permissions on a real install and must never quietly add eleven floors of
+imaginary rooms to it. It refuses on production, and running it twice adds
+nothing.
+
+It is shaped to exercise the parts that are easy to get wrong rather than to look
+tidy:
+
+- **All three buildings have a room 101.** That is the per-building uniqueness
+  rule doing its job, and the reason a room's display name is built from its
+  location rather than typed into the number field.
+- **A Deluxe is 3,500 in the Main Block and 4,200 in the Annexe** — the same room
+  type at two prices, which is the whole of §2.8 in one row, and needs no second
+  room type to express.
+- **Garden Block covers all three sale modes**: its 1st floor is `both` (2,200
+  whole *or* 1,300 a bed), its 2nd is `whole`, and its 3rd is a six-bed
+  `seat`-only dormitory carrying **no** whole-room rent at all — NULL, not zero,
+  because a zero prints as free.
+
+*(Note: the four Hotel permissions are granted to nobody by the masters SQL, so
+the menu stays hidden until `2026_08_24_hotel_permissions_grant.sql` is run —
+which is a separate, opt-in file for a site that really is a hotel.)*
+
+---
+
+## 13. The Layout tab — the property drawn, 2026-08-24
+
+*(Agreed as an **elevation**: buildings side by side, floors stacked, top floor
+on top. Built the same day.)*
+
+### The decision that shaped it
+
+There are two building-wise visuals, not one, and they differ only in what the
+colour means:
+
+| | Colour source | Needs |
+|---|---|---|
+| **Structure map** | room type · sale mode · status | the master data — **built** |
+| **Occupancy map** | what is free on a date | `booking_resource_details` — screens 2–3 |
+
+They are **the same component**. So the colour was put in
+`layoutPalette.ts` rather than inside the grid, and `COLOUR_MODES` is a list
+with a comment saying where Availability joins it. When bookings exist, the
+occupancy view is a fourth entry in that list and `LayoutTab.tsx` does not
+change. Getting this wrong would have meant two grids to keep in step by month
+three.
+
+### What it draws
+
+`GET api/hotel-setup/layout` — its own endpoint, because the rooms list
+paginates at ten and a floor plan cannot be read ten rooms at a time. It returns
+building → floor → room with a **summary** of each room's beds, in **6 queries**
+regardless of size. Clicking a room fetches the beds themselves from
+`resources/edit/{id}`, which already returned them.
+
+*(The first draft ran 65 queries: `BookingResource::display_name` reaches for
+`$this->building`, which lazy-loaded one building per room. The layout groups by
+building and already holds it, so it now passes it in. The accessor stays for
+callers that have only a room.)*
+
+Floors arrive **ground-first** and the view reverses them. Which end is up is a
+fact about the drawing, not about the data.
+
+### Rules the screen keeps
+
+- **Colour means one thing at a time.** Painting type, sale mode and status at
+  once leaves none of the three readable.
+- **⚠️ Never colour alone.** Every tile carries a badge — the room type's own
+  code (`STD`, `DLX`), or `W`/`S`/`B` for sale mode — because red-green is the
+  first pair colour blindness takes and none of it survives a grey printer. The
+  legend carries the badge too, so the two agree when the colour is gone.
+- **Three things on a tile:** number, badge, bed pips. A four-bed dormitory and
+  a two-bed room must not look alike from a step back — the seat is the
+  inventory, so a grid that showed only rooms would draw a third of the beds
+  missing. Switched-off beds are drawn hollow, because the room still has them.
+- **An inactive room is drawn inactive whatever the switcher says** — and in
+  grey, not red. It is not a fault; it is a room kept so older bookings still
+  read.
+- **A floorless building keeps no invented floor.** Its rooms sit in a group of
+  their own (`unfloored`).
+- **The room type's colour is keyed by id**, so renaming "Deluxe" does not
+  repaint the building.
+- **The legend is built from what is on the property**, not a fixed list — a
+  hotel with no dormitory is not shown a key for one.
+
+### Where it lives
+
+Fifth tab of `/hotel/setup`. The tab now lives in the URL (`?tab=layout`), so
+the panel's **Edit this room** hands over to the Rooms tab with that room
+already open (`?tab=rooms&room=12`) — and a reload comes back to the same place.
+Tab changes `replace` rather than push, so Back does not have to walk out of
+four tabs one at a time.
+
+### Checked
+
+`php hotel_layout_check.php` — 18 assertions, all passing. Read-only in effect:
+it moves one room off its floor for a moment to prove a floorless room lands in
+its own group rather than disappearing, then puts it back.
+
+It pins down the things the grid would otherwise get quietly wrong: the
+dormitory carrying **null** rather than a zero whole-room rent, the same Deluxe
+at 3,500 in one block and 4,200 in another, floors arriving ground-first, and a
+branch belonging to somebody else being refused rather than drawn.
+
+*(A bug found while building it and fixed: the detail panel is fed from the
+grid's own row, so repricing a bed refreshed the grid underneath while the panel
+went on showing the range it opened with. The panel now re-syncs from the
+reloaded layout, and closes if the room has gone.)*
