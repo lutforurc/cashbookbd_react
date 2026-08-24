@@ -409,16 +409,6 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
     const SignatureBlock: React.FC<{ band: SignatureBand }> = ({ band }) => {
       if (!band.items.length) return null;
 
-      // Whether a line has to be kept for the name at all.
-      //
-      // Only when some column carries one. A block of plain "Receiver
-      // Signature" rules should sit tight under its rules; it is the presence
-      // of a name in ONE column that forces the others to reserve the same
-      // line, or that column's label would sit lower than its neighbours'.
-      const anyNamed = band.items.some(
-        (item) => item.field && !blank(value(item.field)),
-      );
-
       return (
         // Top-aligned, so the rules agree even where one column's label runs to
         // two lines. Bottom-aligning them let the tallest column push its own
@@ -438,13 +428,16 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                     the order the paper is read in: the signature first, then
                     the name that explains it.
 
-                    A hard space where there is no name, not an empty box. A
-                    line of real text is as tall as the page's line-height, so a
-                    column carrying a name would otherwise stand a line taller
-                    than its neighbours and drop its label out of line with
-                    theirs. */}
+                    A column with no name prints no line for one. Reserving a
+                    blank there would keep every label level with its
+                    neighbours', but it also puts a gap under rules that are
+                    waiting to be signed by hand -- and a "Receiver Signature"
+                    hanging a line below its own rule reads as a mistake on the
+                    paper. The rules stay level either way, which is the
+                    alignment that shows; the labels sit where their own column
+                    puts them. */}
                 <div className="mx-auto w-4/5 border-t border-gray-800 pt-0.5">
-                  {anyNamed ? <div>{name || ' '}</div> : null}
+                  {name ? <div>{name}</div> : null}
                   <div>{item.label}</div>
                 </div>
               </div>
