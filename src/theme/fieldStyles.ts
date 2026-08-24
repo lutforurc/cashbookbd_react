@@ -376,22 +376,31 @@ export const FIELD_HELP = 'mt-0.5 text-xs leading-snug text-gray-500 dark:text-g
 /**
  * The tooltip a field can carry.
  *
- * Look only -- no position. The bubble is drawn into the body and placed by
- * InputElement from the field's measured position on screen, so that a field
- * inside a strip that scrolls (a toolbar, say) does not earn the strip a
- * scrollbar the moment the bubble hangs past its edge.
+ * Look only -- no position. The bubble is drawn into the body and placed by its
+ * caller from the anchor's measured position on screen, so that something
+ * inside a strip that scrolls (a toolbar, a row of room tiles) does not earn
+ * that strip a scrollbar the moment the bubble hangs past its edge.
  *
- * Only InputElement offers one today, but it is described here so a second
- * component adding one does not invent a different bubble.
+ * InputElement and useTooltip both read from here, so there is one bubble in
+ * the application rather than one per component that wanted one.
+ *
+ * ⚠️ It runs AGAINST the theme, and that is deliberate: dark on a light page,
+ * light on a dark one. A bubble painted in the page's own colours reads as a
+ * panel that has always been there -- one more surface among the cards and
+ * fields it is floating over. Inverted, it reads as something the pointer
+ * summoned and that will go away again, which is what a tooltip is. It is also
+ * the convention nearly every other application follows, so it needs no
+ * learning.
+ *
+ * This is why the dark: variants below look backwards. They are not.
  */
 export const FIELD_TOOLTIP = [
-  'pointer-events-none w-max max-w-xs rounded-lg border bg-white',
-  // Deep enough to read as a drawn edge rather than the ghost of one, and the
-  // same weight in both themes -- a hairline that shows on white disappears on
-  // a dark panel, which is how a bubble ends up looking borderless there.
-  'border-slate-400 dark:border-slate-500',
-  'px-3.5 py-2.5 text-sm font-medium leading-snug text-slate-700 shadow-lg',
-  'dark:bg-slate-900 dark:text-slate-100',
+  'pointer-events-none w-max max-w-xs rounded-lg border shadow-lg',
+  'px-3.5 py-2.5 text-sm font-medium leading-snug',
+  // Light page -> dark bubble.
+  'bg-slate-800 text-slate-100 border-slate-900',
+  // Dark page -> light bubble.
+  'dark:bg-slate-50 dark:text-slate-800 dark:border-slate-300',
 ].join(' ');
 
 /**
@@ -399,11 +408,13 @@ export const FIELD_TOOLTIP = [
  *
  * A square turned on its corner, with the two edges that show given the
  * bubble's own border -- so it reads as one shape with the bubble rather than
- * a diamond parked beside it.
+ * a diamond parked beside it. It inverts with the bubble, or it would sit there
+ * as a small square of the wrong colour.
  */
 const FIELD_TOOLTIP_CARET = [
-  'absolute h-2.5 w-2.5 rotate-45 bg-white border-slate-400',
-  'dark:bg-slate-900 dark:border-slate-500',
+  'absolute h-2.5 w-2.5 rotate-45',
+  'bg-slate-800 border-slate-900',
+  'dark:bg-slate-50 dark:border-slate-300',
 ].join(' ');
 
 /** Pointing up, for a bubble beneath the field. */

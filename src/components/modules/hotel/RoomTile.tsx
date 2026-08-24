@@ -38,9 +38,13 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, on
   const total = room.beds ?? 0;
   const switchedOff = Math.max(0, total - active);
 
-  const title = [
-    room.display_name,
-    room.room_type,
+  // Two lines, and the break is where the subject changes: which room this is,
+  // then what is true of it. On one line the six facts ran to the full width of
+  // the bubble and the room's own name -- the thing being pointed at -- was just
+  // the first of them.
+  const identity = [room.display_name, room.room_type].filter(Boolean).join(' · ');
+
+  const facts = [
     room.sale_mode === 'seat'
       ? 'sold by the seat'
       : room.sale_mode === 'both'
@@ -58,7 +62,16 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, on
   // It is portalled into the body -- see useTooltip -- because this tile sits in
   // a row that scrolls, and a bubble laid out beside it would be clipped by the
   // same overflow that once shaved the top off the selection ring.
-  const { anchorProps, tooltip } = useTooltip<HTMLButtonElement>(title);
+  const { anchorProps, tooltip } = useTooltip<HTMLButtonElement>(
+    <>
+      <div>{identity}</div>
+      {/* Lighter, so the eye lands on the name first and reads the rest only
+          if it wants it. The pair looks backwards for the same reason the
+          bubble does: it runs against the page, so on a light page this line
+          is muted ON a dark bubble, and the other way round. */}
+      <div className="font-normal text-slate-400 dark:text-slate-500">{facts}</div>
+    </>,
+  );
 
   return (
     <>
