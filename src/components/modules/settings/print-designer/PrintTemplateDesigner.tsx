@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
@@ -136,7 +136,11 @@ const PrintTemplateDesigner = () => {
   // Re-measured on anything that changes either side of the sum: the panel
   // being resized, and the paper growing a band or a page. Both go through one
   // observer because both answers are read together.
-  useEffect(() => {
+  // useLayoutEffect, not useEffect: the spacer below is sized from what this
+  // measures, and measuring after the browser has painted means one frame in
+  // which the paper is inside a container of no height -- which the panel
+  // clips, so the preview flashes empty every time the panel remounts.
+  useLayoutEffect(() => {
     const shell = previewShellRef.current;
     const paper = paperRef.current;
     if (!shell || !paper) return undefined;
@@ -611,7 +615,14 @@ const PrintTemplateDesigner = () => {
               ref={previewShellRef}
               className="max-h-[75vh] overflow-auto rounded-sm border border-[rgb(var(--c-border))] bg-gray-100 p-3 dark:bg-meta-4"
             >
-              <div style={{ height: paperHeight * previewScale }}>
+              {/* Only once there is a measurement to stand on.
+                  Before that the spacer would be `height: 0`, and the panel
+                  scrolls -- so a paper standing inside a container of no height
+                  is clipped away entirely and the preview shows blank. Left
+                  unset, the untransformed height stands: too tall by the scale
+                  factor for one frame, which is a panel that is briefly too
+                  long rather than one that is briefly empty. */}
+              <div style={paperHeight ? { height: paperHeight * previewScale } : undefined}>
                 <div
                   ref={paperRef}
                   className="bg-white shadow-lg"
