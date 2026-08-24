@@ -61,7 +61,17 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, on
         relative flex w-24 shrink-0 flex-col items-start gap-1 rounded border px-2.5 py-3
         text-left transition
         ${look.className}
-        ${selected ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-boxdark' : 'hover:brightness-95 dark:hover:brightness-125'}
+        ${/*
+            The selection is drawn INSIDE the tile -- ring-inset, and no offset.
+            An outset ring is painted outside the border box, and the floor it
+            sits on scrolls sideways: `overflow-x: auto` makes the other axis
+            auto too, so the row clips top and bottom. The result was a mark on
+            three sides with the top edge shaved off.
+
+            Inside the box it cannot be clipped by anything, at any tile size,
+            and it reads as a highlighted tile rather than a halo around one.
+         */ ''}
+        ${selected ? 'ring-2 ring-inset ring-primary' : 'hover:brightness-95 dark:hover:brightness-125'}
         print:break-inside-avoid
       `}
     >

@@ -310,16 +310,30 @@ const FloorRow = ({
   dimmed?: boolean;
 }) => (
   <div className={`flex items-center gap-2 border-b border-stroke/60 py-1 last:border-b-0 dark:border-strokedark/60 ${dimmed ? 'opacity-50' : ''}`}>
+    {/* The floor marker: large and bold, and carrying no colour of its own.
+        Big enough to find the third floor on a five-storey card at a glance,
+        which the old grey whisper in the margin was not.
+
+        No background, and no accent. On this screen colour MEANS something --
+        the tiles are painted by room type, sale mode or status, and the legend
+        above explains that scheme. A filled chip in the gutter joins that
+        conversation without having anything to say: its blue sat in the same
+        family as the Standard tiles and read as though the floor were being
+        coded too. Ink alone says "label", not "data". */}
     <span
       title={title}
-      className="w-9 shrink-0 text-right text-[0.65rem] font-medium text-gray-400"
+      className="w-10 shrink-0 text-center text-sm font-bold text-gray-700 dark:text-gray-200"
     >
       {label}
     </span>
 
     {/* A floor with many rooms scrolls inside itself rather than widening the
-        card -- and rather than paging, which a plan cannot be read in. */}
-    <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto pb-0.5 print:overflow-visible print:flex-wrap">
+        card -- and rather than paging, which a plan cannot be read in.
+
+        Note that `overflow-x: auto` makes the vertical axis auto as well, so
+        this row clips anything a tile paints above or below itself. That is why
+        the selected tile marks itself on the inside -- see RoomTile. */}
+    <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto print:overflow-visible print:flex-wrap">
       {rooms.length ? (
         rooms.map((room) => (
           <RoomTile
