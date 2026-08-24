@@ -204,10 +204,24 @@ const ChallanDriverDialog: React.FC<ChallanDriverDialogProps> = ({
             icon={<FiX className="mr-2 text-lg" />}
             disabled={saving}
           />
+          {/* The blue the dialog exists for, named rather than spelled out.
+              This carried `bg-emerald-600 hover:bg-emerald-700`, and neither
+              ever reached the screen: the variant's own utilities decide a
+              conflicting background by where they sit in the stylesheet, not by
+              which class was written last on the element. So the button rested
+              at the default grey and only turned blue under the pointer, which
+              is the colour that got noticed and asked for.
+
+              `primary` is that blue at rest, and its hover is the same blue at
+              nine-tenths -- a shade lighter, which is the whole of the movement
+              a button needs. It also follows the palette, so a user who changes
+              their primary colour on the theme form changes this too, instead
+              of leaving one emerald button behind. */}
           <ButtonLoading
             onClick={submit}
             label="Print Challan"
-            className="whitespace-nowrap bg-emerald-600 hover:bg-emerald-700"
+            variant="primary"
+            className="whitespace-nowrap"
             icon={<FiTruck className="mr-2 text-lg" />}
             buttonLoading={saving}
             disabled={saving}
