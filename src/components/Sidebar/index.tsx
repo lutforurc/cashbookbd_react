@@ -2194,10 +2194,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {/* Where a branch lays out its own delivery challan.
-                              On branch.view, the same as the branch screens it
-                              belongs with -- the layout is a branch setting,
-                              like its pad heading and its paper size. */}
+                          {/* Where a branch lays out its own printed papers --
+                              the delivery challan and the sales order, and
+                              whatever is added beside them. On branch.view, the
+                              same as the branch screens it belongs with: a
+                              layout is a branch setting, like its pad heading
+                              and its paper size.
+
+                              One entry, and the paper is chosen at the top of
+                              the screen. There was briefly a second entry for
+                              the order's layout; it was taken away because this
+                              screen already offers both, and two menu rows
+                              leading to one screen is a menu that has to be read
+                              twice.
+
+                              The order's route still exists -- the switcher
+                              navigates to it, so the address bar never names one
+                              paper while the screen edits the other. It is
+                              simply not reached from here. */}
                           {hasPermission(permissions, 'branch.view') && (
                             <li style={subSlot('admin', 'print_template_designer')}>
                               <NavLink

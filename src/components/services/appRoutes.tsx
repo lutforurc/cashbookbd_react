@@ -44,7 +44,11 @@ const ROUTES = {
   calendar: '/calendar',
   profile: '/profile',
   menu_arrangement: '/settings/menu-arrangement',
+  // One route per paper the designer edits. Two entries rather than one
+  // generic screen, because somebody looking for the order's layout looks for
+  // "Order Layout" in the menu and would not open "Print Layout" to find it.
   print_template_designer: '/settings/challan-layout',
+  order_template_designer: '/settings/order-layout',
   my_devices: '/my-devices',
   my_tasks: '/my-tasks',
   formElements: '/forms/form-elements',

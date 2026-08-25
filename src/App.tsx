@@ -391,9 +391,21 @@ function App() {
                 {/* The challan layout belongs to a branch, the same as its pad
                     heading and its paper size -- so whoever may see a branch may
                     lay out its paper. */}
+                {/* One screen, two papers, a route each.
+                    ⚠️ The `key` is what makes `paper` take effect. Both routes
+                    render the same component at the same place in the tree, so
+                    React reconciles rather than remounts and useState(paper)
+                    -- which only runs on mount -- keeps whichever paper was
+                    opened first. Going from one route to the other left the
+                    heading and the fields on the previous paper. Keyed by the
+                    paper, each is a fresh mount. */}
                 <Route
                   path={routes.print_template_designer}
-                  element={<PrintTemplateDesigner />}
+                  element={<PrintTemplateDesigner key="sales_challan" paper="sales_challan" />}
+                />
+                <Route
+                  path={routes.order_template_designer}
+                  element={<PrintTemplateDesigner key="sales_order" paper="sales_order" />}
                 />
               </Route>
               {/* The sidebar offers these two on their own permissions, so the

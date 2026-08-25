@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
 import {
@@ -20,11 +21,14 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
 import { API_PRINT_TEMPLATE_URL } from '../../../services/apiRoutes';
+import routes from '../../../services/appRoutes';
 import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
 import {
   ADDABLE_BANDS,
   Band,
-  CHALLAN_PRESETS,
+  DOC_TYPES,
+  DocType,
+  presetsFor,
   InfoBand,
   NotesBand,
   PrintTemplate,
@@ -39,6 +43,7 @@ import {
 } from '../../../utils/print-designer/printTemplate';
 import {
   CheckRow,
+  DocTypeContext,
   InfoBandEditor,
   NotesBandEditor,
   NumberBox,
@@ -52,9 +57,17 @@ import {
   reorder,
   useRowDrag,
 } from './bandEditors';
-import { SAMPLE_DOCUMENT } from './sampleDocument';
+import { SAMPLE_DOCUMENT, SAMPLE_ORDER_DOCUMENT } from './sampleDocument';
 
-const DOC_TYPE = 'sales_challan';
+/**
+ * Which paper is being designed.
+ *
+ * It was a constant while there was one paper. Now it is state, and everything
+ * that used to read the constant -- the load, the save, the preset list, the
+ * sample document, the field catalogue the band editors offer -- reads this
+ * instead. A third paper is a row in DOC_TYPES and a default template, and
+ * nothing here.
+ */
 
 const BAND_NAMES: Record<string, string> = {
   header: 'Letterhead',
@@ -89,15 +102,20 @@ const isRemovable = (band: Band) => band.type !== 'header' && band.type !== 'tab
 const PAPER_WIDTH_PX = { portrait: 794, landscape: 1123 };
 
 /**
- * Where a tenant lays out their own delivery challan.
+ * Where a tenant lays out their own printed papers.
  *
  * The problem this exists for: this is multi-tenant software and no two
- * customers' challans look alike -- one wants weights and a truck fare, one
+ * customers' papers look alike -- one wants weights and a truck fare, one
  * wants every field on its own boxed line in Bengali, one wants no prices on
  * the paper at all. Answering that with a template file per customer does not
  * end. Here the paper is described as bands of fields, the tenant drags them
  * into the order they want and renames every label into their own words, and
  * one renderer draws whatever the description says.
+ *
+ * It began as the challan's screen and now edits the sales order too, chosen at
+ * the top. Adding a third paper is a catalogue and a default template in
+ * printTemplate.ts and nothing here -- which is the test of whether the idea
+ * was worth building.
  *
  * Deliberately not a free canvas. A challan's row count is not known when it is
  * designed, so boxes placed at fixed points would ride over their own footer on
@@ -109,14 +127,20 @@ const PAPER_WIDTH_PX = { portrait: 794, landscape: 1123 };
  * not a drawing of it. There is no "it looked different on paper" to answer,
  * because there is only one renderer.
  */
-const PrintTemplateDesigner = () => {
+const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const settings = useSelector((state: any) => state.settings?.data);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const sessionBranchId = settings?.branch?.id;
 
   const [branchId, setBranchId] = useState<string>('');
-  const [template, setTemplate] = useState<PrintTemplate>(() => defaultTemplate());
+  const [docType, setDocType] = useState<DocType>(paper);
+  // The preview draws a document that never happened. It has to be the right
+  // KIND of document, or an order template previews against a challan and every
+  // field reads blank.
+  const sample = docType === 'sales_order' ? SAMPLE_ORDER_DOCUMENT : SAMPLE_DOCUMENT;
+  const [template, setTemplate] = useState<PrintTemplate>(() => defaultTemplate(paper));
   const [selectedBandId, setSelectedBandId] = useState<string>('table');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -164,7 +188,7 @@ const PrintTemplateDesigner = () => {
 
   const printSample = useReactToPrint({
     contentRef: previewRef,
-    documentTitle: 'Challan Layout Sample',
+    documentTitle: 'Print Layout Sample',
   });
 
   useEffect(() => {
@@ -191,11 +215,11 @@ const PrintTemplateDesigner = () => {
     setLoading(true);
 
     httpService
-      .get(`${API_PRINT_TEMPLATE_URL}/${DOC_TYPE}`, { params: { branch_id: branchId } })
+      .get(`${API_PRINT_TEMPLATE_URL}/${docType}`, { params: { branch_id: branchId } })
       .then((response) => {
         if (!live) return;
         const layout = response?.data?.data?.data?.layout ?? null;
-        const next = layout ? normalizeTemplate(layout) : defaultTemplate();
+        const next = layout ? normalizeTemplate(layout, docType) : defaultTemplate(docType);
         setTemplate(next);
         // A branch that has never saved one starts on the default and counts as
         // unsaved, so the first Save writes a row rather than looking like a
@@ -204,7 +228,7 @@ const PrintTemplateDesigner = () => {
       })
       .catch(() => {
         if (!live) return;
-        setTemplate(defaultTemplate());
+        setTemplate(defaultTemplate(docType));
         setSaved('');
       })
       .finally(() => {
@@ -214,7 +238,7 @@ const PrintTemplateDesigner = () => {
     return () => {
       live = false;
     };
-  }, [branchId]);
+  }, [branchId, docType]);
 
   const patch = (changes: Partial<PrintTemplate>) =>
     setTemplate((current) => ({ ...current, ...changes }));
@@ -270,7 +294,7 @@ const PrintTemplateDesigner = () => {
   };
 
   const applyPreset = (presetId: string) => {
-    const preset = CHALLAN_PRESETS.find((item) => item.id === presetId);
+    const preset = presetsFor(docType).find((item) => item.id === presetId);
     if (!preset) return;
     setTemplate(preset.build());
     setSelectedBandId('table');
@@ -286,7 +310,7 @@ const PrintTemplateDesigner = () => {
     setSaving(true);
     try {
       await httpService.post(API_PRINT_TEMPLATE_URL, {
-        doc_type: DOC_TYPE,
+        doc_type: docType,
         branch_id: Number(branchId),
         layout: template,
       });
@@ -302,7 +326,7 @@ const PrintTemplateDesigner = () => {
   };
 
   const resetToDefault = () => {
-    setTemplate(defaultTemplate());
+    setTemplate(defaultTemplate(docType));
     setSelectedBandId('table');
   };
 
@@ -351,9 +375,17 @@ const PrintTemplateDesigner = () => {
   };
 
   return (
+    // Everything below is describing one paper, so the paper is announced once
+    // here rather than passed down through every band editor -- see
+    // DocTypeContext. The field pickers deep inside read it and offer that
+    // paper's catalogue.
+    <DocTypeContext.Provider value={docType}>
     <div className="p-2">
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Challan Layout" screen="print-template-designer" />
+        <HelmetTitle
+          title={`${DOC_TYPES.find((paper) => paper.id === docType)?.name ?? 'Print'} Layout`}
+          screen="print-template-designer"
+        />
       </div>
 
       {/* ------------------------- the strip ------------------------- */}
@@ -370,6 +402,43 @@ const PrintTemplateDesigner = () => {
             />
           </div>
 
+          {/* Which paper. Beside the branch rather than anywhere else, because
+              the two together are what identifies the layout being edited --
+              one row per branch per paper is exactly what the table holds. */}
+          <div>
+            <span className={SUB_LABEL}>Paper</span>
+            <Select
+              id="print_template_doc_type"
+              name="doc_type"
+              value={docType}
+              onChange={(event) => {
+                const next = event.target.value as DocType;
+                setDocType(next);
+                // Each paper has a route of its own, so the address bar has to
+                // follow -- otherwise a reload, or a link handed to somebody,
+                // comes back to the paper the menu named rather than the one on
+                // screen. replace, so Back leaves the designer rather than
+                // walking through every paper that was looked at.
+                navigate(
+                  next === 'sales_order'
+                    ? routes.order_template_designer
+                    : routes.print_template_designer,
+                  { replace: true },
+                );
+              }}
+              className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-sm text-[rgb(var(--c-text))] outline-none dark:bg-boxdark"
+            >
+              {DOC_TYPES.map((paper) => (
+                <option key={paper.id} value={paper.id}>
+                  {paper.name}
+                </option>
+              ))}
+            </Select>
+            <p className="mt-0.5 text-[0.65rem] leading-snug text-gray-500 dark:text-gray-400">
+              {DOC_TYPES.find((paper) => paper.id === docType)?.hint}
+            </p>
+          </div>
+
           <div>
             <span className={SUB_LABEL}>Start from</span>
             <Select
@@ -380,7 +449,7 @@ const PrintTemplateDesigner = () => {
               className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-sm text-[rgb(var(--c-text))] outline-none dark:bg-boxdark"
             >
               <option value="">Choose a ready layout…</option>
-              {CHALLAN_PRESETS.map((preset) => (
+              {presetsFor(docType).map((preset) => (
                 <option key={preset.id} value={preset.id}>
                   {preset.name} — {preset.hint}
                 </option>
@@ -636,7 +705,7 @@ const PrintTemplateDesigner = () => {
                     transformOrigin: 'top left',
                   }}
                 >
-                  <DocumentPrint template={template} data={SAMPLE_DOCUMENT} preview />
+                  <DocumentPrint template={template} data={sample} preview />
                 </div>
               </div>
             </div>
@@ -657,11 +726,12 @@ const PrintTemplateDesigner = () => {
               neither, which makes a test print exactly what a customer's
               challan will be. */}
           <div className="hidden">
-            <DocumentPrint ref={previewRef} template={template} data={SAMPLE_DOCUMENT} />
+            <DocumentPrint ref={previewRef} template={template} data={sample} />
           </div>
         </div>
       )}
     </div>
+    </DocTypeContext.Provider>
   );
 };
 
