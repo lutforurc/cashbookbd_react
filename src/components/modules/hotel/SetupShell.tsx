@@ -36,6 +36,13 @@ interface SetupShellProps {
   onCancel: () => void;
   onSave: () => void;
   saving: boolean;
+  /**
+   * What the Save button says, where "Save" understates it.
+   *
+   * A button that creates twelve rooms in one press should say so before it is
+   * pressed, not in the message afterwards.
+   */
+  saveLabel?: string;
   /** The fields. Laid out by the tab, because no two of them are alike. */
   form: React.ReactNode;
 
@@ -59,6 +66,7 @@ const SetupShell: React.FC<SetupShellProps> = ({
   onCancel,
   onSave,
   saving,
+  saveLabel,
   form,
   columns,
   rows,
@@ -105,7 +113,7 @@ const SetupShell: React.FC<SetupShellProps> = ({
           <ButtonLoading
             onClick={onSave}
             buttonLoading={saving}
-            label={editing ? 'Update' : 'Save'}
+            label={saveLabel ?? (editing ? 'Update' : 'Save')}
             variant="primary"
             icon={<FiSave size={16} />}
           />

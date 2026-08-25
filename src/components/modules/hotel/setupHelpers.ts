@@ -116,6 +116,35 @@ export const money = (value: number | string | null | undefined): string => {
   return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
+/**
+ * The numbers a run of rooms will be given: 301, asked for four times over,
+ * reads back 301, 302, 303, 304.
+ *
+ * ⚠️ A preview, and nothing more. The server counts the run out again from the
+ * same rule and is the one that decides; this exists so that a mistyped start
+ * is seen before it is sent rather than after twelve rooms exist.
+ *
+ * The trailing digits are what moves and anything in front of them is kept, so
+ * A-01 runs A-01..A-04. So is the width they were typed at -- which is why a
+ * run started at 01 reaches 10 and never 010.
+ *
+ * An empty list means the start is one nothing can be counted from. The caller
+ * shows that as a sentence rather than as an empty preview.
+ */
+export const runOfCodes = (start: string, count: number): string[] => {
+  const parts = /^(.*?)(\d+)$/.exec((start ?? '').trim());
+
+  if (!parts || !Number.isFinite(count) || count < 1) return [];
+
+  const [, prefix, digits] = parts;
+  const first = Number(digits);
+
+  return Array.from(
+    { length: count },
+    (_, n) => prefix + String(first + n).padStart(digits.length, '0'),
+  );
+};
+
 /** Text as a number for the API, or null where the box was left empty. */
 export const numberOrNull = (value: any): number | null => {
   if (value === null || value === undefined || String(value).trim() === '') return null;

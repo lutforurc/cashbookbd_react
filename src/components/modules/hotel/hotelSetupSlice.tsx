@@ -144,6 +144,22 @@ export const resourceSave = saveThunk<HotelResource>('resourceSave', (p) =>
 );
 export const resourceDelete = deleteThunk('resourceDelete', API_HOTEL_RESOURCE_URL);
 
+/**
+ * A floor's worth of rooms at once.
+ *
+ * The same form as resourceSave with a run of numbers in place of one, so it
+ * goes through the same saveThunk -- and answers with what it made rather than
+ * with a row, because there is no single row to hand back.
+ *
+ * It creates all of them or none: a number already taken refuses the whole run
+ * rather than quietly skipping it, so the answer never has to be reconciled
+ * against what was asked for.
+ */
+export const resourceBulkSave = saveThunk<{ created: number; codes: string[] }>(
+  'resourceBulkSave',
+  () => `${API_HOTEL_RESOURCE_URL}/bulk-store`,
+);
+
 /** The kinds a resource may be. The seat is absent -- it is made by splitting. */
 export const resourceKinds = createAsyncThunk<ResourceKind[], void, { rejectValue: string }>(
   'hotelSetup/resourceKinds',
@@ -338,6 +354,7 @@ const hotelSetupSlice = createSlice({
     save(floorSave);
     save(roomTypeSave);
     save(resourceSave);
+    save(resourceBulkSave);
     save(seatSave);
 
     builder

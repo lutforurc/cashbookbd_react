@@ -14,6 +14,11 @@
 > **Rent lives on the room, not on the room type** — the client's instruction of
 > 2026-08-24. It changes §4.2 and §6.6 and is written up as **§2.8**.
 >
+> **2026-08-25:** two small things on the setup screen — the Layout tab can hide
+> the rooms that are switched off, and a floor of rooms can be created in one go
+> rather than one form at a time. Both are **§14**. Screens 2–6 of §8.1 are still
+> where they were.
+>
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
 > working document** — start here when work resumes.
@@ -1349,3 +1354,94 @@ branch belonging to somebody else being refused rather than drawn.
 grid's own row, so repricing a bed refreshed the grid underneath while the panel
 went on showing the range it opened with. The panel now re-syncs from the
 reloaded layout, and closes if the room has gone.)*
+
+## 14. Two smaller things on the setup screen, 2026-08-25
+
+Neither is a new screen. Both came out of the same observation: the setup
+tabs describe a property one row at a time, which is right for the *first*
+ten minutes of a property and wrong for every minute after.
+
+### Hiding what is switched off
+
+A room is deactivated rather than deleted (§2.5), so a property that has been
+running a while carries rooms nobody can book. On a plan of forty they are
+noise. The Layout tab now carries a **Hide inactive** switch.
+
+What it settles, and why:
+
+- **Off by default.** A plan that quietly leaves rooms out of itself is the
+  more dangerous of the two defaults, and the paper it is printed on cannot be
+  asked what it was showing.
+- **Drawn only where there is something to hide** — the same rule the legend
+  already follows. A hotel that has retired nothing is not offered the switch.
+- **"Inactive" is read at every level, not only the room's own flag.** A live
+  room on a switched-off floor cannot be let either. A floor or a building left
+  with nothing then goes with it, so the switch never leaves an empty card
+  standing where a block used to be.
+- **The building header is recomputed, not reused.** The API's counts and rent
+  range describe the whole building; a header still reading "20 rooms · 40
+  beds" over a card drawing eighteen is simply wrong, and so is a range whose
+  bottom end is the price of a room nobody can book.
+- **The colour index is NOT recomputed.** Room-type colours stay keyed off the
+  whole property, so hiding rooms does not shift every colour along by one.
+- **The legend follows what is drawn**, so the grey "Inactive" key goes away
+  with the rooms it explained.
+- **⚠️ The count is printed in the legend row, which is not `print:hidden`.**
+  A plan carried to the front desk on paper has to say that rooms were left out
+  of it.
+
+### A run of rooms
+
+Rooms on a floor are the same room described a dozen times over: same type,
+same rent, same beds, and numbers that run 301, 302, 303. Typing that form
+twelve times is twelve chances to put the Deluxe rate on a Standard room, and
+the demo property alone is forty-four rooms.
+
+**It is the same form, not a second screen.** Ticking *Add a run of rooms*
+swaps the Name field — a run has no name to give; twelve rooms cannot all be
+the Rose Room — for a count, and changes nothing else. A second screen would
+have been the same fields twice, and the copy that drifts.
+
+- `POST hotel-setup/resources/bulk-store`. Same payload as `store` with
+  `start_code` + `count` in place of `code`, and `name` refused rather than
+  ignored.
+- **Both endpoints write through one `createRoom()`.** A second copy of it in
+  the bulk path is the copy that quietly stops creating seats the day the room
+  table gains a column — and a room without its seat rows is a room the
+  availability screen cannot see, which is the quiet half of a double booking.
+- **The trailing digits move; the width is kept.** `301` runs 301–304, `A-08`
+  runs A-08–A-11. Asking for the first number rather than for a prefix and a
+  count is what makes that possible: a run started at `01` reaches 10, never
+  010.
+- **⚠️ A clash refuses the WHOLE run and creates nothing.** Skipping the taken
+  numbers and creating the rest is the friendlier-looking choice and the wrong
+  one: asked for twelve rooms from 301 the operator would get nine, no clear
+  sign of which three are missing, and a floor that reads as complete at a
+  glance. The refusal names the numbers rather than saying "some".
+- **Capped at 100 a request**, so a finger held on the 0 key cannot write six
+  hundred rooms. A genuinely larger block is two runs.
+- The rent rules of §2.8 are unchanged and are checked once, for the run.
+- The form previews the numbers before they are sent. The server counts them
+  out again from the same rule and is the one that decides; the preview exists
+  so a mistyped start is seen before it is sent rather than after twelve rooms
+  exist.
+
+### Checked
+
+`php hotel_setup_check.php --write` — **56 assertions, all passing** (43
+before, 13 added for the run). The new ones pin down the things a bulk path
+gets quietly wrong: that every room in the run got its beds and not just the
+first, that a clash left the property exactly as it was, that `A-08` reaches
+`A-10` rather than `A-010`, and that the cap refuses without writing.
+
+The Layout change is front-end only; `tsc --noEmit` and `npm run build` are
+clean. It has not been driven in a browser.
+
+### Where it lives
+
+| | |
+|---|---|
+| The switch | `LayoutTab.tsx` — `liveBuildings`, `summarise()`, `isLive()` |
+| The run, on screen | `RoomsTab.tsx` — the `bulk` branch; `runOfCodes()` in `setupHelpers.ts` |
+| The run, on the server | `BookingResourceController@bulkStore`, with `runOfCodes()`, `codesTaken()`, `clashMessage()` and the shared `createRoom()` |
+| The button that names itself | `SetupShell.tsx` — `saveLabel` |

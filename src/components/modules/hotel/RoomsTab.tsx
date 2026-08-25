@@ -7,6 +7,7 @@ import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import ActionButtons from '../../utils/fields/ActionButton';
 import SearchInput from '../../utils/fields/SearchInput';
+import Checkbox from '../../utils/fields/Checkbox';
 
 import SetupShell from './SetupShell';
 import SeatEditor from './SeatEditor';
@@ -18,6 +19,7 @@ import {
   resourceEdit,
   resourceKinds,
   resourceList,
+  resourceBulkSave,
   resourceSave,
   roomTypeDdl,
 } from './hotelSetupSlice';
@@ -30,6 +32,7 @@ import {
   needsSeatRent,
   needsWholeRent,
   numberOrNull,
+  runOfCodes,
   useDebounced,
 } from './setupHelpers';
 
@@ -50,6 +53,12 @@ import {
  * Cutting the bed count switches the spare beds OFF; it never deletes them.
  * Raising it again revives those same numbered rows. That is what keeps a stay
  * recorded against "seat 3" in July still reading as seat 3 in December.
+ *
+ * The same form describes ONE room or a whole floor of them. Rooms on a floor
+ * differ only in their number -- same type, same rent, same beds -- so ticking
+ * "Add a run" swaps the Name field for a count and leaves everything else
+ * exactly where it was. A second screen for it would have been the same fields
+ * twice, and the copy that drifts.
  */
 const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: string }) => {
   const dispatch = useDispatch<any>();
@@ -69,6 +78,12 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
   const [buildingFilter, setBuildingFilter] = useState('');
   const [form, setForm] = useState<HotelResource | null>(null);
   const [confirmId, setConfirmId] = useState<number | null>(null);
+
+  // The run. Kept across saves rather than reset with the form, because a
+  // property is set up floor after floor and unticking the box between each
+  // one would be the click the feature was added to remove.
+  const [several, setSeveral] = useState(false);
+  const [count, setCount] = useState('4');
 
   const debouncedSearch = useDebounced(search);
 
@@ -133,6 +148,10 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
   useEffect(() => {
     if (!editingResource) return;
 
+    // A run makes one room after another; there is nothing to make when a room
+    // that already exists is opened.
+    setSeveral(false);
+
     setForm({
       ...editingResource,
       seat_count: editingResource.seats?.filter((s: any) => Number(s.status) === 1).length || 1,
@@ -161,6 +180,16 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
   );
 
   const saleMode: SaleMode = (form?.sale_mode ?? 'whole') as SaleMode;
+
+  /** Making a run, as opposed to one room. Never true over a room that exists. */
+  const bulk = several && !form?.id;
+
+  // Empty where the first number is one nothing can be counted from -- which is
+  // shown as a sentence rather than as a preview of nothing.
+  const run = useMemo(
+    () => (bulk ? runOfCodes(form?.code ?? '', Number(count)) : []),
+    [bulk, form?.code, count],
+  );
 
   const set = (field: keyof HotelResource) => (e: any) =>
     setForm((prev) => (prev ? { ...prev, [field]: e.target.value } : prev));
@@ -220,7 +249,14 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
     }
 
     if (!form.code?.trim()) {
-      toast.error('The room needs a number');
+      toast.error(bulk ? 'The run needs a number to start from' : 'The room needs a number');
+      return;
+    }
+
+    if (bulk && !run.length) {
+      toast.error(
+        'The first room number has to end in a number — 301, or A-01 — so the rest can be counted out',
+      );
       return;
     }
 
@@ -237,17 +273,30 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
       return;
     }
 
+    const described = {
+      ...form,
+      branch_id: branchId,
+      capacity: Number(form.capacity) || 1,
+      rent: numberOrNull(form.rent),
+      seat_count: isRoom ? Number(form.seat_count) || 1 : undefined,
+      seat_rent: isRoom ? numberOrNull(form.seat_rent) : undefined,
+    };
+
     try {
-      const result = await dispatch(
-        resourceSave({
-          ...form,
-          branch_id: branchId,
-          capacity: Number(form.capacity) || 1,
-          rent: numberOrNull(form.rent),
-          seat_count: isRoom ? Number(form.seat_count) || 1 : undefined,
-          seat_rent: isRoom ? numberOrNull(form.seat_rent) : undefined,
-        }),
-      ).unwrap();
+      const result = bulk
+        ? await dispatch(
+            resourceBulkSave({
+              ...described,
+              // The number is counted out by the server, and a name is one
+              // room's own -- a dozen rooms cannot all be the Rose Room. Both
+              // are left off rather than sent to be ignored.
+              code: undefined,
+              name: undefined,
+              start_code: form.code.trim(),
+              count: run.length,
+            }),
+          ).unwrap()
+        : await dispatch(resourceSave(described)).unwrap();
 
       toast.success(result.message);
 
@@ -256,8 +305,9 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
         // what the save actually did to the beds.
         dispatch(resourceEdit(form.id));
       } else {
-        // Rooms are added in a run -- 101, 102, 103. The building, floor, type
-        // and rents are kept and only the number is cleared.
+        // Rooms are added one floor after another. The building, floor, type
+        // and rents are kept and only the number is cleared -- and the number
+        // is the one thing the next floor certainly does not share.
         setForm({ ...form, id: undefined, code: '', name: '', seats: [] });
       }
 
@@ -396,6 +446,7 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
       onCancel={closeForm}
       onSave={handleSave}
       saving={saving}
+      saveLabel={bulk && run.length ? `Create ${run.length} rooms` : undefined}
       form={
         form && (
           <>
@@ -453,24 +504,57 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
               />
             </div>
 
+            {/* Drawn only while making something new: a run creates rooms one
+                after another, and a room that already exists is not a run. */}
+            {!form.id ? (
+              <div className="mt-3">
+                <Checkbox
+                  id="room_several"
+                  name="room_several"
+                  label="Add a run of rooms — a whole floor at once"
+                  checked={several}
+                  onChange={() => setSeveral((on) => !on)}
+                  labelClassName="cursor-pointer text-sm text-gray-600 dark:text-gray-300"
+                />
+              </div>
+            ) : null}
+
             <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-4">
               <InputElement
                 id="room_code"
                 name="code"
-                label="Room number"
-                placeholder="101"
+                label={bulk ? 'First room number' : 'Room number'}
+                placeholder={bulk ? '301' : '101'}
                 title="Its own number, not 'ANX-101'. Two buildings both having a 101 is ordinary — the screens build the full name from the building."
                 value={form.code}
                 onChange={set('code')}
               />
-              <InputElement
-                id="room_name"
-                name="name"
-                label="Name"
-                placeholder="Only if it has one — Rose Hall"
-                value={form.name ?? ''}
-                onChange={set('name')}
-              />
+
+              {/* One field, swapped rather than added. A run has no name to give
+                  -- twelve rooms cannot all be the Rose Room -- so the box that
+                  asked for one is exactly the space the count needs. */}
+              {bulk ? (
+                <InputElement
+                  id="room_count"
+                  name="count"
+                  label="How many rooms"
+                  type="number"
+                  min={1}
+                  max={100}
+                  title="Counted on from the first number. Nothing is created if any number in the run is already used in this building."
+                  value={count}
+                  onChange={(e: any) => setCount(e.target.value)}
+                />
+              ) : (
+                <InputElement
+                  id="room_name"
+                  name="name"
+                  label="Name"
+                  placeholder="Only if it has one — Rose Hall"
+                  value={form.name ?? ''}
+                  onChange={set('name')}
+                />
+              )}
               <InputElement
                 id="room_capacity"
                 name="capacity"
@@ -554,8 +638,34 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
 
             {isRoom && !form.id ? (
               <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
-                The beds are written when the room is saved. Reopen the room afterwards to price any
-                of them on its own.
+                The beds are written when the {bulk ? 'rooms are' : 'room is'} saved. Reopen a room
+                afterwards to price any of its beds on its own.
+              </p>
+            ) : null}
+
+            {/* Read back before it is sent. The server counts the run out again
+                and is the one that decides, but a mistyped start is far cheaper
+                to see here than as twelve rooms numbered from 3011. */}
+            {bulk ? (
+              <p className="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                {run.length ? (
+                  <>
+                    Creates <strong className="text-black dark:text-white">{run.length}</strong>{' '}
+                    {run.length === 1 ? 'room' : 'rooms'} —{' '}
+                    <span className="font-medium text-black dark:text-white">
+                      {/* Short runs are printed out; a long one shows where it
+                          starts and where it ends. The gap is drawn only where
+                          numbers really are missing from the line -- an ellipsis
+                          standing between 306 and 307 would read as a skip. */}
+                      {run.length <= 8
+                        ? run.join(', ')
+                        : `${run.slice(0, 5).join(', ')} … ${run[run.length - 1]}`}
+                    </span>
+                    . If any of those numbers is already in this building, none of them is created.
+                  </>
+                ) : (
+                  <>The first room number has to end in a number — 301, or A-01 — so the rest can be counted out.</>
+                )}
               </p>
             ) : null}
           </>
