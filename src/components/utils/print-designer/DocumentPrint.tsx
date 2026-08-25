@@ -152,6 +152,14 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       if (!key.startsWith('total_')) return null;
 
       const column = key.slice('total_'.length);
+
+      // The column has to be a real numeric line field, and that guard is doing
+      // more work than it looks. `total_order` is a sales order's own quantity
+      // -- a fact on the voucher, not a column added up -- and it begins with
+      // the same six letters. It falls through to the voucher because there is
+      // no line field called `order`. A numeric line field of that name would
+      // silently turn Order Quantity into a sum of the table; if one is ever
+      // added, rename it.
       if (!isNumericLineField(column)) return null;
 
       totals[key] = rows.reduce((sum, row) => sum + num(row?.[column]), 0);

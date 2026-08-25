@@ -822,17 +822,26 @@ const standardOrder = (): PrintTemplate => ({
       labelWidth: DEFAULT_LABEL_WIDTH,
       rowPadding: DEFAULT_ROW_PADDING,
       rowGap: DEFAULT_ROW_GAP,
+      // Read in pairs: the band lays two columns out row by row, so these are
+      // interleaved left, right, left, right. Who the order is for runs down
+      // the left; what was agreed runs down the right, in the order the sheet
+      // people already use puts them.
       items: [
         { field: 'order_for', label: 'Customer Name' },
         { field: 'product_name', label: 'Product Name' },
+
         { field: 'address', label: 'Address', hideIfEmpty: true },
-        { field: 'order_rate', label: 'Order Rate' },
+        { field: 'contract_order_qty', label: 'Contact Qty', hideIfEmpty: true },
+
         { field: 'mobile', label: 'Mobile', hideIfEmpty: true },
-        { field: 'total_order', label: 'Order Qty' },
+        { field: 'order_rate', label: 'Order Rate' },
+
         { field: 'duration', label: 'Duration', hideIfEmpty: true },
-        { field: 'order_amount', label: 'Amount' },
+        { field: 'total_order', label: 'Order Qty' },
+
         { field: 'delivery_location', label: 'Delivery Location', hideIfEmpty: true },
-        { field: 'blank', label: '' },
+        { field: 'order_amount', label: 'Amount' },
+
         { field: 'order_number', label: 'Order No' },
       ],
     }),
@@ -875,6 +884,25 @@ const standardOrder = (): PrintTemplate => ({
         { field: 'total_received', label: 'Total Received' },
         { field: 'total_due', label: 'Total Due' },
       ],
+    }),
+    // The order's own note, under the totals where the sheet has always put it.
+    //
+    // An info band rather than the notes band beneath it, and the difference
+    // matters: the notes band prints a FIXED string the tenant types once --
+    // terms and conditions, the same on every sheet -- while this prints what
+    // was written on this order. Hidden when there is none, so an order with no
+    // note does not print an empty label.
+    band<InfoBand>({
+      id: 'order-note',
+      type: 'info',
+      show: true,
+      columns: 1,
+      layout: 'inline',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [{ field: 'notes', label: 'Notes', hideIfEmpty: true }],
     }),
     band<NotesBand>({
       id: 'notes',
