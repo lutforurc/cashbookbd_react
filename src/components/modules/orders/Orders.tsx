@@ -21,7 +21,18 @@ import PrintFontInput from '../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
-import { API_ORDERS_LIST_URL, API_ORDERS_STATUS_URL, API_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
+import {
+  API_ORDERS_LIST_URL,
+  API_ORDERS_STATUS_URL,
+  API_ORDERS_TRANSACTION_URL,
+  API_PRINT_TEMPLATE_URL,
+} from '../../services/apiRoutes';
+import DocumentPrint from '../../utils/print-designer/DocumentPrint';
+import type { DocumentData } from '../../utils/print-designer/DocumentPrint';
+import {
+  PrintTemplate,
+  normalizeTemplate,
+} from '../../utils/print-designer/printTemplate';
 import httpService from '../../services/httpService';
 import { toast } from 'react-toastify';
 import { ORDER_STATUS } from '../../constant/constant/variables';
@@ -291,6 +302,53 @@ const normalizeOrderPrintPayload = (baseOrder: any, payload: any) => {
   };
 };
 
+/**
+ * The order print payload, in the shape DocumentPrint reads.
+ *
+ * Two things are worked out here rather than left to the renderer, because both
+ * need to see more than one row:
+ *
+ *   received -- the freight charge where there is one, otherwise the money
+ *               taken. One column on the paper, two columns in the data, and
+ *               the rule for choosing between them is the order's own.
+ *   due      -- RUNNING. What is still owed after this delivery and every one
+ *               above it, not what this one left unpaid. A renderer drawing one
+ *               cell cannot see the rows before it, so it could not do this.
+ *
+ * `qty`, `price` and `amount` take the challan's line keys deliberately: the
+ * renderer already separates thousands in those three and already totals them,
+ * so the order's table gets both without the renderer learning anything new.
+ */
+const orderDocumentData = (order: any): DocumentData => {
+  const rows: any[] = Array.isArray(order?.transaction_rows) ? order.transaction_rows : [];
+
+  let runningDue = 0;
+
+  const products = rows.map((row) => {
+    const qty = toNumber(row?.weight);
+    const price = toNumber(row?.rate);
+    const amount = toNumber(row?.amount) || qty * price;
+    const freight = toNumber(row?.freight_charge);
+    const received = freight > 0 ? freight : toNumber(row?.receive);
+
+    runningDue += amount - received;
+
+    return {
+      ...row,
+      qty,
+      price,
+      amount,
+      received,
+      due: runningDue,
+    };
+  });
+
+  return {
+    basic: { ...order },
+    products,
+  };
+};
+
 const Orders = () => {
   const orders = useSelector((state) => state.orders);
   const settings = useSelector((state: any) => state.settings);
@@ -326,6 +384,9 @@ const Orders = () => {
   const transactionPrintRef = useRef<HTMLDivElement>(null);
   const listPrintTimeoutRef = useRef<number | null>(null);
   const [selectedPrintOrder, setSelectedPrintOrder] = useState<any | null>(null);
+  // The branch's designed layout for this paper, or null where it has none --
+  // in which case the built-in sheet below prints, exactly as before.
+  const [orderTemplate, setOrderTemplate] = useState<PrintTemplate | null>(null);
   const [printingOrderId, setPrintingOrderId] = useState<number | string | null>(null);
 
   const ordersData = orders?.data ?? {};
@@ -753,6 +814,24 @@ const Orders = () => {
       }
 
       setSelectedPrintOrder(normalizeOrderPrintPayload(order, payload));
+
+      // The branch's own layout for this paper, if it has designed one.
+      //
+      // Fetched beside the order rather than bundled into its endpoint, which
+      // is what the challan does -- one extra request at the moment somebody
+      // asks to print, against a backend change to a payload three screens
+      // read. It is allowed to fail: a branch with no layout, or a server a
+      // patch behind, simply prints the sheet it always has.
+      try {
+        const layoutResponse = await httpService.get(`${API_PRINT_TEMPLATE_URL}/sales_order`, {
+          params: { branch_id: order?.branch_id ?? settings?.data?.branch?.id },
+        });
+        const layout = layoutResponse?.data?.data?.data?.layout ?? null;
+
+        setOrderTemplate(layout ? normalizeTemplate(layout, 'sales_order') : null);
+      } catch {
+        setOrderTemplate(null);
+      }
     } catch (error) {
       console.error(error);
       toast.error('Order print data load ÃƒÂ Ã‚Â¦Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¦Ã‚Â°ÃƒÂ Ã‚Â¦Ã‚Â¾ ÃƒÂ Ã‚Â¦Ã‚Â¯ÃƒÂ Ã‚Â¦Ã‚Â¾ÃƒÂ Ã‚Â§Ã…Â¸ÃƒÂ Ã‚Â¦Ã‚Â¨ÃƒÂ Ã‚Â¦Ã‚Â¿ÃƒÂ Ã‚Â¥Ã‚Â¤');
@@ -1376,17 +1455,42 @@ const Orders = () => {
           fontSize={Number(printFontSize)}
         />
 
-        <OrderTransactionPrint
-          ref={transactionPrintRef}
-          order={selectedPrintOrder}
-          title={
-            selectedPrintOrder
-              ? `${selectedPrintOrder.order_type === 2 ? 'Sales' : 'Purchase'} Details`
-              : 'Order Details'
-          }
-          rowsPerPage={Number(printRowsPerPage)}
-          fontSize={Number(printFontSize)}
-        />
+        {/*
+          The designed sheet where the branch has one, the built-in sheet where
+          it does not.
+
+          Deliberately not "the designer's default for everybody". The component
+          below carries rules the default template reproduces but cannot be
+          proven identical to at a glance -- a running due, a freight charge
+          standing in for money received -- and switching every branch's
+          customer-facing paper on the day this shipped is not a change anyone
+          asked for. A branch opting in by designing one is.
+
+          The old component keeps the print settings it has always had. The
+          designed sheet takes its own from the template, which is where those
+          settings live once a paper is described rather than coded.
+        */}
+        {orderTemplate && selectedPrintOrder ? (
+          <div className="hidden">
+            <DocumentPrint
+              ref={transactionPrintRef}
+              template={orderTemplate}
+              data={orderDocumentData(selectedPrintOrder)}
+            />
+          </div>
+        ) : (
+          <OrderTransactionPrint
+            ref={transactionPrintRef}
+            order={selectedPrintOrder}
+            title={
+              selectedPrintOrder
+                ? `${selectedPrintOrder.order_type === 2 ? 'Sales' : 'Purchase'} Details`
+                : 'Order Details'
+            }
+            rowsPerPage={Number(printRowsPerPage)}
+            fontSize={Number(printFontSize)}
+          />
+        )}
       </div>
 
       {selectedLinkedOrder && (
