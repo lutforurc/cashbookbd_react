@@ -1155,7 +1155,9 @@ touched.
 
 ### The five tables
 
-`database/sql/2026_08_24_hotel_room_and_seat_masters.sql` — raw SQL, per §10.
+`database/sql/2026_08_25_hotel_module.sql` — raw SQL, per §10. *(Written at the
+time as `2026_08_24_hotel_room_and_seat_masters.sql`; folded into the one file
+by §22.)*
 Idempotent: every `CREATE` is `IF NOT EXISTS`, every seed is guarded, and it has
 been run twice against the dev database to prove it.
 
@@ -1483,8 +1485,9 @@ first, because every screen above it is wrong if it is wrong, and because it
 is the one thing in the project that cannot be fixed after the fact — a hotel
 that sold the same bed twice does not get to un-sell it.
 
-`database/sql/2026_08_25_hotel_booking_engine.sql`. Requires the masters file
-of §12; safe to run twice.
+`database/sql/2026_08_25_hotel_module.sql`, Part A. Safe to run twice.
+*(Written at the time as its own `..._hotel_booking_engine.sql`; folded in by
+§22.)*
 
 ### ⚠️ The decision that changed: one row per night, not one per stay
 
@@ -1658,7 +1661,7 @@ So the screen is built to admit it rather than to hide it:
 ### Permissions
 
 `hotel.booking.view` and `hotel.booking.cancel`, in the same `Hotel` group,
-granted to nobody by `2026_08_25_hotel_booking_permissions.sql`. Running
+granted to nobody by Part C of `2026_08_25_hotel_module.sql`. Running
 `2026_08_24_hotel_permissions_grant.sql` again picks them up — it grants the
 whole group and is `INSERT IGNORE`.
 
@@ -1692,9 +1695,8 @@ screen.
 
 ### To deploy
 
-1. `2026_08_25_hotel_booking_engine.sql`, then
-   `2026_08_25_hotel_booking_permissions.sql`, then
-   `2026_08_24_hotel_permissions_grant.sql` again.
+1. `2026_08_25_hotel_module.sql`, then `2026_08_24_hotel_permissions_grant.sql`.
+   *(Two files rather than four since §22.)*
 2. `php artisan route:clear` and `php artisan permission:cache-reset`.
 3. ⚠️ The two repos must go together. The Bookings menu without the API is a
    404 on every click.
@@ -1818,8 +1820,9 @@ the booking does not hold.
 
 ### To deploy
 
-Add `2026_08_25_hotel_booking_guests.sql` to the run of §16, then
-`2026_08_24_hotel_permissions_grant.sql` again and `permission:cache-reset`. It
+The table and the permission are both in `2026_08_25_hotel_module.sql` (Parts A
+and C). Then `2026_08_24_hotel_permissions_grant.sql` and
+`permission:cache-reset`. It
 brings one more permission, **`hotel.booking.allot`** — separate because the
 booking is taken by whoever answers the telephone and the allotment by whoever
 is at the desk when the guests walk in. A site where those are one person grants
@@ -2198,3 +2201,77 @@ one screen and noon on another.
 **Early check-in and late check-out charges** (§6.2) are not built. Neither is
 the no-show moment — which these times now make answerable, and which is the
 same question §20 left hanging about how long a hold should survive.
+
+## 22. Four SQL files became one, 2026-08-25
+
+The module was installed by running four files in order:
+
+```
+2026_08_24_hotel_room_and_seat_masters.sql     tables 1–5, kinds, permissions
+2026_08_25_hotel_booking_engine.sql            tables 6–7
+2026_08_25_hotel_booking_guests.sql            table 8, one permission
+2026_08_25_hotel_booking_permissions.sql       two permissions
+```
+
+They are now **`2026_08_25_hotel_module.sql`** — one file. Running four things
+in the right order is three chances to run them in the wrong one.
+
+Nothing in it is new. The blocks were **moved rather than rewritten**, so the
+reasoning that came with each table is still attached to it.
+
+### ⚠️ The grant file is deliberately still separate
+
+`2026_08_24_hotel_permissions_grant.sql` was **not** merged in, and that is the
+whole of the safety in this design.
+
+The combined file is harmless on any of the fifteen sites that sell rice, gas
+and building materials: it adds tables nothing reads and permissions **nobody
+holds**, so no menu appears anywhere. Merging the grant would put a Hotel menu
+in front of every one of them the moment somebody ran the schema.
+
+So a site that really is a hotel runs two files, not one:
+
+```
+mysql -u USER -p DATABASE < 2026_08_25_hotel_module.sql
+mysql -u USER -p DATABASE < 2026_08_24_hotel_permissions_grant.sql
+php artisan permission:cache-reset
+php artisan route:clear
+```
+
+### How it is organised
+
+| Part | |
+|---|---|
+| **A** | The eight tables, in the order their foreign keys need |
+| **B** | The rows that ship with the system — resource kinds, business types |
+| **C** | The seven permissions, granted to nobody |
+| **D** | What to run afterwards, and how to check or undo it |
+
+The table numbers inside Part A are §8.1's, so "table 7" means the same thing
+in the file as it does in this document.
+
+### Checked
+
+Proved the way it will actually be used: the eight tables were **dropped** and
+the seven permissions **deleted**, then the one file was run against the empty
+state.
+
+- eight tables back, seven permissions back
+- five resource kinds and both business types seeded
+- **granted to nobody** — 0 rows, which is the correct state for a site that
+  is not a hotel
+- `uq_brd_seat_night = (resource_id, stay_date)` — the lock, intact
+- run a second time: no error, no change
+
+Then all six check scripts: **249 assertions, all passing.**
+
+### One thing the rebuild exposed
+
+Dropping and recreating the permissions gave them **new ids**, which left the
+existing `role_has_permissions` rows pointing at nothing — and
+`hotel_layout_check.php` failed, because unlike its siblings it does **not**
+borrow the permissions it needs; it assumes they are already granted.
+
+Re-running the grant file fixed it. Worth knowing for any real deployment that
+ever recreates a permission row: **the grants do not survive it.** Worth fixing
+in that script too, so it stands on its own like the others do.
