@@ -16,8 +16,35 @@
 >
 > **2026-08-25:** two small things on the setup screen — the Layout tab can hide
 > the rooms that are switched off, and a floor of rooms can be created in one go
-> rather than one form at a time. Both are **§14**. Screens 2–6 of §8.1 are still
-> where they were.
+> rather than one form at a time. Both are **§14**.
+>
+> **2026-08-25 (later): the booking engine has started.** `booking_master` and
+> `booking_resource_details` are built — tables 6 and 7 of §8.1 — and with them the
+> overlap lock, which is **§15**. ⚠️ **This changes §9.** The lock is a UNIQUE key
+> on one row per seat per night, not `SELECT … FOR UPDATE` over a date range; the
+> reasoning is in §15 and the risk table has been corrected. Nothing is billed and
+> nothing is posted — OPEN-12 still blocks that, and screen 5 with it.
+>
+> **2026-08-25 (later still): a hotel can now be booked from the browser.**
+> Screens 2 and 3 of §8.1 — availability and the booking form — are built as one
+> screen under a new **Hotel ▸ Bookings** menu, together with the controller
+> behind them. **§16.** Whole rooms only, and the first of the two stages of
+> §6.5 only: guests, allotment, check-in, billing and check-out are still to come.
+>
+> **2026-08-25 (last): the second stage is built too.** `booking_guests` — table 8
+> — and an allotment panel over the bookings list: names, mobiles, NIDs, gender and
+> ages, room by room, on the day the guests arrive. **§17.** That is screens 2, 3
+> and 4 of §8.1 done. Screens 5 and 6 — the bill and check-out — remain, and
+> **OPEN-12** still blocks 5.
+>
+> **2026-08-25 (really last): the booking screen draws the property.** The
+> availability picker is now the SAME elevation grid the setup screen's Layout
+> tab draws, painted by what is free rather than by room type, and a booking's
+> state is a chip in the list in those same colours. **§18.**
+>
+> **2026-08-25 (truly last): a dormitory can be booked bed by bed.** The last
+> thing §16 had deliberately left out. Rooms and beds now sell side by side, and
+> one booking may hold both. **§19.**
 >
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
@@ -390,8 +417,8 @@ Legend: 🆕 new · ✅ exists · 🔧 exists, needs change
 
 | Table | | Holds |
 |---|---|---|
-| `booking_master` | 🆕 | Guest, dates, status, `main_trx_id`. Also — per §6.4 — `booking_type`, `billed_to_party_id` (who owes, which is not always who stays), `payment_terms`, and `hold_until` for a tentative hold. Per §6.5 it also carries the **stated** counts taken at booking — rooms, adults, children — kept apart from what was actually allocated |
-| `booking_resource_details` | 🆕 | Which resource, from when to when — ⚠️ **overlap lock lives here**. For a group seat booking it holds the **counts by gender** (§6.1), names arriving later |
+| `booking_master` | ✅ | Guest, dates, status, `main_trx_id`. Also — per §6.4 — `booking_type`, `billed_to_party_id` (who owes, which is not always who stays), `payment_terms`, and `hold_until` for a tentative hold. Per §6.5 it also carries the **stated** counts taken at booking — rooms, adults, children — kept apart from what was actually allocated |
+| `booking_resource_details` | ✅ | **One row per seat per night** — ⚠️ **the overlap lock lives here**, as `UNIQUE(resource_id, stay_date)`. Not a from–to range: see §15 for why that changed. Carries the rent confirmed for that night, how it was let, and the occupant's gender for the §6.1 rule |
 | `booking_guests` | 🆕 | NID/passport + address (police guest register). May be empty at booking time and filled at check-in — a rooming list usually arrives late |
 | `booking_payments` | 🆕 | Advance, instalments, final settlement |
 | `booking_folio_details` | 🆕 | Bill lines — rent, restaurant, laundry, VAT, service charge. Each line stores **the rate, the base amount and the tax amount as applied** (§6.3); a bill is read back, never recomputed |
@@ -997,7 +1024,7 @@ Of the 47 tables, the first release needs **13**:
 | 5 | `booking_resources` | Every bookable thing — rooms and seats |
 | 6 | `booking_master` | The booking |
 | 7 | `booking_resource_details` | ⚠️ **the overlap lock lives here** |
-| 8 | `booking_guests` | Filled at allotment (§6.5) |
+| 8 | ✅ `booking_guests` | Filled at allotment (§6.5) |
 | 9 | `booking_payments` | Advance and settlement |
 | 10 | `booking_folio_details` | Bill lines |
 | 11 | `booking_tax_rates` | VAT and service charge (§6.3) |
@@ -1029,7 +1056,7 @@ assets, depreciation, dashboard. Not dropped — later, and separately.
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| **Double booking** | Guest conflict, reputational damage | DB-level `SELECT … FOR UPDATE` inside the transaction. A PHP-only check passes both concurrent requests. This is the single most important correctness requirement in the project. |
+| **Double booking** | Guest conflict, reputational damage | ⚠️ **Revised 2026-08-25 — see §15.** Was `SELECT … FOR UPDATE` over a date range; is now a **`UNIQUE(resource_id, stay_date)` key over one row per seat per night**. A PHP-only check passes both concurrent requests, and a range lock only holds if InnoDB picks the index the reasoning assumed — a unique key has no query plan to get wrong. This is still the single most important correctness requirement in the project. |
 | **Counting rooms and seats separately** | A second route to double booking, and a silent one | Seats are the only inventory (§2.5). Whole-room availability is derived from them, never stored beside them. Two counters would eventually disagree, and nothing on screen would say which was right. |
 | **Two strangers of different genders in one room** | A complaint at the desk, at best | The rule is in §6.1: the first guest of a night sets the room, the rest must match, and it is checked on every night of the range. The engine refuses the booking — a policy document cannot. **It is only as good as the gender data, which is empty today** (§6.2). |
 | **Forking the code for the resort** | Two divergent products within months | Differences via settings only. Never copy the repo. |
@@ -1445,3 +1472,576 @@ clean. It has not been driven in a browser.
 | The run, on screen | `RoomsTab.tsx` — the `bulk` branch; `runOfCodes()` in `setupHelpers.ts` |
 | The run, on the server | `BookingResourceController@bulkStore`, with `runOfCodes()`, `codesTaken()`, `clashMessage()` and the shared `createRoom()` |
 | The button that names itself | `SetupShell.tsx` — `saveLabel` |
+
+## 15. The booking engine — the lock first, 2026-08-25
+
+Tables 6 and 7 of §8.1: `booking_master` and `booking_resource_details`.
+No controller, no screen, no ledger entry. The lock was built on its own and
+first, because every screen above it is wrong if it is wrong, and because it
+is the one thing in the project that cannot be fixed after the fact — a hotel
+that sold the same bed twice does not get to un-sell it.
+
+`database/sql/2026_08_25_hotel_booking_engine.sql`. Requires the masters file
+of §12; safe to run twice.
+
+### ⚠️ The decision that changed: one row per night, not one per stay
+
+This supersedes the mitigation written in §9.
+
+| | A row per stay (§9 as written) | A row per night (built) |
+|---|---|---|
+| The lock | `SELECT … FOR UPDATE`, then insert | `UNIQUE(resource_id, stay_date)` |
+| What has to be true | InnoDB takes the gap the reasoning assumed, on the index the query actually used | The table cannot hold two of the same key |
+| How it fails | Silently, under concurrency, in production | It cannot |
+| Rows | One per booking | 100 rooms let every night ≈ 36,500 a year |
+
+A range lock is correct **and** subtle. It depends on the query plan, so a
+later `ORDER BY`, a changed index, or an optimiser that picks differently can
+narrow the gap the lock was assumed to cover. The code still reads correct.
+A single-threaded test still passes, because a single-threaded test cannot
+see it. It fails the day two clerks press Save at once.
+
+A per-night row asks nothing of the reader. Both requests find the night
+free, both insert, and the second is refused — not by a check anybody wrote,
+but because the row already exists. Between *subtle but correct* and
+*impossible to express incorrectly*, the second is the right choice for the
+risk §9 calls the most important in the project.
+
+Three things fall out of it for free, which is what makes the extra rows a
+bargain rather than a cost:
+
+- **Date-wise rent.** The rent sits on the night, so a stay spanning a rate
+  change is three honest numbers instead of one averaged one — and
+  `booking_rate_plans` can arrive later without touching a booking that
+  already exists.
+- **The gender rule of §6.1 is a per-night rule**, and now has a per-night
+  table to answer it in: "who else is in this seat's room tonight" is one
+  indexed read rather than range arithmetic in PHP.
+- **Availability** is a `GROUP BY` rather than a range intersection.
+
+### What a night is
+
+`stay_date` is **the night slept**, and the **check-out date is never one of**
+**them**. The 15th to the 18th is three rows: 15, 16, 17.
+
+That one line is why the next guest can arrive on the 18th while this one is
+still at breakfast. Backwards, it costs the hotel one sellable night per
+booking, forever, and nothing on any screen would say so.
+
+### Rules the schema keeps
+
+- **The resource is always a seat, never a room.** Letting a room whole is
+  booking all of its seats in the same booking — §2.5, unchanged. A single
+  room is one seat, so the ordinary case costs nothing.
+- **`nights` is a generated column**, never typed. Same argument as adults +
+  children + total in §6.5: a stored number that can be derived invites the
+  day it disagrees.
+- **`let_as` is frozen at booking.** A room may be converted between whole and
+  seat-wise later (§6.1); reading today's `sale_mode` would start turning
+  families away for a stay that happened in March.
+- **`rent` is frozen too** (§2.8). A bill is read back, never recomputed.
+- **⚠️ Releasing a night DELETES the row.** The only place in the hotel module
+  where something is deleted rather than deactivated. The never-delete rule
+  protects master data so an old stay still reads; this table is not master
+  data, it is the allocation — and a released night that kept its row would
+  keep its key, so a cancelled booking would go on blocking the bed. MySQL has
+  no conditional unique index. The history lives in `booking_status_logs` and
+  `booking_cancellations`, which is where history belongs.
+- **The unique key is deliberately narrow** — no `company_id` in it. A seat
+  belongs to one property already, and widening a key with a column that
+  cannot vary is how the same seat gets sold twice under two company ids.
+- **No foreign key to `main_trx_master`.** It is the oldest table in the
+  system and the hotel module does not get to constrain it.
+
+### Checked
+
+`php hotel_booking_lock_check.php --write` — **19 assertions, all passing.**
+
+It checks the *table*, not a controller, on purpose: there is no booking
+controller yet, and the whole claim of this design is that the guarantee lives
+in the schema rather than in the code above it. A test through a controller
+would be testing the code; this tests the claim.
+
+The one that matters most: **two separate database connections are both told
+the bed is free, both try to take it, and exactly one gets it** — the loser
+stopped by `uq_brd_seat_night` rather than by anything anybody wrote. That is
+the assertion the range design could not make without arguing about gap locks.
+
+Also pinned: that the check-out date is not a night; that a guest arriving on
+the 18th does not clash with one leaving on the 18th; that bed 2 is free while
+bed 1 is taken, because the seat is the lock and the room is not; that a
+cancelled booking gives its night back while staying on the books; and that a
+zero-night booking, a duplicate booking number, and deleting a bed that has
+been slept in are all refused by the schema itself.
+
+⚠️ Single-process, so the two writes are ordered rather than simultaneous.
+Both *decisions* are made on the same stale answer, which is the whole of the
+bug — but the blocking case, where the second insert waits on the first
+transaction, would need a second process and is not covered.
+
+⚠️ Like `hotel_setup_check.php`, it **wipes company 1's hotel rows**. Reseed
+the demo property afterwards with `HotelDemoPropertySeeder` (§12).
+
+### What is next, and what is not here
+
+Six of the thirteen remain: `booking_guests`, `booking_payments`,
+`booking_folio_details`, `booking_tax_rates`, `booking_status_logs`,
+`booking_cancellations`. Halls are not here either — a hall is taken for a
+slot rather than for a night, and `booking_slots` is its own table in §4.2.
+Nothing built above closes that door: a slot table joins the same booking.
+
+With the lock standing, the build order of §8.1 can run as written — screen 2
+(availability) reads these two tables and needs no new ones, and screen 3
+(the booking form) writes them. Screen 5 is still blocked by **OPEN-12**.
+
+## 16. Booking from the browser — screens 2 and 3, 2026-08-25
+
+The first thing in the module a guest could actually be booked into. Screens
+2 and 3 of §8.1, built as **one** screen rather than two, because "what is
+free" and "take it" are one action at a desk and splitting them would mean
+the clerk reads a list, navigates away, and picks rooms from memory.
+
+⚠️ **Whole rooms only**, and **the telephone-call stage of §6.5 only.**
+
+### What it is honest about
+
+The design problem on this screen is not the query. It is that **an
+availability list is always out of date** — two clerks can be looking at the
+same free room, and both are right at the moment they look. Reserving on view
+would fix it and fill the hotel with rooms held by people who wandered off.
+
+So the screen is built to admit it rather than to hide it:
+
+- The list is **thrown away** whenever a date or the building changes, and
+  after every save. A stale list of "free" rooms is the one way this screen
+  could make somebody believe a room was already theirs.
+- It says so on the page, every time — *what was free a moment ago; a room is
+  not yours until it is booked.*
+- **A clash is a sentence, not a failure.** The server answers 409 with
+  "somebody took one of those rooms while this form was open. **Nothing was
+  booked** — read the dates again and pick from what is left", and the screen
+  shows exactly that and clears the selection.
+
+### Rules the controller keeps
+
+- **The read is advisory and the write is authoritative.** `availability()`
+  never locks anything; `store()` catches the duplicate-key error from
+  `uq_brd_seat_night` and names it. It does not try to avoid it — *avoiding it
+  is the bug*, because the check both clerks would pass is the check that
+  fails.
+- **⚠️ All the rooms or none.** One clash rolls the whole booking back. A
+  partial booking would leave a clerk believing a party of ten has somewhere
+  to sleep when half of them do not.
+- **A room is free only when every one of its live beds is free for every
+  night asked for** — §2.5 derived, never counted separately. A room with some
+  beds sold reads "3 of 6 beds free — cannot be let whole" rather than
+  "taken", because those are different problems.
+- **A room sold by the bed is listed, not hidden**, and says why it cannot be
+  taken here. §2.8 forbids the alternative: a dormitory has no whole-room
+  price, and dividing or summing the bed rates to invent one is exactly what
+  that section exists to prevent.
+- **The rent goes on the first bed of each room and the rest carry zero.** So
+  a plain `SUM(rent)` over a booking is the right total, and no divided
+  per-bed figure exists anywhere to be read back later as a seat rate.
+- **A corporate booking with nobody to bill is refused.** With no credit limit
+  (§6.4), the ageing report is the only guard there is, and it cannot chase a
+  booking that names no company.
+- **A zero-night stay is refused and named** — "a booking for part of one day
+  is a hall slot, which is not built yet" — rather than called an invalid date.
+  Day use is a real thing the client asked for; it is `booking_slots`.
+- **Cancelling deletes the nights and keeps the booking**, with the reason
+  appended. Its own permission, because releasing inventory is not the same
+  act as taking a booking.
+
+### Permissions
+
+`hotel.booking.view` and `hotel.booking.cancel`, in the same `Hotel` group,
+granted to nobody by `2026_08_25_hotel_booking_permissions.sql`. Running
+`2026_08_24_hotel_permissions_grant.sql` again picks them up — it grants the
+whole group and is `INSERT IGNORE`.
+
+Bookings are gated **separately from the setup four**: a front desk books
+rooms and has no business editing the building list, and the manager who
+describes the property may never take a booking.
+
+⚠️ The sidebar gates the *group*, not the individual entries — the app has no
+per-item menu permissions. A role holding only the setup four still sees the
+Bookings link and is refused at the route. That is the existing pattern
+everywhere in the app, not something this screen introduced.
+
+### Checked
+
+`php hotel_booking_check.php --write` — **35 assertions, all passing.** The
+companion to the lock check and a different question: that one proves the
+table cannot hold a double booking, this proves the controller above it
+behaves.
+
+Among them: that the 18th is not one of the nights of a 15th–18th stay; that
+booking the same room twice is refused *and leaves no half-made booking*; that
+a five-room request containing one clash writes not a single night row; that
+`SUM(rent)` is rooms × nights × rate with nothing divided and no bed carrying
+half a room rate; that a dormitory is listed with a reason rather than hidden;
+and that cancelling returns the nights while the booking stays on the books
+with its reason.
+
+⚠️ **Not driven in a browser.** `tsc --noEmit` and `npm run build` are clean
+and the API is covered by the script, but no human has clicked through the
+screen.
+
+### To deploy
+
+1. `2026_08_25_hotel_booking_engine.sql`, then
+   `2026_08_25_hotel_booking_permissions.sql`, then
+   `2026_08_24_hotel_permissions_grant.sql` again.
+2. `php artisan route:clear` and `php artisan permission:cache-reset`.
+3. ⚠️ The two repos must go together. The Bookings menu without the API is a
+   404 on every click.
+
+### What is still missing before a guest can be checked in
+
+| | Screen | Blocked by |
+|---|---|---|
+| 4 | Allotment / check-in — guest names, NIDs, which bed | `booking_guests`; the dormitory gender rule needs §6.2 |
+| 5 | Advance and bill | **OPEN-12** |
+| 6 | Check-out | 5 |
+
+And within this screen: booking a dormitory **bed at a time**, and the payer
+picker that makes Corporate selectable. Neither needs a schema change — every
+night row is a seat row already, and `billed_to_party_id` is on the table.
+
+## 17. Allotment — the second stage, 2026-08-25
+
+Table 8 (`booking_guests`) and screen 4 of §8.1. The booking was taken on the
+telephone months ago and already holds real rooms; this is the list of people,
+filled in on the day they walk in.
+
+**One booking record opened twice, never two mechanisms** (§6.5). There is no
+second booking row and no second lock — nothing here touches
+`booking_resource_details`.
+
+⚠️ **It is a PAGE, and that was learned the hard way.** It was built as a dialog
+over the bookings list, on the reasoning that the row being checked in is the row
+the clerk was already looking at. The dialog was wrong twice over:
+
+1. The scrolling was on the backdrop rather than on the dialog, so a booking with
+   several rooms scrolled its own header — and its × — off the top of the window.
+   **It could not be closed at all.**
+2. Fixed, it was still the wrong container. A coach party is twelve rooms of five
+   guests: sixty rows of six fields. No dialog holds that, and the second attempt
+   was clipped against the sidebar before it even got there.
+
+Work that fills a screen belongs on a screen. `/hotel/check-in/{id}`, reached
+from a row, with the way back drawn on it.
+
+### ⚠️ It is piecemeal, and that shapes the whole screen
+
+Three of five rooms check in at noon and two more at nine in the evening. So:
+each room is its own small form with its own Save, the panel says at the top how
+many rooms are still outstanding, and nothing anywhere asks for the whole
+booking at once.
+
+A screen that demanded all five rooms together would be filled with invented
+names to get past it — **which is worse than an empty room, because invented
+names look like a police register.**
+
+### The two rules the desk actually meets
+
+| | Rule | Why not the obvious alternative |
+|---|---|---|
+| ID | **One identified guest per room** — name and NID for that one, optional for the rest | Requiring it of everybody stops a family of five at the desk for a rule aimed at one person; requiring it of nobody endangers the register |
+| Mobile | **One mobile per room is enough** | Twelve numbers for twelve workers will not be given, and a required field that cannot be filled gets filled with rubbish — worse than empty, because it looks like data |
+
+Neither can be a `NOT NULL`: "one per room" is not a column-level rule. Both
+are enforced in the controller, per room, and checked again in the browser so
+the message arrives while the guest is still holding their ID card out.
+
+### Other rules it keeps
+
+- **⚠️ A guest is not a customer account.** The party master is for whoever
+  money is owed by; twelve workers in a dormitory owe nothing, the company that
+  booked them does. `party_id` is a **link** to a party that already exists,
+  found by mobile or NID and confirmed by a person — **nothing creates one.**
+  Auto-creating a party per guest would bury the receivables list under
+  thousands of dead accounts inside a year, and with no credit limit (§6.4) that
+  list is the only guard there is.
+- **Counts that do not match warn, never block.** Booked for twelve, ten
+  arrived: both numbers are kept and shown side by side, and the message says
+  so. Block it and the clerk edits the booking to get past the screen, which
+  destroys the very figure the count was kept for. Amenities and food are
+  computed from what arrived.
+- **Over capacity warns too.** The desk knows about the infant and the extra
+  mattress.
+- **The first room through the door checks the booking in.** The status is about
+  the booking; the panel is what shows the remainder.
+- **Both `age` and `is_child` are stored, and they are not the same fact.** The
+  age is durable — §6.5 keeps child rate tiers possible as a rate *rule* rather
+  than a schema change, but only if the age was written down at the time.
+  `is_child` is what the clerk decided on the day, and it exists only because
+  "what counts as a child" is a setting the client has not answered. When they
+  do, `age` is what reports should be recomputed from.
+- **A correction replaces the room's list and SOFT-deletes what it replaced.**
+  These rows are the police register: a name recorded and then changed is
+  exactly what somebody may have to account for later, and a hard delete would
+  leave no trace the desk ever wrote it. Every read goes through the model, so
+  the withdrawn rows are invisible to the screen and to every count.
+
+### The gender column, and why nothing enforces it
+
+`gender` is recorded and **no rule acts on it**, for two separate reasons:
+
+1. **Whole-room lets are exempt** (§6.1) — a family is mixed inside its own
+   room — and every booking the system can currently take is a whole-room let.
+2. **§6.2 is still open.** Under "match the first", unknown is neither male nor
+   female, so one guest of unknown gender closes a dormitory for that night to
+   everybody. Switched on as the data stands, every dormitory would shut after
+   its first bed.
+
+The column is ready. The rule is not, and shipping it would turn guests away.
+
+### Checked
+
+`php hotel_booking_check.php --write` — **59 assertions, all passing** (35
+before, 24 added for allotment).
+
+Among the new ones: that a room with nobody identified is refused *and the
+message says the rest do not need one*; that one ID and one mobile between three
+guests is enough; that exactly one row is marked as the identified guest and it
+is the one who gave the NID; that **no party was created for any guest**; that
+the first room checks the booking in while the second stays outstanding; that a
+correction leaves two live rows and three withdrawn ones; that fewer people than
+booked is allowed and *says so*; and that guests cannot be filed against a room
+the booking does not hold.
+
+⚠️ **Not driven in a browser.** `tsc --noEmit` and `npm run build` are clean.
+
+### To deploy
+
+Add `2026_08_25_hotel_booking_guests.sql` to the run of §16, then
+`2026_08_24_hotel_permissions_grant.sql` again and `permission:cache-reset`. It
+brings one more permission, **`hotel.booking.allot`** — separate because the
+booking is taken by whoever answers the telephone and the allotment by whoever
+is at the desk when the guests walk in. A site where those are one person grants
+both to one role and loses nothing.
+
+### What is left
+
+| | | Blocked by |
+|---|---|---|
+| Screen 5 | Advance and bill | **OPEN-12** |
+| Screen 6 | Check-out | 5 |
+| — | Booking a dormitory bed at a time | §6.2, for the gender rule |
+| — | Corporate bookings from the screen | a payer picker |
+
+None needs a schema change.
+
+## 18. The booking screen draws the property, 2026-08-25
+
+The availability picker was a flat grid of tiles. It is now the **same**
+elevation the Layout tab draws — buildings side by side, floors stacked, bed
+pips on every room — painted by what is free.
+
+This is the thing §13 left a door open for, in its own words: *"When bookings
+exist, Availability becomes a fourth entry in that list and this component does
+not change — which is the reason the colour lives in layoutPalette.ts rather
+than in the component."* It went through that door exactly as written.
+
+### Why it is the same picture and not a similar one
+
+A clerk who has learned where room 302 sits on the floor plan should not have
+to learn a second arrangement to book it. And two screens each building their
+own grid is how the two drift — one gains a floor sort, the other never does.
+
+So there is only one grid. `PropertyGrid.tsx` was lifted out of `LayoutTab`
+unchanged, and on the server `DescribesProperty` was lifted out of
+`HotelLayoutController`. The availability read now answers with the **property**
+— building → floor → room — rather than with a list, and adds one field per
+room: what it is doing on those dates.
+
+The two screens differ in exactly two things, and neither is in the shared
+code: the **permission** they check (the desk books rooms without being able
+to edit the building list), and what the booking screen **writes into** each
+room afterwards.
+
+### The six states, and why each is its own
+
+| | Badge | Colour | |
+|---|---|---|---|
+| Free | `FREE` | teal | can be taken |
+| Held | `HELD` | amber | tentative, may expire |
+| Booked | `BKD` | rose | confirmed, nobody in it yet |
+| Checked in | `IN` | violet | guests are in the room |
+| Part-sold | `PART` | orange | some beds gone — cannot be let whole |
+| Not lettable | `—` | grey | sold by the bed, or no rent, or no beds |
+
+- **⚠️ `PART` is its own state, not a kind of booked.** A room with two of its
+  four beds sold cannot be let whole, but it is not taken either, and telling a
+  clerk "taken" would be a lie they could not act on.
+- **A fully-taken room reads as the most committed booking on it** — guests
+  asleep in it outrank a confirmed booking, which outranks a hold. A room a
+  family is in must never draw as merely "held".
+- **Grey is not red.** A dormitory that cannot be sold whole is not a fault.
+- **The badge is a word, not a letter.** On the setup screen a badge is a room
+  *type* code the reader already knows; here it is a state they are meeting for
+  the first time — and `B` for booked beside `B` for "either way" on the next
+  tab would be a trap. `FREE`, `HELD`, `BKD`, `IN`, `PART` cost three
+  characters and read without a legend.
+- **No red/green pair**, as everywhere else in this module, and every tile
+  carries its word beside its colour.
+
+### What else the screen gained
+
+- **A "Colour by" switcher**, as on the Layout tab — availability first, then
+  room type and how it is sold, so "which of the free ones is a Deluxe" is
+  answered without leaving the screen. **Not** "Status", which here would paint
+  every room the same and answer nothing.
+- **A legend built from what is drawn**, not a fixed list: a property with
+  nothing held tonight is not shown a key for "held".
+- **The building header says what is picked in it** and what that costs.
+- **A blocked tile keeps its colour** and loses only its hover. Fading it would
+  take away the shape of the floor — the reason the grid was worth drawing —
+  and a wall of grey says nothing about *why*. The tooltip still names the
+  booking holding it, which is what the clerk repeats down the telephone.
+- **The list's status is a chip in the grid's own colours** — held is amber in
+  both places, booked rose in both, checked-in violet in both — with what it is
+  *waiting for* underneath: a hold's expiry date, or "nobody checked in".
+
+### A bug found on the way
+
+`hotel_layout_check.php` had been committed with an absolute path to one
+developer's own drive (`F:/All_Database/...`), so it had never run on any other
+machine since it was written. Now `__DIR__`, like its two siblings — and with
+it, proof that lifting the tree out of the controller changed nothing.
+
+### Checked
+
+**160 assertions across four scripts, all passing:**
+
+| | |
+|---|---|
+| `hotel_setup_check.php` | 56 |
+| `hotel_layout_check.php` | 18 — unchanged by the extraction, which is the point |
+| `hotel_booking_lock_check.php` | 19 |
+| `hotel_booking_check.php` | 67 (59 before) |
+
+The new ones pin down that the answer arrives as the property rather than a
+list, that it carries the unfloored bucket and the bed counts the grid draws as
+pips, that a hold reads as `HELD` and not as booked, that the same room reads as
+`IN` once its guests are checked in, that a dormitory is greyed rather than
+coloured as taken, and that the blocked sentence now names *which* kind of taken
+it is.
+
+⚠️ **Not driven in a browser.** `tsc --noEmit` and `npm run build` are clean.
+
+### Where it lives
+
+| | |
+|---|---|
+| The grid, shared | `PropertyGrid.tsx` — lifted out of `LayoutTab` |
+| The tree, shared | `Concerns/DescribesProperty.php` — lifted out of `HotelLayoutController` |
+| The six states | `layoutPalette.ts` — `BOOKING_LOOKS`, `BOOKING_COLOUR_MODES` |
+| Which state a room is in | `BookingController@stateOf` |
+| The disabled tile | `RoomTile.tsx` — `disabled`, and the tooltip that still says why |
+
+## 19. Selling a room by the bed, 2026-08-25
+
+The one thing §16 left out on purpose. A dormitory was drawn on the grid and
+greyed, saying *"sold by the bed, and booking beds one at a time is not built
+yet"*. Now it is.
+
+| | Whole | By the bed |
+|---|---|---|
+| Picked as | a tile | beds, one at a time |
+| Rent written on the night | the ROOM's, on its first bed; the rest carry zero | each bed's OWN |
+| `let_as` | `whole` | `seat` |
+
+**⚠️ The two rents are never derived from each other, in either direction**
+(§2.8). The screen adds up what was picked; it never divides a room rate
+across beds and never sums beds into a room rate. That is the rule this whole
+feature could have broken quietly, and the check pins it: a bed booking writes
+the bed's 500 on every night row, and a room booking still writes 3,000 once.
+
+A bed with no rent of its own is **refused**, and the room's rent is not used
+as a fallback — a bed let for nothing is noticed at check-out, not before.
+
+### The state that changed meaning
+
+`part` — some beds sold — used to mean *blocked*. Now it depends on how the
+room is sold:
+
+- A room sold **only whole** with two of four beds gone: still blocked, and it
+  says *"2 of 4 beds free — cannot be let whole"*.
+- A **dormitory** with two of six gone: **not blocked at all.** Four beds are
+  still for sale, and greying it would take a floor of a hotel off the market
+  because one bed sold.
+
+Same picture, opposite answers, and only the sale mode tells them apart.
+
+### What the screen does
+
+- Clicking a room means one of two things, **and the room says which**: a room
+  with beds for sale opens them; anything else is picked as a room. A second
+  control on the tile was the alternative — a button on something the size of
+  a postage stamp that already carries three things.
+- The beds open **under** the grid, not inside a tile: six beds with prices do
+  not fit in a tile, and a popover over a scrolling floor row would be clipped
+  by the same overflow that once shaved the selection ring.
+- One room's beds at a time. Six dormitories open at once is a wall of beds
+  under a grid drawn to be glanced at.
+- The picked line names beds as **"GDN / 301 bed 2"**. "Bed 2" alone means
+  nothing across four dormitories.
+- The Save button says **"Book 1 room and 2 beds"** — what was picked, not a
+  count folded into one word.
+
+### One booking may hold both
+
+Three whole rooms and four dormitory beds — a family and their drivers — is
+**one** booking, because it is one party and one bill. `stated_rooms` counts
+the rooms *touched*: a dormitory taken four beds at a time is one room on that
+line, not four.
+
+### ⚠️ The gender rule is still not enforced
+
+Unchanged from §17, and worth repeating because this is the feature that makes
+it reachable. §6.1 says a room sold by the bed takes its gender from its first
+guest of the night and every other bed that night must match. It is **off**:
+
+- **§6.2 is open.** Under "match the first", unknown is neither male nor
+  female, so one guest of unknown gender closes a dormitory for that night to
+  everybody — and no guest carries a gender on the data as it stands.
+- Every night row carries `guest_gender`, left NULL at booking and filled at
+  allotment where §6.5 puts it anyway.
+
+The column is ready. The rule is not, and shipping it would turn guests away.
+
+### Checked
+
+**226 assertions across five scripts, all passing** (194 before):
+
+| | |
+|---|---|
+| `hotel_setup_check.php` | 56 |
+| `hotel_layout_check.php` | 18 |
+| `hotel_booking_lock_check.php` | 19 |
+| `hotel_booking_check.php` | 88 (67 before) |
+| `hotel_booking_smoke.php` | 45 (34 before) |
+
+The new ones: that six night rows are written for two beds over three nights
+and not the whole room; that each carries the bed's own rent with nothing
+divided; that the same bed twice is refused by the same unique key that guards
+a room; that a part-sold dormitory stays open while a part-sold twin does not;
+that a room sold only whole will not sell one of its beds *and says so in those
+words*; and that a booking can hold a room and two beds at once, with both
+`let_as` values in the same booking.
+
+On the demo property the grid now reads **44 free** where it read 40 free and
+4 closed — the Garden Block dormitory floor the client asked about.
+
+⚠️ **Not driven in a browser.** `tsc --noEmit --noUnusedLocals` and
+`npm run build` are clean.
+
+### Still not built
+
+Booking a bed does not yet ask **who** is in it — the gender counts §6.4 says a
+group states at booking. They arrive at allotment instead, which is where the
+names are taken anyway. Screens 5 and 6 (the bill, check-out) remain, and
+**OPEN-12** still blocks 5.
