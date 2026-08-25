@@ -5,7 +5,7 @@ import {
   API_HOTEL_BOOKING_AVAILABILITY_URL,
   API_HOTEL_BOOKING_URL,
 } from '../../../services/apiRoutes';
-import { Paged } from '../types';
+import { HotelTimes, Paged } from '../types';
 import { Allotment, Availability, Booking } from './types';
 
 /**
@@ -53,7 +53,7 @@ export const availabilityRead = createAsyncThunk<
 });
 
 export const bookingList = createAsyncThunk<
-  Paged<Booking>,
+  { bookings: Paged<Booking>; times: HotelTimes },
   Record<string, any> | undefined,
   { rejectValue: string }
 >('hotelBooking/bookingList', async (params, { rejectWithValue }) => {
@@ -174,6 +174,16 @@ interface BookingState {
   /** The booking being checked in, room by room. */
   allotment: Allotment | null;
 
+  /**
+   * When the day turns over at this property.
+   *
+   * Arrives with the LIST, not only with an availability read, because the desk
+   * is asked "what time is check-out?" far more often than it is asked to find
+   * a free room -- and usually while looking at a screen it has pressed nothing
+   * on.
+   */
+  times: HotelTimes | null;
+
   loading: boolean;
   checking: boolean;
   saving: boolean;
@@ -185,6 +195,7 @@ const initialState: BookingState = {
   availability: null,
   opened: null,
   allotment: null,
+  times: null,
 
   loading: false,
   checking: false,
@@ -224,7 +235,10 @@ const bookingSlice = createSlice({
       })
       .addCase(bookingList.fulfilled, (state, action) => {
         state.loading = false;
-        state.bookings = action.payload || { ...emptyPage };
+        state.bookings = action.payload?.bookings || { ...emptyPage };
+        // Kept when a later read does not carry them, rather than blanked: the
+        // line at the top of the screen should not flicker away on a search.
+        state.times = action.payload?.times ?? state.times;
       })
       // A list that comes back empty answers 404 with a sentence, which axios
       // throws. An empty table is the right thing to show for it.

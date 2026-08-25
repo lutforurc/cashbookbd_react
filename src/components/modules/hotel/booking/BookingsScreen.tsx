@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiSearch } from 'react-icons/fi';
 
@@ -20,7 +20,7 @@ import PropertyGrid from '../PropertyGrid';
 import { BOOKING_COLOUR_MODES, ColourMode, buildTypeIndex, lookOf } from '../layoutPalette';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { buildingDdl } from '../hotelSetupSlice';
-import { money, useDebounced } from '../setupHelpers';
+import { clockTime, money, useDebounced } from '../setupHelpers';
 import { DdlOption, LayoutBuilding, LayoutRoom, LayoutSeat } from '../types';
 import {
   availabilityRead,
@@ -194,6 +194,7 @@ const BookingsScreen = ({ user }: any) => {
   const checking = useSelector((state: any) => state.hotelBooking.checking);
   const saving = useSelector((state: any) => state.hotelBooking.saving);
   const buildingOptions = useSelector((state: any) => state.hotelSetup.buildingOptions);
+  const times = useSelector((state: any) => state.hotelBooking.times);
 
   // From the signed-in user's own property, which covers almost everybody.
   // The effect below covers the account that has none.
@@ -638,6 +639,33 @@ const BookingsScreen = ({ user }: any) => {
   return (
     <div>
       <HelmetTitle title="Bookings" />
+
+      {/* ⚠️ The two times, where the desk sits.
+
+          Not inside the New Booking form, and not only after somebody has asked
+          what is free: the commonest question on the telephone is "what time do
+          we have to be out?", and it is asked of this screen with nothing
+          pressed on it. So it rides with the LIST and is drawn before anything
+          else.
+
+          It is also the pair the night count quietly depends on -- the 26th is
+          free for the next guest only because the last one has gone by then --
+          which is the other reason it is not tucked away in a settings page. */}
+      {times ? (
+        <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
+          Check in <strong className="text-black dark:text-white">{clockTime(times.check_in)}</strong>
+          {' · '}
+          Check out <strong className="text-black dark:text-white">{clockTime(times.check_out)}</strong>
+          {times.branch_ref ? (
+            <Link
+              to={`/branch/branch-edit/${times.branch_ref}`}
+              className="ml-2 text-xs text-primary hover:underline print:hidden"
+            >
+              Change
+            </Link>
+          ) : null}
+        </p>
+      ) : null}
 
       {/* Drawn only where there is a choice. A dropdown holding one option is a
           question with one answer -- but the answer is still needed, so a lone

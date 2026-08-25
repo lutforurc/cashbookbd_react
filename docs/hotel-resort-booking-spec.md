@@ -2132,7 +2132,7 @@ guarantee. It is now a rule with a check on it.
 | **Stored** | `metas`, per branch — `hotel_check_in_time`, `hotel_check_out_time` |
 | **Edited** | Branch form, a new **Hotel Setup** step |
 | **Enforced** | `BranchController::hotelTimes()` — the only place that knows the rule |
-| **Shown** | Head of the Layout tab, with a **Change** link |
+| **Shown** | Head of the **Bookings** screen *and* the Layout tab, with a **Change** link |
 | **Default** | 12:00 out / 14:00 in |
 
 The branch form rather than a sixth tab on Hotel Setup, for five reasons:
@@ -2149,15 +2149,29 @@ The branch form rather than a sixth tab on Hotel Setup, for five reasons:
    all §4.8 settings, all branch-level, all set once. One step holds them; a
    hotel tab would become a second settings screen beside the one that exists.
 
-### But it is shown where the rooms are
+### But it is shown where the work happens
 
 The objection to the branch form is real: **the hotel manager knows the
-check-in time; the company administrator does not.** So the value is drawn at
-the head of the Layout tab — *Check in 2:00 PM · Check out 12:00 noon* — with a
-Change link into that step. It prints, too: it is the first thing a guest asks.
+check-in time; the company administrator does not.** So the value is drawn as a
+line — *Check in 2:00 PM · Check out 12:00 noon* — with a Change link into that
+step, in **two** places:
+
+- **The Bookings screen**, above everything. This is the one that matters: the
+  commonest question on the telephone is *"what time do we have to be out?"*,
+  and it is asked of a screen the desk has pressed nothing on. So the times ride
+  with the booking **list**, not only with an availability read — a clerk should
+  not have to start a booking to answer a question about one.
+- **The Layout tab**, where the rooms are drawn, and it prints with the floor
+  plan.
 
 A number that decides whether a room can be sold twice must not be invisible to
-the person looking at the rooms.
+the people whose day it governs.
+
+*(Carrying them on the list meant wrapping that response —
+`{ bookings, times }` — rather than returning the paginator bare. A second
+request for two strings would be a second request on every page turn, and
+hanging them off the paginator object would be smuggling them through something
+that means something else.)*
 
 *(The hotel screens hold a plain branch id and the branch form is reached by an
 encoded one, so the read hands over `branch_ref` as well. Without it the link
@@ -2177,7 +2191,7 @@ neither keeps what the branch had; and that the hotel screens default to the
 same pair the form does — a property nobody has asked must not read blank on
 one screen and noon on another.
 
-**251 assertions across six scripts** (233 before).
+**254 assertions across six scripts** (233 before).
 
 ### Still open
 
