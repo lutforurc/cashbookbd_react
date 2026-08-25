@@ -259,7 +259,7 @@ const LayoutTab = ({ branchId }: { branchId: number }) => {
             {times.branch_ref ? (
               <Link
                 to={`/branch/branch-edit/${times.branch_ref}`}
-                className="ml-2 text-primary hover:underline print:hidden"
+                className="ml-2 text-primary hover:underline dark:text-secondary print:hidden"
               >
                 Change
               </Link>

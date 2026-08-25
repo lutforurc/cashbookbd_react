@@ -568,6 +568,12 @@ const BookingsScreen = ({ user }: any) => {
         render: (row: any) => {
           const look = STATUS_LOOK[row.status];
 
+          // Who is actually in, next to the word for it. Counted from the guest
+          // rows, so it is the names the desk took -- not the number the
+          // telephone gave, which is the Guests column two along.
+          const arrived = Number(row.guests_count ?? 0);
+          const stated = Number(row.stated_adults ?? 0) + Number(row.stated_children ?? 0);
+
           return (
             <div className="flex flex-col items-center gap-0.5">
               <span
@@ -576,6 +582,28 @@ const BookingsScreen = ({ user }: any) => {
                 }`}
               >
                 {look?.label ?? (row.status ?? '').replace('_', ' ')}
+
+                {/* Drawn only once somebody has been named. "(0)" against a
+                    booking nobody has checked in yet says nothing the word
+                    beside it did not already say.
+
+                    ⚠️ It carries NO colour of its own. Inside the chip it
+                    inherits whatever that state is painted in -- violet on
+                    checked in, teal on checked out -- so it stays part of the
+                    chip in both themes. A fixed grey was legible on none of
+                    them: it read as a foreign mark dropped on the badge. */}
+                {arrived ? (
+                  <span
+                    className="ml-1 opacity-75"
+                    title={
+                      arrived === stated
+                        ? `${arrived} guests named at the desk — the whole party stated at booking.`
+                        : `${arrived} guests named at the desk; ${stated} were stated at booking. Booked for one number and arrived as another is normal — food and amenities go by this one.`
+                    }
+                  >
+                    ({arrived})
+                  </span>
+                ) : null}
               </span>
 
               {/* What it is WAITING for, under what it is. A hold nobody chases
@@ -587,9 +615,9 @@ const BookingsScreen = ({ user }: any) => {
                   until {String(row.hold_until).slice(0, 10)}
                 </span>
               ) : null}
-              {row.status === 'confirmed' ? (
+              {/* {row.status === 'confirmed' ? (
                 <span className="text-[0.6rem] text-gray-400">nobody checked in</span>
-              ) : null}
+              ) : null} */}
             </div>
           );
         },
@@ -612,7 +640,7 @@ const BookingsScreen = ({ user }: any) => {
               <button
                 type="button"
                 onClick={() => navigate(`${routes.hotel_booking_check_in}/${row.id}`)}
-                className="text-xs text-primary hover:underline"
+                className="text-xs font-medium text-primary hover:underline dark:text-secondary"
               >
                 {row.status === 'checked_in' ? 'Guests' : 'Check in'}
               </button>
@@ -621,7 +649,7 @@ const BookingsScreen = ({ user }: any) => {
                 <button
                   type="button"
                   onClick={() => askToCancel(row)}
-                  className="text-xs text-danger hover:underline"
+                  className="text-xs font-medium text-danger hover:underline dark:text-red-400"
                 >
                   Cancel
                 </button>
@@ -659,7 +687,7 @@ const BookingsScreen = ({ user }: any) => {
           {times.branch_ref ? (
             <Link
               to={`/branch/branch-edit/${times.branch_ref}`}
-              className="ml-2 text-xs text-primary hover:underline print:hidden"
+              className="ml-2 text-xs text-primary hover:underline dark:text-secondary print:hidden"
             >
               Change
             </Link>
@@ -876,7 +904,7 @@ const BookingsScreen = ({ user }: any) => {
                         <button
                           type="button"
                           onClick={() => setOpenBeds(null)}
-                          className="text-xs text-primary hover:underline"
+                          className="text-xs font-medium text-primary hover:underline dark:text-secondary"
                         >
                           Close
                         </button>

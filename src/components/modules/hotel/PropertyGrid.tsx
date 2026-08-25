@@ -130,7 +130,7 @@ const BuildingCard = ({
         </div>
 
         {summary ? (
-          <div className="text-xs font-medium text-primary">{summary}</div>
+          <div className="text-xs font-medium text-primary dark:text-secondary">{summary}</div>
         ) : null}
       </div>
 

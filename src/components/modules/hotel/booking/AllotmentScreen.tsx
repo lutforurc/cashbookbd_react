@@ -197,7 +197,7 @@ const AllotmentScreen = () => {
       <button
         type="button"
         onClick={back}
-        className="mb-3 flex items-center gap-1.5 text-sm text-primary hover:underline"
+        className="mb-3 flex items-center gap-1.5 text-sm text-primary hover:underline dark:text-secondary"
       >
         <FiArrowLeft size={15} /> All bookings
       </button>
@@ -273,7 +273,7 @@ const AllotmentScreen = () => {
                 <button
                   type="button"
                   onClick={() => (openRoom === room.room_id ? close() : open(room))}
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-primary hover:underline dark:text-secondary"
                 >
                   {openRoom === room.room_id
                     ? 'Close'
@@ -372,7 +372,7 @@ const AllotmentScreen = () => {
                         <button
                           type="button"
                           onClick={() => setDraft((prev) => prev.filter((_, i) => i !== index))}
-                          className="text-gray-400 hover:text-danger"
+                          className="text-gray-400 hover:text-danger dark:hover:text-red-400"
                           title="Remove this line"
                         >
                           <FiTrash2 size={14} />
@@ -386,7 +386,7 @@ const AllotmentScreen = () => {
                   <button
                     type="button"
                     onClick={() => setDraft((prev) => [...prev, blankGuest()])}
-                    className="flex items-center gap-1 text-sm text-primary hover:underline"
+                    className="flex items-center gap-1 text-sm text-primary hover:underline dark:text-secondary"
                   >
                     <FiPlus size={15} /> Another guest
                   </button>
