@@ -16,7 +16,29 @@
  * which is a separate mode and not this one.
  */
 
-export type DocType = 'sales_challan';
+/**
+ * The papers this describes.
+ *
+ * One was enough while there was one. A second is what proves the idea: a sales
+ * order is a different set of fields and a different table, and it needed no
+ * new renderer, no new designer and no new table -- only its own catalogue and
+ * its own default. Anything that still says 'sales_challan' in a signature
+ * rather than taking a DocType is a place a third paper would have to touch.
+ */
+export type DocType = 'sales_challan' | 'sales_order';
+
+export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
+  {
+    id: 'sales_challan',
+    name: 'Delivery Challan',
+    hint: 'What goes out with the goods.',
+  },
+  {
+    id: 'sales_order',
+    name: 'Sales Order',
+    hint: 'The order, and the deliveries made against it.',
+  },
+];
 
 export type Align = 'left' | 'center' | 'right';
 
@@ -264,7 +286,9 @@ export type FieldGroup =
   | 'product'
   | 'total'
   | 'manual'
-  | 'line';
+  | 'line'
+  /** The order's own terms -- what was agreed, and for how long. */
+  | 'order';
 
 export type FieldDef = {
   key: string;
@@ -283,6 +307,7 @@ export const FIELD_GROUP_NAMES: Record<FieldGroup, string> = {
   total: 'Totals',
   manual: 'Filled in by hand',
   line: 'Product line',
+  order: 'Order terms',
 };
 
 /**
@@ -357,6 +382,84 @@ export const FIELD_CATALOG: FieldDef[] = [
   { key: 'amount_words', name: 'Amount In Words', group: 'total' },
 ];
 
+/**
+ * Every value a sales order can print.
+ *
+ * The keys are the ones normalizeOrderPrintPayload() in Orders.tsx settles on,
+ * so a template naming one the server did not send prints blank rather than
+ * breaking -- the same contract the challan catalogue keeps.
+ *
+ * Party fields keep the order's own names rather than the challan's. An order
+ * is raised against `order_for`, not `party_name`, and inventing an alias so
+ * the two catalogues could share a key would put a second name on one thing --
+ * which is how a field ends up filled on one paper and blank on the other.
+ */
+export const ORDER_FIELD_CATALOG: FieldDef[] = [
+  // Who it is for
+  { key: 'order_for', name: 'Customer Name', group: 'party' },
+  { key: 'address', name: 'Address', group: 'party' },
+  { key: 'mobile', name: 'Mobile', group: 'party' },
+
+  // Which paper this is
+  { key: 'order_number', name: 'Order No', group: 'voucher' },
+  { key: 'order_date', name: 'Order Date', group: 'voucher' },
+  { key: 'branch_name', name: 'Branch', group: 'voucher' },
+  { key: 'branch_address', name: 'Branch Address', group: 'voucher' },
+  { key: 'notes', name: 'Notes', group: 'voucher' },
+  { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+
+  // What was agreed
+  { key: 'product_name', name: 'Product Name', group: 'order' },
+  { key: 'order_rate', name: 'Order Rate', group: 'order', numeric: true },
+  { key: 'total_order', name: 'Order Quantity', group: 'order', numeric: true },
+  { key: 'order_amount', name: 'Order Amount', group: 'order', numeric: true },
+  { key: 'unit', name: 'Unit', group: 'order' },
+  // The window the order runs for, already written as one string by the payload
+  // -- "19/08/2026 to 20/08/2026" -- because that is how the desk says it.
+  { key: 'duration', name: 'Duration', group: 'order' },
+  { key: 'last_delivery_date', name: 'Last Delivery Date', group: 'order' },
+  { key: 'delivery_location', name: 'Delivery Location', group: 'order' },
+  { key: 'contract_order_qty', name: 'Contract Quantity', group: 'order', numeric: true },
+  { key: 'trx_quantity', name: 'Delivered Quantity', group: 'order', numeric: true },
+
+  { key: 'blank', name: 'Blank line', group: 'manual' },
+
+  // What the deliveries add up to. total_qty and total_amount are the same two
+  // the challan has; the other two are the order's own, and exist because its
+  // table carries money received against each delivery.
+  { key: 'total_qty', name: 'Total Quantity', group: 'total', numeric: true },
+  { key: 'total_amount', name: 'Total Amount', group: 'total', numeric: true },
+  { key: 'total_received', name: 'Total Received', group: 'total', numeric: true },
+  { key: 'total_due', name: 'Total Due', group: 'total', numeric: true },
+  { key: 'line_count', name: 'Number of Deliveries', group: 'total', numeric: true },
+  { key: 'amount_words', name: 'Amount In Words', group: 'total' },
+];
+
+/**
+ * One delivery made against an order -- a row of the Sales Details table.
+ *
+ * `qty`, `price` and `amount` deliberately reuse the challan's line keys rather
+ * than being called weight/rate/value. The renderer already separates thousands
+ * in those three and already sums them, so borrowing the names means the order
+ * table gets both for nothing; a private set of names would have meant teaching
+ * the renderer the same lesson twice.
+ */
+export const ORDER_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  { key: 'vr_no', name: 'Inv. No.', group: 'line' },
+  { key: 'date', name: 'Inv. Date', group: 'line' },
+  { key: 'vehicle_no', name: 'Vehicle No.', group: 'line' },
+  { key: 'qty', name: 'Quantity', group: 'line', numeric: true },
+  { key: 'unit', name: 'Unit', group: 'line' },
+  { key: 'price', name: 'Rate', group: 'line', numeric: true },
+  { key: 'amount', name: 'Amount', group: 'line', numeric: true },
+  { key: 'received', name: 'Received', group: 'line', numeric: true },
+  // Running, not per row: what is still owed after this delivery and every one
+  // above it. Worked out where the rows are built, because a renderer drawing
+  // one cell cannot see the rows before it.
+  { key: 'due', name: 'Due Amount', group: 'line', numeric: true },
+];
+
 /** The columns a product line can offer. `sl` is generated, not a data key. */
 export const LINE_FIELDS: FieldDef[] = [
   { key: 'sl', name: 'Sl. No.', group: 'line' },
@@ -399,17 +502,45 @@ const byKey = (list: FieldDef[]) =>
     return map;
   }, {});
 
-const INFO_BY_KEY = byKey(FIELD_CATALOG);
-const LINE_BY_KEY = byKey(LINE_FIELDS);
+/**
+ * Which fields a paper may offer.
+ *
+ * The designer asks for these rather than reading FIELD_CATALOG, so that an
+ * order's field list holds no vehicle number and a challan's holds no order
+ * rate. Offering the wrong catalogue does not break anything -- an unknown key
+ * prints blank -- but it invites somebody to drag a field onto a paper that
+ * will never have a value for it, and then to wonder why.
+ */
+export const catalogFor = (docType: DocType): FieldDef[] =>
+  docType === 'sales_order' ? ORDER_FIELD_CATALOG : FIELD_CATALOG;
+
+export const lineFieldsFor = (docType: DocType): FieldDef[] =>
+  docType === 'sales_order' ? ORDER_LINE_FIELDS : LINE_FIELDS;
+
+/**
+ * Naming and numeric-ness read across every paper at once, on purpose.
+ *
+ * These three answer questions about a key that arrives on its own -- from a
+ * saved template, or from a cell the renderer is about to draw -- with no doc
+ * type beside it. Threading one through every call site would be a large change
+ * to tell `amount` from `amount`, and the keys the two papers share mean the
+ * same thing in both. Where they differ, the keys differ too.
+ */
+const ALL_INFO_BY_KEY = byKey([...FIELD_CATALOG, ...ORDER_FIELD_CATALOG]);
+const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS]);
 
 /** The catalogue's own name for a field, or the key itself if it is unknown. */
 export const fieldName = (key: string) =>
-  INFO_BY_KEY[key]?.name ?? LINE_BY_KEY[key]?.name ?? key;
+  ALL_INFO_BY_KEY[key]?.name ?? ALL_LINE_BY_KEY[key]?.name ?? key;
 
-export const lineFieldName = (key: string) => LINE_BY_KEY[key]?.name ?? key;
+export const lineFieldName = (key: string) => ALL_LINE_BY_KEY[key]?.name ?? key;
 
 export const isNumericField = (key: string) =>
-  Boolean(INFO_BY_KEY[key]?.numeric || LINE_BY_KEY[key]?.numeric);
+  Boolean(ALL_INFO_BY_KEY[key]?.numeric || ALL_LINE_BY_KEY[key]?.numeric);
+
+/** True where a line field is one the totals band can add up. */
+export const isNumericLineField = (key: string) =>
+  Boolean(ALL_LINE_BY_KEY[key]?.numeric);
 
 /* ------------------------------------------------------------------ */
 /* Presets                                                             */
@@ -658,6 +789,111 @@ const bengaliPadChallan = (): PrintTemplate => {
   return template;
 };
 
+/**
+ * The sales order as it prints today.
+ *
+ * Drawn to match the paper that OrderTransactionPrint hard-codes, so that a
+ * branch switching to the designer gets the sheet it already knows and can then
+ * change it. A new default that looked better would still be a new sheet
+ * arriving without warning on somebody's customer-facing paper.
+ *
+ * Two info columns, because the order's facts fall naturally in two halves: who
+ * it is for on the left, what was agreed on the right. Then the deliveries made
+ * against it, and what they come to.
+ */
+const standardOrder = (): PrintTemplate => ({
+  version: 1,
+  docType: 'sales_order',
+  orientation: 'portrait',
+  fontSize: 13,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'order_for', label: 'Customer Name' },
+        { field: 'product_name', label: 'Product Name' },
+        { field: 'address', label: 'Address', hideIfEmpty: true },
+        { field: 'order_rate', label: 'Order Rate' },
+        { field: 'mobile', label: 'Mobile', hideIfEmpty: true },
+        { field: 'total_order', label: 'Order Qty' },
+        { field: 'duration', label: 'Duration', hideIfEmpty: true },
+        { field: 'order_amount', label: 'Amount' },
+        { field: 'delivery_location', label: 'Delivery Location', hideIfEmpty: true },
+        { field: 'blank', label: '' },
+        { field: 'order_number', label: 'Order No' },
+      ],
+    }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Sales Details',
+      align: 'center',
+      scale: 1.1,
+      underline: false,
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      columns: [
+        { field: 'sl', label: 'Sl. No.', width: 7, align: 'center' },
+        { field: 'vr_no', label: 'Inv. No.', width: 15, align: 'center' },
+        { field: 'date', label: 'Inv. Date', width: 12, align: 'center' },
+        { field: 'vehicle_no', label: 'Vehicle No.', width: 14, align: 'center' },
+        { field: 'qty', label: 'Quantity', width: 12, align: 'right' },
+        { field: 'price', label: 'Rate', width: 8, align: 'right' },
+        { field: 'amount', label: 'Amount', width: 12, align: 'right' },
+        { field: 'received', label: 'Received', width: 10, align: 'right' },
+        { field: 'due', label: 'Due Amount', width: 12, align: 'right' },
+      ],
+    }),
+    band<TotalsBand>({
+      id: 'totals',
+      type: 'totals',
+      show: true,
+      align: 'right',
+      items: [
+        { field: 'total_qty', label: 'Total Quantity' },
+        { field: 'total_amount', label: 'Total Amount' },
+        { field: 'total_received', label: 'Total Received' },
+        { field: 'total_due', label: 'Total Due' },
+      ],
+    }),
+    band<NotesBand>({
+      id: 'notes',
+      type: 'notes',
+      show: false,
+      text: '',
+      align: 'left',
+      boxed: false,
+    }),
+    band<SignatureBand>({
+      id: 'signature',
+      type: 'signature',
+      show: true,
+      space: 60,
+      items: [{ label: 'Prepared by', field: 'created_by' }, { label: 'Authorized by' }],
+    }),
+  ],
+});
+
 export type PresetDef = {
   id: string;
   name: string;
@@ -693,10 +929,21 @@ export const CHALLAN_PRESETS: PresetDef[] = [
   },
 ];
 
-export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTemplate => {
-  void docType;
-  return standardChallan();
-};
+export const ORDER_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Order',
+    hint: 'The order above, its deliveries below, and what they come to.',
+    build: standardOrder,
+  },
+];
+
+/** The presets a paper offers. An unknown paper offers the challan's. */
+export const presetsFor = (docType: DocType): PresetDef[] =>
+  docType === 'sales_order' ? ORDER_PRESETS : CHALLAN_PRESETS;
+
+export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTemplate =>
+  docType === 'sales_order' ? standardOrder() : standardChallan();
 
 /* ------------------------------------------------------------------ */
 /* Reading one back                                                    */

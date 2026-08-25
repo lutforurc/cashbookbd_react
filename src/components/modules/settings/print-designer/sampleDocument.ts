@@ -68,3 +68,42 @@ export const SAMPLE_DOCUMENT: DocumentData = {
     },
   ],
 };
+
+/**
+ * A sales order that never happened, for the same preview.
+ *
+ * Its rows are deliveries rather than products, so `qty`, `price` and `amount`
+ * mean what one lorry-load carried, cost and came to. `due` is running, exactly
+ * as the real payload builds it -- what is still owed after this delivery and
+ * every one above it -- because a sample with a per-row due would let somebody
+ * design a column that reads quite differently once real figures arrive.
+ */
+export const SAMPLE_ORDER_DOCUMENT: DocumentData = {
+  basic: {
+    order_for: 'Sample Poultry Group',
+    address: 'Sample House, Mohakhali CA, Dhaka',
+    mobile: '01700000000',
+    order_number: 'ORD-001/PO-72',
+    order_date: dayjs().format('DD/MM/YYYY'),
+    duration: `${dayjs().subtract(1, 'day').format('DD/MM/YYYY')} to ${dayjs().format('DD/MM/YYYY')}`,
+    delivery_location: 'Sample Poultry Division, Baniarchala',
+    product_name: 'DORB',
+    order_rate: 26,
+    total_order: 100000,
+    order_amount: 2600000,
+    unit: 'Kg',
+    last_delivery_date: dayjs().format('DD/MM/YYYY'),
+    contract_order_qty: 100000,
+    trx_quantity: 95685,
+    notes: '',
+    created_by: 'Sample User',
+  },
+  products: [
+    { id: 1, vr_no: '3-260800151', date: '19/08/2026', vehicle_no: 'DMT 17-0523', qty: 15803, unit: 'Kg', price: 26, amount: 410878, received: 14500, due: 396378 },
+    { id: 2, vr_no: '3-260800152', date: '19/08/2026', vehicle_no: 'DMT 16-3336', qty: 16135, unit: 'Kg', price: 26, amount: 419510, received: 11400, due: 804488 },
+    { id: 3, vr_no: '3-260800153', date: '19/08/2026', vehicle_no: 'DMT 15-2028', qty: 15673, unit: 'Kg', price: 26, amount: 407498, received: 15100, due: 1196886 },
+    { id: 4, vr_no: '3-260800154', date: '19/08/2026', vehicle_no: 'DMT 24-7837', qty: 16313, unit: 'Kg', price: 26, amount: 424138, received: 15500, due: 1605524 },
+    { id: 5, vr_no: '3-260800155', date: '20/08/2026', vehicle_no: 'BGT 11-1323', qty: 15828, unit: 'Kg', price: 26, amount: 411528, received: 15000, due: 2002052 },
+    { id: 6, vr_no: '3-260800156', date: '20/08/2026', vehicle_no: 'DMT 12-9860', qty: 15933, unit: 'Kg', price: 26, amount: 414330, received: 14500, due: 2401882 },
+  ],
+};

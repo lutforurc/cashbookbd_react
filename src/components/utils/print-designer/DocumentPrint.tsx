@@ -23,6 +23,7 @@ import {
   TotalsBand,
   fieldName,
   isNumericField,
+  isNumericLineField,
 } from './printTemplate';
 
 /**
@@ -109,11 +110,53 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
     const lineAmount = (row: any) =>
       num(row?.amount) || num(row?.qty) * num(row?.price);
 
-    const totals = {
+    const totalReceived = rows.reduce((sum, row) => sum + num(row?.received), 0);
+    const totalAmount = rows.reduce((sum, row) => sum + lineAmount(row), 0);
+
+    const totals: Record<string, number> = {
       total_qty: rows.reduce((sum, row) => sum + num(row?.qty), 0),
       total_bag: rows.reduce((sum, row) => sum + num(row?.bag), 0),
-      total_amount: rows.reduce((sum, row) => sum + lineAmount(row), 0),
+      total_amount: totalAmount,
+      total_received: totalReceived,
+      /**
+       * ⚠️ NOT the sum of the `due` column, and this is the one total that
+       * cannot be left to the generic rule below.
+       *
+       * On a sales order the due column is a RUNNING balance -- what is still
+       * owed after this delivery and every one above it -- so adding the column
+       * up counts every earlier delivery again and again. Six deliveries owing
+       * 24,01,810 in total would foot as 84,03,048.
+       *
+       * What is owed is what was charged less what was taken, which is also
+       * what the last row of a running column already reads.
+       */
+      total_due: totalAmount - totalReceived,
       line_count: rows.length,
+    };
+
+    /**
+     * Any other total the paper asks for, summed from the column of that name.
+     *
+     * `total_received` adds up `received`, and so would `total_anything` for a
+     * numeric line field called `anything`. The four above stay written out
+     * because they are not all plain sums -- total_amount falls back to qty
+     * times rate where a row carries no amount of its own, and line_count
+     * counts rather than adds.
+     *
+     * This is what let the sales order arrive without the renderer learning
+     * about sales orders: its table carries money received and money owed, and
+     * the totals band adds them up by knowing only that they are numbers.
+     */
+    const totalOf = (key: string): number | null => {
+      if (key in totals) return totals[key];
+      if (!key.startsWith('total_')) return null;
+
+      const column = key.slice('total_'.length);
+      if (!isNumericLineField(column)) return null;
+
+      totals[key] = rows.reduce((sum, row) => sum + num(row?.[column]), 0);
+
+      return totals[key];
     };
 
     /**
@@ -201,17 +244,25 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           return blank(basic?.truck_fare)
             ? ''
             : thousandSeparator(num(basic.truck_fare)) || '0';
-        case 'total_qty':
-        case 'total_bag':
-        case 'total_amount':
-          return thousandSeparator(totals[key as keyof typeof totals]);
         case 'line_count':
           return String(totals.line_count);
         case 'amount_words':
           return totals.total_amount ? `${numberToWords(totals.total_amount)} Only` : '';
         default: {
+          // A total, if the key names one -- total_qty and total_bag as before,
+          // and total_received or any other numeric column of the table.
+          const total = totalOf(key);
+          if (total !== null) return thousandSeparator(total);
+
           const raw = basic?.[key];
-          return blank(raw) ? '' : String(raw);
+
+          if (blank(raw)) return '';
+
+          // A figure the voucher carries rather than one worked out here --
+          // an order's rate, its quantity, its amount. Separated the same way
+          // the table separates its own, or the head of the paper would print
+          // 2600000 where the table beneath it prints 26,00,000.
+          return isNumericField(key) ? thousandSeparator(num(raw)) : String(raw);
         }
       }
     };
@@ -235,7 +286,13 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           return num(row?.warranty_days) ? `${num(row.warranty_days)} days` : '';
         default: {
           const raw = row?.[key];
-          return blank(raw) ? '' : String(raw);
+
+          if (blank(raw)) return '';
+
+          // Any other column the catalogue calls a number -- an order's
+          // Received and Due among them. Listing them above by name would have
+          // meant editing this switch for every paper added.
+          return isNumericLineField(key) ? thousandSeparator(num(raw)) : String(raw);
         }
       }
     };

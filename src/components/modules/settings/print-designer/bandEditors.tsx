@@ -4,12 +4,13 @@ import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { Input, Select, Textarea } from '../../../utils/fields/FormControls';
 import {
   Align,
-  FIELD_CATALOG,
+  DocType,
+  catalogFor,
+  lineFieldsFor,
   FIELD_GROUP_NAMES,
   FieldGroup,
   InfoBand,
   InfoItem,
-  LINE_FIELDS,
   NotesBand,
   SignatureBand,
   SpacerBand,
@@ -129,12 +130,28 @@ export const NumberBox: React.FC<{
  * prints the invoice number twice -- once at the top, once beside the total --
  * is a real thing people ask for.
  */
+/**
+ * Which paper the editors are describing.
+ *
+ * A context rather than a prop threaded through every band editor. The doc type
+ * is needed in exactly two leaves -- the field picker and the signature row's
+ * field select -- and passing it down through eight editors that have no use
+ * for it would be eight signatures widened to carry one value past them.
+ *
+ * The default is the challan, so an editor rendered outside a provider behaves
+ * as it did before this existed rather than showing an empty field list.
+ */
+export const DocTypeContext = React.createContext<DocType>('sales_challan');
+
+export const useDocType = () => React.useContext(DocTypeContext);
+
 export const FieldPicker: React.FC<{
   onPick: (key: string) => void;
   source?: 'info' | 'line';
   label?: string;
 }> = ({ onPick, source = 'info', label = 'Add a field' }) => {
-  const catalog = source === 'line' ? LINE_FIELDS : FIELD_CATALOG;
+  const docType = useDocType();
+  const catalog = source === 'line' ? lineFieldsFor(docType) : catalogFor(docType);
   const groups = catalog.reduce<Record<string, typeof catalog>>((map, field) => {
     (map[field.group] ||= []).push(field);
     return map;
@@ -731,6 +748,9 @@ export const SignatureBandEditor: React.FC<{
   onChange: (band: SignatureBand) => void;
 }> = ({ band, onChange }) => {
   const { handlers, rowClass } = useRowDrag();
+  // Totals are filtered out below: a signature line names who signs, and no
+  // paper is signed by its own total.
+  const signatureFields = catalogFor(useDocType());
   const move = (from: number, to: number) =>
     onChange({ ...band, items: reorder(band.items, from, to) });
   const rowId = (index: number) => `sign-${index}`;
@@ -785,7 +805,7 @@ export const SignatureBandEditor: React.FC<{
               className="w-36 shrink-0 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1 py-0.5 text-xs outline-none dark:bg-boxdark"
             >
               <option value="">(blank line)</option>
-              {FIELD_CATALOG.filter((field) => field.group !== 'total').map((field) => (
+              {signatureFields.filter((field) => field.group !== 'total').map((field) => (
                 <option key={field.key} value={field.key}>
                   {field.name}
                 </option>
