@@ -31,6 +31,7 @@ import {
   clearBookings,
 } from './bookingSlice';
 import { BookingType } from './types';
+import formatDate from '../../../utils/utils-functions/formatDate';
 
 /**
  * Bookings -- what is free on a set of dates, and taking it.
@@ -522,8 +523,8 @@ const BookingsScreen = ({ user }: any) => {
         header: 'Stay',
         render: (row: any) => (
           <div className="text-xs">
-            <div>
-              {row.check_in_date} → {row.check_out_date}
+            <div className="font-xs text-black dark:text-white">
+              { formatDate(row.check_in_date) } → { formatDate(row.check_out_date) }
             </div>
             {/* Nights, not days. The number the database worked out from the
                 two dates, so the screen cannot disagree with the booking. */}
