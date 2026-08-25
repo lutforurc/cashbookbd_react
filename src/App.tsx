@@ -133,6 +133,8 @@ import LabourCategoryAdd from './components/modules/labour/LabourCategoryAdd';
 import LabourItemList from './components/modules/labour/LabourItemList';
 import LabourItemAdd from './components/modules/labour/LabourItemAdd';
 import HotelSetup from './components/modules/hotel/HotelSetup';
+import BookingsScreen from './components/modules/hotel/booking/BookingsScreen';
+import AllotmentScreen from './components/modules/hotel/booking/AllotmentScreen';
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
@@ -531,6 +533,42 @@ function App() {
               }
             >
               <Route path={routes.hotel_setup} element={<HotelSetup user={me} />} />
+            </Route>
+            {/*
+              Bookings are gated on their own permission, not on the setup four.
+              A front desk books rooms and has no business editing the building
+              list, and the manager who describes the property may never take a
+              booking. Two different jobs, two different permissions.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.booking.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_bookings} element={<BookingsScreen user={me} />} />
+            </Route>
+            {/*
+              Checking in is gated apart from taking a booking. Releasing and
+              recording are different jobs at different hours -- the telephone is
+              answered by one person, the desk manned by another.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.booking.allot']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route
+                path={`${routes.hotel_booking_check_in}/:id`}
+                element={<AllotmentScreen />}
+              />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
               <Route path={routes.journal} element={<Journal />} />

@@ -129,6 +129,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'real_estate_project_income_report', title: "Project Income Report" },
   ],
   'hotel': [
+    { id: 'hotel_bookings', title: "Bookings" },
     { id: 'hotel_setup', title: "Rooms & Seats Setup" },
   ],
   'products': [
@@ -1974,6 +1975,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
                             </li>
                           ))}
+
+                          {/* Bookings first. Setup is a sitting done once;
+                              this is the screen somebody opens every day. */}
+                          <li style={subSlot('hotel', 'hotel_bookings')}>
+                            <NavLink to={routes.hotel_bookings} className={subMenuLinkClass}>
+                              Bookings
+                            </NavLink>
+                          </li>
 
                           <li style={subSlot('hotel', 'hotel_setup')}>
                             <NavLink to={routes.hotel_setup} className={subMenuLinkClass}>

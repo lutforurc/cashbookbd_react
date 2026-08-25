@@ -153,6 +153,7 @@ export const MENU_PERMISSIONS = {
     'hotel.floor.view',
     'hotel.room.type.view',
     'hotel.resource.view',
+    'hotel.booking.view',
   ],
   reseller: ['reseller.dashboard.view'],
   subscription_history: ['subscription.view', 'subscription.history'],

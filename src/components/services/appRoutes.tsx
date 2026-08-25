@@ -348,6 +348,13 @@ const ROUTES = {
   // Hotel. One screen with four tabs, because buildings, floors, room types
   // and rooms are one sitting of setup rather than four errands.
   hotel_setup: '/hotel/setup',
+  // Bookings are a screen of their own, not a sixth tab: setup is done once
+  // and this is opened every day.
+  hotel_bookings: '/hotel/bookings',
+  // Checking a booking in is its own page, reached from a row with the booking
+  // id on the end. A coach party is twelve rooms of five guests, and sixty rows
+  // of six fields is not something a dialog holds.
+  hotel_booking_check_in: '/hotel/check-in',
 
   notFound: '*',
 };

@@ -864,3 +864,12 @@ export const API_HOTEL_RESOURCE_URL = `${API_BASE_URL}/hotel-setup/resources`;
 // because the resources list paginates at ten, and a floor plan cannot be read
 // ten rooms at a time.
 export const API_HOTEL_LAYOUT_URL = `${API_BASE_URL}/hotel-setup/layout`;
+
+// Bookings. The stem suffixes /store, /edit/{id}, /cancel/{id}, and — for the
+// second stage of the form, on the day the guests arrive — /allotment/{id} and
+// /allot/{id}.
+export const API_HOTEL_BOOKING_URL = `${API_BASE_URL}/hotel-setup/bookings`;
+// ⚠️ ADVISORY. What is free at the moment it is asked, and never a hold on
+// anything — two clerks can both be told the same room is free and both be
+// right. The bed is claimed by a unique key when the booking is saved.
+export const API_HOTEL_BOOKING_AVAILABILITY_URL = `${API_BASE_URL}/hotel-setup/bookings/availability`;
