@@ -13,6 +13,7 @@ import {
   HotelFloor,
   HotelResource,
   HotelRoomType,
+  HotelTimes,
   LayoutBuilding,
   Paged,
   ResourceKind,
@@ -183,7 +184,7 @@ export const resourceKinds = createAsyncThunk<ResourceKind[], void, { rejectValu
  * returns them.
  */
 export const layoutRead = createAsyncThunk<
-  { buildings: LayoutBuilding[] },
+  { buildings: LayoutBuilding[]; times?: HotelTimes },
   Record<string, any> | undefined,
   { rejectValue: string }
 >('hotelSetup/layoutRead', async (params, { rejectWithValue }) => {
@@ -251,6 +252,15 @@ interface HotelSetupState {
   /** The elevation grid's own copy -- the whole property, not a page of it. */
   layout: LayoutBuilding[];
   layoutLoading: boolean;
+  /**
+   * When the day turns over at this property.
+   *
+   * Kept beside the layout because it arrives with it, and shown ON the layout
+   * because the gap between the two times is what keeps a turnover day from
+   * selling the same room twice. A number that decides that should not live
+   * only in a settings screen nobody opens.
+   */
+  times: HotelTimes | null;
 
   editingResource: HotelResource | null;
 
@@ -272,6 +282,7 @@ const initialState: HotelSetupState = {
 
   layout: [],
   layoutLoading: false,
+  times: null,
 
   editingResource: null,
 
@@ -365,6 +376,7 @@ const hotelSetupSlice = createSlice({
       .addCase(layoutRead.fulfilled, (state, action) => {
         state.layoutLoading = false;
         state.layout = action.payload?.buildings ?? [];
+        state.times = action.payload?.times ?? null;
       })
       // A property with no buildings answers 404 with a sentence, which axios
       // throws. An empty grid is the right thing to draw for it -- the tab says

@@ -627,7 +627,9 @@ and net book value separately.
   at the end of §6.3; one of them, **OPEN-12**, blocks billing code outright.
 - **Rate card rules** — weekend, wedding season, holiday, corporate rates?
 - **Cancellation percentages** — how much is refundable at 30 / 15 / 7 days.
-- **Check-in / check-out times** and early/late charges.
+- ~~**Check-in / check-out times**~~ — ✅ **settled 2026-08-25, §21.** A per-branch
+  setting with 12:00 / 14:00 as the standing default until the client says
+  otherwise. **Early and late charges are still open** and are not built.
 - **The client's actual COA heads** — do "Room Rent Income" etc. exist, or must they
   be created?
 
@@ -2102,3 +2104,83 @@ cap from both sides: a distant stay still gets its seven days *from today*; a
 stay two days off is cut to the stay and not a day further; asking for sixty
 days over a two-day stay gets the two days; the expiry lands at `23:59:59`; and
 a confirmed booking carries no hold date at all.
+
+## 21. When the day turns over, 2026-08-25
+
+Asked plainly: *what time is check-in, what time is check-out?* The answer was
+**nowhere** — no column, no setting, no value — while the engine had been
+quietly depending on one since §15.
+
+### ⚠️ The assumption that was never written down
+
+The engine counts **nights** and never hours. A stay of the 15th to the 18th
+holds the nights of the 15th, 16th and 17th, and the 18th is sold to somebody
+else.
+
+That is right **only while check-out comes before check-in**. Set check-out to
+6pm and check-in to 2pm and the same room is let to two parties for four hours,
+every turnover day — and nothing in the engine would notice, because it is not
+looking at hours.
+
+It was an unwritten assumption holding up the module's most important
+guarantee. It is now a rule with a check on it.
+
+### Where it lives, and why there
+
+| | |
+|---|---|
+| **Stored** | `metas`, per branch — `hotel_check_in_time`, `hotel_check_out_time` |
+| **Edited** | Branch form, a new **Hotel Setup** step |
+| **Enforced** | `BranchController::hotelTimes()` — the only place that knows the rule |
+| **Shown** | Head of the Layout tab, with a **Change** link |
+| **Default** | 12:00 out / 14:00 in |
+
+The branch form rather than a sixth tab on Hotel Setup, for five reasons:
+
+1. **§2.7 — the branch IS the property.** Property policy belongs on the
+   property record.
+2. **Real Estate Setup is the exact precedent** — one module's branch-level
+   settings as a named step.
+3. **§4.8 already said so**: "VAT %, check-out time, cancellation policy →
+   existing `metas` table + `meta()` helper".
+4. The write path exists. Nothing new was built on that side.
+5. **It will not come alone.** The child-age boundary (§6.5), VAT rates (§6.3),
+   cancellation percentages, default advance % and the hold's seven days are
+   all §4.8 settings, all branch-level, all set once. One step holds them; a
+   hotel tab would become a second settings screen beside the one that exists.
+
+### But it is shown where the rooms are
+
+The objection to the branch form is real: **the hotel manager knows the
+check-in time; the company administrator does not.** So the value is drawn at
+the head of the Layout tab — *Check in 2:00 PM · Check out 12:00 noon* — with a
+Change link into that step. It prints, too: it is the first thing a guest asks.
+
+A number that decides whether a room can be sold twice must not be invisible to
+the person looking at the rooms.
+
+*(The hotel screens hold a plain branch id and the branch form is reached by an
+encoded one, so the read hands over `branch_ref` as well. Without it the link
+could only point at a branch list, which is a hint rather than a link.)*
+
+### Checked
+
+`php hotel_times_check.php --write` — **13 assertions**. It reaches the private
+rule by reflection rather than making it public for a test's sake, and puts the
+two meta rows back exactly as it found them, *including not existing*.
+
+Among them: that 6pm out with 2pm in is refused and says **"two guests at
+once"**; that the same time for both is refused; that a minute apart is allowed,
+because that is the desk's business and not the code's; that rubbish and
+impossible hours fall back rather than being written; that a form sending
+neither keeps what the branch had; and that the hotel screens default to the
+same pair the form does — a property nobody has asked must not read blank on
+one screen and noon on another.
+
+**251 assertions across six scripts** (233 before).
+
+### Still open
+
+**Early check-in and late check-out charges** (§6.2) are not built. Neither is
+the no-show moment — which these times now make answerable, and which is the
+same question §20 left hanging about how long a hold should survive.

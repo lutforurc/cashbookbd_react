@@ -153,3 +153,26 @@ export const numberOrNull = (value: any): number | null => {
 
   return Number.isNaN(number) ? null : number;
 };
+
+/**
+ * "14:00" as a person says it: 2:00 PM. Noon and midnight by name.
+ *
+ * The setting is stored as HH:MM because that is what a time input sends and
+ * what sorts correctly; nobody at a desk says "fourteen hundred". Noon is
+ * spelt out rather than shown as 12:00 PM, which reads as ambiguous to enough
+ * people to be worth the two extra words.
+ */
+export const clockTime = (value?: string | null): string => {
+  if (!value) return '—';
+
+  const [h, m] = value.split(':').map(Number);
+
+  if (Number.isNaN(h) || Number.isNaN(m)) return value;
+
+  if (h === 12 && m === 0) return '12:00 noon';
+  if (h === 0 && m === 0) return 'midnight';
+
+  const hour = h % 12 === 0 ? 12 : h % 12;
+
+  return `${hour}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+};

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { FiPrinter } from 'react-icons/fi';
 
 import Loader from '../../../common/Loader';
@@ -12,6 +13,7 @@ import RoomPanel from './RoomPanel';
 import { clearEditingResource, layoutRead, resourceEdit } from './hotelSetupSlice';
 import { LayoutBuilding, LayoutRoom } from './types';
 import { ColourMode, COLOUR_MODES, buildTypeIndex, lookOf } from './layoutPalette';
+import { clockTime } from './setupHelpers';
 
 /**
  * The property drawn as buildings, with a switcher over it.
@@ -29,7 +31,9 @@ import { ColourMode, COLOUR_MODES, buildTypeIndex, lookOf } from './layoutPalett
  */
 const LayoutTab = ({ branchId }: { branchId: number }) => {
   const dispatch = useDispatch<any>();
-  const { layout, layoutLoading, editingResource } = useSelector((state: any) => state.hotelSetup);
+  const { layout, layoutLoading, editingResource, times } = useSelector(
+    (state: any) => state.hotelSetup,
+  );
 
   const [mode, setMode] = useState<ColourMode>('room_type');
   const [hideInactive, setHideInactive] = useState(false);
@@ -237,6 +241,31 @@ const LayoutTab = ({ branchId }: { branchId: number }) => {
 
           <ButtonLoading onClick={() => window.print()} label="Print" icon={<FiPrinter size={16} />} />
         </div>
+
+      {/* ⚠️ The two times, ON the drawing rather than in a settings screen.
+
+          The gap between them is what keeps a turnover day from selling the
+          same room twice: the engine counts nights and never hours, so the
+          18th is free for the next guest only because the last one has gone by
+          then. A number that decides that must not be invisible to the person
+          looking at the rooms.
+
+          Printed too -- it is the first thing a guest asks at the desk. */}
+        {times ? (
+          <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+            Check in <strong className="text-black dark:text-white">{clockTime(times.check_in)}</strong>
+            {' · '}
+            Check out <strong className="text-black dark:text-white">{clockTime(times.check_out)}</strong>
+            {times.branch_ref ? (
+              <Link
+                to={`/branch/branch-edit/${times.branch_ref}`}
+                className="ml-2 text-primary hover:underline print:hidden"
+              >
+                Change
+              </Link>
+            ) : null}
+          </p>
+        ) : null}
 
         {/* The key. It carries the badge as well as the colour, because the
             colour is the half that does not survive a grey printer. */}

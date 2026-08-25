@@ -233,6 +233,22 @@ export interface LayoutFloor {
   rooms: LayoutRoom[];
 }
 
+/**
+ * When the day turns over at a property.
+ *
+ * ⚠️ check_out is always earlier than check_in, and the booking engine depends
+ * on it: a stay of the 15th to the 18th holds three nights and leaves the 18th
+ * for the next guest, which is honest only while the last one has gone before
+ * the next arrives. The branch form refuses to save them the other way round.
+ */
+export interface HotelTimes {
+  /** HH:MM. */
+  check_in: string;
+  check_out: string;
+  /** The branch as its own edit URL spells it, for the Change link. */
+  branch_ref?: string;
+}
+
 export interface LayoutBuilding {
   id: number;
   name: string;

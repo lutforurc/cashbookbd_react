@@ -108,6 +108,9 @@ interface branchItem {
   need_relation_info: boolean;
   need_customer_mother_name: boolean;
   need_customer_sex: boolean;
+  /** When the day turns over at this property. HH:MM. */
+  hotel_check_in_time: string;
+  hotel_check_out_time: string;
   salutation_male: string;
   salutation_female: string;
   salutation_other: string;
@@ -291,6 +294,7 @@ const AddBranch = () => {
     'Customer Setup',
     'Product Setup',
     'Real Estate Setup',
+    'Hotel Setup',
     'Feature Controls',
     ...(isPlatformOwner ? ['SaaS Setup'] : []),
   ];
@@ -372,6 +376,11 @@ const AddBranch = () => {
     need_relation_info: false,
     need_customer_mother_name: false,
     need_customer_sex: false,
+    // Noon out and two in -- what most of the trade runs on, with two hours for
+    // housekeeping between. The server holds the same pair, so a branch nobody
+    // has asked reads the same here as it does on the hotel screens.
+    hotel_check_in_time: '14:00',
+    hotel_check_out_time: '12:00',
     salutation_male: '',
     salutation_female: '',
     salutation_other: '',
@@ -620,6 +629,8 @@ const AddBranch = () => {
         need_relation_info: toBooleanFlag(b.need_relation_info),
         need_customer_mother_name: toBooleanFlag(b.need_customer_mother_name),
         need_customer_sex: toBooleanFlag(b.need_customer_sex),
+        hotel_check_in_time: b.hotel_check_in_time || '14:00',
+        hotel_check_out_time: b.hotel_check_out_time || '12:00',
         salutation_male: b.salutation_male ? String(b.salutation_male) : '',
         salutation_female: b.salutation_female ? String(b.salutation_female) : '',
         salutation_other: b.salutation_other ? String(b.salutation_other) : '',
@@ -868,6 +879,8 @@ const AddBranch = () => {
                   {currentStep === stepIndex('Customer Setup') && 'Customer and supplier related options for this branch.'}
                   {currentStep === stepIndex('Product Setup') && 'How products are ordered and priced in this branch.'}
                   {currentStep === stepIndex('Real Estate Setup') && 'Real estate options for this branch.'}
+                  {currentStep === stepIndex('Hotel Setup') &&
+                    'When the day turns over at this property, for a branch that is a hotel.'}
                   {currentStep === stepIndex('Feature Controls') && 'Operational controls, sharing options, and SMS preferences.'}
                   {currentStep === SAAS_STEP &&
                     'Platform settings. Only this account sees them.'}
@@ -1667,6 +1680,71 @@ const AddBranch = () => {
                     </div>
                   </div>
 
+                </>
+              )}
+
+              {currentStep === stepIndex('Hotel Setup') && (
+                <>
+                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Check-in and check-out
+                  </h4>
+
+                  {/* ⚠️ These two are not decoration, and the note says so.
+
+                      The booking engine counts NIGHTS and never hours: a stay of
+                      the 15th to the 18th holds three nights and leaves the 18th
+                      free for the next guest. That is true only while check-out
+                      comes BEFORE check-in on the same day. Reversed, the same
+                      room is let to two parties for the hours between, every
+                      turnover day, and nothing in the engine would notice. The
+                      server refuses to save them that way round. */}
+                  <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
+                    <div>
+                      <InputElement
+                        id="hotel_check_out_time"
+                        name="hotel_check_out_time"
+                        type="time"
+                        label="Check-out time"
+                        value={formData.hotel_check_out_time || ''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        When the room has to be given up. Noon almost everywhere.
+                      </p>
+                    </div>
+
+                    <div>
+                      <InputElement
+                        id="hotel_check_in_time"
+                        name="hotel_check_in_time"
+                        type="time"
+                        label="Check-in time"
+                        value={formData.hotel_check_in_time || ''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        When the next guest may take it. Two hours later leaves
+                        housekeeping a window.
+                      </p>
+                    </div>
+
+                    <div className="flex items-end pb-1">
+                      <p className="text-xs leading-snug text-gray-500 dark:text-gray-400">
+                        <strong className="text-black dark:text-white">
+                          Check-out has to be earlier than check-in.
+                        </strong>{' '}
+                        The night of the 17th is the last one a guest leaving on
+                        the 18th pays for, and the 18th is sold to somebody else
+                        — which only works if the first one has gone before the
+                        second arrives.
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                    Only a branch that is a hotel uses these. Every other branch
+                    can leave them alone.
+                  </p>
                 </>
               )}
 
