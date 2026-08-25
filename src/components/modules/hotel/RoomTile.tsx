@@ -25,13 +25,23 @@ interface RoomTileProps {
   mode: ColourMode;
   typeIndex: Record<number, number>;
   selected: boolean;
+  /**
+   * Cannot be picked. Only the booking screen sets it -- on the setup screen
+   * a room that cannot be let is still worth opening.
+   *
+   * The tile is still drawn in its own colour and still carries its tooltip:
+   * a greyed-out shape says "no" without saying why, and why is the whole of
+   * what the clerk needs -- "sold by the bed" and "taken until Friday" want
+   * different things done about them.
+   */
+  disabled?: boolean;
   onSelect: (room: LayoutRoom) => void;
 }
 
 /** Above this many, the pips stop being countable and a number reads better. */
 const MAX_PIPS = 8;
 
-const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, onSelect }) => {
+const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, disabled, onSelect }) => {
   const look = lookOf(room, mode, typeIndex);
 
   const active = room.active_beds ?? 0;
@@ -45,6 +55,11 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, on
   const identity = [room.display_name, room.room_type].filter(Boolean).join(' · ');
 
   const facts = [
+    // What is true of it on the dates being looked at, first, because on the
+    // booking screen it is the only line anybody reads. Undefined on the setup
+    // screen, where it simply does not appear.
+    room.blocked_reason,
+    room.taken_by,
     room.sale_mode === 'seat'
       ? 'sold by the seat'
       : room.sale_mode === 'both'
@@ -77,6 +92,7 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, on
     <>
     <button
       type="button"
+      disabled={disabled}
       onClick={() => onSelect(room)}
       {...anchorProps}
       className={`
@@ -93,7 +109,20 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, on
             Inside the box it cannot be clipped by anything, at any tile size,
             and it reads as a highlighted tile rather than a halo around one.
          */ ''}
-        ${selected ? 'ring-2 ring-inset ring-primary' : 'hover:brightness-95 dark:hover:brightness-125'}
+        ${/*
+            Disabled keeps its colour and loses only its hover and its cursor.
+            Fading it would take away the one thing that made the grid worth
+            drawing -- the shape of the floor -- and a wall of grey tiles says
+            nothing about WHY any of them cannot be taken.
+         */ ''}
+        ${disabled ? 'cursor-not-allowed' : ''}
+        ${
+          selected
+            ? 'ring-2 ring-inset ring-primary'
+            : disabled
+              ? ''
+              : 'hover:brightness-95 dark:hover:brightness-125'
+        }
         print:break-inside-avoid
       `}
     >

@@ -160,6 +160,19 @@ export interface Paged<T> {
  * neither does a room whose floor has not been said yet — they are shown in a
  * group of their own rather than under a floor invented to hold them.
  */
+/**
+ * What a room is doing on the dates being looked at.
+ *
+ * Only ever set by the availability read — the setup screen leaves it
+ * undefined, and a room with no state is simply a room, which is what the
+ * Layout tab draws.
+ *
+ * `part` is its own state rather than a kind of `booked` on purpose: a room
+ * with two of its four beds sold cannot be let whole, but it is not taken
+ * either, and telling a clerk "taken" would be a lie they could not act on.
+ */
+export type RoomState = 'free' | 'held' | 'booked' | 'checked_in' | 'part' | 'closed';
+
 export interface LayoutRoom {
   id: number;
   code: string;
@@ -178,8 +191,38 @@ export interface LayoutRoom {
   beds: number;
   /** Beds still in use. The rest are switched off and kept, never deleted. */
   active_beds: number;
+
+  /* ---- Only on the availability read. Undefined on the setup screen. ---- */
+
+  state?: RoomState;
+  /** Beds free for EVERY night asked for. */
+  free_beds?: number;
+  /** Why it cannot be taken, in words, or null where it can. */
+  blocked_reason?: string | null;
+  /** Which booking has it, for the tooltip — never for a decision. */
+  taken_by?: string | null;
+
+  /**
+   * The beds, where they can be bought one at a time.
+   *
+   * Empty on a room sold only whole — listing its beds would invite somebody to
+   * offer them for sale. So an empty array is the answer "this room is picked
+   * as a room", not "this room has no beds".
+   */
+  seats?: LayoutSeat[];
   seat_rent_min: string | number | null;
   seat_rent_max: string | number | null;
+}
+
+/** One bed of a room sold by the bed. */
+export interface LayoutSeat {
+  id: number;
+  code: string;
+  name: string | null;
+  /** Its OWN rent. Never the room's over the beds — see spec 2.8. */
+  rent: string | number | null;
+  state: 'free' | 'held' | 'booked' | 'checked_in';
+  taken_by?: string | null;
 }
 
 export interface LayoutFloor {

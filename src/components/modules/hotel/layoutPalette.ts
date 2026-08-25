@@ -18,7 +18,7 @@ import { LayoutRoom } from './types';
  * the component.
  */
 
-export type ColourMode = 'room_type' | 'sale_mode' | 'status';
+export type ColourMode = 'room_type' | 'sale_mode' | 'status' | 'booking_state';
 
 export interface TileLook {
   /** Tailwind classes for the tile: background, border, ink. Light and dark. */
@@ -63,6 +63,63 @@ const SALE_LOOKS: Record<string, { className: string; badge: string; label: stri
       'bg-amber-100 border-amber-300 text-amber-900 dark:bg-amber-500/20 dark:border-amber-500/50 dark:text-amber-100',
     badge: 'B',
     label: 'Either way',
+  },
+};
+
+/**
+ * What a room is doing on the dates being looked at.
+ *
+ * The fourth mode, and the one this file was written to accept — see the note
+ * at the top. Nothing about the grid changes to draw it.
+ *
+ * ⚠️ No red/green pair here either, and every entry carries a word rather than
+ * a letter. On the setup screen a badge is a room TYPE code the reader already
+ * knows; here it is a state they are meeting for the first time, and "B" for
+ * booked beside "B" for "either way" on the next tab would be a trap. FREE,
+ * HELD, BKD, IN, PART, — cost three characters and read without a legend.
+ */
+const BOOKING_LOOKS: Record<string, TileLook> = {
+  free: {
+    // Teal rather than green: green/red is the pair colour blindness takes
+    // first, and this is the tile a clerk picks out fastest of all.
+    className:
+      'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-500/25 dark:border-teal-400/60 dark:text-teal-50',
+    badge: 'FREE',
+    label: 'Free — can be taken',
+  },
+  held: {
+    className:
+      'bg-amber-100 border-amber-400 text-amber-900 dark:bg-amber-500/25 dark:border-amber-400/60 dark:text-amber-50',
+    badge: 'HELD',
+    label: 'Tentative hold',
+  },
+  booked: {
+    className:
+      'bg-rose-100 border-rose-400 text-rose-900 dark:bg-rose-500/25 dark:border-rose-400/60 dark:text-rose-50',
+    badge: 'BKD',
+    label: 'Booked',
+  },
+  checked_in: {
+    className:
+      'bg-violet-100 border-violet-400 text-violet-900 dark:bg-violet-500/25 dark:border-violet-400/60 dark:text-violet-50',
+    badge: 'IN',
+    label: 'Guests in the room',
+  },
+  part: {
+    // Its own colour, because it is its own answer: some beds sold, so the
+    // room cannot be let whole and is not taken either.
+    className:
+      'bg-orange-100 border-orange-400 text-orange-900 dark:bg-orange-500/25 dark:border-orange-400/60 dark:text-orange-50',
+    badge: 'PART',
+    label: 'Some beds sold — cannot be let whole',
+  },
+  closed: {
+    // Not a fault and not a booking. A dormitory that cannot be sold whole,
+    // or a room with no beds set up: grey, and the tooltip says which.
+    className:
+      'bg-gray-100 border-gray-300 text-gray-400 dark:bg-gray-700/40 dark:border-gray-600 dark:text-gray-500',
+    badge: '—',
+    label: 'Not lettable from this screen',
   },
 };
 
@@ -119,6 +176,17 @@ export const lookOf = (
     return STATUS_LOOKS.active;
   }
 
+  if (mode === 'booking_state') {
+    // A room with no state at all is one nobody asked about. Neutral rather
+    // than "free" -- claiming a room is free on the strength of a missing
+    // field is the one mistake this mode must not make.
+    if (!room.state) {
+      return { className: NEUTRAL, badge: '?', label: 'Not checked' };
+    }
+
+    return BOOKING_LOOKS[room.state] ?? BOOKING_LOOKS.closed;
+  }
+
   if (mode === 'sale_mode') {
     return SALE_LOOKS[room.sale_mode] ?? { className: NEUTRAL, badge: '?', label: room.sale_mode };
   }
@@ -138,7 +206,19 @@ export const COLOUR_MODES: { id: ColourMode; name: string }[] = [
   { id: 'room_type', name: 'Room type' },
   { id: 'sale_mode', name: 'How it is sold' },
   { id: 'status', name: 'Status' },
-  // Availability lands here when bookings exist. Nothing else has to move.
 ];
 
-export { SALE_LOOKS, STATUS_LOOKS, PALETTE, NEUTRAL };
+/**
+ * What the booking screen offers instead.
+ *
+ * The same list with availability at the front, because that is the question
+ * being asked there -- and without "Status", which on that screen would draw
+ * every room the same green and answer nothing.
+ */
+export const BOOKING_COLOUR_MODES: { id: ColourMode; name: string }[] = [
+  { id: 'booking_state', name: 'What is free' },
+  { id: 'room_type', name: 'Room type' },
+  { id: 'sale_mode', name: 'How it is sold' },
+];
+
+export { SALE_LOOKS, STATUS_LOOKS, BOOKING_LOOKS, PALETTE, NEUTRAL };
