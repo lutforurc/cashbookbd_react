@@ -2045,3 +2045,60 @@ Booking a bed does not yet ask **who** is in it — the gender counts §6.4 says
 group states at booking. They arrive at allotment instead, which is where the
 names are taken anyway. Screens 5 and 6 (the bill, check-out) remain, and
 **OPEN-12** still blocks 5.
+
+## 20. A hold that outlived its stay, 2026-08-25
+
+Found on the screen, not by a check: a booking for the night of the 25th,
+shown as **Held until 2026-09-01**.
+
+§6.4 gives a hold seven days by default and ninety at most. It does not say
+the thing that turns out to matter:
+
+> ⚠️ **A hold cannot outlive what it is holding.**
+
+Seven days *added to today* is only right when the stay is further off than
+that. For a stay tomorrow it holds nights that are already behind it — they
+went unsold while the record said somebody might still want them, which is the
+exact opposite of what a hold is for.
+
+So the seven days are now a **maximum measured against the stay**:
+
+```
+hold_until = min(asked-for or +7 days, +90 days, end of the check-out day)
+```
+
+End of the day rather than its start — a guest arrives *during* a day, and a
+hold expiring at midnight on its own last day would release the room while
+they were on their way. The ninety-day ceiling of §6.4 is enforced here too;
+it never had been.
+
+⚠️ **This leaves the arrival day inside the hold.** A booking nobody turned up
+for still holds its rooms for the rest of the stay — one unsold night per night
+of it. Capping at `check_in_date` instead is a one-word change and is the
+tighter, more revenue-protecting rule; it was **not** made unasked, because it
+decides how long the desk has to chase somebody, which is the client's business
+rather than the code's. Worth putting to them.
+
+### The check scripts stopped eating the demo data
+
+Found the same way. All three fixture-building scripts wipe company 1's hotel
+rows — the headers said so — and the person setting the screens up in a browser
+had four bookings in there. A warning about "every hotel row company 1 has"
+does not read as *"your four bookings"*.
+
+`hotel_check_support.php` now gives them two courtesies:
+
+- **Before**: the number is counted and named. The `--write` flag is the
+  consent; this is what makes it informed.
+- **After**: the demo property is reseeded automatically. The bookings are gone
+  either way — they were made by hand — but an empty property is a fixable
+  thing to leave behind, so it is fixed rather than described in a closing
+  line of advice.
+
+### Checked
+
+**233 assertions across five scripts** (226 before). The seven new ones pin the
+cap from both sides: a distant stay still gets its seven days *from today*; a
+stay two days off is cut to the stay and not a day further; asking for sixty
+days over a two-day stay gets the two days; the expiry lands at `23:59:59`; and
+a confirmed booking carries no hold date at all.
