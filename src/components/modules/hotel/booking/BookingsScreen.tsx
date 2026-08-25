@@ -626,7 +626,8 @@ const BookingsScreen = ({ user }: any) => {
       {
         key: 'action',
         header: 'Action',
-        headerClass: 'text-center w-40',
+        // Four links on a checked-in row. Left narrower they wrap.
+        headerClass: 'text-center w-64',
         cellClass: 'text-center',
         render: (row: any) => {
           if (['cancelled', 'expired'].includes(row.status)) {
@@ -645,6 +646,30 @@ const BookingsScreen = ({ user }: any) => {
               >
                 {row.status === 'checked_in' ? 'Guests' : 'Check in'}
               </button>
+
+              {/* The bill. Offered on every live booking rather than only on a
+                  checked-in one: an advance is taken on the telephone, long
+                  before anybody arrives. */}
+              <button
+                type="button"
+                onClick={() => navigate(`${routes.hotel_booking_folio}/${row.id}`)}
+                className="text-xs font-medium text-primary hover:underline dark:text-secondary"
+              >
+                Bill
+              </button>
+
+              {/* Only on a stay that has actually started. Offered on a hold
+                  or a confirmed booking it would be a button that can only
+                  ever answer "these guests have not been checked in". */}
+              {row.status === 'checked_in' ? (
+                <button
+                  type="button"
+                  onClick={() => navigate(`${routes.hotel_booking_check_out}/${row.id}`)}
+                  className="text-xs font-medium text-primary hover:underline dark:text-secondary"
+                >
+                  Check out
+                </button>
+              ) : null}
 
               {row.status === 'checked_out' ? null : (
                 <button

@@ -135,6 +135,8 @@ import LabourItemAdd from './components/modules/labour/LabourItemAdd';
 import HotelSetup from './components/modules/hotel/HotelSetup';
 import BookingsScreen from './components/modules/hotel/booking/BookingsScreen';
 import AllotmentScreen from './components/modules/hotel/booking/AllotmentScreen';
+import FolioScreen from './components/modules/hotel/booking/FolioScreen';
+import CheckOutScreen from './components/modules/hotel/booking/CheckOutScreen';
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
@@ -568,6 +570,48 @@ function App() {
               <Route
                 path={`${routes.hotel_booking_check_in}/:id`}
                 element={<AllotmentScreen />}
+              />
+            </Route>
+            {/*
+              The bill is gated apart again. Reading what a guest owes is
+              something anybody at the desk does; a property large enough to have
+              a cashier keeps taking money to one person. hotel.folio.bill is
+              checked separately by the server on every write.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.folio.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route
+                path={`${routes.hotel_booking_folio}/:id`}
+                element={<FolioScreen />}
+              />
+            </Route>
+            {/*
+              Ending a stay is gated apart from reading the bill, and apart from
+              taking money for it. It is the one screen in the module that
+              RELEASES INVENTORY -- a stay ended by mistake puts beds back on
+              the market that somebody is still asleep in. A property where the
+              cashier and the person handed the key are one grants both and
+              loses nothing.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.booking.checkout']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route
+                path={`${routes.hotel_booking_check_out}/:id`}
+                element={<CheckOutScreen />}
               />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>

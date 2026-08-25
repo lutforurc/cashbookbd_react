@@ -46,6 +46,28 @@
 > thing §16 had deliberately left out. Rooms and beds now sell side by side, and
 > one booking may hold both. **§19.**
 >
+> **2026-08-26: the bill is made, the money is taken, and the guest can leave.**
+> Screens 5 and 6 of §8.1 — the last two. `booking_payments`,
+> `booking_folio_details`, `booking_tax_rates` and `booking_status_logs` are built
+> (tables 9 to 12), and **OPEN-12 is answered**: VAT falls due on the BILL, not on
+> the advance, which is what §2.6 already assumed. All six screens now exist.
+>
+> Check-out releases the nights nobody slept, bills the ones they did, and refuses
+> to end a stay that still owes money with **nobody's name against it** — the
+> balance is either settled or carried to a named party. The client's decision,
+> 2026-08-26, and the reason `billed_to_party_id` was on `booking_master` from the
+> start.
+>
+> ⚠️ **Nothing is posted to the ledger yet**, by the same decision: a stay that
+> clears its balance needs no voucher, because the money was recorded when it was
+> taken. The consequence to keep in view is that a balance carried to a party
+> lives in `booking_master` and in this module's reports — **that party's coa4
+> ledger does not know about it**. The §5 vouchers are what close that gap, and
+> they are the next piece of work.
+>
+> Still not built: early check-in / late check-out charges (§6.2), and
+> `booking_cancellations` (table 13).
+
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
 > working document** — start here when work resumes.
@@ -719,12 +741,22 @@ client's VAT consultant; this is the common practice, not a certainty.)*
 That last row is deliberate. A guessed rate prints wrong bills silently; a zero rate
 is visible on the first bill and somebody asks.
 
-**⚠️ The one thing that cannot be standardised.** Whether VAT falls due when an
-**advance is received** or when the **service is given** is a matter of law, not of
-preference. The standard assumes *at service*, which agrees with §2.6 — but if the
-law says otherwise, the advance receipt needs a `Cr VAT Payable` line of its own, and
-getting it wrong makes both the monthly return and the year-end P&L wrong. Tracked as
-**OPEN-12** in §7. **Billing code should not be written before this is answered.**
+**✅ Settled 2026-08-26 — VAT falls due when the BILL is made.** The client's
+answer, and it is the one this standard was already written for: *at service*, not
+at receipt. So §2.6 stands untouched — an advance is `Dr Cash / Cr Advance Against
+Booking` and carries no `Cr VAT Payable`. Nothing in the schema moves, and billing
+code is no longer blocked. This closes **OPEN-12** in §7.
+
+**⚠️ What follows from it, and is easy to get wrong.** If VAT is due on the bill,
+then **an advance receipt must not be printed as a VAT invoice** — it is a money
+receipt against a liability, and the guest's stay has not been sold yet. A document
+that shows a VAT line is a document on which VAT is due, whatever it is called at the
+desk; issue one at advance and the answer above is undone by the paperwork. The VAT
+appears once, on the bill, on the folio lines.
+
+⚠️ *This settles the timing only.* The **rates** are still missing — see the list
+below, which is unchanged. The system ships them at zero with a setup warning
+(§6.3 above), so a bill cannot silently carry a guessed rate.
 
 **Still needed from the client** *(their VAT consultant, not their manager — a manager
 will say "15%", and the question is 15% of what)*:
@@ -735,7 +767,8 @@ will say "15%", and the question is 15% of what)*:
    tickets / laundry.
 3. Service charge percentage, and which heads it applies to.
 4. Confirmation of the calculation order above.
-5. **OPEN-12** — VAT on advance, or on service.
+5. ~~**OPEN-12** — VAT on advance, or on service.~~ **Answered 2026-08-26: on the
+   bill.** The only one of this list that is settled.
 6. Is a মূসক ৬.৩ (Mushak 6.3) VAT challan required? Is there an EFD/SDC machine?
    If so the bill *is* that challan, with a mandated format and an unbroken serial —
    separate work, not a print tweak.
@@ -967,7 +1000,7 @@ and reconcile kitchen stock against what is physically there.
 | **OPEN-3** | **Does the resort have a restaurant, or is food inside the stay package?** | **Unanswered.** If a restaurant, reuse the existing sales module — no new tables |
 | **OPEN-9** | Do walk-in gate ticket sales go through `booking_master`, or their own tables? | Hybrid: shared master data and capacity check; walk-in cash sale in `ticket_sales_*` (it behaves like POS); advance group booking (e.g. a school booking 300 for Friday) through `booking_master` — note that such a booking is a **Group** booking under §6.4, so booking type spans tickets, not only rooms |
 | 13 | Up to what age is a guest a child? | A setting, not a constant (§6.5) — the client's own practice. Until it is answered no two occupancy reports compare |
-| **OPEN-12** | **Is VAT due when an advance is received, or when the service is given?** | **Unanswered — blocks billing code.** A matter of law, not preference. The §6.3 standard assumes *at service*, agreeing with §2.6; if the law says at receipt, the advance entry needs its own `Cr VAT Payable` line. Wrong either way makes the monthly return and the year-end P&L wrong together. Client's VAT consultant, not their manager |
+| ~~OPEN-12~~ | ~~Is VAT due when an advance is received, or when the service is given?~~ | **Settled 2026-08-26: VAT falls due when the BILL is made.** Not on the advance receipt. This is what §6.3 already assumed and what §2.6 needs, so nothing in the design moves and no table changes — the advance entry keeps `Dr Cash / Cr Advance Against Booking` with no VAT line. Billing code is unblocked. ⚠️ The consequence: **an advance receipt must not be issued as a VAT invoice** — it is a money receipt. Charge the VAT on a document, and it is due |
 
 ---
 
@@ -2275,3 +2308,370 @@ borrow the permissions it needs; it assumes they are already granted.
 Re-running the grant file fixed it. Worth knowing for any real deployment that
 ever recreates a permission row: **the grants do not survive it.** Worth fixing
 in that script too, so it stands on its own like the others do.
+
+---
+
+## 23. Groundwork for the bill — two tables and the chart heads, 2026-08-26
+
+The billing screens were unblocked on this day: **OPEN-12 was answered — VAT
+falls due when the BILL is made**, never on the advance receipt. That is what
+§6.3 had assumed and what §2.6 needs, so nothing in the design moved. See the
+settled row in §7.
+
+This section is the groundwork laid immediately after, and deliberately *before*
+screen 5 rather than as part of it.
+
+### The order was changed, and why
+
+The remaining five tables were named as `booking_payments`,
+`booking_folio_details`, `booking_tax_rates`, `booking_status_logs`,
+`booking_cancellations`. They are not being built in that order.
+
+**`booking_status_logs` went first because it is a cross-cutting concern.**
+Every status change has to write one. Built after the payment and folio code,
+each of those would have to be opened up again to add logging to it; built
+before, the billing code is written against it from birth. It is a small table
+whose cost is entirely in *when* it arrives.
+
+**`booking_cancellations` went last** for the opposite reason: a refund has no
+meaning until there is a payment to refund. Until then the cancellation reason
+had nowhere better to live than a notes field — which §23.2 below now fixes
+anyway, so the remaining half of that table is genuinely only about money.
+
+### 23.1 booking_tax_rates — table 11
+
+Section 6.3's table. One row per charge type per tax, **with the date range it
+applied over**, because the rates move and a bill reprinted next year must not
+come out carrying today's rate.
+
+⚠️ **It ships at zero, not at 15%** — eight rows at `company_id = 0`, one per
+charge type, all `0.00`. A guessed rate prints wrong bills silently; a zero rate
+is visible on the first bill and somebody asks. `BookingTaxRate::rateFor()`
+returns `0.0` rather than throwing when nothing matches, for the same reason: an
+unanswered rate must not stop the front desk.
+
+Most specific wins — this branch's row, then the company's, then the shipped
+zero.
+
+⚠️ **A bug this table taught, worth not repeating.** `branch_id` was first
+written `NULL DEFAULT NULL`, NULL meaning "the whole company". **MySQL treats
+NULLs in a unique index as distinct from one another**, so `uq_btr_period` was
+enforcing nothing at all: the eight shipped rows seeded themselves a second time
+on the second run — 8 became 16 — and an operator could equally have entered two
+different VAT rates for the same charge type on the same date, leaving the bill
+to pick one of them by whichever the query read first. It is now `NOT NULL
+DEFAULT 0`, 0 meaning the whole company. **0 is a value; NULL is an absence, and
+an absence cannot be made unique.**
+
+That was found by running the file twice, which is the only way it *could* have
+been found — every statement reported success both times.
+
+### 23.2 booking_status_logs — table 12
+
+Append-only. `from_status`, `to_status`, the reason, and who did it.
+
+`booking_master` carries where a booking *is*; this carries how it got there.
+The cancellation reason was being appended as a sentence onto
+`booking_master.notes`, where nothing could count it, report on it, or say who
+wrote it — and where a second cancellation would append a second sentence under
+the first. `cancel()` no longer touches `notes`.
+
+⚠️ **No `updated_at`, no soft delete, and nothing updates a row.** A history that
+can be edited answers "what happened" with "whatever somebody last said
+happened". `booking_guests` is soft-deleted because a withdrawn name must stop
+counting; a status move never stops having happened.
+
+Two NULLs that are answers rather than gaps:
+
+- **`from_status` NULL** on creation — the booking came from nowhere. Writing
+  `'new'` would invent a status `booking_master` can never hold.
+- **`changed_by` NULL** means the *system* did it, not that the actor is
+  unknown. The hold-expiry sweep is the case: nothing was pressed. Stamping the
+  sweep's own user id would name a person who was not there.
+
+Written at all three transitions — `store()`, `cancel()`, `allot()` — and inside
+each one's transaction, so a booking that rolls back on a night clash takes its
+history with it.
+
+### 23.3 The chart heads — and the one that looked right
+
+§6.3 item 10 asked whether the client's COA already held the heads a hotel bill
+posts to. Checked against the dev database, and the answer was worse than "no":
+
+| Head | Where it actually sits | |
+|---|---|---|
+| `Hotel Rent` (147) | **Expense** → Administrative & General | ⚠️ a trap |
+| `TDS / VAT` (41) | Liabilities → Current Liability | a different balance |
+| `Service Charge` (42) | Income → Direct Income | but reports to the Balance Sheet |
+| `Room Rent Income` | — | absent |
+| `Advance Against Booking` | — | absent |
+
+**`Hotel Rent` is what a trading company PAYS for staff travel.** The name is
+close enough that room rent income would have gone into it without anyone
+looking twice, and the books would have run backwards.
+
+`TDS / VAT` is tax others deduct from *us*; output VAT is what the hotel
+collects and owes. Merged into one head the monthly return can never be
+reconciled.
+
+`Service Charge` (42) is genuinely Direct Income but carries
+`acc_reporting_to_id = 3` (Balance Sheet) rather than 2 (Profit and Loss), which
+looks like an old seeding mistake. **Nothing here touches it** — correcting
+somebody's existing head is not a schema script's business — and a
+`Hotel Service Charge` of its own is created instead.
+
+Four heads are created, following `inter_branch_account_heads.sql` throughout:
+levels found **by name** with `(company_id = @company_id OR company_id IS NULL)`
+because ids differ per tenant, and ⚠️ **`sku_code` is the marker the posting
+code matches on, never the name** — `HOTEL_ROOM_RENT_INCOME` and its three
+siblings. A client may rename these heads to whatever their accountant calls
+them and the billing code still finds them.
+
+⚠️ `acc_coa_level3s.status` is `enum('0','1')` while `acc_coa_level4s.status` is
+`int`. The string `'1'` is right for the enum and coerced harmlessly for the
+int, so it is used for both — an integer `1` into the enum selects its **first
+ordinal** and quietly stores `'0'`, which is how a head ends up created but
+inactive.
+
+### Where they live
+
+The two tables are in `2026_08_25_hotel_module.sql`. **The chart heads are
+not** — they are in `2026_08_24_hotel_permissions_grant.sql`, the opt-in file
+that is only ever run on a site that really is a hotel, for the same reason the
+grants are: three unused heads in the chart of a company that sells rice is
+clutter it never asked for, and a chart of accounts is something people read.
+
+That file now needs `@company_id` set, and section 2 of it must be run **once
+per company**.
+
+### Checked
+
+`hotel_status_log_check.php` — **22 assertions, all passing**, through the
+models the code actually uses rather than hand-written SQL. It writes only
+inside transactions it rolls back, and asserts that nothing was left behind.
+
+Both SQL blocks were run twice against the dev database: the second run inserts
+nothing and changes nothing, which is what caught the NULL unique-key bug above.
+
+### What is next
+
+Screen 5 proper — `booking_payments` (table 9) then `booking_folio_details`
+(table 10), then `booking_cancellations` (13) and screen 6.
+
+Still outstanding from §6.3, and none of it blocks the code: the actual VAT
+**rates**, the service charge percentage, whether a মূসক ৬.৩ challan is
+required, VDS on corporate bookings, and whether refunded VAT comes back.
+
+---
+
+## 24. The bill and the money — tables 9 and 10, 2026-08-26
+
+Screen 5's foundation. The two tables, the models, and the arithmetic §6.3
+specifies — written once, in one place, and checked against the spec's own
+worked example.
+
+**Not yet built, and deliberately named here so nobody assumes otherwise:** the
+controller endpoints, the routes, the permissions, the posting to
+`main_trx_master`, and the screen. Nothing is reachable from the UI. What exists
+is the shape of the bill and everything needed to compute one correctly.
+
+### 24.1 booking_payments — table 9
+
+Advance, settlement, refund. `payment_no` runs `RC-YYYY-NNNN` per branch, the way
+`booking_no` does.
+
+⚠️ **There is no `direction` column.** Which way the money went follows from the
+`purpose`, and two columns that must agree are two columns that eventually will
+not. `amount` is always positive, refunds included — the sign lives in the
+purpose, so no report has to remember how the column was stored.
+
+⚠️ **No `deleted_at`, and no SoftDeletes on the model.** The money either
+arrived or it did not; a receipt that can vanish is a receipt nobody can rely
+on. A wrong entry is corrected by a row of its own.
+
+The foreign key to `booking_master` is **RESTRICT**, not CASCADE — unlike
+`booking_status_logs`. Deleting a booking that has been paid should fail rather
+than quietly take the receipts with it.
+
+### 24.2 booking_folio_details — table 10
+
+Every line stores the rate, the base and the tax **as applied** (§6.3).
+`BookingTaxRate::rateFor()` is asked once, while the line is being written, and
+never again. A rate corrected years later cannot restate a bill somebody has
+already paid.
+
+`BookingFolioDetail::line()` is **the only place the tax arithmetic is
+written.** A second copy of it in a screen, a report or a print template is a
+second answer waiting to disagree with the bill.
+
+⚠️ **Rounding happens once, on the total, not per line.** Rounding each line and
+adding them gives a different figure from adding them and rounding once, and
+only one of the two can match what the guest is asked to pay. `totalsFor()`
+returns the exact figure, the rounded figure, and the difference — so a bill can
+show what it rounded.
+
+⚠️ **The same night cannot be billed twice.** `uq_bfd_room_night` on
+`(booking_id, resource_id, stay_date, charge_type)`. Anything that runs nightly
+will one day run twice — a retry, a second cron, somebody pressing the button
+again — and without the key the guest is charged for the 15th twice with nothing
+complaining.
+
+⚠️ **And here the NULLs are load-bearing, deliberately.** Laundry and restaurant
+lines carry no room and no night, so MySQL's NULL-distinctness exempts them from
+that key and a guest may be charged for lunch twice in a day, which is ordinary.
+Only lines naming a room AND a night are constrained.
+
+That is the *same* MySQL behaviour which was a **bug** on
+`booking_tax_rates.branch_id` (§23.1). The difference is worth stating plainly:
+there the key was meant to constrain every row and NULL quietly excused them
+all; here the exemption is the rule being expressed. NULL-distinctness is not
+good or bad — it is only ever right or wrong for the rule you meant.
+
+### 24.3 HotelAccountHead — the read side of the chart
+
+`app/Services/Hotel/HotelAccountHead.php`, after
+`InterBranchAccountHead`. Resolves the four heads **by `sku_code` marker**, never
+by name and never by id.
+
+⚠️ **It returns null rather than creating what is missing** — unlike
+`InterBranchAccountHead`, which mints heads because a branch can be born on any
+Tuesday. These four are created once, deliberately, by somebody who has decided
+this install is a hotel. `missing()` is meant to be asked *before* a bill is
+posted: a voucher half-written because one head was absent is worse than a screen
+saying the chart is not set up yet.
+
+This class exists because of `Hotel Rent` (§23.3). A `where('name', ...)` in a
+controller would have posted revenue as expenditure, and the name is close
+enough that nobody would look twice. The check script asserts the resolved head
+is *not* that one.
+
+### Checked
+
+`hotel_folio_check.php` — **28 assertions**, including §6.3's own worked example:
+rent 1,000 at 10% service charge and 15% VAT is **1,265, not 1,250**, with an
+explicit assertion that it is not 150.00 of VAT. Also: a rate changed after
+billing leaves the bill untouched; the night audit running twice is refused
+while a second laundry line is allowed; and both top-level placements — room
+rent under Income, advance and VAT under Liabilities.
+
+`hotel_status_log_check.php` — 22 assertions, still passing.
+
+Everything is written inside transactions that are rolled back, and the last
+assertions confirm nothing was left behind.
+
+### What is next
+
+The controller and the screen: take an advance, build the folio from the nights
+already held, show what is owed. Then the posting to `main_trx_master` — §5's
+entries — then `booking_cancellations` (13) and check-out (screen 6).
+
+The VAT **rates** are still zero on every install until the client's consultant
+answers §6.3's list. That is by design and does not block any of the above.
+
+---
+
+## 25. Screen 5 — the folio, 2026-08-26
+
+The bill and the money, end to end: `FolioController`, four routes, two
+permissions, a slice and a screen. Reachable from the Bookings list as **Bill**
+on every live booking.
+
+### The two numbers, and why they are never one
+
+⚠️ **What was CHARGED and what was PAID are different questions with different
+tables behind them.** A guest may pay in full before a single night is billed —
+an advance on the telephone is the ordinary case — and a booking may be billed
+in full with nothing paid.
+
+The balance is **derived from the two, never stored**. A stored balance is a
+third number that can disagree with the two it came from, and those two are the
+ones with an audit trail behind them.
+
+This is why **"Take money" and "Bill the nights" are separate actions**. A
+screen that billed on payment would make what a guest is charged depend on when
+they paid, and would turn an advance into income the moment it was handed over —
+exactly what §2.6 forbids.
+
+### What the endpoints do
+
+| | |
+|---|---|
+| `GET folio/{id}` | lines, payments, totals, paid, balance, unbilled nights, missing chart heads |
+| `POST folio/{id}/bill` | every held night not yet billed becomes a rent line, **at the rates in force on that night** |
+| `POST folio/{id}/charge` | one charge that is not a night |
+| `POST folio/{id}/receive` | advance, settlement or refund |
+
+**All three writes answer with the whole folio again**, so the screen is
+replaced from the server rather than patched — otherwise it could show a bill and
+a balance from two different moments.
+
+### Three rules the controller enforces that the schema could not
+
+**Room rent cannot be added by hand.** A hand-typed rent line would carry no room
+and no night, which is exactly what exempts a row from `uq_bfd_room_night` — so
+the same night could then be billed twice, once by the night audit and once by
+somebody typing. Nights go on through `bill()` only, and `addCharge()` refuses
+`room_rent` explicitly.
+
+**A refund cannot exceed what was taken.** Blocked rather than warned: unlike the
+guest-count rules of §6.5, there is no honest reading of giving back money that
+was never received.
+
+**Pressing "Bill the nights" twice adds nothing.** `bill()` skips what is already
+billed, but the *guarantee* is the unique key — two clerks pressing at once both
+pass the check, and the second gets a 409 saying nothing was added.
+
+### ⚠️ Nothing posts to the ledger yet, and the screen says so
+
+`main_trx_id` is written NULL on every row. The vouchers of §5 are the next piece
+of work, and doing them badly is worse than not yet doing them.
+
+**The screen carries an amber banner saying the accounts have not moved.** That
+banner is not a placeholder to be quietly deleted — it comes down when the
+vouchers are actually written. A desk that assumes the books have moved when they
+have not is the failure this is guarding against.
+
+A second banner names any missing chart head, from
+`HotelAccountHead::missing()`, so the chart being unready is said on the screen
+rather than discovered at posting time.
+
+### Permissions
+
+`hotel.folio.view` and `hotel.folio.bill`, separated for the same reason
+allotment's is separate from the booking's: reading what a guest owes is
+something anybody at the desk does, taking money is the till, and on a property
+large enough to have a cashier those are two people.
+
+⚠️ Both are in the `AddUnitTypeToBuildingUnits.php` sync list. Anything absent
+from that list is **deleted on the next patch run**, taking every role's grant
+with it — see §17's note and the earlier incident.
+
+### One thing worth knowing about RTK
+
+`builder.addCase` **throws if the same action type is registered twice**. The
+folio's three writes are in their own loop rather than appended to the existing
+one, because a thunk may appear in exactly one list. The folio writes replace the
+folio; the booking writes throw the availability list away. Different endings,
+so different loops.
+
+### Checked
+
+`hotel_folio_api_check.php` — **24 assertions through the CONTROLLER**, not the
+models underneath it: a real user is signed in, so the permission gate, the
+validation and the night-gathering all run. It asserts the 403 when signed out,
+that pressing Bill twice adds nothing, that room rent by hand is refused, that an
+over-large refund is refused, and that taking money leaves the bill untouched.
+
+With §23 and §24: **74 assertions across three scripts, all passing.** Everything
+runs inside transactions that are rolled back.
+
+⚠️ Two database facts these scripts had to be told rather than assume:
+`model_has_roles.model_type` is `App\User` here, not `App\Models\User`; and
+`acc_coa_level4s.status` is an int while `acc_coa_level3s.status` is
+`enum('0','1')`.
+
+### What is left of the first release
+
+`booking_cancellations` (table 13), the §5 vouchers, and check-out (screen 6).
+The VAT rates remain zero on every install until the client's consultant answers
+§6.3's list — by design, and it blocks none of the above.

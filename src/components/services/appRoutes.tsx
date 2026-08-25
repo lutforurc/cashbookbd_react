@@ -355,6 +355,14 @@ const ROUTES = {
   // id on the end. A coach party is twelve rooms of five guests, and sixty rows
   // of six fields is not something a dialog holds.
   hotel_booking_check_in: '/hotel/check-in',
+  // The bill, with the booking id on the end. Its own page rather than a panel
+  // on the list: a folio is read alongside a guest standing at the desk, and it
+  // has to hold the nights, the extras, the money and what is left of it.
+  hotel_booking_folio: '/hotel/folio',
+  // Ending the stay, with the booking id on the end. Its own page rather
+  // than a dialog on the folio: it releases beds, and the desk has to see
+  // which nights go back and what is left owing before it presses anything.
+  hotel_booking_check_out: '/hotel/check-out',
 
   notFound: '*',
 };

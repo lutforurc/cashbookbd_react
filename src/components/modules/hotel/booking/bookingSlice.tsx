@@ -4,6 +4,8 @@ import httpService from '../../../services/httpService';
 import {
   API_HOTEL_BOOKING_AVAILABILITY_URL,
   API_HOTEL_BOOKING_URL,
+  API_HOTEL_CHECKOUT_URL,
+  API_HOTEL_FOLIO_URL,
 } from '../../../services/apiRoutes';
 import { HotelTimes, Paged } from '../types';
 import { Allotment, Availability, Booking } from './types';
@@ -164,6 +166,146 @@ export const allotSave = createAsyncThunk<
   }
 });
 
+/**
+ * The bill, the money, and what is left -- screen 5.
+ *
+ * ⚠️ Read again after every write rather than patched in place. What was
+ * CHARGED and what was PAID are two different questions with two different
+ * tables behind them, and the balance is derived from both. Patching one in
+ * place would let the screen show a bill and a balance from two different
+ * moments -- and the moment that matters is the one the guest is standing in.
+ */
+export const folioRead = createAsyncThunk<any, number, { rejectValue: string }>(
+  'hotelBooking/folioRead',
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await httpService.get(`${API_HOTEL_FOLIO_URL}/${id}`);
+      if (res.data?.success === true) return unwrap(res);
+      return rejectWithValue(res.data?.message || 'Failed to load the bill');
+    } catch (error: any) {
+      return rejectWithValue(said(error, 'Failed to load the bill'));
+    }
+  },
+);
+
+/**
+ * Put the nights already held on the bill.
+ *
+ * ⚠️ Safe to press twice, and the server is what makes it so. A 409 means
+ * somebody billed one of these nights while this screen was open, and NOTHING
+ * was added -- the server's own sentence says exactly that, so it is passed
+ * through rather than replaced.
+ */
+export const folioBill = createAsyncThunk<
+  { message: string; data: any },
+  number,
+  { rejectValue: string }
+>('hotelBooking/folioBill', async (id, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_HOTEL_FOLIO_URL}/${id}/bill`, {});
+    if (res.data?.success === true) {
+      return { message: res.data?.message || 'Billed', data: unwrap(res) };
+    }
+    return rejectWithValue(res.data?.message || 'Could not bill the nights');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not bill the nights'));
+  }
+});
+
+/** One charge that is not a night -- laundry, a meal, a late checkout. */
+export const folioCharge = createAsyncThunk<
+  { message: string; data: any },
+  { id: number; [key: string]: any },
+  { rejectValue: string }
+>('hotelBooking/folioCharge', async ({ id, ...payload }, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_HOTEL_FOLIO_URL}/${id}/charge`, payload);
+    if (res.data?.success === true) {
+      return { message: res.data?.message || 'Added', data: unwrap(res) };
+    }
+    return rejectWithValue(res.data?.message || 'Could not add the charge');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not add the charge'));
+  }
+});
+
+/**
+ * Take money, or give some back.
+ *
+ * ⚠️ This does not touch the bill. An advance is a liability until the nights
+ * have been slept (spec 2.6), and a payment that quietly created a bill line
+ * would make what a guest is charged depend on when they paid.
+ */
+export const folioReceive = createAsyncThunk<
+  { message: string; data: any },
+  { id: number; [key: string]: any },
+  { rejectValue: string }
+>('hotelBooking/folioReceive', async ({ id, ...payload }, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_HOTEL_FOLIO_URL}/${id}/receive`, payload);
+    if (res.data?.success === true) {
+      return { message: res.data?.message || 'Received', data: unwrap(res) };
+    }
+    return rejectWithValue(res.data?.message || 'Could not record the money');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not record the money'));
+  }
+});
+
+/**
+ * What checking out on a given day would do -- screen 6.
+ *
+ * ⚠️ A PLAN, not a record. Nothing is written by reading it, and every figure
+ * in it is conditional on the departure date it was asked with: change the date
+ * and every one of them changes with it. So it is read again on every change
+ * rather than filtered on screen.
+ *
+ * ⚠️ ITS BALANCE IS NOT THE FOLIO'S. The folio shows what has been charged;
+ * this shows what WILL have been charged once the nights are billed, which on
+ * the morning a guest leaves is usually the whole stay. Showing the folio's
+ * figure here would tell the desk to collect nothing.
+ */
+export const checkoutRead = createAsyncThunk<
+  any,
+  { id: number; departure_date?: string },
+  { rejectValue: string }
+>('hotelBooking/checkoutRead', async ({ id, ...params }, { rejectWithValue }) => {
+  try {
+    const res = await httpService.get(`${API_HOTEL_CHECKOUT_URL}/${id}`, { params });
+    if (res.data?.success === true) return unwrap(res);
+    return rejectWithValue(res.data?.message || 'Could not work out the check-out');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not work out the check-out'));
+  }
+});
+
+/**
+ * End the stay.
+ *
+ * ⚠️ NOT SAFE TO PRESS TWICE, and unlike billing it cannot be made so: it
+ * DELETES the nights the guest is not staying, so the beds can be sold again. A
+ * second press answers "already checked out" rather than doing it twice, but the
+ * screen still asks before the first.
+ *
+ * ⚠️ The server refuses a balance with nobody's name on it. That rejection is
+ * passed through as it stands -- it names the figure, which a replacement
+ * sentence here would not.
+ */
+export const checkoutSave = createAsyncThunk<
+  { message: string; data: any },
+  { id: number; [key: string]: any },
+  { rejectValue: string }
+>('hotelBooking/checkoutSave', async ({ id, ...payload }, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_HOTEL_CHECKOUT_URL}/${id}`, payload);
+    if (res.data?.success === true) {
+      return { message: res.data?.message || 'Checked out', data: unwrap(res) };
+    }
+    return rejectWithValue(res.data?.message || 'Could not check the guest out');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not check the guest out'));
+  }
+});
 const emptyPage = { data: [], total: 0, current_page: 1, per_page: 10 };
 
 interface BookingState {
@@ -173,6 +315,19 @@ interface BookingState {
   opened: Booking | null;
   /** The booking being checked in, room by room. */
   allotment: Allotment | null;
+
+  /** The bill, the money against it, and what is left. */
+  folio: any | null;
+
+  /**
+   * What checking out would do, for the departure date last asked about.
+   *
+   * ⚠️ Kept apart from `folio` on purpose. The two carry a field called
+   * `balance` that answers different questions -- what has been charged, and
+   * what WILL have been charged once the nights are billed. Merging them
+   * would let the smaller number be read off the check-out screen.
+   */
+  checkout: any | null;
 
   /**
    * When the day turns over at this property.
@@ -195,6 +350,8 @@ const initialState: BookingState = {
   availability: null,
   opened: null,
   allotment: null,
+  folio: null,
+  checkout: null,
   times: null,
 
   loading: false,
@@ -225,6 +382,19 @@ const bookingSlice = createSlice({
     },
     clearAllotment(state) {
       state.allotment = null;
+    },
+    clearFolio(state) {
+      state.folio = null;
+    },
+    /**
+     * Thrown away on the way off the screen.
+     *
+     * A plan describes one booking on one date. Left behind, the next
+     * booking opened would paint somebody else's figures for the moment
+     * before its own read came back -- and those figures name money.
+     */
+    clearCheckout(state) {
+      state.checkout = null;
     },
   },
   extraReducers: (builder) => {
@@ -275,7 +445,86 @@ const bookingSlice = createSlice({
       .addCase(bookingRead.rejected, (state, action) => {
         state.opened = null;
         state.error = action.payload || null;
+      })
+
+      .addCase(folioRead.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(folioRead.fulfilled, (state, action) => {
+        state.loading = false;
+        state.folio = action.payload;
+      })
+      .addCase(folioRead.rejected, (state, action) => {
+        state.loading = false;
+        state.folio = null;
+        state.error = action.payload || null;
+      })
+
+      .addCase(checkoutRead.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkoutRead.fulfilled, (state, action) => {
+        state.loading = false;
+        state.checkout = action.payload;
+      })
+      // A refused date -- an overstay, or a day nobody slept -- answers 422
+      // with the sentence explaining it. The plan is dropped so the screen
+      // cannot go on offering a button for a departure the server refused.
+      .addCase(checkoutRead.rejected, (state, action) => {
+        state.loading = false;
+        state.checkout = null;
+        state.error = action.payload || null;
+      })
+
+      .addCase(checkoutSave.pending, (state) => {
+        state.saving = true;
+        state.error = null;
+      })
+      .addCase(checkoutSave.fulfilled, (state, action) => {
+        state.saving = false;
+        state.checkout = action.payload?.data ?? state.checkout;
+        // The bill and the availability list both changed underneath: nights
+        // were billed and beds went back on the market. Whatever is held of
+        // either describes the moment before.
+        state.folio = null;
+        state.availability = null;
+      })
+      .addCase(checkoutSave.rejected, (state, action) => {
+        state.saving = false;
+        state.error = action.payload || 'Failed';
+        // ⚠️ The plan is LEFT ALONE. Every refusal in CheckOutController
+        // happens before the transaction, so nothing was written and what is
+        // on screen is still true.
       });
+
+    // The three folio writes, kept in their own loop rather than added to the
+    // one below.
+    //
+    // ⚠️ Not because it reads better: builder.addCase THROWS if the same action
+    // type is registered twice, so a thunk may appear in exactly one of these
+    // lists. These three answer with the WHOLE folio and replace it; the three
+    // below throw the availability list away instead.
+    [folioBill, folioCharge, folioReceive].forEach((thunk: any) => {
+      builder
+        .addCase(thunk.pending, (state: any) => {
+          state.saving = true;
+          state.error = null;
+        })
+        .addCase(thunk.fulfilled, (state: any, action: any) => {
+          state.saving = false;
+          // Replaced from the server, never patched -- see folioRead.
+          state.folio = action.payload?.data ?? state.folio;
+        })
+        .addCase(thunk.rejected, (state: any, action: any) => {
+          state.saving = false;
+          state.error = action.payload || 'Failed';
+          // ⚠️ The folio is LEFT ALONE on a rejection. A 409 means nothing was
+          // written, so what is on screen is still true -- and blanking it would
+          // take the bill away from under a guest standing at the desk.
+        });
+    });
 
     [bookingSave, bookingCancel, allotSave].forEach((thunk: any) => {
       builder
@@ -299,6 +548,13 @@ const bookingSlice = createSlice({
   },
 });
 
-export const { clearBookings, clearAvailability, clearOpened, clearAllotment } =
+export const {
+  clearBookings,
+  clearAvailability,
+  clearOpened,
+  clearAllotment,
+  clearFolio,
+  clearCheckout,
+} =
   bookingSlice.actions;
 export default bookingSlice.reducer;

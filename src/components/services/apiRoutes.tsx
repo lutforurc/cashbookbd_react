@@ -873,3 +873,25 @@ export const API_HOTEL_BOOKING_URL = `${API_BASE_URL}/hotel-setup/bookings`;
 // anything — two clerks can both be told the same room is free and both be
 // right. The bed is claimed by a unique key when the booking is saved.
 export const API_HOTEL_BOOKING_AVAILABILITY_URL = `${API_BASE_URL}/hotel-setup/bookings/availability`;
+// The folio — screen 5. The stem suffixes /{id}, /{id}/bill, /{id}/charge and
+// /{id}/receive.
+//
+// ⚠️ Every one of the three writes answers with the WHOLE folio again rather
+// than with what it wrote. What was charged and what was paid are two different
+// questions, and a screen that patched one of them in place would eventually
+// show a bill and a balance from two different moments.
+export const API_HOTEL_FOLIO_URL = `${API_BASE_URL}/hotel-setup/bookings/folio`;
+
+// Check-out — screen 6. The stem suffixes /{id}, read and written.
+//
+// ⚠️ The GET is a PLAN, not a record: it says what the button would do on the
+// departure date it is given, and its balance counts the nights that are not
+// on the bill yet. Read it again whenever that date changes, or the desk is
+// shown a figure for a day the guest is not leaving on.
+export const API_HOTEL_CHECKOUT_URL = `${API_BASE_URL}/hotel-setup/bookings/checkout`;
+
+// Who an unpaid balance can be carried to.
+//
+// ⚠️ Answers cust_party_infos.id. NOT interchangeable with the coa4 ids the
+// chart dropdowns return — billed_to_party_id points at the party master.
+export const API_HOTEL_PARTY_URL = `${API_BASE_URL}/hotel-setup/bookings/parties`;
