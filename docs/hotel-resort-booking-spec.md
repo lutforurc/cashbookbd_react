@@ -144,9 +144,28 @@
 > ADR and a bad RevPAR, and quoting one for the other reports an empty month as a
 > full one.
 >
-> Next unblocked, in order: **rate plans** (season / holiday / corporate rents —
-> today the rent is fixed per room), then `booking_charge_types`, then
-> `booking_bill_transfers`.
+> **2026-08-26 (truly the last): a bill can be moved to another payer.** §6.4,
+> approved by the client on 2026-08-23 and never built. `booking_bill_transfers`
+> (**table 15**), a voucher every time, and `hotel.booking.transfer` — manager
+> and above, because with no credit limit on corporate bookings one press turns a
+> cash bill into an open-ended receivable. **§32.**
+>
+> ⚠️ **Only the outstanding balance moves** — money already received stays with
+> whoever paid it — and **nothing is re-priced**: what changes is who pays, never
+> what it cost. Both are the client's rules, and the second is a rule rather than
+> a setting because re-pricing on a transfer is the back door for discounts that
+> appear nowhere in the books.
+>
+> It also fixed three things that were quietly wrong the moment a bill could
+> move: money taken afterwards now settles the **company**, later charges go on
+> the company's bill, and check-out no longer carries a bill that has already
+> moved. Plus §6.4's missed rule — **a hold with money against it now confirms
+> itself**.
+>
+> ⚠️ **Rate plans are BLOCKED, not next.** §31 said otherwise and was wrong: §6.2
+> lists rate-card rules under *"not yet known — needed before schema work"*.
+> Genuinely unblocked next: `booking_charge_types`, then housekeeping and
+> amenities.
 
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
@@ -3734,3 +3753,157 @@ check-out charges (§6.2), the §6.1 gender rule, cancellation percentages, and 
 child age (OPEN-13) — **which last one this section now has a use for**, because
 an occupancy report that counted children differently from one property to the
 next is exactly the comparison OPEN-13 warned about.
+
+---
+
+## 32. "Bill it to my office" — §6.4, built 2026-08-26
+
+### A correction to §31's ordering
+
+§31 ended by naming **rate plans** as the next unblocked piece. That was wrong,
+and §6.2 says so in its own words: *"**Rate card rules** — weekend, wedding
+season, holiday, corporate rates?"* sits under **"Not yet known — needed before
+schema work"**. Building that schema without the client's answer is exactly what
+that heading warns against.
+
+**Bill transfer is the opposite case.** §6.4 is marked *"Approved by the client
+2026-08-23"* and specifies the whole of it — the four rules, the permission, the
+table name. It was simply never built.
+
+### ⚠️ It is not a field edit
+
+Setting `billed_to_party_id` and calling it done would leave a receivable in the
+hotel's own control head while the company's statement showed nothing — and the
+two would be reconciled by hand for ever. **The money owed moves from one
+party's account to another's, and that is a ledger entry.**
+
+### The guest is a head, not a party
+
+The elegant part, and it falls out of §26's design rather than being invented
+for this.
+
+Until a bill is moved anywhere, what is owed sits in **Advance Against
+Booking** — which *is* the guest's account: money arrives there as a liability,
+the bill turns it into a debit, and the balance of that head for one booking is
+exactly what the folio calls "owed".
+
+So all three moves are one entry with different heads on the two sides:
+
+| | Debit | Credit |
+|---|---|---|
+| Guest → company | The company | Advance Against Booking |
+| Company A → company B | B | A |
+| Company → back to the guest | Advance Against Booking | The company |
+
+`HotelVoucher::postTransfer` is that one entry, and the check-out carry (§26) is
+now a caller of it. `NULL` on either side of `booking_bill_transfers` means the
+guest — writing the guest as a party row instead would mean inventing a party per
+walk-in, which `booking_guests` already refuses to do and for the same reason.
+
+### The four rules, all the client's
+
+**⚠️ Only the outstanding balance moves.** Money already received stays with
+whoever paid it. A 5,000 advance against a 15,000 bill leaves the company owing
+**10,000**, not 15,000.
+
+**⚠️ No re-pricing.** A stay at rack rate stays at rack rate even where the
+company has a contract rate. What changes is who pays, never what it cost.
+Nothing in the transfer path touches a folio line, and the check script asserts
+the lines are byte-for-byte identical afterwards. §6.4 makes it a rule rather
+than a setting on purpose: allowed, it becomes the back door for discounts, and
+the discount appears nowhere in the books.
+
+**⚠️ Both directions.** Not because a company will refuse to pay — the client
+says that will not happen — but because the desk will sometimes name the wrong
+company, and with no way back the whole bill has to be cancelled and typed again.
+
+**⚠️ A voucher every time**, plus a `booking_bill_transfers` row.
+
+### ⚠️ Three consequences that had to be chased down
+
+Moving a receivable is not a self-contained act. Three other paths were quietly
+wrong the moment it became possible, and none of them would have announced
+itself.
+
+**Money taken afterwards must settle the COMPANY.** `HotelVoucher::postPayment`
+credited Advance Against Booking unconditionally. Against a bill already moved,
+that pushes the advance head negative while leaving the company still owing on
+paper — two accounts wrong from one receipt, and neither obviously. It now
+credits `BillOwner::head()`, which on an ordinary booking still *is* the advance
+head, so every voucher raised before this reads the same way.
+
+**Charges billed afterwards belong to the company too.** §6.4: *"all charges go
+on the company's bill"*. `postFolio` debits the same head, so a stay extended
+after its bill moved does not put the new nights back on the guest and leave one
+stay owed by two people.
+
+**Check-out must not carry it again.** A bill already moved has left the advance
+head; carrying it a second time debits the company twice and pushes the advance
+head negative by the same amount. `BillOwner::isCarried()` guards it.
+
+That last one is why the state is read from **`booking_master.main_trx_id`**
+rather than from `billed_to_party_id`. The party id alone is not enough: it can
+be filled in at booking time as an intention — *"this is Company X's booking"* —
+long before any money has moved anywhere. `main_trx_id` is set only when a
+receivable actually leaves the advance head, and cleared when it comes back.
+
+### ⚠️ The permission is the only guard left
+
+`hotel.booking.transfer`, manager and above, **not the desk**. §6.4 gives
+corporate bookings **no credit limit**, so one press turns a bill that was going
+to be settled in cash into an open-ended receivable that nothing will ever block.
+
+⚠️ §6.4 names the permission `booking.bill.transfer`. It is created as
+`hotel.booking.transfer` instead: every other permission in this module is
+`hotel.*`, the Roles screen groups them by `group_name = 'Hotel'`, and a bare
+`booking.bill.transfer` would read as belonging to some other module. The spec
+was written before that convention settled.
+
+### 32.1 A rule that had been missed
+
+§6.4's holds table says: **"On advance — a hold with money against it becomes
+*confirmed* automatically."** It was never implemented.
+
+It matters more than it reads. A hold that stays tentative after somebody has
+paid gets its beds released by `hotel:expire-holds` on the day it lapses — and
+that sweep's *"money has been taken against it, left for a person"* branch (§28)
+was written as a **backstop**. Without this rule it was the ordinary path, which
+is not what a backstop is for.
+
+Taking money against a hold now confirms it, clears `hold_until` — the deadline
+belonged to the hold, and left standing it is a date on a booking nothing expires
+— and writes the move to `booking_status_logs` with a reason a person can read.
+
+### Checked
+
+`hotel_bill_transfer_check.php` — **38 assertions**, every block rolled back.
+
+It reads each head's **net movement across every voucher the booking raised**,
+which is the only way to catch a double-carry: both postings balance perfectly on
+their own, and only the running total shows one of them should not be there.
+
+⚠️ Two faults the script found on its first run, both real:
+
+- **`$data['reason']` on a request that sent none.** `validate()` returns only
+  the keys that were *sent*, so `?:` was reading a missing key rather than an
+  empty one. Fixed with `?? null` first.
+- **The fixture, not the code.** A fixed 5,000 advance against whatever this
+  database's demo rooms cost left the booking *in credit* — and the controller
+  quite rightly refuses to move a bill that owes nothing. The advance is now a
+  fraction of the bill, worked out after billing.
+
+With the rest: **345 assertions across eleven hotel scripts, all passing.**
+
+### What is left
+
+⚠️ **Rate plans are blocked**, not next: §6.2 needs the client's rate-card
+answer first. Genuinely unblocked, in order:
+
+1. **`booking_charge_types`** — extra charges with their own COA heads, which
+   would retire the single `Hotel Other Income` head §26 settled for.
+2. Housekeeping and amenities (phase 5).
+3. Events and catering (phase 6), then ticketing.
+
+One thing §6.4 leaves open and this section inherits: **a printed Mushak 6.3
+cannot be reissued in another name** — it needs a credit note. That rule waits on
+OPEN-6, and it does not bite yet because §27 prints a *Bill* and not a Mushak.

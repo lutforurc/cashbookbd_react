@@ -933,3 +933,10 @@ export const API_HOTEL_MONTH_URL = `${API_BASE_URL}/hotel-setup/calendar/month`;
 // The tape chart: rooms down the side, nights across the top. What it is read
 // for is the HOLES, which a list of bookings never shows.
 export const API_HOTEL_TIMELINE_URL = `${API_BASE_URL}/hotel-setup/calendar/timeline`;
+
+// Who owes this bill, and moving it to somebody else — §6.4.
+//
+// ⚠️ NOT a field edit. The money owed moves from one party's account to
+// another's with a voucher against it, and only the OUTSTANDING balance moves:
+// money already received stays with whoever paid it. Nothing is re-priced.
+export const API_HOTEL_BILL_URL = `${API_BASE_URL}/hotel-setup/bookings/bill`;

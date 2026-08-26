@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import httpService from '../../../services/httpService';
 import {
+  API_HOTEL_BILL_URL,
   API_HOTEL_BOOKING_AVAILABILITY_URL,
   API_HOTEL_BOOKING_URL,
   API_HOTEL_CANCELLATION_URL,
@@ -149,6 +150,50 @@ export const bookingCancel = createAsyncThunk<
     return rejectWithValue(res.data?.message || 'Cancellation failed');
   } catch (error: any) {
     return rejectWithValue(said(error, 'Cancellation failed'));
+  }
+});
+
+/**
+ * Who owes this bill now, how much, and every move it has made — §6.4.
+ *
+ * ⚠️ Read before the dialog opens, and read AGAIN after a move. The figure the
+ * desk is asked to agree to is the outstanding balance, and it changes the
+ * moment anything is billed or paid — so it is never carried over from a
+ * previous open of the dialog.
+ */
+export const billRead = createAsyncThunk<any, number, { rejectValue: string }>(
+  'hotelBooking/billRead',
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await httpService.get(`${API_HOTEL_BILL_URL}/${id}`);
+      if (res.data?.success === true) return unwrap(res);
+      return rejectWithValue(res.data?.message || 'Could not read the bill');
+    } catch (error: any) {
+      return rejectWithValue(said(error, 'Could not read the bill'));
+    }
+  },
+);
+
+/**
+ * Move what is owed onto somebody else — or back to the guest.
+ *
+ * ⚠️ `to_party_id: null` is not "leave it alone", it is "move it BACK to the
+ * guest". That is the way out of a company named by mistake, and §6.4 requires
+ * it: without a way back the whole bill has to be cancelled and typed again.
+ */
+export const billTransfer = createAsyncThunk<
+  { message: string; data: any },
+  { id: number; to_party_id: number | null; reason?: string },
+  { rejectValue: string }
+>('hotelBooking/billTransfer', async ({ id, ...payload }, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_HOTEL_BILL_URL}/${id}/transfer`, payload);
+    if (res.data?.success === true) {
+      return { message: res.data?.message || 'Moved', data: unwrap(res) };
+    }
+    return rejectWithValue(res.data?.message || 'Could not move the bill');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not move the bill'));
   }
 });
 
@@ -395,6 +440,16 @@ interface BookingState {
   tills: any[];
 
   /**
+   * Who owes the bill of the booking last asked about, and what it has cost.
+   *
+   * ⚠️ Kept apart from `folio` even though both are about one booking's money.
+   * The folio's `balance` is what the BOOKING owes; this says WHO owes it, and
+   * a screen that read one for the other would move a bill onto a company on
+   * the strength of a figure that says nothing about who is holding it.
+   */
+  bill: any | null;
+
+  /**
    * When the day turns over at this property.
    *
    * Arrives with the LIST, not only with an availability read, because the desk
@@ -419,6 +474,7 @@ const initialState: BookingState = {
   checkout: null,
   cancellation: null,
   tills: [],
+  bill: null,
   times: null,
 
   loading: false,
@@ -472,6 +528,17 @@ const bookingSlice = createSlice({
      */
     clearCancellation(state) {
       state.cancellation = null;
+    },
+    /**
+     * Dropped when the dialog closes.
+     *
+     * ⚠️ It names a company and an amount owed. Left in the store, the next
+     * booking's dialog would open showing the previous one's payer for the
+     * moment before its own read came back -- under a button that moves money
+     * onto whoever is named.
+     */
+    clearBill(state) {
+      state.bill = null;
     },
   },
   extraReducers: (builder) => {
@@ -576,6 +643,40 @@ const bookingSlice = createSlice({
         // on screen is still true.
       })
 
+      .addCase(billRead.pending, (state) => {
+        state.checking = true;
+        state.error = null;
+      })
+      .addCase(billRead.fulfilled, (state, action) => {
+        state.checking = false;
+        state.bill = action.payload;
+      })
+      .addCase(billRead.rejected, (state, action) => {
+        state.checking = false;
+        state.bill = null;
+        state.error = action.payload || null;
+      })
+
+      .addCase(billTransfer.pending, (state) => {
+        state.saving = true;
+        state.error = null;
+      })
+      .addCase(billTransfer.fulfilled, (state, action) => {
+        state.saving = false;
+        // Replaced from the server, never patched: who owes it and how much are
+        // one answer and must come from one read.
+        state.bill = action.payload?.data ?? state.bill;
+        // The folio's own copy of the booking now names a different payer.
+        state.folio = null;
+      })
+      .addCase(billTransfer.rejected, (state, action) => {
+        state.saving = false;
+        state.error = action.payload || 'Failed';
+        // ⚠️ Left standing. Every refusal in BillTransferController happens
+        // before the transaction, so nothing moved and what is on screen is
+        // still true.
+      })
+
       .addCase(cancellationRead.pending, (state) => {
         state.checking = true;
         state.error = null;
@@ -657,6 +758,7 @@ export const {
   clearFolio,
   clearCheckout,
   clearCancellation,
+  clearBill,
 } =
   bookingSlice.actions;
 export default bookingSlice.reducer;

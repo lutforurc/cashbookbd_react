@@ -3,7 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
-import { FiArrowLeft, FiCalendar, FiLogOut, FiPlus, FiPrinter } from 'react-icons/fi';
+import {
+  FiArrowLeft,
+  FiCalendar,
+  FiLogOut,
+  FiPlus,
+  FiPrinter,
+  FiRepeat,
+} from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
@@ -13,6 +20,7 @@ import Table from '../../../utils/others/Table';
 import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
+import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
 import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
 import {
@@ -21,10 +29,13 @@ import {
   normalizeTemplate,
 } from '../../../utils/print-designer/printTemplate';
 import httpService from '../../../services/httpService';
-import { API_HOTEL_FOLIO_URL } from '../../../services/apiRoutes';
+import { API_HOTEL_FOLIO_URL, API_HOTEL_PARTY_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
 import { money } from '../setupHelpers';
 import {
+  billRead,
+  billTransfer,
+  clearBill,
   clearFolio,
   folioBill,
   folioCharge,
@@ -32,6 +43,26 @@ import {
   folioRead,
   tillList,
 } from './bookingSlice';
+
+/**
+ * Parties a bill can be moved to.
+ *
+ * ⚠️ Answers cust_party_infos.id, which is what billed_to_party_id points at.
+ * The chart dropdowns elsewhere in this app answer coa4 ids and are NOT
+ * interchangeable with it. Same list the check-out screen uses, and it never
+ * creates: a party is somebody money is owed by, confirmed by a person.
+ */
+const findParties = async (typed: string) => {
+  const res = await httpService.get(API_HOTEL_PARTY_URL, { params: { q: typed } });
+  const rows = res?.data?.data?.data ?? res?.data?.data ?? [];
+
+  return (Array.isArray(rows) ? rows : []).map((party: any) => ({
+    value: String(party.id),
+    label: party.name,
+    label_2: party.mobile || '',
+    label_3: party.idfr_code || '',
+  }));
+};
 
 /**
  * The bill, and the money against it -- screen 5.
@@ -129,8 +160,19 @@ const FolioScreen = () => {
   const saving = useSelector((state: any) => state.hotelBooking.saving);
   const tills = useSelector((state: any) => state.hotelBooking.tills);
 
+  const bill = useSelector((state: any) => state.hotelBooking.bill);
+
   const [charge, setCharge] = useState<any>(null);
   const [payment, setPayment] = useState<any>(null);
+
+  /**
+   * The open "move this bill" panel: who it is going to, and why.
+   *
+   * ⚠️ `party: null` inside an OPEN panel means "back to the guest", which is
+   * the way out of a company named by mistake (§6.4). The panel being closed is
+   * `moving === null`; do not conflate the two.
+   */
+  const [moving, setMoving] = useState<any>(null);
 
   /**
    * The paper waiting to go to the printer, and what it is called.
@@ -213,10 +255,15 @@ const FolioScreen = () => {
   useEffect(() => {
     load();
 
+    // Who owes it, read beside the bill itself. The folio's balance says what
+    // the BOOKING owes; this says who owes it, and they are two questions.
+    if (id) dispatch(billRead(Number(id)));
+
     return () => {
       dispatch(clearFolio());
+      dispatch(clearBill());
     };
-  }, [load, dispatch]);
+  }, [load, dispatch, id]);
 
   // Read once, and only if it is not already held. The chart of accounts does
   // not change while a clerk is at the desk, and a spinner between the guest
@@ -442,6 +489,32 @@ const FolioScreen = () => {
     }
   };
 
+  const moveBill = async () => {
+    const owing = Number(bill?.outstanding ?? 0);
+
+    if (owing <= 0) {
+      toast.error('Nothing is outstanding on this bill, so there is nothing to move.');
+      return;
+    }
+
+    try {
+      const result = await dispatch(
+        billTransfer({
+          id: Number(id),
+          // ⚠️ null is not "unset" here, it is "move it back to the guest".
+          to_party_id: moving?.party ? Number(moving.party.value) : null,
+          reason: (moving?.reason ?? '').trim(),
+        }),
+      ).unwrap();
+
+      toast.success(result.message);
+      setMoving(null);
+      load();
+    } catch (error: any) {
+      toast.error(String(error));
+    }
+  };
+
   const savePayment = async () => {
     if (!Number(payment?.amount)) {
       toast.error('How much?');
@@ -654,7 +727,111 @@ const FolioScreen = () => {
             icon={<FiLogOut size={16} />}
           />
         ) : null}
+
+        {/* "Bill it to my office" -- §6.4. Only where something is actually
+            outstanding: a settled bill has nothing to move, and offering the
+            button anyway would be offering a refusal. */}
+        {Number(bill?.outstanding ?? 0) > 0 ? (
+          <ButtonLoading
+            onClick={() =>
+              setMoving(moving ? null : { party: null, reason: '' })
+            }
+            label={moving ? 'Close' : 'Bill it to…'}
+            icon={<FiRepeat size={16} />}
+          />
+        ) : null}
       </div>
+
+      {/* Who owes this bill. Shown whenever it is not the guest, because a bill
+          on a company's account looks exactly like one on the guest's until
+          somebody says otherwise -- and the difference is who gets chased. */}
+      {bill?.carried ? (
+        <p className="mb-3 rounded border border-primary bg-blue-50 p-2.5 text-xs text-blue-900 dark:border-secondary dark:bg-secondary/15 dark:text-blue-50">
+          <strong>This bill is {bill.owed_by?.name}&rsquo;s.</strong>{' '}
+          {money(bill.outstanding)} outstanding on their account. Money taken from here settles
+          them, not the guest.
+        </p>
+      ) : null}
+
+      {moving ? (
+        <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
+          <div className="mb-2 text-sm font-medium text-black dark:text-white">
+            Move this bill
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            <div>
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                To whom
+              </span>
+              <DdlMultiline
+                id="bill_to_party_id"
+                name="to_party_id"
+                fetchOptions={findParties}
+                defaultOptions
+                value={moving.party}
+                onSelect={(chosen: any) => setMoving({ ...moving, party: chosen })}
+                placeholder="Search a party by name, mobile or code"
+              />
+              {/* ⚠️ The way back, and §6.4 requires it: without one, a company
+                  named by mistake means cancelling the whole bill and typing it
+                  again. */}
+              {bill?.carried ? (
+                <button
+                  type="button"
+                  onClick={() => setMoving({ ...moving, party: null })}
+                  className="mt-1 text-xs font-medium text-primary hover:underline dark:text-secondary"
+                >
+                  or move it back to the guest
+                </button>
+              ) : null}
+            </div>
+
+            <InputElement
+              id="bill_transfer_reason"
+              name="reason"
+              label="Why, for the record"
+              placeholder="Guest asked for it to go to their office"
+              value={moving.reason ?? ''}
+              onChange={(e: any) => setMoving({ ...moving, reason: e.target.value })}
+            />
+          </div>
+
+          {/* ⚠️ The two rules people expect to be otherwise, said where the
+              decision is made rather than in a manual. */}
+          <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+            Only the <strong>{money(bill?.outstanding)}</strong> still outstanding moves — money
+            already received stays with whoever paid it.{' '}
+            <strong>Nothing is re-priced:</strong> what changes is who pays, never what it cost.
+          </p>
+
+          <div className="mt-3">
+            <ButtonLoading
+              onClick={moveBill}
+              buttonLoading={saving}
+              label={
+                moving.party ? `Move it to ${moving.party.label}` : 'Move it back to the guest'
+              }
+              variant="primary"
+            />
+          </div>
+
+          {bill?.history?.length ? (
+            <div className="mt-3 border-t border-stroke pt-2 text-xs dark:border-strokedark">
+              <div className="mb-1 font-medium text-black dark:text-white">Where it has been</div>
+              {bill.history.map((row: any) => (
+                <div key={row.id} className="text-gray-600 dark:text-gray-300">
+                  {row.date}: {row.from} → {row.to}, {money(row.amount)}
+                  {row.voucher_no ? (
+                    <span className="ml-1 font-mono text-[0.65rem]">{row.voucher_no}</span>
+                  ) : null}
+                  {row.reason ? <span className="ml-1 italic">— {row.reason}</span> : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       {charge ? (
         <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
