@@ -923,3 +923,13 @@ export const API_HOTEL_REGISTER_URL = `${API_BASE_URL}/hotel-setup/reports/regis
 // the purpose — so a report that summed the column would say the day took more
 // than the drawer holds.
 export const API_HOTEL_COLLECTION_URL = `${API_BASE_URL}/hotel-setup/reports/collection`;
+
+// How full a month was, night by night, with ADR and RevPAR against it.
+//
+// ⚠️ ADR and RevPAR are different divisions — per bed SOLD and per bed the
+// property HAS. Quoting one for the other reports an empty month as a full one.
+export const API_HOTEL_MONTH_URL = `${API_BASE_URL}/hotel-setup/calendar/month`;
+
+// The tape chart: rooms down the side, nights across the top. What it is read
+// for is the HOLES, which a list of bookings never shows.
+export const API_HOTEL_TIMELINE_URL = `${API_BASE_URL}/hotel-setup/calendar/timeline`;

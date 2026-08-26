@@ -130,6 +130,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'hotel': [
     { id: 'hotel_bookings', title: "Bookings" },
+    { id: 'hotel_calendar', title: "Calendar" },
     { id: 'hotel_reports', title: "Reports" },
     { id: 'hotel_setup', title: "Rooms & Seats Setup" },
   ],
@@ -1982,6 +1983,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           <li style={subSlot('hotel', 'hotel_bookings')}>
                             <NavLink to={routes.hotel_bookings} className={subMenuLinkClass}>
                               Bookings
+                            </NavLink>
+                          </li>
+
+                          {/* The month at a glance, and the tape chart the desk
+                              reads for gaps. Beside Bookings because it answers
+                              the question that screen cannot: what does next
+                              week look like? */}
+                          <li style={subSlot('hotel', 'hotel_calendar')}>
+                            <NavLink to={routes.hotel_calendar} className={subMenuLinkClass}>
+                              Calendar
                             </NavLink>
                           </li>
 

@@ -125,6 +125,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.hotel_setup,
     routes.hotel_bookings,
     routes.hotel_reports,
+    routes.hotel_calendar,
     // No menu entry of its own -- it is reached from a booking. Listed so the
     // Hotel menu stays open and marked while somebody is on it.
     routes.hotel_booking_check_in,

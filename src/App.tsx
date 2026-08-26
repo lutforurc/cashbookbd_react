@@ -138,6 +138,7 @@ import AllotmentScreen from './components/modules/hotel/booking/AllotmentScreen'
 import FolioScreen from './components/modules/hotel/booking/FolioScreen';
 import CheckOutScreen from './components/modules/hotel/booking/CheckOutScreen';
 import HotelReports from './components/modules/hotel/reports/HotelReports';
+import HotelCalendar from './components/modules/hotel/calendar/HotelCalendar';
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
@@ -634,6 +635,26 @@ function App() {
               }
             >
               <Route path={routes.hotel_reports} element={<HotelReports />} />
+            </Route>
+            {/*
+              The property over time -- the month, and the tape chart.
+
+              ⚠️ On hotel.booking.view, the SAME permission the availability
+              grid reads under. Both show the same nights in a different shape,
+              and gating them apart would pretend they reveal something the desk
+              cannot already see -- while leaving a property having to grant two
+              permissions to show somebody one fact.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.booking.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_calendar} element={<HotelCalendar />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
               <Route path={routes.journal} element={<Journal />} />

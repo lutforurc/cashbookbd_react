@@ -131,8 +131,22 @@
 > Still not built: early check-in / late check-out charges (§6.2), and the §6.1
 > gender rule. The VAT rates remain zero on every install until the client's
 > consultant answers §6.3 — which means every bill printed today comes out with
-> no tax lines on it at all. **Phase 4's timeline and month calendar** are the
-> next piece that is neither blocked nor a hole.
+> no tax lines on it at all.
+>
+> **2026-08-26 (the last of the day): phase 4 is finished.** A **month view** —
+> occupancy, ADR, RevPAR, arrivals and departures per night — and the **tape
+> chart**, rooms down the side and nights across the top, which is the shape that
+> shows the holes. Under Hotel ▸ Calendar, on `hotel.booking.view`: no new
+> permission and no new table. **§31.**
+>
+> ⚠️ **ADR and RevPAR divide by different things** — per bed *sold* and per bed
+> the property *has*. A hotel selling half its rooms at a high rate has a good
+> ADR and a bad RevPAR, and quoting one for the other reports an empty month as a
+> full one.
+>
+> Next unblocked, in order: **rate plans** (season / holiday / corporate rents —
+> today the rent is fixed per room), then `booking_charge_types`, then
+> `booking_bill_transfers`.
 
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
@@ -3569,3 +3583,154 @@ Unchanged from §29, less this one: early check-in and late check-out charges
 (§6.2), the §6.1 gender rule, and the VAT rates — all waiting on the client.
 **Phase 4's timeline and month calendar** remain the next unblocked piece, with
 rate plans (`booking_rate_plans`) behind them.
+
+---
+
+## 31. The property over time — phase 4, 2026-08-26
+
+The availability grid answers *"what is free between these two dates"*, which is
+what somebody taking a booking asks. Two questions could not be asked of it at
+all:
+
+| | |
+|---|---|
+| **The month** | How full were we in August, and how does September look? |
+| **The tape** | Which room has a three-night hole in it next week? |
+
+The first is an owner's question and the one they ask first. The second is a
+desk's, and it wants **rooms down the side and dates across the top** — the
+shape that shows the *holes*, which a list of bookings never does.
+
+Phase 4 of §8 asked for a floor grid, a timeline and a month calendar. The grid
+was built with the setup screen (§13) and the booking screen paints it (§18).
+These are the other two.
+
+### No new permission and no new table
+
+Both read under **`hotel.booking.view`**, the same permission the availability
+grid uses. They show the same nights in a different shape, and gating them apart
+would pretend they reveal something the desk cannot already see — while leaving
+a property having to grant two permissions to show somebody one fact.
+
+Everything is counted out of `booking_resource_details`, which is one row per
+seat per night and therefore **already an occupancy record**. It had simply never
+been read as one.
+
+### ⚠️ ADR and RevPAR are not the same division
+
+The one thing here that could be quietly wrong for years, because both figures
+look plausible whichever denominator they used.
+
+| | Divided by |
+|---|---|
+| **ADR** — Average Daily Rate | The beds that were **sold** |
+| **RevPAR** — Revenue Per Available Room | Every bed the property **has**, every night |
+
+A hotel selling half its rooms at a high rate has a **good ADR and a bad
+RevPAR**, which is the entire reason both are quoted. Getting the denominator
+wrong makes a bad month read like a good one — so the check script asserts each
+against its own arithmetic and asserts that the two are **not equal**.
+
+Room revenue here is the rent held against each night, **before** service charge
+and VAT. That is what ADR means, and it is said on the screen.
+
+### ⚠️ A hold occupies a bed and earns nothing
+
+Sold and held are counted **separately**, and both occupy.
+
+- Folded into *sold*, a hold reports revenue nobody has agreed to pay — and a
+  month would look better the more of its bookings went on to be cancelled.
+- Folded into *free*, it offers a bed that cannot be sold.
+
+Occupancy counts both, because the question occupancy answers is *can I sell it*,
+not *was it paid for*. Revenue counts only the sold ones.
+
+### ⚠️ Departures are the morning after the last night held
+
+Not `check_out_date`. A guest who left early has had their later nights deleted,
+so `check_out_date` names a day they were not here — and the departure would be
+counted on a morning nobody handed a key back.
+
+The same rule the guest register follows (§29), for the same reason, and the
+check script proves it the same way: it deletes the later nights the way
+check-out does and asserts the departure moved, *while `booking_master` still
+says the stay runs longer*.
+
+### ⚠️ The occupancy denominator is today's property, and the screen says so
+
+Every occupancy report in the world has this fault and most of them hide it. The
+denominator is the beds the property has **today** — a hotel that has added rooms
+since reads low for older months, and one that removed some reads high.
+
+A true point-in-time capacity needs a history of the room list that nobody asked
+for and that would be wrong the first time somebody corrected a typo in a room
+code. So the approximation stands and is **stated on the screen**, in the
+sentence under the figures, rather than left for somebody to discover.
+
+`free` is clamped at zero for the same reason: a property whose rooms were
+deleted can hold more nights than it now has beds, and a cell reading `−3 free`
+is a cell nobody believes about anything else either.
+
+### 31.1 The tape chart
+
+**By room, not by seat.** A dormitory of eight beds would otherwise be eight rows
+of the same name, and the chart is read by somebody *scanning* for a gap.
+
+What each cell carries instead is **how many of that room's beds are taken** — so
+a half-full dormitory reads as half full rather than as either free or gone.
+Amber is part of a room, red is all of it, and ⚠️ **the count is printed in the
+cell** rather than left to the colour: a colour cannot say *three of eight*, and
+it says nothing at all to a reader with colour blindness or to a printer.
+
+Capped at 31 nights. Past a month the cells are too narrow to carry a room
+number, and the answer stops being *readable* rather than merely large.
+
+⚠️ **Nothing here books anything**, and the tape is the one that could be
+mistaken for something that does. A booking is taken on the availability screen,
+against the unique key that actually stops a bed being sold twice — this is a
+picture of what was held when the page was read. The screen says so under the
+chart.
+
+Where two bookings share a room on one night — ordinary in a dormitory sold bed
+by bed — the cell names one and flags `shared`, so a tooltip naming one guest
+does not read as naming the only one. The name is taken with `MIN` rather than
+whichever row the engine read first: a cell showing a different guest on every
+refresh is a cell nobody trusts.
+
+### The month, laid out
+
+⚠️ **Sunday first.** Bangladesh's working week begins on Sunday, and a calendar
+starting on Monday would put the weekend in the middle of the row for everybody
+reading this.
+
+Each day carries occupancy as a percentage *and* a colour, sold and held, the
+night's revenue, and arrivals and departures as `↓` and `↑` — the two numbers a
+desk plans its morning by.
+
+### Checked
+
+`hotel_calendar_check.php` — **38 assertions**, every block rolled back, run
+against a **quiet month** (April 2026) so no figure depends on whatever somebody
+last did in a browser.
+
+With the rest: **307 assertions across ten hotel scripts, all passing.**
+
+### What is left
+
+Phase 4 is done. What remains unblocked, in the order it is worth doing:
+
+1. **Rate plans** (`booking_rate_plans` / `_details`) — season, holiday and
+   corporate rates. Rent is fixed per room today, so a hotel cannot charge more
+   at Eid than in Ramadan without editing every room.
+2. **`booking_charge_types`** — extra charges with their own COA heads, which
+   would retire the single `Hotel Other Income` head §26 settled for.
+3. **`booking_bill_transfers`** (§6.4) — moving a bill to another payer with its
+   own voucher and permission. Check-out's *carry to party* covers half of it.
+4. Housekeeping and amenities (phase 5), then events and catering (phase 6),
+   then ticketing.
+
+Still waiting on the client: the VAT rates (§6.3), early check-in and late
+check-out charges (§6.2), the §6.1 gender rule, cancellation percentages, and the
+child age (OPEN-13) — **which last one this section now has a use for**, because
+an occupancy report that counted children differently from one property to the
+next is exactly the comparison OPEN-13 warned about.
