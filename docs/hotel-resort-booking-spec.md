@@ -112,6 +112,22 @@
 > they had left — an error on an ordinary report, and something else on a
 > register a police officer reads.
 >
+> **2026-08-26 (and finally): rent reaches the books on the night it was
+> earned.** Open decision **2** — *"room rent posts per night, so daily and
+> monthly income stays correct"* — was written at the start of this project and
+> never done: a night reached the ledger only when somebody pressed a button, so
+> a long stay across a month end contributed nothing to that month.
+> `php artisan hotel:night-audit`, scheduled at 01:00. **§30.**
+>
+> ⚠️ **One voucher per night, dated to that night.** Billing several outstanding
+> nights in one pass would date them all to the last one and land the rest in the
+> wrong period — the exact fault the audit exists to end.
+>
+> ⚠️ `booking_night_audit_runs` (table 14) is **not** the guard against double
+> billing — `uq_bfd_room_night` is. It answers *did the audit run?*, and its
+> **gaps** are what it is read for: a cron that died on Friday leaves no other
+> trace.
+>
 > Still not built: early check-in / late check-out charges (§6.2), and the §6.1
 > gender rule. The VAT rates remain zero on every install until the client's
 > consultant answers §6.3 — which means every bill printed today comes out with
@@ -3428,3 +3444,128 @@ And **phase 4's calendar** (§8): the floor grid is built and the availability
 screen paints it, but the *timeline* and *month calendar* views are not. They are
 the next thing that is neither blocked nor a hole — a month at a glance is what
 an owner asks for, and occupancy percentages (phase 10) hang off the same read.
+
+---
+
+## 30. The night audit, 2026-08-26
+
+Open decision **2**, written down at the very start of this project:
+
+> *Room rent posted per night, or once at check-out?*
+> **Per night — daily and monthly income stays correct.**
+
+Nothing did it. A night reached the books when somebody pressed **Bill the
+nights** on the folio, so a twenty-day stay running across a month end
+contributed **nothing** to that month's profit and loss — and nobody could see
+it, because an unbilled night looks exactly like a night nobody has got to yet.
+
+Like §28, this is not a feature. It is a gap against a recorded decision.
+
+### `php artisan hotel:night-audit`
+
+Bills every night that has been **slept** and is not yet on a folio, and posts
+the voucher. Scheduled at 01:00, half an hour after the hold sweep.
+
+⚠️ **It audits YESTERDAY.** The night has to have finished before it can be
+billed; auditing today would bill a night the guests are still asleep in.
+
+### ⚠️ One night at a time, and that is not an optimisation
+
+Each night is billed on its own so it gets **its own voucher, dated to itself**
+— `HotelVoucher::postFolio` dates by the latest service on the batch (§26).
+
+Billing five outstanding nights in one pass would put all five onto one voucher
+dated to the last of them, and **four nights of income would land in the wrong
+period — possibly the wrong month**. Which is the exact fault this command
+exists to end. Doing it the fast way would have reintroduced the bug while
+appearing to fix it.
+
+The check script asserts it directly: three nights, three vouchers, each dated
+to its own night.
+
+### ⚠️ It only bills nights somebody slept
+
+`checked_in` and `checked_out` only. A confirmed booking holds its nights from
+the moment the telephone call ended and nobody has been in the bed; billing one
+would charge a guest who has not arrived.
+
+The same rule the guest register follows (§29), for the same reason.
+
+### ⚠️ It catches up by itself
+
+It bills every unbilled slept night **up to** the audit date, not merely the
+audit date's own. A week when the cron was down is repaired by the next
+successful run rather than by somebody noticing — and each of those nights still
+gets its own correctly dated voucher, so the catch-up does not distort the
+periods it is repairing.
+
+### 30.1 `booking_night_audit_runs` — and why the gaps are the point
+
+⚠️ **This table is not what stops a night being billed twice.**
+`uq_bfd_room_night` does that, and it does it whatever the second attempt comes
+from — this sweep, the folio screen, or two clerks at once. Nothing in the table
+is load-bearing for correctness.
+
+⚠️ **What it is for is the opposite question: did the audit RUN?** A server whose
+cron died on a Friday bills nothing all weekend, every folio quietly falls
+behind, and there is no screen anywhere that looks different. A missing row here
+is the only evidence that would exist.
+
+So `BookingNightAuditRun::missingNights()` is the method that matters, and it
+answers about **absence**. Reading the rows tells you what was billed; reading
+the holes tells you what was not, and only the second one is an alarm.
+
+One row per **property** per night, not per company: two hotels under one company
+audit separately, and a run covering both could not say which one it had failed
+on.
+
+`ran_by` is NULL for the scheduler — the same convention as
+`booking_status_logs.changed_by`. Nobody is signed in at one in the morning, and
+inventing a user id would name a person who was asleep.
+
+### One property's problem is not the sweep's
+
+The chart-of-accounts check is per property. A company that has not run the grant
+file is **skipped with its reason recorded in the run row**, and every other
+tenant on the server is audited normally. A booking that will not bill is counted
+and named, and the other forty are billed — but a run reporting nothing wrong
+while leaving a stay unbilled would be worse than one that failed outright, so
+the trouble is written into `notes`.
+
+### ⚠️ Nothing runs until the host's cron calls the scheduler
+
+The same warning as §28, and it now covers two commands:
+
+```
+* * * * * cd /path/to/api && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Without it, `hotel:expire-holds` and `hotel:night-audit` are both notes nobody
+reads — and the second one means the books stay as they were before this section
+was written.
+
+### Checked
+
+`hotel_night_audit_check.php` — **21 assertions**, every block rolled back, so
+running it bills no real stay and raises no real voucher.
+
+The interesting ones are the refusals: that a confirmed booking is not billed,
+that tonight is not billed, that `--pretend` writes nothing, and that a second
+run adds nothing.
+
+With the rest: **269 assertions across nine hotel scripts, all passing.**
+
+### What this changes for whoever reads the books
+
+Room rent, service charge and VAT now reach the ledger **on the night they were
+earned**, without anybody pressing anything. The folio's *Bill the nights* button
+stays — it is what a desk uses to settle a guest who is leaving mid-morning
+before the audit has run — but it is no longer the only thing standing between a
+stay and the month's profit and loss.
+
+### What is left
+
+Unchanged from §29, less this one: early check-in and late check-out charges
+(§6.2), the §6.1 gender rule, and the VAT rates — all waiting on the client.
+**Phase 4's timeline and month calendar** remain the next unblocked piece, with
+rate plans (`booking_rate_plans`) behind them.
