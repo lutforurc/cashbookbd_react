@@ -21,6 +21,7 @@ import {
   TableColumn,
   TitleBand,
   TotalsBand,
+  fieldFormat,
   fieldName,
   isNumericField,
 } from './printTemplate';
@@ -97,6 +98,47 @@ const columnWidths = (columns: TableColumn[]) => {
   const raw = columns.map((column) => Math.max(3, num(column.width) || 10));
   const total = raw.reduce((sum, width) => sum + width, 0) || 1;
   return raw.map((width) => `${((width / total) * 100).toFixed(3)}%`);
+};
+
+/**
+ * A field printed the way its catalogue entry says to print it.
+ *
+ * The switches above were written when there was one document; there are three
+ * now, and a fourth would need twenty more cases of which the twenty-first
+ * would be forgotten. So a field may DECLARE its formatting instead -- see
+ * FieldDef.format -- and this is the last thing tried, after every case above
+ * has had its chance.
+ *
+ * ⚠️ Nothing on the sales challan reaches here with a format: every one of its
+ * fields is a plain string or has a case of its own, so no challan anywhere
+ * prints differently for this existing.
+ *
+ * @param source  The row or the voucher, for a `words` field that has to look
+ *                up the figure it is spelling.
+ */
+const declared = (key: string, raw: any, source: any): string => {
+  const field = fieldFormat(key);
+
+  if (field?.format === 'words') {
+    const figure = num(source?.[field.from ?? key]);
+    // ⚠️ Zero spells nothing. "Zero Only" on a receipt is a receipt for no
+    // money, and printing it is worse than leaving the line blank.
+    return figure ? `${numberToWords(figure)} Only` : '';
+  }
+
+  if (blank(raw)) return '';
+
+  if (field?.format === 'money') {
+    // thousandSeparator turns 0 into a dash, which is right on a bill: a line
+    // of nothing should read as nothing rather than as a figure.
+    return thousandSeparator(num(raw));
+  }
+
+  if (field?.format === 'date') {
+    return dayjs(raw).isValid() ? dayjs(raw).format('DD/MM/YYYY') : String(raw);
+  }
+
+  return String(raw);
 };
 
 const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
@@ -209,10 +251,8 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           return String(totals.line_count);
         case 'amount_words':
           return totals.total_amount ? `${numberToWords(totals.total_amount)} Only` : '';
-        default: {
-          const raw = basic?.[key];
-          return blank(raw) ? '' : String(raw);
-        }
+        default:
+          return declared(key, basic?.[key], basic);
       }
     };
 
@@ -233,10 +273,8 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           return thousandSeparator(num(row?.[key]));
         case 'warranty_days':
           return num(row?.warranty_days) ? `${num(row.warranty_days)} days` : '';
-        default: {
-          const raw = row?.[key];
-          return blank(raw) ? '' : String(raw);
-        }
+        default:
+          return declared(key, row?.[key], row);
       }
     };
 

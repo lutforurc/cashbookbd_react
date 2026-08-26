@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
-import { FiArrowLeft, FiCalendar, FiLogOut, FiPlus } from 'react-icons/fi';
+import { FiArrowLeft, FiCalendar, FiLogOut, FiPlus, FiPrinter } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
@@ -12,6 +13,15 @@ import Table from '../../../utils/others/Table';
 import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
+import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
+import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
+import {
+  PrintTemplate,
+  defaultTemplate,
+  normalizeTemplate,
+} from '../../../utils/print-designer/printTemplate';
+import httpService from '../../../services/httpService';
+import { API_HOTEL_FOLIO_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
 import { money } from '../setupHelpers';
 import {
@@ -121,6 +131,80 @@ const FolioScreen = () => {
 
   const [charge, setCharge] = useState<any>(null);
   const [payment, setPayment] = useState<any>(null);
+
+  /**
+   * The paper waiting to go to the printer, and what it is called.
+   *
+   * ⚠️ Held in state rather than printed straight from the response, because
+   * react-to-print copies what is in the DOM at the moment it is called -- so
+   * the document has to be MOUNTED first and printed in the effect below.
+   * Called in the same breath, it would print the previous paper, or nothing.
+   */
+  const [paper, setPaper] = useState<{
+    template: PrintTemplate;
+    data: DocumentData;
+    title: string;
+  } | null>(null);
+
+  const [fetchingPaper, setFetchingPaper] = useState(false);
+  const paperRef = useRef<HTMLDivElement>(null);
+
+  const sendToPrinter = useReactToPrint({
+    contentRef: paperRef,
+    documentTitle: paper?.title ?? 'Hotel',
+    // Unmounted afterwards. Left standing, a whole document would be re-drawn
+    // on every keystroke in the charge form on a screen that re-renders often,
+    // and there is nothing to draw between papers anyway.
+    onAfterPrint: () => setPaper(null),
+  });
+
+  useEffect(() => {
+    if (!paper) return undefined;
+    // The wait is for the letterhead image, which PadPrinting loads rather
+    // than renders inline -- printed sooner, the paper goes out headless.
+    const timer = setTimeout(() => sendToPrinter(), 250);
+    return () => clearTimeout(timer);
+  }, [paper]);
+
+  /**
+   * Fetch one paper's facts and the branch's own layout, then print it.
+   *
+   * Both come back in the SAME call: the paper is printed with a guest standing
+   * at the counter, and one that needs two round trips is one that opens late.
+   *
+   * A branch that never opened the designer has no layout, and null here means
+   * the built-in default -- which is why this works on the day it ships,
+   * without anybody setting anything up.
+   */
+  const printPaper = async (url: string, docType: any, title: string) => {
+    setFetchingPaper(true);
+
+    try {
+      const response = await httpService.get(url);
+      const payload = response?.data?.data?.data ?? response?.data?.data ?? null;
+
+      if (!payload) {
+        toast.error('That paper could not be prepared.');
+        return;
+      }
+
+      setPaper({
+        template: payload.layout
+          ? normalizeTemplate(payload.layout, docType)
+          : defaultTemplate(docType),
+        data: {
+          basic: payload.basic ?? null,
+          products: payload.products ?? [],
+          branch: payload.branch ?? null,
+        },
+        title,
+      });
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'That paper could not be prepared.');
+    } finally {
+      setFetchingPaper(false);
+    }
+  };
 
   const load = useCallback(() => {
     if (id) dispatch(folioRead(Number(id)));
@@ -301,8 +385,34 @@ const FolioScreen = () => {
         cellClass: 'text-center',
         render: (row: any) => <VoucherMark vrNo={row.vr_no} />,
       },
+      {
+        key: 'print',
+        header: '',
+        headerClass: 'w-12 text-center',
+        cellClass: 'text-center',
+        // ⚠️ Per ROW, not one button for the screen. A receipt is what somebody
+        // is handed at the moment they hand money over; a paper covering three
+        // payments is a statement, which is a different document.
+        render: (row: any) => (
+          <button
+            type="button"
+            title={`Print receipt ${row.payment_no}`}
+            onClick={() =>
+              printPaper(
+                `${API_HOTEL_FOLIO_URL}/${id}/receipt/${row.id}`,
+                'hotel_money_receipt',
+                `Money Receipt ${row.payment_no}`,
+              )
+            }
+            className="text-primary hover:underline dark:text-secondary"
+          >
+            <FiPrinter size={15} />
+          </button>
+        ),
+      },
     ],
-    [],
+    // printPaper closes over `id`, which is the only thing about it that moves.
+    [id],
   );
 
   const billNights = async () => {
@@ -514,6 +624,23 @@ const FolioScreen = () => {
           icon={<FiPlus size={16} />}
           disabled={!!folio.chart_missing?.length}
         />
+        {/* ⚠️ Prints what is ON the bill, and does not bill anything on the way.
+            A stay whose nights nobody has billed prints an empty table, which
+            is correct -- it is what the guest has been charged. Disabled while
+            that is the case, so nobody hands a guest a blank sheet. */}
+        <ButtonLoading
+          onClick={() =>
+            printPaper(
+              `${API_HOTEL_FOLIO_URL}/${id}/bill-paper`,
+              'hotel_bill',
+              `Bill ${booking?.booking_no ?? ''}`,
+            )
+          }
+          buttonLoading={fetchingPaper}
+          label="Print the bill"
+          icon={<FiPrinter size={16} />}
+          disabled={!folio.lines?.length}
+        />
         {/* The way out, from the screen where the money was settled.
 
             ⚠️ Only on a checked-in stay. It is a link rather than the act
@@ -700,6 +827,15 @@ const FolioScreen = () => {
         data={folio.payments ?? []}
         noDataMessage="Nothing taken yet."
       />
+
+      {/* Mounted only while a paper is on its way to the printer. It has to be
+          in the DOM for react-to-print to copy it, and it must not be seen on
+          screen -- the desk asked for paper, not for a preview. */}
+      <div className="hidden">
+        {paper ? (
+          <DocumentPrint ref={paperRef} template={paper.template} data={paper.data} />
+        ) : null}
+      </div>
     </div>
   );
 };

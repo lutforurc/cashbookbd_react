@@ -24,7 +24,7 @@ import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
 import {
   ADDABLE_BANDS,
   Band,
-  CHALLAN_PRESETS,
+  DocType,
   InfoBand,
   NotesBand,
   PrintTemplate,
@@ -36,9 +36,11 @@ import {
   defaultTemplate,
   nextBandId,
   normalizeTemplate,
+  presetsFor,
 } from '../../../utils/print-designer/printTemplate';
 import {
   CheckRow,
+  DocTypeContext,
   InfoBandEditor,
   NotesBandEditor,
   NumberBox,
@@ -52,9 +54,37 @@ import {
   reorder,
   useRowDrag,
 } from './bandEditors';
-import { SAMPLE_DOCUMENT } from './sampleDocument';
+import { sampleFor } from './sampleDocument';
 
-const DOC_TYPE = 'sales_challan';
+/**
+ * The papers this screen can lay out.
+ *
+ * ⚠️ A money receipt and a bill are SEPARATE entries and must stay so. They are
+ * different documents with different legal weight -- the VAT falls due on the
+ * bill and not on the receipt -- and one layout serving both is how a receipt
+ * quietly acquires a tax line. The catalogues behind them differ for the same
+ * reason: see HOTEL_RECEIPT_FIELDS, which offers no tax field at all.
+ *
+ * ⚠️ These ids are stored in print_templates.doc_type and are checked against
+ * PrintTemplateController::DOC_TYPES. A new one needs a row in both lists.
+ */
+const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
+  {
+    id: 'sales_challan',
+    name: 'Delivery Challan',
+    hint: 'The paper that travels with the goods.',
+  },
+  {
+    id: 'hotel_money_receipt',
+    name: 'Hotel — Money Receipt',
+    hint: 'Proof that money arrived. Carries no tax line, by design.',
+  },
+  {
+    id: 'hotel_bill',
+    name: 'Hotel — Bill',
+    hint: 'What the stay was charged. The VAT falls due on this one.',
+  },
+];
 
 const BAND_NAMES: Record<string, string> = {
   header: 'Letterhead',
@@ -116,7 +146,15 @@ const PrintTemplateDesigner = () => {
   const sessionBranchId = settings?.branch?.id;
 
   const [branchId, setBranchId] = useState<string>('');
-  const [template, setTemplate] = useState<PrintTemplate>(() => defaultTemplate());
+  /**
+   * Which paper is being laid out.
+   *
+   * ⚠️ Changing it reloads from the server rather than converting what is on
+   * screen. A challan's bands name a challan's fields, and carrying them over
+   * to a hotel bill would produce a paper of blanks that looked designed.
+   */
+  const [docType, setDocType] = useState<DocType>('sales_challan');
+  const [template, setTemplate] = useState<PrintTemplate>(() => defaultTemplate('sales_challan'));
   const [selectedBandId, setSelectedBandId] = useState<string>('table');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -191,11 +229,11 @@ const PrintTemplateDesigner = () => {
     setLoading(true);
 
     httpService
-      .get(`${API_PRINT_TEMPLATE_URL}/${DOC_TYPE}`, { params: { branch_id: branchId } })
+      .get(`${API_PRINT_TEMPLATE_URL}/${docType}`, { params: { branch_id: branchId } })
       .then((response) => {
         if (!live) return;
         const layout = response?.data?.data?.data?.layout ?? null;
-        const next = layout ? normalizeTemplate(layout) : defaultTemplate();
+        const next = layout ? normalizeTemplate(layout, docType) : defaultTemplate(docType);
         setTemplate(next);
         // A branch that has never saved one starts on the default and counts as
         // unsaved, so the first Save writes a row rather than looking like a
@@ -204,7 +242,7 @@ const PrintTemplateDesigner = () => {
       })
       .catch(() => {
         if (!live) return;
-        setTemplate(defaultTemplate());
+        setTemplate(defaultTemplate(docType));
         setSaved('');
       })
       .finally(() => {
@@ -214,7 +252,7 @@ const PrintTemplateDesigner = () => {
     return () => {
       live = false;
     };
-  }, [branchId]);
+  }, [branchId, docType]);
 
   const patch = (changes: Partial<PrintTemplate>) =>
     setTemplate((current) => ({ ...current, ...changes }));
@@ -270,7 +308,7 @@ const PrintTemplateDesigner = () => {
   };
 
   const applyPreset = (presetId: string) => {
-    const preset = CHALLAN_PRESETS.find((item) => item.id === presetId);
+    const preset = presetsFor(docType).find((item) => item.id === presetId);
     if (!preset) return;
     setTemplate(preset.build());
     setSelectedBandId('table');
@@ -286,7 +324,7 @@ const PrintTemplateDesigner = () => {
     setSaving(true);
     try {
       await httpService.post(API_PRINT_TEMPLATE_URL, {
-        doc_type: DOC_TYPE,
+        doc_type: docType,
         branch_id: Number(branchId),
         layout: template,
       });
@@ -302,7 +340,7 @@ const PrintTemplateDesigner = () => {
   };
 
   const resetToDefault = () => {
-    setTemplate(defaultTemplate());
+    setTemplate(defaultTemplate(docType));
     setSelectedBandId('table');
   };
 
@@ -351,14 +389,19 @@ const PrintTemplateDesigner = () => {
   };
 
   return (
-    <div className="p-2">
+    // ⚠️ The whole screen, so every field picker inside offers THIS paper's
+    // catalogue. A receipt whose picker still offered the challan's fields
+    // would let a tenant put a VAT line on a money receipt, which is the one
+    // thing the two doc types exist to prevent.
+    <DocTypeContext.Provider value={docType}>
+      <div className="p-2">
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Challan Layout" screen="print-template-designer" />
+        <HelmetTitle title="Print Layout" screen="print-template-designer" />
       </div>
 
       {/* ------------------------- the strip ------------------------- */}
       <div className={`${PANEL} mb-3`}>
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-5">
           <div>
             <span className={SUB_LABEL}>Branch</span>
             <BranchDropdown
@@ -371,6 +414,26 @@ const PrintTemplateDesigner = () => {
           </div>
 
           <div>
+            <span className={SUB_LABEL}>Paper</span>
+            {/* ⚠️ Changing this RELOADS from the server rather than converting
+                what is on screen: a challan's bands name a challan's fields,
+                and carried over to a hotel bill they would draw a paper of
+                blanks that looked designed. */}
+            <Select
+              value={docType}
+              onChange={(event) => setDocType(event.target.value as DocType)}
+              className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-sm text-[rgb(var(--c-text))] outline-none dark:bg-boxdark"
+              title={DOC_TYPES.find((item) => item.id === docType)?.hint}
+            >
+              {DOC_TYPES.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <div>
             <span className={SUB_LABEL}>Start from</span>
             <Select
               value=""
@@ -380,7 +443,7 @@ const PrintTemplateDesigner = () => {
               className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-sm text-[rgb(var(--c-text))] outline-none dark:bg-boxdark"
             >
               <option value="">Choose a ready layout…</option>
-              {CHALLAN_PRESETS.map((preset) => (
+              {presetsFor(docType).map((preset) => (
                 <option key={preset.id} value={preset.id}>
                   {preset.name} — {preset.hint}
                 </option>
@@ -636,7 +699,7 @@ const PrintTemplateDesigner = () => {
                     transformOrigin: 'top left',
                   }}
                 >
-                  <DocumentPrint template={template} data={SAMPLE_DOCUMENT} preview />
+                  <DocumentPrint template={template} data={sampleFor(docType)} preview />
                 </div>
               </div>
             </div>
@@ -657,11 +720,12 @@ const PrintTemplateDesigner = () => {
               neither, which makes a test print exactly what a customer's
               challan will be. */}
           <div className="hidden">
-            <DocumentPrint ref={previewRef} template={template} data={SAMPLE_DOCUMENT} />
+            <DocumentPrint ref={previewRef} template={template} data={sampleFor(docType)} />
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </DocTypeContext.Provider>
   );
 };
 

@@ -4,12 +4,11 @@ import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { Input, Select, Textarea } from '../../../utils/fields/FormControls';
 import {
   Align,
-  FIELD_CATALOG,
+  DocType,
   FIELD_GROUP_NAMES,
   FieldGroup,
   InfoBand,
   InfoItem,
-  LINE_FIELDS,
   NotesBand,
   SignatureBand,
   SpacerBand,
@@ -18,8 +17,25 @@ import {
   TitleBand,
   TotalsBand,
   fieldName,
+  fieldsFor,
   isNumericField,
+  lineFieldsFor,
 } from '../../../utils/print-designer/printTemplate';
+
+/**
+ * Which paper is being designed.
+ *
+ * ⚠️ Context rather than a prop, and it is worth saying why: the doc type is
+ * needed only by FieldPicker, four levels down inside band editors that have no
+ * other reason to know about it. Threading it through would put a `docType` on
+ * five component signatures whose job is to draw a form -- and the sixth one
+ * added later would be the one that forgets it and quietly offers a challan's
+ * fields on a hotel bill.
+ *
+ * The default is the sales challan, so every existing caller keeps working
+ * without a provider.
+ */
+export const DocTypeContext = React.createContext<DocType>('sales_challan');
 
 /**
  * The controls for one band of a print template.
@@ -134,7 +150,11 @@ export const FieldPicker: React.FC<{
   source?: 'info' | 'line';
   label?: string;
 }> = ({ onPick, source = 'info', label = 'Add a field' }) => {
-  const catalog = source === 'line' ? LINE_FIELDS : FIELD_CATALOG;
+  const docType = React.useContext(DocTypeContext);
+  // ⚠️ The paper's OWN catalogue. A hotel money receipt offers no tax field and
+  // no table column at all, and that absence is what stops a receipt turning
+  // into a VAT invoice -- see HOTEL_RECEIPT_FIELDS.
+  const catalog = source === 'line' ? lineFieldsFor(docType) : fieldsFor(docType);
   const groups = catalog.reduce<Record<string, typeof catalog>>((map, field) => {
     (map[field.group] ||= []).push(field);
     return map;
@@ -730,6 +750,7 @@ export const SignatureBandEditor: React.FC<{
   band: SignatureBand;
   onChange: (band: SignatureBand) => void;
 }> = ({ band, onChange }) => {
+  const docType = React.useContext(DocTypeContext);
   const { handlers, rowClass } = useRowDrag();
   const move = (from: number, to: number) =>
     onChange({ ...band, items: reorder(band.items, from, to) });
@@ -785,11 +806,16 @@ export const SignatureBandEditor: React.FC<{
               className="w-36 shrink-0 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1 py-0.5 text-xs outline-none dark:bg-boxdark"
             >
               <option value="">(blank line)</option>
-              {FIELD_CATALOG.filter((field) => field.group !== 'total').map((field) => (
-                <option key={field.key} value={field.key}>
-                  {field.name}
-                </option>
-              ))}
+              {/* A name printed above the rule, so the totals are no use here
+                  -- and neither are the hotel's bill figures, for the same
+                  reason: nobody signs "4,830". */}
+              {fieldsFor(docType)
+                .filter((field) => !['total', 'bill', 'receipt'].includes(field.group))
+                .map((field) => (
+                  <option key={field.key} value={field.key}>
+                    {field.name}
+                  </option>
+                ))}
             </Select>
 
             <MoveButtons index={index} count={band.items.length} onMove={move} />
