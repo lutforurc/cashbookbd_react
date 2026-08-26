@@ -4196,6 +4196,73 @@ against, and the kit tables would be two masters nobody can act on.
 That is a change to shared, live code and wants its own piece of work rather than
 being tacked onto a housekeeping board.
 
+## 35. A stay that ends in pieces — §6.5, built 2026-08-26
+
+### The gap, in the words it was asked in
+
+> Four rooms are let for five nights. After two nights the guests in 101 have to
+> go home. The bill must then read **101 — 2 nights, 102 — 5, 103 — 5, 104 — 5**.
+
+Check-out was all-or-nothing. It released every unslept night on the booking,
+billed everything left, marked every room dirty and closed the stay. There was no
+way to let one room go: the desk's choices were to end four stays' worth of
+booking at once, or to leave 101's beds held — unsellable — until Friday.
+
+### ⚠️ Ticked is not the same as leaving
+
+The request carries `resource_ids`. **Absent means every room**, which is what
+every caller before §6.5 meant and still means — a partial check-out is something
+the desk asks for, never something a client gets by forgetting a parameter.
+
+But a ticked room is not necessarily a leaving one. Checking the whole booking
+out on Friday ticks 101 too, and 101 went home on Wednesday. Acting on it again
+would write it a second departure record and **send housekeeping back to a room
+somebody has already made up**. So the write acts on `chosen ∩ pending`, where
+pending means *has a night to give back, or a night to bill*.
+
+### ⚠️ One stay is one folio, and one bill
+
+The money rules did **not** move to the room. A room leaving mid-stay settles
+nothing:
+
+- the balance shown is the **whole stay's**, not this room's quarter of it;
+- *"a balance has to be somebody's"* is enforced only when the **last** room
+  goes — there is no final figure to answer for until then;
+- *"money in hand over the bill"* is likewise refused only at the end. It is the
+  ordinary state of a stay that took an advance and still has rooms occupied, and
+  refusing over it would make an advance impossible to take.
+
+### ⚠️ The status moves only when the last room goes
+
+A booking with guests upstairs is checked **in**, whatever has been released from
+it. A stay marked checked-out with people asleep in 102 vanishes from the desk's
+own list of who is in the building.
+
+Which leaves the history with nowhere to go, and that is what the new table is
+for. The nights cannot hold it — releasing one **deletes** the row, so the very
+act being recorded destroys the evidence. `booking_status_logs` cannot either: a
+`checked_in → checked_in` row would be counted by the history screen as an
+ending, and one stay would report four of them.
+
+`booking_room_checkouts` — append-only, one row per room per check-out including
+the final one, carrying the departure date, the nights billed, the nights
+released and whether that room closed the stay.
+
+### What the screen does
+
+The rooms are picked **before** the date, because the desk decides who is leaving
+first. Rooms already gone are greyed and say so rather than showing four zeroes.
+Unticking the last room is refused: an empty list reads to the server as *all
+rooms*, and the desk would be shown the whole stay's figures and press the button
+on them.
+
+The button says `Check out 1 room` when that is what it does, and the dialog says
+the bill stays open and how many rooms are staying behind.
+
+The nights table also gained a **Room** column, without which it was unreadable
+the moment a booking had two rooms — four identical *"Whole room, 2,500"* lines
+and nothing saying which room each belonged to.
+
 ### What is left, honestly
 
 ⚠️ **Most of what remains cannot be built, and should not be.** These are the

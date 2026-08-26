@@ -95,18 +95,36 @@ const CheckOutScreen = () => {
   const [reason, setReason] = useState('');
   const [asking, setAsking] = useState(false);
 
+  /**
+   * The rooms leaving, or null for "whatever the server takes as all of them".
+   *
+   * ⚠️ NULL IS NOT AN EMPTY LIST. Sending no rooms means every room -- which is
+   * what this screen meant before §6.5 and still means on the ordinary
+   * departure. An empty array would mean the same thing to the server, which is
+   * why the toggle below refuses to empty it.
+   */
+  const [picked, setPicked] = useState<number[] | null>(null);
+
   const load = useCallback(
-    (on: string) => {
-      if (id) dispatch(checkoutRead({ id: Number(id), departure_date: on }));
+    (on: string, rooms: number[] | null) => {
+      if (id) {
+        dispatch(
+          checkoutRead({
+            id: Number(id),
+            departure_date: on,
+            resource_ids: rooms ?? undefined,
+          }),
+        );
+      }
     },
     [dispatch, id],
   );
 
-  // Read again on every change of date. See the header: the figures belong to
-  // the date, not to the booking.
+  // Read again on every change of date OR of which rooms are going. See the
+  // header: the figures belong to the date and the rooms, not to the booking.
   useEffect(() => {
-    load(departure);
-  }, [load, departure]);
+    load(departure, picked);
+  }, [load, departure, picked]);
 
   useEffect(() => () => {
     dispatch(clearCheckout());
@@ -116,10 +134,36 @@ const CheckOutScreen = () => {
   const totals = plan?.totals;
   const balance = Number(plan?.balance ?? 0);
 
+  const rooms: any[] = plan?.rooms ?? [];
+
+  // ⚠️ Whether this check-out ENDS the stay, which is the server's answer and
+  // not a count done here. Everything about money on this screen hangs on it: a
+  // room going home mid-stay settles nothing, because one stay is one bill.
+  const closing = plan ? plan.closes_booking !== false : true;
+
   // Already on the booking, so a corporate stay taken on the telephone does not
   // have to be looked up again at the desk.
   const alreadyBilledTo = booking?.billed_to_party_id;
-  const needsParty = balance > 0 && !party && !alreadyBilledTo;
+  const needsParty = closing && balance > 0 && !party && !alreadyBilledTo;
+
+  /**
+   * Tick a room on or off.
+   *
+   * ⚠️ Never down to nothing. An empty list reads to the server as "all rooms",
+   * so a desk that unticked the last one would be shown the figures for the
+   * whole stay and press the button on them.
+   */
+  const toggle = (roomId: number) => {
+    const on = rooms
+      .filter((room: any) => room.chosen && !room.already_left)
+      .map((room: any) => Number(room.room_resource_id));
+
+    const next = on.includes(roomId)
+      ? on.filter((held: number) => held !== roomId)
+      : [...on, roomId];
+
+    if (next.length) setPicked(next);
+  };
 
   const nightColumns = useMemo(
     () => [
@@ -129,6 +173,14 @@ const CheckOutScreen = () => {
         render: (row: any) => (
           <span className="text-black dark:text-white">{row.stay_date}</span>
         ),
+      },
+      {
+        // ⚠️ Without this the table is unreadable the moment a booking has two
+        // rooms: four identical "Whole room, 2,500" lines and nothing saying
+        // which room each belongs to.
+        key: 'room',
+        header: 'Room',
+        render: (row: any) => row.room ?? '—',
       },
       {
         key: 'let_as',
@@ -154,6 +206,13 @@ const CheckOutScreen = () => {
           departure_date: departure,
           billed_to_party_id: party?.value ? Number(party.value) : undefined,
           reason: reason.trim() || undefined,
+
+          // ⚠️ What is on the SCREEN, read back from the plan rather than from
+          // `picked` -- which is null until somebody unticks something, and
+          // would send nothing on the very departure it was meant to describe.
+          resource_ids: rooms
+            .filter((room: any) => room.chosen && !room.already_left)
+            .map((room: any) => Number(room.room_resource_id)),
         }),
       ).unwrap();
 
@@ -280,10 +339,103 @@ const CheckOutScreen = () => {
             for somebody to discover by comparing two screens. */}
         <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
           This counts the {plan.nights_to_bill}{' '}
-          {plan.nights_to_bill === 1 ? 'night' : 'nights'} still to be billed. The folio will
-          not show them until check-out puts them on it.
+          {plan.nights_to_bill === 1 ? 'night' : 'nights'}{' '}
+          {closing ? '' : `in the ${plan.rooms_leaving === 1 ? 'room' : 'rooms'} leaving `}
+          still to be billed. The folio will not show them until check-out puts them on it.
+          {closing ? null : (
+            <>
+              {' '}
+              The rooms staying behind are not billed today — their nights have not been
+              slept yet.
+            </>
+          )}
         </p>
       </div>
+
+      {/* ⚠️ The rooms, before the date. A stay is not always ended all at once
+          (§6.5): guests in one room of four can go home on Wednesday, and the
+          desk decides WHO is leaving before it decides anything else. Shown
+          only where there is a choice to make — one room needs no picker. */}
+      {rooms.length > 1 ? (
+        <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
+          <div className="mb-2 text-sm font-medium text-black dark:text-white">
+            Which rooms are leaving?
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {rooms.map((room: any) => {
+              const roomId = Number(room.room_resource_id);
+
+              // ⚠️ Already LEFT, not "nothing pending". A room whose nights the
+              // night audit billed days ago is pending nothing and is still
+              // full of guests -- ticking it is exactly what ends their stay.
+              const gone = !!room.already_left;
+
+              return (
+                <label
+                  key={roomId}
+                  className={`flex items-start gap-2 rounded border p-2 text-sm ${
+                    gone
+                      ? 'cursor-not-allowed border-stroke opacity-60 dark:border-strokedark'
+                      : room.chosen
+                        ? 'cursor-pointer border-primary bg-primary/5 dark:border-secondary'
+                        : 'cursor-pointer border-stroke dark:border-strokedark'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={!gone && !!room.chosen}
+                    disabled={gone}
+                    onChange={() => toggle(roomId)}
+                  />
+
+                  <span className="leading-snug">
+                    <span className="block font-medium text-black dark:text-white">
+                      {room.room}
+                    </span>
+
+                    {/* A room already let go says so instead of showing figures
+                        that are all zero — the desk asks why they are zero. */}
+                    {gone ? (
+                      <span className="block text-xs text-gray-500 dark:text-gray-400">
+                        Already left — {room.nights_held}{' '}
+                        {room.nights_held === 1 ? 'night' : 'nights'} kept
+                      </span>
+                    ) : (
+                      <span className="block text-xs text-gray-500 dark:text-gray-400">
+                        {room.nights_to_bill} to bill
+                        {room.nights_to_release
+                          ? `, ${room.nights_to_release} to release`
+                          : ''}{' '}
+                        · through {room.last_night}
+                      </span>
+                    )}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+
+          <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+            {closing ? (
+              <>
+                Every room still on this stay is leaving, so the booking will be closed
+                and the bill answered for.
+              </>
+            ) : (
+              <>
+                <strong className="text-black dark:text-white">
+                  {plan.rooms_staying}{' '}
+                  {plan.rooms_staying === 1 ? 'room stays' : 'rooms stay'} occupied
+                </strong>{' '}
+                — the booking stays open and the bill stays with it. Nothing has to be
+                settled until the last room goes.
+              </>
+            )}
+          </p>
+        </div>
+      ) : null}
 
       <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
         <InputDatePicker
@@ -317,10 +469,11 @@ const CheckOutScreen = () => {
         </div>
       </div>
 
-      {/* Only when there is something to carry. A party picker on a settled
-          bill invites somebody to fill it in, and put a paid stay on an
-          account. */}
-      {balance > 0 ? (
+      {/* Only when there is something to carry, and only when the stay is
+          actually ending. A party picker on a settled bill invites somebody to
+          fill it in and put a paid stay on an account; one on a partial
+          check-out invites them to bill a company for a stay still running. */}
+      {closing && balance > 0 ? (
         <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
           <div className="mb-2 text-sm font-medium text-black dark:text-white">
             Who owes the {money(balance)}?
@@ -352,7 +505,11 @@ const CheckOutScreen = () => {
         </div>
       ) : null}
 
-      {balance < 0 ? (
+      {/* ⚠️ Only at the end, like the party picker. Money in hand over the bill
+          is the ORDINARY state of a stay that took an advance and still has
+          rooms occupied — refusing a room's departure over it would make an
+          advance impossible to take. */}
+      {closing && balance < 0 ? (
         <p className="mb-4 rounded border border-danger bg-rose-50 p-2.5 text-xs text-rose-900 dark:border-danger dark:bg-rose-500/15 dark:text-rose-50">
           <strong>{money(Math.abs(balance))} is being held over the bill.</strong> Refund it
           on the folio before checking out — this screen will not keep it.
@@ -378,12 +535,25 @@ const CheckOutScreen = () => {
         <ButtonLoading
           onClick={() => setAsking(true)}
           buttonLoading={saving}
-          label="Check out"
+          // Says what it will do. "Check out" on a booking where three rooms
+          // are staying reads as ending the stay, which it is not.
+          label={
+            closing
+              ? 'Check out'
+              : `Check out ${plan.rooms_leaving} ${
+                  plan.rooms_leaving === 1 ? 'room' : 'rooms'
+                }`
+          }
           variant="primary"
           icon={<FiLogOut size={16} />}
           // The third reason it can be refused, and the only one the desk
           // cannot fix from this screen: the chart has no heads to post to.
-          disabled={needsParty || balance < 0 || !!plan.chart_missing?.length}
+          disabled={
+            needsParty
+            || (closing && balance < 0)
+            || !plan.rooms_leaving
+            || !!plan.chart_missing?.length
+          }
         />
         {needsParty ? (
           <span className="ml-3 text-xs text-gray-500 dark:text-gray-400">
@@ -405,7 +575,7 @@ const CheckOutScreen = () => {
           be destroyed, which is the part that cannot be taken back. */}
       <ConfirmModal
         show={asking}
-        title="End this stay"
+        title={closing ? 'End this stay' : 'Let these rooms go'}
         confirmLabel="Check out"
         cancelLabel="Not yet"
         className="bg-primary hover:bg-primary/90"
@@ -415,8 +585,25 @@ const CheckOutScreen = () => {
         message={
           <>
             <span className="block">
-              <strong className="text-black dark:text-white">{booking?.booking_no}</strong>{' '}
-              leaves on {departure}.
+              {closing ? (
+                <>
+                  <strong className="text-black dark:text-white">
+                    {booking?.booking_no}
+                  </strong>{' '}
+                  leaves on {departure}.
+                </>
+              ) : (
+                <>
+                  <strong className="text-black dark:text-white">
+                    {rooms
+                      .filter((room: any) => room.chosen && !room.already_left)
+                      .map((room: any) => room.room)
+                      .join(', ')}
+                  </strong>{' '}
+                  {plan.rooms_leaving === 1 ? 'leaves' : 'leave'} {booking?.booking_no} on{' '}
+                  {departure}.
+                </>
+              )}
             </span>
 
             {plan.nights_to_bill ? (
@@ -434,7 +621,17 @@ const CheckOutScreen = () => {
               </span>
             ) : null}
 
-            {balance > 0 ? (
+            {/* ⚠️ On a partial check-out the money is not answered for at all,
+                and the dialog says so rather than staying silent — the desk is
+                about to send a guest away and needs to know the bill is still
+                running. */}
+            {!closing ? (
+              <span className="mt-2 block">
+                The stay goes on in {plan.rooms_staying}{' '}
+                {plan.rooms_staying === 1 ? 'room' : 'rooms'}, so nothing is settled
+                today. {money(balance)} stands on the bill.
+              </span>
+            ) : balance > 0 ? (
               <span className="mt-2 block">
                 {money(balance)} will be carried to{' '}
                 <strong className="text-black dark:text-white">

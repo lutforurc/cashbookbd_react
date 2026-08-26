@@ -362,7 +362,10 @@ export const folioReceive = createAsyncThunk<
  */
 export const checkoutRead = createAsyncThunk<
   any,
-  { id: number; departure_date?: string },
+  // ⚠️ resource_ids ABSENT means every room, which is what an ordinary
+  // departure means. An empty array would say the same thing to the server, so
+  // the screen never sends one (§6.5).
+  { id: number; departure_date?: string; resource_ids?: number[] },
   { rejectValue: string }
 >('hotelBooking/checkoutRead', async ({ id, ...params }, { rejectWithValue }) => {
   try {

@@ -499,7 +499,11 @@ export const HOTEL_BILL_LINE_FIELDS: FieldDef[] = [
   { key: 'sl', name: 'Sl. No.', group: 'folio' },
   { key: 'description', name: 'Description', group: 'folio' },
   { key: 'charge_type', name: 'Charge Type', group: 'folio' },
+  // ⚠️ A row is one room over a RUN of nights, so its date is a FROM and a TO.
+  // They are equal on a single night, and the description already reads as a
+  // range -- these are for a property whose own paper wants them in columns.
   { key: 'stay_date', name: 'Date', group: 'folio', format: 'date' },
+  { key: 'stay_date_to', name: 'Date To', group: 'folio', format: 'date' },
   { key: 'room', name: 'Room', group: 'folio' },
   { key: 'quantity', name: 'Quantity', group: 'folio', numeric: true },
   { key: 'unit_rate', name: 'Rate', group: 'folio', numeric: true, format: 'money' },
