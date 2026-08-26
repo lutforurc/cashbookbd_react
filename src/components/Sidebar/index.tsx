@@ -131,6 +131,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   'hotel': [
     { id: 'hotel_bookings', title: "Bookings" },
     { id: 'hotel_calendar', title: "Calendar" },
+    { id: 'hotel_housekeeping', title: "Housekeeping" },
     { id: 'hotel_reports', title: "Reports" },
     { id: 'hotel_setup', title: "Rooms & Seats Setup" },
   ],
@@ -1993,6 +1994,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           <li style={subSlot('hotel', 'hotel_calendar')}>
                             <NavLink to={routes.hotel_calendar} className={subMenuLinkClass}>
                               Calendar
+                            </NavLink>
+                          </li>
+
+                          {/* Opened every morning by somebody who does nothing
+                              else in the system. */}
+                          <li style={subSlot('hotel', 'hotel_housekeeping')}>
+                            <NavLink to={routes.hotel_housekeeping} className={subMenuLinkClass}>
+                              Housekeeping
                             </NavLink>
                           </li>
 

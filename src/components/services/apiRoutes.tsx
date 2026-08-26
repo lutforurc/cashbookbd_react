@@ -948,3 +948,11 @@ export const API_HOTEL_BILL_URL = `${API_BASE_URL}/hotel-setup/bookings/bill`;
 // Hotel Other Income. Editing one of the seven that ship writes THIS company's
 // own version of it, which overrides the shipped row rather than changing it.
 export const API_HOTEL_CHARGE_TYPE_URL = `${API_BASE_URL}/hotel-setup/charge-types`;
+
+// Is the room ready? The stem suffixes /move/{id} and /history/{id}.
+//
+// ⚠️ Cleanliness and occupancy are different questions. Whether a bed is SOLD
+// comes from the nights; whether a room is FIT TO ENTER comes from here, and a
+// room can be occupied and dirty at once. Only `out_of_order` changes what the
+// booking screens may do — it takes the room off the market entirely.
+export const API_HOTEL_HOUSEKEEPING_URL = `${API_BASE_URL}/hotel-setup/housekeeping`;

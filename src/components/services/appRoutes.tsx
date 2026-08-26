@@ -371,6 +371,10 @@ const ROUTES = {
   // desk reads for gaps. Its own screen: the availability grid answers a
   // question about two dates, and neither of these could be asked of it.
   hotel_calendar: '/hotel/calendar',
+  // Is the room ready? Its own screen rather than a tab on setup: setup is a
+  // sitting done once, and this is opened every morning by somebody who does
+  // nothing else in the system.
+  hotel_housekeeping: '/hotel/housekeeping',
 
   notFound: '*',
 };

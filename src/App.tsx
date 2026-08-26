@@ -139,6 +139,7 @@ import FolioScreen from './components/modules/hotel/booking/FolioScreen';
 import CheckOutScreen from './components/modules/hotel/booking/CheckOutScreen';
 import HotelReports from './components/modules/hotel/reports/HotelReports';
 import HotelCalendar from './components/modules/hotel/calendar/HotelCalendar';
+import HousekeepingBoard from './components/modules/hotel/housekeeping/HousekeepingBoard';
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
@@ -655,6 +656,23 @@ function App() {
               }
             >
               <Route path={routes.hotel_calendar} element={<HotelCalendar />} />
+            </Route>
+            {/*
+              Housekeeping -- its own permission, because it is its own job. On
+              a property large enough to have a housekeeper this is the ONLY
+              hotel permission they need: they have no business in the folio,
+              the till or the guest register.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.housekeeping.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_housekeeping} element={<HousekeepingBoard />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
               <Route path={routes.journal} element={<Journal />} />

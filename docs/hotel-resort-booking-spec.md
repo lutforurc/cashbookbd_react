@@ -177,8 +177,24 @@
 > restaurant and catering into one Food & Beverage account sees one credit, not
 > two.
 >
-> Genuinely unblocked next: **housekeeping and amenities** (phase 5), then events
-> and catering, then ticketing.
+> **2026-08-26 (phase 5): the desk stops selling unmade rooms.** After a guest
+> left, the room was dirty and **nothing said so** — it could be sold to somebody
+> walking in five minutes later. `hotel_housekeeping_status` and `_logs`
+> (**tables 17 and 18**), a board under Hotel ▸ Housekeeping, on its own
+> permission. **§34.**
+>
+> ⚠️ **Cleanliness and occupancy are different questions.** A room can be
+> occupied and dirty at once, and the board shows both. Two integrations are what
+> make it real rather than a screen nobody updates: **check-out marks the rooms
+> dirty** (by the *system*, not the clerk), and an **out-of-order room leaves the
+> booking screen entirely** — it outranks free.
+>
+> ⚠️ **What remains is mostly not buildable, and should not be.** VAT rates,
+> rate-card rules, early/late charges, cancellation percentages, the §6.1 gender
+> rule, the child age and the Mushak question are all the **client's business
+> rules** — inventing them is worse than leaving them. What is buildable is
+> amenity kits (with the `material_issue_master` change §4.3 asks for), events and
+> catering, and ticketing — each its own piece of work. See §34's closing table.
 
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
@@ -4052,3 +4068,159 @@ events and catering (phase 6), then ticketing.
 Still waiting on the client: the VAT rates (§6.3), rate-card rules (§6.2 — which
 is why **rate plans remain blocked**, see §32), early check-in and late check-out
 charges, the §6.1 gender rule, cancellation percentages, and the child age.
+
+---
+
+## 34. Is the room ready? — phase 5, 2026-08-26
+
+### The gap
+
+After a guest left, the room was **dirty and nothing in this system said so**.
+The desk could sell it to somebody walking through the door five minutes later,
+and the first anybody knew was the new guest standing in an unmade room.
+
+### ⚠️ Cleanliness and occupancy are different questions
+
+The whole design turns on keeping them apart.
+
+Whether a bed is **sold** lives in `booking_resource_details`, one row per seat
+per night, and nothing here touches it. Whether a room is **fit to enter** is
+`hotel_housekeeping_status`. A room can be occupied and dirty, free and dirty, or
+free and ready — and only the last of those is a room the desk can hand a key to
+today.
+
+The board shows both, because a housekeeper needs both: a dirty room somebody is
+still asleep in is a different job from a dirty room that is empty.
+
+### ⚠️ No dates in it
+
+Housekeeping is about **now**: a room is dirty until somebody cleans it, and the
+moment they do is the moment it changes. Dated cleanliness would be a second
+booking engine answering a question nobody asks — *"was 201 clean last Tuesday"*
+is what `hotel_housekeeping_logs` is for.
+
+### ⚠️ A room with no row is clean
+
+Nothing seeds the status table. Rooms are set up long before anybody opens a
+housekeeping screen, and a property of forty rooms must not have to be
+initialised before its first booking.
+
+Absence is the ordinary state, and every read copes with it. Filling the gaps in
+on read would be a **write on a read path** and a table that grows by being
+looked at.
+
+### The four states
+
+| | |
+|---|---|
+| `clean` | Made up, ready. Also what a room with no row is |
+| `dirty` | Somebody has left it — the ordinary state after check-out |
+| `cleaning` | Being made up now, so two housekeepers do not both start |
+| `out_of_order` | ⚠️ **Not sellable.** Painting, a broken air conditioner |
+
+Four, and each means something a person does. A fifth — *inspected*, what large
+hotels add when a supervisor signs a room off — is **not** added, because nobody
+asked and an unused state is a state somebody has to be told to ignore.
+
+### 34.1 The two integrations, which are what make it real
+
+A housekeeping board nothing feeds is a screen somebody has to remember to
+update, and they never do.
+
+**⚠️ Check-out leaves the rooms dirty.** Inside the same transaction, after the
+nights are released. The rooms are read from the nights *and* from the folio,
+because a stay whose later nights were released has none left after the departure
+date while its bill still names the rooms.
+
+`changed_by` is **NULL** — the *system* did it. The clerk ended a stay; they did
+not dirty a room, and naming them would be a small lie that reads perfectly. The
+same convention `booking_status_logs` uses.
+
+**⚠️ An out-of-order room leaves the market.** `availability` reads the blocked
+list once for the property and overrides the room's state to `closed` with the
+reason on it.
+
+It **outranks free**: a room being painted is not for sale however empty the
+calendar says it is, and a screen showing it green would have somebody book it.
+It does *not* stop a stay already in it — the guard is on offering the room, not
+on the guests who are in one when the air conditioner breaks.
+
+⚠️ And a check-out does **not** downgrade an out-of-order room to dirty. That
+would put it back on the market the moment somebody cleaned it, with the air
+conditioner still broken.
+
+### Out of order asks why, and nothing else does
+
+It is the one state with a dialog behind it, and the confirm button stays dead
+until a reason is typed. It takes a room off the market **until a person clears
+it** — nothing clears it on a timer — and a room nobody can sell for a reason
+nobody wrote down stays out of order until it is noticed.
+
+Every other move is one press. A housekeeper with an armful of sheets is not
+going to confirm forty dialogs.
+
+⚠️ Pressing the state a room is already in writes **nothing** — not the status,
+not the log. People press *Clean* twice, and a log full of clean-to-clean rows is
+one nobody can read the real moves out of.
+
+### Its own permission
+
+`hotel.housekeeping.view`. On a property large enough to have a housekeeper this
+is the **only** hotel permission they need: they have no business in the folio,
+the till or the guest register. On a small property one person holds all of them
+and loses nothing by it.
+
+### Checked
+
+`hotel_housekeeping_check.php` — **26 assertions**, every block rolled back.
+
+The two that matter are the integrations, and they are checked end to end: a real
+check-out through its own controller, then the board read back; and a real
+availability read before and after a room goes out of order.
+
+With the rest: **397 assertions across thirteen hotel scripts, all passing.**
+
+### 34.2 What phase 5 still does not have
+
+Amenity kits — `hotel_amenity_kits` and `hotel_amenity_kit_items` (§4.3), the
+standard kit per room type and whether each item is counted **per room or per
+guest** (§6.1).
+
+They are deliberately left for now, and the reason is not effort. §4.3 also asks
+for a **location reference and a nullable booking reference on
+`material_issue_master`** — a table the construction module already uses in
+production — and the kits are only worth having once an issue can say which room
+or event it was for. Without that the variance report has nothing to compare
+against, and the kit tables would be two masters nobody can act on.
+
+That is a change to shared, live code and wants its own piece of work rather than
+being tacked onto a housekeeping board.
+
+### What is left, honestly
+
+⚠️ **Most of what remains cannot be built, and should not be.** These are the
+client's business rules, and inventing them is worse than leaving them:
+
+| | |
+|---|---|
+| VAT and service-charge **rates** (§6.3) | Six questions for their VAT consultant. Every bill prints with no tax lines until answered |
+| **Rate-card rules** (§6.2) | Weekend / season / holiday / corporate — which is why rate plans stay blocked (§32) |
+| Early check-in and late check-out **charges** (§6.2) | |
+| **Cancellation percentages** (§6.2) | The desk types the refund by hand meanwhile |
+| The §6.1 **gender rule** | Blocked by §6.2, and no guest has a gender on the data as it stands |
+| **Child age** (OPEN-13) | Until answered, no two occupancy reports compare |
+| **Mushak 6.3 / EFD** (OPEN-6) | Decides whether the bill is a government document |
+| A restaurant? (OPEN-3) | |
+
+Buildable, and each its own piece of work rather than a loose end:
+
+1. **Amenity kits** + the `material_issue_master` references — §34.2 above.
+2. **Events and catering** (phase 6, seven tables) — *motel site only*, and halls
+   need `booking_slots` first.
+3. **Ticketing** (six tables) — *resort site only*.
+4. Financial year (phases 0–1), assets and depreciation (8–9) — §12 already
+   records that phase 0 was skipped deliberately and is **not** a prerequisite.
+
+§8's own estimate for the whole of it is **~100 days for site 1**. What has been
+built is the first release and the six pieces since; what is listed above is the
+rest of that estimate, not a tail of odds and ends.
