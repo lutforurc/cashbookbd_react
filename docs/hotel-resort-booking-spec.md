@@ -164,8 +164,21 @@
 >
 > ⚠️ **Rate plans are BLOCKED, not next.** §31 said otherwise and was wrong: §6.2
 > lists rate-card rules under *"not yet known — needed before schema work"*.
-> Genuinely unblocked next: `booking_charge_types`, then housekeeping and
-> amenities.
+>
+> **2026-08-26 (the last of them): a charge can earn into whichever head the
+> client says.** `booking_charge_types` (**table 16**), under Hotel ▸ Setup ▸
+> Charges. **§33.** It retires §26's openly-made compromise of one catch-all
+> `Hotel Other Income` — the answer was never six fixed heads, it was letting the
+> client nominate.
+>
+> ⚠️ **Nothing changed for anybody.** The seven shipped types carry no head, so a
+> property that never opens the screen posts exactly as it always did. And the
+> voucher writes **one leg per head, not per charge type** — a hotel putting
+> restaurant and catering into one Food & Beverage account sees one credit, not
+> two.
+>
+> Genuinely unblocked next: **housekeeping and amenities** (phase 5), then events
+> and catering, then ticketing.
 
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
@@ -3907,3 +3920,135 @@ answer first. Genuinely unblocked, in order:
 One thing §6.4 leaves open and this section inherits: **a printed Mushak 6.3
 cannot be reissued in another name** — it needs a credit note. That rule waits on
 OPEN-6, and it does not bite yet because §27 prints a *Bill* and not a Mushak.
+
+---
+
+## 33. What a charge is, and which head it earns into, 2026-08-26
+
+### The compromise this retires
+
+§26 settled the ledger with **one catch-all** `Hotel Other Income` for everything
+that is not a room, and said why at the time:
+
+> *"§5 names a head per service — Catering Income, Ticket Income, Hall Rent
+> Income. Those arrive with the modules that sell them, and there is no
+> restaurant module yet. One head now beats six empty ones, and it beats the only
+> other thing the code could do, which is post a guest's dinner to Room Rent
+> Income."*
+
+⚠️ **The answer was never six fixed heads. It was letting the client say.** A
+hotel with a restaurant wants restaurant income of its own; one that sells
+nothing but rooms wants none of it, and shipping six heads into their chart would
+be clutter they never asked for.
+
+`booking_charge_types` (**table 16**) maps a charge type to whichever head *they*
+nominate — and a type with none nominated still falls back to Hotel Other Income.
+
+### ⚠️ Which is why nothing changed for anybody on the day it shipped
+
+The seven shipped rows carry **`coa4_id NULL`**. They give the codes their names
+and their order on the picker, and move no money. A tenant who never opens the
+screen posts exactly as every install did before: room rent to Room Rent Income,
+everything else to Hotel Other Income.
+
+The screen says so at the top, because somebody staring at a column of blank
+"Earns into" cells has to be told that is the *working* state and not an
+unfinished one. The list prints the fallback by name rather than leaving the cell
+empty, for the same reason.
+
+### ⚠️ `code` is a key, and it does not move
+
+It is the string **already held** by `booking_folio_details.charge_type` and
+`booking_tax_rates.charge_type`. It is not an id and must never become one: a
+bill is read back from what it stored (§6.3), and a code renamed underneath a
+folio line would restate a bill somebody has already paid.
+
+So the code is shown but never editable on an existing type, and a typed one is
+normalised — lower case, underscores, nothing else. `"Hall Rent"` and
+`"hall_rent"` would be two charge types that look like one, **taxed differently,
+on the same bill**.
+
+### ⚠️ A company overrides; it does not mutate
+
+The shipped list is shared by every tenant on the server. Saving a change to one
+writes a row of **this company's own** with the same code, which wins — the same
+"most specific wins" rule `booking_tax_rates` and the chart-level lookups already
+follow. *Reset* deletes that row and the shipped one stands again.
+
+There is deliberately **no way to delete a shipped code**: folio lines already
+hold the string, and a code with no row behind it would print on a bill as its
+own key — `hall_rent` rather than "Hall Rent".
+
+### ⚠️ One leg per HEAD, not one per charge type
+
+The posting change that needed care. `postFolio` used to make at most two income
+legs — rent and other. It now sums the base amounts **keyed by the head each
+charge earns into**, and writes one leg per head.
+
+A hotel putting restaurant *and* catering into one Food & Beverage account must
+see **one credit** on the voucher. Two legs would show the ledger twice what the
+accountant thinks of as one figure, and both would be right on their own.
+
+`ksort` on the way out, so the legs run in the chart's order rather than
+whichever line of the bill happened to come first — a voucher whose legs shuffle
+between two otherwise identical bills is one nobody can compare.
+
+### Income heads only
+
+The picker offers level-4 heads under **Direct Income** or **Indirect Income**,
+and the server checks it again on the way in. ⚠️ `Hotel Rent` is an **expense**
+head sitting in every one of these charts (see `HotelAccountHead`'s header),
+close enough in name that nobody would look twice — a charge nominated to it
+would run the books backwards.
+
+### The folio stopped guessing
+
+`addCharge` validated against a **constant in the code**; it now validates
+against the **company's own list**. A property that has added "Spa" can bill one,
+and one that has switched "Ticket" off cannot — neither of which a constant could
+say.
+
+The dropdown is fed from the folio's own answer for the same reason: a hardcoded
+list in the client would quietly disagree with what the server accepts. It falls
+back to the shipped seven only until that answer arrives.
+
+A type with a **suggested rate** fills the box in — but only where the box is
+still empty. Overwriting a figure somebody just typed because they corrected the
+charge type would be worse than not suggesting at all.
+
+⚠️ `room_rent` is kept off the picker by its own `by_hand = 0`, whatever anybody
+ticks. A hand-typed rent line carries no room and no night, escapes
+`uq_bfd_room_night`, and the same night could then be charged twice —
+`FolioController::addCharge` has refused it since §25 and this does not open a
+second door to it.
+
+### The tab is last, and the only optional one
+
+Under **Hotel ▸ Rooms & Seats Setup**, after Layout. It takes no branch: charge
+types and the heads they earn into are the **company's**, not a property's. One
+hotel's laundry income and another's belong in the same account, and a per-branch
+list would be two answers to one bookkeeping question.
+
+### Checked
+
+`hotel_charge_type_check.php` — **26 assertions**, every block rolled back.
+
+The first one is the one that matters most: **with nothing nominated, a charge
+posts exactly as it always did**. That fallback is what makes the whole table
+optional, and it is the thing that would break silently.
+
+⚠️ The same fault §32 hit, hit again: **`$data['coa4_id']` on a request that sent
+none.** `validate()` returns only the keys that were *sent*. Two occurrences in
+two sections is a pattern, not an accident — every optional field read out of a
+validated array in this module now goes through `??`.
+
+With the rest: **371 assertions across twelve hotel scripts, all passing.**
+
+### What is left
+
+Unblocked, in order: **housekeeping and amenities** (phase 5, four tables), then
+events and catering (phase 6), then ticketing.
+
+Still waiting on the client: the VAT rates (§6.3), rate-card rules (§6.2 — which
+is why **rate plans remain blocked**, see §32), early check-in and late check-out
+charges, the §6.1 gender rule, cancellation percentages, and the child age.

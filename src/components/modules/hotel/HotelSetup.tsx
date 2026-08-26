@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
-import { FiHome, FiLayers, FiTag, FiGrid, FiMap } from 'react-icons/fi';
+import { FiHome, FiLayers, FiTag, FiGrid, FiMap, FiDollarSign } from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
@@ -11,6 +11,7 @@ import { clearHotelSetup } from './hotelSetupSlice';
 import BuildingsTab from './BuildingsTab';
 import FloorsTab from './FloorsTab';
 import RoomTypesTab from './RoomTypesTab';
+import ChargeTypesTab from './ChargeTypesTab';
 import RoomsTab from './RoomsTab';
 import LayoutTab from './LayoutTab';
 
@@ -42,7 +43,7 @@ import LayoutTab from './LayoutTab';
  * so a lone property is selected rather than merely assumed.
  */
 
-type TabKey = 'buildings' | 'floors' | 'room-types' | 'rooms' | 'layout';
+type TabKey = 'buildings' | 'floors' | 'room-types' | 'rooms' | 'layout' | 'charges';
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[] = [
   { key: 'buildings', label: 'Buildings', icon: <FiHome size={15} />, hint: 'Blocks and zones' },
@@ -50,6 +51,9 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
   { key: 'room-types', label: 'Room Types', icon: <FiTag size={15} />, hint: 'Deluxe, Dormitory' },
   { key: 'rooms', label: 'Rooms & Seats', icon: <FiGrid size={15} />, hint: 'The inventory' },
   { key: 'layout', label: 'Layout', icon: <FiMap size={15} />, hint: 'The property drawn' },
+  // Last, because it is the only tab that is optional: a property that never
+  // opens it bills exactly as it would have. See ChargeTypesTab.
+  { key: 'charges', label: 'Charges', icon: <FiDollarSign size={15} />, hint: 'What a bill may say' },
 ];
 
 const TAB_KEYS = TABS.map((t) => t.key);
@@ -201,6 +205,11 @@ const HotelSetup = ({ user }: any) => {
           {tab === 'room-types' && <RoomTypesTab branchId={branchId} />}
           {tab === 'rooms' && <RoomsTab branchId={branchId} branchName={branchName} />}
           {tab === 'layout' && <LayoutTab branchId={branchId} />}
+          {/* ⚠️ No branchId. Charge types and the heads they earn into are the
+              COMPANY's, not a property's -- one hotel's laundry income and
+              another's belong in the same account, and a per-branch list would
+              be two answers to one bookkeeping question. */}
+          {tab === 'charges' && <ChargeTypesTab />}
         </>
       )}
     </div>

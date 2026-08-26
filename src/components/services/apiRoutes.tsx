@@ -940,3 +940,11 @@ export const API_HOTEL_TIMELINE_URL = `${API_BASE_URL}/hotel-setup/calendar/time
 // another's with a voucher against it, and only the OUTSTANDING balance moves:
 // money already received stays with whoever paid it. Nothing is re-priced.
 export const API_HOTEL_BILL_URL = `${API_BASE_URL}/hotel-setup/bookings/bill`;
+
+// What can go on a bill, and which head each earns into — §33.
+//
+// ⚠️ Nothing here is required. A property that never opens it posts exactly as
+// every install did before: room rent to Room Rent Income, everything else to
+// Hotel Other Income. Editing one of the seven that ship writes THIS company's
+// own version of it, which overrides the shipped row rather than changing it.
+export const API_HOTEL_CHARGE_TYPE_URL = `${API_BASE_URL}/hotel-setup/charge-types`;

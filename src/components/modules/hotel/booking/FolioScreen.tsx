@@ -110,10 +110,21 @@ const METHOD_OPTIONS = [
   { id: 'adjustment', name: 'Adjustment' },
 ];
 
-// room_rent is deliberately absent. It goes on through "Bill the nights", which
-// is the only path that carries a room and a night -- and therefore the only one
-// the same-night-twice key can see. See FolioController::addCharge.
-const CHARGE_OPTIONS = [
+/**
+ * What may go on this bill comes from the SERVER (§33), not from a list here.
+ *
+ * A property that has added "Spa" must be able to bill one, and one that has
+ * switched "Ticket" off must not -- neither of which a constant in the client
+ * can say, and a hardcoded dropdown would quietly disagree with what the server
+ * accepts.
+ *
+ * room_rent is absent from the answer by its own flag: it goes on through
+ * "Bill the nights", the only path that carries a room and a night and
+ * therefore the only one the same-night-twice key can see.
+ */
+const FALLBACK_CHARGE_OPTIONS = [
+  // Drawn only until the folio's own answer arrives, and on a server too old to
+  // send one. The seven that ship, less room rent.
   { id: 'restaurant', name: 'Restaurant' },
   { id: 'catering', name: 'Catering' },
   { id: 'laundry', name: 'Laundry' },
@@ -286,6 +297,11 @@ const FolioScreen = () => {
 
   const booking = folio?.booking;
   const totals = folio?.totals;
+
+  // The company's own list, or the shipped seven until it arrives.
+  const chargeOptions = folio?.charge_types?.length
+    ? folio.charge_types
+    : FALLBACK_CHARGE_OPTIONS;
 
   const lineColumns = useMemo(
     () => [
@@ -841,9 +857,22 @@ const FolioScreen = () => {
               id="charge_type"
               name="charge_type"
               label="For"
-              data={CHARGE_OPTIONS}
+              data={chargeOptions}
               value={charge.charge_type}
-              onChange={(e: any) => setCharge({ ...charge, charge_type: e.target.value })}
+              onChange={(e: any) => {
+                const picked = e.target.value;
+                // The suggested rate fills the box in, and only where the box
+                // has not been typed into: overwriting a figure somebody just
+                // entered because they corrected the charge type would be worse
+                // than not suggesting at all.
+                const suggested = chargeOptions.find((t: any) => t.id === picked)?.default_rate;
+
+                setCharge({
+                  ...charge,
+                  charge_type: picked,
+                  unit_rate: Number(charge.unit_rate) ? charge.unit_rate : (suggested ?? 0),
+                });
+              }}
               description="Room rent goes on through Bill the nights."
             />
             <div className="md:col-span-2">
