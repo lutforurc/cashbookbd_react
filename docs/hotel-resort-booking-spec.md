@@ -71,8 +71,39 @@
 > **refuses to take money** — deliberately, over the softer alternative of
 > recording it outside the books.
 >
-> Still not built: early check-in / late check-out charges (§6.2). The VAT rates
-> remain zero on every install until the client's consultant answers §6.3.
+> **2026-08-26 (last): the desk can hand a guest paper.** A **money receipt** and
+> a **bill**, on the existing print-designer — two new `doc_type` values, no new
+> table and no second renderer, so a property that wants its bill in its own
+> words is a layout saved in the designer. **§27.**
+>
+> ⚠️ **The receipt carries no tax line, and cannot be made to.** OPEN-12 again:
+> the VAT falls due on the BILL, and a receipt showing tax *becomes* a VAT
+> invoice for money taken against a stay that has not happened. Enforced by
+> absence in three places — the server does not send it, the field catalogue does
+> not offer it, and the receipt has no table to build one from.
+>
+> ⚠️ The bill is titled **Bill**, not মূসক ৬.৩. Whether a Mushak challan and an
+> EFD machine are required is **open question 6** and still unanswered.
+>
+> **2026-08-26 (truly last): holds stop holding beds for ever.** Not a feature —
+> a hole in shipped code. `hold_until`, the index for it, the `expired` status
+> and the log's "the system did it" convention were all in place; **the sweep
+> that uses them was not**, so a hold nobody confirmed held its beds
+> indefinitely and the desk found out by turning somebody away. `php artisan
+> hotel:expire-holds`, scheduled nightly, plus the chasing list §6.4 asked for.
+> **§28.**
+>
+> ⚠️ **Nothing runs until the host's cron calls `schedule:run`.** Without that
+> one line, §28 is a note nobody reads.
+>
+> ⚠️ It will not expire a hold with **money or a bill** on it — that would strand
+> an advance in a liability head with no booking to settle it. Those are listed
+> for a person, loudly.
+>
+> Still not built: early check-in / late check-out charges (§6.2), and the §6.1
+> gender rule. The VAT rates remain zero on every install until the client's
+> consultant answers §6.3 — which means every bill printed today comes out with
+> no tax lines on it at all.
 
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
@@ -2905,3 +2936,327 @@ enforced and still blocked by §6.2 being open. And the VAT rates, which stay
 zero on every install until the client's consultant answers the six questions in
 §6.3 — the code is ready for them and will charge nothing until they arrive,
 which is the correct behaviour for a number nobody has confirmed.
+
+---
+
+## 27. The paper the desk hands over, 2026-08-26
+
+A hotel front desk cannot work without paper. A guest hands over five thousand
+taka and wants something back for it; a guest leaving wants a bill they can show
+their own accountant. Everything up to here recorded both perfectly and could
+print neither.
+
+### It is not a new print system
+
+The app already has one, built for the delivery challan: a document is stored as
+a **description** — a list of bands, each naming which fields it prints and what
+that tenant calls them — and **one renderer** draws whatever the description
+says. Fifty tenants is fifty rows in `print_templates`, not fifty template files.
+
+So the hotel's two papers are **two new `doc_type` values on the existing
+table**. No new table, no second renderer, and a property that wants its bill in
+Bengali with its own labels is a layout saved in the designer.
+
+| | |
+|---|---|
+| `hotel_money_receipt` | Proof that money arrived |
+| `hotel_bill` | What the stay was charged |
+
+### ⚠️ Why they are two doc types and not one
+
+They are different documents with different legal weight. **The VAT falls due on
+the bill and not on the receipt** — OPEN-12, settled 2026-08-26 — and a receipt
+that shows a VAT line *becomes* a VAT invoice whatever the desk calls it. The
+tax would then fall due on money taken for a stay that has not happened.
+
+One doc type serving both is exactly how a receipt acquires that line.
+
+### ⚠️ The rule is enforced by absence, not by a warning
+
+Three separate places, and none of them is a note in a manual:
+
+1. `HotelPaper::receipt()` **does not put** `bill_vat`, `bill_service_charge` or
+   any tax figure into a receipt's data.
+2. `HOTEL_RECEIPT_FIELDS` **does not offer** one in the designer's field picker,
+   so a tenant cannot lay one on however hard they try.
+3. `products` on a receipt is **empty** — a table on a receipt would be the bill,
+   and the bill is precisely the document it must not become.
+
+`hotel_paper_check.php` asserts it by searching the receipt's own keys for
+anything named vat, tax or service charge, rather than against a list of known
+keys — a key added later and called `output_vat` would slip past a list.
+
+A warning in a manual would be obeyed for a year and then not.
+
+### ⚠️ The bill carries the ROUNDED total, and that is not the sum of its lines
+
+§6.3 rounds the bill **once, on the whole total**. The renderer has its own
+`total_amount`, which adds the line amounts up — that is the **exact** figure,
+and it disagrees with the till by up to fifty poisha.
+
+So `total_amount` and `amount_words` are **not offered** in the hotel bill's
+catalogue at all, and `bill_rounded` and `bill_words` are offered instead. The
+same trick as the VAT rule: a tenant cannot put the wrong figure on the paper
+because the wrong figure is not on the menu.
+
+The bill sends `bill_base`, `bill_service_charge`, `bill_vat`, `bill_gross`,
+`bill_rounding` and `bill_rounded` separately. A bill giving only the final
+figure is unusable to the guest's own accountant and useless as evidence for a
+VAT return.
+
+### ⚠️ It prints what is billed, and bills nothing
+
+A booking whose nights nobody has billed prints an **empty table and a total of
+nothing** — correctly, because that is what the guest has been charged. Screen
+5's *Bill the nights* is what changes it. A paper that quietly billed on its way
+to the printer would charge a guest by being looked at.
+
+The button is disabled while the folio is empty, so nobody hands over a blank
+sheet.
+
+### ⚠️ It is a Bill, not a মূসক ৬.৩
+
+Titled `Bill`. Whether the client's hotel must issue a **Mushak 6.3 challan** —
+and whether an EFD/SDC machine is involved — is **open question 6** in §6.3 and
+has not been answered. A Mushak has a mandated format and an unbroken government
+serial; calling this one would be claiming something nobody has checked.
+
+When the answer comes it is a layout saved in the designer, plus a numbering
+decision if a serial is required. Not a rewrite.
+
+### What changed in the shared print code
+
+The field catalogue was one global list because there was one document. It is
+now per doc type — `fieldsFor(docType)` and `lineFieldsFor(docType)` — and the
+name/numeric lookups read across all of them at once. **That only works because
+the keys do not collide:** the hotel reuses `branch_name`, `notes` and
+`printed_at` because they mean the same thing on any paper, and everything else
+it adds is its own. A key meaning two things on two papers would have to be
+renamed first — those lookups answer by key alone, and the renderer asks them
+without knowing which document it is drawing.
+
+`FieldDef` grew `format: 'money' | 'date' | 'words'`. The renderer's switch was
+written for one document and now serves three; a fourth would need twenty more
+cases of which the twenty-first would be forgotten. A field may now **declare**
+its formatting, and that is tried last, after every existing case has had its
+chance. ⚠️ **Nothing on the sales challan reaches it** — every one of its fields
+is a plain string or has a case of its own — so no challan anywhere prints
+differently for this existing.
+
+The designer got a **paper picker** and a doc type context.
+
+⚠️ The context is worth explaining. The doc type is needed only by
+`FieldPicker`, four levels down inside band editors that have no other reason to
+know about it. Threading it as a prop would put a `docType` on five component
+signatures whose job is to draw a form — and the sixth one added later is the one
+that forgets it and quietly offers a challan's fields on a hotel bill. The
+context defaults to `sales_challan`, so every existing caller keeps working
+without a provider.
+
+Changing the picker **reloads from the server** rather than converting what is on
+screen: a challan's bands name a challan's fields, and carried over to a hotel
+bill they would draw a paper of blanks that looked designed.
+
+### The preview's sample adds up
+
+⚠️ `HOTEL_BILL_SAMPLE` is arithmetically real, and it has to be. A tenant lays a
+bill out by reading the preview, and a sample whose lines did not add to its own
+total would teach them the totals band is decorative. Two rooms for two nights at
+4,200, one laundry charge, 10% service charge and 15% VAT on the base plus the
+service charge:
+
+```
+base    16,800.00 + 349.50 = 17,149.50
+service 4 × 420            =  1,680.00
+VAT     4 × 693            =  2,772.00
+exact                      = 21,601.50
+rounded once on the total  = 21,602.00   → 0.50 of rounding
+```
+
+The half-taka is deliberate. With a round figure the Rounding line would never
+appear in the preview, and a tenant would not know it exists until a real bill
+printed one.
+
+### Where the buttons are
+
+**Print the bill** on the folio, and a printer icon **on every payment row**.
+
+⚠️ Per row, not one button for the screen. A receipt is what somebody is handed
+at the moment they hand money over; a paper covering three payments is a
+statement, which is a different document with a different purpose.
+
+Both fetch the facts **and the branch's saved layout in one call**. The paper is
+printed with a guest standing at the counter, and one that needs two round trips
+is one that opens late. A branch that never opened the designer has no layout,
+and null means the built-in default — which is why this works on the day it
+ships, without anybody setting anything up.
+
+### Checked
+
+`hotel_paper_check.php` — **25 assertions through the controller**, with a real
+user signed in, rolled back. Among them: that the doc type strings the designer
+saves under are the ones the server will store (a mismatch there is silent and
+total — the tenant's layout simply reverts to the default with nothing said),
+that the bill's lines add to its own stated totals and those round to the figure
+the guest is asked for, that the receipt carries **no** tax key of any kind, and
+that a payment on somebody else's stay reads as absent rather than printing.
+
+With the rest: **198 assertions across six hotel scripts, all passing.**
+
+### What is left
+
+Early check-in and late check-out charges (§6.2). The gender rule of §6.1. The
+VAT rates, still zero on every install until the client's consultant answers
+§6.3 — and note what that means for this section: **today every hotel bill
+prints with no tax lines on it at all**, because the rates are zero and both tax
+lines are set to hide when empty. That is the correct behaviour for a number
+nobody has confirmed, and it is what the paper will do until they do.
+
+---
+
+## 28. The hold that never let go, 2026-08-26
+
+Not a feature. A hole in code that had already shipped, and the kind that is
+invisible from the screens: everything looked right and beds were quietly
+disappearing from the market for ever.
+
+### What was wrong
+
+A hold takes **real inventory** — one row per seat per night in
+`booking_resource_details`, which is the only place the module counts what is
+free. `hold_until` says when it stops being anybody's.
+
+Everything for expiring one was already there:
+
+- the `hold_until` column, capped at the stay's end (§16)
+- the index `idx_bm_holds (status, hold_until)`, cut for exactly this query
+- the status `expired`, which every controller already refuses
+- the note in `booking_status_logs` saying `changed_by = NULL` means the system
+  did it, **naming the expiry sweep as the case it was written for**
+
+Everything except the sweep. So a hold taken by telephone in August for
+December, that nobody ever confirmed, held those beds **for ever** — and the
+desk found out by turning somebody away at the door.
+
+### `php artisan hotel:expire-holds`
+
+Finds holds whose date has passed, deletes their nights, logs the move, and sets
+them to `expired`. One transaction **per booking**, not one for the sweep: a
+single bad row must not take a night's work with it.
+
+⚠️ It **deletes** nights, and that is the one thing it does that cannot be
+undone. Deleting rather than flagging is the rule the whole module follows — the
+unique key on `(resource_id, stay_date)` is what stops a bed being sold twice,
+and a row left behind goes on holding the bed however it is marked.
+
+`--pretend` exists because of that. It lists what would go and writes nothing.
+
+⚠️ `hold_until` is **left standing** after the expiry. It is the evidence of why
+the sweep acted, and a sweep has no business erasing its own reason.
+
+### ⚠️ Two holds it will not touch
+
+**One with money on it.** Expiring it would delete the nights and leave an
+advance credited to `Advance Against Booking` against a booking nobody will ever
+settle — a liability with no way to clear it, which is exactly the residue §26
+was written to avoid. No screen would ever offer to clear it, because the
+booking is gone and the guest never came.
+
+**One that has been billed.** Rarer — nothing stops a hold being billed, and it
+means somebody charged a guest who had not confirmed. Expiring it would leave
+the charge and the VAT standing with no stay behind them.
+
+Both are **listed for a person**, loudly, with what to do: cancel them on the
+booking screen, which refunds or retains the money and posts the entry (§26.1).
+
+⚠️ Skipping them in *silence* would have been the worst of the three options —
+the beds would stay held indefinitely by exactly the bookings that matter most,
+the ones a guest has already paid on, and nobody would be told.
+
+### The second test in the query, which is not redundant
+
+```
+hold_until < now()          OR   check_out_date < today
+```
+
+`hold_until` is capped at the stay's end when a hold is taken, so the second
+clause should never fire. But a row written before that cap existed, or one
+whose `hold_until` was never set, is **invisible to the first test** — NULL is
+not less than anything in SQL — and would hold its beds for ever. The failure
+this command exists to end, reappearing through the one gap in its own query.
+
+### ⚠️ Nothing runs until the host's cron calls the scheduler
+
+`routes/console.php` is the timetable, not the clock. The server needs the one
+entry Laravel asks for:
+
+```
+* * * * * cd /path/to/api && php artisan schedule:run >> /dev/null 2>&1
+```
+
+**Without it this whole section is a note nobody reads**, and holds go on
+holding beds exactly as they did before the command was written.
+
+Half past midnight, daily rather than hourly: `hold_until` is always the END of
+a day (a guest arrives during the day, and a hold expiring at midnight on its
+own last day would release the room while they were still on their way), so an
+hourly sweep would find nothing extra twenty-three times in twenty-four.
+
+`withoutOverlapping()`, because it deletes rows. ⚠️ `onOneServer()` is
+deliberately **not** set — it needs a shared cache lock this install cannot
+guarantee. Add it before this is ever run from two web heads.
+
+Output goes to `storage/logs/hotel-expire-holds.log`, kept so somebody can ask
+what last night's sweep released and which bookings it left for a person.
+
+### 28.1 The chasing list
+
+§6.4 asked for holds with expiry **and a chasing list**. The list is not a new
+screen — it is two small things that are meant to be used together.
+
+**Filter the bookings list to Hold and it reorders by `hold_until`**, soonest to
+lapse first. The ordinary order sorts by arrival, which puts a hold lapsing
+tonight for a December stay below one lapsing in a fortnight for next week. What
+the desk wants from that list is *who do I ring before their beds go back*.
+NULLs sort last: a hold with no deadline is not urgent.
+
+**The row says how long is left, not a date.** It used to read
+`until 2026-08-28` in grey, which does not tell anybody they are in the last day
+of it. Now it counts down — `lapses today`, `lapses tomorrow`, `4 days left` —
+amber inside two days, red once it has lapsed.
+
+⚠️ `lapsed` shows only between the moment it expires and the next sweep, so at
+most a night. That is not a gap in the display. It is exactly the last chance
+anybody has, and it should look like one.
+
+### Checked
+
+`hotel_hold_expiry_check.php` — **24 assertions**, every block rolled back, so
+running it expires no real booking and releases no real bed.
+
+The interesting ones are about what the command does *not* do: that `--pretend`
+writes nothing, that a hold with a payment is left alone **and said out loud**,
+that a billed one is left too, and that a hold which has not lapsed is untouched.
+Plus the one about what it does: the status log names the **system**, not a
+person — nobody was awake at half past midnight.
+
+⚠️ The test runs the command **in-process**, on the same connection, so it sees
+the fixture inside the open transaction and is rolled back with it. Shelled out
+it would run on its own connection, see none of the fixture, and report
+cheerfully that there was nothing to do.
+
+With the rest: **222 assertions across seven hotel scripts, all passing.**
+
+### What is left
+
+Early check-in and late check-out charges (§6.2), and the §6.1 gender rule. Both
+still waiting on the client. The VAT rates too — which is why every hotel bill
+printed today comes out with no tax lines on it at all.
+
+One question this section raises and does not answer: **§16 left the arrival day
+inside the hold**, so a booking nobody turned up for still holds its rooms for
+the rest of the stay — one unsold night per night of the stay, until the sweep
+catches it at the end. Capping `holdUntil` at `check_in` instead is a one-word
+change, and it is a decision about how long the desk gets to chase somebody.
+That is the client's to make, and it should be put to them now that the sweep
+exists to act on the answer.

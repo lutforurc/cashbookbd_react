@@ -169,6 +169,78 @@ const tomorrow = () => {
   return asText(date);
 };
 
+/**
+ * How long a hold has left, and how loudly to say it.
+ *
+ * ⚠️ THIS IS THE CHASING LIST (spec 6.4). A hold takes real beds and gives them
+ * back when it lapses — `hotel:expire-holds` sweeps at half past midnight and
+ * deletes the nights, and nothing puts them back. The window in which a person
+ * can still ring the guest is the day or two before that, and a grey line
+ * reading "until 2026-08-28" does not tell anybody they are in it.
+ *
+ * So the wording is a COUNTDOWN rather than a date, and the colour follows the
+ * urgency. Filtering the list to Hold sorts by this, soonest first — the two
+ * halves are meant to be used together.
+ *
+ * ⚠️ "Lapsed" shows only between the moment it expires and the next sweep, so
+ * it is at most a night on screen. That is not a gap in the display; it is
+ * exactly the last chance anybody has, and it should look like one.
+ */
+const HoldDeadline = ({ until }: { until?: string | null }) => {
+  if (!until) {
+    // No deadline at all. Not urgent and not wrong — a row from before
+    // hold_until was written. Said plainly rather than left blank, because a
+    // hold with no end is one nothing will ever release on its own.
+    return (
+      <span className="text-[0.6rem] text-gray-500 dark:text-gray-400" title="No expiry set on this hold.">
+        no deadline
+      </span>
+    );
+  }
+
+  // Whole days, counted from the ends of days: the deadline is always the end
+  // of its own day, so a hold expiring tonight has "today" left, not "0.4 days".
+  const endOfDay = new Date(until);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const now = new Date();
+  now.setHours(23, 59, 59, 999);
+
+  const days = Math.round((endOfDay.getTime() - now.getTime()) / 86400000);
+
+  const lapsed = days < 0;
+  const urgent = days >= 0 && days <= 2;
+
+  const said = lapsed
+    ? days === -1
+      ? 'lapsed yesterday'
+      : `lapsed ${Math.abs(days)} days ago`
+    : days === 0
+      ? 'lapses today'
+      : days === 1
+        ? 'lapses tomorrow'
+        : `${days} days left`;
+
+  return (
+    <span
+      className={`text-[0.6rem] ${
+        lapsed
+          ? 'font-semibold text-danger dark:text-red-400'
+          : urgent
+            ? 'font-semibold text-amber-700 dark:text-amber-300'
+            : 'text-gray-500 dark:text-gray-400'
+      }`}
+      title={
+        lapsed
+          ? `Held until ${formatDate(until)}. The next nightly sweep releases these beds — ring the guest or confirm the booking now.`
+          : `Held until ${formatDate(until)}. The beds go back on sale after that.`
+      }
+    >
+      {said}
+    </span>
+  );
+};
+
 const blankBooking = () => ({
   check_in_date: today(),
   check_out_date: tomorrow(),
@@ -673,11 +745,7 @@ const BookingsScreen = ({ user }: any) => {
                   expires, and a confirmed booking whose guests are at the desk
                   needs somebody to press Check in -- neither is visible from
                   the state alone. */}
-              {row.status === 'hold' && row.hold_until ? (
-                <span className="text-[0.6rem] text-gray-500 dark:text-gray-400">
-                  until {String(row.hold_until).slice(0, 10)}
-                </span>
-              ) : null}
+              {row.status === 'hold' ? <HoldDeadline until={row.hold_until} /> : null}
               {/* {row.status === 'confirmed' ? (
                 <span className="text-[0.6rem] text-gray-400">nobody checked in</span>
               ) : null} */}
