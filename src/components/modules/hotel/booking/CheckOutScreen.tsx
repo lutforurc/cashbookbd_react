@@ -218,6 +218,21 @@ const CheckOutScreen = () => {
 
       toast.success(result.message);
       setAsking(false);
+
+      // ⚠️ A stay that is still running stays on this screen. The desk has
+      // guests upstairs and often another room to let go in the same breath,
+      // and sending it back to the list would make it find the booking again.
+      // The ticks are cleared with it: the rooms just released are gone, and
+      // holding them in `picked` would ask the server for a check-out of rooms
+      // that have already left.
+      if (result?.data?.closes_booking === false) {
+        setPicked(null);
+        setParty(null);
+        setReason('');
+
+        return;
+      }
+
       navigate(routes.hotel_bookings);
     } catch (error: any) {
       // The server's own sentence, which names the figure still owing or the
@@ -246,9 +261,26 @@ const CheckOutScreen = () => {
             after the booking ends, or one nobody slept -- and says why. The
             date box stays so the desk can answer it rather than go back. */}
         <p className="rounded border border-stroke p-6 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
-          This stay cannot be checked out on {departure}. Try another date, or open the
-          booking to extend it.
+          {picked
+            ? `The rooms you picked cannot be checked out on ${departure}. Try another date, or go back to every room.`
+            : `This stay cannot be checked out on ${departure}. Try another date, or open the booking to extend it.`}
         </p>
+
+        {/* ⚠️ THE WAY OUT OF A CORNER. A refused date wipes the plan, and the
+            room picker goes with it — so a desk that ticked one room and then
+            chose a date that room cannot leave on would be left with a date
+            box that refuses every answer, and no way to untick anything. */}
+        {picked ? (
+          <div className="mt-3 text-center">
+            <button
+              type="button"
+              onClick={() => setPicked(null)}
+              className="text-sm font-medium text-primary hover:underline dark:text-secondary"
+            >
+              Check out every room instead
+            </button>
+          </div>
+        ) : null}
 
         <div className="mt-3 max-w-xs">
           <InputDatePicker
@@ -558,6 +590,12 @@ const CheckOutScreen = () => {
         {needsParty ? (
           <span className="ml-3 text-xs text-gray-500 dark:text-gray-400">
             Name the party carrying the balance first.
+          </span>
+        ) : !plan.rooms_leaving ? (
+          // The button is dead and the reason is not on the screen otherwise:
+          // every room ticked has already been let go.
+          <span className="ml-3 text-xs text-gray-500 dark:text-gray-400">
+            Tick a room that has not left yet.
           </span>
         ) : null}
       </div>
