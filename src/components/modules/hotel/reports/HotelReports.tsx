@@ -289,7 +289,7 @@ const HotelReports = () => {
 
       <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
         <div>
-          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <span className="mt-1 mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Property
           </span>
           <BranchDropdown
@@ -321,7 +321,7 @@ const HotelReports = () => {
               onChange={(event: any) => setMode(event.target.value)}
             />
             <div>
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <span className="mt-2 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Find
               </span>
               {/* Name, mobile, NID or room — the four things somebody standing
