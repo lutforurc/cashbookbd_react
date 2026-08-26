@@ -100,10 +100,23 @@
 > an advance in a liability head with no booking to settle it. Those are listed
 > for a person, loudly.
 >
+> **2026-08-26 (and last): the property can be read back.** A **guest register**
+> — who was in the building on a given night, name by name with NIDs, printable
+> — and a **collection report** for what money came in. Under Hotel ▸ Reports,
+> on a reading permission of its own. **§29.**
+>
+> ⚠️ The register reads the **nights**, not the booking's dates: check-out
+> deletes the nights a guest did not sleep, so "holds a night on the 25th" is the
+> only expression in this schema that means "was here on the 25th". Reading
+> `check_in_date <= D <= check_out_date` would place a named person in a building
+> they had left — an error on an ordinary report, and something else on a
+> register a police officer reads.
+>
 > Still not built: early check-in / late check-out charges (§6.2), and the §6.1
 > gender rule. The VAT rates remain zero on every install until the client's
 > consultant answers §6.3 — which means every bill printed today comes out with
-> no tax lines on it at all.
+> no tax lines on it at all. **Phase 4's timeline and month calendar** are the
+> next piece that is neither blocked nor a hole.
 
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
@@ -3260,3 +3273,158 @@ catches it at the end. Capping `holdUntil` at `check_in` instead is a one-word
 change, and it is a decision about how long the desk gets to chase somebody.
 That is the client's to make, and it should be put to them now that the sweep
 exists to act on the answer.
+
+---
+
+## 29. Reading the property back, 2026-08-26
+
+Every screen so far answers a question about **one booking**. Nothing answered a
+question about the **property**, and the desk is asked two of those daily — one
+of them sometimes by a police officer standing at the counter.
+
+| | |
+|---|---|
+| **Guest register** | Who was in the building on the night of the 25th |
+| **Collection** | What money came in between two dates, and is it in the books |
+
+One screen, two tabs. They are asked in the same breath at the same moment of
+the morning, and two screens would be two places to pick a branch and a date.
+
+### ⚠️ The register reads the NIGHTS, not the booking's dates
+
+This is the whole point of the report, and it is the one thing in it that could
+be quietly wrong for years.
+
+`booking_resource_details` holds one row per seat per night, and **check-out
+deletes the nights from the departure date forward** (§6, and `BookingNight`'s
+own header — a row left behind goes on holding the bed however it is marked). So
+a guest booked to the 18th who left on the 16th holds **no night on the 17th**.
+
+That makes *"holds a night on D"* exactly *"slept here on D"*, and it is the only
+expression in this schema that is.
+
+Reading `check_in_date <= D <= check_out_date` off `booking_master` instead would
+put that guest in the building for two nights they were not in it. On an ordinary
+report that is an error. **On a register a police officer reads, it is a
+statement about where a named person spent a night.**
+
+`hotel_report_check.php` proves it directly: it puts a guest on the register for
+their last night, deletes that night the way check-out does, and asserts they are
+gone from it — *while `booking_master` still says the stay runs later*.
+
+### ⚠️ And only bookings somebody actually checked into
+
+A confirmed booking holds its nights from the moment the telephone call ends.
+Nobody has slept in them. The register counts `checked_in` and `checked_out`, and
+nothing else.
+
+The same booking **does** belong on the arrivals list, which is what somebody
+works through during the day — so a guest who has not come yet is exactly what
+that list is for. Three questions, one date, one table:
+
+| Mode | Who |
+|---|---|
+| In the building | Slept here that night — held a night, and was checked in |
+| Arriving | `check_in_date` is that day, including holds nobody has confirmed |
+| Leaving | The morning **after** their last night |
+
+⚠️ Departures are the morning after `MAX(stay_date)`, **not** `check_out_date`. A
+guest who left early has had their later nights deleted, so `check_out_date`
+still names a day they were not here — and they would appear on the wrong
+morning's list, which is the list somebody uses to know which rooms to clean.
+
+### ⚠️ One row per guest, and an occupied room is never hidden
+
+A register naming a booking and saying "4 guests" is not a register. The question
+it exists to answer is about **people**, one at a time, by name.
+
+A booking with **no guest rows** still appears — once, under the booker's name,
+**marked as such** on the screen and on the paper. Allotment is piecemeal (§6.5)
+and a room let at midnight may have nobody typed against it until morning.
+Dropping it would hide an occupied room, which on this report is the one thing
+that must not happen; printing the person who telephoned as the person who slept
+there without saying so would be wrong about its only fact.
+
+### The printed copy
+
+The register prints, because it is a paper somebody may be asked to hand to a
+person who has no login. It carries the NIDs and the mobiles, and it says at the
+top which property and which night — a page of names with no night on it answers
+no question at all.
+
+⚠️ **Not on the print designer.** That is for papers a tenant re-arranges to
+their own taste; this is a record whose columns are not really theirs to choose,
+and a register missing the NID column because somebody dragged it off is a
+register that fails at the only moment it matters.
+
+⚠️ It is headed with the **report's** branch, not the reader's — `PadPrinting`
+falls back to the session's branch when none is passed, which would put one
+property's name over another property's guests.
+
+### 29.1 The collection report
+
+Money taken between two dates, with the booking, the guest, the purpose, the
+method, the account and **the voucher number** against each row.
+
+⚠️ **Every total is netted.** A refund is stored positive — the direction lives
+in the purpose (see `BookingPayment`) — so a report that added the column up
+would say a day took 9,200 when the drawer holds 6,800. The server signs each
+row **once**, so no screen and no print template has to remember which way a
+refund goes.
+
+Broken down two ways, because they are two people asking:
+
+- **by method** — for whoever is counting the drawer
+- **by account** — for whoever is reconciling the cash book
+
+Rows with no account are named `Not recorded` rather than dropped: a breakdown
+that silently omitted them would not add up to the net above.
+
+⚠️ **It counts what was RECEIVED, not what was earned.** An advance is a
+liability until the nights are slept (§2.6), so this figure is not income and
+must never be read as one — which is exactly why the voucher is shown against
+each row. The ledger is where income lives.
+
+The screen says how many rows are **not in the ledger**. Zero for anything
+written since the §5 vouchers; anything else is a number somebody has to account
+for, so it is stated rather than left to be noticed.
+
+### A reading permission of its own
+
+`hotel.report.view`, and it is separate from every other permission in the group
+on purpose. The six screens are the desk's; a report is read by an owner, a
+manager or an auditor, **none of whom needs to be able to take a booking**.
+
+The register in particular is a property's record of who slept there, name by
+name, with NIDs against them. That is something a client may reasonably want in
+one person's hands and nobody else's — which it cannot be if reading it is folded
+into `hotel.booking.view`.
+
+No new table. Both reports are reads of what is already there.
+
+### Two things fixed on the way past
+
+**`formatDate` returns JSX, not a string.** §28's hold tooltip used it inside a
+template literal, which stringifies to `[object Object]`. The string form is
+`formatDayMonthYear`, and it is what every new use here calls.
+
+**The check script was asserting about other people's guests.** The register is a
+whole property's, and this database has other stays on the same nights — so
+asserting on the answer's row *count* would pass or fail on whatever happened to
+be in the demo data. It now filters to the fixture's own booking.
+
+### Checked
+
+`hotel_report_check.php` — **26 assertions**, every block rolled back.
+
+With the rest: **248 assertions across eight hotel scripts, all passing.**
+
+### What is left
+
+Early check-in and late check-out charges (§6.2), and the §6.1 gender rule — both
+still waiting on the client. The VAT rates too.
+
+And **phase 4's calendar** (§8): the floor grid is built and the availability
+screen paints it, but the *timeline* and *month calendar* views are not. They are
+the next thing that is neither blocked nor a hole — a month at a glance is what
+an owner asks for, and occupancy percentages (phase 10) hang off the same read.

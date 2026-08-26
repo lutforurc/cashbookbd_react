@@ -66,6 +66,7 @@ import realEstateProjects from './components/modules/real-estate/project/project
 import buildingsSlice from './components/modules/real-estate/buildings/buildingsSlice';
 import hotelSetupSlice from './components/modules/hotel/hotelSetupSlice';
 import hotelBookingSlice from './components/modules/hotel/booking/bookingSlice';
+import hotelReportSlice from './components/modules/hotel/reports/reportSlice';
 import unitSlice from './components/modules/real-estate/units/unitSlice';
 import brandSlice from './components/modules/product/brand/brandSlice';
 import productUnitSlice from './components/modules/product/unit/unitSlice';
@@ -168,6 +169,7 @@ const store = configureStore({
     buildings: buildingsSlice,
     hotelSetup: hotelSetupSlice,
     hotelBooking: hotelBookingSlice,
+    hotelReport: hotelReportSlice,
     buildingUnits: unitSlice,
     brand: brandSlice,
     productUnit: productUnitSlice,

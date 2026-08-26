@@ -137,6 +137,7 @@ import BookingsScreen from './components/modules/hotel/booking/BookingsScreen';
 import AllotmentScreen from './components/modules/hotel/booking/AllotmentScreen';
 import FolioScreen from './components/modules/hotel/booking/FolioScreen';
 import CheckOutScreen from './components/modules/hotel/booking/CheckOutScreen';
+import HotelReports from './components/modules/hotel/reports/HotelReports';
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
@@ -613,6 +614,26 @@ function App() {
                 path={`${routes.hotel_booking_check_out}/:id`}
                 element={<CheckOutScreen />}
               />
+            </Route>
+            {/*
+              Hotel reports -- who was in the building, and what came in.
+
+              Its own permission, and a READING one. A report is read by an
+              owner, a manager or an auditor, none of whom needs to be able to
+              take a booking -- and the register in particular names every guest
+              with their NID against them, which a property may reasonably want
+              in one person's hands and nobody else's.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.report.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_reports} element={<HotelReports />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
               <Route path={routes.journal} element={<Journal />} />

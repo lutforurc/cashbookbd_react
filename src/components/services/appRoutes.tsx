@@ -363,6 +363,10 @@ const ROUTES = {
   // than a dialog on the folio: it releases beds, and the desk has to see
   // which nights go back and what is left owing before it presses anything.
   hotel_booking_check_out: '/hotel/check-out',
+  // Reading the property back: who was here, and what came in. One screen with
+  // two tabs, because both are asked at the same moment of the morning and a
+  // second screen would be a second place to pick a branch and a date.
+  hotel_reports: '/hotel/reports',
 
   notFound: '*',
 };

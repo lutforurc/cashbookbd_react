@@ -130,6 +130,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'hotel': [
     { id: 'hotel_bookings', title: "Bookings" },
+    { id: 'hotel_reports', title: "Reports" },
     { id: 'hotel_setup', title: "Rooms & Seats Setup" },
   ],
   'products': [
@@ -1981,6 +1982,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           <li style={subSlot('hotel', 'hotel_bookings')}>
                             <NavLink to={routes.hotel_bookings} className={subMenuLinkClass}>
                               Bookings
+                            </NavLink>
+                          </li>
+
+                          {/* Who was in the building, and what came in. Above
+                              setup for the same reason Bookings is: setup is a
+                              sitting done once, and these are read daily. */}
+                          <li style={subSlot('hotel', 'hotel_reports')}>
+                            <NavLink to={routes.hotel_reports} className={subMenuLinkClass}>
+                              Reports
                             </NavLink>
                           </li>
 

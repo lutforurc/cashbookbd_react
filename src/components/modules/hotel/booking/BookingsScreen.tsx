@@ -34,7 +34,7 @@ import {
   tillList,
 } from './bookingSlice';
 import { BookingType } from './types';
-import formatDate from '../../../utils/utils-functions/formatDate';
+import formatDate, { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 
 /**
  * Bookings -- what is free on a set of dates, and taking it.
@@ -230,10 +230,13 @@ const HoldDeadline = ({ until }: { until?: string | null }) => {
             ? 'font-semibold text-amber-700 dark:text-amber-300'
             : 'text-gray-500 dark:text-gray-400'
       }`}
+      // ⚠️ formatDayMonthYear, not formatDate. The latter returns JSX for use
+      // inside markup; dropped into a template literal it stringifies to
+      // "[object Object]", and a tooltip is a string.
       title={
         lapsed
-          ? `Held until ${formatDate(until)}. The next nightly sweep releases these beds — ring the guest or confirm the booking now.`
-          : `Held until ${formatDate(until)}. The beds go back on sale after that.`
+          ? `Held until ${formatDayMonthYear(until)}. The next nightly sweep releases these beds — ring the guest or confirm the booking now.`
+          : `Held until ${formatDayMonthYear(until)}. The beds go back on sale after that.`
       }
     >
       {said}

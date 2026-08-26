@@ -908,3 +908,18 @@ export const API_HOTEL_TILL_URL = `${API_BASE_URL}/hotel-setup/bookings/folio/ti
 // is held, whether it has been billed (which forbids cancelling at all), and
 // which tills a refund could come out of.
 export const API_HOTEL_CANCELLATION_URL = `${API_BASE_URL}/hotel-setup/bookings/cancellation`;
+
+// Who was in the building on a given night, and who is arriving or leaving.
+//
+// ⚠️ It reads the NIGHTS, not the booking's own dates. Check-out deletes the
+// nights a guest did not sleep, so "holds a night on the 25th" is the only
+// expression in the schema that means "was here on the 25th" — and a register a
+// police officer reads has to mean that.
+export const API_HOTEL_REGISTER_URL = `${API_BASE_URL}/hotel-setup/reports/register`;
+
+// What money came in between two dates, and whether it reached the ledger.
+//
+// ⚠️ Every total is NETTED. A refund is stored positive — the direction lives in
+// the purpose — so a report that summed the column would say the day took more
+// than the drawer holds.
+export const API_HOTEL_COLLECTION_URL = `${API_BASE_URL}/hotel-setup/reports/collection`;
