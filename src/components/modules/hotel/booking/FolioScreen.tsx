@@ -14,7 +14,14 @@ import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
 import routes from '../../../services/appRoutes';
 import { money } from '../setupHelpers';
-import { clearFolio, folioBill, folioCharge, folioReceive, folioRead } from './bookingSlice';
+import {
+  clearFolio,
+  folioBill,
+  folioCharge,
+  folioReceive,
+  folioRead,
+  tillList,
+} from './bookingSlice';
 
 /**
  * The bill, and the money against it -- screen 5.
@@ -36,10 +43,16 @@ import { clearFolio, folioBill, folioCharge, folioReceive, folioRead } from './b
  * actions rather than one. A screen that billed on payment would make what a
  * guest is charged depend on when they paid.
  *
- * ⚠️ NOTHING HERE POSTS TO THE LEDGER YET, and the screen SAYS SO rather than
- * letting the desk assume the books have moved. The banner is not a placeholder
- * to be quietly deleted later -- it comes down when the vouchers of spec 5 are
- * actually written.
+ * ⚠️ THE AMBER BANNER IS GONE, and it went the honest way. It said the accounts
+ * had not moved; the vouchers of spec 5 were written on 2026-08-26 and now they
+ * have, so what stands in its place is the voucher NUMBER against each line and
+ * each receipt. A row still without one is shown as still without one -- the
+ * screen never claims the books have moved for a row where they have not.
+ *
+ * ⚠️ WHICH DRAWER THE MONEY WENT INTO IS NOW ASKED FOR. A voucher has to name
+ * the cash or bank head, and "cash" as a word is not an account: a property with
+ * a till and three bank accounts has four of them, and only the person taking
+ * the money knows which one they put it in.
  */
 
 const PURPOSE_OPTIONS = [
@@ -80,6 +93,22 @@ const asText = (date: Date | null) => {
 
 const today = () => asText(new Date());
 
+/**
+ * A row's voucher number, or the fact that it has not got one.
+ *
+ * ⚠️ "Not posted" is said in words rather than left as a dash. A dash in a
+ * column of voucher numbers reads as "nothing to show here", and what it
+ * actually means is that this line of the guest's bill is not in the books.
+ */
+const VoucherMark = ({ vrNo }: { vrNo?: string | null }) =>
+  vrNo ? (
+    <span className="whitespace-nowrap font-mono text-xs text-black dark:text-white">{vrNo}</span>
+  ) : (
+    <span className="whitespace-nowrap rounded border border-amber-400 bg-amber-50 px-1.5 py-0.5 text-[0.65rem] font-semibold text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/20 dark:text-amber-50">
+      not posted
+    </span>
+  );
+
 const FolioScreen = () => {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
@@ -88,6 +117,7 @@ const FolioScreen = () => {
   const folio = useSelector((state: any) => state.hotelBooking.folio);
   const loading = useSelector((state: any) => state.hotelBooking.loading);
   const saving = useSelector((state: any) => state.hotelBooking.saving);
+  const tills = useSelector((state: any) => state.hotelBooking.tills);
 
   const [charge, setCharge] = useState<any>(null);
   const [payment, setPayment] = useState<any>(null);
@@ -103,6 +133,25 @@ const FolioScreen = () => {
       dispatch(clearFolio());
     };
   }, [load, dispatch]);
+
+  // Read once, and only if it is not already held. The chart of accounts does
+  // not change while a clerk is at the desk, and a spinner between the guest
+  // and the receipt is a spinner nobody asked for.
+  useEffect(() => {
+    if (!tills?.length) dispatch(tillList());
+  }, [dispatch, tills?.length]);
+
+  // The shape DropdownCommon wants, with the group in the label: 'Cash' and
+  // 'Cash — Social Islami Bank (0225)' are told apart by a clerk at a glance,
+  // and two accounts called 'Cash' in different groups are not.
+  const tillOptions = useMemo(
+    () =>
+      (tills ?? []).map((till: any) => ({
+        id: till.id,
+        name: `${till.name} (${till.group_name})`,
+      })),
+    [tills],
+  );
 
   const booking = folio?.booking;
   const totals = folio?.totals;
@@ -184,6 +233,16 @@ const FolioScreen = () => {
         cellClass: 'text-right font-medium',
         render: (row: any) => money(row.line_total),
       },
+      {
+        key: 'vr_no',
+        header: 'Voucher',
+        headerClass: 'text-center',
+        cellClass: 'text-center',
+        // ⚠️ The voucher NUMBER, because it is the thing somebody types into
+        // the accounts screen. A tick saying "posted" would be a claim they
+        // could not check.
+        render: (row: any) => <VoucherMark vrNo={row.vr_no} />,
+      },
     ],
     [],
   );
@@ -235,6 +294,13 @@ const FolioScreen = () => {
           </span>
         ),
       },
+      {
+        key: 'vr_no',
+        header: 'Voucher',
+        headerClass: 'text-center',
+        cellClass: 'text-center',
+        render: (row: any) => <VoucherMark vrNo={row.vr_no} />,
+      },
     ],
     [],
   );
@@ -269,6 +335,14 @@ const FolioScreen = () => {
   const savePayment = async () => {
     if (!Number(payment?.amount)) {
       toast.error('How much?');
+      return;
+    }
+
+    // ⚠️ Checked here as well as at the server. The server's refusal is the one
+    // that matters, but it arrives after the clerk has typed a figure and
+    // pressed a button in front of a guest — and this one arrives before.
+    if (!payment?.coa4_id) {
+      toast.error('Which account did the money go into?');
       return;
     }
 
@@ -308,23 +382,30 @@ const FolioScreen = () => {
         <FiArrowLeft size={15} /> Back to bookings
       </button>
 
-      {/* ⚠️ Said plainly, every time. The desk must not be left to assume the
-          accounts have moved when they have not. It comes down when the
-          vouchers of spec 5 are written, not before. */}
-      {folio.posted_to_ledger === false ? (
+      {/* ⚠️ Only for what is actually behind, and it names the number. The old
+          blanket "nothing is in the accounts" banner came down when the vouchers
+          were written; this replaces it and says something narrower and true.
+          Rows written before that day keep their NULL and are counted here. */}
+      {folio.unposted_rows ? (
         <p className="mb-3 rounded border border-amber-400 bg-amber-50 p-2.5 text-xs text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
-          <strong>Not yet in the accounts.</strong> The bill and the money are recorded here,
-          but no voucher has been raised — the ledger has not moved. Post them from the
-          accounts screens until this is wired up.
+          <strong>
+            {folio.unposted_rows} {folio.unposted_rows === 1 ? 'row is' : 'rows are'} not in the
+            accounts.
+          </strong>{' '}
+          Everything written from now on raises its voucher as it is saved. Pressing{' '}
+          <em>Bill the nights</em> also posts any bill line still behind; a receipt taken before
+          this was wired up stays as it is, because nothing here knows what happened to that cash.
         </p>
       ) : null}
 
-      {/* The chart heads are missing, so posting could not happen even once it
-          is wired. Better said here than discovered at posting time. */}
+      {/* The chart heads are missing, so nothing can be posted at all — and
+          because posting is now refused rather than deferred, nothing can be
+          taken either. Said before the desk brings a guest to the counter. */}
       {folio.chart_missing?.length ? (
         <p className="mb-3 rounded border border-danger bg-rose-50 p-2.5 text-xs text-rose-900 dark:border-danger dark:bg-rose-500/15 dark:text-rose-50">
-          <strong>The chart of accounts is not ready.</strong> Missing:{' '}
-          {folio.chart_missing.join(', ')}. Run the hotel grant file against this company.
+          <strong>The chart of accounts is not ready, so no money can be taken.</strong> Missing:{' '}
+          {folio.chart_missing.join(', ')}. Run the hotel grant file against this company, then
+          reload.
         </p>
       ) : null}
 
@@ -394,7 +475,9 @@ const FolioScreen = () => {
           }
           variant={folio.unbilled_nights ? 'primary' : 'default'}
           icon={<FiCalendar size={16} />}
-          disabled={!folio.unbilled_nights}
+          // Billing raises a journal, so an unready chart stops it as surely as
+          // having nothing to bill does.
+          disabled={!folio.unbilled_nights || !!folio.chart_missing?.length}
         />
         <ButtonLoading
           onClick={() =>
@@ -406,17 +489,30 @@ const FolioScreen = () => {
           }
           label={charge ? 'Close' : 'Add a charge'}
           icon={<FiPlus size={16} />}
+          disabled={!!folio.chart_missing?.length}
         />
         <ButtonLoading
           onClick={() =>
             setPayment(
               payment
                 ? null
-                : { purpose: 'advance', amount: '', method: 'cash', payment_date: today(), reference: '' },
+                : {
+                    purpose: 'advance',
+                    amount: '',
+                    method: 'cash',
+                    payment_date: today(),
+                    reference: '',
+                    // The first till on the list, which on a property with one
+                    // drawer is the only one and saves a decision nobody has.
+                    // Wrong on a property with several, which is exactly why
+                    // the field sits beside the amount rather than out of sight.
+                    coa4_id: tillOptions[0]?.id ?? '',
+                  },
             )
           }
           label={payment ? 'Close' : 'Take money'}
           icon={<FiPlus size={16} />}
+          disabled={!!folio.chart_missing?.length}
         />
         {/* The way out, from the screen where the money was settled.
 
@@ -549,12 +645,35 @@ const FolioScreen = () => {
             />
           </div>
 
+          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-5">
+            {/* ⚠️ The ACCOUNT, which is not the same question as "How" above.
+                Method is how the guest handed it over; this is which of the
+                hotel's own drawers it ended up in, and it is what the voucher
+                is written against. A card payment is a bank account. */}
+            <div className="md:col-span-2">
+              <DropdownCommon
+                id="payment_coa4_id"
+                name="coa4_id"
+                label="Into which account"
+                data={tillOptions}
+                value={payment.coa4_id ?? ''}
+                onChange={(e: any) => setPayment({ ...payment, coa4_id: e.target.value })}
+                description={
+                  payment.purpose === 'refund'
+                    ? 'The account the refund is paid out of.'
+                    : 'The cash or bank head the voucher is written against.'
+                }
+              />
+            </div>
+          </div>
+
           {/* ⚠️ The one thing about this form that somebody could get wrong,
               said where the money is being taken rather than in a manual. */}
           <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
             An advance is money held, not income — it stays a liability until the nights are
             billed. <strong>A receipt printed from here is a money receipt, never a VAT
-            invoice:</strong> the VAT falls due on the bill.
+            invoice:</strong> the VAT falls due on the bill. Saving raises the voucher at the same
+            moment, so the number appears against the row.
           </p>
 
           <div className="mt-3">

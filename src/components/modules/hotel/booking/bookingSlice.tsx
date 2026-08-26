@@ -4,8 +4,10 @@ import httpService from '../../../services/httpService';
 import {
   API_HOTEL_BOOKING_AVAILABILITY_URL,
   API_HOTEL_BOOKING_URL,
+  API_HOTEL_CANCELLATION_URL,
   API_HOTEL_CHECKOUT_URL,
   API_HOTEL_FOLIO_URL,
+  API_HOTEL_TILL_URL,
 } from '../../../services/apiRoutes';
 import { HotelTimes, Paged } from '../types';
 import { Allotment, Availability, Booking } from './types';
@@ -106,14 +108,41 @@ export const bookingSave = createAsyncThunk<
   }
 });
 
-/** Give the nights back. The booking itself stays, cancelled. */
+/**
+ * What cancelling would do to the money, before the dialog asks.
+ *
+ * ⚠️ Read EVERY time the dialog opens rather than taken off the booking row.
+ * The list row says nothing about what has been paid, and the one number the
+ * desk is about to be asked to divide is exactly that.
+ */
+export const cancellationRead = createAsyncThunk<any, number, { rejectValue: string }>(
+  'hotelBooking/cancellationRead',
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await httpService.get(`${API_HOTEL_CANCELLATION_URL}/${id}`);
+      if (res.data?.success === true) return unwrap(res);
+      return rejectWithValue(res.data?.message || 'Could not work out the cancellation');
+    } catch (error: any) {
+      return rejectWithValue(said(error, 'Could not work out the cancellation'));
+    }
+  },
+);
+
+/**
+ * Give the nights back, and settle the money. The booking itself stays,
+ * cancelled.
+ *
+ * ⚠️ The refund is only half of it. Whatever is NOT handed back is retained as
+ * cancellation income — so sending no refund_amount does not mean "decide
+ * later", it means the hotel keeps all of it. The dialog says so in words.
+ */
 export const bookingCancel = createAsyncThunk<
   { message: string; data: Booking },
-  { id: number; reason?: string },
+  { id: number; reason?: string; refund_amount?: number; coa4_id?: number | null },
   { rejectValue: string }
->('hotelBooking/bookingCancel', async ({ id, reason }, { rejectWithValue }) => {
+>('hotelBooking/bookingCancel', async ({ id, ...payload }, { rejectWithValue }) => {
   try {
-    const res = await httpService.post(`${API_HOTEL_BOOKING_URL}/cancel/${id}`, { reason });
+    const res = await httpService.post(`${API_HOTEL_BOOKING_URL}/cancel/${id}`, payload);
     if (res.data?.success === true) {
       return { message: res.data?.message || 'Cancelled', data: unwrap(res) };
     }
@@ -122,6 +151,27 @@ export const bookingCancel = createAsyncThunk<
     return rejectWithValue(said(error, 'Cancellation failed'));
   }
 });
+
+/**
+ * This company's cash and bank heads — where money can be taken into, or paid
+ * out of.
+ *
+ * ⚠️ Read once and kept. The chart of accounts does not change while a clerk is
+ * standing at the desk, and re-reading it on every payment form would put a
+ * spinner between the guest and the receipt.
+ */
+export const tillList = createAsyncThunk<any[], void, { rejectValue: string }>(
+  'hotelBooking/tillList',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await httpService.get(API_HOTEL_TILL_URL);
+      if (res.data?.success === true) return unwrap(res) || [];
+      return rejectWithValue(res.data?.message || 'Could not read the cash accounts');
+    } catch (error: any) {
+      return rejectWithValue(said(error, 'Could not read the cash accounts'));
+    }
+  },
+);
 
 /**
  * The booking as the desk sees it when the guests walk in.
@@ -330,6 +380,21 @@ interface BookingState {
   checkout: any | null;
 
   /**
+   * What cancelling the booking last asked about would do to its money.
+   *
+   * ⚠️ Kept apart from `opened` for the same reason `checkout` is kept apart
+   * from `folio`: it names an amount held, and an amount held belonging to the
+   * previous booking painted under this one's heading is money on the wrong
+   * screen.
+   */
+  cancellation: any | null;
+
+  /**
+   * The cash and bank heads money may pass through. Read once per session.
+   */
+  tills: any[];
+
+  /**
    * When the day turns over at this property.
    *
    * Arrives with the LIST, not only with an availability read, because the desk
@@ -352,6 +417,8 @@ const initialState: BookingState = {
   allotment: null,
   folio: null,
   checkout: null,
+  cancellation: null,
+  tills: [],
   times: null,
 
   loading: false,
@@ -395,6 +462,16 @@ const bookingSlice = createSlice({
      */
     clearCheckout(state) {
       state.checkout = null;
+    },
+    /**
+     * Dropped when the dialog closes, and after the cancellation is done.
+     *
+     * ⚠️ It carries `amount_held`. Left behind, the next booking's dialog would
+     * open showing the previous guest's money for the moment before its own read
+     * came back — and the field beside it is one somebody types a refund into.
+     */
+    clearCancellation(state) {
+      state.cancellation = null;
     },
   },
   extraReducers: (builder) => {
@@ -497,6 +574,27 @@ const bookingSlice = createSlice({
         // ⚠️ The plan is LEFT ALONE. Every refusal in CheckOutController
         // happens before the transaction, so nothing was written and what is
         // on screen is still true.
+      })
+
+      .addCase(cancellationRead.pending, (state) => {
+        state.checking = true;
+        state.error = null;
+      })
+      .addCase(cancellationRead.fulfilled, (state, action) => {
+        state.checking = false;
+        state.cancellation = action.payload;
+      })
+      .addCase(cancellationRead.rejected, (state, action) => {
+        state.checking = false;
+        state.cancellation = null;
+        state.error = action.payload || null;
+      })
+
+      // Kept on a failure rather than blanked. The list is the chart of
+      // accounts; a network blip should not take the payment form's only
+      // dropdown away from somebody mid-receipt.
+      .addCase(tillList.fulfilled, (state, action) => {
+        state.tills = action.payload || [];
       });
 
     // The three folio writes, kept in their own loop rather than added to the
@@ -536,6 +634,9 @@ const bookingSlice = createSlice({
           state.saving = false;
           // Whatever was on screen described the moment before this write.
           state.availability = null;
+          // A cancellation just moved money. What the dialog was showing is a
+          // statement about a booking that no longer holds anything.
+          state.cancellation = null;
         })
         .addCase(thunk.rejected, (state: any, action: any) => {
           state.saving = false;
@@ -555,6 +656,7 @@ export const {
   clearAllotment,
   clearFolio,
   clearCheckout,
+  clearCancellation,
 } =
   bookingSlice.actions;
 export default bookingSlice.reducer;

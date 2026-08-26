@@ -895,3 +895,16 @@ export const API_HOTEL_CHECKOUT_URL = `${API_BASE_URL}/hotel-setup/bookings/chec
 // ⚠️ Answers cust_party_infos.id. NOT interchangeable with the coa4 ids the
 // chart dropdowns return — billed_to_party_id points at the party master.
 export const API_HOTEL_PARTY_URL = `${API_BASE_URL}/hotel-setup/bookings/parties`;
+
+// Where money may be taken — this company's own cash and bank heads.
+//
+// ⚠️ Answers acc_coa_level4s.id, which is what `coa4_id` on a payment wants —
+// the opposite of the line above, and the two must not be crossed. Required on
+// every receipt since the §5 vouchers were written: a voucher cannot say which
+// drawer the money went into if nobody said.
+export const API_HOTEL_TILL_URL = `${API_BASE_URL}/hotel-setup/bookings/folio/tills`;
+
+// What cancelling a booking would do to the money, before it is done — how much
+// is held, whether it has been billed (which forbids cancelling at all), and
+// which tills a refund could come out of.
+export const API_HOTEL_CANCELLATION_URL = `${API_BASE_URL}/hotel-setup/bookings/cancellation`;

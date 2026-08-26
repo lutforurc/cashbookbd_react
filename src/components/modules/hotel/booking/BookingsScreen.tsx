@@ -27,8 +27,11 @@ import {
   bookingCancel,
   bookingList,
   bookingSave,
+  cancellationRead,
   clearAvailability,
   clearBookings,
+  clearCancellation,
+  tillList,
 } from './bookingSlice';
 import { BookingType } from './types';
 import formatDate from '../../../utils/utils-functions/formatDate';
@@ -197,6 +200,11 @@ const BookingsScreen = ({ user }: any) => {
   const buildingOptions = useSelector((state: any) => state.hotelSetup.buildingOptions);
   const times = useSelector((state: any) => state.hotelBooking.times);
 
+  // What cancelling the booking in the dialog would do to its money, and the
+  // drawers a refund could come out of.
+  const cancellation = useSelector((state: any) => state.hotelBooking.cancellation);
+  const tills = useSelector((state: any) => state.hotelBooking.tills);
+
   // From the signed-in user's own property, which covers almost everybody.
   // The effect below covers the account that has none.
   const [branchId, setBranchId] = useState<number | null>(user?.branch_id ?? null);
@@ -213,6 +221,17 @@ const BookingsScreen = ({ user }: any) => {
   // looks like something the page did not mean to do.
   const [cancelling, setCancelling] = useState<any>(null);
   const [reason, setReason] = useState('');
+
+  /**
+   * How much of the advance goes back, and out of which drawer.
+   *
+   * ⚠️ Starts at the WHOLE amount held rather than at zero. Whatever is not
+   * refunded is retained as income, so a field left at zero by somebody who
+   * meant to think about it later would quietly keep the guest's money. The
+   * safe default is giving it back; keeping some is the deliberate act.
+   */
+  const [refund, setRefund] = useState('');
+  const [refundTill, setRefundTill] = useState<any>('');
   const [picked, setPicked] = useState<number[]>([]);
 
   // Beds are their own selection, kept apart from rooms because the server
@@ -480,13 +499,51 @@ const BookingsScreen = ({ user }: any) => {
     }
   };
 
+  /**
+   * Fill the refund in once the server has said how much there is.
+   *
+   * ⚠️ THE WHOLE AMOUNT, not zero. Whatever is not refunded is retained as
+   * income, so a box left at zero by somebody who meant to decide later would
+   * keep the guest's money without anybody choosing to. Giving it back is the
+   * default; keeping some is the deliberate act, and it is one keystroke.
+   */
+  useEffect(() => {
+    if (!cancelling || !cancellation) return;
+
+    setRefund(String(cancellation.amount_held ?? 0));
+    setRefundTill((current: any) => current || cancellation.tills?.[0]?.id || '');
+    // Only when a new plan arrives. Listing `refund` would undo every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cancellation, cancelling?.id]);
+
   const askToCancel = (row: any) => {
     setCancelling(row);
     setReason('');
+    setRefund('');
+    setRefundTill('');
+
+    // ⚠️ Asked fresh every time, never taken off the row. The list says nothing
+    // about what has been paid, and what has been paid is the one figure the
+    // desk is about to be asked to divide.
+    dispatch(cancellationRead(row.id));
+
+    if (!tills?.length) dispatch(tillList());
+  };
+
+  const closeCancel = () => {
+    setCancelling(null);
+    dispatch(clearCancellation());
   };
 
   const cancel = async () => {
     if (!cancelling) return;
+
+    const giving = Number(refund || 0);
+
+    if (giving > 0 && !refundTill) {
+      toast.error('Which account is the refund paid out of?');
+      return;
+    }
 
     try {
       const result = await dispatch(
@@ -494,11 +551,16 @@ const BookingsScreen = ({ user }: any) => {
         // that nobody wants to fill gets filled with a full stop. The server
         // writes "no reason given" against it and the record still says who
         // cancelled it and when.
-        bookingCancel({ id: cancelling.id, reason: reason.trim() }),
+        bookingCancel({
+          id: cancelling.id,
+          reason: reason.trim(),
+          refund_amount: giving,
+          coa4_id: giving > 0 ? Number(refundTill) : null,
+        }),
       ).unwrap();
 
       toast.success(result.message);
-      setCancelling(null);
+      closeCancel();
       load();
     } catch (error: any) {
       toast.error(String(error));
@@ -1120,7 +1182,11 @@ const BookingsScreen = ({ user }: any) => {
         // throughout, and the Cancel link in the row above is text-danger.
         className="bg-danger hover:bg-danger/90"
         loading={saving}
-        onCancel={() => setCancelling(null)}
+        // ⚠️ The button is taken away rather than left to fail, in the one case
+        // the server refuses outright: a booking that has already been billed
+        // is checked out, never cancelled.
+        disabled={Boolean(cancellation?.billed_lines) || Boolean(cancellation?.chart_missing?.length)}
+        onCancel={closeCancel}
         onConfirm={cancel}
         message={
           <>
@@ -1140,6 +1206,82 @@ const BookingsScreen = ({ user }: any) => {
               The rooms go back on sale straight away. The booking stays on the books,
               marked cancelled.
             </span>
+
+            {/* ⚠️ The refusal, said as a fact before the button is pressed. A
+                billed booking has charged the guest and VAT has fallen due on
+                it; undoing that is a credit note, which this module does not
+                have and must not counterfeit. */}
+            {cancellation?.billed_lines ? (
+              <span className="mt-3 block rounded border border-danger bg-rose-50 p-2 text-left text-sm text-rose-900 dark:bg-rose-500/15 dark:text-rose-50">
+                This booking has already been billed, so it cannot be cancelled — the guest has
+                been charged and the VAT has fallen due. <strong>Check it out instead</strong>, and
+                settle or carry what is owed.
+              </span>
+            ) : null}
+
+            {cancellation?.chart_missing?.length ? (
+              <span className="mt-3 block rounded border border-danger bg-rose-50 p-2 text-left text-sm text-rose-900 dark:bg-rose-500/15 dark:text-rose-50">
+                Money has been taken against this booking, but the chart of accounts is not ready
+                to record giving it back. Missing: {cancellation.chart_missing.join(', ')}.
+              </span>
+            ) : null}
+
+            {/* The money half. Only where there is money -- a hold nobody paid
+                on is called off without any of this being asked. */}
+            {!cancellation?.billed_lines && Number(cancellation?.amount_held) > 0 ? (
+              // ⚠️ div, not span. InputElement and DropdownCommon draw their own
+              // labelled blocks, and a block element inside a span is invalid
+              // markup that browsers repair by closing the span early -- which
+              // moves the fields out from under this box.
+              <div className="mt-3 rounded border border-[rgb(var(--c-border))] p-2.5 text-left">
+                <div className="text-sm text-slate-600 dark:text-slate-300">
+                  This booking is holding{' '}
+                  <strong className="text-black dark:text-white">
+                    {money(cancellation.amount_held)}
+                  </strong>
+                  .
+                </div>
+
+                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <InputElement
+                    id="cancel_refund"
+                    name="refund_amount"
+                    label="Give back"
+                    type="number"
+                    min={0}
+                    value={refund}
+                    onChange={(e: any) => setRefund(e.target.value)}
+                  />
+                  <DropdownCommon
+                    id="cancel_refund_till"
+                    name="coa4_id"
+                    label="Out of which account"
+                    data={(cancellation.tills ?? tills ?? []).map((till: any) => ({
+                      id: till.id,
+                      name: `${till.name} (${till.group_name})`,
+                    }))}
+                    value={refundTill}
+                    onChange={(e: any) => setRefundTill(e.target.value)}
+                  />
+                </div>
+
+                {/* ⚠️ The number nobody would work out for themselves, shown
+                    where the decision is made. What is not given back is not
+                    left over -- it is the hotel's earnings, and it is posted as
+                    such. Said in a sentence rather than as a second figure in a
+                    box, because the point is what it BECOMES. */}
+                <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                  {money(Math.max(0, Number(cancellation.amount_held) - Number(refund || 0)))} stays
+                  with the hotel as a cancellation charge, and is posted as income.
+                </div>
+
+                {Number(refund || 0) > Number(cancellation.amount_held) ? (
+                  <div className="mt-2 text-sm text-danger dark:text-red-400">
+                    That is more than the booking is holding.
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
 
             <span className="mt-3 block text-left">
               <span className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">

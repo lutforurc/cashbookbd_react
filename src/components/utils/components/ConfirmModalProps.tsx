@@ -12,6 +12,15 @@ interface ConfirmModalProps {
   cancelLabel?: string;
   showCancelButton?: boolean;
   loading?: boolean;
+  /**
+   * Take the confirm button away while the message itself explains why.
+   *
+   * Separate from `loading`, which means "wait" -- this means "not from here".
+   * A dialog whose own text says the thing cannot be done, above a button that
+   * still offers to do it, asks the reader to believe the button over the words.
+   * The way out is Cancel, which stays live.
+   */
+  disabled?: boolean;
   className?: string;
   onConfirm: () => void;
   onCancel: () => void;
@@ -25,6 +34,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   cancelLabel = "Cancel",
   showCancelButton = true,
   loading = false,
+  disabled = false,
   className = "",
   onConfirm,
   onCancel,
@@ -65,7 +75,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             label={confirmLabel}
             onClick={onConfirm}
             loading={loading}
-            disabled={loading}
+            disabled={loading || disabled}
             className={className}
           />
         </div>

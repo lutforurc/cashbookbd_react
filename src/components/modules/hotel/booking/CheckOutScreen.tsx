@@ -42,6 +42,12 @@ import { checkoutRead, checkoutSave, clearCheckout } from './bookingSlice';
  * or it is carried to a named party. That is a decision of the business, not a
  * validation rule to be worked around -- an anonymous due is a receivable
  * nobody can ever chase.
+ *
+ * ⚠️ AND IT NOW REACHES THE LEDGER (spec 5, 2026-08-26). Ending a stay raises a
+ * journal for the nights it bills, and a SECOND one where a balance is carried
+ * -- Dr the party, Cr Advance Against Booking -- so the receivable arrives in
+ * that party's own ledger with a voucher explaining it. The amber banner that
+ * used to say none of this happened has come down.
  */
 
 const asText = (date: Date | null) => {
@@ -212,14 +218,16 @@ const CheckOutScreen = () => {
         <FiArrowLeft size={15} /> Back to bookings
       </button>
 
-      {/* ⚠️ Said plainly, as on the folio. Ending a stay is where somebody most
-          expects the books to move, and they do not. It comes down when the
-          vouchers of spec 5 are written, not before. */}
-      {plan.posted_to_ledger === false ? (
-        <p className="mb-3 rounded border border-amber-400 bg-amber-50 p-2.5 text-xs text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
-          <strong>Not yet in the accounts.</strong> Checking out records the bill and the
-          money here; it raises no voucher, and a balance carried to a party does not appear
-          in that party&rsquo;s ledger yet.
+      {/* ⚠️ The amber "not in the accounts" banner came down on 2026-08-26,
+          when the vouchers of spec 5 were written — checking out now raises a
+          journal for the nights and a second one for a balance carried to a
+          party. What replaces it is the one thing that can still stop it. */}
+      {plan.chart_missing?.length ? (
+        <p className="mb-3 rounded border border-danger bg-rose-50 p-2.5 text-xs text-rose-900 dark:border-danger dark:bg-rose-500/15 dark:text-rose-50">
+          <strong>The chart of accounts is not ready, so this stay cannot be ended.</strong>{' '}
+          Missing: {plan.chart_missing.join(', ')}. Run the hotel grant file against this
+          company, then reload — the guest can wait at the desk, but the beds must not be
+          released without the bill going into the books.
         </p>
       ) : null}
 
@@ -373,7 +381,9 @@ const CheckOutScreen = () => {
           label="Check out"
           variant="primary"
           icon={<FiLogOut size={16} />}
-          disabled={needsParty || balance < 0}
+          // The third reason it can be refused, and the only one the desk
+          // cannot fix from this screen: the chart has no heads to post to.
+          disabled={needsParty || balance < 0 || !!plan.chart_missing?.length}
         />
         {needsParty ? (
           <span className="ml-3 text-xs text-gray-500 dark:text-gray-400">

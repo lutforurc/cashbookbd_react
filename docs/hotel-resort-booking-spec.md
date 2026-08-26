@@ -58,15 +58,21 @@
 > 2026-08-26, and the reason `billed_to_party_id` was on `booking_master` from the
 > start.
 >
-> ⚠️ **Nothing is posted to the ledger yet**, by the same decision: a stay that
-> clears its balance needs no voucher, because the money was recorded when it was
-> taken. The consequence to keep in view is that a balance carried to a party
-> lives in `booking_master` and in this module's reports — **that party's coa4
-> ledger does not know about it**. The §5 vouchers are what close that gap, and
-> they are the next piece of work.
+> **2026-08-26 (later): the money reaches the books, and a cancellation can hand
+> it back.** The **§5 vouchers** are written — every receipt, every bill, every
+> refund and every balance carried to a party now raises one — and
+> `booking_cancellations` (**table 13**) is built with the refund/retention split
+> behind it. **§26.** ⚠️ **The amber "not in the accounts" banner has come down**,
+> the honest way: it said the ledger had not moved, and now it has.
 >
-> Still not built: early check-in / late check-out charges (§6.2), and
-> `booking_cancellations` (table 13).
+> ⚠️ **Three more chart heads**, so the grant file must be **run again** on any
+> company that ran it before this date: Hotel Other Income, Hotel Cancellation
+> Charge and Bill Rounding. Until it is, the folio names what is missing and
+> **refuses to take money** — deliberately, over the softer alternative of
+> recording it outside the books.
+>
+> Still not built: early check-in / late check-out charges (§6.2). The VAT rates
+> remain zero on every install until the client's consultant answers §6.3.
 
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
@@ -2675,3 +2681,227 @@ runs inside transactions that are rolled back.
 `booking_cancellations` (table 13), the §5 vouchers, and check-out (screen 6).
 The VAT rates remain zero on every install until the client's consultant answers
 §6.3's list — by design, and it blocks none of the above.
+
+> **All three were done later the same day.** Check-out is the commit that
+> follows this section; the vouchers and table 13 are **§26**. The paragraph
+> above is left as it was written — this file records what was true when each
+> section was — and §26 is where the current state is.
+
+---
+
+## 26. The vouchers, and the cancellation that hands money back, 2026-08-26
+
+The last two pieces of the first release, and they went together because the
+second cannot exist without the first: a cancellation that refunds an advance is
+money leaving the till, and until the till entries existed there was nothing for
+it to leave.
+
+### What came down, and why it was not just deleted
+
+Every screen in this module has carried an amber banner saying the accounts had
+not moved. §25 said plainly that the banner was **not a placeholder to be
+quietly deleted** — that it comes down when the vouchers are written and not
+before. They are written. It is down.
+
+What replaced it is narrower and still true: a **voucher number against every
+line and every receipt**, and an amber `not posted` chip against any row that
+has not got one. A screen that said "all posted" while a row from last week
+still carried NULL would be the same lie in a friendlier colour.
+
+### The five entries, and the head they all pass through
+
+| Event | Debit | Credit |
+|---|---|---|
+| Advance / settlement taken | Cash or Bank | Advance Against Booking |
+| Refund given | Advance Against Booking | Cash or Bank |
+| Nights and charges billed | Advance Against Booking | Room Rent / Other Income / Service Charge / VAT Payable |
+| Balance carried at check-out | The party | Advance Against Booking |
+| Cancellation charge retained | Advance Against Booking | Hotel Cancellation Charge |
+
+⚠️ **Advance Against Booking is the hinge, and that is the whole design.** Money
+arrives as a liability; the bill turns that liability into income; whatever is
+left at check-out moves onto a named party's ledger. Read the head's net
+movement for one booking and it is **exactly what the folio screen calls
+"owed"** — which is why there is no separate guest-ledger head, and why nothing
+anywhere stores a balance.
+
+`hotel_voucher_check.php` asserts that equality directly rather than trusting
+it. If it ever drifts, the guest ledger is fiction and everything else on the
+screen is decoration.
+
+### ⚠️ The rounding is a plug, and it could have been a leak
+
+§6.3 rounds the bill **once, on the whole total**, to the nearest taka. The
+guest pays the rounded figure; the income and VAT lines carry the exact one. Up
+to fifty poisha a bill therefore has to land somewhere, and without a head of its
+own it lands in Advance Against Booking — where it never clears, and every
+booking ever taken leaves a few poisha behind for ever.
+
+Hence **Bill Rounding**, and it takes debits as well as credits: a bill rounded
+down is a debit.
+
+The subtle half is a bill posted in **two batches** — nights today, a laundry
+charge tomorrow. Each batch cannot round itself; the sum of two rounded batches
+is not the rounded sum. What is debited to the hinge on each posting is
+
+    round(exact total of every posted line INCLUDING this batch)
+      − round(exact total of the lines already posted)
+
+so the running debit equals the folio's rounded total after every batch, in any
+order. The rounding line is the difference between that and the batch's own
+exact amounts. The check script bills, then adds a charge at **33.33** on
+purpose: it rounds the whole bill the other way, so a second batch that rounded
+itself would be caught there and nowhere else.
+
+### Three new chart heads, and one that is a compromise
+
+`HOTEL_OTHER_INCOME` is the compromise and it should be said out loud. §5 names
+a head per service — Catering Income, Ticket Income, Hall Rent Income — and
+those arrive with the modules that sell them. There is no restaurant module, and
+**OPEN-3 has still not said whether there will be one**. One head now beats six
+empty ones, and it beats the only other thing the code could have done, which is
+post a guest's dinner to Room Rent Income.
+
+`HOTEL_CANCELLATION_CHARGE` is its own head because folded into room rent it
+would inflate occupancy earnings with money from rooms nobody slept in.
+
+⚠️ **The grant file has to be run again** on any company set up before today.
+Seven markers now, not four.
+
+### ⚠️ Refusing rather than deferring
+
+Every write that posts asks `HotelAccountHead::readyFor()` first and **refuses**
+if a head is missing, naming which. The softer option — record it and post later
+— was available and was rejected: money recorded outside the books is precisely
+what the amber banner existed to warn about, and the cure is one SQL file run
+once per company. The screens say the chart is not ready **before** a guest is
+brought to the counter, and the buttons are disabled rather than left to fail.
+
+### Which drawer the money went into is now required
+
+`coa4_id` was optional on a payment while nothing posted. A voucher cannot say
+where the money is without it, and **"cash" as a word is not an account**: a
+property with a till and three bank accounts has four of them, and only the
+person taking the money knows which.
+
+The folio's payment form grew a dropdown for it, fed by a new endpoint that
+reads the company's own cash and bank heads. Those are found by the level-3
+group's **`acc_source_id`** (7 cash, 8 bank) rather than by name, because group
+names differ per tenant — the same reasoning as the markers, one level up.
+
+⚠️ The check refuses a head that is not a till. Without it a caller could name
+any level-4 id and post the day's takings into somebody's salary expense, or
+into another tenant's chart.
+
+### 26.1 booking_cancellations — table 13
+
+Three figures, and the third is why it is a table:
+
+| | |
+|---|---|
+| `amount_held` | what the booking had on it when it was cancelled |
+| `refund_amount` | what was handed back |
+| `retained_amount` | what the hotel **kept** — the cancellation charge, and it is income |
+
+`retained_amount` is **stored, not derived**. Both figures it comes from can be
+corrected later by rows of their own; this has to go on saying what was decided
+on the day.
+
+`UNIQUE (booking_id)` — one cancellation per booking. Two rows would mean two
+refunds, and the second paid out of the till against money already gone back.
+The controller checks the status first; the key is what guarantees it when two
+clerks press at the same moment.
+
+`from_status` is recorded because `booking_master` now says `cancelled` and has
+forgotten: a hold that lapsed and a confirmed booking called off the night
+before arrival are different events, and the report that separates them would
+otherwise have to go digging in the status log.
+
+⚠️ It does **not** replace `booking_status_logs`. That stays the history — the
+log is read by the desk, this by the accountant.
+
+### ⚠️ A billed booking cannot be cancelled
+
+Once a night is on the folio the guest has been charged and **VAT has fallen due
+on it**. Unwinding that is a credit note, which this module does not have and
+must not counterfeit. Such a stay is **checked out**, and its balance settled or
+carried.
+
+That rule is also what keeps **open question 9** — does VAT come back on a
+cancellation refund — from mattering before the client's consultant has answered
+it. The dialog says so as a fact, with the confirm button taken away, rather
+than letting somebody press it and read an error.
+
+### Two permissions, conditionally
+
+Calling a booking off is `hotel.booking.cancel`. Paying money **out** of the
+till is `hotel.folio.bill` — the same permission that guards the till on the
+folio, checked only when there is a refund. A clerk holding only the first can
+still cancel a booking nobody paid on, and must fetch the cashier for one they
+have. No new permission was created; there are still ten.
+
+### The dialog defaults to giving it back
+
+The refund box opens at the **whole amount held**, not at zero. Whatever is not
+refunded is retained as income, so a box left at zero by somebody who meant to
+decide later would keep the guest's money without anybody choosing to. Giving it
+back is the default; keeping some is the deliberate act, and it is one keystroke.
+The sentence under it says what the remainder becomes, in words, where the
+decision is made.
+
+### ⚠️ Why it does not call apiMainTransactionMaster()
+
+The shared helper takes its branch from `Auth::user()->branch_id` and its date
+from that branch's last day-close. Neither is right here: a hotel booking
+belongs to **the branch that is the property**, which for a caller with
+multi-branch reach is not their own; and a night's income belongs to the night,
+not to whenever the desk pressed the button.
+
+There is a second difference and it is deliberate. The shared helper looks up the
+next serial `->where('status', 1)`, so a recycled voucher donates its number to
+the next one and the two collide — the duplicate-`vr_no` fault diagnosed on
+2026-08-08, present in **25 of the 28 generators**. `HotelVoucher` does not
+filter on status, so the hotel's series is gap-free and unrepeated from its
+first voucher.
+
+It does **not fix** the other 25. It declines to join them. When those are
+consolidated into one counter — step 4 of that plan, still not started — this
+becomes a caller of it.
+
+### Two guards that should never fire
+
+`HotelVoucher::raise()` refuses to write an **unbalanced** voucher, and refuses
+one worth nothing. Every caller builds its legs from a single figure, so neither
+can happen today — which is exactly why they are there. The day one of them is
+edited wrongly the books stay right and somebody reads a sentence instead of
+finding a hole three weeks later.
+
+### Checked
+
+`hotel_voucher_check.php` — **66 assertions through the controllers**, with a
+real user signed in, everything rolled back. It asserts that every voucher
+balances separately, that the hinge head agrees with the screen, that two
+batches still add to one rounded total, that a receipt has no VAT line on it,
+that a refund is the receipt's mirror image, that a non-till head is refused,
+that a billed booking cannot be cancelled, that a cancelled booking's advance
+is left at **nil** rather than a few poisha short, and that a balance carried at
+check-out really does arrive in the party's own ledger.
+
+With the earlier scripts: **173 assertions across five hotel scripts, all
+passing.**
+
+⚠️ Two of the older scripts were picking `Booking::query()->first()` and then
+asserting they had left nothing behind. On a database somebody has been using in
+a browser that counts **the browser's** rows as the script's litter, and totals
+the browser's folio lines into §6.3's worked example. They now pick a booking
+with no history of its own. Neither failure was ever a fault in the code, and
+both looked exactly like one.
+
+### What is left
+
+Early check-in and late check-out charges (§6.2) — a late departure is billed by
+hand through the folio in the meantime. The gender rule of §6.1, still not
+enforced and still blocked by §6.2 being open. And the VAT rates, which stay
+zero on every install until the client's consultant answers the six questions in
+§6.3 — the code is ready for them and will charge nothing until they arrive,
+which is the correct behaviour for a number nobody has confirmed.
