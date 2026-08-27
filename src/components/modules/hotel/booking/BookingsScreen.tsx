@@ -821,17 +821,21 @@ const BookingsScreen = ({ user }: any) => {
       return;
     }
 
-    // ⚠️ AN EDIT ASKS FIRST. Dropping a night that is already billed
-    // leaves the charge on the folio -- nothing takes a line off one -- so the
-    // desk sees the count before it presses, not after. A new booking has
-    // nothing to drop and goes straight through.
+    // ⚠️ AN EDIT ASKS FIRST. A night that is already billed cannot be dropped
+    // -- the server refuses it -- so the dry run is what turns that refusal
+    // into something the clerk reads BEFORE filling the form in, instead of an
+    // error after pressing Save. A new booking has nothing to drop and goes
+    // straight through.
     if (form.id && !warning) {
       try {
         const preview: any = await dispatch(
           bookingUpdate({ ...payloadOf(), id: form.id, dry_run: true }),
         ).unwrap();
 
-        if (Number(preview?.data?.billed_dropping ?? 0) > 0) {
+        // `refused` is the server's own word for it. The count is read as well,
+        // so a server that has not been updated yet still stops here rather
+        // than sending a change it is about to reject.
+        if (preview?.data?.refused || Number(preview?.data?.billed_dropping ?? 0) > 0) {
           setWarning(preview.data);
 
           return;
@@ -1740,27 +1744,33 @@ const BookingsScreen = ({ user }: any) => {
           does -- which is not obvious, because the booking stays and only the
           nights go back -- and the reason it takes is the one the record
           keeps. */}
-      {/* ⚠️ THE ONE THING AN EDIT CAN DO THAT NOTHING UNDOES. Dropping a
-          night that is already billed leaves its charge on the folio: nothing
-          takes a line off one, and a credit note is §6.2, unbuilt. So the
-          figure is put in front of the clerk before the write, not after. */}
+      {/* ⚠️ NOT A WARNING ANY MORE -- A REFUSAL, EXPLAINED.
+          It offered "Change it anyway", and the charge then stayed on the folio
+          with nothing able to take it off: a guest moved 101 → 102 → 103 on one
+          night ended up holding one room and owing for three, each with its own
+          posted voucher. The server refuses it now, so the button that offered
+          to do it would be offering something that cannot happen -- hence
+          `disabled`, with the message carrying the reason and the way out. */}
       <ConfirmModal
         show={warning !== null}
-        title="Some of these nights are already billed"
-        confirmLabel="Change it anyway"
-        cancelLabel="Leave it alone"
+        title="These nights are already billed"
+        confirmLabel="Cannot be dropped"
+        cancelLabel="Close"
+        disabled
         className="bg-primary hover:bg-primary/90"
         loading={saving}
         onCancel={() => setWarning(null)}
-        onConfirm={() => save()}
+        // Belt and braces. The button is disabled, so this cannot be reached --
+        // and if it ever were, closing is the one thing that must not write.
+        onConfirm={() => setWarning(null)}
         message={
           <>
             <span className="block">
               <strong className="text-danger dark:text-red-400">
-                {warning?.billed_dropping} of the nights being dropped are on the bill.
+                {warning?.billed_dropping} of the nights being dropped {Number(warning?.billed_dropping) === 1 ? 'is' : 'are'} on the bill.
               </strong>{' '}
-              Taking them off the booking does not take them off the folio — the guest
-              goes on being charged for them until somebody adjusts it by hand.
+              A billed night cannot be taken off a booking — the charge is posted to the
+              ledger with a voucher against it, and nothing here can unwrite that.
             </span>
 
             {(warning?.billed_lines ?? []).length ? (
@@ -1771,9 +1781,12 @@ const BookingsScreen = ({ user }: any) => {
               </span>
             ) : null}
 
-            <span className="mt-2 block">
-              {warning?.nights_adding ? `${warning.nights_adding} night(s) added. ` : ''}
-              {warning?.nights_dropping ? `${warning.nights_dropping} dropped.` : ''}
+            {/* A refusal that only refuses teaches people to stop using the
+                screen. This is what is still open to them. */}
+            <span className="mt-2 block text-xs text-gray-600 dark:text-gray-300">
+              Rooms and sittings may still be added, dates extended, and any night that
+              has not been billed dropped. A guest who is really leaving a room is
+              checked out of it, which keeps what was billed.
             </span>
           </>
         }
