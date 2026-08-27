@@ -210,10 +210,10 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
         {/* ⚠️ Said on the page, every time. A list of free sittings is out of
             date the moment it is drawn, and a screen that does not admit it is
             one somebody treats as a reservation. */}
-        <p className="mb-1 flex-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
+        {/* <p className="mb-1 flex-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
           What was free a moment ago. A sitting is not yours until it is booked —
           somebody else may be looking at this same evening.
-        </p>
+        </p> */}
       </div>
 
       {loading && !halls ? <Loader /> : null}
