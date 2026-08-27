@@ -233,6 +233,16 @@ export interface LayoutRoom {
   seats?: LayoutSeat[];
   seat_rent_min: string | number | null;
   seat_rent_max: string | number | null;
+
+  /**
+   * The parts of a day this hall is let in, or null on a room.
+   *
+   * ⚠️ They belong to the PROPERTY, not to the hall -- every hall on a branch
+   * is let in the same sittings, and the list is repeated onto each so the tile
+   * can draw it without a second lookup. An empty list on a hall means it
+   * cannot be let at all.
+   */
+  sittings?: { id: number; name: string; label?: string }[] | null;
 }
 
 /** One bed of a room sold by the bed. */
@@ -286,4 +296,8 @@ export interface LayoutBuilding {
   rent_max: number | null;
   seat_rent_min: number | null;
   seat_rent_max: number | null;
+  /** Halls and community centres, counted apart from the rooms. */
+  halls_count?: number;
+  /** Their seating, counted apart from the beds. */
+  seats_count?: number;
 }

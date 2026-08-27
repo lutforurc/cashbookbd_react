@@ -48,6 +48,25 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
   const total = room.beds ?? 0;
   const switchedOff = Math.max(0, total - active);
 
+  /**
+   * ⚠️ A HALL HAS NO BEDS, IT HAS CHAIRS. Everything below this line was
+   * written for rooms, and drawn for a hall it said "sold whole · 0 beds" --
+   * which reads as a room somebody forgot to finish setting up. A function
+   * space is measured by how many people sit in it, and that number is its
+   * capacity.
+   *
+   * The kind comes from the server (booking_resource_types.code); the tile does
+   * not guess it from a missing bed count, because a room with its beds not yet
+   * added would look identical.
+   */
+  const isHall = room.kind === 'hall' || room.kind === 'community_centre';
+  const seats = Number(room.capacity ?? 0);
+
+  // ⚠️ A hall with no sittings CANNOT BE LET. The booking screen offers it
+  // nothing to pick, and the only way to find that out was to go there and see
+  // an empty row -- so the tile says it here, where the property is set up.
+  const sittings = room.sittings ?? [];
+
   // Two lines, and the break is where the subject changes: which room this is,
   // then what is true of it. On one line the six facts ran to the full width of
   // the bubble and the room's own name -- the thing being pointed at -- was just
@@ -60,13 +79,19 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
     // screen, where it simply does not appear.
     room.blocked_reason,
     room.taken_by,
-    room.sale_mode === 'seat'
-      ? 'sold by the seat'
-      : room.sale_mode === 'both'
-        ? 'sold whole or by the seat'
-        : 'sold whole',
-    `${active} bed${active === 1 ? '' : 's'}`,
-    switchedOff ? `${switchedOff} switched off` : null,
+    // ⚠️ A hall is not "sold whole" either -- it is let by the sitting, and
+    // "whole" is the answer to a question about beds that a hall never asks.
+    isHall
+      ? 'let by the sitting'
+      : room.sale_mode === 'seat'
+        ? 'sold by the seat'
+        : room.sale_mode === 'both'
+          ? 'sold whole or by the seat'
+          : 'sold whole',
+    isHall
+      ? (seats ? `${seats} seat${seats === 1 ? '' : 's'}` : 'no seating set')
+      : `${active} bed${active === 1 ? '' : 's'}`,
+    isHall ? null : switchedOff ? `${switchedOff} switched off` : null,
     Number(room.status) !== 1 ? 'inactive' : null,
   ]
     .filter(Boolean)
@@ -85,6 +110,19 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
           bubble does: it runs against the page, so on a light page this line
           is muted ON a dark bubble, and the other way round. */}
       <div className="font-normal text-slate-400 dark:text-slate-500">{facts}</div>
+
+      {/* ⚠️ A LINE OF THEIR OWN. Run in with the rest, the sittings wrapped
+          mid-list -- "Morning," ending one line and "Afternoon, Evening"
+          starting the next -- so the bubble read as one long sentence with a
+          fold in it. They are a different KIND of fact from the seating and the
+          price: those describe the hall, these are what it can be sold in. */}
+      {isHall ? (
+        <div className="font-normal text-slate-400 dark:text-slate-500">
+          {sittings.length
+            ? sittings.map((one: any) => one.name).join(', ')
+            : 'no sittings set — cannot be let'}
+        </div>
+      ) : null}
     </>,
   );
 
@@ -135,7 +173,17 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
       </div>
 
       <div className="flex w-full items-center gap-0.5">
-        {active > MAX_PIPS ? (
+        {/* ⚠️ Pips are BEDS -- one mark per bed, so a six-bed dormitory reads
+            at a glance. A hall has none of them; it has chairs, and four
+            hundred of those is a number rather than a row of marks. */}
+        {isHall ? (
+          <span className="text-[0.55rem] leading-none opacity-75">
+            {seats ? `${seats} seats` : 'no seating'}
+            {sittings.length
+              ? ` · ${sittings.length} ${sittings.length === 1 ? 'sitting' : 'sittings'}`
+              : ' · no sittings'}
+          </span>
+        ) : active > MAX_PIPS ? (
           <span className="text-[0.55rem] leading-none opacity-75">{active} beds</span>
         ) : (
           <>

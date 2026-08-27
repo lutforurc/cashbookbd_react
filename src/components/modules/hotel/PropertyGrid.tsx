@@ -55,6 +55,7 @@ const PropertyGrid = ({
   selectedIds,
   onSelect,
   picking,
+  ownIds,
   summaryOf,
 }: PropertyGridProps) => (
   <div className="flex flex-wrap items-start gap-4">
@@ -67,6 +68,7 @@ const PropertyGrid = ({
         selectedIds={selectedIds}
         onSelect={onSelect}
         picking={picking}
+        ownIds={ownIds}
         summary={summaryOf?.(building) ?? null}
       />
     ))}
@@ -82,6 +84,7 @@ const BuildingCard = ({
   selectedIds,
   onSelect,
   picking,
+  ownIds,
   summary,
 }: {
   building: LayoutBuilding;
@@ -90,6 +93,11 @@ const BuildingCard = ({
   selectedIds: number[];
   onSelect: (room: LayoutRoom) => void;
   picking?: boolean;
+  /**
+   * Rooms this booking already holds, which stay clickable however the grid
+   * marks them. Empty on a new booking.
+   */
+  ownIds?: number[];
   summary: string | null;
 }) => {
   // Top floor first. The API sends them ground-first because that is their
@@ -125,6 +133,13 @@ const BuildingCard = ({
             more in one block than another -- the rent lives on the room. */}
         <div className="text-xs text-gray-500 dark:text-gray-400">
           {building.rooms_count} rooms · {building.beds_count} beds
+          {/* ⚠️ Halls counted apart from rooms, and their SEATS apart from
+              beds. Folded in, a block with two function spaces read "22 rooms ·
+              40 beds" -- two of which had no beds and looked unfinished. */}
+          {building.halls_count
+            ? ` · ${building.halls_count} ${building.halls_count === 1 ? 'hall' : 'halls'}`
+              + (building.seats_count ? ` (${building.seats_count} seats)` : '')
+            : ''}
           {rent ? ` · ${rent}` : ''}
           {seatRent ? ` · ${seatRent}` : ''}
         </div>
@@ -153,6 +168,7 @@ const BuildingCard = ({
             selectedIds={selectedIds}
             onSelect={onSelect}
             picking={picking}
+            ownIds={ownIds}
             dimmed={Number(floor.status) !== 1}
           />
         ))}
@@ -167,6 +183,7 @@ const BuildingCard = ({
             selectedIds={selectedIds}
             onSelect={onSelect}
             picking={picking}
+            ownIds={ownIds}
           />
         ) : null}
 
@@ -189,6 +206,7 @@ const FloorRow = ({
   selectedIds,
   onSelect,
   picking,
+  ownIds,
   dimmed,
 }: {
   label: string;
@@ -200,6 +218,7 @@ const FloorRow = ({
   onSelect: (room: LayoutRoom) => void;
   picking?: boolean;
   dimmed?: boolean;
+  ownIds?: number[];
 }) => (
   // No padding and no rule of its own. The column above spaces these, so a
   // row that also padded itself would add to that space on one axis only --
@@ -239,7 +258,22 @@ const FloorRow = ({
             mode={mode}
             typeIndex={typeIndex}
             selected={selectedIds.includes(room.id)}
-            disabled={picking && !!room.blocked_reason}
+            /**
+             * ⚠️ A ROOM ALREADY PICKED IS ALWAYS CLICKABLE, whatever the
+             * grid says about it. Blocked tiles are dead so nobody books a room
+             * somebody else has -- right for a new booking, and wrong the
+             * moment an EXISTING one is opened for editing: its own rooms come
+             * back marked "booked" (they are -- by this booking), so the clerk
+             * could not untick them and nothing could be dropped.
+             *
+             * Unticking never books anything. It only ever gives a room back.
+             */
+            disabled={
+              picking
+              && !!room.blocked_reason
+              && !selectedIds.includes(room.id)
+              && !(ownIds ?? []).includes(room.id)
+            }
             onSelect={onSelect}
           />
         ))

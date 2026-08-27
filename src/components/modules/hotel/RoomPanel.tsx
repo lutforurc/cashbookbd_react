@@ -45,8 +45,19 @@ const RoomPanel: React.FC<RoomPanelProps> = ({ summary, detail, onClose, onChang
 
   const showing = detail?.id === summary.id ? detail : null;
 
-  const saleLabel =
-    SALE_MODE_OPTIONS.find((o) => o.id === summary.sale_mode)?.name ?? summary.sale_mode;
+  /**
+   * ⚠️ A HALL IS MEASURED IN CHAIRS AND SOLD BY THE SITTING. Everything
+   * below was written for rooms, and a hall opened here read "Whole room only
+   * · ৳15,000.00 / night · Beds 0" -- three statements, all of them false
+   * about a community centre. The kind comes from the server, never guessed
+   * from a bed count of nought: a room whose beds are not set up yet has the
+   * same nought and is a different problem.
+   */
+  const isHall = summary.kind === 'hall' || summary.kind === 'community_centre';
+
+  const saleLabel = isHall
+    ? 'Let by the sitting'
+    : SALE_MODE_OPTIONS.find((o) => o.id === summary.sale_mode)?.name ?? summary.sale_mode;
 
   const switchedOff = Math.max(0, (summary.beds ?? 0) - (summary.active_beds ?? 0));
 
@@ -61,10 +72,13 @@ const RoomPanel: React.FC<RoomPanelProps> = ({ summary, detail, onClose, onChang
   const facts: { label: string; value: React.ReactNode }[] = [
     { label: 'Sold', value: saleLabel },
     {
-      label: 'Whole room',
+      label: isHall ? 'Per sitting' : 'Whole room',
       // A dash, not 0.00. A room sold only by the bed has no whole-room price,
-      // and a zero would read as free.
-      value: summary.rent === null ? '—' : `৳${money(summary.rent)} / night`,
+      // and a zero would read as free. The same for a hall with no rate.
+      value:
+        summary.rent === null
+          ? '—'
+          : `৳${money(summary.rent)} / ${isHall ? 'sitting' : 'night'}`,
     },
     ...(summary.seat_rent_min !== null
       ? [
@@ -77,13 +91,22 @@ const RoomPanel: React.FC<RoomPanelProps> = ({ summary, detail, onClose, onChang
           },
         ]
       : []),
-    { label: 'Holds', value: `${summary.capacity} guest${summary.capacity === 1 ? '' : 's'}` },
     {
-      label: 'Beds',
-      value: switchedOff
-        ? `${summary.active_beds} in use, ${switchedOff} switched off`
-        : `${summary.active_beds}`,
+      label: isHall ? 'Seats' : 'Holds',
+      value: `${summary.capacity} ${isHall ? 'chair' : 'guest'}${summary.capacity === 1 ? '' : 's'}`,
     },
+    // ⚠️ No bed row on a hall. "Beds 0" is the answer to a question about
+    // a room, and printed here it reads as a setup somebody left half done.
+    ...(isHall
+      ? []
+      : [
+          {
+            label: 'Beds',
+            value: switchedOff
+              ? `${summary.active_beds} in use, ${switchedOff} switched off`
+              : `${summary.active_beds}`,
+          },
+        ]),
     {
       label: 'Status',
       value:
@@ -108,7 +131,13 @@ const RoomPanel: React.FC<RoomPanelProps> = ({ summary, detail, onClose, onChang
 
   return (
     <div
-      className="fixed inset-0 z-1001 flex items-center justify-center bg-black/50 px-3 py-6 print:hidden"
+      // ⚠️ ABOVE THE SIDEBAR, which sits at z-9999. At z-1001 this dialog
+      // was BEHIND it: the backdrop covered the page, the panel opened in the
+      // middle, and the sidebar went on drawing over its left-hand third -- so
+      // the title read "mmunity Centre" and the Edit button was half a button.
+      // It looked like the panel had been positioned wrongly; it had not, it
+      // was simply underneath.
+      className="fixed inset-0 z-10000 flex items-center justify-center bg-black/50 px-3 py-6 print:hidden"
       // The backdrop closes it; the dialog stops the click from reaching the
       // backdrop, so a stray click inside -- on a rent field, say -- does not
       // throw away what is being typed.
@@ -173,7 +202,12 @@ const RoomPanel: React.FC<RoomPanelProps> = ({ summary, detail, onClose, onChang
             ))}
           </div>
 
-          <div>
+          {/* ⚠️ The bed editor is meaningless on a hall: a hall has no beds
+              to price one at a time, and offering the editor invites somebody
+              to add one. What a hall is sold in are its SITTINGS, and those
+              belong to the property rather than to this room -- they are set
+              on the Sittings tab. */}
+          <div className={isHall ? 'hidden' : ''}>
             <div className="mb-1.5 text-xs font-medium text-black dark:text-white">
               Beds, priced one at a time
             </div>
