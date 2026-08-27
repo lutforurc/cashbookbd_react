@@ -111,6 +111,15 @@ interface branchItem {
   /** When the day turns over at this property. HH:MM. */
   hotel_check_in_time: string;
   hotel_check_out_time: string;
+  /**
+   * How long a tentative hold keeps a room, in whole hours -- and the longest
+   * the desk may ask for.
+   *
+   * ⚠️ Hours on the clock, not days. A hold used to run to the end of its last
+   * day, so one taken in the morning and one taken at night lapsed together.
+   */
+  hotel_hold_hours: string;
+  hotel_hold_max_hours: string;
   salutation_male: string;
   salutation_female: string;
   salutation_other: string;
@@ -223,6 +232,33 @@ const metaTextOr = (value: unknown, fallback: string) =>
   value === null || value === undefined || value === '' || value === false
     ? fallback
     : String(value);
+
+/**
+ * A number of hours, said the way somebody says it.
+ *
+ * 168 is a correct answer to "how long is the hold" and an unreadable one. The
+ * field takes hours because that is what the engine counts, and this is what
+ * makes 168 legible as a week without making the form ask in two units.
+ *
+ * Days only where the hours divide into whole ones -- "1 day 12 hours" is
+ * harder to read at a glance than "36 hours", and the number in the box is the
+ * one that decides anything.
+ */
+const spellHours = (value: string): string => {
+  const hours = Number(value);
+
+  if (!Number.isFinite(hours) || hours < 1) return '';
+  if (hours % 24 !== 0) return `${hours} hour${hours === 1 ? '' : 's'}`;
+
+  const days = hours / 24;
+
+  if (days % 7 === 0 && days > 7) {
+    const weeks = days / 7;
+    return `${days} days — ${weeks} weeks`;
+  }
+
+  return `${days} day${days === 1 ? '' : 's'}`;
+};
 
 /**
  * A stored 'YYYY-MM-DD' as a date on the calendar.
@@ -381,6 +417,13 @@ const AddBranch = () => {
     // has asked reads the same here as it does on the hotel screens.
     hotel_check_in_time: '14:00',
     hotel_check_out_time: '12:00',
+    // ⚠️ Two hours, and a day at most. A HOLD IS NOT A BOOKING -- it is the desk
+    // waiting for somebody who said they were coming, so the default is a wait
+    // and not a reservation. The server holds the same two numbers as its own
+    // fallback, so the form and the engine cannot disagree about an unset
+    // branch.
+    hotel_hold_hours: '2',
+    hotel_hold_max_hours: '24',
     salutation_male: '',
     salutation_female: '',
     salutation_other: '',
@@ -631,6 +674,8 @@ const AddBranch = () => {
         need_customer_sex: toBooleanFlag(b.need_customer_sex),
         hotel_check_in_time: b.hotel_check_in_time || '14:00',
         hotel_check_out_time: b.hotel_check_out_time || '12:00',
+        hotel_hold_hours: String(b.hotel_hold_hours ?? 2),
+        hotel_hold_max_hours: String(b.hotel_hold_max_hours ?? 24),
         salutation_male: b.salutation_male ? String(b.salutation_male) : '',
         salutation_female: b.salutation_female ? String(b.salutation_female) : '',
         salutation_other: b.salutation_other ? String(b.salutation_other) : '',
@@ -1728,15 +1773,64 @@ const AddBranch = () => {
                       </p>
                     </div>
 
-                    <div className="flex items-end pb-1">
-                      <p className="text-xs leading-snug text-gray-500 dark:text-gray-400">
-                        <strong className="text-black dark:text-white">
-                          Check-out has to be earlier than check-in.
-                        </strong>{' '}
-                        The night of the 17th is the last one a guest leaving on
-                        the 18th pays for, and the 18th is sold to somebody else
-                        — which only works if the first one has gone before the
-                        second arrives.
+                    
+                  </div>
+
+                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    How long a room is held
+                  </h4>
+
+                  {/* ⚠️ A HOLD TAKES REAL INVENTORY -- one row per bed per
+                      night -- so this is how long an unconfirmed enquiry may
+                      keep a room off the market. Too long and the desk turns
+                      people away for rooms nobody is coming to; too short and a
+                      guest who said they would ring back finds their room sold.
+                      It is a commercial decision, which is why it is a setting
+                      and not a number in the booking code.
+
+                      Hours, on the clock. A hold used to run to the end of its
+                      last day, so one taken at nine in the morning and one
+                      taken at eleven at night lapsed at the same moment and the
+                      second lasted fourteen hours longer for no reason anybody
+                      chose. */}
+                  <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
+                    <div>
+                      <InputElement
+                        id="hotel_hold_hours"
+                        name="hotel_hold_hours"
+                        type="number"
+                        min={1}
+                        label="Hold lasts (hours)"
+                        value={formData.hotel_hold_hours || ''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        When the desk names no date of its own.{' '}
+                        {spellHours(formData.hotel_hold_hours) ? (
+                          <strong className="text-black dark:text-white">
+                            {spellHours(formData.hotel_hold_hours)}
+                          </strong>
+                        ) : null}
+                      </p>
+                    </div>
+
+                    <div>
+                      <InputElement
+                        id="hotel_hold_max_hours"
+                        name="hotel_hold_max_hours"
+                        type="number"
+                        min={1}
+                        label="Longest hold (hours)"
+                        value={formData.hotel_hold_max_hours || ''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        The most the desk may ask for.{' '}
+                        {spellHours(formData.hotel_hold_max_hours) ? (
+                          <strong className="text-black dark:text-white">
+                            {spellHours(formData.hotel_hold_max_hours)}
+                          </strong>
+                        ) : null}
                       </p>
                     </div>
                   </div>

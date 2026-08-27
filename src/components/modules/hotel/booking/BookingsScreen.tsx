@@ -179,23 +179,132 @@ const tomorrow = () => {
 };
 
 /**
+ * A stored 'YYYY-MM-DD HH:MM:SS' as a moment on this clock.
+ *
+ * ⚠️ Read out by hand rather than handed to `new Date`. That shape has no zone
+ * and no T, so what it means is left to the browser: Chrome reads it as local
+ * time and Safari has historically refused it outright, returning Invalid Date
+ * — and a hold that will not parse is a countdown that reads as "no deadline"
+ * on somebody's phone.
+ */
+const parseStamp = (value: string): Date | null => {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/.exec(value ?? '');
+
+  if (!parts) return null;
+
+  const [, y, mo, d, h, mi, sec] = parts;
+
+  return new Date(
+    Number(y),
+    Number(mo) - 1,
+    Number(d),
+    Number(h),
+    Number(mi),
+    Number(sec ?? 0),
+  );
+};
+
+/**
+ * A number of hours as somebody says it -- "an hour", "two days".
+ *
+ * ⚠️ The form used to say "seven days" in fixed words. The property holds its
+ * rooms for as long as its own branch settings say, and a screen that names a
+ * different number is a screen the desk will believe over the sweep.
+ */
+const holdLength = (hours?: number): string => {
+  if (!hours || hours < 1) return 'a while';
+  if (hours === 1) return 'an hour';
+  if (hours < 24) return `${hours} hours`;
+  if (hours % 24 !== 0) return `${hours} hours`;
+
+  const days = hours / 24;
+
+  return days === 1 ? 'a day' : `${days} days`;
+};
+
+/**
+ * "3:45 PM". The hour a person says, not a twenty-four hour stamp.
+ *
+ * ⚠️ THE AM/PM IS THE WHOLE POINT, and leaving it to the browser lost it.
+ * `toLocaleTimeString` with `hour: 'numeric'` follows the visitor's locale, and
+ * on a 24-hour one it returns "1:07" with no meridiem at all — which read as a
+ * DURATION beside the word "lapses" and was taken for an hour and seven
+ * minutes. It was one in the morning.
+ *
+ * Written out by hand for that reason, and by the same rule as clockTime() in
+ * setupHelpers, so the two say the hour the same way across the module.
+ */
+const onTheClock = (at: Date): string => {
+  const h = at.getHours();
+  const hour = h % 12 === 0 ? 12 : h % 12;
+
+  return `${hour}:${String(at.getMinutes()).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+};
+
+/**
+ * Re-draw on a timer, so a countdown counts down.
+ *
+ * ⚠️ A COUNTDOWN THAT DOES NOT MOVE IS A LIE THAT GETS WORSE. "lapses in 54
+ * min" was worked out when the row was drawn and then sat there: leave the
+ * screen open through lunch and it still says 54 while the hold has been gone
+ * an hour. The desk reads that number to decide whether to ring somebody.
+ *
+ * Half a minute, so the minute on screen is never wrong by a whole one. Cheap
+ * -- it re-renders one short line, not the table.
+ *
+ * ⚠️ Only while `active`. A hold three days out does not change minute to
+ * minute, and a timer per row on a page of forty bookings is forty timers doing
+ * nothing. The interval is cleared on unmount, which matters here: this list
+ * re-renders on every filter change, and a timer left behind would go on
+ * calling setState against a component that is gone.
+ */
+const useTicking = (active: boolean, everyMs = 30000) => {
+  const [, tick] = useState(0);
+
+  useEffect(() => {
+    if (!active) return undefined;
+
+    const timer = setInterval(() => tick((n) => n + 1), everyMs);
+
+    return () => clearInterval(timer);
+  }, [active, everyMs]);
+};
+
+/**
  * How long a hold has left, and how loudly to say it.
  *
  * ⚠️ THIS IS THE CHASING LIST (spec 6.4). A hold takes real beds and gives them
- * back when it lapses — `hotel:expire-holds` sweeps at half past midnight and
+ * back when it lapses — `hotel:expire-holds` sweeps every five minutes and
  * deletes the nights, and nothing puts them back. The window in which a person
- * can still ring the guest is the day or two before that, and a grey line
- * reading "until 2026-08-28" does not tell anybody they are in it.
+ * can still ring the guest is what this has to make visible.
  *
- * So the wording is a COUNTDOWN rather than a date, and the colour follows the
- * urgency. Filtering the list to Hold sorts by this, soonest first — the two
- * halves are meant to be used together.
+ * ⚠️ IT COUNTS IN MINUTES, AND IT USED TO COUNT IN DAYS.
+ *
+ * A hold ran to the end of a day, so whole days were the only unit that meant
+ * anything and the line said "lapses tomorrow". Then a hold became a WAIT --
+ * one property holds a room for an hour, because a hold is a guest saying they
+ * are on their way, not a booking -- and a day-counter could only ever answer
+ * "today" or "tomorrow" for something with forty minutes left on it. The desk
+ * needs the hour, and near the end it needs the minutes.
+ *
+ * So the clock time is the fact, and the countdown appears beside it only while
+ * it is short enough to act on. "lapses at 3:45 PM" is what somebody rings a
+ * guest about; "in 12 minutes" is what makes them do it now.
  *
  * ⚠️ "Lapsed" shows only between the moment it expires and the next sweep, so
- * it is at most a night on screen. That is not a gap in the display; it is
- * exactly the last chance anybody has, and it should look like one.
+ * it is at most five minutes on screen. That is not a gap in the display; it is
+ * the last instant anybody has, and it should look like one.
  */
 const HoldDeadline = ({ until }: { until?: string | null }) => {
+  // ⚠️ Parsed and the timer started BEFORE either early return below. Hooks run
+  // in the same order on every render or React loses track of them, and a
+  // `return` above a hook is exactly how that order changes between renders.
+  const at = until ? parseStamp(until) : null;
+
+  // Ticking only where the words would actually change: inside two days. "3
+  // days left" reads the same at noon and at midnight.
+  useTicking(!!at && at.getTime() - Date.now() < 2 * 86400000);
+
   if (!until) {
     // No deadline at all. Not urgent and not wrong — a row from before
     // hold_until was written. Said plainly rather than left blank, because a
@@ -207,28 +316,60 @@ const HoldDeadline = ({ until }: { until?: string | null }) => {
     );
   }
 
-  // Whole days, counted from the ends of days: the deadline is always the end
-  // of its own day, so a hold expiring tonight has "today" left, not "0.4 days".
-  const endOfDay = new Date(until);
-  endOfDay.setHours(23, 59, 59, 999);
+  if (!at) {
+    return (
+      <span className="text-[0.6rem] text-gray-500 dark:text-gray-400" title={String(until)}>
+        {until}
+      </span>
+    );
+  }
 
-  const now = new Date();
-  now.setHours(23, 59, 59, 999);
+  const minutes = Math.round((at.getTime() - Date.now()) / 60000);
+  const lapsed = minutes < 0;
+  const gone = Math.abs(minutes);
 
-  const days = Math.round((endOfDay.getTime() - now.getTime()) / 86400000);
+  /**
+   * ⚠️ HOW LONG IS LEFT, NOT WHEN IT ENDS.
+   *
+   * This said "lapses at 1:15 AM" on a hold taken at 1:15 minus an hour, and it
+   * was read as wrong twice over: once as a duration ("an hour and fifteen
+   * minutes"), and once as a hold that had not started counting. The property
+   * sets its hold in HOURS -- "Hold lasts: 1" -- so the hour is the number
+   * somebody is looking for in this column, and a clock time makes them work it
+   * out from two figures neither of which is on screen.
+   *
+   * The moment itself is not lost: it is in the tooltip, and that is the form
+   * somebody reads out to a guest on the telephone.
+   */
+  const left = (mins: number): string => {
+    if (mins < 60) return `${Math.max(1, mins)} min left`;
 
-  const lapsed = days < 0;
-  const urgent = days >= 0 && days <= 2;
+    if (mins < 1440) {
+      const hours = Math.floor(mins / 60);
+      const rest = mins % 60;
+
+      // "1 hr 5 min", but plain "3 hr" on the hour -- a trailing "0 min" is
+      // noise in a line this short.
+      return rest ? `${hours} hr ${rest} min left` : `${hours} hr left`;
+    }
+
+    const days = Math.round(mins / 1440);
+
+    return `${days} day${days === 1 ? '' : 's'} left`;
+  };
 
   const said = lapsed
-    ? days === -1
-      ? 'lapsed yesterday'
-      : `lapsed ${Math.abs(days)} days ago`
-    : days === 0
-      ? 'lapses today'
-      : days === 1
-        ? 'lapses tomorrow'
-        : `${days} days left`;
+    ? gone < 1
+      ? 'lapsed just now'
+      : gone < 60
+        ? `lapsed ${gone} min ago`
+        : gone < 1440
+          ? `lapsed ${Math.round(gone / 60)} hr ago`
+          : `lapsed ${Math.round(gone / 1440)} days ago`
+    : left(minutes);
+
+  // Three hours, because that is about as far ahead as a desk acts on anything.
+  const urgent = !lapsed && minutes <= 180;
 
   return (
     <span
@@ -239,13 +380,12 @@ const HoldDeadline = ({ until }: { until?: string | null }) => {
             ? 'font-semibold text-amber-700 dark:text-amber-300'
             : 'text-gray-500 dark:text-gray-400'
       }`}
-      // ⚠️ formatDayMonthYear, not formatDate. The latter returns JSX for use
-      // inside markup; dropped into a template literal it stringifies to
-      // "[object Object]", and a tooltip is a string.
+      // The whole moment, to the minute. The line above is deliberately short
+      // and a date with no hour on it is what this replaced.
       title={
         lapsed
-          ? `Held until ${formatDayMonthYear(until)}. The next nightly sweep releases these beds — ring the guest or confirm the booking now.`
-          : `Held until ${formatDayMonthYear(until)}. The beds go back on sale after that.`
+          ? `Held until ${formatDayMonthYear(until)}, ${onTheClock(at)}. The sweep runs every five minutes — ring the guest or confirm the booking now.`
+          : `Held until ${formatDayMonthYear(until)}, ${onTheClock(at)}. The beds go back on sale after that.`
       }
     >
       {said}
@@ -808,6 +948,18 @@ const BookingsScreen = ({ user }: any) => {
     stated_adults: Number(form.stated_adults) || 0,
     stated_children: Number(form.stated_children) || 0,
     notes: form.notes || undefined,
+
+    // ⚠️ THE FORM ASKED AND NOTHING SENT IT. "Confirmed or held" sat on the
+    // edit screen, the clerk moved it to Confirmed, the save succeeded and the
+    // booking stayed held -- the answer never left the browser, and the server
+    // did not validate it either. A control that does nothing is worse than no
+    // control: the desk believes the guest is confirmed and the sweep releases
+    // their room.
+    //
+    // Sent on every edit, including the ones that do not move it: the server
+    // compares it with what the booking already is and treats "the same" as no
+    // change at all.
+    status: form.status,
   });
 
   const save = async () => {
@@ -1706,7 +1858,7 @@ const BookingsScreen = ({ user }: any) => {
                         data={STATUS_OPTIONS}
                         value={form.status}
                         onChange={set('status')}
-                        description="A hold keeps the rooms for seven days."
+                        description={`A hold keeps the rooms for ${holdLength(times?.hold_hours)}, then the beds go back on sale.`}
                       />
                       <div className="md:col-span-2">
                         <InputElement

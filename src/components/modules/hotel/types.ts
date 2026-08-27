@@ -333,6 +333,18 @@ export interface HotelTimes {
   /** HH:MM. */
   check_in: string;
   check_out: string;
+
+  /**
+   * How long a hold keeps a room, in hours, and the longest the desk may ask
+   * for.
+   *
+   * ⚠️ Sent so the booking form can SAY it. It read "a hold keeps the rooms for
+   * seven days" in fixed words while the property held them for one hour -- a
+   * sentence on the screen arguing with the sweep, and the clerk believing the
+   * screen.
+   */
+  hold_hours?: number;
+  hold_max_hours?: number;
   /** The branch as its own edit URL spells it, for the Change link. */
   branch_ref?: string;
 }
