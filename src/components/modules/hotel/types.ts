@@ -100,6 +100,30 @@ export interface HotelRoomType {
   rooms_count?: number;
 }
 
+/**
+ * Something a room offers: AC, Wi-Fi, a balcony, a projector.
+ *
+ * ⚠️ THE COMPANY'S list, not a property's -- a company running two hotels ticks
+ * the same word on rooms in both, and two lists would be two spellings of one
+ * facility within a season. Which is why nothing about it carries a branch.
+ *
+ * `applies_to` keeps the two vocabularies apart. A projector is not a bedroom
+ * facility and a wardrobe is not a hall one, and a form offering all of both is
+ * a list nobody reads to the end.
+ */
+export interface HotelFacility {
+  id?: number;
+  code?: string | null;
+  name: string;
+  applies_to: 'room' | 'hall' | 'both';
+  sort_order?: number;
+  status: number;
+
+  serial_no?: number;
+  /** How many rooms tick it. The number that makes deleting one a decision. */
+  rooms_count?: number;
+}
+
 /** How a room is sold. A seat follows its room and is never asked. */
 export type SaleMode = 'whole' | 'seat' | 'both';
 
@@ -128,9 +152,26 @@ export interface HotelResource {
   capacity: number;
   /** What THIS row costs for one unit of its kind's rate unit. */
   rent?: number | string | null;
+  /**
+   * ⚠️ THE DESK'S, not the guest's -- "key sticks, engineering told". Kept
+   * apart from `description` on purpose: that one rides onto the tile, the
+   * booking screen and the bill, and a housekeeping remark must not take that
+   * ride.
+   */
   notes?: string | null;
+  /** For the guest: what the room offers, in the words no tick list holds. */
+  description?: string | null;
   sort_order?: number;
   status: number;
+
+  /**
+   * The tick list, by id -- what the form sends.
+   *
+   * ⚠️ AN EMPTY ARRAY AND UNDEFINED ARE DIFFERENT ANSWERS to the server. Empty
+   * means "this room offers none of them" and clears the list; leaving the key
+   * off means "I am not talking about facilities" and keeps what is there.
+   */
+  facility_ids?: number[];
 
   /** Sent by the room form; the server writes the seat rows from them. */
   seat_count?: number;
@@ -142,6 +183,8 @@ export interface HotelResource {
   seats_count?: number;
   active_seats_count?: number;
   seats?: HotelResource[];
+  /** Read-only: the ticked rows themselves, for the chips in the list. */
+  facilities?: HotelFacility[];
   type?: ResourceKind;
   building?: { id: number; name: string; code?: string | null };
   floor?: { id: number; name: string; floor_no?: number };
@@ -153,6 +196,9 @@ export interface DdlOption {
   value: number;
   label: string;
   label_2?: string | null;
+
+  /** A facility says which kind of thing it may be ticked on. */
+  applies_to?: 'room' | 'hall' | 'both';
 
   /** Room types carry their defaults down so the form can fill itself in. */
   capacity?: number;
@@ -208,6 +254,17 @@ export interface LayoutRoom {
   capacity: number;
   rent: string | number | null;
   status: number;
+
+  /**
+   * What the room offers and what its own sentence says.
+   *
+   * Both go in the TOOLTIP rather than on the tile. The tile holds three things
+   * and no more -- see RoomTile -- and a fourth at that size is a tile nobody
+   * can read from across a desk. `facilities` is empty rather than absent on a
+   * room nothing is ticked on.
+   */
+  facilities?: string[];
+  description?: string | null;
 
   beds: number;
   /** Beds still in use. The rest are switched off and kept, never deleted. */

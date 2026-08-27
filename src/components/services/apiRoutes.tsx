@@ -858,6 +858,15 @@ export const API_HOTEL_FLOOR_URL = `${API_BASE_URL}/hotel-setup/floors`;
 export const API_HOTEL_ROOM_TYPE_URL = `${API_BASE_URL}/hotel-setup/room-types`;
 
 /**
+ * What a room offers -- the tick list behind the room form.
+ *
+ * ⚠️ THE COMPANY'S, not a property's, and that is why nothing here takes a
+ * branch. A company running two hotels ticks "air conditioning" on rooms in
+ * both, and two lists would be two spellings of one word within a season.
+ */
+export const API_HOTEL_FACILITY_URL = `${API_BASE_URL}/hotel-setup/facilities`;
+
+/**
  * The parts of a day a hall is let for (§4.2).
  *
  * A room is sold by the night; a hall by the slot, and the same hall earns

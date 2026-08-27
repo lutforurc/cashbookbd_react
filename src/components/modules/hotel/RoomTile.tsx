@@ -67,6 +67,11 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
   // an empty row -- so the tile says it here, where the property is set up.
   const sittings = room.sittings ?? [];
 
+  // What the room offers, and its own sentence. Both belong in the bubble
+  // rather than on the tile: the tile holds three things and no more, and a
+  // fourth at this size is a tile nobody can read from across a desk.
+  const facilities = room.facilities ?? [];
+
   // Two lines, and the break is where the subject changes: which room this is,
   // then what is true of it. On one line the six facts ran to the full width of
   // the bubble and the room's own name -- the thing being pointed at -- was just
@@ -121,6 +126,23 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
           {sittings.length
             ? sittings.map((one: any) => one.name).join(', ')
             : 'no sittings set — cannot be let'}
+        </div>
+      ) : null}
+
+      {/* ⚠️ LINES OF THEIR OWN, and last. What a room OFFERS is a different
+          kind of fact from what it is and whether it can be taken -- and it is
+          the one somebody reads only after the first two lines have answered
+          "can I sell this". Absent entirely on a room nothing is ticked on:
+          an empty line reads as a fact that failed to load. */}
+      {facilities.length ? (
+        <div className="font-normal text-slate-400 dark:text-slate-500">
+          {facilities.join(' · ')}
+        </div>
+      ) : null}
+
+      {room.description ? (
+        <div className="max-w-xs font-normal italic text-slate-400 dark:text-slate-500">
+          {room.description}
         </div>
       ) : null}
     </>,

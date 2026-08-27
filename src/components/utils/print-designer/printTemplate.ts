@@ -505,6 +505,17 @@ export const HOTEL_BILL_LINE_FIELDS: FieldDef[] = [
   { key: 'stay_date', name: 'Date', group: 'folio', format: 'date' },
   { key: 'stay_date_to', name: 'Date To', group: 'folio', format: 'date' },
   { key: 'room', name: 'Room', group: 'folio' },
+  // ⚠️ WHAT THE ROOM IS, not what the line is. A bill naming "Deluxe 302" and
+  // nothing else leaves the guest's own accountant with no record of what was
+  // paid for. Offered rather than printed: neither is in any shipped layout, so
+  // a paper that does not ask for them comes out exactly as it always did.
+  //
+  // ⚠️ And both read as the room stands TODAY, not as it stood on the night --
+  // nothing here is stored against the folio. That is the honest answer for a
+  // description and would be the wrong one for a rate, which is why rates are
+  // read back from what was stored and these are not.
+  { key: 'room_facilities', name: 'Room Facilities', group: 'folio' },
+  { key: 'room_description', name: 'Room Description', group: 'folio' },
   { key: 'quantity', name: 'Quantity', group: 'folio', numeric: true },
   { key: 'unit_rate', name: 'Rate', group: 'folio', numeric: true, format: 'money' },
   { key: 'base_amount', name: 'Amount', group: 'folio', numeric: true, format: 'money' },

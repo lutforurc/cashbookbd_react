@@ -8,12 +8,15 @@ import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import ActionButtons from '../../utils/fields/ActionButton';
 import SearchInput from '../../utils/fields/SearchInput';
 import Checkbox from '../../utils/fields/Checkbox';
+import ToggleSwitch from '../../utils/fields/ToggleSwitch';
+import { FIELD_TEXTAREA, FIELD_LABEL, FIELD_HELP } from '../../../theme/fieldStyles';
 
 import SetupShell from './SetupShell';
 import SeatEditor from './SeatEditor';
 import {
   buildingDdl,
   clearEditingResource,
+  facilityDdl,
   floorDdl,
   resourceDelete,
   resourceEdit,
@@ -28,6 +31,7 @@ import {
   SALE_MODE_OPTIONS,
   STATUS_OPTIONS,
   blankRoom,
+  facilityFits,
   money,
   needsSeatRent,
   needsWholeRent,
@@ -67,6 +71,7 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
     buildingOptions,
     floorOptions,
     roomTypeOptions,
+    facilityOptions,
     kinds,
     editingResource,
     loading,
@@ -117,6 +122,11 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
 
   useEffect(() => {
     dispatch(resourceKinds());
+    // ⚠️ No branch_id, and asked for in full rather than per kind: the tick
+    // list is the COMPANY's, and the form switches between a bedroom's and a
+    // hall's the moment the Kind dropdown changes. A second request for that
+    // would put a blank list on screen for as long as it took to answer.
+    dispatch(facilityDdl());
   }, [dispatch]);
 
   useEffect(() => {
@@ -156,6 +166,15 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
       ...editingResource,
       seat_count: editingResource.seats?.filter((s: any) => Number(s.status) === 1).length || 1,
       seat_rent: '',
+      // ⚠️ From the ids the server sends beside the rows, never mapped back
+      // from the names -- that map is the one that goes wrong the day two
+      // facilities are worded alike. An older answer without them leaves the
+      // ticks empty rather than undefined, so a save then clears the list it
+      // could not show; see the note on facility_ids in types.ts.
+      facility_ids:
+        (editingResource as any).facility_ids ??
+        (editingResource.facilities ?? []).map((f: any) => f.id),
+      description: editingResource.description ?? '',
     });
   }, [editingResource]);
 
@@ -178,6 +197,55 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
     () => (kinds ?? []).find((k: any) => k.id === Number(form?.resource_type_id))?.code === 'room',
     [kinds, form?.resource_type_id],
   );
+
+  /**
+   * Which tick list this is -- a bedroom's or a hall's.
+   *
+   * ⚠️ Read off the KIND, never guessed from the sale mode or a missing bed
+   * count. A community centre is a hall for this purpose even though its code
+   * is not "hall", and a ticketed item is neither -- which is why an unknown
+   * kind shows the whole list rather than an empty one. See facilityFits.
+   */
+  const facilityKind = useMemo(() => {
+    const code = (kinds ?? []).find((k: any) => k.id === Number(form?.resource_type_id))?.code;
+
+    if (code === 'room') return 'room';
+    if (code === 'hall' || code === 'community_centre') return 'hall';
+
+    return null;
+  }, [kinds, form?.resource_type_id]);
+
+  /**
+   * The tick boxes to draw, in the list's own order.
+   *
+   * A projector is not a bedroom facility and a wardrobe is not a hall one; a
+   * form offering all of both is a list nobody reads to the end. Anything
+   * marked "either" is on both lists, which is most of them.
+   */
+  const facilityChoices = useMemo(
+    () => (facilityOptions ?? []).filter((f: any) => facilityFits(f.applies_to, facilityKind)),
+    [facilityOptions, facilityKind],
+  );
+
+  const ticked = form?.facility_ids ?? [];
+
+  /**
+   * ⚠️ Ticks are toggled, never rebuilt from what is on screen. The list drawn
+   * is filtered by kind, so rebuilding it from the boxes would drop every
+   * facility the current kind does not offer -- and switching a room to a hall
+   * and back would quietly strip its wardrobe and its television.
+   */
+  const toggleFacility = (id: number) =>
+    setForm((prev) => {
+      if (!prev) return prev;
+
+      const held = prev.facility_ids ?? [];
+
+      return {
+        ...prev,
+        facility_ids: held.includes(id) ? held.filter((one) => one !== id) : [...held, id],
+      };
+    });
 
   const saleMode: SaleMode = (form?.sale_mode ?? 'whole') as SaleMode;
 
@@ -280,6 +348,11 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
       rent: numberOrNull(form.rent),
       seat_count: isRoom ? Number(form.seat_count) || 1 : undefined,
       seat_rent: isRoom ? numberOrNull(form.seat_rent) : undefined,
+      // ⚠️ Sent even when nothing is ticked, and that is the point: an empty
+      // array is the answer "this room offers none of them" and clears the
+      // list, where leaving the key off would keep whatever is stored. The
+      // server tells the two apart -- see syncFacilities in the API.
+      facility_ids: form.facility_ids ?? [],
     };
 
     try {
@@ -308,7 +381,13 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
         // Rooms are added one floor after another. The building, floor, type
         // and rents are kept and only the number is cleared -- and the number
         // is the one thing the next floor certainly does not share.
-        setForm({ ...form, id: undefined, code: '', name: '', seats: [] });
+        //
+        // ⚠️ The TICKS are kept and the DESCRIPTION is not, and the split is
+        // deliberate: rooms on a floor share their facilities almost by
+        // definition, while "corner room, lake side" is true of exactly one of
+        // them. Carried over, it would be quietly wrong on every room after
+        // the first -- and wrong on their bills.
+        setForm({ ...form, id: undefined, code: '', name: '', description: '', seats: [] });
       }
 
       load();
@@ -341,6 +420,40 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
               {row.type?.name}
               {row.room_type?.name ? ` · ${row.room_type.name}` : ''}
             </div>
+
+            {/* What it offers, under what it is. Four and a count rather than
+                the lot: a room with twelve ticks would be a table row three
+                lines deep, and the twelfth is not what anybody is scanning
+                this column for. */}
+            {row.facilities?.length ? (
+              <div className="mt-1 flex flex-wrap gap-1">
+                {row.facilities.slice(0, 4).map((f: any) => (
+                  <span
+                    key={f.id}
+                    className="rounded bg-gray-100 px-1.5 py-0.5 text-[0.65rem] leading-none text-gray-600 dark:bg-meta-4 dark:text-gray-300"
+                  >
+                    {f.name}
+                  </span>
+                ))}
+                {row.facilities.length > 4 ? (
+                  <span
+                    className="text-[0.65rem] leading-none text-gray-400"
+                    title={row.facilities.map((f: any) => f.name).join(', ')}
+                  >
+                    +{row.facilities.length - 4} more
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+
+            {row.description ? (
+              <div
+                className="mt-0.5 line-clamp-1 text-[0.7rem] italic leading-snug text-gray-400"
+                title={row.description}
+              >
+                {row.description}
+              </div>
+            ) : null}
           </div>
         ),
       },
@@ -619,6 +732,86 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
                 value={String(form.seat_rent ?? '')}
                 onChange={set('seat_rent')}
               />
+            </div>
+
+            {/* ⚠️ WHAT THE ROOM IS, under what it costs. Both of these were
+                being typed into the room NAME before they existed -- which is
+                the one field the bill prints, so "302 (AC, balcony)" ended up
+                on a guest's invoice as the room's number.
+
+                The tick list first and the sentence after it: the list is what
+                a clerk answers in four seconds, and the sentence is the part
+                only some rooms need. */}
+            <div className="mt-4 rounded border border-stroke p-3 dark:border-strokedark">
+              <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+                <span className="text-sm font-medium text-black dark:text-white">
+                  What {bulk ? 'these rooms offer' : 'it offers'}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {ticked.length ? `${ticked.length} on` : 'none on'}
+                </span>
+              </div>
+
+              {facilityChoices.length ? (
+                // The app's own switch rather than a bare checkbox -- one
+                // control, drawn from the SWITCH_* tokens like every other, so
+                // twenty of them in a grid cannot be the one field on this form
+                // that follows its own colours. gap-y-2 because a switch stands
+                // taller than the box it replaced and the rows would touch.
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 lg:grid-cols-4">
+                  {facilityChoices.map((f: any) => (
+                    <ToggleSwitch
+                      key={f.value}
+                      id={`room_facility_${f.value}`}
+                      name={`facility_${f.value}`}
+                      label={f.label}
+                      checked={ticked.includes(f.value)}
+                      onChange={() => toggleFacility(f.value)}
+                      labelClassName="text-sm text-gray-600 dark:text-gray-300"
+                    />
+                  ))}
+                </div>
+              ) : (
+                // Not an empty grid. A property that has never opened the
+                // Facilities tab has nothing to tick, and a blank space here
+                // reads as a screen that failed to load.
+                <p className="text-xs leading-snug text-gray-500 dark:text-gray-400">
+                  Nothing on the list yet. The Facilities tab has the usual
+                  twenty-two — AC, Wi-Fi, a projector — in one press.
+                </p>
+              )}
+
+              <div className="mt-3">
+                <label htmlFor="room_description" className={FIELD_LABEL}>
+                  Description
+                </label>
+                {/* A textarea rather than InputElement: this is the one field on
+                    the form that holds a sentence, and a single-line box would
+                    hide most of what was typed into it behind a caret. */}
+                <textarea
+                  id="room_description"
+                  name="description"
+                  rows={3}
+                  placeholder="Corner room, lake side. Extra bed on request."
+                  className={`${FIELD_TEXTAREA} w-full px-3 py-2`}
+                  value={form.description ?? ''}
+                  onChange={set('description')}
+                />
+                <p className={FIELD_HELP}>
+                  For the guest — it shows on the layout and the booking screen, and on the bill
+                  where the property’s paper asks for it. Anything for the desk alone is a note,
+                  not this.
+                </p>
+              </div>
+
+              {bulk && run.length ? (
+                // Said before the run is made rather than found afterwards: a
+                // description that fits one room is rarely true of twelve.
+                <p className="mt-2 text-xs leading-snug text-warning">
+                  All {run.length} rooms are created with these ticks and this description. Open one
+                  afterwards to change its own.
+                </p>
+              ) : null}
             </div>
 
             {isRoom && form.id ? (

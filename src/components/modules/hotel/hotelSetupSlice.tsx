@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import httpService from '../../services/httpService';
 import {
   API_HOTEL_BUILDING_URL,
+  API_HOTEL_FACILITY_URL,
   API_HOTEL_FLOOR_URL,
   API_HOTEL_LAYOUT_URL,
   API_HOTEL_RESOURCE_URL,
@@ -11,6 +12,7 @@ import {
 import {
   DdlOption,
   HotelBuilding,
+  HotelFacility,
   HotelFloor,
   HotelResource,
   HotelRoomType,
@@ -148,6 +150,34 @@ export const roomTypeSave = saveThunk<HotelRoomType>('roomTypeSave', (p) =>
 );
 export const roomTypeDelete = deleteThunk('roomTypeDelete', API_HOTEL_ROOM_TYPE_URL);
 
+/* ================= Facilities -- what a room offers ================= */
+
+/**
+ * ⚠️ NO branch_id anywhere in this group, and it is not an oversight. The tick
+ * list is the COMPANY's: a company running two hotels ticks "air conditioning"
+ * on rooms in both, and a per-property list would be two spellings of one word
+ * within a season.
+ */
+export const facilityList = listThunk<HotelFacility>('facilityList', API_HOTEL_FACILITY_URL);
+export const facilityDdl = ddlThunk('facilityDdl', `${API_HOTEL_FACILITY_URL}/ddl`);
+export const facilitySave = saveThunk<HotelFacility>('facilitySave', (p) =>
+  p?.id ? `${API_HOTEL_FACILITY_URL}/update/${p.id}` : `${API_HOTEL_FACILITY_URL}/store`,
+);
+export const facilityDelete = deleteThunk('facilityDelete', API_HOTEL_FACILITY_URL);
+
+/**
+ * The standard twenty-two, copied in.
+ *
+ * For a company whose property was set up after the patch that seeds them ran:
+ * typing twenty-two rows by hand to say a room has air conditioning is not a
+ * setup step anybody finishes. Adds what is missing and touches nothing that is
+ * there, so a company that has renamed a row keeps its wording.
+ */
+export const facilityStandard = saveThunk<{ added: number }>(
+  'facilityStandard',
+  () => `${API_HOTEL_FACILITY_URL}/standard`,
+);
+
 /* ================= Rooms, and the seats inside them ================= */
 
 export const resourceList = listThunk<HotelResource>('resourceList', API_HOTEL_RESOURCE_URL);
@@ -254,12 +284,16 @@ interface HotelSetupState {
   floors: Paged<HotelFloor>;
   roomTypes: Paged<HotelRoomType>;
   slots: Paged<HotelSlot>;
+  facilities: Paged<HotelFacility>;
   resources: Paged<HotelResource>;
 
   buildingOptions: DdlOption[];
   floorOptions: DdlOption[];
   roomTypeOptions: DdlOption[];
   slotOptions: DdlOption[];
+  /** The room form's tick boxes. Carries applies_to, so one answer serves
+      a bedroom's list and a hall's. */
+  facilityOptions: DdlOption[];
   kinds: ResourceKind[];
 
   /** The elevation grid's own copy -- the whole property, not a page of it. */
@@ -287,12 +321,14 @@ const initialState: HotelSetupState = {
   floors: { ...emptyPage },
   roomTypes: { ...emptyPage },
   slots: { ...emptyPage },
+  facilities: { ...emptyPage },
   resources: { ...emptyPage },
 
   buildingOptions: [],
   floorOptions: [],
   roomTypeOptions: [],
   slotOptions: [],
+  facilityOptions: [],
   kinds: [],
 
   layout: [],
@@ -322,7 +358,7 @@ const hotelSetupSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    const page = (key: 'buildings' | 'floors' | 'roomTypes' | 'resources', thunk: any) => {
+    const page = (key: 'buildings' | 'floors' | 'roomTypes' | 'facilities' | 'resources', thunk: any) => {
       builder
         .addCase(thunk.pending, (state: any) => {
           state.loading = true;
@@ -342,7 +378,10 @@ const hotelSetupSlice = createSlice({
         });
     };
 
-    const options = (key: 'buildingOptions' | 'floorOptions' | 'roomTypeOptions', thunk: any) => {
+    const options = (
+      key: 'buildingOptions' | 'floorOptions' | 'roomTypeOptions' | 'facilityOptions',
+      thunk: any,
+    ) => {
       builder
         .addCase(thunk.fulfilled, (state: any, action: any) => {
           state[key] = action.payload || [];
@@ -371,17 +410,21 @@ const hotelSetupSlice = createSlice({
     page('floors', floorList);
     page('roomTypes', roomTypeList);
     page('slots', slotList);
+    page('facilities', facilityList);
     page('resources', resourceList);
 
     options('buildingOptions', buildingDdl);
     options('floorOptions', floorDdl);
     options('roomTypeOptions', roomTypeDdl);
     options('slotOptions', slotDdl);
+    options('facilityOptions', facilityDdl);
 
     save(buildingSave);
     save(floorSave);
     save(roomTypeSave);
     save(slotSave);
+    save(facilitySave);
+    save(facilityStandard);
     save(resourceSave);
     save(resourceBulkSave);
     save(seatSave);

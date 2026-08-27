@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   HotelBuilding,
+  HotelFacility,
   HotelFloor,
   HotelResource,
   HotelRoomType,
@@ -84,6 +85,43 @@ export const blankRoomType = (): HotelRoomType => ({
   status: 1,
 });
 
+/**
+ * Which kinds of thing a facility may be offered on.
+ *
+ * "Either" first, because most facilities are neither a bedroom's nor a hall's
+ * alone -- air conditioning, Wi-Fi, a lift -- and the common answer belongs at
+ * the top of a list somebody picks from twenty times in a sitting.
+ */
+export const APPLIES_TO_OPTIONS = [
+  { id: 'both', name: 'Either — a room or a hall' },
+  { id: 'room', name: 'Rooms only' },
+  { id: 'hall', name: 'Halls only' },
+];
+
+export const blankFacility = (): HotelFacility => ({
+  code: '',
+  name: '',
+  applies_to: 'both',
+  sort_order: 0,
+  status: 1,
+});
+
+/**
+ * Whether a facility belongs on the form for this kind of thing.
+ *
+ * `both` is always in, which is why this is not an equality: the great majority
+ * of facilities are neither a bedroom's nor a hall's alone. An unknown kind --
+ * the moment before the Kind dropdown has been answered -- shows everything
+ * rather than nothing, because an empty tick list reads as "this property has
+ * no facilities set" and is a complaint about nothing.
+ */
+export const facilityFits = (appliesTo: string | undefined, kind: string | null): boolean => {
+  if (!appliesTo || appliesTo === 'both') return true;
+  if (kind !== 'room' && kind !== 'hall') return true;
+
+  return appliesTo === kind;
+};
+
 export const blankRoom = (kindId: number | null = null): HotelResource => ({
   resource_type_id: kindId,
   building_id: null,
@@ -97,6 +135,10 @@ export const blankRoom = (kindId: number | null = null): HotelResource => ({
   seat_count: 1,
   seat_rent: '',
   notes: '',
+  description: '',
+  // Empty rather than absent: a NEW room genuinely offers nothing until
+  // somebody says so, and the server tells the two apart -- see HotelResource.
+  facility_ids: [],
   sort_order: 0,
   status: 1,
 });

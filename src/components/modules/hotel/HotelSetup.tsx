@@ -1,7 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
-import { FiHome, FiLayers, FiTag, FiGrid, FiMap, FiDollarSign, FiClock } from 'react-icons/fi';
+import {
+  FiHome,
+  FiLayers,
+  FiTag,
+  FiGrid,
+  FiMap,
+  FiDollarSign,
+  FiClock,
+  FiCheckSquare,
+} from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
@@ -11,6 +20,7 @@ import { clearHotelSetup } from './hotelSetupSlice';
 import BuildingsTab from './BuildingsTab';
 import FloorsTab from './FloorsTab';
 import RoomTypesTab from './RoomTypesTab';
+import FacilitiesTab from './FacilitiesTab';
 import ChargeTypesTab from './ChargeTypesTab';
 import RoomsTab from './RoomsTab';
 import SlotsTab from './SlotsTab';
@@ -44,12 +54,30 @@ import LayoutTab from './LayoutTab';
  * so a lone property is selected rather than merely assumed.
  */
 
-type TabKey = 'buildings' | 'floors' | 'room-types' | 'rooms' | 'slots' | 'layout' | 'charges';
+type TabKey =
+  | 'buildings'
+  | 'floors'
+  | 'room-types'
+  | 'facilities'
+  | 'rooms'
+  | 'slots'
+  | 'layout'
+  | 'charges';
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[] = [
   { key: 'buildings', label: 'Buildings', icon: <FiHome size={15} />, hint: 'Blocks and zones' },
   { key: 'floors', label: 'Floors', icon: <FiLayers size={15} />, hint: 'Optional' },
   { key: 'room-types', label: 'Room Types', icon: <FiTag size={15} />, hint: 'Deluxe, Dormitory' },
+  // Before the rooms, because a room ticks these off a list that has to exist
+  // first -- the same reason a floor comes before a room. And after the types,
+  // because it is the second half of the same question: what a room IS, then
+  // what it offers.
+  {
+    key: 'facilities',
+    label: 'Facilities',
+    icon: <FiCheckSquare size={15} />,
+    hint: 'AC, Wi-Fi, projector',
+  },
   { key: 'rooms', label: 'Rooms & Seats', icon: <FiGrid size={15} />, hint: 'The inventory' },
   // After the inventory, because a sitting is a way of SELLING something that
   // has to exist first -- and only halls and community centres use them.
@@ -207,6 +235,11 @@ const HotelSetup = ({ user }: any) => {
           {tab === 'buildings' && <BuildingsTab branchId={branchId} />}
           {tab === 'floors' && <FloorsTab branchId={branchId} />}
           {tab === 'room-types' && <RoomTypesTab branchId={branchId} />}
+          {/* ⚠️ No branchId, for the same reason the Charges tab has none: the
+              tick list is the COMPANY's. A company running two hotels ticks
+              "air conditioning" on rooms in both, and a per-property list would
+              be two spellings of one word within a season. */}
+          {tab === 'facilities' && <FacilitiesTab />}
           {tab === 'rooms' && <RoomsTab branchId={branchId} branchName={branchName} />}
           {tab === 'slots' && <SlotsTab branchId={branchId} />}
           {tab === 'layout' && <LayoutTab branchId={branchId} />}
