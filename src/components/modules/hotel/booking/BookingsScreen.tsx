@@ -17,7 +17,13 @@ import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import routes from '../../../services/appRoutes';
 import SetupShell from '../SetupShell';
 import PropertyGrid from '../PropertyGrid';
-import { BOOKING_COLOUR_MODES, ColourMode, buildTypeIndex, lookOf } from '../layoutPalette';
+import {
+  BOOKING_COLOUR_MODES,
+  BOOKING_LOOKS,
+  ColourMode,
+  buildTypeIndex,
+  lookOf,
+} from '../layoutPalette';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { buildingDdl } from '../hotelSetupSlice';
 import { clockTime, money, useDebounced } from '../setupHelpers';
@@ -676,13 +682,62 @@ const BookingsScreen = ({ user }: any) => {
 
   const hallRows: any[] = halls?.halls ?? [];
 
+  // ⚠️ DECLARED AFTER WHAT IT READS. `const` does not hoist: placed above
+  // hallRows this threw "Cannot access 'hallRows' before initialization" on the
+  // first render, and the whole bookings screen came up blank -- a syntax the
+  // build is perfectly happy with.
+  /**
+   * The hall rows folded into one card per hall, days inside it.
+   *
+   * ⚠️ The server sends one row per hall PER DAY, which is the right shape
+   * for the lock and the wrong one for the eye: three days of one hall would
+   * draw three headings for the same room. Folded here rather than there,
+   * because the flat shape is what the booking form posts back.
+   */
+  const hallCards = useMemo(() => {
+    const byHall = new Map<number, any>();
+
+    for (const row of hallRows) {
+      if (!byHall.has(row.id)) {
+        byHall.set(row.id, {
+          id: row.id,
+          code: row.code,
+          name: row.name || row.code,
+          capacity: row.capacity,
+          rent: row.rent,
+          days: [],
+        });
+      }
+
+      byHall.get(row.id).days.push({ date: row.date, sittings: row.sittings });
+    }
+
+    return [...byHall.values()];
+  }, [hallRows]);
+
+  /**
+   * What a sitting cell looks like -- the ROOM GRID's own palette.
+   *
+   * ⚠️ Teal is free and rose is booked on both halves of this screen. A
+   * second colour scheme for halls would mean learning twice which colour can
+   * be clicked, on one page, in one act.
+   */
+  const lookOfSitting = (cell: any, isChosen: boolean) => {
+    if (isChosen) return BOOKING_LOOKS.checked_in ?? BOOKING_LOOKS.booked;
+    if (cell.state === 'free') return BOOKING_LOOKS.free;
+    if (cell.state === 'closed') return BOOKING_LOOKS.closed ?? BOOKING_LOOKS.booked;
+
+    return BOOKING_LOOKS[cell.state] ?? BOOKING_LOOKS.booked;
+  };
+
   const chosenSittings = useMemo(
     () => new Set(pickedSittings.map((one) => sittingKey(one.resource_id, one.slot_id, one.date))),
     [pickedSittings],
   );
 
-  const toggleSitting = (row: any, cell: any) => {
-    const at = sittingKey(row.id, cell.slot_id, row.date);
+  const toggleSitting = (row: any, cell: any, on?: string) => {
+    const date = on ?? row.date;
+    const at = sittingKey(row.id, cell.slot_id, date);
 
     // ⚠️ Free, or already ours. Anything else belongs to another booking.
     if (cell.state !== 'free' && !chosenSittings.has(at) && !ownSittings.includes(at)) {
@@ -697,7 +752,7 @@ const BookingsScreen = ({ user }: any) => {
             {
               resource_id: row.id,
               slot_id: cell.slot_id,
-              date: row.date,
+              date,
               hall: row.name || row.code,
               sitting: cell.slot,
               rent: Number(row.rent ?? 0),
@@ -1455,105 +1510,105 @@ const BookingsScreen = ({ user }: any) => {
                         ) : null}
                       </div>
 
-                      <div className="overflow-x-auto rounded border border-stroke dark:border-strokedark">
-                        <table className="w-full min-w-[640px] table-auto">
-                          <thead>
-                            <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                              <th className="px-3 py-2 text-xs font-medium text-black dark:text-white">
-                                Hall
-                              </th>
-                              <th className="px-3 py-2 text-xs font-medium text-black dark:text-white">
-                                Day
-                              </th>
-                              {(halls?.slots ?? []).map((slot: any) => (
-                                <th
-                                  key={slot.id}
-                                  className="px-3 py-2 text-xs font-medium text-black dark:text-white"
-                                >
-                                  {slot.label ?? slot.name}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
+                      {/*  + W + ONE CARD PER HALL, drawn the way a BUILDING is drawn --
+                          a heading, then a row per day, then a tile per
+                          sitting. The room grid stands right above this one,
+                          and a table of tick-boxes underneath it was a second
+                          visual language on one screen: the clerk had to learn
+                          twice which colour meant taken.
 
-                          <tbody>
-                            {hallRows.map((row: any) => (
-                              <tr
-                                key={`${row.id}|${row.date}`}
-                                className="border-t border-stroke dark:border-strokedark"
-                              >
-                                <td className="px-3 py-2 align-top">
-                                  <div className="text-sm text-black dark:text-white">
-                                    {row.name || row.code}
-                                  </div>
-                                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    {/* §2.8: on a hall this is the price of ONE
-                                        sitting. The room grid beside it means
-                                        the other thing by "rent". */}
-                                    {row.rent === null
-                                      ? 'no rate set'
-                                      : `${money(row.rent)} a sitting`}
-                                  </div>
-                                </td>
+                          The colours are the room grid's own (layoutPalette),
+                          so teal is free and rose is booked in both halves. */}
+                      <div className="flex flex-wrap items-start gap-4">
+                        {hallCards.map((card: any) => (
+                          <div
+                            key={card.id}
+                            className="rounded border border-stroke dark:border-strokedark"
+                          >
+                            <div className="border-b border-stroke px-3 py-2 dark:border-strokedark">
+                              <div className="flex items-baseline gap-2">
+                                <span className="font-semibold text-black dark:text-white">
+                                  {card.name}
+                                </span>
+                                <span className="text-xs text-gray-400">{card.code}</span>
+                              </div>
 
-                                <td className="px-3 py-2 align-top text-xs text-gray-600 dark:text-gray-300">
-                                  {formatDate(row.date)}
-                                </td>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {card.capacity ? `${card.capacity} seats` : 'no seating set'}
+                                {/* \u00a72.8: on a hall the rent is the price of ONE
+                                    sitting. The room card beside it means the
+                                    other thing by "rent". */}
+                                {card.rent === null
+                                  ? ' · no rate set'
+                                  : ` · ${money(card.rent)} a sitting`}
+                              </div>
+                            </div>
 
-                                {row.sittings.map((cell: any) => {
-                                  const on = sittingKey(row.id, cell.slot_id, row.date);
-                                  const isChosen = chosenSittings.has(on);
+                            <div className="px-3 py-2">
+                              {card.days.map((day: any) => (
+                                <div key={day.date} className="flex items-center gap-2 py-1">
+                                  {/* The day label sits where a floor number
+                                      sits on the room grid, for the same
+                                      reason: the eye runs down it. */}
+                                  <span className="w-16 shrink-0 text-[0.7rem] text-gray-500 dark:text-gray-400">
+                                    {formatDate(day.date)}
+                                  </span>
 
-                                  return (
-                                    <td key={cell.slot_id} className="px-2 py-2 align-top">
-                                      <button
-                                        type="button"
-                                        // ⚠️ A sitting this booking already
-                                        // holds stays clickable, for the same
-                                        // reason its rooms do: it comes back
-                                        // "booked" -- by itself -- and dropping
-                                        // it is the whole point of editing.
-                                        disabled={
-                                          cell.state !== 'free'
-                                          && !isChosen
-                                          && !ownSittings.includes(on)
-                                        }
-                                        onClick={() => toggleSitting(row, cell)}
-                                        className={`w-full rounded border p-1.5 text-left text-xs ${
-                                          isChosen
-                                            ? 'border-primary bg-primary/10 dark:border-secondary'
-                                            : cell.state === 'free'
-                                              ? 'border-stroke hover:border-primary dark:border-strokedark'
-                                              : 'cursor-not-allowed border-stroke bg-gray-100 opacity-70 dark:border-strokedark dark:bg-boxdark-2'
-                                        }`}
-                                      >
-                                        <span className="block font-medium text-black dark:text-white">
-                                          {isChosen
-                                            ? 'Taking it'
-                                            : cell.state === 'free'
-                                              ? 'Free'
-                                              : cell.state === 'closed'
-                                                ? 'Not for sale'
-                                                : 'Booked'}
-                                        </span>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {day.sittings.map((cell: any) => {
+                                      const on = sittingKey(card.id, cell.slot_id, day.date);
+                                      const isChosen = chosenSittings.has(on);
+                                      const look = lookOfSitting(cell, isChosen);
 
-                                        {/* The reason is a sentence, not a
-                                            colour: "roof leak" and "held for
-                                            the whole day" are different
-                                            problems with different answers. */}
-                                        {cell.blocked_reason ? (
-                                          <span className="mt-0.5 block text-gray-500 dark:text-gray-400">
-                                            {cell.blocked_reason}
+                                      const dead =
+                                        cell.state !== 'free'
+                                        && !isChosen
+                                        && !ownSittings.includes(on);
+
+                                      return (
+                                        <button
+                                          key={cell.slot_id}
+                                          type="button"
+                                          disabled={dead}
+                                          onClick={() => toggleSitting(card, cell, day.date)}
+                                          title={
+                                            cell.blocked_reason
+                                            || cell.taken_by
+                                            || cell.label
+                                            || cell.slot
+                                          }
+                                          className={`flex w-28 flex-col items-start gap-0.5 rounded border px-2 py-1.5 text-left ${look.className} ${
+                                            dead ? 'cursor-not-allowed opacity-60' : ''
+                                          } ${isChosen ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-boxdark' : ''}`}
+                                        >
+                                          <span className="flex w-full items-baseline justify-between gap-1">
+                                            <span className="text-[0.8rem] font-semibold leading-none">
+                                              {cell.slot}
+                                            </span>
+                                            {/* Beside the colour, never
+                                                instead of it -- the same rule
+                                                the room tiles follow. */}
+                                            <span className="text-[0.5rem] font-bold uppercase leading-none opacity-70">
+                                              {look.badge}
+                                            </span>
                                           </span>
-                                        ) : null}
-                                      </button>
-                                    </td>
-                                  );
-                                })}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+
+                                          {/* The reason is a sentence, not a
+                                              colour: "roof leak" and "held for
+                                              the whole day" are different
+                                              problems. */}
+                                          <span className="text-[0.55rem] leading-tight opacity-80">
+                                            {cell.blocked_reason || cell.taken_by || ''}
+                                          </span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ) : null}
