@@ -65,21 +65,82 @@ const TAB = 'rounded-t border-b-2 px-4 py-2 text-sm font-medium transition';
 /**
  * How full a night was, as a colour.
  *
+ * ⚠️ ONE HUE, LIGHT TO DARK. It was a rainbow -- green, amber, orange, rose --
+ * and that is wrong twice over. Occupancy is a MAGNITUDE, and a magnitude wants
+ * a single hue ramping in lightness; a multi-hue ramp invents a midpoint that
+ * means something, and here it also said the wrong thing commercially: a full
+ * hotel was painted alarm-red and an empty one reassuring green, which is
+ * backwards for the only number on the page that is revenue.
+ *
+ * ⚠️ THE DARK STEPS ARE CHOSEN, NOT FLIPPED. On a dark surface "near zero"
+ * recedes TOWARD the surface, so the ramp runs dark-to-light as the month fills
+ * up -- the same blue, stepped for the ground it is standing on. An automatic
+ * inversion of the light ramp would put the lightest, loudest step on the
+ * emptiest night.
+ *
  * ⚠️ The number is always printed beside it. Colour alone carries nothing to a
  * reader with colour blindness and nothing at all to a printer -- the same rule
- * the room grid follows (see layoutPalette).
+ * the room grid follows (see layoutPalette), and it is what earns the ramp the
+ * right to use steps that sit below 3:1 against the surface at the pale end.
+ *
+ * ⚠️ The INK travels with the fill. The two darkest light-mode steps and the
+ * lightest dark-mode one cannot carry the same text colour as the rest, and a
+ * cell whose number is unreadable is a cell that has thrown away the very thing
+ * making the colour safe. Held together in one string so they cannot drift.
+ *
+ * Steps are the blue sequential ramp, monotonic in lightness:
+ *   light  0.905 → 0.812 → 0.717 → 0.60 → 0.433
+ *   dark   0.338 → 0.433 → 0.53  → 0.63 → 0.717
  */
-const heat = (occupancy: number) => {
-  if (occupancy <= 0) return 'bg-transparent';
-  if (occupancy < 34) return 'bg-emerald-100 dark:bg-emerald-500/20';
-  if (occupancy < 67) return 'bg-amber-100 dark:bg-amber-500/25';
-  if (occupancy < 100) return 'bg-orange-200 dark:bg-orange-500/30';
-  return 'bg-rose-200 dark:bg-rose-500/35';
-};
+const HEAT: { upTo: number; look: string }[] = [
+  // ⚠️ Not transparent. An empty night is a real answer and the grid has to
+  // read as a grid -- a month with nothing sold was a sheet of holes with a
+  // border round it, and the one night that HAD sold was the only thing on
+  // screen that looked like a cell at all.
+  { upTo: 0, look: 'bg-slate-100/70 text-slate-600 dark:bg-white/[0.03] dark:text-slate-400' },
+  { upTo: 25, look: 'bg-[#cde2fb] text-slate-900 dark:bg-[#0d366b] dark:text-slate-100' },
+  { upTo: 50, look: 'bg-[#9ec5f4] text-slate-900 dark:bg-[#184f95] dark:text-slate-100' },
+  { upTo: 75, look: 'bg-[#6da7ec] text-slate-900 dark:bg-[#256abf] dark:text-white' },
+  { upTo: 99, look: 'bg-[#3987e5] text-white dark:bg-[#3987e5] dark:text-white' },
+  { upTo: 100, look: 'bg-[#184f95] text-white dark:bg-[#6da7ec] dark:text-slate-900' },
+];
 
-/** One cell of the tape chart. */
+const heat = (occupancy: number): string =>
+  (HEAT.find((step) => occupancy <= step.upTo) ?? HEAT[HEAT.length - 1]).look;
+
+/**
+ * The ramp, drawn once so the grid above it can be read.
+ *
+ * A sequential scale needs its legend: five squares in a row say "these are one
+ * colour getting stronger" in a way that a month of scattered cells cannot.
+ */
+const HeatLegend = () => (
+  <div className="flex items-center gap-1.5 text-[0.65rem] text-gray-500 dark:text-gray-400">
+    <span>empty</span>
+    {HEAT.map((step) => (
+      <span
+        key={step.upTo}
+        className={`h-3 w-5 rounded-sm border border-black/5 dark:border-white/10 ${step.look}`}
+        title={step.upTo === 0 ? 'Nothing sold' : `up to ${step.upTo}% full`}
+      />
+    ))}
+    <span>full</span>
+  </div>
+);
+
+/**
+ * One cell of the tape chart.
+ *
+ * ⚠️ A DIFFERENT QUESTION, SO A DIFFERENT LANGUAGE. The month grid asks how
+ * much of the property sold -- a magnitude, hence one blue ramp. This asks
+ * whether ONE room is free or taken, which is a state, and it keeps the colours
+ * the room grid already uses for that state (see layoutPalette) so a clerk who
+ * has learned one screen has learned both.
+ */
 const CELL: Record<string, string> = {
-  free: 'bg-transparent',
+  // Given a surface for the same reason the empty day is: a tape chart of
+  // mostly-free rooms was a table with nothing in it.
+  free: 'bg-slate-100/70 dark:bg-white/[0.03]',
   part: 'bg-amber-200 dark:bg-amber-500/35',
   full: 'bg-rose-300 dark:bg-rose-500/45',
 };
@@ -336,29 +397,37 @@ const HotelCalendar = () => {
                         day ? (
                           <td
                             key={day.date}
+                            // ⚠️ The fill carries the INK with it, so every line
+                            // inside inherits a colour that can be read on the
+                            // step it is standing on. Nothing in here states its
+                            // own text colour -- the moment one did, it would be
+                            // black on the darkest blue on exactly the nights
+                            // worth reading.
                             className={`h-24 border border-stroke align-top dark:border-strokedark ${heat(
                               day.occupancy,
-                            )} ${day.is_past ? 'opacity-80' : ''}`}
+                            )} ${day.is_past ? 'opacity-60' : ''} ${
+                              // Today, drawn INSIDE the cell: an outset ring is
+                              // painted outside the border box and this table
+                              // scrolls sideways, which clips it -- the same
+                              // trap the room tiles hit.
+                              day.date === today() ? 'ring-2 ring-inset ring-primary' : ''
+                            }`}
                           >
                             <div className="flex h-full flex-col p-1">
                               <div className="flex items-baseline justify-between">
-                                <span className="text-sm font-semibold text-black dark:text-white">
-                                  {day.date.slice(-2)}
-                                </span>
+                                <span className="text-sm font-semibold">{day.date.slice(-2)}</span>
                                 {/* ⚠️ The number, always, beside the colour. */}
-                                <span className="text-xs font-medium text-black dark:text-white">
-                                  {day.occupancy}%
-                                </span>
+                                <span className="text-xs font-medium">{day.occupancy}%</span>
                               </div>
 
-                              <div className="mt-auto text-[0.65rem] leading-tight text-gray-700 dark:text-gray-200">
+                              <div className="mt-auto text-[0.65rem] leading-tight">
                                 {day.sold || day.held ? (
                                   <div>
                                     {day.sold} sold
                                     {day.held ? ` · ${day.held} held` : ''}
                                   </div>
                                 ) : (
-                                  <div className="text-gray-400">empty</div>
+                                  <div className="opacity-60">empty</div>
                                 )}
 
                                 {day.revenue ? <div>{money(day.revenue)}</div> : null}
@@ -366,7 +435,7 @@ const HotelCalendar = () => {
                                 {/* Arrivals and departures, where there are any.
                                     The two numbers a desk plans its morning by. */}
                                 {day.arrivals || day.departures ? (
-                                  <div className="text-gray-500 dark:text-gray-400">
+                                  <div className="opacity-75">
                                     {day.arrivals ? `↓${day.arrivals}` : ''}
                                     {day.arrivals && day.departures ? ' ' : ''}
                                     {day.departures ? `↑${day.departures}` : ''}
@@ -387,10 +456,14 @@ const HotelCalendar = () => {
                 </tbody>
               </table>
 
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                ↓ arrivals · ↑ departures. A departure is counted on the morning after the last
-                night slept, not on the date the booking was written to.
-              </p>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  ↓ arrivals · ↑ departures. A departure is counted on the morning after the last
+                  night slept, not on the date the booking was written to.
+                </p>
+
+                <HeatLegend />
+              </div>
             </div>
           ) : null}
         </>
