@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { HotelBuilding, HotelFloor, HotelResource, HotelRoomType, SaleMode } from './types';
+import {
+  HotelBuilding,
+  HotelFloor,
+  HotelResource,
+  HotelRoomType,
+  HotelSlot,
+  SaleMode,
+} from './types';
 
 /**
  * The small shared pieces of the four setup tabs.
@@ -38,6 +45,18 @@ export const blankBuilding = (): HotelBuilding => ({
   code: '',
   address: '',
   notes: '',
+  sort_order: 0,
+  status: 1,
+});
+
+export const blankSlot = (): HotelSlot => ({
+  code: '',
+  name: '',
+  // An evening sitting, because that is the one every community centre sells
+  // first -- and a form that opens on 00:00-00:00 is one nobody can save.
+  start_time: '18:00',
+  end_time: '23:00',
+  ends_next_day: false,
   sort_order: 0,
   status: 1,
 });

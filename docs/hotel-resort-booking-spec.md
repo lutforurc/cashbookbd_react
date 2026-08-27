@@ -4263,6 +4263,131 @@ The nights table also gained a **Room** column, without which it was unreadable
 the moment a booking had two rooms — four identical *"Whole room, 2,500"* lines
 and nothing saying which room each belonged to.
 
+### 35.1 What the rest of the module had to learn
+
+A booking checked **in**, with one room's beds released and its nights billed
+while three rooms sleep on, is a state nothing else had ever seen. Three places
+were reading it wrongly:
+
+**The departures report.** It asked for bookings whose `MAX(stay_date) + 1` was
+today — a booking-wide question. Four rooms with one going home on Wednesday
+have their maximum fixed by the three that stayed, so Wednesday's list said
+nobody left, on the morning a room needed making up. It now also asks
+`booking_room_checkouts`, which is the only record of that departure: the nights
+that room gave back were deleted.
+
+**Allotment.** It checked that the booking held the room, and a room that has
+left keeps the nights it slept — that is the register of who was in the
+building — so the check passed and guests could be filed against a door the
+hotel had already relet. Refused now, by the same record.
+
+**`Housekeeping::roomsOf()`** answers *every* room a stay touched. It was written
+for check-out, back when a stay ended all at once. Handing it to `markDirty()`
+now would knock housekeeping on three occupied doors, and re-dirty a room made up
+two days earlier. The call site passes the rooms actually leaving; the function
+keeps a warning in its docblock, because the question it answers is still a real
+one.
+
+### ⚠️ Nights billed before they were slept
+
+Screen 5 bills every night a booking **holds**, future ones included — that is
+deliberate, and it is how an advance is charged. Cut the stay short afterwards
+and those nights are released while their folio lines stay, because nothing takes
+a line off a folio: taking money back off a bill is a credit note, which §6.2
+does not have yet.
+
+So the plan counts them, and the screen says so before the button: *"3 nights
+already on the bill are being given back."* A warning and not a refusal — the
+desk may be handing the money back across the counter as it presses — but never
+silence, which is the version where the guest pays for a room they left.
+
+## 36. Selling a hall by the sitting — §4.2, built 2026-08-27
+
+A room is sold by the **night**. A hall is sold by the **slot**: a seminar takes
+the morning, a wedding the evening, and the same hall earns twice on one date.
+`booking_resource_types.rate_unit` has said `'slot'` for `hall` and
+`community_centre` since the module shipped. Nothing had ever made the word mean
+anything.
+
+### ⚠️ The overlap lock had to be rebuilt
+
+The module's whole guarantee that a bed is not sold twice is one unique index:
+
+```
+uq_brd_seat_night  UNIQUE(resource_id, stay_date)
+```
+
+One resource, one date, one row — which is exactly what a hall must break. So it
+now counts `slot_id`, and **`slot_id` is `NOT NULL DEFAULT 0`**.
+
+That default is not tidiness. MySQL treats NULLs in a unique index as *distinct*,
+so a nullable `slot_id` would have let the same room be booked for the same night
+any number of times, every row's slot NULL, with **no error anywhere** — nobody
+would have found out until two guests were handed one key. **0 means the whole
+night**, which is what every room row carries, so rooms are locked exactly as
+they always were.
+
+A hall taken for a whole day is **every sitting, one row each** — never slot 0.
+Slot 0 beside slot 3 are two rows that do not collide.
+
+The rebuild has an order forced on it: `resource_id`'s foreign key leans on that
+index, and MySQL refuses to drop the last index a constraint can use. The new key
+is built first, the old one dropped, then renamed back — so the table is never,
+for an instant, without a unique key.
+
+### ⚠️ The database cannot catch an overlapping *definition*
+
+Two sittings that share an hour — an afternoon of 3–8 beside an evening of 7–12 —
+are two different slot ids. Both can be sold for one date and the key is
+satisfied: a wedding lands on top of a seminar and nothing complains. The clash
+is between the **definitions**, not the bookings, so no index will ever see it.
+
+`HotelSlotController` refuses the overlapping pair when slots are *written*,
+which is the only moment anybody can. Touching is not overlapping — 09:00–14:00
+then 14:00–18:00 is how a property that lets its hall twice a day works.
+
+Two more rules there, each with a reason:
+
+- **A sold slot's hours cannot be moved.** The guest holding it bought those
+  hours, and moving them can drop the sitting onto one sold separately — the very
+  clash this screen prevents, arriving by the back door. The name may be fixed.
+- **A sold slot cannot be deleted.** `slot_id` carries no foreign key (0 is not a
+  row), so deleting it would leave bookings naming a sitting nobody can look up,
+  with no database error to say so.
+
+### ⚠️ The bug this opened, and where it was closed
+
+The moment halls became creatable they appeared on the **room** screen —
+`propertyTree()` takes every top-level resource — drawn *"closed: no beds set up
+in it"*, a sentence about a room. Worse, `store()` **accepted** one for a stay of
+nights. That booking is stored with slot 0, which collides with nothing, leaving
+the same hall free to be sold that evening as slot 3.
+
+Closed in both places: availability asks the tree for `'night'` only, and the
+write refuses a slot-priced resource by name. The layout grid still shows halls —
+a property drawn without its community centre is a drawing of a different
+property.
+
+### The hall's own availability
+
+`GET bookings/halls` — one date, one row per hall, one cell per sitting. Its own
+endpoint rather than a flag, because it is a different question: a room is asked
+about over a **range** and answered per room; a hall on **one date** and answered
+per sitting.
+
+| | |
+|---|---|
+| A slot-0 row | Blocks **every** sitting — somebody holds the hall all day |
+| No rent | Closed, not free. §2.8: the rent is the price of one sitting, and a hall with none would bill at zero and print as a free wedding |
+| Out of order | Closed for every sitting |
+| No sittings defined | A refusal naming what is missing, not an empty grid |
+
+### What is not built yet
+
+Booking a hall — picking the date and the sitting — is the next step. The setup
+is complete: a property can create a hall, price it per sitting, define when its
+sittings are, and see what is free.
+
 ### What is left, honestly
 
 ⚠️ **Most of what remains cannot be built, and should not be.** These are the

@@ -6,6 +6,7 @@ import {
   API_HOTEL_LAYOUT_URL,
   API_HOTEL_RESOURCE_URL,
   API_HOTEL_ROOM_TYPE_URL,
+  API_HOTEL_SLOT_URL,
 } from '../../services/apiRoutes';
 import {
   DdlOption,
@@ -17,6 +18,7 @@ import {
   LayoutBuilding,
   Paged,
   ResourceKind,
+  HotelSlot,
 } from './types';
 
 /**
@@ -127,6 +129,15 @@ export const floorSave = saveThunk<HotelFloor>('floorSave', (p) =>
   p?.id ? `${API_HOTEL_FLOOR_URL}/update/${p.id}` : `${API_HOTEL_FLOOR_URL}/store`,
 );
 export const floorDelete = deleteThunk('floorDelete', API_HOTEL_FLOOR_URL);
+
+/* ================= Slots -- how a hall is sold ================= */
+
+export const slotList = listThunk<HotelSlot>('slotList', API_HOTEL_SLOT_URL);
+export const slotDdl = ddlThunk('slotDdl', `${API_HOTEL_SLOT_URL}/ddl`);
+export const slotSave = saveThunk<HotelSlot>('slotSave', (p) =>
+  p?.id ? `${API_HOTEL_SLOT_URL}/update/${p.id}` : `${API_HOTEL_SLOT_URL}/store`,
+);
+export const slotDelete = deleteThunk('slotDelete', API_HOTEL_SLOT_URL);
 
 /* ================= Room types ================= */
 
@@ -242,11 +253,13 @@ interface HotelSetupState {
   buildings: Paged<HotelBuilding>;
   floors: Paged<HotelFloor>;
   roomTypes: Paged<HotelRoomType>;
+  slots: Paged<HotelSlot>;
   resources: Paged<HotelResource>;
 
   buildingOptions: DdlOption[];
   floorOptions: DdlOption[];
   roomTypeOptions: DdlOption[];
+  slotOptions: DdlOption[];
   kinds: ResourceKind[];
 
   /** The elevation grid's own copy -- the whole property, not a page of it. */
@@ -273,11 +286,13 @@ const initialState: HotelSetupState = {
   buildings: { ...emptyPage },
   floors: { ...emptyPage },
   roomTypes: { ...emptyPage },
+  slots: { ...emptyPage },
   resources: { ...emptyPage },
 
   buildingOptions: [],
   floorOptions: [],
   roomTypeOptions: [],
+  slotOptions: [],
   kinds: [],
 
   layout: [],
@@ -355,15 +370,18 @@ const hotelSetupSlice = createSlice({
     page('buildings', buildingList);
     page('floors', floorList);
     page('roomTypes', roomTypeList);
+    page('slots', slotList);
     page('resources', resourceList);
 
     options('buildingOptions', buildingDdl);
     options('floorOptions', floorDdl);
     options('roomTypeOptions', roomTypeDdl);
+    options('slotOptions', slotDdl);
 
     save(buildingSave);
     save(floorSave);
     save(roomTypeSave);
+    save(slotSave);
     save(resourceSave);
     save(resourceBulkSave);
     save(seatSave);

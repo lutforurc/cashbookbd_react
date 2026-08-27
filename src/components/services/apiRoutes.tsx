@@ -856,6 +856,16 @@ export const API_LABOUR_ITEM_STATUS_URL = `${API_BASE_URL}/labour-setup/items/st
 export const API_HOTEL_BUILDING_URL = `${API_BASE_URL}/hotel-setup/buildings`;
 export const API_HOTEL_FLOOR_URL = `${API_BASE_URL}/hotel-setup/floors`;
 export const API_HOTEL_ROOM_TYPE_URL = `${API_BASE_URL}/hotel-setup/room-types`;
+
+/**
+ * The parts of a day a hall is let for (§4.2).
+ *
+ * A room is sold by the night; a hall by the slot, and the same hall earns
+ * twice on one date. Two slots that share an hour could both be sold for one
+ * date -- the unique key counts (resource, date, slot) and cannot see the
+ * clash -- so the server refuses an overlapping pair when they are DEFINED.
+ */
+export const API_HOTEL_SLOT_URL = `${API_BASE_URL}/hotel-setup/slots`;
 // Also the stem for /types (the kinds a resource may be), /{id}/seats,
 // /seats/update/{id} — where one bed is priced on its own — and /bulk-store,
 // which is the same form as /store with a run of numbers in place of one.

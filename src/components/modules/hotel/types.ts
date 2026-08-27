@@ -40,6 +40,27 @@ export interface HotelBuilding {
   rooms_count?: number;
 }
 
+/**
+ * A sitting: the part of a day a hall is let for.
+ *
+ * ⚠️ The times are not decoration. Two slots that share an hour can both be
+ * sold for one date, and the hall would hold two events at once -- the server
+ * refuses the overlapping pair, and this is the shape it checks.
+ */
+export interface HotelSlot {
+  id?: number;
+  code: string;
+  name: string;
+  /** HH:mm. An evening running to 01:00 ends before it starts, hence the flag. */
+  start_time: string;
+  end_time: string;
+  ends_next_day: boolean;
+  sort_order: number;
+  status: number;
+
+  serial_no?: number;
+}
+
 export interface HotelFloor {
   id?: number;
   building_id: number | null;
