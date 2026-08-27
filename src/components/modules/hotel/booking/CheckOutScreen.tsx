@@ -537,6 +537,25 @@ const CheckOutScreen = () => {
         </div>
       ) : null}
 
+      {/* ⚠️ NIGHTS ALREADY CHARGED THAT ARE BEING GIVEN BACK. Screen 5 bills
+          every night a booking holds, future ones included — so a stay billed
+          on Monday and cut short on Wednesday has the guest paying for nights
+          they will not sleep. The rows go; the folio lines stay, because taking
+          money back off a bill is a credit note and this module has none. Said
+          here, before the button, so the desk adjusts the folio rather than
+          finding out from the guest. */}
+      {plan.billed_ahead ? (
+        <p className="mb-4 rounded border border-warning bg-amber-50 p-2.5 text-xs text-amber-900 dark:border-warning dark:bg-amber-500/15 dark:text-amber-50">
+          <strong>
+            {plan.billed_ahead} {plan.billed_ahead === 1 ? 'night' : 'nights'} already on
+            the bill {plan.billed_ahead === 1 ? 'is' : 'are'} being given back.
+          </strong>{' '}
+          Somebody billed these nights in advance, and the guest is not staying them.
+          Check-out will not take them off — adjust the folio before or after, or the
+          guest pays for a room they left.
+        </p>
+      ) : null}
+
       {/* ⚠️ Only at the end, like the party picker. Money in hand over the bill
           is the ORDINARY state of a stay that took an advance and still has
           rooms occupied — refusing a room's departure over it would make an
@@ -648,6 +667,13 @@ const CheckOutScreen = () => {
               <span className="mt-2 block">
                 {plan.nights_to_bill} {plan.nights_to_bill === 1 ? 'night' : 'nights'} will go
                 on the bill at the rates in force on {plan.nights_to_bill === 1 ? 'it' : 'each'}.
+              </span>
+            ) : null}
+
+            {plan.billed_ahead ? (
+              <span className="mt-2 block text-danger dark:text-red-400">
+                {plan.billed_ahead} of those {plan.billed_ahead === 1 ? 'night is' : 'nights are'}{' '}
+                already on the bill and will not come off it.
               </span>
             ) : null}
 
