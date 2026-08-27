@@ -4382,11 +4382,46 @@ per sitting.
 | Out of order | Closed for every sitting |
 | No sittings defined | A refusal naming what is missing, not an empty grid |
 
+### 36.1 Booking one — §4.2, step 4
+
+The room form takes a **stay**: two dates, and every night between them. A hall
+takes neither. It is asked for as `(hall, date, sitting)` — the evening of the
+29th and the morning of the 30th are two entries, not a range, because a wedding
+is exactly that shape and two flat lists cannot say it.
+
+**⚠️ A hall-only booking has no stay of nights.** A wedding on the 29th starts
+and ends on the 29th, which `range()` refuses as *"a stay has to be at least one
+night"* — rightly, for a room. So `check_in_date` and `check_out_date` became
+optional: with no rooms on the booking the dates are **read off the sittings**,
+check-out being the morning after the last one, which is what the rest of the
+module means by a check-out date. That refusal message no longer says a hall slot
+is "not built yet"; it names the sitting path instead.
+
+**⚠️ Rooms and halls on one booking stretch the dates.** The client's own
+decision was one booking and one bill — a wedding with four rooms for the
+guests. Left at the room dates, a booking that says the 14th–17th while its hall
+is held on the 19th is read wrongly by every report filtering on
+`check_out_date`, starting with the departures list. So the range covers
+everything on the booking.
+
+**⚠️ A duplicate is caught by name, not by the key.** The unique index would
+fire on a hall listed twice in one request, but its sentence is *"somebody took
+it while this form was open"* — a lie when the somebody is the clerk, twice, in
+one form. The duplicate is found before the write and named.
+
+A hall row is written against **the hall itself** (`resource_id = the hall`), not
+against a bed inside it. A room's lock lives on its beds because beds are what is
+sold; a hall has none, and it is the hall that is taken.
+
+The count reported back is sittings, never nights: *"Booked 3 sittings"*. "Booked
+1 sitting for 1 night" is a sentence about a stay, and the guests go home after
+the wedding.
+
 ### What is not built yet
 
-Booking a hall — picking the date and the sitting — is the next step. The setup
-is complete: a property can create a hall, price it per sitting, define when its
-sittings are, and see what is free.
+The booking **screen** — picking a hall and its sittings in the browser. The API
+takes it; nothing draws it. Check-in and check-out for a hall (the client asked
+for both) come with it.
 
 ### What is left, honestly
 

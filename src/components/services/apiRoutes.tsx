@@ -883,6 +883,16 @@ export const API_HOTEL_BOOKING_URL = `${API_BASE_URL}/hotel-setup/bookings`;
 // anything — two clerks can both be told the same room is free and both be
 // right. The bed is claimed by a unique key when the booking is saved.
 export const API_HOTEL_BOOKING_AVAILABILITY_URL = `${API_BASE_URL}/hotel-setup/bookings/availability`;
+
+/**
+ * What is free in the HALLS on one date, sitting by sitting.
+ *
+ * Its own endpoint because it is a different question: a room is asked about
+ * over a RANGE and answered per room; a hall on ONE DATE and answered per
+ * sitting -- the morning free while the evening is a wedding is one hall with
+ * two answers.
+ */
+export const API_HOTEL_HALL_URL = `${API_BASE_URL}/hotel-setup/bookings/halls`;
 // The folio — screen 5. The stem suffixes /{id}, /{id}/bill, /{id}/charge and
 // /{id}/receive.
 //

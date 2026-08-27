@@ -351,6 +351,7 @@ const ROUTES = {
   // Bookings are a screen of their own, not a sixth tab: setup is done once
   // and this is opened every day.
   hotel_bookings: '/hotel/bookings',
+  hotel_hall_bookings: '/hotel/hall-bookings',
   // Checking a booking in is its own page, reached from a row with the booking
   // id on the end. A coach party is twelve rooms of five guests, and sixty rows
   // of six fields is not something a dialog holds.

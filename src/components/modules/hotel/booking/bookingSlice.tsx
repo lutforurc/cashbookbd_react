@@ -9,6 +9,7 @@ import {
   API_HOTEL_CHECKOUT_URL,
   API_HOTEL_FOLIO_URL,
   API_HOTEL_TILL_URL,
+  API_HOTEL_HALL_URL,
 } from '../../../services/apiRoutes';
 import { HotelTimes, Paged } from '../types';
 import { Allotment, Availability, Booking } from './types';
@@ -54,6 +55,27 @@ export const availabilityRead = createAsyncThunk<
     return rejectWithValue(res.data?.message || 'Could not read availability');
   } catch (error: any) {
     return rejectWithValue(said(error, 'Could not read availability'));
+  }
+});
+
+/**
+ * What is free in the halls on one date.
+ *
+ * ⚠️ ADVISORY, exactly like availabilityRead. What stops a hall being sold
+ * twice is the unique key, which counts the sitting -- two clerks may both be
+ * told the evening is free and both be right at the moment they are told.
+ */
+export const hallsRead = createAsyncThunk<
+  any,
+  Record<string, any>,
+  { rejectValue: string }
+>('hotelBooking/hallsRead', async (params, { rejectWithValue }) => {
+  try {
+    const res = await httpService.get(API_HOTEL_HALL_URL, { params });
+    if (res.data?.success === true) return unwrap(res);
+    return rejectWithValue(res.data?.message || 'Could not read the halls');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not read the halls'));
   }
 });
 
@@ -410,6 +432,7 @@ interface BookingState {
   bookings: Paged<Booking>;
   /** What was free the last time somebody asked. Never a reservation. */
   availability: Availability | null;
+  halls: null as any,
   opened: Booking | null;
   /** The booking being checked in, room by room. */
   allotment: Allotment | null;
@@ -562,6 +585,23 @@ const bookingSlice = createSlice({
       .addCase(bookingList.rejected, (state, action) => {
         state.loading = false;
         state.bookings = { ...emptyPage };
+        state.error = action.payload || null;
+      })
+
+      .addCase(hallsRead.pending, (state: any) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(hallsRead.fulfilled, (state: any, action: any) => {
+        state.loading = false;
+        state.halls = action.payload;
+      })
+      // A property with no sittings, or no halls, answers 404 with a sentence
+      // saying which. The grid is dropped so the screen cannot go on offering
+      // one the server has just disowned.
+      .addCase(hallsRead.rejected, (state: any, action: any) => {
+        state.loading = false;
+        state.halls = null;
         state.error = action.payload || null;
       })
 
@@ -738,6 +778,9 @@ const bookingSlice = createSlice({
           state.saving = false;
           // Whatever was on screen described the moment before this write.
           state.availability = null;
+          // ⚠️ The hall grid with it. A sitting just went from free to taken,
+          // and a grid still calling it free is one somebody books against.
+          state.halls = null;
           // A cancellation just moved money. What the dialog was showing is a
           // statement about a booking that no longer holds anything.
           state.cancellation = null;
@@ -748,6 +791,7 @@ const bookingSlice = createSlice({
           // Especially on a clash: the rooms it listed are provably out of
           // date, because one of them has just been taken by somebody else.
           state.availability = null;
+          state.halls = null;
         });
     });
   },

@@ -134,6 +134,7 @@ import LabourItemList from './components/modules/labour/LabourItemList';
 import LabourItemAdd from './components/modules/labour/LabourItemAdd';
 import HotelSetup from './components/modules/hotel/HotelSetup';
 import BookingsScreen from './components/modules/hotel/booking/BookingsScreen';
+import HallBookingScreen from './components/modules/hotel/booking/HallBookingScreen';
 import AllotmentScreen from './components/modules/hotel/booking/AllotmentScreen';
 import FolioScreen from './components/modules/hotel/booking/FolioScreen';
 import CheckOutScreen from './components/modules/hotel/booking/CheckOutScreen';
@@ -555,6 +556,10 @@ function App() {
               }
             >
               <Route path={routes.hotel_bookings} element={<BookingsScreen user={me} />} />
+              <Route
+                path={routes.hotel_hall_bookings}
+                element={<HallBookingScreen user={me} />}
+              />
             </Route>
             {/*
               Checking in is gated apart from taking a booking. Releasing and

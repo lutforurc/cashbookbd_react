@@ -130,6 +130,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'hotel': [
     { id: 'hotel_bookings', title: "Bookings" },
+    { id: 'hotel_hall_bookings', title: "Hall Booking" },
     { id: 'hotel_calendar', title: "Calendar" },
     { id: 'hotel_housekeeping', title: "Housekeeping" },
     { id: 'hotel_reports', title: "Reports" },
@@ -1984,6 +1985,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           <li style={subSlot('hotel', 'hotel_bookings')}>
                             <NavLink to={routes.hotel_bookings} className={subMenuLinkClass}>
                               Bookings
+                            </NavLink>
+                          </li>
+
+                          {/* Halls and community centres, which are sold by the
+                              part of the day rather than by the night -- a
+                              different question with a different answer, so a
+                              screen of its own rather than a mode on the one
+                              above. */}
+                          <li style={subSlot('hotel', 'hotel_hall_bookings')}>
+                            <NavLink to={routes.hotel_hall_bookings} className={subMenuLinkClass}>
+                              Hall Booking
                             </NavLink>
                           </li>
 
