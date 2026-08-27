@@ -132,6 +132,33 @@ export const bookingSave = createAsyncThunk<
 });
 
 /**
+ * Change a booking that has already been taken.
+ *
+ * ⚠️ A DIFF, NOT A REBUILD. The server works out which nights to drop and
+ * which to hold; the booking keeps its number, its payments and its folio.
+ *
+ * ⚠️ `dry_run: true` asks the same question and writes nothing. That is how
+ * the screen learns, BEFORE it asks the clerk to confirm, how many of the
+ * nights being dropped are already on the bill -- nothing takes a line off a
+ * folio, so those stay charged until somebody adjusts them by hand.
+ */
+export const bookingUpdate = createAsyncThunk<
+  { message: string; data: any },
+  { id: number; [key: string]: any },
+  { rejectValue: string }
+>('hotelBooking/bookingUpdate', async ({ id, ...payload }, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_HOTEL_BOOKING_URL}/update/${id}`, payload);
+    if (res.data?.success === true) {
+      return { message: res.data?.message || 'Updated', data: unwrap(res) };
+    }
+    return rejectWithValue(res.data?.message || 'Could not change the booking');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not change the booking'));
+  }
+});
+
+/**
  * What cancelling would do to the money, before the dialog asks.
  *
  * ⚠️ Read EVERY time the dialog opens rather than taken off the booking row.
@@ -768,7 +795,7 @@ const bookingSlice = createSlice({
         });
     });
 
-    [bookingSave, bookingCancel, allotSave].forEach((thunk: any) => {
+    [bookingSave, bookingUpdate, bookingCancel, allotSave].forEach((thunk: any) => {
       builder
         .addCase(thunk.pending, (state: any) => {
           state.saving = true;
