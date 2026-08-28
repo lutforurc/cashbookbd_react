@@ -132,6 +132,15 @@ import LabourCategoryList from './components/modules/labour/LabourCategoryList';
 import LabourCategoryAdd from './components/modules/labour/LabourCategoryAdd';
 import LabourItemList from './components/modules/labour/LabourItemList';
 import LabourItemAdd from './components/modules/labour/LabourItemAdd';
+import HotelSetup from './components/modules/hotel/HotelSetup';
+import BookingsScreen from './components/modules/hotel/booking/BookingsScreen';
+import HallBookingScreen from './components/modules/hotel/booking/HallBookingScreen';
+import AllotmentScreen from './components/modules/hotel/booking/AllotmentScreen';
+import FolioScreen from './components/modules/hotel/booking/FolioScreen';
+import CheckOutScreen from './components/modules/hotel/booking/CheckOutScreen';
+import HotelReports from './components/modules/hotel/reports/HotelReports';
+import HotelCalendar from './components/modules/hotel/calendar/HotelCalendar';
+import HousekeepingBoard from './components/modules/hotel/housekeeping/HousekeepingBoard';
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
@@ -520,6 +529,167 @@ function App() {
               <Route path={routes.labour_item} element={<LabourItemList />} />
               <Route path={routes.labour_item_create} element={<LabourItemAdd />} />
               <Route path={`${routes.labour_item_edit}/:id`} element={<LabourItemAdd />} />
+            </Route>
+            {/*
+              Hotel setup. Any one of the four opens the screen, because the
+              tabs inside it check nothing further -- holding only
+              hotel.room.type.view has to be enough to reach the tab it gates,
+              or that permission names a screen its holder can never see.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={[
+                    'hotel.building.view',
+                    'hotel.floor.view',
+                    'hotel.room.type.view',
+                    'hotel.resource.view',
+                  ]}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_setup} element={<HotelSetup user={me} />} />
+            </Route>
+            {/*
+              Bookings are gated on their own permission, not on the setup four.
+              A front desk books rooms and has no business editing the building
+              list, and the manager who describes the property may never take a
+              booking. Two different jobs, two different permissions.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.booking.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_bookings} element={<BookingsScreen user={me} />} />
+              <Route
+                path={routes.hotel_hall_bookings}
+                element={<HallBookingScreen user={me} />}
+              />
+            </Route>
+            {/*
+              Checking in is gated apart from taking a booking. Releasing and
+              recording are different jobs at different hours -- the telephone is
+              answered by one person, the desk manned by another.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.booking.allot']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route
+                path={`${routes.hotel_booking_check_in}/:id`}
+                element={<AllotmentScreen />}
+              />
+            </Route>
+            {/*
+              The bill is gated apart again. Reading what a guest owes is
+              something anybody at the desk does; a property large enough to have
+              a cashier keeps taking money to one person. hotel.folio.bill is
+              checked separately by the server on every write.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.folio.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route
+                path={`${routes.hotel_booking_folio}/:id`}
+                element={<FolioScreen />}
+              />
+            </Route>
+            {/*
+              Ending a stay is gated apart from reading the bill, and apart from
+              taking money for it. It is the one screen in the module that
+              RELEASES INVENTORY -- a stay ended by mistake puts beds back on
+              the market that somebody is still asleep in. A property where the
+              cashier and the person handed the key are one grants both and
+              loses nothing.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.booking.checkout']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route
+                path={`${routes.hotel_booking_check_out}/:id`}
+                element={<CheckOutScreen />}
+              />
+            </Route>
+            {/*
+              Hotel reports -- who was in the building, and what came in.
+
+              Its own permission, and a READING one. A report is read by an
+              owner, a manager or an auditor, none of whom needs to be able to
+              take a booking -- and the register in particular names every guest
+              with their NID against them, which a property may reasonably want
+              in one person's hands and nobody else's.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.report.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_reports} element={<HotelReports />} />
+            </Route>
+            {/*
+              The property over time -- the month, and the tape chart.
+
+              ⚠️ On hotel.booking.view, the SAME permission the availability
+              grid reads under. Both show the same nights in a different shape,
+              and gating them apart would pretend they reveal something the desk
+              cannot already see -- while leaving a property having to grant two
+              permissions to show somebody one fact.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.booking.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_calendar} element={<HotelCalendar />} />
+            </Route>
+            {/*
+              Housekeeping -- its own permission, because it is its own job. On
+              a property large enough to have a housekeeper this is the ONLY
+              hotel permission they need: they have no business in the folio,
+              the till or the guest register.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.housekeeping.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_housekeeping} element={<HousekeepingBoard />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
               <Route path={routes.journal} element={<Journal />} />

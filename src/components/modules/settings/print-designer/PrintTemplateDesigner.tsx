@@ -28,7 +28,6 @@ import {
   Band,
   DOC_TYPES,
   DocType,
-  presetsFor,
   InfoBand,
   NotesBand,
   PrintTemplate,
@@ -40,6 +39,7 @@ import {
   defaultTemplate,
   nextBandId,
   normalizeTemplate,
+  presetsFor,
 } from '../../../utils/print-designer/printTemplate';
 import {
   CheckRow,
@@ -57,7 +57,7 @@ import {
   reorder,
   useRowDrag,
 } from './bandEditors';
-import { SAMPLE_DOCUMENT, SAMPLE_ORDER_DOCUMENT } from './sampleDocument';
+import { sampleFor } from './sampleDocument';
 
 /**
  * Which paper is being designed.
@@ -65,8 +65,12 @@ import { SAMPLE_DOCUMENT, SAMPLE_ORDER_DOCUMENT } from './sampleDocument';
  * It was a constant while there was one paper. Now it is state, and everything
  * that used to read the constant -- the load, the save, the preset list, the
  * sample document, the field catalogue the band editors offer -- reads this
- * instead. A third paper is a row in DOC_TYPES and a default template, and
- * nothing here.
+ * instead.
+ *
+ * ⚠️ The list of papers itself lives in printTemplate.ts, beside the DocType it
+ * has to agree with. This screen kept a second copy of it for a while, which is
+ * how a paper comes to exist in the type and not in the dropdown -- or worse,
+ * the other way round, offering a doc_type the server refuses to store.
  */
 
 const BAND_NAMES: Record<string, string> = {
@@ -135,11 +139,17 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
   const sessionBranchId = settings?.branch?.id;
 
   const [branchId, setBranchId] = useState<string>('');
+  /**
+   * Which paper is being laid out.
+   *
+   * ⚠️ Changing it reloads from the server rather than converting what is on
+   * screen. A challan's bands name a challan's fields, and carrying them over
+   * to a hotel bill would produce a paper of blanks that looked designed.
+   *
+   * Starts from the `paper` prop, so a caller can open the screen on the paper
+   * it is about rather than on the challan every time.
+   */
   const [docType, setDocType] = useState<DocType>(paper);
-  // The preview draws a document that never happened. It has to be the right
-  // KIND of document, or an order template previews against a challan and every
-  // field reads blank.
-  const sample = docType === 'sales_order' ? SAMPLE_ORDER_DOCUMENT : SAMPLE_DOCUMENT;
   const [template, setTemplate] = useState<PrintTemplate>(() => defaultTemplate(paper));
   const [selectedBandId, setSelectedBandId] = useState<string>('table');
   const [loading, setLoading] = useState(true);
@@ -375,22 +385,23 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
   };
 
   return (
-    // Everything below is describing one paper, so the paper is announced once
-    // here rather than passed down through every band editor -- see
-    // DocTypeContext. The field pickers deep inside read it and offer that
-    // paper's catalogue.
+    // ⚠️ The whole screen, so every field picker inside offers THIS paper's
+    // catalogue. A receipt whose picker still offered the challan's fields
+    // would let a tenant put a VAT line on a money receipt, which is the one
+    // thing the two doc types exist to prevent.
     <DocTypeContext.Provider value={docType}>
-    <div className="p-2">
+      <div className="p-2">
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        {/* Named, so the browser tab says which paper is being laid out. */}
         <HelmetTitle
-          title={`${DOC_TYPES.find((paper) => paper.id === docType)?.name ?? 'Print'} Layout`}
+          title={`${DOC_TYPES.find((one) => one.id === docType)?.name ?? 'Print'} Layout`}
           screen="print-template-designer"
         />
       </div>
 
       {/* ------------------------- the strip ------------------------- */}
       <div className={`${PANEL} mb-3`}>
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-5">
           <div>
             <span className={SUB_LABEL}>Branch</span>
             <BranchDropdown
@@ -437,6 +448,26 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
             <p className="mt-0.5 text-[0.65rem] leading-snug text-gray-500 dark:text-gray-400">
               {DOC_TYPES.find((paper) => paper.id === docType)?.hint}
             </p>
+          </div>
+
+          <div>
+            <span className={SUB_LABEL}>Paper</span>
+            {/* ⚠️ Changing this RELOADS from the server rather than converting
+                what is on screen: a challan's bands name a challan's fields,
+                and carried over to a hotel bill they would draw a paper of
+                blanks that looked designed. */}
+            <Select
+              value={docType}
+              onChange={(event) => setDocType(event.target.value as DocType)}
+              className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-sm text-[rgb(var(--c-text))] outline-none dark:bg-boxdark"
+              title={DOC_TYPES.find((item) => item.id === docType)?.hint}
+            >
+              {DOC_TYPES.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </Select>
           </div>
 
           <div>
@@ -705,7 +736,7 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
                     transformOrigin: 'top left',
                   }}
                 >
-                  <DocumentPrint template={template} data={sample} preview />
+                  <DocumentPrint template={template} data={sampleFor(docType)} preview />
                 </div>
               </div>
             </div>
@@ -726,11 +757,11 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
               neither, which makes a test print exactly what a customer's
               challan will be. */}
           <div className="hidden">
-            <DocumentPrint ref={previewRef} template={template} data={sample} />
+            <DocumentPrint ref={previewRef} template={template} data={sampleFor(docType)} />
           </div>
         </div>
       )}
-    </div>
+      </div>
     </DocTypeContext.Provider>
   );
 };

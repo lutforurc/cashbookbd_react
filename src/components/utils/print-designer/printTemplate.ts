@@ -17,16 +17,34 @@
  */
 
 /**
- * The papers this describes.
+ * Which paper. One renderer draws all of them; what differs is the field
+ * catalogue each may draw from and the layout it starts out with.
  *
- * One was enough while there was one. A second is what proves the idea: a sales
- * order is a different set of fields and a different table, and it needed no
- * new renderer, no new designer and no new table -- only its own catalogue and
- * its own default. Anything that still says 'sales_challan' in a signature
- * rather than taking a DocType is a place a third paper would have to touch.
+ * ⚠️ FOUR, AND THE LIST IS THE UNION OF TWO BRANCHES. Each grew this type on
+ * its own -- one added the sales order, the other the hotel's two -- and
+ * neither removed anything. A merge that kept one side would have deleted a
+ * paper somebody is already saving layouts against, and the only symptom would
+ * be "Unknown document type" on a screen that worked yesterday.
+ *
+ * ⚠️ `hotel_money_receipt` and `hotel_bill` are SEPARATE and must stay so. They
+ * are different documents with different legal weight -- the VAT falls due on
+ * the bill and not on the receipt (OPEN-12, settled 2026-08-26) -- and one type
+ * serving both is how a receipt quietly acquires a tax line and becomes a VAT
+ * invoice whatever the desk calls it.
+ *
+ * ⚠️ These strings are stored in print_templates.doc_type and are checked
+ * against PrintTemplateController::DOC_TYPES. A new one needs a row in both
+ * lists, and renaming one orphans every layout saved under the old name.
  */
-export type DocType = 'sales_challan' | 'sales_order';
+export type DocType = 'sales_challan' | 'sales_order' | 'hotel_money_receipt' | 'hotel_bill';
 
+/**
+ * The papers the designer offers, in the order it offers them.
+ *
+ * ⚠️ Exported from here rather than written out in the designer, which is where
+ * the hotel branch had put its own copy. Two lists is how a paper comes to
+ * exist in the type and not in the dropdown -- or worse, the other way round.
+ */
 export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
   {
     id: 'sales_challan',
@@ -35,8 +53,18 @@ export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
   },
   {
     id: 'sales_order',
-    name: 'Sales Order',
+    name: 'Order',
     hint: 'The order, and the deliveries made against it.',
+  },
+  {
+    id: 'hotel_money_receipt',
+    name: 'Hotel — Money Receipt',
+    hint: 'Proof that money arrived. Carries no tax line, by design.',
+  },
+  {
+    id: 'hotel_bill',
+    name: 'Hotel — Bill',
+    hint: 'What the stay was charged. The VAT falls due on this one.',
   },
 ];
 
@@ -288,7 +316,15 @@ export type FieldGroup =
   | 'manual'
   | 'line'
   /** The order's own terms -- what was agreed, and for how long. */
-  | 'order';
+  | 'order'
+  // The hotel's own. Kept apart from 'party' and 'voucher' rather than folded
+  // in, because the picker is read by somebody looking for one thing: a desk
+  // clerk hunting the guest's NID looks under Guest, not under Party.
+  | 'guest'
+  | 'stay'
+  | 'bill'
+  | 'receipt'
+  | 'folio';
 
 export type FieldDef = {
   key: string;
@@ -297,6 +333,23 @@ export type FieldDef = {
   group: FieldGroup;
   /** Right-aligned by default in a table, and summed in the totals band. */
   numeric?: boolean;
+  /**
+   * How the renderer prints it, where nothing in DocumentPrint's own switch
+   * claims the key.
+   *
+   * Declared here rather than as another `case` because the switch was written
+   * for one document and now serves three: a fourth would add twenty more
+   * cases, and the twenty-first would be forgotten. The sales challan's fields
+   * are untouched -- their cases still run first and behave exactly as they
+   * always did.
+   *
+   *   money  a figure with thousand separators
+   *   date   DD/MM/YYYY, the way the desk reads a date
+   *   words  the figure at `from`, spelled out
+   */
+  format?: 'money' | 'date' | 'words';
+  /** For `format: 'words'` -- which key holds the figure to spell. */
+  from?: string;
 };
 
 export const FIELD_GROUP_NAMES: Record<FieldGroup, string> = {
@@ -308,6 +361,11 @@ export const FIELD_GROUP_NAMES: Record<FieldGroup, string> = {
   manual: 'Filled in by hand',
   line: 'Product line',
   order: 'Order terms',
+  guest: 'Guest',
+  stay: 'The stay',
+  bill: 'Bill totals',
+  receipt: 'This receipt',
+  folio: 'Bill line',
 };
 
 /**
@@ -476,6 +534,181 @@ export const LINE_FIELDS: FieldDef[] = [
   { key: 'warranty_days', name: 'Warranty', group: 'line' },
 ];
 
+/* ------------------------------------------------------------------ */
+/* The hotel's two papers                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Who stayed, and when. Shared by the bill and the receipt, because a receipt
+ * that does not name the stay is a slip of paper nobody can file.
+ *
+ * The keys are the keys App\Services\Hotel\HotelPaper answers with, so a
+ * template naming a field an older server does not send prints blank rather
+ * than breaking.
+ */
+const HOTEL_STAY_FIELDS: FieldDef[] = [
+  // ⚠️ The guest and the booker are different people often enough to matter --
+  // a company books, a driver sleeps. Both are offered, and a property prints
+  // whichever its own paper names.
+  { key: 'guest_name', name: 'Guest Name', group: 'guest' },
+  { key: 'guest_mobile', name: 'Guest Mobile', group: 'guest' },
+  { key: 'guest_nid', name: 'Guest NID', group: 'guest' },
+  { key: 'guest_address', name: 'Guest Address', group: 'guest' },
+  { key: 'guest_count', name: 'Guests Checked In', group: 'guest', numeric: true },
+  { key: 'booker_name', name: 'Booked By', group: 'guest' },
+  { key: 'booker_mobile', name: 'Booked By (Mobile)', group: 'guest' },
+  // Whose name the bill is in, where a balance was carried at check-out.
+  { key: 'billed_to', name: 'Billed To (Party)', group: 'guest' },
+
+  { key: 'booking_no', name: 'Booking No', group: 'stay' },
+  { key: 'booking_date', name: 'Booking Date', group: 'stay', format: 'date' },
+  { key: 'booking_type', name: 'Booking Type', group: 'stay' },
+  { key: 'booking_status', name: 'Status', group: 'stay' },
+  { key: 'check_in_date', name: 'Check-in Date', group: 'stay', format: 'date' },
+  { key: 'check_out_date', name: 'Check-out Date', group: 'stay', format: 'date' },
+  // ⚠️ Nights, not days. Monday to Tuesday is ONE night and one night's rent,
+  // and those two numbers being different is the commonest argument at a counter.
+  { key: 'nights', name: 'Nights', group: 'stay', numeric: true },
+  { key: 'room_list', name: 'Room(s)', group: 'stay' },
+  { key: 'room_count', name: 'Number of Rooms', group: 'stay', numeric: true },
+  { key: 'stated_adults', name: 'Adults (booked)', group: 'stay', numeric: true },
+  { key: 'stated_children', name: 'Children (booked)', group: 'stay', numeric: true },
+
+  { key: 'branch_name', name: 'Property', group: 'voucher' },
+  { key: 'branch_address', name: 'Property Address', group: 'voucher' },
+  { key: 'notes', name: 'Notes', group: 'voucher' },
+  { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+  // For the accountant's copy -- the ledger entry this paper corresponds to.
+  { key: 'voucher_no', name: 'Voucher No', group: 'voucher' },
+  { key: 'blank', name: 'Blank line', group: 'manual' },
+];
+
+/**
+ * The bill.
+ *
+ * ⚠️ `total_amount` and `amount_words` from the sales catalogue are DELIBERATELY
+ * ABSENT. The renderer works those out by adding the line amounts up, which is
+ * the EXACT figure -- and §6.3 rounds the bill ONCE on the whole total, so what
+ * the guest is asked for is `bill_rounded`. Offering both would let a tenant put
+ * a figure on the paper that disagrees with the till by up to fifty poisha, and
+ * they would not find out until somebody counted the drawer.
+ */
+export const HOTEL_BILL_FIELDS: FieldDef[] = [
+  ...HOTEL_STAY_FIELDS,
+
+  { key: 'bill_base', name: 'Room & Charges', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_service_charge', name: 'Service Charge', group: 'bill', numeric: true, format: 'money' },
+  // ⚠️ On the BILL this is right and required -- the tax falls due here.
+  { key: 'bill_vat', name: 'VAT', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_gross', name: 'Total (exact)', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_rounding', name: 'Rounding', group: 'bill', numeric: true, format: 'money' },
+  // What is actually asked for at the counter.
+  { key: 'bill_rounded', name: 'Grand Total', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_words', name: 'Grand Total In Words', group: 'bill', format: 'words', from: 'bill_rounded' },
+  { key: 'bill_paid', name: 'Paid', group: 'bill', numeric: true, format: 'money' },
+  // Negative means the hotel is holding money over the bill, which is the
+  // ordinary state of a booking with an advance and no nights billed yet.
+  { key: 'bill_due', name: 'Balance Due', group: 'bill', numeric: true, format: 'money' },
+  { key: 'line_count', name: 'Number of Lines', group: 'bill', numeric: true },
+];
+
+/** One line of the bill. */
+export const HOTEL_BILL_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'folio' },
+  { key: 'description', name: 'Description', group: 'folio' },
+  { key: 'charge_type', name: 'Charge Type', group: 'folio' },
+  // ⚠️ A row is one room over a RUN of nights, so its date is a FROM and a TO.
+  // They are equal on a single night, and the description already reads as a
+  // range -- these are for a property whose own paper wants them in columns.
+  { key: 'stay_date', name: 'Date', group: 'folio', format: 'date' },
+  { key: 'stay_date_to', name: 'Date To', group: 'folio', format: 'date' },
+  { key: 'room', name: 'Room', group: 'folio' },
+  // ⚠️ WHAT THE ROOM IS, not what the line is. A bill naming "Deluxe 302" and
+  // nothing else leaves the guest's own accountant with no record of what was
+  // paid for. Offered rather than printed: neither is in any shipped layout, so
+  // a paper that does not ask for them comes out exactly as it always did.
+  //
+  // ⚠️ And both read as the room stands TODAY, not as it stood on the night --
+  // nothing here is stored against the folio. That is the honest answer for a
+  // description and would be the wrong one for a rate, which is why rates are
+  // read back from what was stored and these are not.
+  { key: 'room_facilities', name: 'Room Facilities', group: 'folio' },
+  { key: 'room_description', name: 'Room Description', group: 'folio' },
+  { key: 'quantity', name: 'Quantity', group: 'folio', numeric: true },
+  { key: 'unit_rate', name: 'Rate', group: 'folio', numeric: true, format: 'money' },
+  { key: 'base_amount', name: 'Amount', group: 'folio', numeric: true, format: 'money' },
+  { key: 'service_charge_rate', name: 'Service %', group: 'folio', numeric: true },
+  { key: 'service_charge_amount', name: 'Service Charge', group: 'folio', numeric: true, format: 'money' },
+  { key: 'vat_rate', name: 'VAT %', group: 'folio', numeric: true },
+  { key: 'vat_amount', name: 'VAT', group: 'folio', numeric: true, format: 'money' },
+  { key: 'line_total', name: 'Line Total', group: 'folio', numeric: true, format: 'money' },
+];
+
+/**
+ * The money receipt.
+ *
+ * ⚠️ NOT ONE TAX FIELD IN THE LIST, and that is the point of it being its own
+ * catalogue. OPEN-12, settled 2026-08-26: VAT falls due when the BILL is made.
+ * A receipt showing a VAT line becomes a VAT invoice whatever the desk calls
+ * it, and the tax then falls due on money taken for a stay that has not
+ * happened.
+ *
+ * Enforced by absence rather than by a warning: the fields are not offered in
+ * the designer, and the server does not send them either. A note in a manual
+ * would be obeyed for a year and then not.
+ */
+export const HOTEL_RECEIPT_FIELDS: FieldDef[] = [
+  ...HOTEL_STAY_FIELDS,
+
+  { key: 'payment_no', name: 'Receipt No', group: 'receipt' },
+  { key: 'payment_date', name: 'Receipt Date', group: 'receipt', format: 'date' },
+  { key: 'receipt_amount', name: 'Amount', group: 'receipt', numeric: true, format: 'money' },
+  { key: 'receipt_words', name: 'Amount In Words', group: 'receipt', format: 'words', from: 'receipt_amount' },
+  // ⚠️ "Received" or "Refund". A refund is stored positive, so without this
+  // word on the paper the two receipts are indistinguishable.
+  { key: 'receipt_kind', name: 'Received / Refund', group: 'receipt' },
+  { key: 'purpose', name: 'Purpose', group: 'receipt' },
+  { key: 'method', name: 'Paid By', group: 'receipt' },
+  { key: 'reference', name: 'Cheque / Txn No', group: 'receipt' },
+  { key: 'payment_notes', name: 'Remarks', group: 'receipt' },
+  // The guest's running position, which is what they usually ask about next.
+  { key: 'advance_held', name: 'Total Held To Date', group: 'receipt', numeric: true, format: 'money' },
+];
+
+/** Which fields a paper may draw from. */
+export const fieldsFor = (docType: DocType): FieldDef[] => {
+  if (docType === 'sales_order') return ORDER_FIELD_CATALOG;
+  if (docType === 'hotel_bill') return HOTEL_BILL_FIELDS;
+  if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_FIELDS;
+  return FIELD_CATALOG;
+};
+
+/**
+ * The same function under the name the other branch gave it.
+ *
+ * ⚠️ An alias, not a copy. Both branches wrote this selector -- one called it
+ * catalogFor, one fieldsFor -- and their call sites are spread across the
+ * designer. Two implementations of "which fields may this paper offer" is a
+ * pair that drifts the first time a fifth paper is added and only one of them
+ * hears about it.
+ */
+export const catalogFor = fieldsFor;
+
+/**
+ * Which columns its table may draw from.
+ *
+ * A money receipt has none: it is one payment, and a table on it would be the
+ * bill -- which is precisely the document a receipt must not become.
+ */
+export const lineFieldsFor = (docType: DocType): FieldDef[] => {
+  if (docType === 'sales_order') return ORDER_LINE_FIELDS;
+  if (docType === 'hotel_bill') return HOTEL_BILL_LINE_FIELDS;
+  // A money receipt has none: it is one payment, and a table on it would be the
+  // bill -- which is precisely the document a receipt must not become.
+  if (docType === 'hotel_money_receipt') return [];
+  return LINE_FIELDS;
+};
+
 /**
  * How wide a label column starts out, in `em`.
  *
@@ -503,31 +736,29 @@ const byKey = (list: FieldDef[]) =>
   }, {});
 
 /**
- * Which fields a paper may offer.
+ * Every paper's fields in one map, for the lookups below.
  *
- * The designer asks for these rather than reading FIELD_CATALOG, so that an
- * order's field list holds no vehicle number and a challan's holds no order
- * rate. Offering the wrong catalogue does not break anything -- an unknown key
- * prints blank -- but it invites somebody to drag a field onto a paper that
- * will never have a value for it, and then to wonder why.
- */
-export const catalogFor = (docType: DocType): FieldDef[] =>
-  docType === 'sales_order' ? ORDER_FIELD_CATALOG : FIELD_CATALOG;
-
-export const lineFieldsFor = (docType: DocType): FieldDef[] =>
-  docType === 'sales_order' ? ORDER_LINE_FIELDS : LINE_FIELDS;
-
-/**
- * Naming and numeric-ness read across every paper at once, on purpose.
+ * ⚠️ ONE PAIR OF MAPS, NOT TWO. Both branches built this and each covered only
+ * the papers it knew about, so the merge arrived with ALL_INFO_BY_KEY over the
+ * challan and the order beside INFO_BY_KEY over the challan and the hotel's --
+ * two maps answering the same question, each blind to half the answer. A field
+ * missing from whichever one a caller happened to use prints as its own key.
  *
- * These three answer questions about a key that arrives on its own -- from a
- * saved template, or from a cell the renderer is about to draw -- with no doc
- * type beside it. Threading one through every call site would be a large change
- * to tell `amount` from `amount`, and the keys the two papers share mean the
- * same thing in both. Where they differ, the keys differ too.
+ * ⚠️ Flat across doc types on purpose, and it only works because the keys do
+ * not collide: the hotel reuses `branch_name`, `notes` and `printed_at` because
+ * they mean the same thing on any paper, and everything else each paper adds is
+ * its own. A key that meant two things on two papers would have to be renamed
+ * before it went in here -- these lookups answer by key alone, and the renderer
+ * asks them without knowing which document it is drawing.
  */
-const ALL_INFO_BY_KEY = byKey([...FIELD_CATALOG, ...ORDER_FIELD_CATALOG]);
-const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS]);
+const ALL_INFO_BY_KEY = byKey([
+  ...FIELD_CATALOG,
+  ...ORDER_FIELD_CATALOG,
+  ...HOTEL_BILL_FIELDS,
+  ...HOTEL_RECEIPT_FIELDS,
+]);
+
+const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS]);
 
 /** The catalogue's own name for a field, or the key itself if it is unknown. */
 export const fieldName = (key: string) =>
@@ -541,6 +772,16 @@ export const isNumericField = (key: string) =>
 /** True where a line field is one the totals band can add up. */
 export const isNumericLineField = (key: string) =>
   Boolean(ALL_LINE_BY_KEY[key]?.numeric);
+
+/**
+ * How a field is printed, where DocumentPrint's own switch does not claim it.
+ *
+ * See FieldDef.format. Returns undefined for the sales challan's fields, every
+ * one of which is either a plain string or already has a case of its own --
+ * which is what keeps this from changing a single challan.
+ */
+export const fieldFormat = (key: string): FieldDef | undefined =>
+  ALL_INFO_BY_KEY[key] ?? ALL_LINE_BY_KEY[key];
 
 /* ------------------------------------------------------------------ */
 /* Presets                                                             */
@@ -930,6 +1171,230 @@ export type PresetDef = {
   build: () => PrintTemplate;
 };
 
+/**
+ * The hotel bill.
+ *
+ * ⚠️ Base, service charge and VAT each shown on their own line rather than
+ * folded into a total. A bill that gives only the final figure is unusable to
+ * the guest's own accountant, and useless as evidence for a VAT return.
+ *
+ * ⚠️ It is titled "Bill", not "VAT Challan" or মূসক ৬.৩. Whether the client's
+ * hotel must issue a Mushak 6.3 -- and whether an EFD machine is involved -- is
+ * open question 6 in §6.3 of the spec and has not been answered. A Mushak has a
+ * mandated format and an unbroken government serial, and calling this one would
+ * be claiming something nobody has checked. When the answer comes it is a
+ * layout saved in the designer plus, if a serial is required, a numbering
+ * decision -- not a rewrite of this file.
+ */
+const hotelBill = (): PrintTemplate => ({
+  version: 1,
+  docType: 'hotel_bill',
+  orientation: 'portrait',
+  fontSize: 13,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Bill',
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'guest_name', label: 'Guest' },
+        { field: 'booking_no', label: 'Booking No' },
+        { field: 'guest_mobile', label: 'Mobile', hideIfEmpty: true },
+        { field: 'check_in_date', label: 'Check-in' },
+        { field: 'room_list', label: 'Room' },
+        { field: 'check_out_date', label: 'Check-out' },
+        // Hidden when absent rather than printing "Billed To:" with a blank
+        // beside it -- most stays are settled at the counter and belong to
+        // nobody but the guest.
+        { field: 'billed_to', label: 'Billed To', hideIfEmpty: true },
+        { field: 'nights', label: 'Nights' },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      columns: [
+        { field: 'sl', label: 'Sl.', width: 6, align: 'center' },
+        { field: 'description', label: 'Description', width: 40, align: 'left' },
+        { field: 'quantity', label: 'Qty', width: 8, align: 'right' },
+        { field: 'unit_rate', label: 'Rate', width: 13, align: 'right' },
+        { field: 'base_amount', label: 'Amount', width: 15, align: 'right' },
+        { field: 'line_total', label: 'Total', width: 18, align: 'right' },
+      ],
+    }),
+    band<TotalsBand>({
+      id: 'totals',
+      type: 'totals',
+      show: true,
+      align: 'right',
+      items: [
+        { field: 'bill_base', label: 'Room & Charges' },
+        // Both hidden when zero: a property whose rates are still at zero --
+        // which is every install until the client's consultant answers §6.3 --
+        // should print a bill with no tax lines on it, not two zeroes.
+        { field: 'bill_service_charge', label: 'Service Charge', hideIfEmpty: true },
+        { field: 'bill_vat', label: 'VAT', hideIfEmpty: true },
+        { field: 'bill_rounding', label: 'Rounding', hideIfEmpty: true },
+        { field: 'bill_rounded', label: 'Grand Total' },
+        { field: 'bill_words', label: 'In Words' },
+        { field: 'bill_paid', label: 'Paid' },
+        { field: 'bill_due', label: 'Balance Due' },
+      ],
+    }),
+    band<NotesBand>({
+      id: 'notes',
+      type: 'notes',
+      show: false,
+      text: '',
+      align: 'left',
+      boxed: false,
+    }),
+    band<SignatureBand>({
+      id: 'signature',
+      type: 'signature',
+      show: true,
+      space: 50,
+      items: [{ label: 'Guest Signature' }, { label: 'For the Hotel' }],
+    }),
+  ],
+});
+
+/**
+ * The money receipt.
+ *
+ * ⚠️ NO TABLE BAND AT ALL, and no tax line anywhere. A receipt is one payment;
+ * a table on it would be the bill, and a VAT line on it would make it a VAT
+ * invoice for money taken against a stay that has not happened (OPEN-12).
+ * The catalogue behind this doc type offers neither, so a tenant editing it in
+ * the designer cannot add them back.
+ *
+ * Landscape half-page would be closer to what a real receipt book looks like,
+ * but portrait is what every other paper in the app prints and what every
+ * tenant's printer is set up for. A property that wants a half sheet says so in
+ * the designer.
+ */
+const hotelReceipt = (): PrintTemplate => ({
+  version: 1,
+  docType: 'hotel_money_receipt',
+  orientation: 'portrait',
+  fontSize: 13,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Money Receipt',
+      align: 'center',
+      scale: 1.5,
+      underline: true,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'payment_no', label: 'Receipt No' },
+        { field: 'payment_date', label: 'Date' },
+        { field: 'guest_name', label: 'Received From' },
+        { field: 'booking_no', label: 'Booking No' },
+        { field: 'guest_mobile', label: 'Mobile', hideIfEmpty: true },
+        { field: 'method', label: 'Paid By' },
+      ],
+    }),
+    band<InfoBand>({
+      id: 'amount',
+      type: 'info',
+      show: true,
+      columns: 1,
+      layout: 'rows',
+      // Boxed, because this is the line the whole paper exists for and it
+      // should not read as one of six facts.
+      boxed: true,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: 2,
+      rowGap: 0,
+      items: [
+        // ⚠️ "Received" or "Refund". A refund is stored positive, so without
+        // this the two papers are the same document with the same figure on it.
+        { field: 'receipt_kind', label: 'Nature' },
+        { field: 'receipt_amount', label: 'Amount' },
+        { field: 'receipt_words', label: 'In Words' },
+        { field: 'purpose', label: 'On Account Of' },
+        { field: 'reference', label: 'Cheque / Txn No', hideIfEmpty: true },
+      ],
+    }),
+    band<InfoBand>({
+      id: 'stay',
+      type: 'info',
+      show: true,
+      columns: 3,
+      layout: 'inline',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'check_in_date', label: 'Check-in' },
+        { field: 'check_out_date', label: 'Check-out' },
+        { field: 'room_list', label: 'Room', hideIfEmpty: true },
+      ],
+    }),
+    band<NotesBand>({
+      id: 'notes',
+      type: 'notes',
+      show: true,
+      // ⚠️ Says what the paper is, in words, on the paper itself. An advance is
+      // money held against a stay that has not happened -- a guest who reads
+      // this as a bill has been told the wrong thing by their own receipt.
+      text: 'An advance is money held against the stay. The bill is issued separately.',
+      align: 'left',
+      boxed: false,
+    }),
+    band<SignatureBand>({
+      id: 'signature',
+      type: 'signature',
+      show: true,
+      space: 50,
+      items: [{ label: 'Received By' }],
+    }),
+  ],
+});
+
 export const CHALLAN_PRESETS: PresetDef[] = [
   {
     id: 'standard',
@@ -966,12 +1431,46 @@ export const ORDER_PRESETS: PresetDef[] = [
   },
 ];
 
-/** The presets a paper offers. An unknown paper offers the challan's. */
-export const presetsFor = (docType: DocType): PresetDef[] =>
-  docType === 'sales_order' ? ORDER_PRESETS : CHALLAN_PRESETS;
+/**
+ * The hotel's papers ship with one layout each rather than a shelf of them.
+ *
+ * The challan has four because four real tenants print four different challans.
+ * Nobody has printed a hotel bill from this system yet, so a second and a third
+ * would be guesses -- and a guess in a preset list is worse than an absence,
+ * because somebody picks it and then has to undo it.
+ */
+export const HOTEL_BILL_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Bill',
+    hint: 'Charges as a table, with service charge and VAT shown separately.',
+    build: hotelBill,
+  },
+];
 
-export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTemplate =>
-  docType === 'sales_order' ? standardOrder() : standardChallan();
+export const HOTEL_RECEIPT_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Money Receipt',
+    hint: 'One payment, the amount in words, and no tax line.',
+    build: hotelReceipt,
+  },
+];
+
+/** What the designer offers for the paper being edited. */
+export const presetsFor = (docType: DocType): PresetDef[] => {
+  if (docType === 'sales_order') return ORDER_PRESETS;
+  if (docType === 'hotel_bill') return HOTEL_BILL_PRESETS;
+  if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_PRESETS;
+  return CHALLAN_PRESETS;
+};
+
+export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTemplate => {
+  if (docType === 'sales_order') return standardOrder();
+  if (docType === 'hotel_bill') return hotelBill();
+  if (docType === 'hotel_money_receipt') return hotelReceipt();
+  return standardChallan();
+};
 
 /* ------------------------------------------------------------------ */
 /* Reading one back                                                    */
@@ -1016,6 +1515,12 @@ const tableColumns = (value: any): TableColumn[] =>
  * lost its table gets one back, because a challan without a product table is
  * not a challan and the tenant would have nothing to drag onto.
  */
+/** What this paper calls itself when a saved band has no title of its own. */
+const defaultTitleOf = (template: PrintTemplate): string => {
+  const title = template.bands.find((item) => item.type === 'title') as TitleBand | undefined;
+  return title?.text ?? '';
+};
+
 export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'): PrintTemplate => {
   const fallback = defaultTemplate(docType);
   if (!raw || typeof raw !== 'object') return fallback;
@@ -1039,7 +1544,10 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
           return {
             ...base,
             type: 'title',
-            text: typeof item.text === 'string' ? item.text : 'Delivery Challan',
+            // ⚠️ The fallback comes from THIS paper's own default, not from the
+            // word "Delivery Challan" -- a hotel bill saved without a title
+            // would otherwise print the challan's heading over a guest's bill.
+            text: typeof item.text === 'string' ? item.text : defaultTitleOf(fallback),
             align: align(item.align, 'center'),
             scale: bounded(item.scale, 0.8, 3, 1.5),
             underline: Boolean(item.underline),

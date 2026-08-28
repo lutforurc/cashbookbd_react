@@ -128,6 +128,14 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'real_estate_project_cost_report', title: "Project Cost Report" },
     { id: 'real_estate_project_income_report', title: "Project Income Report" },
   ],
+  'hotel': [
+    { id: 'hotel_bookings', title: "Bookings" },
+    { id: 'hotel_hall_bookings', title: "Hall Booking" },
+    { id: 'hotel_calendar', title: "Calendar" },
+    { id: 'hotel_housekeeping', title: "Housekeeping" },
+    { id: 'hotel_reports', title: "Reports" },
+    { id: 'hotel_setup', title: "Rooms & Seats Setup" },
+  ],
   'products': [
     { id: 'brand/brand-list', title: "Brand List" },
     { id: 'category/category-list', title: "Category List" },
@@ -225,6 +233,7 @@ export const SIDEBAR_MENUS = [
   { id: 'product_tracking', title: 'Product Tracking' },
   { id: 'requisition', title: 'Requisition' },
   { id: 'real-estate', title: 'Real Estate' },
+  { id: 'hotel', title: 'Hotel' },
   { id: 'products', title: 'Products' },
   { id: 'labour_items', title: 'Labour Items' },
   { id: 'admin', title: 'Admin' },
@@ -249,6 +258,7 @@ import {
   FiGrid,
   FiHome,
   FiLayers,
+  FiKey,
   FiMapPin,
   FiPieChart,
   FiServer,
@@ -1905,6 +1915,128 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     )}
                   </SidebarLinkGroup>
                 )}
+
+
+              {/*
+                Hotel.
+
+                Gated on permission alone, and not on a business type the way
+                Real Estate above is. That check reads `business_type_id == 9`,
+                and the id is auto-increment: "Hotel / Motel" is 9 in one
+                tenant's database and 11 in another's, so a number written here
+                would open the wrong menu somewhere. The four hotel permissions
+                are granted to nobody when they are created, which draws the
+                same line and cannot drift between installs.
+
+                One entry today. The availability screen, the booking form and
+                check-in join it here as the module is built, which is why it is
+                a group rather than a bare link.
+              */}
+              {hasMenuPermission(permissions, 'hotel') && (
+                <SidebarLinkGroup
+                  activeCondition={isMenuActive('hotel', pathname)}
+                  menuId="hotel"
+                  style={menuSlot('hotel')}
+                  open={openMenu === 'hotel'}
+                  handleClick={() => handleMenuClick('hotel')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4
+                          ${isMenuActive('hotel', pathname) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiKey className="-ml-1" />
+                        Hotel
+                        <FiChevronRight
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
+                            }`}
+                        />
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('hotel').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
+
+                          {/* Bookings first. Setup is a sitting done once;
+                              this is the screen somebody opens every day. */}
+                          <li style={subSlot('hotel', 'hotel_bookings')}>
+                            <NavLink to={routes.hotel_bookings} className={subMenuLinkClass}>
+                              Bookings
+                            </NavLink>
+                          </li>
+
+                          {/* Halls and community centres, which are sold by the
+                              part of the day rather than by the night -- a
+                              different question with a different answer, so a
+                              screen of its own rather than a mode on the one
+                              above. */}
+                          <li style={subSlot('hotel', 'hotel_hall_bookings')}>
+                            <NavLink to={routes.hotel_hall_bookings} className={subMenuLinkClass}>
+                              Hall Booking
+                            </NavLink>
+                          </li>
+
+                          {/* The month at a glance, and the tape chart the desk
+                              reads for gaps. Beside Bookings because it answers
+                              the question that screen cannot: what does next
+                              week look like? */}
+                          <li style={subSlot('hotel', 'hotel_calendar')}>
+                            <NavLink to={routes.hotel_calendar} className={subMenuLinkClass}>
+                              Calendar
+                            </NavLink>
+                          </li>
+
+                          {/* Opened every morning by somebody who does nothing
+                              else in the system. */}
+                          <li style={subSlot('hotel', 'hotel_housekeeping')}>
+                            <NavLink to={routes.hotel_housekeeping} className={subMenuLinkClass}>
+                              Housekeeping
+                            </NavLink>
+                          </li>
+
+                          {/* Who was in the building, and what came in. Above
+                              setup for the same reason Bookings is: setup is a
+                              sitting done once, and these are read daily. */}
+                          <li style={subSlot('hotel', 'hotel_reports')}>
+                            <NavLink to={routes.hotel_reports} className={subMenuLinkClass}>
+                              Reports
+                            </NavLink>
+                          </li>
+
+                          <li style={subSlot('hotel', 'hotel_setup')}>
+                            <NavLink to={routes.hotel_setup} className={subMenuLinkClass}>
+                              Rooms &amp; Seats Setup
+                            </NavLink>
+                          </li>
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
 
 
               {/* Products */}

@@ -1,9 +1,201 @@
 # Hotel / Motel + Resort Booking & Ticketing — Working Spec
 
-> **Status:** Design agreed, **no code written yet**. The user has said three times
-> that nothing is to be built until they explicitly say so — advice and documents
-> only. Last updated: 2026-08-23.
+> **Status: building. Step 1 is done.** The go-ahead was given on **2026-08-24**
+> and the five master tables of §8.1 — `hotel_buildings`, `hotel_floors`,
+> `hotel_room_types`, `booking_resource_types`, `booking_resources` — are built,
+> along with their API and a four-tab setup screen. See **§12** for exactly what
+> exists and what was deliberately left out.
 >
+> **Phase 0 (financial year) was NOT done first**, against the order in §11.
+> The reasoning is in §12: phase 0 is a refactor of code running on fifteen live
+> sites, the hotel module does not depend on it, and starting a new module with
+> the riskiest change in the project buys nothing.
+>
+> **Rent lives on the room, not on the room type** — the client's instruction of
+> 2026-08-24. It changes §4.2 and §6.6 and is written up as **§2.8**.
+>
+> **2026-08-25:** two small things on the setup screen — the Layout tab can hide
+> the rooms that are switched off, and a floor of rooms can be created in one go
+> rather than one form at a time. Both are **§14**.
+>
+> **2026-08-25 (later): the booking engine has started.** `booking_master` and
+> `booking_resource_details` are built — tables 6 and 7 of §8.1 — and with them the
+> overlap lock, which is **§15**. ⚠️ **This changes §9.** The lock is a UNIQUE key
+> on one row per seat per night, not `SELECT … FOR UPDATE` over a date range; the
+> reasoning is in §15 and the risk table has been corrected. Nothing is billed and
+> nothing is posted — OPEN-12 still blocks that, and screen 5 with it.
+>
+> **2026-08-25 (later still): a hotel can now be booked from the browser.**
+> Screens 2 and 3 of §8.1 — availability and the booking form — are built as one
+> screen under a new **Hotel ▸ Bookings** menu, together with the controller
+> behind them. **§16.** Whole rooms only, and the first of the two stages of
+> §6.5 only: guests, allotment, check-in, billing and check-out are still to come.
+>
+> **2026-08-25 (last): the second stage is built too.** `booking_guests` — table 8
+> — and an allotment panel over the bookings list: names, mobiles, NIDs, gender and
+> ages, room by room, on the day the guests arrive. **§17.** That is screens 2, 3
+> and 4 of §8.1 done. Screens 5 and 6 — the bill and check-out — remain, and
+> **OPEN-12** still blocks 5.
+>
+> **2026-08-25 (really last): the booking screen draws the property.** The
+> availability picker is now the SAME elevation grid the setup screen's Layout
+> tab draws, painted by what is free rather than by room type, and a booking's
+> state is a chip in the list in those same colours. **§18.**
+>
+> **2026-08-25 (truly last): a dormitory can be booked bed by bed.** The last
+> thing §16 had deliberately left out. Rooms and beds now sell side by side, and
+> one booking may hold both. **§19.**
+>
+> **2026-08-26: the bill is made, the money is taken, and the guest can leave.**
+> Screens 5 and 6 of §8.1 — the last two. `booking_payments`,
+> `booking_folio_details`, `booking_tax_rates` and `booking_status_logs` are built
+> (tables 9 to 12), and **OPEN-12 is answered**: VAT falls due on the BILL, not on
+> the advance, which is what §2.6 already assumed. All six screens now exist.
+>
+> Check-out releases the nights nobody slept, bills the ones they did, and refuses
+> to end a stay that still owes money with **nobody's name against it** — the
+> balance is either settled or carried to a named party. The client's decision,
+> 2026-08-26, and the reason `billed_to_party_id` was on `booking_master` from the
+> start.
+>
+> **2026-08-26 (later): the money reaches the books, and a cancellation can hand
+> it back.** The **§5 vouchers** are written — every receipt, every bill, every
+> refund and every balance carried to a party now raises one — and
+> `booking_cancellations` (**table 13**) is built with the refund/retention split
+> behind it. **§26.** ⚠️ **The amber "not in the accounts" banner has come down**,
+> the honest way: it said the ledger had not moved, and now it has.
+>
+> ⚠️ **Three more chart heads**, so the grant file must be **run again** on any
+> company that ran it before this date: Hotel Other Income, Hotel Cancellation
+> Charge and Bill Rounding. Until it is, the folio names what is missing and
+> **refuses to take money** — deliberately, over the softer alternative of
+> recording it outside the books.
+>
+> **2026-08-26 (last): the desk can hand a guest paper.** A **money receipt** and
+> a **bill**, on the existing print-designer — two new `doc_type` values, no new
+> table and no second renderer, so a property that wants its bill in its own
+> words is a layout saved in the designer. **§27.**
+>
+> ⚠️ **The receipt carries no tax line, and cannot be made to.** OPEN-12 again:
+> the VAT falls due on the BILL, and a receipt showing tax *becomes* a VAT
+> invoice for money taken against a stay that has not happened. Enforced by
+> absence in three places — the server does not send it, the field catalogue does
+> not offer it, and the receipt has no table to build one from.
+>
+> ⚠️ The bill is titled **Bill**, not মূসক ৬.৩. Whether a Mushak challan and an
+> EFD machine are required is **open question 6** and still unanswered.
+>
+> **2026-08-26 (truly last): holds stop holding beds for ever.** Not a feature —
+> a hole in shipped code. `hold_until`, the index for it, the `expired` status
+> and the log's "the system did it" convention were all in place; **the sweep
+> that uses them was not**, so a hold nobody confirmed held its beds
+> indefinitely and the desk found out by turning somebody away. `php artisan
+> hotel:expire-holds`, scheduled nightly, plus the chasing list §6.4 asked for.
+> **§28.**
+>
+> ⚠️ **Nothing runs until the host's cron calls `schedule:run`.** Without that
+> one line, §28 is a note nobody reads.
+>
+> ⚠️ It will not expire a hold with **money or a bill** on it — that would strand
+> an advance in a liability head with no booking to settle it. Those are listed
+> for a person, loudly.
+>
+> **2026-08-26 (and last): the property can be read back.** A **guest register**
+> — who was in the building on a given night, name by name with NIDs, printable
+> — and a **collection report** for what money came in. Under Hotel ▸ Reports,
+> on a reading permission of its own. **§29.**
+>
+> ⚠️ The register reads the **nights**, not the booking's dates: check-out
+> deletes the nights a guest did not sleep, so "holds a night on the 25th" is the
+> only expression in this schema that means "was here on the 25th". Reading
+> `check_in_date <= D <= check_out_date` would place a named person in a building
+> they had left — an error on an ordinary report, and something else on a
+> register a police officer reads.
+>
+> **2026-08-26 (and finally): rent reaches the books on the night it was
+> earned.** Open decision **2** — *"room rent posts per night, so daily and
+> monthly income stays correct"* — was written at the start of this project and
+> never done: a night reached the ledger only when somebody pressed a button, so
+> a long stay across a month end contributed nothing to that month.
+> `php artisan hotel:night-audit`, scheduled at 01:00. **§30.**
+>
+> ⚠️ **One voucher per night, dated to that night.** Billing several outstanding
+> nights in one pass would date them all to the last one and land the rest in the
+> wrong period — the exact fault the audit exists to end.
+>
+> ⚠️ `booking_night_audit_runs` (table 14) is **not** the guard against double
+> billing — `uq_bfd_room_night` is. It answers *did the audit run?*, and its
+> **gaps** are what it is read for: a cron that died on Friday leaves no other
+> trace.
+>
+> Still not built: early check-in / late check-out charges (§6.2), and the §6.1
+> gender rule. The VAT rates remain zero on every install until the client's
+> consultant answers §6.3 — which means every bill printed today comes out with
+> no tax lines on it at all.
+>
+> **2026-08-26 (the last of the day): phase 4 is finished.** A **month view** —
+> occupancy, ADR, RevPAR, arrivals and departures per night — and the **tape
+> chart**, rooms down the side and nights across the top, which is the shape that
+> shows the holes. Under Hotel ▸ Calendar, on `hotel.booking.view`: no new
+> permission and no new table. **§31.**
+>
+> ⚠️ **ADR and RevPAR divide by different things** — per bed *sold* and per bed
+> the property *has*. A hotel selling half its rooms at a high rate has a good
+> ADR and a bad RevPAR, and quoting one for the other reports an empty month as a
+> full one.
+>
+> **2026-08-26 (truly the last): a bill can be moved to another payer.** §6.4,
+> approved by the client on 2026-08-23 and never built. `booking_bill_transfers`
+> (**table 15**), a voucher every time, and `hotel.booking.transfer` — manager
+> and above, because with no credit limit on corporate bookings one press turns a
+> cash bill into an open-ended receivable. **§32.**
+>
+> ⚠️ **Only the outstanding balance moves** — money already received stays with
+> whoever paid it — and **nothing is re-priced**: what changes is who pays, never
+> what it cost. Both are the client's rules, and the second is a rule rather than
+> a setting because re-pricing on a transfer is the back door for discounts that
+> appear nowhere in the books.
+>
+> It also fixed three things that were quietly wrong the moment a bill could
+> move: money taken afterwards now settles the **company**, later charges go on
+> the company's bill, and check-out no longer carries a bill that has already
+> moved. Plus §6.4's missed rule — **a hold with money against it now confirms
+> itself**.
+>
+> ⚠️ **Rate plans are BLOCKED, not next.** §31 said otherwise and was wrong: §6.2
+> lists rate-card rules under *"not yet known — needed before schema work"*.
+>
+> **2026-08-26 (the last of them): a charge can earn into whichever head the
+> client says.** `booking_charge_types` (**table 16**), under Hotel ▸ Setup ▸
+> Charges. **§33.** It retires §26's openly-made compromise of one catch-all
+> `Hotel Other Income` — the answer was never six fixed heads, it was letting the
+> client nominate.
+>
+> ⚠️ **Nothing changed for anybody.** The seven shipped types carry no head, so a
+> property that never opens the screen posts exactly as it always did. And the
+> voucher writes **one leg per head, not per charge type** — a hotel putting
+> restaurant and catering into one Food & Beverage account sees one credit, not
+> two.
+>
+> **2026-08-26 (phase 5): the desk stops selling unmade rooms.** After a guest
+> left, the room was dirty and **nothing said so** — it could be sold to somebody
+> walking in five minutes later. `hotel_housekeeping_status` and `_logs`
+> (**tables 17 and 18**), a board under Hotel ▸ Housekeeping, on its own
+> permission. **§34.**
+>
+> ⚠️ **Cleanliness and occupancy are different questions.** A room can be
+> occupied and dirty at once, and the board shows both. Two integrations are what
+> make it real rather than a screen nobody updates: **check-out marks the rooms
+> dirty** (by the *system*, not the clerk), and an **out-of-order room leaves the
+> booking screen entirely** — it outranks free.
+>
+> ⚠️ **What remains is mostly not buildable, and should not be.** VAT rates,
+> rate-card rules, early/late charges, cancellation percentages, the §6.1 gender
+> rule, the child age and the Mushak question are all the **client's business
+> rules** — inventing them is worse than leaving them. What is buildable is
+> amenity kits (with the `material_issue_master` change §4.3 asks for), events and
+> catering, and ticketing — each its own piece of work. See §34's closing table.
+
 > **Client-facing proposal:** `docs/Hotel_Community_Center_Asset_Management_Proposal.docx`
 > (Bengali, 11 chapters, submitted to the client). **This file is the internal
 > working document** — start here when work resumes.
@@ -181,6 +373,72 @@ Nothing is lost by this: because every room records its building, building-wise
 occupancy and income come out as report filters, at no cost. *Not keeping separate
 books is not the same as not being able to see them separately.*
 
+### 2.8 Rent lives on the row that is sold
+
+*(The client's instruction, 2026-08-24: **"একেকটি রুম বা সিট এর ভাড়া দেয়া থাকবে"** —
+each room, and each seat, carries its own rent. It supersedes what §4.2 and §6.6
+said, and both now point here.)*
+
+**The rent that is charged is `booking_resources.rent`** — one number per row,
+meaning what *that row* costs for one unit of its type's rate unit.
+
+| Row | What its `rent` means |
+|---|---|
+| Room | The **whole room**, for one night |
+| Seat | **That bed**, for one night |
+| Hall / centre | One **slot** |
+
+Room 101 and room 102 can both be "Deluxe" and cost different money. Before this,
+a difference in price meant inventing a room type to hold it (§6.6); it no longer
+does.
+
+**A room has two rents, not one — and they live on different rows.** §6.2 already
+said a seat rate is not the room rate divided by the beds: both are commercial
+decisions and the client makes each separately. Keeping them on separate rows is
+what stops anybody summing one into the other. Which of the two is required
+follows the room's `sale_mode`:
+
+| `sale_mode` | Room row's rent | Seat rows' rent |
+|---|---|---|
+| `whole` | **required** | empty |
+| `seat` | empty | **required** |
+| `both` | **required** | **required** |
+
+The unused one is left **NULL, never zero**. A dormitory that is never let whole
+has no whole-room price, and a zero would read as *free* on the first bill that
+used it — and print as one.
+
+**`hotel_room_types` keeps rents, renamed `default_*`.** They are read in exactly
+one place: filling the room form in when a type is chosen. Editing "Deluxe" from
+3,000 to 3,500 moves **no existing room**. That is the point rather than a
+limitation — a type whose rent *was* the price would silently reprice a hotel the
+moment somebody corrected a typo in it, and every bill already printed against
+those rooms would stop reconciling. The save says so out loud, because whoever
+edits that number is very often trying to do the thing it will not do.
+
+**The rate unit is a fact about the kind, not the room** — a room is priced by the
+night and a hall by the slot. It sits on `booking_resource_types.rate_unit`, so
+the booking engine never has to guess and no room has to repeat it.
+
+**Nothing here is what a bill is built from.** The §6.3 rule holds unchanged: a
+booking stores the rent it was confirmed at, and a folio line stores the rate, the
+base and the tax as applied. Raising a room's rent tomorrow must not reprint last
+month's bill at the new figure. This table is the default for the **next** booking.
+
+**⚠️ Open — which rent a future booking gets.** A booking taken in June for a
+December stay: the rent as it stood at confirmation, or as it stands on the night?
+*Recommendation: locked at confirmation*, because that is what the guest was told,
+and a rate rise between the two must not follow them. Seasonal properties do run
+the other way, so the client should confirm it. Not blocking: it is a rule the
+booking engine applies, not a column.
+
+**Season, holiday and corporate rates (`booking_rate_plans`) still sit on top**,
+as an override, with the room's own rent as the fallback. No schema change when
+they arrive.
+
+**An extra bed is a charge line, never part of the rent** (§6.5), so the money
+stays visible.
+
 ---
 
 ## 3. Codebase findings (verified against the dev DB, not assumed)
@@ -296,7 +554,7 @@ Legend: 🆕 new · ✅ exists · 🔧 exists, needs change
 |---|---|---|
 | `booking_resource_types` | 🆕 | room / hall / community centre / ticketed item |
 | `booking_resources` | 🆕 | **Central list of everything bookable**, incl. `allocation_mode`, and — per §2.5 — a `parent_id` so a seat can point at its room, a sold-whole-or-by-seat flag on the room, and an active flag (seats are deactivated, never deleted). Also `building_id` (required) and `floor_id` (optional) — where the room is, per §2.7. Both are held because the floor is optional; a save must check the two agree |
-| `hotel_room_types` | 🆕 | Standard/Deluxe/Suite, capacity, base rate. Where a second building prices differently, that is a room type of its own — no extra machinery (§6.6) |
+| `hotel_room_types` | 🆕 | Standard/Deluxe/Suite, capacity, and **suggested** rents. ⚠️ **Superseded in part by §2.8:** the rent that is charged now lives on the room, so these are `default_*` columns that fill the room form in and are read nowhere else. A second building pricing differently no longer *needs* to be a room type of its own, though it may still be one |
 | `hotel_buildings` | 🆕 | Buildings, or zones on a resort, under the branch — §2.7. Unlimited: adding one is a row, never a schema change |
 | `hotel_floors` | 🆕 | Floors within a building — **optional**, for the floor-plan view. Scattered cottages have none |
 | `booking_slots` | 🆕 | Morning/afternoon/evening slots for halls & centres |
@@ -309,8 +567,8 @@ Legend: 🆕 new · ✅ exists · 🔧 exists, needs change
 
 | Table | | Holds |
 |---|---|---|
-| `booking_master` | 🆕 | Guest, dates, status, `main_trx_id`. Also — per §6.4 — `booking_type`, `billed_to_party_id` (who owes, which is not always who stays), `payment_terms`, and `hold_until` for a tentative hold. Per §6.5 it also carries the **stated** counts taken at booking — rooms, adults, children — kept apart from what was actually allocated |
-| `booking_resource_details` | 🆕 | Which resource, from when to when — ⚠️ **overlap lock lives here**. For a group seat booking it holds the **counts by gender** (§6.1), names arriving later |
+| `booking_master` | ✅ | Guest, dates, status, `main_trx_id`. Also — per §6.4 — `booking_type`, `billed_to_party_id` (who owes, which is not always who stays), `payment_terms`, and `hold_until` for a tentative hold. Per §6.5 it also carries the **stated** counts taken at booking — rooms, adults, children — kept apart from what was actually allocated |
+| `booking_resource_details` | ✅ | **One row per seat per night** — ⚠️ **the overlap lock lives here**, as `UNIQUE(resource_id, stay_date)`. Not a from–to range: see §15 for why that changed. Carries the rent confirmed for that night, how it was let, and the occupant's gender for the §6.1 rule |
 | `booking_guests` | 🆕 | NID/passport + address (police guest register). May be empty at booking time and filled at check-in — a rooming list usually arrives late |
 | `booking_payments` | 🆕 | Advance, instalments, final settlement |
 | `booking_folio_details` | 🆕 | Bill lines — rent, restaurant, laundry, VAT, service charge. Each line stores **the rate, the base amount and the tax amount as applied** (§6.3); a bill is read back, never recomputed |
@@ -519,7 +777,9 @@ and net book value separately.
   at the end of §6.3; one of them, **OPEN-12**, blocks billing code outright.
 - **Rate card rules** — weekend, wedding season, holiday, corporate rates?
 - **Cancellation percentages** — how much is refundable at 30 / 15 / 7 days.
-- **Check-in / check-out times** and early/late charges.
+- ~~**Check-in / check-out times**~~ — ✅ **settled 2026-08-25, §21.** A per-branch
+  setting with 12:00 / 14:00 as the standing default until the client says
+  otherwise. **Early and late charges are still open** and are not built.
 - **The client's actual COA heads** — do "Room Rent Income" etc. exist, or must they
   be created?
 
@@ -609,12 +869,22 @@ client's VAT consultant; this is the common practice, not a certainty.)*
 That last row is deliberate. A guessed rate prints wrong bills silently; a zero rate
 is visible on the first bill and somebody asks.
 
-**⚠️ The one thing that cannot be standardised.** Whether VAT falls due when an
-**advance is received** or when the **service is given** is a matter of law, not of
-preference. The standard assumes *at service*, which agrees with §2.6 — but if the
-law says otherwise, the advance receipt needs a `Cr VAT Payable` line of its own, and
-getting it wrong makes both the monthly return and the year-end P&L wrong. Tracked as
-**OPEN-12** in §7. **Billing code should not be written before this is answered.**
+**✅ Settled 2026-08-26 — VAT falls due when the BILL is made.** The client's
+answer, and it is the one this standard was already written for: *at service*, not
+at receipt. So §2.6 stands untouched — an advance is `Dr Cash / Cr Advance Against
+Booking` and carries no `Cr VAT Payable`. Nothing in the schema moves, and billing
+code is no longer blocked. This closes **OPEN-12** in §7.
+
+**⚠️ What follows from it, and is easy to get wrong.** If VAT is due on the bill,
+then **an advance receipt must not be printed as a VAT invoice** — it is a money
+receipt against a liability, and the guest's stay has not been sold yet. A document
+that shows a VAT line is a document on which VAT is due, whatever it is called at the
+desk; issue one at advance and the answer above is undone by the paperwork. The VAT
+appears once, on the bill, on the folio lines.
+
+⚠️ *This settles the timing only.* The **rates** are still missing — see the list
+below, which is unchanged. The system ships them at zero with a setup warning
+(§6.3 above), so a bill cannot silently carry a guessed rate.
 
 **Still needed from the client** *(their VAT consultant, not their manager — a manager
 will say "15%", and the question is 15% of what)*:
@@ -625,7 +895,8 @@ will say "15%", and the question is 15% of what)*:
    tickets / laundry.
 3. Service charge percentage, and which heads it applies to.
 4. Confirmation of the calculation order above.
-5. **OPEN-12** — VAT on advance, or on service.
+5. ~~**OPEN-12** — VAT on advance, or on service.~~ **Answered 2026-08-26: on the
+   bill.** The only one of this list that is settled.
 6. Is a মূসক ৬.৩ (Mushak 6.3) VAT challan required? Is there an EFD/SDC machine?
    If so the bill *is* that challan, with a mandated format and an unbroken serial —
    separate work, not a print tweak.
@@ -789,8 +1060,10 @@ under the new rule.
 - **Housekeeping and material issue follow the building**, not the floor: separate
   store, separate staff. §4.3 says `material_issue_master` gains a floor reference —
   make it a **location** reference instead.
-- **A different price in the annexe is a different room type.** Simplest possible
-  answer, and it needs nothing new.
+- ~~**A different price in the annexe is a different room type.**~~ ⚠️ **Superseded
+  by §2.8 (2026-08-24).** The rent now sits on the room itself, so an annexe that
+  charges more is simply a room with a different number in it. Making it a room
+  type of its own is still allowed — it is just no longer the only way.
 - **Growth costs nothing.** A new building, a new floor, more rooms — all rows. No
   schema change, which is what the client asked for.
 - **A closed floor is deactivated, never deleted** — the §2.5 rule again. Delete it
@@ -855,7 +1128,7 @@ and reconcile kitchen stock against what is physically there.
 | **OPEN-3** | **Does the resort have a restaurant, or is food inside the stay package?** | **Unanswered.** If a restaurant, reuse the existing sales module — no new tables |
 | **OPEN-9** | Do walk-in gate ticket sales go through `booking_master`, or their own tables? | Hybrid: shared master data and capacity check; walk-in cash sale in `ticket_sales_*` (it behaves like POS); advance group booking (e.g. a school booking 300 for Friday) through `booking_master` — note that such a booking is a **Group** booking under §6.4, so booking type spans tickets, not only rooms |
 | 13 | Up to what age is a guest a child? | A setting, not a constant (§6.5) — the client's own practice. Until it is answered no two occupancy reports compare |
-| **OPEN-12** | **Is VAT due when an advance is received, or when the service is given?** | **Unanswered — blocks billing code.** A matter of law, not preference. The §6.3 standard assumes *at service*, agreeing with §2.6; if the law says at receipt, the advance entry needs its own `Cr VAT Payable` line. Wrong either way makes the monthly return and the year-end P&L wrong together. Client's VAT consultant, not their manager |
+| ~~OPEN-12~~ | ~~Is VAT due when an advance is received, or when the service is given?~~ | **Settled 2026-08-26: VAT falls due when the BILL is made.** Not on the advance receipt. This is what §6.3 already assumed and what §2.6 needs, so nothing in the design moves and no table changes — the advance entry keeps `Dr Cash / Cr Advance Against Booking` with no VAT line. Billing code is unblocked. ⚠️ The consequence: **an advance receipt must not be issued as a VAT invoice** — it is a money receipt. Charge the VAT on a document, and it is due |
 
 ---
 
@@ -914,7 +1187,7 @@ Of the 47 tables, the first release needs **13**:
 | 5 | `booking_resources` | Every bookable thing — rooms and seats |
 | 6 | `booking_master` | The booking |
 | 7 | `booking_resource_details` | ⚠️ **the overlap lock lives here** |
-| 8 | `booking_guests` | Filled at allotment (§6.5) |
+| 8 | ✅ `booking_guests` | Filled at allotment (§6.5) |
 | 9 | `booking_payments` | Advance and settlement |
 | 10 | `booking_folio_details` | Bill lines |
 | 11 | `booking_tax_rates` | VAT and service charge (§6.3) |
@@ -946,7 +1219,7 @@ assets, depreciation, dashboard. Not dropped — later, and separately.
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| **Double booking** | Guest conflict, reputational damage | DB-level `SELECT … FOR UPDATE` inside the transaction. A PHP-only check passes both concurrent requests. This is the single most important correctness requirement in the project. |
+| **Double booking** | Guest conflict, reputational damage | ⚠️ **Revised 2026-08-25 — see §15.** Was `SELECT … FOR UPDATE` over a date range; is now a **`UNIQUE(resource_id, stay_date)` key over one row per seat per night**. A PHP-only check passes both concurrent requests, and a range lock only holds if InnoDB picks the index the reasoning assumed — a unique key has no query plan to get wrong. This is still the single most important correctness requirement in the project. |
 | **Counting rooms and seats separately** | A second route to double booking, and a silent one | Seats are the only inventory (§2.5). Whole-room availability is derived from them, never stored beside them. Two counters would eventually disagree, and nothing on screen would say which was right. |
 | **Two strangers of different genders in one room** | A complaint at the desk, at best | The rule is in §6.1: the first guest of a night sets the room, the rest must match, and it is checked on every night of the range. The engine refuses the booking — a policy document cannot. **It is only as good as the gender data, which is empty today** (§6.2). |
 | **Forking the code for the resort** | Two divergent products within months | Differences via settings only. Never copy the repo. |
@@ -1006,6 +1279,8 @@ Learned from this codebase — ignoring these causes real breakage.
    seat-wise rooms, holds, the two-stage form, buildings) but still describes site 1
    only — the resort and its ticketing are not in it.
 
+   ⚠️ *Step 4 above is now partly done — see §12.*
+
    ⚠️ **The two documents disagree on effort.** As of v1.3 the `.docx` prices site 1 at
    **117 days / 24 weeks** — the original 100, plus 26 for modules 13–18, less the 9 of
    the dropped recipe phase — with its phases renumbered 0–16 and their week ranges
@@ -1013,3 +1288,3166 @@ Learned from this codebase — ignoring these causes real breakage.
    through and a note that phases 0 and 3 need re-costing. Reconcile them before
    either goes to the client again; the `.docx` table is the fuller of the two.
 6. **Wait for an explicit go-ahead before writing any code.**
+
+---
+
+## 12. What is built — step 1, 2026-08-24
+
+*(Written the day it was built. Everything below exists, runs, and is checked.)*
+
+### Why not phase 0 first
+
+§11 puts the financial year first and §8 costs it at 7 days. It was deliberately
+**not** done first, and the reasoning should be on the record:
+
+- Phase 0 is a **refactor of code already running on fifteen production sites** —
+  83 hardcoded `financial_year_id => 1` writes across 20 files, one corrupt row,
+  and 7,000+ vouchers that fall inside no year at all (§3.2).
+- **The hotel module does not depend on it.** A booking voucher will write the
+  financial year the same way every other module already does. Fixing the year
+  later touches no hotel table.
+- So starting there would have meant taking the largest risk in the project before
+  producing anything the client can look at. Phase 0 is still needed; it is its
+  own piece of work, and it is not a prerequisite for this one.
+
+The masters below are the opposite kind of change: **entirely additive**. No
+existing table is altered, no existing row is written, no existing code path is
+touched.
+
+### The five tables
+
+`database/sql/2026_08_25_hotel_module.sql` — raw SQL, per §10. *(Written at the
+time as `2026_08_24_hotel_room_and_seat_masters.sql`; folded into the one file
+by §22.)*
+Idempotent: every `CREATE` is `IF NOT EXISTS`, every seed is guarded, and it has
+been run twice against the dev database to prove it.
+
+| Table | |
+|---|---|
+| `booking_resource_types` | The five kinds, **shipped** as `company_id = 0` rows: room, seat, hall, community_centre, ticketed_item. Not a vocabulary a tenant edits — the code branches on these codes. Carries `rate_unit` (§2.8) |
+| `hotel_buildings` | Blocks and zones under the branch (§2.7) |
+| `hotel_floors` | Optional (§2.7) |
+| `hotel_room_types` | Categories, with `default_*` rents that fill a form in (§2.8) |
+| `booking_resources` | Rooms **and** seats. `parent_id` = 0 on a room, the room's id on a seat |
+
+Also: `Hotel / Motel` and `Resort` rows in `business_type`, and four permissions
+in the `Hotel` group.
+
+**Two decisions inside the schema worth knowing:**
+
+- **`parent_id` is `0`, not `NULL`.** The unique key
+  `(company_id, branch_id, building_id, parent_id, code)` is what stops two 101s
+  in one building — and MySQL counts NULLs as **distinct** inside a unique index,
+  which would have switched that guard off for exactly the rows that need it.
+  So 0 means "no parent", and there is no foreign key on it because there is no
+  row 0 to point at. The controller checks the parent instead.
+- **`building_id` is on every row, seats included; `floor_id` is optional.** Both
+  are held so that an availability query can filter on either without a join that
+  would drop the floorless rows. The database cannot express that the two must
+  agree — the controller does, and a room that moves takes its seats with it.
+
+### The API
+
+`app/Http/Controllers/Hotel/` — four controllers, one `ScopesToProperty` trait,
+27 routes under `api/hotel-setup/`. Models in `app/Models/Hotel/`.
+
+Every endpoint checks its own permission **in the controller**, not through route
+middleware, so a route added later cannot arrive ungated by being one line short.
+`denyUnlessPermitted()` rather than `can()`, per §10.
+
+Two lines are drawn on every query: the company, and the branch. In this module
+**the branch is the property**, so a company running two hotels cannot have one
+desk reach the other's rooms by counting upwards through the ids.
+
+**The seat reconciliation is the piece that matters.** Saving a room writes its
+beds with it, in one transaction — there is no way to end up with a room the
+availability query cannot see. Changing the bed count:
+
+- a missing bed is **created**
+- a switched-off bed is **switched back on**, keeping its number and its rent
+- a bed above the new count is **deactivated, never deleted**
+
+The third rule is the one that would have been got wrong. Deleting is the obvious
+thing: it is also what breaks the July stay recorded against "seat 3" once the
+room is cut to two beds in September — and going back to four would then invent a
+*new* seat 3 that the old bill and the old register entry do not point at.
+
+*(The reconciliation compares `CAST(code AS UNSIGNED)`, not the text. Cutting a
+twelve-bed room to nine has to switch off 10, 11 and 12 — by text order it would
+have switched off 1 and 2, which is not a mistake that announces itself.)*
+
+### The screen
+
+`/hotel/setup` — one route, four tabs: Buildings · Floors · Room Types ·
+Rooms & Seats. Tabs rather than four screens because setup is one sitting and the
+tab order is the order the tables depend on each other.
+
+The form sits above the table and stays open after a save, keeping the building,
+floor and type and clearing only the number — rooms are added in a run of 101,
+102, 103, and a page turn between each one triples the job.
+
+Reopening a room shows its beds, each priced on its own. The room form's seat rent
+is what a *new* bed starts at; the window bed that costs more is set in that list,
+and the room form never overwrites it.
+
+The sidebar entry is gated on **permission alone**, not on a business type. Real
+Estate above it checks `business_type_id == 9` — and that id is auto-increment, so
+"Hotel / Motel" is 9 in one tenant's database and 11 in another's. *(On the dev
+database it landed on 9, which is the Real Estate id. That is a pre-existing
+fragility in that menu, not a new one — but it is the reason this one avoids the
+pattern.)*
+
+### Checked
+
+`hotel_setup_check.php --write` — 43 assertions, all passing. It refuses to run
+without the flag and refuses outright on production, because it writes.
+
+What it pins down, beyond the plain CRUD: two 101s in one building refused and
+101 in two buildings allowed; a floor from another building refused; a room sold
+whole with no whole-room rent refused, and a dormitory with no seat rent refused;
+the four-to-two-to-four bed cycle keeping the same rows and the same per-seat
+rents; twelve-to-nine switching off the right three; a room moving taking its beds
+with it; a building, floor or room type still in use refusing to delete; and a
+room type's default rent changing **nothing** about the rooms already of that type.
+
+The four permissions were also confirmed to answer **403** when not granted —
+which is their state on every site until somebody hands them out.
+
+### Deliberately not built
+
+The availability screen, the booking form, the overlap lock, allotment, billing,
+check-out. Screens 2–6 of §8.1, in that order. The lock in screen 3 is the single
+most important correctness requirement in the project (§9) and wants its own
+sitting; screen 5 is still blocked by **OPEN-12**.
+
+Also absent by design: `booking_slots`, `booking_rate_plans` / `_details`,
+`booking_charge_types`. §2.8 leaves room for all three without a schema change.
+
+### To deploy
+
+1. Run the SQL on the target database.
+2. `php artisan route:clear` and `php artisan permission:cache-reset` (§10).
+3. Grant the four `Hotel` permissions to the roles that should hold them. Until
+   then the menu does not exist for anybody — which is the correct state for the
+   fifteen sites that are not hotels.
+
+### Demo data
+
+`database/seeds/HotelDemoPropertySeeder.php` (API repo) — one five-storey block
+and two three-storey blocks, four rooms to a floor: **44 rooms, 104 beds**.
+
+    php artisan db:seed --class=Database\Seeders\HotelDemoPropertySeeder
+
+Deliberately **not** wired into `DatabaseSeeder` — a plain `db:seed` sets up roles
+and permissions on a real install and must never quietly add eleven floors of
+imaginary rooms to it. It refuses on production, and running it twice adds
+nothing.
+
+It is shaped to exercise the parts that are easy to get wrong rather than to look
+tidy:
+
+- **All three buildings have a room 101.** That is the per-building uniqueness
+  rule doing its job, and the reason a room's display name is built from its
+  location rather than typed into the number field.
+- **A Deluxe is 3,500 in the Main Block and 4,200 in the Annexe** — the same room
+  type at two prices, which is the whole of §2.8 in one row, and needs no second
+  room type to express.
+- **Garden Block covers all three sale modes**: its 1st floor is `both` (2,200
+  whole *or* 1,300 a bed), its 2nd is `whole`, and its 3rd is a six-bed
+  `seat`-only dormitory carrying **no** whole-room rent at all — NULL, not zero,
+  because a zero prints as free.
+
+*(Note: the four Hotel permissions are granted to nobody by the masters SQL, so
+the menu stays hidden until `2026_08_24_hotel_permissions_grant.sql` is run —
+which is a separate, opt-in file for a site that really is a hotel.)*
+
+---
+
+## 13. The Layout tab — the property drawn, 2026-08-24
+
+*(Agreed as an **elevation**: buildings side by side, floors stacked, top floor
+on top. Built the same day.)*
+
+### The decision that shaped it
+
+There are two building-wise visuals, not one, and they differ only in what the
+colour means:
+
+| | Colour source | Needs |
+|---|---|---|
+| **Structure map** | room type · sale mode · status | the master data — **built** |
+| **Occupancy map** | what is free on a date | `booking_resource_details` — screens 2–3 |
+
+They are **the same component**. So the colour was put in
+`layoutPalette.ts` rather than inside the grid, and `COLOUR_MODES` is a list
+with a comment saying where Availability joins it. When bookings exist, the
+occupancy view is a fourth entry in that list and `LayoutTab.tsx` does not
+change. Getting this wrong would have meant two grids to keep in step by month
+three.
+
+### What it draws
+
+`GET api/hotel-setup/layout` — its own endpoint, because the rooms list
+paginates at ten and a floor plan cannot be read ten rooms at a time. It returns
+building → floor → room with a **summary** of each room's beds, in **6 queries**
+regardless of size. Clicking a room fetches the beds themselves from
+`resources/edit/{id}`, which already returned them.
+
+*(The first draft ran 65 queries: `BookingResource::display_name` reaches for
+`$this->building`, which lazy-loaded one building per room. The layout groups by
+building and already holds it, so it now passes it in. The accessor stays for
+callers that have only a room.)*
+
+Floors arrive **ground-first** and the view reverses them. Which end is up is a
+fact about the drawing, not about the data.
+
+### Rules the screen keeps
+
+- **Colour means one thing at a time.** Painting type, sale mode and status at
+  once leaves none of the three readable.
+- **⚠️ Never colour alone.** Every tile carries a badge — the room type's own
+  code (`STD`, `DLX`), or `W`/`S`/`B` for sale mode — because red-green is the
+  first pair colour blindness takes and none of it survives a grey printer. The
+  legend carries the badge too, so the two agree when the colour is gone.
+- **Three things on a tile:** number, badge, bed pips. A four-bed dormitory and
+  a two-bed room must not look alike from a step back — the seat is the
+  inventory, so a grid that showed only rooms would draw a third of the beds
+  missing. Switched-off beds are drawn hollow, because the room still has them.
+- **An inactive room is drawn inactive whatever the switcher says** — and in
+  grey, not red. It is not a fault; it is a room kept so older bookings still
+  read.
+- **A floorless building keeps no invented floor.** Its rooms sit in a group of
+  their own (`unfloored`).
+- **The room type's colour is keyed by id**, so renaming "Deluxe" does not
+  repaint the building.
+- **The legend is built from what is on the property**, not a fixed list — a
+  hotel with no dormitory is not shown a key for one.
+
+### Where it lives
+
+Fifth tab of `/hotel/setup`. The tab now lives in the URL (`?tab=layout`), so
+the panel's **Edit this room** hands over to the Rooms tab with that room
+already open (`?tab=rooms&room=12`) — and a reload comes back to the same place.
+Tab changes `replace` rather than push, so Back does not have to walk out of
+four tabs one at a time.
+
+### Checked
+
+`php hotel_layout_check.php` — 18 assertions, all passing. Read-only in effect:
+it moves one room off its floor for a moment to prove a floorless room lands in
+its own group rather than disappearing, then puts it back.
+
+It pins down the things the grid would otherwise get quietly wrong: the
+dormitory carrying **null** rather than a zero whole-room rent, the same Deluxe
+at 3,500 in one block and 4,200 in another, floors arriving ground-first, and a
+branch belonging to somebody else being refused rather than drawn.
+
+*(A bug found while building it and fixed: the detail panel is fed from the
+grid's own row, so repricing a bed refreshed the grid underneath while the panel
+went on showing the range it opened with. The panel now re-syncs from the
+reloaded layout, and closes if the room has gone.)*
+
+## 14. Two smaller things on the setup screen, 2026-08-25
+
+Neither is a new screen. Both came out of the same observation: the setup
+tabs describe a property one row at a time, which is right for the *first*
+ten minutes of a property and wrong for every minute after.
+
+### Hiding what is switched off
+
+A room is deactivated rather than deleted (§2.5), so a property that has been
+running a while carries rooms nobody can book. On a plan of forty they are
+noise. The Layout tab now carries a **Hide inactive** switch.
+
+What it settles, and why:
+
+- **Off by default.** A plan that quietly leaves rooms out of itself is the
+  more dangerous of the two defaults, and the paper it is printed on cannot be
+  asked what it was showing.
+- **Drawn only where there is something to hide** — the same rule the legend
+  already follows. A hotel that has retired nothing is not offered the switch.
+- **"Inactive" is read at every level, not only the room's own flag.** A live
+  room on a switched-off floor cannot be let either. A floor or a building left
+  with nothing then goes with it, so the switch never leaves an empty card
+  standing where a block used to be.
+- **The building header is recomputed, not reused.** The API's counts and rent
+  range describe the whole building; a header still reading "20 rooms · 40
+  beds" over a card drawing eighteen is simply wrong, and so is a range whose
+  bottom end is the price of a room nobody can book.
+- **The colour index is NOT recomputed.** Room-type colours stay keyed off the
+  whole property, so hiding rooms does not shift every colour along by one.
+- **The legend follows what is drawn**, so the grey "Inactive" key goes away
+  with the rooms it explained.
+- **⚠️ The count is printed in the legend row, which is not `print:hidden`.**
+  A plan carried to the front desk on paper has to say that rooms were left out
+  of it.
+
+### A run of rooms
+
+Rooms on a floor are the same room described a dozen times over: same type,
+same rent, same beds, and numbers that run 301, 302, 303. Typing that form
+twelve times is twelve chances to put the Deluxe rate on a Standard room, and
+the demo property alone is forty-four rooms.
+
+**It is the same form, not a second screen.** Ticking *Add a run of rooms*
+swaps the Name field — a run has no name to give; twelve rooms cannot all be
+the Rose Room — for a count, and changes nothing else. A second screen would
+have been the same fields twice, and the copy that drifts.
+
+- `POST hotel-setup/resources/bulk-store`. Same payload as `store` with
+  `start_code` + `count` in place of `code`, and `name` refused rather than
+  ignored.
+- **Both endpoints write through one `createRoom()`.** A second copy of it in
+  the bulk path is the copy that quietly stops creating seats the day the room
+  table gains a column — and a room without its seat rows is a room the
+  availability screen cannot see, which is the quiet half of a double booking.
+- **The trailing digits move; the width is kept.** `301` runs 301–304, `A-08`
+  runs A-08–A-11. Asking for the first number rather than for a prefix and a
+  count is what makes that possible: a run started at `01` reaches 10, never
+  010.
+- **⚠️ A clash refuses the WHOLE run and creates nothing.** Skipping the taken
+  numbers and creating the rest is the friendlier-looking choice and the wrong
+  one: asked for twelve rooms from 301 the operator would get nine, no clear
+  sign of which three are missing, and a floor that reads as complete at a
+  glance. The refusal names the numbers rather than saying "some".
+- **Capped at 100 a request**, so a finger held on the 0 key cannot write six
+  hundred rooms. A genuinely larger block is two runs.
+- The rent rules of §2.8 are unchanged and are checked once, for the run.
+- The form previews the numbers before they are sent. The server counts them
+  out again from the same rule and is the one that decides; the preview exists
+  so a mistyped start is seen before it is sent rather than after twelve rooms
+  exist.
+
+### Checked
+
+`php hotel_setup_check.php --write` — **56 assertions, all passing** (43
+before, 13 added for the run). The new ones pin down the things a bulk path
+gets quietly wrong: that every room in the run got its beds and not just the
+first, that a clash left the property exactly as it was, that `A-08` reaches
+`A-10` rather than `A-010`, and that the cap refuses without writing.
+
+The Layout change is front-end only; `tsc --noEmit` and `npm run build` are
+clean. It has not been driven in a browser.
+
+### Where it lives
+
+| | |
+|---|---|
+| The switch | `LayoutTab.tsx` — `liveBuildings`, `summarise()`, `isLive()` |
+| The run, on screen | `RoomsTab.tsx` — the `bulk` branch; `runOfCodes()` in `setupHelpers.ts` |
+| The run, on the server | `BookingResourceController@bulkStore`, with `runOfCodes()`, `codesTaken()`, `clashMessage()` and the shared `createRoom()` |
+| The button that names itself | `SetupShell.tsx` — `saveLabel` |
+
+## 15. The booking engine — the lock first, 2026-08-25
+
+Tables 6 and 7 of §8.1: `booking_master` and `booking_resource_details`.
+No controller, no screen, no ledger entry. The lock was built on its own and
+first, because every screen above it is wrong if it is wrong, and because it
+is the one thing in the project that cannot be fixed after the fact — a hotel
+that sold the same bed twice does not get to un-sell it.
+
+`database/sql/2026_08_25_hotel_module.sql`, Part A. Safe to run twice.
+*(Written at the time as its own `..._hotel_booking_engine.sql`; folded in by
+§22.)*
+
+### ⚠️ The decision that changed: one row per night, not one per stay
+
+This supersedes the mitigation written in §9.
+
+| | A row per stay (§9 as written) | A row per night (built) |
+|---|---|---|
+| The lock | `SELECT … FOR UPDATE`, then insert | `UNIQUE(resource_id, stay_date)` |
+| What has to be true | InnoDB takes the gap the reasoning assumed, on the index the query actually used | The table cannot hold two of the same key |
+| How it fails | Silently, under concurrency, in production | It cannot |
+| Rows | One per booking | 100 rooms let every night ≈ 36,500 a year |
+
+A range lock is correct **and** subtle. It depends on the query plan, so a
+later `ORDER BY`, a changed index, or an optimiser that picks differently can
+narrow the gap the lock was assumed to cover. The code still reads correct.
+A single-threaded test still passes, because a single-threaded test cannot
+see it. It fails the day two clerks press Save at once.
+
+A per-night row asks nothing of the reader. Both requests find the night
+free, both insert, and the second is refused — not by a check anybody wrote,
+but because the row already exists. Between *subtle but correct* and
+*impossible to express incorrectly*, the second is the right choice for the
+risk §9 calls the most important in the project.
+
+Three things fall out of it for free, which is what makes the extra rows a
+bargain rather than a cost:
+
+- **Date-wise rent.** The rent sits on the night, so a stay spanning a rate
+  change is three honest numbers instead of one averaged one — and
+  `booking_rate_plans` can arrive later without touching a booking that
+  already exists.
+- **The gender rule of §6.1 is a per-night rule**, and now has a per-night
+  table to answer it in: "who else is in this seat's room tonight" is one
+  indexed read rather than range arithmetic in PHP.
+- **Availability** is a `GROUP BY` rather than a range intersection.
+
+### What a night is
+
+`stay_date` is **the night slept**, and the **check-out date is never one of**
+**them**. The 15th to the 18th is three rows: 15, 16, 17.
+
+That one line is why the next guest can arrive on the 18th while this one is
+still at breakfast. Backwards, it costs the hotel one sellable night per
+booking, forever, and nothing on any screen would say so.
+
+### Rules the schema keeps
+
+- **The resource is always a seat, never a room.** Letting a room whole is
+  booking all of its seats in the same booking — §2.5, unchanged. A single
+  room is one seat, so the ordinary case costs nothing.
+- **`nights` is a generated column**, never typed. Same argument as adults +
+  children + total in §6.5: a stored number that can be derived invites the
+  day it disagrees.
+- **`let_as` is frozen at booking.** A room may be converted between whole and
+  seat-wise later (§6.1); reading today's `sale_mode` would start turning
+  families away for a stay that happened in March.
+- **`rent` is frozen too** (§2.8). A bill is read back, never recomputed.
+- **⚠️ Releasing a night DELETES the row.** The only place in the hotel module
+  where something is deleted rather than deactivated. The never-delete rule
+  protects master data so an old stay still reads; this table is not master
+  data, it is the allocation — and a released night that kept its row would
+  keep its key, so a cancelled booking would go on blocking the bed. MySQL has
+  no conditional unique index. The history lives in `booking_status_logs` and
+  `booking_cancellations`, which is where history belongs.
+- **The unique key is deliberately narrow** — no `company_id` in it. A seat
+  belongs to one property already, and widening a key with a column that
+  cannot vary is how the same seat gets sold twice under two company ids.
+- **No foreign key to `main_trx_master`.** It is the oldest table in the
+  system and the hotel module does not get to constrain it.
+
+### Checked
+
+`php hotel_booking_lock_check.php --write` — **19 assertions, all passing.**
+
+It checks the *table*, not a controller, on purpose: there is no booking
+controller yet, and the whole claim of this design is that the guarantee lives
+in the schema rather than in the code above it. A test through a controller
+would be testing the code; this tests the claim.
+
+The one that matters most: **two separate database connections are both told
+the bed is free, both try to take it, and exactly one gets it** — the loser
+stopped by `uq_brd_seat_night` rather than by anything anybody wrote. That is
+the assertion the range design could not make without arguing about gap locks.
+
+Also pinned: that the check-out date is not a night; that a guest arriving on
+the 18th does not clash with one leaving on the 18th; that bed 2 is free while
+bed 1 is taken, because the seat is the lock and the room is not; that a
+cancelled booking gives its night back while staying on the books; and that a
+zero-night booking, a duplicate booking number, and deleting a bed that has
+been slept in are all refused by the schema itself.
+
+⚠️ Single-process, so the two writes are ordered rather than simultaneous.
+Both *decisions* are made on the same stale answer, which is the whole of the
+bug — but the blocking case, where the second insert waits on the first
+transaction, would need a second process and is not covered.
+
+⚠️ Like `hotel_setup_check.php`, it **wipes company 1's hotel rows**. Reseed
+the demo property afterwards with `HotelDemoPropertySeeder` (§12).
+
+### What is next, and what is not here
+
+Six of the thirteen remain: `booking_guests`, `booking_payments`,
+`booking_folio_details`, `booking_tax_rates`, `booking_status_logs`,
+`booking_cancellations`. Halls are not here either — a hall is taken for a
+slot rather than for a night, and `booking_slots` is its own table in §4.2.
+Nothing built above closes that door: a slot table joins the same booking.
+
+With the lock standing, the build order of §8.1 can run as written — screen 2
+(availability) reads these two tables and needs no new ones, and screen 3
+(the booking form) writes them. Screen 5 is still blocked by **OPEN-12**.
+
+## 16. Booking from the browser — screens 2 and 3, 2026-08-25
+
+The first thing in the module a guest could actually be booked into. Screens
+2 and 3 of §8.1, built as **one** screen rather than two, because "what is
+free" and "take it" are one action at a desk and splitting them would mean
+the clerk reads a list, navigates away, and picks rooms from memory.
+
+⚠️ **Whole rooms only**, and **the telephone-call stage of §6.5 only.**
+
+### What it is honest about
+
+The design problem on this screen is not the query. It is that **an
+availability list is always out of date** — two clerks can be looking at the
+same free room, and both are right at the moment they look. Reserving on view
+would fix it and fill the hotel with rooms held by people who wandered off.
+
+So the screen is built to admit it rather than to hide it:
+
+- The list is **thrown away** whenever a date or the building changes, and
+  after every save. A stale list of "free" rooms is the one way this screen
+  could make somebody believe a room was already theirs.
+- It says so on the page, every time — *what was free a moment ago; a room is
+  not yours until it is booked.*
+- **A clash is a sentence, not a failure.** The server answers 409 with
+  "somebody took one of those rooms while this form was open. **Nothing was
+  booked** — read the dates again and pick from what is left", and the screen
+  shows exactly that and clears the selection.
+
+### Rules the controller keeps
+
+- **The read is advisory and the write is authoritative.** `availability()`
+  never locks anything; `store()` catches the duplicate-key error from
+  `uq_brd_seat_night` and names it. It does not try to avoid it — *avoiding it
+  is the bug*, because the check both clerks would pass is the check that
+  fails.
+- **⚠️ All the rooms or none.** One clash rolls the whole booking back. A
+  partial booking would leave a clerk believing a party of ten has somewhere
+  to sleep when half of them do not.
+- **A room is free only when every one of its live beds is free for every
+  night asked for** — §2.5 derived, never counted separately. A room with some
+  beds sold reads "3 of 6 beds free — cannot be let whole" rather than
+  "taken", because those are different problems.
+- **A room sold by the bed is listed, not hidden**, and says why it cannot be
+  taken here. §2.8 forbids the alternative: a dormitory has no whole-room
+  price, and dividing or summing the bed rates to invent one is exactly what
+  that section exists to prevent.
+- **The rent goes on the first bed of each room and the rest carry zero.** So
+  a plain `SUM(rent)` over a booking is the right total, and no divided
+  per-bed figure exists anywhere to be read back later as a seat rate.
+- **A corporate booking with nobody to bill is refused.** With no credit limit
+  (§6.4), the ageing report is the only guard there is, and it cannot chase a
+  booking that names no company.
+- **A zero-night stay is refused and named** — "a booking for part of one day
+  is a hall slot, which is not built yet" — rather than called an invalid date.
+  Day use is a real thing the client asked for; it is `booking_slots`.
+- **Cancelling deletes the nights and keeps the booking**, with the reason
+  appended. Its own permission, because releasing inventory is not the same
+  act as taking a booking.
+
+### Permissions
+
+`hotel.booking.view` and `hotel.booking.cancel`, in the same `Hotel` group,
+granted to nobody by Part C of `2026_08_25_hotel_module.sql`. Running
+`2026_08_24_hotel_permissions_grant.sql` again picks them up — it grants the
+whole group and is `INSERT IGNORE`.
+
+Bookings are gated **separately from the setup four**: a front desk books
+rooms and has no business editing the building list, and the manager who
+describes the property may never take a booking.
+
+⚠️ The sidebar gates the *group*, not the individual entries — the app has no
+per-item menu permissions. A role holding only the setup four still sees the
+Bookings link and is refused at the route. That is the existing pattern
+everywhere in the app, not something this screen introduced.
+
+### Checked
+
+`php hotel_booking_check.php --write` — **35 assertions, all passing.** The
+companion to the lock check and a different question: that one proves the
+table cannot hold a double booking, this proves the controller above it
+behaves.
+
+Among them: that the 18th is not one of the nights of a 15th–18th stay; that
+booking the same room twice is refused *and leaves no half-made booking*; that
+a five-room request containing one clash writes not a single night row; that
+`SUM(rent)` is rooms × nights × rate with nothing divided and no bed carrying
+half a room rate; that a dormitory is listed with a reason rather than hidden;
+and that cancelling returns the nights while the booking stays on the books
+with its reason.
+
+⚠️ **Not driven in a browser.** `tsc --noEmit` and `npm run build` are clean
+and the API is covered by the script, but no human has clicked through the
+screen.
+
+### To deploy
+
+1. `2026_08_25_hotel_module.sql`, then `2026_08_24_hotel_permissions_grant.sql`.
+   *(Two files rather than four since §22.)*
+2. `php artisan route:clear` and `php artisan permission:cache-reset`.
+3. ⚠️ The two repos must go together. The Bookings menu without the API is a
+   404 on every click.
+
+### What is still missing before a guest can be checked in
+
+| | Screen | Blocked by |
+|---|---|---|
+| 4 | Allotment / check-in — guest names, NIDs, which bed | `booking_guests`; the dormitory gender rule needs §6.2 |
+| 5 | Advance and bill | **OPEN-12** |
+| 6 | Check-out | 5 |
+
+And within this screen: booking a dormitory **bed at a time**, and the payer
+picker that makes Corporate selectable. Neither needs a schema change — every
+night row is a seat row already, and `billed_to_party_id` is on the table.
+
+## 17. Allotment — the second stage, 2026-08-25
+
+Table 8 (`booking_guests`) and screen 4 of §8.1. The booking was taken on the
+telephone months ago and already holds real rooms; this is the list of people,
+filled in on the day they walk in.
+
+**One booking record opened twice, never two mechanisms** (§6.5). There is no
+second booking row and no second lock — nothing here touches
+`booking_resource_details`.
+
+⚠️ **It is a PAGE, and that was learned the hard way.** It was built as a dialog
+over the bookings list, on the reasoning that the row being checked in is the row
+the clerk was already looking at. The dialog was wrong twice over:
+
+1. The scrolling was on the backdrop rather than on the dialog, so a booking with
+   several rooms scrolled its own header — and its × — off the top of the window.
+   **It could not be closed at all.**
+2. Fixed, it was still the wrong container. A coach party is twelve rooms of five
+   guests: sixty rows of six fields. No dialog holds that, and the second attempt
+   was clipped against the sidebar before it even got there.
+
+Work that fills a screen belongs on a screen. `/hotel/check-in/{id}`, reached
+from a row, with the way back drawn on it.
+
+### ⚠️ It is piecemeal, and that shapes the whole screen
+
+Three of five rooms check in at noon and two more at nine in the evening. So:
+each room is its own small form with its own Save, the panel says at the top how
+many rooms are still outstanding, and nothing anywhere asks for the whole
+booking at once.
+
+A screen that demanded all five rooms together would be filled with invented
+names to get past it — **which is worse than an empty room, because invented
+names look like a police register.**
+
+### The two rules the desk actually meets
+
+| | Rule | Why not the obvious alternative |
+|---|---|---|
+| ID | **One identified guest per room** — name and NID for that one, optional for the rest | Requiring it of everybody stops a family of five at the desk for a rule aimed at one person; requiring it of nobody endangers the register |
+| Mobile | **One mobile per room is enough** | Twelve numbers for twelve workers will not be given, and a required field that cannot be filled gets filled with rubbish — worse than empty, because it looks like data |
+
+Neither can be a `NOT NULL`: "one per room" is not a column-level rule. Both
+are enforced in the controller, per room, and checked again in the browser so
+the message arrives while the guest is still holding their ID card out.
+
+### Other rules it keeps
+
+- **⚠️ A guest is not a customer account.** The party master is for whoever
+  money is owed by; twelve workers in a dormitory owe nothing, the company that
+  booked them does. `party_id` is a **link** to a party that already exists,
+  found by mobile or NID and confirmed by a person — **nothing creates one.**
+  Auto-creating a party per guest would bury the receivables list under
+  thousands of dead accounts inside a year, and with no credit limit (§6.4) that
+  list is the only guard there is.
+- **Counts that do not match warn, never block.** Booked for twelve, ten
+  arrived: both numbers are kept and shown side by side, and the message says
+  so. Block it and the clerk edits the booking to get past the screen, which
+  destroys the very figure the count was kept for. Amenities and food are
+  computed from what arrived.
+- **Over capacity warns too.** The desk knows about the infant and the extra
+  mattress.
+- **The first room through the door checks the booking in.** The status is about
+  the booking; the panel is what shows the remainder.
+- **Both `age` and `is_child` are stored, and they are not the same fact.** The
+  age is durable — §6.5 keeps child rate tiers possible as a rate *rule* rather
+  than a schema change, but only if the age was written down at the time.
+  `is_child` is what the clerk decided on the day, and it exists only because
+  "what counts as a child" is a setting the client has not answered. When they
+  do, `age` is what reports should be recomputed from.
+- **A correction replaces the room's list and SOFT-deletes what it replaced.**
+  These rows are the police register: a name recorded and then changed is
+  exactly what somebody may have to account for later, and a hard delete would
+  leave no trace the desk ever wrote it. Every read goes through the model, so
+  the withdrawn rows are invisible to the screen and to every count.
+
+### The gender column, and why nothing enforces it
+
+`gender` is recorded and **no rule acts on it**, for two separate reasons:
+
+1. **Whole-room lets are exempt** (§6.1) — a family is mixed inside its own
+   room — and every booking the system can currently take is a whole-room let.
+2. **§6.2 is still open.** Under "match the first", unknown is neither male nor
+   female, so one guest of unknown gender closes a dormitory for that night to
+   everybody. Switched on as the data stands, every dormitory would shut after
+   its first bed.
+
+The column is ready. The rule is not, and shipping it would turn guests away.
+
+### Checked
+
+`php hotel_booking_check.php --write` — **59 assertions, all passing** (35
+before, 24 added for allotment).
+
+Among the new ones: that a room with nobody identified is refused *and the
+message says the rest do not need one*; that one ID and one mobile between three
+guests is enough; that exactly one row is marked as the identified guest and it
+is the one who gave the NID; that **no party was created for any guest**; that
+the first room checks the booking in while the second stays outstanding; that a
+correction leaves two live rows and three withdrawn ones; that fewer people than
+booked is allowed and *says so*; and that guests cannot be filed against a room
+the booking does not hold.
+
+⚠️ **Not driven in a browser.** `tsc --noEmit` and `npm run build` are clean.
+
+### To deploy
+
+The table and the permission are both in `2026_08_25_hotel_module.sql` (Parts A
+and C). Then `2026_08_24_hotel_permissions_grant.sql` and
+`permission:cache-reset`. It
+brings one more permission, **`hotel.booking.allot`** — separate because the
+booking is taken by whoever answers the telephone and the allotment by whoever
+is at the desk when the guests walk in. A site where those are one person grants
+both to one role and loses nothing.
+
+### What is left
+
+| | | Blocked by |
+|---|---|---|
+| Screen 5 | Advance and bill | **OPEN-12** |
+| Screen 6 | Check-out | 5 |
+| — | Booking a dormitory bed at a time | §6.2, for the gender rule |
+| — | Corporate bookings from the screen | a payer picker |
+
+None needs a schema change.
+
+## 18. The booking screen draws the property, 2026-08-25
+
+The availability picker was a flat grid of tiles. It is now the **same**
+elevation the Layout tab draws — buildings side by side, floors stacked, bed
+pips on every room — painted by what is free.
+
+This is the thing §13 left a door open for, in its own words: *"When bookings
+exist, Availability becomes a fourth entry in that list and this component does
+not change — which is the reason the colour lives in layoutPalette.ts rather
+than in the component."* It went through that door exactly as written.
+
+### Why it is the same picture and not a similar one
+
+A clerk who has learned where room 302 sits on the floor plan should not have
+to learn a second arrangement to book it. And two screens each building their
+own grid is how the two drift — one gains a floor sort, the other never does.
+
+So there is only one grid. `PropertyGrid.tsx` was lifted out of `LayoutTab`
+unchanged, and on the server `DescribesProperty` was lifted out of
+`HotelLayoutController`. The availability read now answers with the **property**
+— building → floor → room — rather than with a list, and adds one field per
+room: what it is doing on those dates.
+
+The two screens differ in exactly two things, and neither is in the shared
+code: the **permission** they check (the desk books rooms without being able
+to edit the building list), and what the booking screen **writes into** each
+room afterwards.
+
+### The six states, and why each is its own
+
+| | Badge | Colour | |
+|---|---|---|---|
+| Free | `FREE` | teal | can be taken |
+| Held | `HELD` | amber | tentative, may expire |
+| Booked | `BKD` | rose | confirmed, nobody in it yet |
+| Checked in | `IN` | violet | guests are in the room |
+| Part-sold | `PART` | orange | some beds gone — cannot be let whole |
+| Not lettable | `—` | grey | sold by the bed, or no rent, or no beds |
+
+- **⚠️ `PART` is its own state, not a kind of booked.** A room with two of its
+  four beds sold cannot be let whole, but it is not taken either, and telling a
+  clerk "taken" would be a lie they could not act on.
+- **A fully-taken room reads as the most committed booking on it** — guests
+  asleep in it outrank a confirmed booking, which outranks a hold. A room a
+  family is in must never draw as merely "held".
+- **Grey is not red.** A dormitory that cannot be sold whole is not a fault.
+- **The badge is a word, not a letter.** On the setup screen a badge is a room
+  *type* code the reader already knows; here it is a state they are meeting for
+  the first time — and `B` for booked beside `B` for "either way" on the next
+  tab would be a trap. `FREE`, `HELD`, `BKD`, `IN`, `PART` cost three
+  characters and read without a legend.
+- **No red/green pair**, as everywhere else in this module, and every tile
+  carries its word beside its colour.
+
+### What else the screen gained
+
+- **A "Colour by" switcher**, as on the Layout tab — availability first, then
+  room type and how it is sold, so "which of the free ones is a Deluxe" is
+  answered without leaving the screen. **Not** "Status", which here would paint
+  every room the same and answer nothing.
+- **A legend built from what is drawn**, not a fixed list: a property with
+  nothing held tonight is not shown a key for "held".
+- **The building header says what is picked in it** and what that costs.
+- **A blocked tile keeps its colour** and loses only its hover. Fading it would
+  take away the shape of the floor — the reason the grid was worth drawing —
+  and a wall of grey says nothing about *why*. The tooltip still names the
+  booking holding it, which is what the clerk repeats down the telephone.
+- **The list's status is a chip in the grid's own colours** — held is amber in
+  both places, booked rose in both, checked-in violet in both — with what it is
+  *waiting for* underneath: a hold's expiry date, or "nobody checked in".
+
+### A bug found on the way
+
+`hotel_layout_check.php` had been committed with an absolute path to one
+developer's own drive (`F:/All_Database/...`), so it had never run on any other
+machine since it was written. Now `__DIR__`, like its two siblings — and with
+it, proof that lifting the tree out of the controller changed nothing.
+
+### Checked
+
+**160 assertions across four scripts, all passing:**
+
+| | |
+|---|---|
+| `hotel_setup_check.php` | 56 |
+| `hotel_layout_check.php` | 18 — unchanged by the extraction, which is the point |
+| `hotel_booking_lock_check.php` | 19 |
+| `hotel_booking_check.php` | 67 (59 before) |
+
+The new ones pin down that the answer arrives as the property rather than a
+list, that it carries the unfloored bucket and the bed counts the grid draws as
+pips, that a hold reads as `HELD` and not as booked, that the same room reads as
+`IN` once its guests are checked in, that a dormitory is greyed rather than
+coloured as taken, and that the blocked sentence now names *which* kind of taken
+it is.
+
+⚠️ **Not driven in a browser.** `tsc --noEmit` and `npm run build` are clean.
+
+### Where it lives
+
+| | |
+|---|---|
+| The grid, shared | `PropertyGrid.tsx` — lifted out of `LayoutTab` |
+| The tree, shared | `Concerns/DescribesProperty.php` — lifted out of `HotelLayoutController` |
+| The six states | `layoutPalette.ts` — `BOOKING_LOOKS`, `BOOKING_COLOUR_MODES` |
+| Which state a room is in | `BookingController@stateOf` |
+| The disabled tile | `RoomTile.tsx` — `disabled`, and the tooltip that still says why |
+
+## 19. Selling a room by the bed, 2026-08-25
+
+The one thing §16 left out on purpose. A dormitory was drawn on the grid and
+greyed, saying *"sold by the bed, and booking beds one at a time is not built
+yet"*. Now it is.
+
+| | Whole | By the bed |
+|---|---|---|
+| Picked as | a tile | beds, one at a time |
+| Rent written on the night | the ROOM's, on its first bed; the rest carry zero | each bed's OWN |
+| `let_as` | `whole` | `seat` |
+
+**⚠️ The two rents are never derived from each other, in either direction**
+(§2.8). The screen adds up what was picked; it never divides a room rate
+across beds and never sums beds into a room rate. That is the rule this whole
+feature could have broken quietly, and the check pins it: a bed booking writes
+the bed's 500 on every night row, and a room booking still writes 3,000 once.
+
+A bed with no rent of its own is **refused**, and the room's rent is not used
+as a fallback — a bed let for nothing is noticed at check-out, not before.
+
+### The state that changed meaning
+
+`part` — some beds sold — used to mean *blocked*. Now it depends on how the
+room is sold:
+
+- A room sold **only whole** with two of four beds gone: still blocked, and it
+  says *"2 of 4 beds free — cannot be let whole"*.
+- A **dormitory** with two of six gone: **not blocked at all.** Four beds are
+  still for sale, and greying it would take a floor of a hotel off the market
+  because one bed sold.
+
+Same picture, opposite answers, and only the sale mode tells them apart.
+
+### What the screen does
+
+- Clicking a room means one of two things, **and the room says which**: a room
+  with beds for sale opens them; anything else is picked as a room. A second
+  control on the tile was the alternative — a button on something the size of
+  a postage stamp that already carries three things.
+- The beds open **under** the grid, not inside a tile: six beds with prices do
+  not fit in a tile, and a popover over a scrolling floor row would be clipped
+  by the same overflow that once shaved the selection ring.
+- One room's beds at a time. Six dormitories open at once is a wall of beds
+  under a grid drawn to be glanced at.
+- The picked line names beds as **"GDN / 301 bed 2"**. "Bed 2" alone means
+  nothing across four dormitories.
+- The Save button says **"Book 1 room and 2 beds"** — what was picked, not a
+  count folded into one word.
+
+### One booking may hold both
+
+Three whole rooms and four dormitory beds — a family and their drivers — is
+**one** booking, because it is one party and one bill. `stated_rooms` counts
+the rooms *touched*: a dormitory taken four beds at a time is one room on that
+line, not four.
+
+### ⚠️ The gender rule is still not enforced
+
+Unchanged from §17, and worth repeating because this is the feature that makes
+it reachable. §6.1 says a room sold by the bed takes its gender from its first
+guest of the night and every other bed that night must match. It is **off**:
+
+- **§6.2 is open.** Under "match the first", unknown is neither male nor
+  female, so one guest of unknown gender closes a dormitory for that night to
+  everybody — and no guest carries a gender on the data as it stands.
+- Every night row carries `guest_gender`, left NULL at booking and filled at
+  allotment where §6.5 puts it anyway.
+
+The column is ready. The rule is not, and shipping it would turn guests away.
+
+### Checked
+
+**226 assertions across five scripts, all passing** (194 before):
+
+| | |
+|---|---|
+| `hotel_setup_check.php` | 56 |
+| `hotel_layout_check.php` | 18 |
+| `hotel_booking_lock_check.php` | 19 |
+| `hotel_booking_check.php` | 88 (67 before) |
+| `hotel_booking_smoke.php` | 45 (34 before) |
+
+The new ones: that six night rows are written for two beds over three nights
+and not the whole room; that each carries the bed's own rent with nothing
+divided; that the same bed twice is refused by the same unique key that guards
+a room; that a part-sold dormitory stays open while a part-sold twin does not;
+that a room sold only whole will not sell one of its beds *and says so in those
+words*; and that a booking can hold a room and two beds at once, with both
+`let_as` values in the same booking.
+
+On the demo property the grid now reads **44 free** where it read 40 free and
+4 closed — the Garden Block dormitory floor the client asked about.
+
+⚠️ **Not driven in a browser.** `tsc --noEmit --noUnusedLocals` and
+`npm run build` are clean.
+
+### Still not built
+
+Booking a bed does not yet ask **who** is in it — the gender counts §6.4 says a
+group states at booking. They arrive at allotment instead, which is where the
+names are taken anyway. Screens 5 and 6 (the bill, check-out) remain, and
+**OPEN-12** still blocks 5.
+
+## 20. A hold that outlived its stay, 2026-08-25
+
+Found on the screen, not by a check: a booking for the night of the 25th,
+shown as **Held until 2026-09-01**.
+
+§6.4 gives a hold seven days by default and ninety at most. It does not say
+the thing that turns out to matter:
+
+> ⚠️ **A hold cannot outlive what it is holding.**
+
+Seven days *added to today* is only right when the stay is further off than
+that. For a stay tomorrow it holds nights that are already behind it — they
+went unsold while the record said somebody might still want them, which is the
+exact opposite of what a hold is for.
+
+So the seven days are now a **maximum measured against the stay**:
+
+```
+hold_until = min(asked-for or +7 days, +90 days, end of the check-out day)
+```
+
+End of the day rather than its start — a guest arrives *during* a day, and a
+hold expiring at midnight on its own last day would release the room while
+they were on their way. The ninety-day ceiling of §6.4 is enforced here too;
+it never had been.
+
+⚠️ **This leaves the arrival day inside the hold.** A booking nobody turned up
+for still holds its rooms for the rest of the stay — one unsold night per night
+of it. Capping at `check_in_date` instead is a one-word change and is the
+tighter, more revenue-protecting rule; it was **not** made unasked, because it
+decides how long the desk has to chase somebody, which is the client's business
+rather than the code's. Worth putting to them.
+
+### The check scripts stopped eating the demo data
+
+Found the same way. All three fixture-building scripts wipe company 1's hotel
+rows — the headers said so — and the person setting the screens up in a browser
+had four bookings in there. A warning about "every hotel row company 1 has"
+does not read as *"your four bookings"*.
+
+`hotel_check_support.php` now gives them two courtesies:
+
+- **Before**: the number is counted and named. The `--write` flag is the
+  consent; this is what makes it informed.
+- **After**: the demo property is reseeded automatically. The bookings are gone
+  either way — they were made by hand — but an empty property is a fixable
+  thing to leave behind, so it is fixed rather than described in a closing
+  line of advice.
+
+### Checked
+
+**233 assertions across five scripts** (226 before). The seven new ones pin the
+cap from both sides: a distant stay still gets its seven days *from today*; a
+stay two days off is cut to the stay and not a day further; asking for sixty
+days over a two-day stay gets the two days; the expiry lands at `23:59:59`; and
+a confirmed booking carries no hold date at all.
+
+## 21. When the day turns over, 2026-08-25
+
+Asked plainly: *what time is check-in, what time is check-out?* The answer was
+**nowhere** — no column, no setting, no value — while the engine had been
+quietly depending on one since §15.
+
+### ⚠️ The assumption that was never written down
+
+The engine counts **nights** and never hours. A stay of the 15th to the 18th
+holds the nights of the 15th, 16th and 17th, and the 18th is sold to somebody
+else.
+
+That is right **only while check-out comes before check-in**. Set check-out to
+6pm and check-in to 2pm and the same room is let to two parties for four hours,
+every turnover day — and nothing in the engine would notice, because it is not
+looking at hours.
+
+It was an unwritten assumption holding up the module's most important
+guarantee. It is now a rule with a check on it.
+
+### Where it lives, and why there
+
+| | |
+|---|---|
+| **Stored** | `metas`, per branch — `hotel_check_in_time`, `hotel_check_out_time` |
+| **Edited** | Branch form, a new **Hotel Setup** step |
+| **Enforced** | `BranchController::hotelTimes()` — the only place that knows the rule |
+| **Shown** | Head of the **Bookings** screen *and* the Layout tab, with a **Change** link |
+| **Default** | 12:00 out / 14:00 in |
+
+The branch form rather than a sixth tab on Hotel Setup, for five reasons:
+
+1. **§2.7 — the branch IS the property.** Property policy belongs on the
+   property record.
+2. **Real Estate Setup is the exact precedent** — one module's branch-level
+   settings as a named step.
+3. **§4.8 already said so**: "VAT %, check-out time, cancellation policy →
+   existing `metas` table + `meta()` helper".
+4. The write path exists. Nothing new was built on that side.
+5. **It will not come alone.** The child-age boundary (§6.5), VAT rates (§6.3),
+   cancellation percentages, default advance % and the hold's seven days are
+   all §4.8 settings, all branch-level, all set once. One step holds them; a
+   hotel tab would become a second settings screen beside the one that exists.
+
+### But it is shown where the work happens
+
+The objection to the branch form is real: **the hotel manager knows the
+check-in time; the company administrator does not.** So the value is drawn as a
+line — *Check in 2:00 PM · Check out 12:00 noon* — with a Change link into that
+step, in **two** places:
+
+- **The Bookings screen**, above everything. This is the one that matters: the
+  commonest question on the telephone is *"what time do we have to be out?"*,
+  and it is asked of a screen the desk has pressed nothing on. So the times ride
+  with the booking **list**, not only with an availability read — a clerk should
+  not have to start a booking to answer a question about one.
+- **The Layout tab**, where the rooms are drawn, and it prints with the floor
+  plan.
+
+A number that decides whether a room can be sold twice must not be invisible to
+the people whose day it governs.
+
+*(Carrying them on the list meant wrapping that response —
+`{ bookings, times }` — rather than returning the paginator bare. A second
+request for two strings would be a second request on every page turn, and
+hanging them off the paginator object would be smuggling them through something
+that means something else.)*
+
+*(The hotel screens hold a plain branch id and the branch form is reached by an
+encoded one, so the read hands over `branch_ref` as well. Without it the link
+could only point at a branch list, which is a hint rather than a link.)*
+
+### Checked
+
+`php hotel_times_check.php --write` — **13 assertions**. It reaches the private
+rule by reflection rather than making it public for a test's sake, and puts the
+two meta rows back exactly as it found them, *including not existing*.
+
+Among them: that 6pm out with 2pm in is refused and says **"two guests at
+once"**; that the same time for both is refused; that a minute apart is allowed,
+because that is the desk's business and not the code's; that rubbish and
+impossible hours fall back rather than being written; that a form sending
+neither keeps what the branch had; and that the hotel screens default to the
+same pair the form does — a property nobody has asked must not read blank on
+one screen and noon on another.
+
+**254 assertions across six scripts** (233 before).
+
+### Still open
+
+**Early check-in and late check-out charges** (§6.2) are not built. Neither is
+the no-show moment — which these times now make answerable, and which is the
+same question §20 left hanging about how long a hold should survive.
+
+## 22. Four SQL files became one, 2026-08-25
+
+The module was installed by running four files in order:
+
+```
+2026_08_24_hotel_room_and_seat_masters.sql     tables 1–5, kinds, permissions
+2026_08_25_hotel_booking_engine.sql            tables 6–7
+2026_08_25_hotel_booking_guests.sql            table 8, one permission
+2026_08_25_hotel_booking_permissions.sql       two permissions
+```
+
+They are now **`2026_08_25_hotel_module.sql`** — one file. Running four things
+in the right order is three chances to run them in the wrong one.
+
+Nothing in it is new. The blocks were **moved rather than rewritten**, so the
+reasoning that came with each table is still attached to it.
+
+### ⚠️ The grant file is deliberately still separate
+
+`2026_08_24_hotel_permissions_grant.sql` was **not** merged in, and that is the
+whole of the safety in this design.
+
+The combined file is harmless on any of the fifteen sites that sell rice, gas
+and building materials: it adds tables nothing reads and permissions **nobody
+holds**, so no menu appears anywhere. Merging the grant would put a Hotel menu
+in front of every one of them the moment somebody ran the schema.
+
+So a site that really is a hotel runs two files, not one:
+
+```
+mysql -u USER -p DATABASE < 2026_08_25_hotel_module.sql
+mysql -u USER -p DATABASE < 2026_08_24_hotel_permissions_grant.sql
+php artisan permission:cache-reset
+php artisan route:clear
+```
+
+### How it is organised
+
+| Part | |
+|---|---|
+| **A** | The eight tables, in the order their foreign keys need |
+| **B** | The rows that ship with the system — resource kinds, business types |
+| **C** | The seven permissions, granted to nobody |
+| **D** | What to run afterwards, and how to check or undo it |
+
+The table numbers inside Part A are §8.1's, so "table 7" means the same thing
+in the file as it does in this document.
+
+### Checked
+
+Proved the way it will actually be used: the eight tables were **dropped** and
+the seven permissions **deleted**, then the one file was run against the empty
+state.
+
+- eight tables back, seven permissions back
+- five resource kinds and both business types seeded
+- **granted to nobody** — 0 rows, which is the correct state for a site that
+  is not a hotel
+- `uq_brd_seat_night = (resource_id, stay_date)` — the lock, intact
+- run a second time: no error, no change
+
+Then all six check scripts: **249 assertions, all passing.**
+
+### One thing the rebuild exposed
+
+Dropping and recreating the permissions gave them **new ids**, which left the
+existing `role_has_permissions` rows pointing at nothing — and
+`hotel_layout_check.php` failed, because unlike its siblings it does **not**
+borrow the permissions it needs; it assumes they are already granted.
+
+Re-running the grant file fixed it. Worth knowing for any real deployment that
+ever recreates a permission row: **the grants do not survive it.** Worth fixing
+in that script too, so it stands on its own like the others do.
+
+---
+
+## 23. Groundwork for the bill — two tables and the chart heads, 2026-08-26
+
+The billing screens were unblocked on this day: **OPEN-12 was answered — VAT
+falls due when the BILL is made**, never on the advance receipt. That is what
+§6.3 had assumed and what §2.6 needs, so nothing in the design moved. See the
+settled row in §7.
+
+This section is the groundwork laid immediately after, and deliberately *before*
+screen 5 rather than as part of it.
+
+### The order was changed, and why
+
+The remaining five tables were named as `booking_payments`,
+`booking_folio_details`, `booking_tax_rates`, `booking_status_logs`,
+`booking_cancellations`. They are not being built in that order.
+
+**`booking_status_logs` went first because it is a cross-cutting concern.**
+Every status change has to write one. Built after the payment and folio code,
+each of those would have to be opened up again to add logging to it; built
+before, the billing code is written against it from birth. It is a small table
+whose cost is entirely in *when* it arrives.
+
+**`booking_cancellations` went last** for the opposite reason: a refund has no
+meaning until there is a payment to refund. Until then the cancellation reason
+had nowhere better to live than a notes field — which §23.2 below now fixes
+anyway, so the remaining half of that table is genuinely only about money.
+
+### 23.1 booking_tax_rates — table 11
+
+Section 6.3's table. One row per charge type per tax, **with the date range it
+applied over**, because the rates move and a bill reprinted next year must not
+come out carrying today's rate.
+
+⚠️ **It ships at zero, not at 15%** — eight rows at `company_id = 0`, one per
+charge type, all `0.00`. A guessed rate prints wrong bills silently; a zero rate
+is visible on the first bill and somebody asks. `BookingTaxRate::rateFor()`
+returns `0.0` rather than throwing when nothing matches, for the same reason: an
+unanswered rate must not stop the front desk.
+
+Most specific wins — this branch's row, then the company's, then the shipped
+zero.
+
+⚠️ **A bug this table taught, worth not repeating.** `branch_id` was first
+written `NULL DEFAULT NULL`, NULL meaning "the whole company". **MySQL treats
+NULLs in a unique index as distinct from one another**, so `uq_btr_period` was
+enforcing nothing at all: the eight shipped rows seeded themselves a second time
+on the second run — 8 became 16 — and an operator could equally have entered two
+different VAT rates for the same charge type on the same date, leaving the bill
+to pick one of them by whichever the query read first. It is now `NOT NULL
+DEFAULT 0`, 0 meaning the whole company. **0 is a value; NULL is an absence, and
+an absence cannot be made unique.**
+
+That was found by running the file twice, which is the only way it *could* have
+been found — every statement reported success both times.
+
+### 23.2 booking_status_logs — table 12
+
+Append-only. `from_status`, `to_status`, the reason, and who did it.
+
+`booking_master` carries where a booking *is*; this carries how it got there.
+The cancellation reason was being appended as a sentence onto
+`booking_master.notes`, where nothing could count it, report on it, or say who
+wrote it — and where a second cancellation would append a second sentence under
+the first. `cancel()` no longer touches `notes`.
+
+⚠️ **No `updated_at`, no soft delete, and nothing updates a row.** A history that
+can be edited answers "what happened" with "whatever somebody last said
+happened". `booking_guests` is soft-deleted because a withdrawn name must stop
+counting; a status move never stops having happened.
+
+Two NULLs that are answers rather than gaps:
+
+- **`from_status` NULL** on creation — the booking came from nowhere. Writing
+  `'new'` would invent a status `booking_master` can never hold.
+- **`changed_by` NULL** means the *system* did it, not that the actor is
+  unknown. The hold-expiry sweep is the case: nothing was pressed. Stamping the
+  sweep's own user id would name a person who was not there.
+
+Written at all three transitions — `store()`, `cancel()`, `allot()` — and inside
+each one's transaction, so a booking that rolls back on a night clash takes its
+history with it.
+
+### 23.3 The chart heads — and the one that looked right
+
+§6.3 item 10 asked whether the client's COA already held the heads a hotel bill
+posts to. Checked against the dev database, and the answer was worse than "no":
+
+| Head | Where it actually sits | |
+|---|---|---|
+| `Hotel Rent` (147) | **Expense** → Administrative & General | ⚠️ a trap |
+| `TDS / VAT` (41) | Liabilities → Current Liability | a different balance |
+| `Service Charge` (42) | Income → Direct Income | but reports to the Balance Sheet |
+| `Room Rent Income` | — | absent |
+| `Advance Against Booking` | — | absent |
+
+**`Hotel Rent` is what a trading company PAYS for staff travel.** The name is
+close enough that room rent income would have gone into it without anyone
+looking twice, and the books would have run backwards.
+
+`TDS / VAT` is tax others deduct from *us*; output VAT is what the hotel
+collects and owes. Merged into one head the monthly return can never be
+reconciled.
+
+`Service Charge` (42) is genuinely Direct Income but carries
+`acc_reporting_to_id = 3` (Balance Sheet) rather than 2 (Profit and Loss), which
+looks like an old seeding mistake. **Nothing here touches it** — correcting
+somebody's existing head is not a schema script's business — and a
+`Hotel Service Charge` of its own is created instead.
+
+Four heads are created, following `inter_branch_account_heads.sql` throughout:
+levels found **by name** with `(company_id = @company_id OR company_id IS NULL)`
+because ids differ per tenant, and ⚠️ **`sku_code` is the marker the posting
+code matches on, never the name** — `HOTEL_ROOM_RENT_INCOME` and its three
+siblings. A client may rename these heads to whatever their accountant calls
+them and the billing code still finds them.
+
+⚠️ `acc_coa_level3s.status` is `enum('0','1')` while `acc_coa_level4s.status` is
+`int`. The string `'1'` is right for the enum and coerced harmlessly for the
+int, so it is used for both — an integer `1` into the enum selects its **first
+ordinal** and quietly stores `'0'`, which is how a head ends up created but
+inactive.
+
+### Where they live
+
+The two tables are in `2026_08_25_hotel_module.sql`. **The chart heads are
+not** — they are in `2026_08_24_hotel_permissions_grant.sql`, the opt-in file
+that is only ever run on a site that really is a hotel, for the same reason the
+grants are: three unused heads in the chart of a company that sells rice is
+clutter it never asked for, and a chart of accounts is something people read.
+
+That file now needs `@company_id` set, and section 2 of it must be run **once
+per company**.
+
+### Checked
+
+`hotel_status_log_check.php` — **22 assertions, all passing**, through the
+models the code actually uses rather than hand-written SQL. It writes only
+inside transactions it rolls back, and asserts that nothing was left behind.
+
+Both SQL blocks were run twice against the dev database: the second run inserts
+nothing and changes nothing, which is what caught the NULL unique-key bug above.
+
+### What is next
+
+Screen 5 proper — `booking_payments` (table 9) then `booking_folio_details`
+(table 10), then `booking_cancellations` (13) and screen 6.
+
+Still outstanding from §6.3, and none of it blocks the code: the actual VAT
+**rates**, the service charge percentage, whether a মূসক ৬.৩ challan is
+required, VDS on corporate bookings, and whether refunded VAT comes back.
+
+---
+
+## 24. The bill and the money — tables 9 and 10, 2026-08-26
+
+Screen 5's foundation. The two tables, the models, and the arithmetic §6.3
+specifies — written once, in one place, and checked against the spec's own
+worked example.
+
+**Not yet built, and deliberately named here so nobody assumes otherwise:** the
+controller endpoints, the routes, the permissions, the posting to
+`main_trx_master`, and the screen. Nothing is reachable from the UI. What exists
+is the shape of the bill and everything needed to compute one correctly.
+
+### 24.1 booking_payments — table 9
+
+Advance, settlement, refund. `payment_no` runs `RC-YYYY-NNNN` per branch, the way
+`booking_no` does.
+
+⚠️ **There is no `direction` column.** Which way the money went follows from the
+`purpose`, and two columns that must agree are two columns that eventually will
+not. `amount` is always positive, refunds included — the sign lives in the
+purpose, so no report has to remember how the column was stored.
+
+⚠️ **No `deleted_at`, and no SoftDeletes on the model.** The money either
+arrived or it did not; a receipt that can vanish is a receipt nobody can rely
+on. A wrong entry is corrected by a row of its own.
+
+The foreign key to `booking_master` is **RESTRICT**, not CASCADE — unlike
+`booking_status_logs`. Deleting a booking that has been paid should fail rather
+than quietly take the receipts with it.
+
+### 24.2 booking_folio_details — table 10
+
+Every line stores the rate, the base and the tax **as applied** (§6.3).
+`BookingTaxRate::rateFor()` is asked once, while the line is being written, and
+never again. A rate corrected years later cannot restate a bill somebody has
+already paid.
+
+`BookingFolioDetail::line()` is **the only place the tax arithmetic is
+written.** A second copy of it in a screen, a report or a print template is a
+second answer waiting to disagree with the bill.
+
+⚠️ **Rounding happens once, on the total, not per line.** Rounding each line and
+adding them gives a different figure from adding them and rounding once, and
+only one of the two can match what the guest is asked to pay. `totalsFor()`
+returns the exact figure, the rounded figure, and the difference — so a bill can
+show what it rounded.
+
+⚠️ **The same night cannot be billed twice.** `uq_bfd_room_night` on
+`(booking_id, resource_id, stay_date, charge_type)`. Anything that runs nightly
+will one day run twice — a retry, a second cron, somebody pressing the button
+again — and without the key the guest is charged for the 15th twice with nothing
+complaining.
+
+⚠️ **And here the NULLs are load-bearing, deliberately.** Laundry and restaurant
+lines carry no room and no night, so MySQL's NULL-distinctness exempts them from
+that key and a guest may be charged for lunch twice in a day, which is ordinary.
+Only lines naming a room AND a night are constrained.
+
+That is the *same* MySQL behaviour which was a **bug** on
+`booking_tax_rates.branch_id` (§23.1). The difference is worth stating plainly:
+there the key was meant to constrain every row and NULL quietly excused them
+all; here the exemption is the rule being expressed. NULL-distinctness is not
+good or bad — it is only ever right or wrong for the rule you meant.
+
+### 24.3 HotelAccountHead — the read side of the chart
+
+`app/Services/Hotel/HotelAccountHead.php`, after
+`InterBranchAccountHead`. Resolves the four heads **by `sku_code` marker**, never
+by name and never by id.
+
+⚠️ **It returns null rather than creating what is missing** — unlike
+`InterBranchAccountHead`, which mints heads because a branch can be born on any
+Tuesday. These four are created once, deliberately, by somebody who has decided
+this install is a hotel. `missing()` is meant to be asked *before* a bill is
+posted: a voucher half-written because one head was absent is worse than a screen
+saying the chart is not set up yet.
+
+This class exists because of `Hotel Rent` (§23.3). A `where('name', ...)` in a
+controller would have posted revenue as expenditure, and the name is close
+enough that nobody would look twice. The check script asserts the resolved head
+is *not* that one.
+
+### Checked
+
+`hotel_folio_check.php` — **28 assertions**, including §6.3's own worked example:
+rent 1,000 at 10% service charge and 15% VAT is **1,265, not 1,250**, with an
+explicit assertion that it is not 150.00 of VAT. Also: a rate changed after
+billing leaves the bill untouched; the night audit running twice is refused
+while a second laundry line is allowed; and both top-level placements — room
+rent under Income, advance and VAT under Liabilities.
+
+`hotel_status_log_check.php` — 22 assertions, still passing.
+
+Everything is written inside transactions that are rolled back, and the last
+assertions confirm nothing was left behind.
+
+### What is next
+
+The controller and the screen: take an advance, build the folio from the nights
+already held, show what is owed. Then the posting to `main_trx_master` — §5's
+entries — then `booking_cancellations` (13) and check-out (screen 6).
+
+The VAT **rates** are still zero on every install until the client's consultant
+answers §6.3's list. That is by design and does not block any of the above.
+
+---
+
+## 25. Screen 5 — the folio, 2026-08-26
+
+The bill and the money, end to end: `FolioController`, four routes, two
+permissions, a slice and a screen. Reachable from the Bookings list as **Bill**
+on every live booking.
+
+### The two numbers, and why they are never one
+
+⚠️ **What was CHARGED and what was PAID are different questions with different
+tables behind them.** A guest may pay in full before a single night is billed —
+an advance on the telephone is the ordinary case — and a booking may be billed
+in full with nothing paid.
+
+The balance is **derived from the two, never stored**. A stored balance is a
+third number that can disagree with the two it came from, and those two are the
+ones with an audit trail behind them.
+
+This is why **"Take money" and "Bill the nights" are separate actions**. A
+screen that billed on payment would make what a guest is charged depend on when
+they paid, and would turn an advance into income the moment it was handed over —
+exactly what §2.6 forbids.
+
+### What the endpoints do
+
+| | |
+|---|---|
+| `GET folio/{id}` | lines, payments, totals, paid, balance, unbilled nights, missing chart heads |
+| `POST folio/{id}/bill` | every held night not yet billed becomes a rent line, **at the rates in force on that night** |
+| `POST folio/{id}/charge` | one charge that is not a night |
+| `POST folio/{id}/receive` | advance, settlement or refund |
+
+**All three writes answer with the whole folio again**, so the screen is
+replaced from the server rather than patched — otherwise it could show a bill and
+a balance from two different moments.
+
+### Three rules the controller enforces that the schema could not
+
+**Room rent cannot be added by hand.** A hand-typed rent line would carry no room
+and no night, which is exactly what exempts a row from `uq_bfd_room_night` — so
+the same night could then be billed twice, once by the night audit and once by
+somebody typing. Nights go on through `bill()` only, and `addCharge()` refuses
+`room_rent` explicitly.
+
+**A refund cannot exceed what was taken.** Blocked rather than warned: unlike the
+guest-count rules of §6.5, there is no honest reading of giving back money that
+was never received.
+
+**Pressing "Bill the nights" twice adds nothing.** `bill()` skips what is already
+billed, but the *guarantee* is the unique key — two clerks pressing at once both
+pass the check, and the second gets a 409 saying nothing was added.
+
+### ⚠️ Nothing posts to the ledger yet, and the screen says so
+
+`main_trx_id` is written NULL on every row. The vouchers of §5 are the next piece
+of work, and doing them badly is worse than not yet doing them.
+
+**The screen carries an amber banner saying the accounts have not moved.** That
+banner is not a placeholder to be quietly deleted — it comes down when the
+vouchers are actually written. A desk that assumes the books have moved when they
+have not is the failure this is guarding against.
+
+A second banner names any missing chart head, from
+`HotelAccountHead::missing()`, so the chart being unready is said on the screen
+rather than discovered at posting time.
+
+### Permissions
+
+`hotel.folio.view` and `hotel.folio.bill`, separated for the same reason
+allotment's is separate from the booking's: reading what a guest owes is
+something anybody at the desk does, taking money is the till, and on a property
+large enough to have a cashier those are two people.
+
+⚠️ Both are in the `AddUnitTypeToBuildingUnits.php` sync list. Anything absent
+from that list is **deleted on the next patch run**, taking every role's grant
+with it — see §17's note and the earlier incident.
+
+### One thing worth knowing about RTK
+
+`builder.addCase` **throws if the same action type is registered twice**. The
+folio's three writes are in their own loop rather than appended to the existing
+one, because a thunk may appear in exactly one list. The folio writes replace the
+folio; the booking writes throw the availability list away. Different endings,
+so different loops.
+
+### Checked
+
+`hotel_folio_api_check.php` — **24 assertions through the CONTROLLER**, not the
+models underneath it: a real user is signed in, so the permission gate, the
+validation and the night-gathering all run. It asserts the 403 when signed out,
+that pressing Bill twice adds nothing, that room rent by hand is refused, that an
+over-large refund is refused, and that taking money leaves the bill untouched.
+
+With §23 and §24: **74 assertions across three scripts, all passing.** Everything
+runs inside transactions that are rolled back.
+
+⚠️ Two database facts these scripts had to be told rather than assume:
+`model_has_roles.model_type` is `App\User` here, not `App\Models\User`; and
+`acc_coa_level4s.status` is an int while `acc_coa_level3s.status` is
+`enum('0','1')`.
+
+### What is left of the first release
+
+`booking_cancellations` (table 13), the §5 vouchers, and check-out (screen 6).
+The VAT rates remain zero on every install until the client's consultant answers
+§6.3's list — by design, and it blocks none of the above.
+
+> **All three were done later the same day.** Check-out is the commit that
+> follows this section; the vouchers and table 13 are **§26**. The paragraph
+> above is left as it was written — this file records what was true when each
+> section was — and §26 is where the current state is.
+
+---
+
+## 26. The vouchers, and the cancellation that hands money back, 2026-08-26
+
+The last two pieces of the first release, and they went together because the
+second cannot exist without the first: a cancellation that refunds an advance is
+money leaving the till, and until the till entries existed there was nothing for
+it to leave.
+
+### What came down, and why it was not just deleted
+
+Every screen in this module has carried an amber banner saying the accounts had
+not moved. §25 said plainly that the banner was **not a placeholder to be
+quietly deleted** — that it comes down when the vouchers are written and not
+before. They are written. It is down.
+
+What replaced it is narrower and still true: a **voucher number against every
+line and every receipt**, and an amber `not posted` chip against any row that
+has not got one. A screen that said "all posted" while a row from last week
+still carried NULL would be the same lie in a friendlier colour.
+
+### The five entries, and the head they all pass through
+
+| Event | Debit | Credit |
+|---|---|---|
+| Advance / settlement taken | Cash or Bank | Advance Against Booking |
+| Refund given | Advance Against Booking | Cash or Bank |
+| Nights and charges billed | Advance Against Booking | Room Rent / Other Income / Service Charge / VAT Payable |
+| Balance carried at check-out | The party | Advance Against Booking |
+| Cancellation charge retained | Advance Against Booking | Hotel Cancellation Charge |
+
+⚠️ **Advance Against Booking is the hinge, and that is the whole design.** Money
+arrives as a liability; the bill turns that liability into income; whatever is
+left at check-out moves onto a named party's ledger. Read the head's net
+movement for one booking and it is **exactly what the folio screen calls
+"owed"** — which is why there is no separate guest-ledger head, and why nothing
+anywhere stores a balance.
+
+`hotel_voucher_check.php` asserts that equality directly rather than trusting
+it. If it ever drifts, the guest ledger is fiction and everything else on the
+screen is decoration.
+
+### ⚠️ The rounding is a plug, and it could have been a leak
+
+§6.3 rounds the bill **once, on the whole total**, to the nearest taka. The
+guest pays the rounded figure; the income and VAT lines carry the exact one. Up
+to fifty poisha a bill therefore has to land somewhere, and without a head of its
+own it lands in Advance Against Booking — where it never clears, and every
+booking ever taken leaves a few poisha behind for ever.
+
+Hence **Bill Rounding**, and it takes debits as well as credits: a bill rounded
+down is a debit.
+
+The subtle half is a bill posted in **two batches** — nights today, a laundry
+charge tomorrow. Each batch cannot round itself; the sum of two rounded batches
+is not the rounded sum. What is debited to the hinge on each posting is
+
+    round(exact total of every posted line INCLUDING this batch)
+      − round(exact total of the lines already posted)
+
+so the running debit equals the folio's rounded total after every batch, in any
+order. The rounding line is the difference between that and the batch's own
+exact amounts. The check script bills, then adds a charge at **33.33** on
+purpose: it rounds the whole bill the other way, so a second batch that rounded
+itself would be caught there and nowhere else.
+
+### Three new chart heads, and one that is a compromise
+
+`HOTEL_OTHER_INCOME` is the compromise and it should be said out loud. §5 names
+a head per service — Catering Income, Ticket Income, Hall Rent Income — and
+those arrive with the modules that sell them. There is no restaurant module, and
+**OPEN-3 has still not said whether there will be one**. One head now beats six
+empty ones, and it beats the only other thing the code could have done, which is
+post a guest's dinner to Room Rent Income.
+
+`HOTEL_CANCELLATION_CHARGE` is its own head because folded into room rent it
+would inflate occupancy earnings with money from rooms nobody slept in.
+
+⚠️ **The grant file has to be run again** on any company set up before today.
+Seven markers now, not four.
+
+### ⚠️ Refusing rather than deferring
+
+Every write that posts asks `HotelAccountHead::readyFor()` first and **refuses**
+if a head is missing, naming which. The softer option — record it and post later
+— was available and was rejected: money recorded outside the books is precisely
+what the amber banner existed to warn about, and the cure is one SQL file run
+once per company. The screens say the chart is not ready **before** a guest is
+brought to the counter, and the buttons are disabled rather than left to fail.
+
+### Which drawer the money went into is now required
+
+`coa4_id` was optional on a payment while nothing posted. A voucher cannot say
+where the money is without it, and **"cash" as a word is not an account**: a
+property with a till and three bank accounts has four of them, and only the
+person taking the money knows which.
+
+The folio's payment form grew a dropdown for it, fed by a new endpoint that
+reads the company's own cash and bank heads. Those are found by the level-3
+group's **`acc_source_id`** (7 cash, 8 bank) rather than by name, because group
+names differ per tenant — the same reasoning as the markers, one level up.
+
+⚠️ The check refuses a head that is not a till. Without it a caller could name
+any level-4 id and post the day's takings into somebody's salary expense, or
+into another tenant's chart.
+
+### 26.1 booking_cancellations — table 13
+
+Three figures, and the third is why it is a table:
+
+| | |
+|---|---|
+| `amount_held` | what the booking had on it when it was cancelled |
+| `refund_amount` | what was handed back |
+| `retained_amount` | what the hotel **kept** — the cancellation charge, and it is income |
+
+`retained_amount` is **stored, not derived**. Both figures it comes from can be
+corrected later by rows of their own; this has to go on saying what was decided
+on the day.
+
+`UNIQUE (booking_id)` — one cancellation per booking. Two rows would mean two
+refunds, and the second paid out of the till against money already gone back.
+The controller checks the status first; the key is what guarantees it when two
+clerks press at the same moment.
+
+`from_status` is recorded because `booking_master` now says `cancelled` and has
+forgotten: a hold that lapsed and a confirmed booking called off the night
+before arrival are different events, and the report that separates them would
+otherwise have to go digging in the status log.
+
+⚠️ It does **not** replace `booking_status_logs`. That stays the history — the
+log is read by the desk, this by the accountant.
+
+### ⚠️ A billed booking cannot be cancelled
+
+Once a night is on the folio the guest has been charged and **VAT has fallen due
+on it**. Unwinding that is a credit note, which this module does not have and
+must not counterfeit. Such a stay is **checked out**, and its balance settled or
+carried.
+
+That rule is also what keeps **open question 9** — does VAT come back on a
+cancellation refund — from mattering before the client's consultant has answered
+it. The dialog says so as a fact, with the confirm button taken away, rather
+than letting somebody press it and read an error.
+
+### Two permissions, conditionally
+
+Calling a booking off is `hotel.booking.cancel`. Paying money **out** of the
+till is `hotel.folio.bill` — the same permission that guards the till on the
+folio, checked only when there is a refund. A clerk holding only the first can
+still cancel a booking nobody paid on, and must fetch the cashier for one they
+have. No new permission was created; there are still ten.
+
+### The dialog defaults to giving it back
+
+The refund box opens at the **whole amount held**, not at zero. Whatever is not
+refunded is retained as income, so a box left at zero by somebody who meant to
+decide later would keep the guest's money without anybody choosing to. Giving it
+back is the default; keeping some is the deliberate act, and it is one keystroke.
+The sentence under it says what the remainder becomes, in words, where the
+decision is made.
+
+### ⚠️ Why it does not call apiMainTransactionMaster()
+
+The shared helper takes its branch from `Auth::user()->branch_id` and its date
+from that branch's last day-close. Neither is right here: a hotel booking
+belongs to **the branch that is the property**, which for a caller with
+multi-branch reach is not their own; and a night's income belongs to the night,
+not to whenever the desk pressed the button.
+
+There is a second difference and it is deliberate. The shared helper looks up the
+next serial `->where('status', 1)`, so a recycled voucher donates its number to
+the next one and the two collide — the duplicate-`vr_no` fault diagnosed on
+2026-08-08, present in **25 of the 28 generators**. `HotelVoucher` does not
+filter on status, so the hotel's series is gap-free and unrepeated from its
+first voucher.
+
+It does **not fix** the other 25. It declines to join them. When those are
+consolidated into one counter — step 4 of that plan, still not started — this
+becomes a caller of it.
+
+### Two guards that should never fire
+
+`HotelVoucher::raise()` refuses to write an **unbalanced** voucher, and refuses
+one worth nothing. Every caller builds its legs from a single figure, so neither
+can happen today — which is exactly why they are there. The day one of them is
+edited wrongly the books stay right and somebody reads a sentence instead of
+finding a hole three weeks later.
+
+### Checked
+
+`hotel_voucher_check.php` — **66 assertions through the controllers**, with a
+real user signed in, everything rolled back. It asserts that every voucher
+balances separately, that the hinge head agrees with the screen, that two
+batches still add to one rounded total, that a receipt has no VAT line on it,
+that a refund is the receipt's mirror image, that a non-till head is refused,
+that a billed booking cannot be cancelled, that a cancelled booking's advance
+is left at **nil** rather than a few poisha short, and that a balance carried at
+check-out really does arrive in the party's own ledger.
+
+With the earlier scripts: **173 assertions across five hotel scripts, all
+passing.**
+
+⚠️ Two of the older scripts were picking `Booking::query()->first()` and then
+asserting they had left nothing behind. On a database somebody has been using in
+a browser that counts **the browser's** rows as the script's litter, and totals
+the browser's folio lines into §6.3's worked example. They now pick a booking
+with no history of its own. Neither failure was ever a fault in the code, and
+both looked exactly like one.
+
+### What is left
+
+Early check-in and late check-out charges (§6.2) — a late departure is billed by
+hand through the folio in the meantime. The gender rule of §6.1, still not
+enforced and still blocked by §6.2 being open. And the VAT rates, which stay
+zero on every install until the client's consultant answers the six questions in
+§6.3 — the code is ready for them and will charge nothing until they arrive,
+which is the correct behaviour for a number nobody has confirmed.
+
+---
+
+## 27. The paper the desk hands over, 2026-08-26
+
+A hotel front desk cannot work without paper. A guest hands over five thousand
+taka and wants something back for it; a guest leaving wants a bill they can show
+their own accountant. Everything up to here recorded both perfectly and could
+print neither.
+
+### It is not a new print system
+
+The app already has one, built for the delivery challan: a document is stored as
+a **description** — a list of bands, each naming which fields it prints and what
+that tenant calls them — and **one renderer** draws whatever the description
+says. Fifty tenants is fifty rows in `print_templates`, not fifty template files.
+
+So the hotel's two papers are **two new `doc_type` values on the existing
+table**. No new table, no second renderer, and a property that wants its bill in
+Bengali with its own labels is a layout saved in the designer.
+
+| | |
+|---|---|
+| `hotel_money_receipt` | Proof that money arrived |
+| `hotel_bill` | What the stay was charged |
+
+### ⚠️ Why they are two doc types and not one
+
+They are different documents with different legal weight. **The VAT falls due on
+the bill and not on the receipt** — OPEN-12, settled 2026-08-26 — and a receipt
+that shows a VAT line *becomes* a VAT invoice whatever the desk calls it. The
+tax would then fall due on money taken for a stay that has not happened.
+
+One doc type serving both is exactly how a receipt acquires that line.
+
+### ⚠️ The rule is enforced by absence, not by a warning
+
+Three separate places, and none of them is a note in a manual:
+
+1. `HotelPaper::receipt()` **does not put** `bill_vat`, `bill_service_charge` or
+   any tax figure into a receipt's data.
+2. `HOTEL_RECEIPT_FIELDS` **does not offer** one in the designer's field picker,
+   so a tenant cannot lay one on however hard they try.
+3. `products` on a receipt is **empty** — a table on a receipt would be the bill,
+   and the bill is precisely the document it must not become.
+
+`hotel_paper_check.php` asserts it by searching the receipt's own keys for
+anything named vat, tax or service charge, rather than against a list of known
+keys — a key added later and called `output_vat` would slip past a list.
+
+A warning in a manual would be obeyed for a year and then not.
+
+### ⚠️ The bill carries the ROUNDED total, and that is not the sum of its lines
+
+§6.3 rounds the bill **once, on the whole total**. The renderer has its own
+`total_amount`, which adds the line amounts up — that is the **exact** figure,
+and it disagrees with the till by up to fifty poisha.
+
+So `total_amount` and `amount_words` are **not offered** in the hotel bill's
+catalogue at all, and `bill_rounded` and `bill_words` are offered instead. The
+same trick as the VAT rule: a tenant cannot put the wrong figure on the paper
+because the wrong figure is not on the menu.
+
+The bill sends `bill_base`, `bill_service_charge`, `bill_vat`, `bill_gross`,
+`bill_rounding` and `bill_rounded` separately. A bill giving only the final
+figure is unusable to the guest's own accountant and useless as evidence for a
+VAT return.
+
+### ⚠️ It prints what is billed, and bills nothing
+
+A booking whose nights nobody has billed prints an **empty table and a total of
+nothing** — correctly, because that is what the guest has been charged. Screen
+5's *Bill the nights* is what changes it. A paper that quietly billed on its way
+to the printer would charge a guest by being looked at.
+
+The button is disabled while the folio is empty, so nobody hands over a blank
+sheet.
+
+### ⚠️ It is a Bill, not a মূসক ৬.৩
+
+Titled `Bill`. Whether the client's hotel must issue a **Mushak 6.3 challan** —
+and whether an EFD/SDC machine is involved — is **open question 6** in §6.3 and
+has not been answered. A Mushak has a mandated format and an unbroken government
+serial; calling this one would be claiming something nobody has checked.
+
+When the answer comes it is a layout saved in the designer, plus a numbering
+decision if a serial is required. Not a rewrite.
+
+### What changed in the shared print code
+
+The field catalogue was one global list because there was one document. It is
+now per doc type — `fieldsFor(docType)` and `lineFieldsFor(docType)` — and the
+name/numeric lookups read across all of them at once. **That only works because
+the keys do not collide:** the hotel reuses `branch_name`, `notes` and
+`printed_at` because they mean the same thing on any paper, and everything else
+it adds is its own. A key meaning two things on two papers would have to be
+renamed first — those lookups answer by key alone, and the renderer asks them
+without knowing which document it is drawing.
+
+`FieldDef` grew `format: 'money' | 'date' | 'words'`. The renderer's switch was
+written for one document and now serves three; a fourth would need twenty more
+cases of which the twenty-first would be forgotten. A field may now **declare**
+its formatting, and that is tried last, after every existing case has had its
+chance. ⚠️ **Nothing on the sales challan reaches it** — every one of its fields
+is a plain string or has a case of its own — so no challan anywhere prints
+differently for this existing.
+
+The designer got a **paper picker** and a doc type context.
+
+⚠️ The context is worth explaining. The doc type is needed only by
+`FieldPicker`, four levels down inside band editors that have no other reason to
+know about it. Threading it as a prop would put a `docType` on five component
+signatures whose job is to draw a form — and the sixth one added later is the one
+that forgets it and quietly offers a challan's fields on a hotel bill. The
+context defaults to `sales_challan`, so every existing caller keeps working
+without a provider.
+
+Changing the picker **reloads from the server** rather than converting what is on
+screen: a challan's bands name a challan's fields, and carried over to a hotel
+bill they would draw a paper of blanks that looked designed.
+
+### The preview's sample adds up
+
+⚠️ `HOTEL_BILL_SAMPLE` is arithmetically real, and it has to be. A tenant lays a
+bill out by reading the preview, and a sample whose lines did not add to its own
+total would teach them the totals band is decorative. Two rooms for two nights at
+4,200, one laundry charge, 10% service charge and 15% VAT on the base plus the
+service charge:
+
+```
+base    16,800.00 + 349.50 = 17,149.50
+service 4 × 420            =  1,680.00
+VAT     4 × 693            =  2,772.00
+exact                      = 21,601.50
+rounded once on the total  = 21,602.00   → 0.50 of rounding
+```
+
+The half-taka is deliberate. With a round figure the Rounding line would never
+appear in the preview, and a tenant would not know it exists until a real bill
+printed one.
+
+### Where the buttons are
+
+**Print the bill** on the folio, and a printer icon **on every payment row**.
+
+⚠️ Per row, not one button for the screen. A receipt is what somebody is handed
+at the moment they hand money over; a paper covering three payments is a
+statement, which is a different document with a different purpose.
+
+Both fetch the facts **and the branch's saved layout in one call**. The paper is
+printed with a guest standing at the counter, and one that needs two round trips
+is one that opens late. A branch that never opened the designer has no layout,
+and null means the built-in default — which is why this works on the day it
+ships, without anybody setting anything up.
+
+### Checked
+
+`hotel_paper_check.php` — **25 assertions through the controller**, with a real
+user signed in, rolled back. Among them: that the doc type strings the designer
+saves under are the ones the server will store (a mismatch there is silent and
+total — the tenant's layout simply reverts to the default with nothing said),
+that the bill's lines add to its own stated totals and those round to the figure
+the guest is asked for, that the receipt carries **no** tax key of any kind, and
+that a payment on somebody else's stay reads as absent rather than printing.
+
+With the rest: **198 assertions across six hotel scripts, all passing.**
+
+### What is left
+
+Early check-in and late check-out charges (§6.2). The gender rule of §6.1. The
+VAT rates, still zero on every install until the client's consultant answers
+§6.3 — and note what that means for this section: **today every hotel bill
+prints with no tax lines on it at all**, because the rates are zero and both tax
+lines are set to hide when empty. That is the correct behaviour for a number
+nobody has confirmed, and it is what the paper will do until they do.
+
+---
+
+## 28. The hold that never let go, 2026-08-26
+
+Not a feature. A hole in code that had already shipped, and the kind that is
+invisible from the screens: everything looked right and beds were quietly
+disappearing from the market for ever.
+
+### What was wrong
+
+A hold takes **real inventory** — one row per seat per night in
+`booking_resource_details`, which is the only place the module counts what is
+free. `hold_until` says when it stops being anybody's.
+
+Everything for expiring one was already there:
+
+- the `hold_until` column, capped at the stay's end (§16)
+- the index `idx_bm_holds (status, hold_until)`, cut for exactly this query
+- the status `expired`, which every controller already refuses
+- the note in `booking_status_logs` saying `changed_by = NULL` means the system
+  did it, **naming the expiry sweep as the case it was written for**
+
+Everything except the sweep. So a hold taken by telephone in August for
+December, that nobody ever confirmed, held those beds **for ever** — and the
+desk found out by turning somebody away at the door.
+
+### `php artisan hotel:expire-holds`
+
+Finds holds whose date has passed, deletes their nights, logs the move, and sets
+them to `expired`. One transaction **per booking**, not one for the sweep: a
+single bad row must not take a night's work with it.
+
+⚠️ It **deletes** nights, and that is the one thing it does that cannot be
+undone. Deleting rather than flagging is the rule the whole module follows — the
+unique key on `(resource_id, stay_date)` is what stops a bed being sold twice,
+and a row left behind goes on holding the bed however it is marked.
+
+`--pretend` exists because of that. It lists what would go and writes nothing.
+
+⚠️ `hold_until` is **left standing** after the expiry. It is the evidence of why
+the sweep acted, and a sweep has no business erasing its own reason.
+
+### ⚠️ Two holds it will not touch
+
+**One with money on it.** Expiring it would delete the nights and leave an
+advance credited to `Advance Against Booking` against a booking nobody will ever
+settle — a liability with no way to clear it, which is exactly the residue §26
+was written to avoid. No screen would ever offer to clear it, because the
+booking is gone and the guest never came.
+
+**One that has been billed.** Rarer — nothing stops a hold being billed, and it
+means somebody charged a guest who had not confirmed. Expiring it would leave
+the charge and the VAT standing with no stay behind them.
+
+Both are **listed for a person**, loudly, with what to do: cancel them on the
+booking screen, which refunds or retains the money and posts the entry (§26.1).
+
+⚠️ Skipping them in *silence* would have been the worst of the three options —
+the beds would stay held indefinitely by exactly the bookings that matter most,
+the ones a guest has already paid on, and nobody would be told.
+
+### The second test in the query, which is not redundant
+
+```
+hold_until < now()          OR   check_out_date < today
+```
+
+`hold_until` is capped at the stay's end when a hold is taken, so the second
+clause should never fire. But a row written before that cap existed, or one
+whose `hold_until` was never set, is **invisible to the first test** — NULL is
+not less than anything in SQL — and would hold its beds for ever. The failure
+this command exists to end, reappearing through the one gap in its own query.
+
+### ⚠️ Nothing runs until the host's cron calls the scheduler
+
+`routes/console.php` is the timetable, not the clock. The server needs the one
+entry Laravel asks for:
+
+```
+* * * * * cd /path/to/api && php artisan schedule:run >> /dev/null 2>&1
+```
+
+**Without it this whole section is a note nobody reads**, and holds go on
+holding beds exactly as they did before the command was written.
+
+Half past midnight, daily rather than hourly: `hold_until` is always the END of
+a day (a guest arrives during the day, and a hold expiring at midnight on its
+own last day would release the room while they were still on their way), so an
+hourly sweep would find nothing extra twenty-three times in twenty-four.
+
+`withoutOverlapping()`, because it deletes rows. ⚠️ `onOneServer()` is
+deliberately **not** set — it needs a shared cache lock this install cannot
+guarantee. Add it before this is ever run from two web heads.
+
+Output goes to `storage/logs/hotel-expire-holds.log`, kept so somebody can ask
+what last night's sweep released and which bookings it left for a person.
+
+### 28.1 The chasing list
+
+§6.4 asked for holds with expiry **and a chasing list**. The list is not a new
+screen — it is two small things that are meant to be used together.
+
+**Filter the bookings list to Hold and it reorders by `hold_until`**, soonest to
+lapse first. The ordinary order sorts by arrival, which puts a hold lapsing
+tonight for a December stay below one lapsing in a fortnight for next week. What
+the desk wants from that list is *who do I ring before their beds go back*.
+NULLs sort last: a hold with no deadline is not urgent.
+
+**The row says how long is left, not a date.** It used to read
+`until 2026-08-28` in grey, which does not tell anybody they are in the last day
+of it. Now it counts down — `lapses today`, `lapses tomorrow`, `4 days left` —
+amber inside two days, red once it has lapsed.
+
+⚠️ `lapsed` shows only between the moment it expires and the next sweep, so at
+most a night. That is not a gap in the display. It is exactly the last chance
+anybody has, and it should look like one.
+
+### Checked
+
+`hotel_hold_expiry_check.php` — **24 assertions**, every block rolled back, so
+running it expires no real booking and releases no real bed.
+
+The interesting ones are about what the command does *not* do: that `--pretend`
+writes nothing, that a hold with a payment is left alone **and said out loud**,
+that a billed one is left too, and that a hold which has not lapsed is untouched.
+Plus the one about what it does: the status log names the **system**, not a
+person — nobody was awake at half past midnight.
+
+⚠️ The test runs the command **in-process**, on the same connection, so it sees
+the fixture inside the open transaction and is rolled back with it. Shelled out
+it would run on its own connection, see none of the fixture, and report
+cheerfully that there was nothing to do.
+
+With the rest: **222 assertions across seven hotel scripts, all passing.**
+
+### What is left
+
+Early check-in and late check-out charges (§6.2), and the §6.1 gender rule. Both
+still waiting on the client. The VAT rates too — which is why every hotel bill
+printed today comes out with no tax lines on it at all.
+
+One question this section raises and does not answer: **§16 left the arrival day
+inside the hold**, so a booking nobody turned up for still holds its rooms for
+the rest of the stay — one unsold night per night of the stay, until the sweep
+catches it at the end. Capping `holdUntil` at `check_in` instead is a one-word
+change, and it is a decision about how long the desk gets to chase somebody.
+That is the client's to make, and it should be put to them now that the sweep
+exists to act on the answer.
+
+---
+
+## 29. Reading the property back, 2026-08-26
+
+Every screen so far answers a question about **one booking**. Nothing answered a
+question about the **property**, and the desk is asked two of those daily — one
+of them sometimes by a police officer standing at the counter.
+
+| | |
+|---|---|
+| **Guest register** | Who was in the building on the night of the 25th |
+| **Collection** | What money came in between two dates, and is it in the books |
+
+One screen, two tabs. They are asked in the same breath at the same moment of
+the morning, and two screens would be two places to pick a branch and a date.
+
+### ⚠️ The register reads the NIGHTS, not the booking's dates
+
+This is the whole point of the report, and it is the one thing in it that could
+be quietly wrong for years.
+
+`booking_resource_details` holds one row per seat per night, and **check-out
+deletes the nights from the departure date forward** (§6, and `BookingNight`'s
+own header — a row left behind goes on holding the bed however it is marked). So
+a guest booked to the 18th who left on the 16th holds **no night on the 17th**.
+
+That makes *"holds a night on D"* exactly *"slept here on D"*, and it is the only
+expression in this schema that is.
+
+Reading `check_in_date <= D <= check_out_date` off `booking_master` instead would
+put that guest in the building for two nights they were not in it. On an ordinary
+report that is an error. **On a register a police officer reads, it is a
+statement about where a named person spent a night.**
+
+`hotel_report_check.php` proves it directly: it puts a guest on the register for
+their last night, deletes that night the way check-out does, and asserts they are
+gone from it — *while `booking_master` still says the stay runs later*.
+
+### ⚠️ And only bookings somebody actually checked into
+
+A confirmed booking holds its nights from the moment the telephone call ends.
+Nobody has slept in them. The register counts `checked_in` and `checked_out`, and
+nothing else.
+
+The same booking **does** belong on the arrivals list, which is what somebody
+works through during the day — so a guest who has not come yet is exactly what
+that list is for. Three questions, one date, one table:
+
+| Mode | Who |
+|---|---|
+| In the building | Slept here that night — held a night, and was checked in |
+| Arriving | `check_in_date` is that day, including holds nobody has confirmed |
+| Leaving | The morning **after** their last night |
+
+⚠️ Departures are the morning after `MAX(stay_date)`, **not** `check_out_date`. A
+guest who left early has had their later nights deleted, so `check_out_date`
+still names a day they were not here — and they would appear on the wrong
+morning's list, which is the list somebody uses to know which rooms to clean.
+
+### ⚠️ One row per guest, and an occupied room is never hidden
+
+A register naming a booking and saying "4 guests" is not a register. The question
+it exists to answer is about **people**, one at a time, by name.
+
+A booking with **no guest rows** still appears — once, under the booker's name,
+**marked as such** on the screen and on the paper. Allotment is piecemeal (§6.5)
+and a room let at midnight may have nobody typed against it until morning.
+Dropping it would hide an occupied room, which on this report is the one thing
+that must not happen; printing the person who telephoned as the person who slept
+there without saying so would be wrong about its only fact.
+
+### The printed copy
+
+The register prints, because it is a paper somebody may be asked to hand to a
+person who has no login. It carries the NIDs and the mobiles, and it says at the
+top which property and which night — a page of names with no night on it answers
+no question at all.
+
+⚠️ **Not on the print designer.** That is for papers a tenant re-arranges to
+their own taste; this is a record whose columns are not really theirs to choose,
+and a register missing the NID column because somebody dragged it off is a
+register that fails at the only moment it matters.
+
+⚠️ It is headed with the **report's** branch, not the reader's — `PadPrinting`
+falls back to the session's branch when none is passed, which would put one
+property's name over another property's guests.
+
+### 29.1 The collection report
+
+Money taken between two dates, with the booking, the guest, the purpose, the
+method, the account and **the voucher number** against each row.
+
+⚠️ **Every total is netted.** A refund is stored positive — the direction lives
+in the purpose (see `BookingPayment`) — so a report that added the column up
+would say a day took 9,200 when the drawer holds 6,800. The server signs each
+row **once**, so no screen and no print template has to remember which way a
+refund goes.
+
+Broken down two ways, because they are two people asking:
+
+- **by method** — for whoever is counting the drawer
+- **by account** — for whoever is reconciling the cash book
+
+Rows with no account are named `Not recorded` rather than dropped: a breakdown
+that silently omitted them would not add up to the net above.
+
+⚠️ **It counts what was RECEIVED, not what was earned.** An advance is a
+liability until the nights are slept (§2.6), so this figure is not income and
+must never be read as one — which is exactly why the voucher is shown against
+each row. The ledger is where income lives.
+
+The screen says how many rows are **not in the ledger**. Zero for anything
+written since the §5 vouchers; anything else is a number somebody has to account
+for, so it is stated rather than left to be noticed.
+
+### A reading permission of its own
+
+`hotel.report.view`, and it is separate from every other permission in the group
+on purpose. The six screens are the desk's; a report is read by an owner, a
+manager or an auditor, **none of whom needs to be able to take a booking**.
+
+The register in particular is a property's record of who slept there, name by
+name, with NIDs against them. That is something a client may reasonably want in
+one person's hands and nobody else's — which it cannot be if reading it is folded
+into `hotel.booking.view`.
+
+No new table. Both reports are reads of what is already there.
+
+### Two things fixed on the way past
+
+**`formatDate` returns JSX, not a string.** §28's hold tooltip used it inside a
+template literal, which stringifies to `[object Object]`. The string form is
+`formatDayMonthYear`, and it is what every new use here calls.
+
+**The check script was asserting about other people's guests.** The register is a
+whole property's, and this database has other stays on the same nights — so
+asserting on the answer's row *count* would pass or fail on whatever happened to
+be in the demo data. It now filters to the fixture's own booking.
+
+### Checked
+
+`hotel_report_check.php` — **26 assertions**, every block rolled back.
+
+With the rest: **248 assertions across eight hotel scripts, all passing.**
+
+### What is left
+
+Early check-in and late check-out charges (§6.2), and the §6.1 gender rule — both
+still waiting on the client. The VAT rates too.
+
+And **phase 4's calendar** (§8): the floor grid is built and the availability
+screen paints it, but the *timeline* and *month calendar* views are not. They are
+the next thing that is neither blocked nor a hole — a month at a glance is what
+an owner asks for, and occupancy percentages (phase 10) hang off the same read.
+
+---
+
+## 30. The night audit, 2026-08-26
+
+Open decision **2**, written down at the very start of this project:
+
+> *Room rent posted per night, or once at check-out?*
+> **Per night — daily and monthly income stays correct.**
+
+Nothing did it. A night reached the books when somebody pressed **Bill the
+nights** on the folio, so a twenty-day stay running across a month end
+contributed **nothing** to that month's profit and loss — and nobody could see
+it, because an unbilled night looks exactly like a night nobody has got to yet.
+
+Like §28, this is not a feature. It is a gap against a recorded decision.
+
+### `php artisan hotel:night-audit`
+
+Bills every night that has been **slept** and is not yet on a folio, and posts
+the voucher. Scheduled at 01:00, half an hour after the hold sweep.
+
+⚠️ **It audits YESTERDAY.** The night has to have finished before it can be
+billed; auditing today would bill a night the guests are still asleep in.
+
+### ⚠️ One night at a time, and that is not an optimisation
+
+Each night is billed on its own so it gets **its own voucher, dated to itself**
+— `HotelVoucher::postFolio` dates by the latest service on the batch (§26).
+
+Billing five outstanding nights in one pass would put all five onto one voucher
+dated to the last of them, and **four nights of income would land in the wrong
+period — possibly the wrong month**. Which is the exact fault this command
+exists to end. Doing it the fast way would have reintroduced the bug while
+appearing to fix it.
+
+The check script asserts it directly: three nights, three vouchers, each dated
+to its own night.
+
+### ⚠️ It only bills nights somebody slept
+
+`checked_in` and `checked_out` only. A confirmed booking holds its nights from
+the moment the telephone call ended and nobody has been in the bed; billing one
+would charge a guest who has not arrived.
+
+The same rule the guest register follows (§29), for the same reason.
+
+### ⚠️ It catches up by itself
+
+It bills every unbilled slept night **up to** the audit date, not merely the
+audit date's own. A week when the cron was down is repaired by the next
+successful run rather than by somebody noticing — and each of those nights still
+gets its own correctly dated voucher, so the catch-up does not distort the
+periods it is repairing.
+
+### 30.1 `booking_night_audit_runs` — and why the gaps are the point
+
+⚠️ **This table is not what stops a night being billed twice.**
+`uq_bfd_room_night` does that, and it does it whatever the second attempt comes
+from — this sweep, the folio screen, or two clerks at once. Nothing in the table
+is load-bearing for correctness.
+
+⚠️ **What it is for is the opposite question: did the audit RUN?** A server whose
+cron died on a Friday bills nothing all weekend, every folio quietly falls
+behind, and there is no screen anywhere that looks different. A missing row here
+is the only evidence that would exist.
+
+So `BookingNightAuditRun::missingNights()` is the method that matters, and it
+answers about **absence**. Reading the rows tells you what was billed; reading
+the holes tells you what was not, and only the second one is an alarm.
+
+One row per **property** per night, not per company: two hotels under one company
+audit separately, and a run covering both could not say which one it had failed
+on.
+
+`ran_by` is NULL for the scheduler — the same convention as
+`booking_status_logs.changed_by`. Nobody is signed in at one in the morning, and
+inventing a user id would name a person who was asleep.
+
+### One property's problem is not the sweep's
+
+The chart-of-accounts check is per property. A company that has not run the grant
+file is **skipped with its reason recorded in the run row**, and every other
+tenant on the server is audited normally. A booking that will not bill is counted
+and named, and the other forty are billed — but a run reporting nothing wrong
+while leaving a stay unbilled would be worse than one that failed outright, so
+the trouble is written into `notes`.
+
+### ⚠️ Nothing runs until the host's cron calls the scheduler
+
+The same warning as §28, and it now covers two commands:
+
+```
+* * * * * cd /path/to/api && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Without it, `hotel:expire-holds` and `hotel:night-audit` are both notes nobody
+reads — and the second one means the books stay as they were before this section
+was written.
+
+### Checked
+
+`hotel_night_audit_check.php` — **21 assertions**, every block rolled back, so
+running it bills no real stay and raises no real voucher.
+
+The interesting ones are the refusals: that a confirmed booking is not billed,
+that tonight is not billed, that `--pretend` writes nothing, and that a second
+run adds nothing.
+
+With the rest: **269 assertions across nine hotel scripts, all passing.**
+
+### What this changes for whoever reads the books
+
+Room rent, service charge and VAT now reach the ledger **on the night they were
+earned**, without anybody pressing anything. The folio's *Bill the nights* button
+stays — it is what a desk uses to settle a guest who is leaving mid-morning
+before the audit has run — but it is no longer the only thing standing between a
+stay and the month's profit and loss.
+
+### What is left
+
+Unchanged from §29, less this one: early check-in and late check-out charges
+(§6.2), the §6.1 gender rule, and the VAT rates — all waiting on the client.
+**Phase 4's timeline and month calendar** remain the next unblocked piece, with
+rate plans (`booking_rate_plans`) behind them.
+
+---
+
+## 31. The property over time — phase 4, 2026-08-26
+
+The availability grid answers *"what is free between these two dates"*, which is
+what somebody taking a booking asks. Two questions could not be asked of it at
+all:
+
+| | |
+|---|---|
+| **The month** | How full were we in August, and how does September look? |
+| **The tape** | Which room has a three-night hole in it next week? |
+
+The first is an owner's question and the one they ask first. The second is a
+desk's, and it wants **rooms down the side and dates across the top** — the
+shape that shows the *holes*, which a list of bookings never does.
+
+Phase 4 of §8 asked for a floor grid, a timeline and a month calendar. The grid
+was built with the setup screen (§13) and the booking screen paints it (§18).
+These are the other two.
+
+### No new permission and no new table
+
+Both read under **`hotel.booking.view`**, the same permission the availability
+grid uses. They show the same nights in a different shape, and gating them apart
+would pretend they reveal something the desk cannot already see — while leaving
+a property having to grant two permissions to show somebody one fact.
+
+Everything is counted out of `booking_resource_details`, which is one row per
+seat per night and therefore **already an occupancy record**. It had simply never
+been read as one.
+
+### ⚠️ ADR and RevPAR are not the same division
+
+The one thing here that could be quietly wrong for years, because both figures
+look plausible whichever denominator they used.
+
+| | Divided by |
+|---|---|
+| **ADR** — Average Daily Rate | The beds that were **sold** |
+| **RevPAR** — Revenue Per Available Room | Every bed the property **has**, every night |
+
+A hotel selling half its rooms at a high rate has a **good ADR and a bad
+RevPAR**, which is the entire reason both are quoted. Getting the denominator
+wrong makes a bad month read like a good one — so the check script asserts each
+against its own arithmetic and asserts that the two are **not equal**.
+
+Room revenue here is the rent held against each night, **before** service charge
+and VAT. That is what ADR means, and it is said on the screen.
+
+### ⚠️ A hold occupies a bed and earns nothing
+
+Sold and held are counted **separately**, and both occupy.
+
+- Folded into *sold*, a hold reports revenue nobody has agreed to pay — and a
+  month would look better the more of its bookings went on to be cancelled.
+- Folded into *free*, it offers a bed that cannot be sold.
+
+Occupancy counts both, because the question occupancy answers is *can I sell it*,
+not *was it paid for*. Revenue counts only the sold ones.
+
+### ⚠️ Departures are the morning after the last night held
+
+Not `check_out_date`. A guest who left early has had their later nights deleted,
+so `check_out_date` names a day they were not here — and the departure would be
+counted on a morning nobody handed a key back.
+
+The same rule the guest register follows (§29), for the same reason, and the
+check script proves it the same way: it deletes the later nights the way
+check-out does and asserts the departure moved, *while `booking_master` still
+says the stay runs longer*.
+
+### ⚠️ The occupancy denominator is today's property, and the screen says so
+
+Every occupancy report in the world has this fault and most of them hide it. The
+denominator is the beds the property has **today** — a hotel that has added rooms
+since reads low for older months, and one that removed some reads high.
+
+A true point-in-time capacity needs a history of the room list that nobody asked
+for and that would be wrong the first time somebody corrected a typo in a room
+code. So the approximation stands and is **stated on the screen**, in the
+sentence under the figures, rather than left for somebody to discover.
+
+`free` is clamped at zero for the same reason: a property whose rooms were
+deleted can hold more nights than it now has beds, and a cell reading `−3 free`
+is a cell nobody believes about anything else either.
+
+### 31.1 The tape chart
+
+**By room, not by seat.** A dormitory of eight beds would otherwise be eight rows
+of the same name, and the chart is read by somebody *scanning* for a gap.
+
+What each cell carries instead is **how many of that room's beds are taken** — so
+a half-full dormitory reads as half full rather than as either free or gone.
+Amber is part of a room, red is all of it, and ⚠️ **the count is printed in the
+cell** rather than left to the colour: a colour cannot say *three of eight*, and
+it says nothing at all to a reader with colour blindness or to a printer.
+
+Capped at 31 nights. Past a month the cells are too narrow to carry a room
+number, and the answer stops being *readable* rather than merely large.
+
+⚠️ **Nothing here books anything**, and the tape is the one that could be
+mistaken for something that does. A booking is taken on the availability screen,
+against the unique key that actually stops a bed being sold twice — this is a
+picture of what was held when the page was read. The screen says so under the
+chart.
+
+Where two bookings share a room on one night — ordinary in a dormitory sold bed
+by bed — the cell names one and flags `shared`, so a tooltip naming one guest
+does not read as naming the only one. The name is taken with `MIN` rather than
+whichever row the engine read first: a cell showing a different guest on every
+refresh is a cell nobody trusts.
+
+### The month, laid out
+
+⚠️ **Sunday first.** Bangladesh's working week begins on Sunday, and a calendar
+starting on Monday would put the weekend in the middle of the row for everybody
+reading this.
+
+Each day carries occupancy as a percentage *and* a colour, sold and held, the
+night's revenue, and arrivals and departures as `↓` and `↑` — the two numbers a
+desk plans its morning by.
+
+### Checked
+
+`hotel_calendar_check.php` — **38 assertions**, every block rolled back, run
+against a **quiet month** (April 2026) so no figure depends on whatever somebody
+last did in a browser.
+
+With the rest: **307 assertions across ten hotel scripts, all passing.**
+
+### What is left
+
+Phase 4 is done. What remains unblocked, in the order it is worth doing:
+
+1. **Rate plans** (`booking_rate_plans` / `_details`) — season, holiday and
+   corporate rates. Rent is fixed per room today, so a hotel cannot charge more
+   at Eid than in Ramadan without editing every room.
+2. **`booking_charge_types`** — extra charges with their own COA heads, which
+   would retire the single `Hotel Other Income` head §26 settled for.
+3. **`booking_bill_transfers`** (§6.4) — moving a bill to another payer with its
+   own voucher and permission. Check-out's *carry to party* covers half of it.
+4. Housekeeping and amenities (phase 5), then events and catering (phase 6),
+   then ticketing.
+
+Still waiting on the client: the VAT rates (§6.3), early check-in and late
+check-out charges (§6.2), the §6.1 gender rule, cancellation percentages, and the
+child age (OPEN-13) — **which last one this section now has a use for**, because
+an occupancy report that counted children differently from one property to the
+next is exactly the comparison OPEN-13 warned about.
+
+---
+
+## 32. "Bill it to my office" — §6.4, built 2026-08-26
+
+### A correction to §31's ordering
+
+§31 ended by naming **rate plans** as the next unblocked piece. That was wrong,
+and §6.2 says so in its own words: *"**Rate card rules** — weekend, wedding
+season, holiday, corporate rates?"* sits under **"Not yet known — needed before
+schema work"**. Building that schema without the client's answer is exactly what
+that heading warns against.
+
+**Bill transfer is the opposite case.** §6.4 is marked *"Approved by the client
+2026-08-23"* and specifies the whole of it — the four rules, the permission, the
+table name. It was simply never built.
+
+### ⚠️ It is not a field edit
+
+Setting `billed_to_party_id` and calling it done would leave a receivable in the
+hotel's own control head while the company's statement showed nothing — and the
+two would be reconciled by hand for ever. **The money owed moves from one
+party's account to another's, and that is a ledger entry.**
+
+### The guest is a head, not a party
+
+The elegant part, and it falls out of §26's design rather than being invented
+for this.
+
+Until a bill is moved anywhere, what is owed sits in **Advance Against
+Booking** — which *is* the guest's account: money arrives there as a liability,
+the bill turns it into a debit, and the balance of that head for one booking is
+exactly what the folio calls "owed".
+
+So all three moves are one entry with different heads on the two sides:
+
+| | Debit | Credit |
+|---|---|---|
+| Guest → company | The company | Advance Against Booking |
+| Company A → company B | B | A |
+| Company → back to the guest | Advance Against Booking | The company |
+
+`HotelVoucher::postTransfer` is that one entry, and the check-out carry (§26) is
+now a caller of it. `NULL` on either side of `booking_bill_transfers` means the
+guest — writing the guest as a party row instead would mean inventing a party per
+walk-in, which `booking_guests` already refuses to do and for the same reason.
+
+### The four rules, all the client's
+
+**⚠️ Only the outstanding balance moves.** Money already received stays with
+whoever paid it. A 5,000 advance against a 15,000 bill leaves the company owing
+**10,000**, not 15,000.
+
+**⚠️ No re-pricing.** A stay at rack rate stays at rack rate even where the
+company has a contract rate. What changes is who pays, never what it cost.
+Nothing in the transfer path touches a folio line, and the check script asserts
+the lines are byte-for-byte identical afterwards. §6.4 makes it a rule rather
+than a setting on purpose: allowed, it becomes the back door for discounts, and
+the discount appears nowhere in the books.
+
+**⚠️ Both directions.** Not because a company will refuse to pay — the client
+says that will not happen — but because the desk will sometimes name the wrong
+company, and with no way back the whole bill has to be cancelled and typed again.
+
+**⚠️ A voucher every time**, plus a `booking_bill_transfers` row.
+
+### ⚠️ Three consequences that had to be chased down
+
+Moving a receivable is not a self-contained act. Three other paths were quietly
+wrong the moment it became possible, and none of them would have announced
+itself.
+
+**Money taken afterwards must settle the COMPANY.** `HotelVoucher::postPayment`
+credited Advance Against Booking unconditionally. Against a bill already moved,
+that pushes the advance head negative while leaving the company still owing on
+paper — two accounts wrong from one receipt, and neither obviously. It now
+credits `BillOwner::head()`, which on an ordinary booking still *is* the advance
+head, so every voucher raised before this reads the same way.
+
+**Charges billed afterwards belong to the company too.** §6.4: *"all charges go
+on the company's bill"*. `postFolio` debits the same head, so a stay extended
+after its bill moved does not put the new nights back on the guest and leave one
+stay owed by two people.
+
+**Check-out must not carry it again.** A bill already moved has left the advance
+head; carrying it a second time debits the company twice and pushes the advance
+head negative by the same amount. `BillOwner::isCarried()` guards it.
+
+That last one is why the state is read from **`booking_master.main_trx_id`**
+rather than from `billed_to_party_id`. The party id alone is not enough: it can
+be filled in at booking time as an intention — *"this is Company X's booking"* —
+long before any money has moved anywhere. `main_trx_id` is set only when a
+receivable actually leaves the advance head, and cleared when it comes back.
+
+### ⚠️ The permission is the only guard left
+
+`hotel.booking.transfer`, manager and above, **not the desk**. §6.4 gives
+corporate bookings **no credit limit**, so one press turns a bill that was going
+to be settled in cash into an open-ended receivable that nothing will ever block.
+
+⚠️ §6.4 names the permission `booking.bill.transfer`. It is created as
+`hotel.booking.transfer` instead: every other permission in this module is
+`hotel.*`, the Roles screen groups them by `group_name = 'Hotel'`, and a bare
+`booking.bill.transfer` would read as belonging to some other module. The spec
+was written before that convention settled.
+
+### 32.1 A rule that had been missed
+
+§6.4's holds table says: **"On advance — a hold with money against it becomes
+*confirmed* automatically."** It was never implemented.
+
+It matters more than it reads. A hold that stays tentative after somebody has
+paid gets its beds released by `hotel:expire-holds` on the day it lapses — and
+that sweep's *"money has been taken against it, left for a person"* branch (§28)
+was written as a **backstop**. Without this rule it was the ordinary path, which
+is not what a backstop is for.
+
+Taking money against a hold now confirms it, clears `hold_until` — the deadline
+belonged to the hold, and left standing it is a date on a booking nothing expires
+— and writes the move to `booking_status_logs` with a reason a person can read.
+
+### Checked
+
+`hotel_bill_transfer_check.php` — **38 assertions**, every block rolled back.
+
+It reads each head's **net movement across every voucher the booking raised**,
+which is the only way to catch a double-carry: both postings balance perfectly on
+their own, and only the running total shows one of them should not be there.
+
+⚠️ Two faults the script found on its first run, both real:
+
+- **`$data['reason']` on a request that sent none.** `validate()` returns only
+  the keys that were *sent*, so `?:` was reading a missing key rather than an
+  empty one. Fixed with `?? null` first.
+- **The fixture, not the code.** A fixed 5,000 advance against whatever this
+  database's demo rooms cost left the booking *in credit* — and the controller
+  quite rightly refuses to move a bill that owes nothing. The advance is now a
+  fraction of the bill, worked out after billing.
+
+With the rest: **345 assertions across eleven hotel scripts, all passing.**
+
+### What is left
+
+⚠️ **Rate plans are blocked**, not next: §6.2 needs the client's rate-card
+answer first. Genuinely unblocked, in order:
+
+1. **`booking_charge_types`** — extra charges with their own COA heads, which
+   would retire the single `Hotel Other Income` head §26 settled for.
+2. Housekeeping and amenities (phase 5).
+3. Events and catering (phase 6), then ticketing.
+
+One thing §6.4 leaves open and this section inherits: **a printed Mushak 6.3
+cannot be reissued in another name** — it needs a credit note. That rule waits on
+OPEN-6, and it does not bite yet because §27 prints a *Bill* and not a Mushak.
+
+---
+
+## 33. What a charge is, and which head it earns into, 2026-08-26
+
+### The compromise this retires
+
+§26 settled the ledger with **one catch-all** `Hotel Other Income` for everything
+that is not a room, and said why at the time:
+
+> *"§5 names a head per service — Catering Income, Ticket Income, Hall Rent
+> Income. Those arrive with the modules that sell them, and there is no
+> restaurant module yet. One head now beats six empty ones, and it beats the only
+> other thing the code could do, which is post a guest's dinner to Room Rent
+> Income."*
+
+⚠️ **The answer was never six fixed heads. It was letting the client say.** A
+hotel with a restaurant wants restaurant income of its own; one that sells
+nothing but rooms wants none of it, and shipping six heads into their chart would
+be clutter they never asked for.
+
+`booking_charge_types` (**table 16**) maps a charge type to whichever head *they*
+nominate — and a type with none nominated still falls back to Hotel Other Income.
+
+### ⚠️ Which is why nothing changed for anybody on the day it shipped
+
+The seven shipped rows carry **`coa4_id NULL`**. They give the codes their names
+and their order on the picker, and move no money. A tenant who never opens the
+screen posts exactly as every install did before: room rent to Room Rent Income,
+everything else to Hotel Other Income.
+
+The screen says so at the top, because somebody staring at a column of blank
+"Earns into" cells has to be told that is the *working* state and not an
+unfinished one. The list prints the fallback by name rather than leaving the cell
+empty, for the same reason.
+
+### ⚠️ `code` is a key, and it does not move
+
+It is the string **already held** by `booking_folio_details.charge_type` and
+`booking_tax_rates.charge_type`. It is not an id and must never become one: a
+bill is read back from what it stored (§6.3), and a code renamed underneath a
+folio line would restate a bill somebody has already paid.
+
+So the code is shown but never editable on an existing type, and a typed one is
+normalised — lower case, underscores, nothing else. `"Hall Rent"` and
+`"hall_rent"` would be two charge types that look like one, **taxed differently,
+on the same bill**.
+
+### ⚠️ A company overrides; it does not mutate
+
+The shipped list is shared by every tenant on the server. Saving a change to one
+writes a row of **this company's own** with the same code, which wins — the same
+"most specific wins" rule `booking_tax_rates` and the chart-level lookups already
+follow. *Reset* deletes that row and the shipped one stands again.
+
+There is deliberately **no way to delete a shipped code**: folio lines already
+hold the string, and a code with no row behind it would print on a bill as its
+own key — `hall_rent` rather than "Hall Rent".
+
+### ⚠️ One leg per HEAD, not one per charge type
+
+The posting change that needed care. `postFolio` used to make at most two income
+legs — rent and other. It now sums the base amounts **keyed by the head each
+charge earns into**, and writes one leg per head.
+
+A hotel putting restaurant *and* catering into one Food & Beverage account must
+see **one credit** on the voucher. Two legs would show the ledger twice what the
+accountant thinks of as one figure, and both would be right on their own.
+
+`ksort` on the way out, so the legs run in the chart's order rather than
+whichever line of the bill happened to come first — a voucher whose legs shuffle
+between two otherwise identical bills is one nobody can compare.
+
+### Income heads only
+
+The picker offers level-4 heads under **Direct Income** or **Indirect Income**,
+and the server checks it again on the way in. ⚠️ `Hotel Rent` is an **expense**
+head sitting in every one of these charts (see `HotelAccountHead`'s header),
+close enough in name that nobody would look twice — a charge nominated to it
+would run the books backwards.
+
+### The folio stopped guessing
+
+`addCharge` validated against a **constant in the code**; it now validates
+against the **company's own list**. A property that has added "Spa" can bill one,
+and one that has switched "Ticket" off cannot — neither of which a constant could
+say.
+
+The dropdown is fed from the folio's own answer for the same reason: a hardcoded
+list in the client would quietly disagree with what the server accepts. It falls
+back to the shipped seven only until that answer arrives.
+
+A type with a **suggested rate** fills the box in — but only where the box is
+still empty. Overwriting a figure somebody just typed because they corrected the
+charge type would be worse than not suggesting at all.
+
+⚠️ `room_rent` is kept off the picker by its own `by_hand = 0`, whatever anybody
+ticks. A hand-typed rent line carries no room and no night, escapes
+`uq_bfd_room_night`, and the same night could then be charged twice —
+`FolioController::addCharge` has refused it since §25 and this does not open a
+second door to it.
+
+### The tab is last, and the only optional one
+
+Under **Hotel ▸ Rooms & Seats Setup**, after Layout. It takes no branch: charge
+types and the heads they earn into are the **company's**, not a property's. One
+hotel's laundry income and another's belong in the same account, and a per-branch
+list would be two answers to one bookkeeping question.
+
+### Checked
+
+`hotel_charge_type_check.php` — **26 assertions**, every block rolled back.
+
+The first one is the one that matters most: **with nothing nominated, a charge
+posts exactly as it always did**. That fallback is what makes the whole table
+optional, and it is the thing that would break silently.
+
+⚠️ The same fault §32 hit, hit again: **`$data['coa4_id']` on a request that sent
+none.** `validate()` returns only the keys that were *sent*. Two occurrences in
+two sections is a pattern, not an accident — every optional field read out of a
+validated array in this module now goes through `??`.
+
+With the rest: **371 assertions across twelve hotel scripts, all passing.**
+
+### What is left
+
+Unblocked, in order: **housekeeping and amenities** (phase 5, four tables), then
+events and catering (phase 6), then ticketing.
+
+Still waiting on the client: the VAT rates (§6.3), rate-card rules (§6.2 — which
+is why **rate plans remain blocked**, see §32), early check-in and late check-out
+charges, the §6.1 gender rule, cancellation percentages, and the child age.
+
+---
+
+## 34. Is the room ready? — phase 5, 2026-08-26
+
+### The gap
+
+After a guest left, the room was **dirty and nothing in this system said so**.
+The desk could sell it to somebody walking through the door five minutes later,
+and the first anybody knew was the new guest standing in an unmade room.
+
+### ⚠️ Cleanliness and occupancy are different questions
+
+The whole design turns on keeping them apart.
+
+Whether a bed is **sold** lives in `booking_resource_details`, one row per seat
+per night, and nothing here touches it. Whether a room is **fit to enter** is
+`hotel_housekeeping_status`. A room can be occupied and dirty, free and dirty, or
+free and ready — and only the last of those is a room the desk can hand a key to
+today.
+
+The board shows both, because a housekeeper needs both: a dirty room somebody is
+still asleep in is a different job from a dirty room that is empty.
+
+### ⚠️ No dates in it
+
+Housekeeping is about **now**: a room is dirty until somebody cleans it, and the
+moment they do is the moment it changes. Dated cleanliness would be a second
+booking engine answering a question nobody asks — *"was 201 clean last Tuesday"*
+is what `hotel_housekeeping_logs` is for.
+
+### ⚠️ A room with no row is clean
+
+Nothing seeds the status table. Rooms are set up long before anybody opens a
+housekeeping screen, and a property of forty rooms must not have to be
+initialised before its first booking.
+
+Absence is the ordinary state, and every read copes with it. Filling the gaps in
+on read would be a **write on a read path** and a table that grows by being
+looked at.
+
+### The four states
+
+| | |
+|---|---|
+| `clean` | Made up, ready. Also what a room with no row is |
+| `dirty` | Somebody has left it — the ordinary state after check-out |
+| `cleaning` | Being made up now, so two housekeepers do not both start |
+| `out_of_order` | ⚠️ **Not sellable.** Painting, a broken air conditioner |
+
+Four, and each means something a person does. A fifth — *inspected*, what large
+hotels add when a supervisor signs a room off — is **not** added, because nobody
+asked and an unused state is a state somebody has to be told to ignore.
+
+### 34.1 The two integrations, which are what make it real
+
+A housekeeping board nothing feeds is a screen somebody has to remember to
+update, and they never do.
+
+**⚠️ Check-out leaves the rooms dirty.** Inside the same transaction, after the
+nights are released. The rooms are read from the nights *and* from the folio,
+because a stay whose later nights were released has none left after the departure
+date while its bill still names the rooms.
+
+`changed_by` is **NULL** — the *system* did it. The clerk ended a stay; they did
+not dirty a room, and naming them would be a small lie that reads perfectly. The
+same convention `booking_status_logs` uses.
+
+**⚠️ An out-of-order room leaves the market.** `availability` reads the blocked
+list once for the property and overrides the room's state to `closed` with the
+reason on it.
+
+It **outranks free**: a room being painted is not for sale however empty the
+calendar says it is, and a screen showing it green would have somebody book it.
+It does *not* stop a stay already in it — the guard is on offering the room, not
+on the guests who are in one when the air conditioner breaks.
+
+⚠️ And a check-out does **not** downgrade an out-of-order room to dirty. That
+would put it back on the market the moment somebody cleaned it, with the air
+conditioner still broken.
+
+### Out of order asks why, and nothing else does
+
+It is the one state with a dialog behind it, and the confirm button stays dead
+until a reason is typed. It takes a room off the market **until a person clears
+it** — nothing clears it on a timer — and a room nobody can sell for a reason
+nobody wrote down stays out of order until it is noticed.
+
+Every other move is one press. A housekeeper with an armful of sheets is not
+going to confirm forty dialogs.
+
+⚠️ Pressing the state a room is already in writes **nothing** — not the status,
+not the log. People press *Clean* twice, and a log full of clean-to-clean rows is
+one nobody can read the real moves out of.
+
+### Its own permission
+
+`hotel.housekeeping.view`. On a property large enough to have a housekeeper this
+is the **only** hotel permission they need: they have no business in the folio,
+the till or the guest register. On a small property one person holds all of them
+and loses nothing by it.
+
+### Checked
+
+`hotel_housekeeping_check.php` — **26 assertions**, every block rolled back.
+
+The two that matter are the integrations, and they are checked end to end: a real
+check-out through its own controller, then the board read back; and a real
+availability read before and after a room goes out of order.
+
+With the rest: **397 assertions across thirteen hotel scripts, all passing.**
+
+### 34.2 What phase 5 still does not have
+
+Amenity kits — `hotel_amenity_kits` and `hotel_amenity_kit_items` (§4.3), the
+standard kit per room type and whether each item is counted **per room or per
+guest** (§6.1).
+
+They are deliberately left for now, and the reason is not effort. §4.3 also asks
+for a **location reference and a nullable booking reference on
+`material_issue_master`** — a table the construction module already uses in
+production — and the kits are only worth having once an issue can say which room
+or event it was for. Without that the variance report has nothing to compare
+against, and the kit tables would be two masters nobody can act on.
+
+That is a change to shared, live code and wants its own piece of work rather than
+being tacked onto a housekeeping board.
+
+## 35. A stay that ends in pieces — §6.5, built 2026-08-26
+
+### The gap, in the words it was asked in
+
+> Four rooms are let for five nights. After two nights the guests in 101 have to
+> go home. The bill must then read **101 — 2 nights, 102 — 5, 103 — 5, 104 — 5**.
+
+Check-out was all-or-nothing. It released every unslept night on the booking,
+billed everything left, marked every room dirty and closed the stay. There was no
+way to let one room go: the desk's choices were to end four stays' worth of
+booking at once, or to leave 101's beds held — unsellable — until Friday.
+
+### ⚠️ Ticked is not the same as leaving
+
+The request carries `resource_ids`. **Absent means every room**, which is what
+every caller before §6.5 meant and still means — a partial check-out is something
+the desk asks for, never something a client gets by forgetting a parameter.
+
+But a ticked room is not necessarily a leaving one. Checking the whole booking
+out on Friday ticks 101 too, and 101 went home on Wednesday. Acting on it again
+would write it a second departure record and **send housekeeping back to a room
+somebody has already made up**. So the write acts on `chosen ∩ pending`, where
+pending means *has a night to give back, or a night to bill*.
+
+### ⚠️ One stay is one folio, and one bill
+
+The money rules did **not** move to the room. A room leaving mid-stay settles
+nothing:
+
+- the balance shown is the **whole stay's**, not this room's quarter of it;
+- *"a balance has to be somebody's"* is enforced only when the **last** room
+  goes — there is no final figure to answer for until then;
+- *"money in hand over the bill"* is likewise refused only at the end. It is the
+  ordinary state of a stay that took an advance and still has rooms occupied, and
+  refusing over it would make an advance impossible to take.
+
+### ⚠️ The status moves only when the last room goes
+
+A booking with guests upstairs is checked **in**, whatever has been released from
+it. A stay marked checked-out with people asleep in 102 vanishes from the desk's
+own list of who is in the building.
+
+Which leaves the history with nowhere to go, and that is what the new table is
+for. The nights cannot hold it — releasing one **deletes** the row, so the very
+act being recorded destroys the evidence. `booking_status_logs` cannot either: a
+`checked_in → checked_in` row would be counted by the history screen as an
+ending, and one stay would report four of them.
+
+`booking_room_checkouts` — append-only, one row per room per check-out including
+the final one, carrying the departure date, the nights billed, the nights
+released and whether that room closed the stay.
+
+### What the screen does
+
+The rooms are picked **before** the date, because the desk decides who is leaving
+first. Rooms already gone are greyed and say so rather than showing four zeroes.
+Unticking the last room is refused: an empty list reads to the server as *all
+rooms*, and the desk would be shown the whole stay's figures and press the button
+on them.
+
+The button says `Check out 1 room` when that is what it does, and the dialog says
+the bill stays open and how many rooms are staying behind.
+
+The nights table also gained a **Room** column, without which it was unreadable
+the moment a booking had two rooms — four identical *"Whole room, 2,500"* lines
+and nothing saying which room each belonged to.
+
+### 35.1 What the rest of the module had to learn
+
+A booking checked **in**, with one room's beds released and its nights billed
+while three rooms sleep on, is a state nothing else had ever seen. Three places
+were reading it wrongly:
+
+**The departures report.** It asked for bookings whose `MAX(stay_date) + 1` was
+today — a booking-wide question. Four rooms with one going home on Wednesday
+have their maximum fixed by the three that stayed, so Wednesday's list said
+nobody left, on the morning a room needed making up. It now also asks
+`booking_room_checkouts`, which is the only record of that departure: the nights
+that room gave back were deleted.
+
+**Allotment.** It checked that the booking held the room, and a room that has
+left keeps the nights it slept — that is the register of who was in the
+building — so the check passed and guests could be filed against a door the
+hotel had already relet. Refused now, by the same record.
+
+**`Housekeeping::roomsOf()`** answers *every* room a stay touched. It was written
+for check-out, back when a stay ended all at once. Handing it to `markDirty()`
+now would knock housekeeping on three occupied doors, and re-dirty a room made up
+two days earlier. The call site passes the rooms actually leaving; the function
+keeps a warning in its docblock, because the question it answers is still a real
+one.
+
+### ⚠️ Nights billed before they were slept
+
+Screen 5 bills every night a booking **holds**, future ones included — that is
+deliberate, and it is how an advance is charged. Cut the stay short afterwards
+and those nights are released while their folio lines stay, because nothing takes
+a line off a folio: taking money back off a bill is a credit note, which §6.2
+does not have yet.
+
+So the plan counts them, and the screen says so before the button: *"3 nights
+already on the bill are being given back."* A warning and not a refusal — the
+desk may be handing the money back across the counter as it presses — but never
+silence, which is the version where the guest pays for a room they left.
+
+## 36. Selling a hall by the sitting — §4.2, built 2026-08-27
+
+A room is sold by the **night**. A hall is sold by the **slot**: a seminar takes
+the morning, a wedding the evening, and the same hall earns twice on one date.
+`booking_resource_types.rate_unit` has said `'slot'` for `hall` and
+`community_centre` since the module shipped. Nothing had ever made the word mean
+anything.
+
+### ⚠️ The overlap lock had to be rebuilt
+
+The module's whole guarantee that a bed is not sold twice is one unique index:
+
+```
+uq_brd_seat_night  UNIQUE(resource_id, stay_date)
+```
+
+One resource, one date, one row — which is exactly what a hall must break. So it
+now counts `slot_id`, and **`slot_id` is `NOT NULL DEFAULT 0`**.
+
+That default is not tidiness. MySQL treats NULLs in a unique index as *distinct*,
+so a nullable `slot_id` would have let the same room be booked for the same night
+any number of times, every row's slot NULL, with **no error anywhere** — nobody
+would have found out until two guests were handed one key. **0 means the whole
+night**, which is what every room row carries, so rooms are locked exactly as
+they always were.
+
+A hall taken for a whole day is **every sitting, one row each** — never slot 0.
+Slot 0 beside slot 3 are two rows that do not collide.
+
+The rebuild has an order forced on it: `resource_id`'s foreign key leans on that
+index, and MySQL refuses to drop the last index a constraint can use. The new key
+is built first, the old one dropped, then renamed back — so the table is never,
+for an instant, without a unique key.
+
+### ⚠️ The database cannot catch an overlapping *definition*
+
+Two sittings that share an hour — an afternoon of 3–8 beside an evening of 7–12 —
+are two different slot ids. Both can be sold for one date and the key is
+satisfied: a wedding lands on top of a seminar and nothing complains. The clash
+is between the **definitions**, not the bookings, so no index will ever see it.
+
+`HotelSlotController` refuses the overlapping pair when slots are *written*,
+which is the only moment anybody can. Touching is not overlapping — 09:00–14:00
+then 14:00–18:00 is how a property that lets its hall twice a day works.
+
+Two more rules there, each with a reason:
+
+- **A sold slot's hours cannot be moved.** The guest holding it bought those
+  hours, and moving them can drop the sitting onto one sold separately — the very
+  clash this screen prevents, arriving by the back door. The name may be fixed.
+- **A sold slot cannot be deleted.** `slot_id` carries no foreign key (0 is not a
+  row), so deleting it would leave bookings naming a sitting nobody can look up,
+  with no database error to say so.
+
+### ⚠️ The bug this opened, and where it was closed
+
+The moment halls became creatable they appeared on the **room** screen —
+`propertyTree()` takes every top-level resource — drawn *"closed: no beds set up
+in it"*, a sentence about a room. Worse, `store()` **accepted** one for a stay of
+nights. That booking is stored with slot 0, which collides with nothing, leaving
+the same hall free to be sold that evening as slot 3.
+
+Closed in both places: availability asks the tree for `'night'` only, and the
+write refuses a slot-priced resource by name. The layout grid still shows halls —
+a property drawn without its community centre is a drawing of a different
+property.
+
+### The hall's own availability
+
+`GET bookings/halls` — one date, one row per hall, one cell per sitting. Its own
+endpoint rather than a flag, because it is a different question: a room is asked
+about over a **range** and answered per room; a hall on **one date** and answered
+per sitting.
+
+| | |
+|---|---|
+| A slot-0 row | Blocks **every** sitting — somebody holds the hall all day |
+| No rent | Closed, not free. §2.8: the rent is the price of one sitting, and a hall with none would bill at zero and print as a free wedding |
+| Out of order | Closed for every sitting |
+| No sittings defined | A refusal naming what is missing, not an empty grid |
+
+### 36.1 Booking one — §4.2, step 4
+
+The room form takes a **stay**: two dates, and every night between them. A hall
+takes neither. It is asked for as `(hall, date, sitting)` — the evening of the
+29th and the morning of the 30th are two entries, not a range, because a wedding
+is exactly that shape and two flat lists cannot say it.
+
+**⚠️ A hall-only booking has no stay of nights.** A wedding on the 29th starts
+and ends on the 29th, which `range()` refuses as *"a stay has to be at least one
+night"* — rightly, for a room. So `check_in_date` and `check_out_date` became
+optional: with no rooms on the booking the dates are **read off the sittings**,
+check-out being the morning after the last one, which is what the rest of the
+module means by a check-out date. That refusal message no longer says a hall slot
+is "not built yet"; it names the sitting path instead.
+
+**⚠️ Rooms and halls on one booking stretch the dates.** The client's own
+decision was one booking and one bill — a wedding with four rooms for the
+guests. Left at the room dates, a booking that says the 14th–17th while its hall
+is held on the 19th is read wrongly by every report filtering on
+`check_out_date`, starting with the departures list. So the range covers
+everything on the booking.
+
+**⚠️ A duplicate is caught by name, not by the key.** The unique index would
+fire on a hall listed twice in one request, but its sentence is *"somebody took
+it while this form was open"* — a lie when the somebody is the clerk, twice, in
+one form. The duplicate is found before the write and named.
+
+A hall row is written against **the hall itself** (`resource_id = the hall`), not
+against a bed inside it. A room's lock lives on its beds because beds are what is
+sold; a hall has none, and it is the hall that is taken.
+
+The count reported back is sittings, never nights: *"Booked 3 sittings"*. "Booked
+1 sitting for 1 night" is a sentence about a stay, and the guests go home after
+the wedding.
+
+### What is not built yet
+
+The booking **screen** — picking a hall and its sittings in the browser. The API
+takes it; nothing draws it. Check-in and check-out for a hall (the client asked
+for both) come with it.
+
+### What is left, honestly
+
+⚠️ **Most of what remains cannot be built, and should not be.** These are the
+client's business rules, and inventing them is worse than leaving them:
+
+| | |
+|---|---|
+| VAT and service-charge **rates** (§6.3) | Six questions for their VAT consultant. Every bill prints with no tax lines until answered |
+| **Rate-card rules** (§6.2) | Weekend / season / holiday / corporate — which is why rate plans stay blocked (§32) |
+| Early check-in and late check-out **charges** (§6.2) | |
+| **Cancellation percentages** (§6.2) | The desk types the refund by hand meanwhile |
+| The §6.1 **gender rule** | Blocked by §6.2, and no guest has a gender on the data as it stands |
+| **Child age** (OPEN-13) | Until answered, no two occupancy reports compare |
+| **Mushak 6.3 / EFD** (OPEN-6) | Decides whether the bill is a government document |
+| A restaurant? (OPEN-3) | |
+
+Buildable, and each its own piece of work rather than a loose end:
+
+1. **Amenity kits** + the `material_issue_master` references — §34.2 above.
+2. **Events and catering** (phase 6, seven tables) — *motel site only*, and halls
+   need `booking_slots` first.
+3. **Ticketing** (six tables) — *resort site only*.
+4. Financial year (phases 0–1), assets and depreciation (8–9) — §12 already
+   records that phase 0 was skipped deliberately and is **not** a prerequisite.
+
+§8's own estimate for the whole of it is **~100 days for site 1**. What has been
+built is the first release and the six pieces since; what is listed above is the
+rest of that estimate, not a tail of odds and ends.

@@ -848,3 +848,140 @@ export const API_LABOUR_ITEM_STORE_URL = `${API_BASE_URL}/labour-setup/items/sto
 export const API_LABOUR_ITEM_UPDATE_URL = `${API_BASE_URL}/labour-setup/items/update`;
 export const API_LABOUR_ITEM_DELETE_URL = `${API_BASE_URL}/labour-setup/items/delete`;
 export const API_LABOUR_ITEM_STATUS_URL = `${API_BASE_URL}/labour-setup/items/status`;
+
+
+// Hotel setup — buildings, floors, room types, and the rooms and seats inside
+// them. One stem per table; the screens suffix /ddl, /store, /update/{id},
+// /delete/{id} and /edit/{id} onto it, the way the labour setup screens do.
+export const API_HOTEL_BUILDING_URL = `${API_BASE_URL}/hotel-setup/buildings`;
+export const API_HOTEL_FLOOR_URL = `${API_BASE_URL}/hotel-setup/floors`;
+export const API_HOTEL_ROOM_TYPE_URL = `${API_BASE_URL}/hotel-setup/room-types`;
+
+/**
+ * What a room offers -- the tick list behind the room form.
+ *
+ * ⚠️ THE COMPANY'S, not a property's, and that is why nothing here takes a
+ * branch. A company running two hotels ticks "air conditioning" on rooms in
+ * both, and two lists would be two spellings of one word within a season.
+ */
+export const API_HOTEL_FACILITY_URL = `${API_BASE_URL}/hotel-setup/facilities`;
+
+/**
+ * The parts of a day a hall is let for (§4.2).
+ *
+ * A room is sold by the night; a hall by the slot, and the same hall earns
+ * twice on one date. Two slots that share an hour could both be sold for one
+ * date -- the unique key counts (resource, date, slot) and cannot see the
+ * clash -- so the server refuses an overlapping pair when they are DEFINED.
+ */
+export const API_HOTEL_SLOT_URL = `${API_BASE_URL}/hotel-setup/slots`;
+// Also the stem for /types (the kinds a resource may be), /{id}/seats,
+// /seats/update/{id} — where one bed is priced on its own — and /bulk-store,
+// which is the same form as /store with a run of numbers in place of one.
+export const API_HOTEL_RESOURCE_URL = `${API_BASE_URL}/hotel-setup/resources`;
+// The whole property in one answer, for the elevation grid. Its own endpoint
+// because the resources list paginates at ten, and a floor plan cannot be read
+// ten rooms at a time.
+export const API_HOTEL_LAYOUT_URL = `${API_BASE_URL}/hotel-setup/layout`;
+
+// Bookings. The stem suffixes /store, /edit/{id}, /cancel/{id}, and — for the
+// second stage of the form, on the day the guests arrive — /allotment/{id} and
+// /allot/{id}.
+export const API_HOTEL_BOOKING_URL = `${API_BASE_URL}/hotel-setup/bookings`;
+// ⚠️ ADVISORY. What is free at the moment it is asked, and never a hold on
+// anything — two clerks can both be told the same room is free and both be
+// right. The bed is claimed by a unique key when the booking is saved.
+export const API_HOTEL_BOOKING_AVAILABILITY_URL = `${API_BASE_URL}/hotel-setup/bookings/availability`;
+
+/**
+ * What is free in the HALLS on one date, sitting by sitting.
+ *
+ * Its own endpoint because it is a different question: a room is asked about
+ * over a RANGE and answered per room; a hall on ONE DATE and answered per
+ * sitting -- the morning free while the evening is a wedding is one hall with
+ * two answers.
+ */
+export const API_HOTEL_HALL_URL = `${API_BASE_URL}/hotel-setup/bookings/halls`;
+// The folio — screen 5. The stem suffixes /{id}, /{id}/bill, /{id}/charge and
+// /{id}/receive.
+//
+// ⚠️ Every one of the three writes answers with the WHOLE folio again rather
+// than with what it wrote. What was charged and what was paid are two different
+// questions, and a screen that patched one of them in place would eventually
+// show a bill and a balance from two different moments.
+export const API_HOTEL_FOLIO_URL = `${API_BASE_URL}/hotel-setup/bookings/folio`;
+
+// Check-out — screen 6. The stem suffixes /{id}, read and written.
+//
+// ⚠️ The GET is a PLAN, not a record: it says what the button would do on the
+// departure date it is given, and its balance counts the nights that are not
+// on the bill yet. Read it again whenever that date changes, or the desk is
+// shown a figure for a day the guest is not leaving on.
+export const API_HOTEL_CHECKOUT_URL = `${API_BASE_URL}/hotel-setup/bookings/checkout`;
+
+// Who an unpaid balance can be carried to.
+//
+// ⚠️ Answers cust_party_infos.id. NOT interchangeable with the coa4 ids the
+// chart dropdowns return — billed_to_party_id points at the party master.
+export const API_HOTEL_PARTY_URL = `${API_BASE_URL}/hotel-setup/bookings/parties`;
+
+// Where money may be taken — this company's own cash and bank heads.
+//
+// ⚠️ Answers acc_coa_level4s.id, which is what `coa4_id` on a payment wants —
+// the opposite of the line above, and the two must not be crossed. Required on
+// every receipt since the §5 vouchers were written: a voucher cannot say which
+// drawer the money went into if nobody said.
+export const API_HOTEL_TILL_URL = `${API_BASE_URL}/hotel-setup/bookings/folio/tills`;
+
+// What cancelling a booking would do to the money, before it is done — how much
+// is held, whether it has been billed (which forbids cancelling at all), and
+// which tills a refund could come out of.
+export const API_HOTEL_CANCELLATION_URL = `${API_BASE_URL}/hotel-setup/bookings/cancellation`;
+
+// Who was in the building on a given night, and who is arriving or leaving.
+//
+// ⚠️ It reads the NIGHTS, not the booking's own dates. Check-out deletes the
+// nights a guest did not sleep, so "holds a night on the 25th" is the only
+// expression in the schema that means "was here on the 25th" — and a register a
+// police officer reads has to mean that.
+export const API_HOTEL_REGISTER_URL = `${API_BASE_URL}/hotel-setup/reports/register`;
+
+// What money came in between two dates, and whether it reached the ledger.
+//
+// ⚠️ Every total is NETTED. A refund is stored positive — the direction lives in
+// the purpose — so a report that summed the column would say the day took more
+// than the drawer holds.
+export const API_HOTEL_COLLECTION_URL = `${API_BASE_URL}/hotel-setup/reports/collection`;
+
+// How full a month was, night by night, with ADR and RevPAR against it.
+//
+// ⚠️ ADR and RevPAR are different divisions — per bed SOLD and per bed the
+// property HAS. Quoting one for the other reports an empty month as a full one.
+export const API_HOTEL_MONTH_URL = `${API_BASE_URL}/hotel-setup/calendar/month`;
+
+// The tape chart: rooms down the side, nights across the top. What it is read
+// for is the HOLES, which a list of bookings never shows.
+export const API_HOTEL_TIMELINE_URL = `${API_BASE_URL}/hotel-setup/calendar/timeline`;
+
+// Who owes this bill, and moving it to somebody else — §6.4.
+//
+// ⚠️ NOT a field edit. The money owed moves from one party's account to
+// another's with a voucher against it, and only the OUTSTANDING balance moves:
+// money already received stays with whoever paid it. Nothing is re-priced.
+export const API_HOTEL_BILL_URL = `${API_BASE_URL}/hotel-setup/bookings/bill`;
+
+// What can go on a bill, and which head each earns into — §33.
+//
+// ⚠️ Nothing here is required. A property that never opens it posts exactly as
+// every install did before: room rent to Room Rent Income, everything else to
+// Hotel Other Income. Editing one of the seven that ship writes THIS company's
+// own version of it, which overrides the shipped row rather than changing it.
+export const API_HOTEL_CHARGE_TYPE_URL = `${API_BASE_URL}/hotel-setup/charge-types`;
+
+// Is the room ready? The stem suffixes /move/{id} and /history/{id}.
+//
+// ⚠️ Cleanliness and occupancy are different questions. Whether a bed is SOLD
+// comes from the nights; whether a room is FIT TO ENTER comes from here, and a
+// room can be occupied and dirty at once. Only `out_of_order` changes what the
+// booking screens may do — it takes the room off the market entirely.
+export const API_HOTEL_HOUSEKEEPING_URL = `${API_BASE_URL}/hotel-setup/housekeeping`;

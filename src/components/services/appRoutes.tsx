@@ -349,6 +349,38 @@ const ROUTES = {
 
   item_chart: '/item/item-chart',
 
+  // Hotel. One screen with four tabs, because buildings, floors, room types
+  // and rooms are one sitting of setup rather than four errands.
+  hotel_setup: '/hotel/setup',
+  // Bookings are a screen of their own, not a sixth tab: setup is done once
+  // and this is opened every day.
+  hotel_bookings: '/hotel/bookings',
+  hotel_hall_bookings: '/hotel/hall-bookings',
+  // Checking a booking in is its own page, reached from a row with the booking
+  // id on the end. A coach party is twelve rooms of five guests, and sixty rows
+  // of six fields is not something a dialog holds.
+  hotel_booking_check_in: '/hotel/check-in',
+  // The bill, with the booking id on the end. Its own page rather than a panel
+  // on the list: a folio is read alongside a guest standing at the desk, and it
+  // has to hold the nights, the extras, the money and what is left of it.
+  hotel_booking_folio: '/hotel/folio',
+  // Ending the stay, with the booking id on the end. Its own page rather
+  // than a dialog on the folio: it releases beds, and the desk has to see
+  // which nights go back and what is left owing before it presses anything.
+  hotel_booking_check_out: '/hotel/check-out',
+  // Reading the property back: who was here, and what came in. One screen with
+  // two tabs, because both are asked at the same moment of the morning and a
+  // second screen would be a second place to pick a branch and a date.
+  hotel_reports: '/hotel/reports',
+  // The property over time -- the month at a glance, and the tape chart the
+  // desk reads for gaps. Its own screen: the availability grid answers a
+  // question about two dates, and neither of these could be asked of it.
+  hotel_calendar: '/hotel/calendar',
+  // Is the room ready? Its own screen rather than a tab on setup: setup is a
+  // sitting done once, and this is opened every morning by somebody who does
+  // nothing else in the system.
+  hotel_housekeeping: '/hotel/housekeeping',
+
   notFound: '*',
 };
 

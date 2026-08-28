@@ -64,6 +64,10 @@ import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice'
 import flatSlice from './components/modules/real-estate/building-flat/flatSlice';
 import realEstateProjects from './components/modules/real-estate/project/projectSlice';
 import buildingsSlice from './components/modules/real-estate/buildings/buildingsSlice';
+import hotelSetupSlice from './components/modules/hotel/hotelSetupSlice';
+import hotelBookingSlice from './components/modules/hotel/booking/bookingSlice';
+import hotelReportSlice from './components/modules/hotel/reports/reportSlice';
+import hotelCalendarSlice from './components/modules/hotel/calendar/calendarSlice';
 import unitSlice from './components/modules/real-estate/units/unitSlice';
 import brandSlice from './components/modules/product/brand/brandSlice';
 import productUnitSlice from './components/modules/product/unit/unitSlice';
@@ -164,6 +168,10 @@ const store = configureStore({
     realEstateProjects: realEstateProjects,
     flats: flatSlice,
     buildings: buildingsSlice,
+    hotelSetup: hotelSetupSlice,
+    hotelBooking: hotelBookingSlice,
+    hotelReport: hotelReportSlice,
+    hotelCalendar: hotelCalendarSlice,
     buildingUnits: unitSlice,
     brand: brandSlice,
     productUnit: productUnitSlice,

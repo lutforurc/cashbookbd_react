@@ -108,6 +108,18 @@ interface branchItem {
   need_relation_info: boolean;
   need_customer_mother_name: boolean;
   need_customer_sex: boolean;
+  /** When the day turns over at this property. HH:MM. */
+  hotel_check_in_time: string;
+  hotel_check_out_time: string;
+  /**
+   * How long a tentative hold keeps a room, in whole hours -- and the longest
+   * the desk may ask for.
+   *
+   * ⚠️ Hours on the clock, not days. A hold used to run to the end of its last
+   * day, so one taken in the morning and one taken at night lapsed together.
+   */
+  hotel_hold_hours: string;
+  hotel_hold_max_hours: string;
   salutation_male: string;
   salutation_female: string;
   salutation_other: string;
@@ -222,6 +234,33 @@ const metaTextOr = (value: unknown, fallback: string) =>
     : String(value);
 
 /**
+ * A number of hours, said the way somebody says it.
+ *
+ * 168 is a correct answer to "how long is the hold" and an unreadable one. The
+ * field takes hours because that is what the engine counts, and this is what
+ * makes 168 legible as a week without making the form ask in two units.
+ *
+ * Days only where the hours divide into whole ones -- "1 day 12 hours" is
+ * harder to read at a glance than "36 hours", and the number in the box is the
+ * one that decides anything.
+ */
+const spellHours = (value: string): string => {
+  const hours = Number(value);
+
+  if (!Number.isFinite(hours) || hours < 1) return '';
+  if (hours % 24 !== 0) return `${hours} hour${hours === 1 ? '' : 's'}`;
+
+  const days = hours / 24;
+
+  if (days % 7 === 0 && days > 7) {
+    const weeks = days / 7;
+    return `${days} days — ${weeks} weeks`;
+  }
+
+  return `${days} day${days === 1 ? '' : 's'}`;
+};
+
+/**
  * A stored 'YYYY-MM-DD' as a date on the calendar.
  *
  * Read out by hand rather than handed to `new Date`, which reads that shape as
@@ -291,6 +330,7 @@ const AddBranch = () => {
     'Customer Setup',
     'Product Setup',
     'Real Estate Setup',
+    'Hotel Setup',
     'Feature Controls',
     ...(isPlatformOwner ? ['SaaS Setup'] : []),
   ];
@@ -372,6 +412,18 @@ const AddBranch = () => {
     need_relation_info: false,
     need_customer_mother_name: false,
     need_customer_sex: false,
+    // Noon out and two in -- what most of the trade runs on, with two hours for
+    // housekeeping between. The server holds the same pair, so a branch nobody
+    // has asked reads the same here as it does on the hotel screens.
+    hotel_check_in_time: '14:00',
+    hotel_check_out_time: '12:00',
+    // ⚠️ Two hours, and a day at most. A HOLD IS NOT A BOOKING -- it is the desk
+    // waiting for somebody who said they were coming, so the default is a wait
+    // and not a reservation. The server holds the same two numbers as its own
+    // fallback, so the form and the engine cannot disagree about an unset
+    // branch.
+    hotel_hold_hours: '2',
+    hotel_hold_max_hours: '24',
     salutation_male: '',
     salutation_female: '',
     salutation_other: '',
@@ -620,6 +672,10 @@ const AddBranch = () => {
         need_relation_info: toBooleanFlag(b.need_relation_info),
         need_customer_mother_name: toBooleanFlag(b.need_customer_mother_name),
         need_customer_sex: toBooleanFlag(b.need_customer_sex),
+        hotel_check_in_time: b.hotel_check_in_time || '14:00',
+        hotel_check_out_time: b.hotel_check_out_time || '12:00',
+        hotel_hold_hours: String(b.hotel_hold_hours ?? 2),
+        hotel_hold_max_hours: String(b.hotel_hold_max_hours ?? 24),
         salutation_male: b.salutation_male ? String(b.salutation_male) : '',
         salutation_female: b.salutation_female ? String(b.salutation_female) : '',
         salutation_other: b.salutation_other ? String(b.salutation_other) : '',
@@ -868,6 +924,8 @@ const AddBranch = () => {
                   {currentStep === stepIndex('Customer Setup') && 'Customer and supplier related options for this branch.'}
                   {currentStep === stepIndex('Product Setup') && 'How products are ordered and priced in this branch.'}
                   {currentStep === stepIndex('Real Estate Setup') && 'Real estate options for this branch.'}
+                  {currentStep === stepIndex('Hotel Setup') &&
+                    'When the day turns over at this property, for a branch that is a hotel.'}
                   {currentStep === stepIndex('Feature Controls') && 'Operational controls, sharing options, and SMS preferences.'}
                   {currentStep === SAAS_STEP &&
                     'Platform settings. Only this account sees them.'}
@@ -1667,6 +1725,120 @@ const AddBranch = () => {
                     </div>
                   </div>
 
+                </>
+              )}
+
+              {currentStep === stepIndex('Hotel Setup') && (
+                <>
+                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Check-in and check-out
+                  </h4>
+
+                  {/* ⚠️ These two are not decoration, and the note says so.
+
+                      The booking engine counts NIGHTS and never hours: a stay of
+                      the 15th to the 18th holds three nights and leaves the 18th
+                      free for the next guest. That is true only while check-out
+                      comes BEFORE check-in on the same day. Reversed, the same
+                      room is let to two parties for the hours between, every
+                      turnover day, and nothing in the engine would notice. The
+                      server refuses to save them that way round. */}
+                  <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
+                    <div>
+                      <InputElement
+                        id="hotel_check_out_time"
+                        name="hotel_check_out_time"
+                        type="time"
+                        label="Check-out time"
+                        value={formData.hotel_check_out_time || ''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        When the room has to be given up. Noon almost everywhere.
+                      </p>
+                    </div>
+
+                    <div>
+                      <InputElement
+                        id="hotel_check_in_time"
+                        name="hotel_check_in_time"
+                        type="time"
+                        label="Check-in time"
+                        value={formData.hotel_check_in_time || ''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        When the next guest may take it. Two hours later leaves
+                        housekeeping a window.
+                      </p>
+                    </div>
+
+                    
+                  </div>
+
+                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    How long a room is held
+                  </h4>
+
+                  {/* ⚠️ A HOLD TAKES REAL INVENTORY -- one row per bed per
+                      night -- so this is how long an unconfirmed enquiry may
+                      keep a room off the market. Too long and the desk turns
+                      people away for rooms nobody is coming to; too short and a
+                      guest who said they would ring back finds their room sold.
+                      It is a commercial decision, which is why it is a setting
+                      and not a number in the booking code.
+
+                      Hours, on the clock. A hold used to run to the end of its
+                      last day, so one taken at nine in the morning and one
+                      taken at eleven at night lapsed at the same moment and the
+                      second lasted fourteen hours longer for no reason anybody
+                      chose. */}
+                  <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
+                    <div>
+                      <InputElement
+                        id="hotel_hold_hours"
+                        name="hotel_hold_hours"
+                        type="number"
+                        min={1}
+                        label="Hold lasts (hours)"
+                        value={formData.hotel_hold_hours || ''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        When the desk names no date of its own.{' '}
+                        {spellHours(formData.hotel_hold_hours) ? (
+                          <strong className="text-black dark:text-white">
+                            {spellHours(formData.hotel_hold_hours)}
+                          </strong>
+                        ) : null}
+                      </p>
+                    </div>
+
+                    <div>
+                      <InputElement
+                        id="hotel_hold_max_hours"
+                        name="hotel_hold_max_hours"
+                        type="number"
+                        min={1}
+                        label="Longest hold (hours)"
+                        value={formData.hotel_hold_max_hours || ''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        The most the desk may ask for.{' '}
+                        {spellHours(formData.hotel_hold_max_hours) ? (
+                          <strong className="text-black dark:text-white">
+                            {spellHours(formData.hotel_hold_max_hours)}
+                          </strong>
+                        ) : null}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                    Only a branch that is a hotel uses these. Every other branch
+                    can leave them alone.
+                  </p>
                 </>
               )}
 
