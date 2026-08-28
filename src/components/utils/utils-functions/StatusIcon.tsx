@@ -14,6 +14,7 @@ const StatusIcon = ({ status }: { status: string }) => {
     return (
       <div className="flex items-center gap-1 text-red-600 font-semibold">
         <BiErrorCircle /> Overdue
+        
       </div>
     );
   } else if (status === 'upcoming') {
