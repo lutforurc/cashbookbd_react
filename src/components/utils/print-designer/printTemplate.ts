@@ -202,11 +202,43 @@ export type TableBand = BandBase & {
    * its table and nobody can add a line to it afterwards.
    */
   fillerRows: number;
+  /**
+   * A ruled row under the last product, footing the columns that have a total.
+   *
+   * ⚠️ It foots the columns the PAPER knows a total for -- not every column of
+   * numbers. A rate column added up is nonsense, and a running balance added up
+   * is worse than nonsense: it counts every earlier delivery again, and six
+   * deliveries owing 24,01,810 foot as 84,03,048. See the totals map in
+   * DocumentPrint, which is the only thing that knows the difference.
+   *
+   * Where it earns its place, it replaces a block of totals standing beside the
+   * table: the same figures under their own headings, in one line rather than
+   * four, and each one directly beneath the column it belongs to.
+   */
+  totalRow: boolean;
+  /** What that row is called. "Grand Total" where nothing is said. */
+  totalRowLabel: string;
 };
 
 export type TotalsBand = BandBase & {
   type: 'totals';
   align: Align;
+  /**
+   * `rows` stacks each total on its own labelled line -- the column of figures
+   * a bill ends with, and what this band has always drawn.
+   *
+   * `inline` runs them across one line instead. An order sheet's four totals
+   * take four lines and most of a hand's width of paper to say what fits on
+   * one, and on a sheet that already runs to a second page for six deliveries
+   * those lines are the difference.
+   *
+   * ⚠️ Not a global change to how totals draw. A hotel bill's column -- charges,
+   * service, VAT, grand total, paid, due -- is read DOWNWARDS, each figure
+   * against the one above it, and run together on one line it stops being a
+   * reckoning and becomes a sentence. So it is the band that chooses, and the
+   * default is what every existing paper already has.
+   */
+  layout: 'rows' | 'inline';
   items: InfoItem[];
 };
 
@@ -856,6 +888,8 @@ const standardChallan = (): PrintTemplate => ({
       bordered: true,
       repeatHeader: true,
       fillerRows: 0,
+      totalRow: false,
+      totalRowLabel: 'Grand Total',
       columns: [
         { field: 'sl', label: 'Sl. No.', width: 8, align: 'center' },
         { field: 'product_name', label: 'Product Name', width: 62, align: 'left' },
@@ -868,6 +902,7 @@ const standardChallan = (): PrintTemplate => ({
       type: 'totals',
       show: true,
       align: 'right',
+      layout: 'rows',
       items: [{ field: 'total_qty', label: 'Total Quantity' }],
     }),
     band<NotesBand>({
@@ -1102,6 +1137,12 @@ const standardOrder = (): PrintTemplate => ({
       bordered: true,
       repeatHeader: true,
       fillerRows: 0,
+      // ⚠️ The four totals that stood beside this table are gone from the
+      // totals band below and foot the columns instead: the same figures,
+      // each under its own heading, in one ruled line rather than four
+      // stacked ones. A rate has no total and gets a blank cell.
+      totalRow: true,
+      totalRowLabel: 'Grand Total',
       columns: [
         { field: 'sl', label: 'Sl. No.', width: 7, align: 'center' },
         { field: 'vr_no', label: 'Inv. No.', width: 15, align: 'center' },
@@ -1114,17 +1155,20 @@ const standardOrder = (): PrintTemplate => ({
         { field: 'due', label: 'Due Amount', width: 12, align: 'right' },
       ],
     }),
+    // ⚠️ EMPTY, AND KEPT. The four totals it held -- quantity, amount,
+    // received, due -- now foot the table above, each under the column it
+    // belongs to, in one ruled line instead of four stacked ones beside it.
+    // Repeating them here would print every figure twice.
+    //
+    // The band stays so that a property wanting a total the table cannot foot
+    // has somewhere to put it; with no items it draws nothing at all.
     band<TotalsBand>({
       id: 'totals',
       type: 'totals',
       show: true,
       align: 'right',
-      items: [
-        { field: 'total_qty', label: 'Total Quantity' },
-        { field: 'total_amount', label: 'Total Amount' },
-        { field: 'total_received', label: 'Total Received' },
-        { field: 'total_due', label: 'Total Due' },
-      ],
+      layout: 'inline',
+      items: [],
     }),
     // The order's own note, under the totals where the sheet has always put it.
     //
@@ -1237,6 +1281,8 @@ const hotelBill = (): PrintTemplate => ({
       bordered: true,
       repeatHeader: true,
       fillerRows: 0,
+      totalRow: false,
+      totalRowLabel: 'Grand Total',
       columns: [
         { field: 'sl', label: 'Sl.', width: 6, align: 'center' },
         { field: 'description', label: 'Description', width: 40, align: 'left' },
@@ -1251,6 +1297,9 @@ const hotelBill = (): PrintTemplate => ({
       type: 'totals',
       show: true,
       align: 'right',
+      // Stacked, and it matters here: a bill's figures are read downwards, each
+      // against the one above it.
+      layout: 'rows',
       items: [
         { field: 'bill_base', label: 'Room & Charges' },
         // Both hidden when zero: a property whose rates are still at zero --
@@ -1575,12 +1624,25 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
             bordered: item.bordered !== false,
             repeatHeader: item.repeatHeader !== false,
             fillerRows: bounded(item.fillerRows, 0, 30, 0),
+            // ⚠️ Off for anything saved before this existed. A total row that
+            // switched itself on would add a line to every challan in the
+            // system on its next print.
+            totalRow: item.totalRow === true,
+            totalRowLabel:
+              typeof item.totalRowLabel === 'string' && item.totalRowLabel.trim()
+                ? item.totalRowLabel
+                : 'Grand Total',
           };
         case 'totals':
           return {
             ...base,
             type: 'totals',
             align: align(item.align, 'right'),
+            // ⚠️ 'rows' for anything saved before this existed, which is every
+            // layout a tenant has. A default of 'inline' would have run the
+            // totals of every bill in the system onto one line on the next
+            // print, without anybody asking for it.
+            layout: item.layout === 'inline' ? 'inline' : 'rows',
             items: infoItems(item.items),
           };
         case 'notes':
@@ -1728,7 +1790,8 @@ export const ADDABLE_BANDS: AddableBand[] = [
     type: 'totals',
     name: 'Totals',
     hint: 'Another set of summed figures.',
-    build: (id) => band<TotalsBand>({ id, type: 'totals', show: true, align: 'right', items: [] }),
+    build: (id) =>
+      band<TotalsBand>({ id, type: 'totals', show: true, align: 'right', layout: 'rows', items: [] }),
   },
   {
     type: 'signature',

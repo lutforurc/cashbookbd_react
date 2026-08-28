@@ -463,17 +463,38 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       );
       if (!visible.length) return null;
 
+      const side =
+        band.align === 'left'
+          ? 'justify-start'
+          : band.align === 'center'
+            ? 'justify-center'
+            : 'justify-end';
+
+      /**
+       * Across one line instead of down four.
+       *
+       * ⚠️ Wrapping, not scrolling off the paper: six totals on a narrow sheet
+       * run onto a second line rather than past the margin, which is the one
+       * thing that cannot be allowed to happen to a figure.
+       *
+       * The label stays bold and the figure bolder, as in the stacked form --
+       * the difference is the arrangement, not the reading.
+       */
+      if (band.layout === 'inline') {
+        return (
+          <div className={`mb-2 flex flex-wrap gap-x-6 gap-y-1 ${side}`}>
+            {visible.map((item, index) => (
+              <span key={`${item.field}-${index}`}>
+                <b>{item.label ?? fieldName(item.field)}:</b>{' '}
+                <b>{value(item.field)}</b>
+              </span>
+            ))}
+          </div>
+        );
+      }
+
       return (
-        <div
-          className={
-            'mb-2 flex ' +
-            (band.align === 'left'
-              ? 'justify-start'
-              : band.align === 'center'
-                ? 'justify-center'
-                : 'justify-end')
-          }
-        >
+        <div className={'mb-2 flex ' + side}>
           <table className="min-w-[45%]">
             <tbody>
               {visible.map((item, index) => (
@@ -576,12 +597,58 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       fillers: number;
       /** Off on later pages when the template says not to repeat the headings. */
       withHeader: boolean;
-    }> = ({ band, pageRows, startIndex, fillers, withHeader }) => {
+      /** The footing row, on the last page only -- a total per page is not one. */
+      withTotal: boolean;
+    }> = ({ band, pageRows, startIndex, fillers, withHeader, withTotal }) => {
       const columns = band.columns.length
         ? band.columns
         : ([{ field: 'product_name', width: 100, align: 'left' }] as TableColumn[]);
       const widths = columnWidths(columns);
       const border = band.bordered ? 'border border-gray-800' : '';
+
+      /**
+       * The footing row.
+       *
+       * ⚠️ IT FOOTS WHAT THE PAPER KNOWS A TOTAL FOR, never every column of
+       * numbers. `totals` above holds the ones that mean something -- and one
+       * of them, total_due, is deliberately NOT the sum of its column, because
+       * a running balance added up counts every earlier delivery again. A rate
+       * column has no total at all and gets a blank cell rather than the sum of
+       * six identical prices.
+       *
+       * The label takes the columns before the first figure, so it has room to
+       * be read: on an order sheet that is Sl, Invoice, Date and Vehicle, and
+       * "Grand Total" sits at the right-hand end of them, directly against the
+       * first number it is totalling.
+       */
+      const footOf = (field: string): string | null => {
+        const figure = totals[`total_${field}`];
+
+        return figure === undefined ? null : thousandSeparator(figure);
+      };
+
+      const firstFigure = columns.findIndex((column) => footOf(column.field) !== null);
+
+      const footRow =
+        firstFigure < 0 ? null : (
+          <tr className="avoid-break font-bold">
+            <td
+              colSpan={Math.max(1, firstFigure)}
+              className={`${border} px-1 py-0.5 text-right`}
+            >
+              {band.totalRowLabel || 'Grand Total'}
+            </td>
+
+            {columns.slice(Math.max(1, firstFigure)).map((column, index) => (
+              <td
+                key={`foot-${column.field}-${index}`}
+                className={`${border} px-1 py-0.5 ${alignClass[column.align ?? 'left']}`}
+              >
+                {footOf(column.field) ?? ''}
+              </td>
+            ))}
+          </tr>
+        );
 
       return (
         <table className="mb-2 w-full table-fixed border-collapse">
@@ -633,6 +700,8 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                 ))}
               </tr>
             ))}
+
+            {withTotal ? footRow : null}
           </tbody>
         </table>
       );
@@ -798,6 +867,9 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                   // page's worth of them.
                   fillers={isLast ? tableBand.fillerRows : 0}
                   withHeader={pageIndex === 0 || tableBand.repeatHeader}
+                  // Once, under the last product. A total repeated at the foot
+                  // of every page is a total repeated per page.
+                  withTotal={isLast && tableBand.totalRow}
                 />
               ) : null}
 

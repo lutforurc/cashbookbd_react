@@ -491,11 +491,31 @@ export const TotalsBandEditor: React.FC<{
   onChange: (band: TotalsBand) => void;
 }> = ({ band, onChange }) => (
   <div className="flex flex-col gap-3">
-    <AlignPicker
-      value={band.align}
-      onChange={(value) => onChange({ ...band, align: value })}
-      label="Where the totals sit"
-    />
+    <div className="grid grid-cols-2 gap-2">
+      <AlignPicker
+        value={band.align}
+        onChange={(value) => onChange({ ...band, align: value })}
+        label="Where the totals sit"
+      />
+
+      <div>
+        <span className={SUB_LABEL}>Arrangement</span>
+        {/* ⚠️ A column of figures is read DOWNWARDS, each against the one above
+            it, which is what a bill wants. One line is for a sheet where the
+            totals are a footnote to the table and the paper is short -- an
+            order that already runs to a second page for six deliveries. */}
+        <Select
+          value={band.layout}
+          onChange={(event) =>
+            onChange({ ...band, layout: event.target.value as "rows" | "inline" })
+          }
+          className={CONTROL}
+        >
+          <option value="rows">One total per line</option>
+          <option value="inline">All on one line</option>
+        </Select>
+      </div>
+    </div>
     <ItemList
       items={band.items}
       allowHideIfEmpty={false}
@@ -537,6 +557,30 @@ export const TableBandEditor: React.FC<{
           onChange={(repeatHeader) => onChange({ ...band, repeatHeader })}
           label="Headings on every page"
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        {/* ⚠️ It foots the columns the paper knows a total for, and only those.
+            A rate column has none and stays blank; a running balance is taken
+            from what was charged less what was taken rather than by adding the
+            column up, which would count every earlier delivery again. */}
+        <CheckRow
+          checked={band.totalRow}
+          onChange={(totalRow) => onChange({ ...band, totalRow })}
+          label="Total row at the foot"
+        />
+
+        {band.totalRow ? (
+          <div>
+            <span className={SUB_LABEL}>What it is called</span>
+            <Input
+              value={band.totalRowLabel}
+              onChange={(event) => onChange({ ...band, totalRowLabel: event.target.value })}
+              placeholder="Grand Total"
+              className={CONTROL}
+            />
+          </div>
+        ) : null}
       </div>
 
       <NumberBox
