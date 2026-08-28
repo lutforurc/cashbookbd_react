@@ -131,7 +131,7 @@ const BuildingCard = ({
 
         {/* Read at a glance, this line is what shows the same Deluxe costing
             more in one block than another -- the rent lives on the room. */}
-        <div className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="text-xs text-gray-700 dark:text-gray-200">
           {building.rooms_count} rooms · {building.beds_count} beds
           {/* ⚠️ Halls counted apart from rooms, and their SEATS apart from
               beds. Folded in, a block with two function spaces read "22 rooms ·
