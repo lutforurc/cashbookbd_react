@@ -1691,7 +1691,7 @@ const BookingsScreen = ({ user }: any) => {
                       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                         <span className="text-sm font-medium text-black dark:text-white">
                           Halls and function spaces
-                          <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">
+                          <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-300">
                             sold by the sitting, not by the night
                           </span>
                         </span>
@@ -1727,10 +1727,10 @@ const BookingsScreen = ({ user }: any) => {
                                 <span className="font-semibold text-black dark:text-white">
                                   {card.name}
                                 </span>
-                                <span className="text-xs text-gray-400">{card.code}</span>
+                                <span className="text-xs text-gray-300">{card.code}</span>
                               </div>
 
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                              <div className="text-xs text-gray-500 dark:text-gray-200">
                                 {card.capacity ? `${card.capacity} seats` : 'no seating set'}
                                 {/* \u00a72.8: on a hall the rent is the price of ONE
                                     sitting. The room card beside it means the
@@ -1747,7 +1747,7 @@ const BookingsScreen = ({ user }: any) => {
                                   {/* The day label sits where a floor number
                                       sits on the room grid, for the same
                                       reason: the eye runs down it. */}
-                                  <span className="w-16 shrink-0 text-[0.7rem] text-gray-500 dark:text-gray-400">
+                                  <span className="w-16 shrink-0 text-[0.8rem] text-gray-500 dark:text-gray-200 mr-1">
                                     {formatDate(day.date)}
                                   </span>
 
