@@ -1,3 +1,4 @@
+import { useSelector } from 'react-redux';
 import React from 'react';
 import dayjs from 'dayjs';
 import PadPrinting from '../utils-functions/PadPrinting';
@@ -146,7 +147,20 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
   ({ template, data, preview = false }, ref) => {
     const mobileFormat = useMobileFormat();
 
-    const basic = data?.basic ?? {};
+    /**
+     * Who is at the printer.
+     *
+     * ⚠️ Filled in HERE rather than by each payload builder, and it has to be:
+     * the server knows who created a voucher, but who is printing this copy is
+     * a fact about the session in front of the paper. Five endpoints each
+     * remembering to add it is five places for it to go missing from.
+     *
+     * A payload that carries its own `printed_by` wins -- nothing does today,
+     * and a document generated for somebody else should be able to say so.
+     */
+    const printedBy = useSelector((state: any) => state.settings?.data?.user?.name) || '';
+
+    const basic = { printed_by: printedBy, ...(data?.basic ?? {}) };
     const rows = Array.isArray(data?.products) ? data.products : [];
 
     const lineAmount = (row: any) =>

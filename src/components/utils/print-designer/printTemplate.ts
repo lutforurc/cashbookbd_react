@@ -446,10 +446,25 @@ export const FIELD_CATALOG: FieldDef[] = [
   { key: 'vr_date', name: 'Invoice Date', group: 'voucher' },
   { key: 'order_no', name: 'Order / PO No', group: 'voucher' },
   { key: 'created_by', name: 'Sales By', group: 'voucher' },
+  /**
+   * Whoever is printing, from the session -- not from the voucher.
+   *
+   * ⚠️ A DIFFERENT FACT FROM `created_by`, and both are worth having. The
+   * voucher's creator prepared it; the person at the printer is the one whose
+   * signature goes under the rule on THIS copy. A manager reprinting a clerk's
+   * order signs their own name to it, and the clerk's name stays available for
+   * a paper that wants to say who wrote the order in the first place.
+   */
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   { key: 'branch_name', name: 'Branch', group: 'voucher' },
   { key: 'branch_address', name: 'Branch Address', group: 'voucher' },
   { key: 'notes', name: 'Notes', group: 'voucher' },
   { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+  // ⚠️ The order paper keeps its OWN catalogue, so a field added to the challan's
+  // never reaches it -- which is how the signature line came to offer no way of
+  // naming anybody. Who is at the printer belongs on every paper that is signed.
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  { key: 'created_by', name: 'Prepared By (voucher)', group: 'voucher' },
 
   // Who carried it
   { key: 'vehicle_no', name: 'Vehicle No', group: 'transport' },
@@ -645,6 +660,8 @@ const HOTEL_STAY_FIELDS: FieldDef[] = [
  * they would not find out until somebody counted the drawer.
  */
 export const HOTEL_BILL_FIELDS: FieldDef[] = [
+  // Who is at the printer. See the note beside it in FIELD_CATALOG.
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   ...HOTEL_STAY_FIELDS,
 
   { key: 'bill_base', name: 'Room & Charges', group: 'bill', numeric: true, format: 'money' },
@@ -720,6 +737,8 @@ export const HOTEL_BILL_LINE_FIELDS: FieldDef[] = [
  * would be obeyed for a year and then not.
  */
 export const HOTEL_RECEIPT_FIELDS: FieldDef[] = [
+  // Who is at the printer. See the note beside it in FIELD_CATALOG.
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   ...HOTEL_STAY_FIELDS,
 
   { key: 'payment_no', name: 'Receipt No', group: 'receipt' },
@@ -1232,7 +1251,12 @@ const standardOrder = (): PrintTemplate => ({
       type: 'signature',
       show: true,
       space: 60,
-      items: [{ label: 'Prepared by', field: 'created_by' }, { label: 'Authorized by' }],
+      // ⚠️ The person at the printer, not the voucher's creator. The hard-coded
+      // order sheet this layout replaced printed the signed-in user here, and a
+      // paper that changed whose name it asks to sign would be a change nobody
+      // asked for. `created_by` is still in the catalogue for a property that
+      // wants to name the clerk instead.
+      items: [{ label: 'Prepared by', field: 'printed_by' }, { label: 'Authorized by' }],
     }),
   ],
 });
