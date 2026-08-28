@@ -106,6 +106,20 @@ const isRemovable = (band: Band) => band.type !== 'header' && band.type !== 'tab
 const PAPER_WIDTH_PX = { portrait: 794, landscape: 1123 };
 
 /**
+ * Which papers have an address of their own.
+ *
+ * ⚠️ Deliberately partial. The challan and the order are reached from the menu
+ * by their own routes; the hotel's two ride on the challan's, so there is
+ * nowhere to send them and the URL simply stays where it is. A full map with
+ * the challan route filled in for all four would read as correct and would
+ * quietly remount this screen on the wrong paper.
+ */
+const ROUTE_OF: Partial<Record<DocType, string>> = {
+  sales_challan: routes.print_template_designer,
+  sales_order: routes.order_template_designer,
+};
+
+/**
  * Where a tenant lays out their own printed papers.
  *
  * The problem this exists for: this is multi-tenant software and no two
@@ -399,10 +413,31 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
         />
       </div>
 
-      {/* ------------------------- the strip ------------------------- */}
+      {/* ------------------------- the strip -------------------------
+
+          ⚠️ A TWELVE-COLUMN GRID, and it took three tries to get here.
+
+          Five equal columns cut "Choose a ready layout…" down to "Choose a
+          ready lay". Equal thirds then stretched a branch name across five
+          hundred pixels on a wide screen. Fixed widths in a wrapping row fixed
+          both and introduced a third fault: where a cell landed depended on how
+          much room was left, so the same panel packed differently at every
+          width and nothing lined up with anything.
+
+          Twelve columns settle it. Each control names the share it wants, the
+          shares add to twelve, and the tracks are the same at every size -- so
+          Text size sits under Branch rather than wherever it happened to fall.
+
+          Two rows by arithmetic rather than by a break: 3 + 3 + 6 fills the
+          first, 2 + 2 + 8 the second. The actions take that last eight and
+          align right inside it, which is where a toolbar's spare room belongs
+          and how Reset stays a long way from anything else.
+
+          Below `lg` it steps to two columns and then to one, so a phone gets a
+          stack of full-width controls. */}
       <div className={`${PANEL} mb-3`}>
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-5">
-          <div>
+        <div className="grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-2 lg:grid-cols-12">
+          <div className="lg:col-span-3">
             <span className={SUB_LABEL}>Branch</span>
             <BranchDropdown
               id="print_template_branch"
@@ -415,8 +450,19 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
 
           {/* Which paper. Beside the branch rather than anywhere else, because
               the two together are what identifies the layout being edited --
-              one row per branch per paper is exactly what the table holds. */}
-          <div>
+              one row per branch per paper is exactly what the table holds.
+
+              ⚠️ ONE PICKER. Both branches drew this cell and the merge kept
+              both, which put six cells in a five-column strip -- the buttons
+              wrapped onto a row of their own and sat at the far left, under the
+              sidebar. Two pickers for one value is also two places to change
+              when a fifth paper arrives.
+
+              ⚠️ Changing it RELOADS from the server rather than converting what
+              is on screen: a challan's bands name a challan's fields, and
+              carried over to a hotel bill they would draw a paper of blanks
+              that looked designed. */}
+          <div className="lg:col-span-3">
             <span className={SUB_LABEL}>Paper</span>
             <Select
               id="print_template_doc_type"
@@ -425,17 +471,21 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
               onChange={(event) => {
                 const next = event.target.value as DocType;
                 setDocType(next);
-                // Each paper has a route of its own, so the address bar has to
-                // follow -- otherwise a reload, or a link handed to somebody,
-                // comes back to the paper the menu named rather than the one on
-                // screen. replace, so Back leaves the designer rather than
+
+                // ⚠️ ONLY THE TWO PAPERS THAT HAVE A ROUTE. The address bar
+                // follows so that a reload, or a link handed to somebody, comes
+                // back to the paper on screen rather than the one the menu
+                // named -- but the hotel's two are reached through the challan
+                // route and have none of their own. Sending them to it anyway
+                // remounted this screen on `paper`, which threw the choice away:
+                // picking Hotel — Bill from the order layout landed back on the
+                // challan. replace, so Back leaves the designer rather than
                 // walking through every paper that was looked at.
-                navigate(
-                  next === 'sales_order'
-                    ? routes.order_template_designer
-                    : routes.print_template_designer,
-                  { replace: true },
-                );
+                const home = ROUTE_OF[next];
+
+                if (home && home !== window.location.pathname) {
+                  navigate(home, { replace: true });
+                }
               }}
               className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-sm text-[rgb(var(--c-text))] outline-none dark:bg-boxdark"
             >
@@ -445,32 +495,20 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
                 </option>
               ))}
             </Select>
-            <p className="mt-0.5 text-[0.65rem] leading-snug text-gray-500 dark:text-gray-400">
-              {DOC_TYPES.find((paper) => paper.id === docType)?.hint}
-            </p>
+            {/* Only where there is one. An empty hint still drew its paragraph,
+                and the margin it carried made this cell taller than the others
+                on every paper that has none -- which knocked the grid row out
+                of line for the sake of a blank space. */}
+            {DOC_TYPES.find((paper) => paper.id === docType)?.hint ? (
+              <p className="mt-0.5 text-[0.65rem] leading-snug text-gray-500 dark:text-gray-400">
+                {DOC_TYPES.find((paper) => paper.id === docType)?.hint}
+              </p>
+            ) : null}
           </div>
 
-          <div>
-            <span className={SUB_LABEL}>Paper</span>
-            {/* ⚠️ Changing this RELOADS from the server rather than converting
-                what is on screen: a challan's bands name a challan's fields,
-                and carried over to a hotel bill they would draw a paper of
-                blanks that looked designed. */}
-            <Select
-              value={docType}
-              onChange={(event) => setDocType(event.target.value as DocType)}
-              className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-sm text-[rgb(var(--c-text))] outline-none dark:bg-boxdark"
-              title={DOC_TYPES.find((item) => item.id === docType)?.hint}
-            >
-              {DOC_TYPES.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-
-          <div>
+          {/* Six of the twelve: its options are a name AND a sentence, and it
+              is the one control here that is read rather than glanced at. */}
+          <div className="sm:col-span-2 lg:col-span-6">
             <span className={SUB_LABEL}>Start from</span>
             <Select
               value=""
@@ -488,7 +526,10 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          {/* Two digits apiece, and the second wants the room its label needs:
+              "Rows per page" wrapped onto a second line at anything narrower,
+              which made its cell taller than the rest of the row. */}
+          <div className="lg:col-span-2">
             <NumberBox
               label="Text size"
               value={template.fontSize}
@@ -496,6 +537,9 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
               max={24}
               onChange={(fontSize) => patch({ fontSize })}
             />
+          </div>
+
+          <div className="lg:col-span-2">
             <NumberBox
               label="Rows per page"
               value={template.rowsPerPage}
@@ -506,31 +550,45 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
             />
           </div>
 
-          <div className="flex items-end justify-end gap-2">
-            <ButtonLoading
-              onClick={() => printSample()}
-              label="Test Print"
-              size="sm"
-              className="whitespace-nowrap"
-              icon={<FiPrinter className="mr-1" />}
-            />
-            <ButtonLoading
-              onClick={resetToDefault}
-              label="Reset"
-              size="sm"
-              className="whitespace-nowrap"
-              icon={<FiRotateCcw className="mr-1" />}
-            />
-            <ButtonLoading
-              onClick={save}
-              label={dirty ? 'Save' : 'Saved'}
-              size="sm"
-              buttonLoading={saving}
-              disabled={saving || !dirty}
-              variant="primary"
-              className="whitespace-nowrap"
-              icon={<FiSave className="mr-1" />}
-            />
+          {/* ⚠️ The spare width of a wide screen lands HERE, inside the last
+              eight columns, rather than in the fields -- which is how a branch
+              name came to be five hundred pixels across.
+
+              The empty label above keeps the buttons on the inputs' line: the
+              grid aligns cells to the top, so without it they would ride up
+              beside the LABELS instead. aria-hidden because there is nothing in
+              it to announce. */}
+          <div className="sm:col-span-2 lg:col-span-8">
+            <span className={SUB_LABEL} aria-hidden="true">
+              &nbsp;
+            </span>
+
+            <div className="flex flex-wrap gap-2 lg:justify-end">
+              <ButtonLoading
+                onClick={() => printSample()}
+                label="Test Print"
+                size="sm"
+                className="whitespace-nowrap"
+                icon={<FiPrinter className="mr-1" />}
+              />
+              <ButtonLoading
+                onClick={resetToDefault}
+                label="Reset"
+                size="sm"
+                className="whitespace-nowrap"
+                icon={<FiRotateCcw className="mr-1" />}
+              />
+              <ButtonLoading
+                onClick={save}
+                label={dirty ? 'Save' : 'Saved'}
+                size="sm"
+                buttonLoading={saving}
+                disabled={saving || !dirty}
+                variant="primary"
+                className="whitespace-nowrap"
+                icon={<FiSave className="mr-1" />}
+              />
+            </div>
           </div>
         </div>
 

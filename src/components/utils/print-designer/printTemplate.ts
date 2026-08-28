@@ -54,17 +54,17 @@ export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
   {
     id: 'sales_order',
     name: 'Order',
-    hint: 'The order, and the deliveries made against it.',
+    hint: '',
   },
   {
     id: 'hotel_money_receipt',
     name: 'Hotel — Money Receipt',
-    hint: 'Proof that money arrived. Carries no tax line, by design.',
+    hint: '',
   },
   {
     id: 'hotel_bill',
     name: 'Hotel — Bill',
-    hint: 'What the stay was charged. The VAT falls due on this one.',
+    hint: '',
   },
 ];
 
