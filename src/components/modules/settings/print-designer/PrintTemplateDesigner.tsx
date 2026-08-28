@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
 import {
+  FiCheckCircle,
+  FiCopy,
   FiEye,
   FiEyeOff,
   FiLayout,
@@ -16,7 +18,7 @@ import {
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
-import { Select } from '../../../utils/fields/FormControls';
+import { Input, Select } from '../../../utils/fields/FormControls';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
@@ -72,6 +74,40 @@ import { sampleFor } from './sampleDocument';
  * how a paper comes to exist in the type and not in the dropdown -- or worse,
  * the other way round, offering a doc_type the server refuses to store.
  */
+
+/**
+ * One layout a branch keeps for a paper, as the server holds it.
+ *
+ * The description travels WITH the list rather than being fetched when one is
+ * picked. Comparing two arrangements is the whole reason for keeping two, and a
+ * round trip on every flick between them would make it feel like loading two
+ * screens instead of turning a page.
+ */
+interface SavedLayout {
+  id: number;
+  name: string;
+  is_default: number;
+  layout: any;
+}
+
+/**
+ * A name no other layout of this branch's is using.
+ *
+ * ⚠️ The name is the second half of the unique key on the table, so a duplicate
+ * is refused by the server. Handing somebody "Layout 2" when they already have
+ * one, and letting them find out on Save, is a worse way to say the same thing.
+ */
+const freeLayoutName = (taken: SavedLayout[], base = 'Layout') => {
+  const used = new Set(taken.map((one) => one.name.trim().toLowerCase()));
+  if (!used.has(base.toLowerCase())) return base;
+
+  for (let n = 2; n < 200; n += 1) {
+    const candidate = `${base} ${n}`;
+    if (!used.has(candidate.toLowerCase())) return candidate;
+  }
+
+  return base;
+};
 
 const BAND_NAMES: Record<string, string> = {
   header: 'Letterhead',
@@ -172,6 +208,20 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
   // save rather than leaving a Save button that may or may not do something.
   const [saved, setSaved] = useState<string>('');
 
+  /**
+   * Every layout this branch keeps for this paper, and which of them is on
+   * screen.
+   *
+   * ⚠️ `layoutId` NULL MEANS UNSAVED, and it is the difference between Save
+   * writing over what is on the server and Save adding a layout beside it. A
+   * branch that spent an hour on its order pad, then wanted to try a second
+   * arrangement, used to have to destroy the first to see the second.
+   */
+  const [layouts, setLayouts] = useState<SavedLayout[]>([]);
+  const [layoutId, setLayoutId] = useState<number | null>(null);
+  const [layoutName, setLayoutName] = useState<string>('Default');
+  const [deleting, setDeleting] = useState(false);
+
   const previewRef = useRef<HTMLDivElement>(null);
   const previewShellRef = useRef<HTMLDivElement>(null);
   const paperRef = useRef<HTMLDivElement>(null);
@@ -208,7 +258,26 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
     return () => observer.disconnect();
   }, [paperWidth, loading]);
 
-  const dirty = useMemo(() => JSON.stringify(template) !== saved, [template, saved]);
+  /**
+   * What "unchanged" means, in one place.
+   *
+   * ⚠️ THE NAME IS PART OF IT. Renaming a layout and pressing Save has to
+   * work, and with the signature taken from the bands alone the button sat
+   * there saying "Saved" over a name the server had never heard of.
+   */
+  const signatureOf = (name: string, layout: PrintTemplate) =>
+    JSON.stringify({ name: name.trim(), layout });
+
+  const dirty = useMemo(
+    () => signatureOf(layoutName, template) !== saved,
+    [layoutName, template, saved],
+  );
+
+  /** The one that prints, as the server last told us. */
+  const printingId = useMemo(
+    () => layouts.find((one) => one.is_default)?.id ?? null,
+    [layouts],
+  );
 
   const printSample = useReactToPrint({
     contentRef: previewRef,
@@ -239,21 +308,23 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
     setLoading(true);
 
     httpService
-      .get(`${API_PRINT_TEMPLATE_URL}/${docType}`, { params: { branch_id: branchId } })
+      .get(`${API_PRINT_TEMPLATE_URL}/${docType}/layouts`, { params: { branch_id: branchId } })
       .then((response) => {
         if (!live) return;
-        const layout = response?.data?.data?.data?.layout ?? null;
-        const next = layout ? normalizeTemplate(layout, docType) : defaultTemplate(docType);
-        setTemplate(next);
-        // A branch that has never saved one starts on the default and counts as
-        // unsaved, so the first Save writes a row rather than looking like a
-        // no-op to somebody who changed nothing.
-        setSaved(layout ? JSON.stringify(next) : '');
+        const list: SavedLayout[] = response?.data?.data?.data ?? [];
+        setLayouts(list);
+
+        // The one that prints, opened first: it is the paper coming out of the
+        // printer today, so it is the one somebody who came here to change
+        // something means. The server sorts it to the front; the fallback is
+        // for a row whose flag was lost outside the app.
+        const opening = list.find((one) => one.is_default) ?? list[0] ?? null;
+        openLayout(opening);
       })
       .catch(() => {
         if (!live) return;
-        setTemplate(defaultTemplate(docType));
-        setSaved('');
+        setLayouts([]);
+        openLayout(null);
       })
       .finally(() => {
         if (live) setLoading(false);
@@ -262,7 +333,31 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
     return () => {
       live = false;
     };
+    // openLayout is stable enough for this: it only ever reads docType, which
+    // is already a dependency. Listing it would remake the effect on every
+    // render and reload the branch's layouts with it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [branchId, docType]);
+
+  /**
+   * Puts one saved layout on screen, or a blank one when given nothing.
+   *
+   * ⚠️ It sets `saved` from the SAME pair it just put on screen, so nothing
+   * arrives looking edited. A branch that has never saved one starts on the
+   * built-in default with `saved` empty -- unsaved on purpose, so the first
+   * Save writes a row rather than sitting there disabled in front of somebody
+   * who changed nothing and simply wants their own layout kept.
+   */
+  const openLayout = (one: SavedLayout | null) => {
+    const next = one?.layout ? normalizeTemplate(one.layout, docType) : defaultTemplate(docType);
+    const name = one?.name ?? 'Default';
+
+    setTemplate(next);
+    setLayoutId(one?.id ?? null);
+    setLayoutName(name);
+    setSaved(one ? signatureOf(name, next) : '');
+    setSelectedBandId('table');
+  };
 
   const patch = (changes: Partial<PrintTemplate>) =>
     setTemplate((current) => ({ ...current, ...changes }));
@@ -325,27 +420,144 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
     toast.info(`${preset.name} loaded. Nothing is saved until you press Save.`);
   };
 
-  const save = async () => {
+  /**
+   * Writes what is on screen to the server.
+   *
+   * One button for both jobs, because from where the tenant sits there is only
+   * one: an id on screen means save over that layout, no id means keep this as
+   * a new one. `printing` is passed when the point of the press was to change
+   * which layout comes out of the printer.
+   */
+  const save = async (printing = false) => {
     if (!branchId) {
       toast.error('Choose a branch first.');
       return;
     }
 
+    const name = layoutName.trim();
+
+    if (!name) {
+      toast.error('Give this layout a name first.');
+      return;
+    }
+
+    // Refused here as well as on the server. The server's answer arrives after
+    // the request and says the same thing; this one arrives before it, which is
+    // the difference between a warning and a rejection.
+    const clash = layouts.some(
+      (one) => one.id !== layoutId && one.name.trim().toLowerCase() === name.toLowerCase(),
+    );
+
+    if (clash) {
+      toast.error(`This branch already keeps a layout called “${name}”. Give this one another name.`);
+      return;
+    }
+
     setSaving(true);
     try {
-      await httpService.post(API_PRINT_TEMPLATE_URL, {
+      const response = await httpService.post(API_PRINT_TEMPLATE_URL, {
         doc_type: docType,
         branch_id: Number(branchId),
         layout: template,
+        name,
+        // Absent on a new layout, so the server adds one rather than writing
+        // over whichever it found.
+        ...(layoutId ? { id: layoutId } : {}),
+        // ⚠️ Sent only to CLAIM the printer. Sending the current state instead
+        // would quietly hand it back to a layout the tenant had just moved it
+        // away from, every time they saved a tweak to the old one.
+        ...(printing ? { is_default: true } : {}),
       });
-      setSaved(JSON.stringify(template));
-      toast.success('Saved. Challans from this branch print this way from now on.');
+
+      const stored = response?.data?.data?.data ?? null;
+      const id = stored?.id ?? layoutId;
+
+      setLayoutId(id ?? null);
+      setSaved(signatureOf(name, template));
+
+      // Re-read rather than patched in place: the server moves the flag off
+      // whichever layout used to print, and guessing that here would leave the
+      // list claiming two of them do.
+      await reloadLayouts();
+
+      toast.success(
+        stored?.is_default
+          ? 'Saved. This is the layout this branch prints.'
+          : 'Saved. It is kept, but the branch still prints the one marked below.',
+      );
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message || error?.message || 'The layout could not be saved.',
       );
     } finally {
       setSaving(false);
+    }
+  };
+
+  /** The list again, without disturbing what is on screen. */
+  const reloadLayouts = async () => {
+    if (!branchId) return;
+
+    try {
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/${docType}/layouts`, {
+        params: { branch_id: branchId },
+      });
+      setLayouts(response?.data?.data?.data ?? []);
+    } catch {
+      // The list going stale is not worth an error over the work on screen.
+      // It is right again the next time the branch or the paper changes.
+    }
+  };
+
+  /**
+   * Starts a layout of its own, keeping the drawing as a head start.
+   *
+   * ⚠️ It does NOT clear the bands. Somebody presses this having got most of
+   * the way to what they want and wanting to keep the old one too -- throwing
+   * their work away and handing back an empty paper is the opposite of what
+   * they asked for. Only the identity is dropped, so the next Save adds a
+   * layout instead of writing over the one they started from.
+   */
+  const startNewLayout = () => {
+    setLayoutId(null);
+    setLayoutName(freeLayoutName(layouts));
+    setSaved('');
+    toast.info('A new layout, started from what is on screen. Name it, then Save.');
+  };
+
+  /** Throws one saved layout away. The server hands the printer to another. */
+  const removeLayout = async () => {
+    if (!layoutId) return;
+
+    // eslint-disable-next-line no-alert
+    if (!window.confirm(`Delete the layout “${layoutName}”? This cannot be undone.`)) return;
+
+    setDeleting(true);
+    try {
+      await httpService.delete(`${API_PRINT_TEMPLATE_URL}/${docType}`, {
+        params: { branch_id: branchId, id: layoutId },
+      });
+
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/${docType}/layouts`, {
+        params: { branch_id: branchId },
+      });
+      const list: SavedLayout[] = response?.data?.data?.data ?? [];
+
+      setLayouts(list);
+      // Onto whatever prints now -- never left pointing at the row that is
+      // gone, which would make the next Save recreate it.
+      openLayout(list.find((one) => one.is_default) ?? list[0] ?? null);
+      toast.success(
+        list.length
+          ? 'Layout deleted.'
+          : 'Layout deleted. This branch is back on the built-in default.',
+      );
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || error?.message || 'The layout could not be deleted.',
+      );
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -578,8 +790,12 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
                 className="whitespace-nowrap"
                 icon={<FiRotateCcw className="mr-1" />}
               />
+              {/* ⚠️ Wrapped, not passed. `onClick={save}` would hand the click
+                  event to the first parameter -- which is the flag that claims
+                  the printer -- and every ordinary save would silently move
+                  which layout the branch prints. */}
               <ButtonLoading
-                onClick={save}
+                onClick={() => save()}
                 label={dirty ? 'Save' : 'Saved'}
                 size="sm"
                 buttonLoading={saving}
@@ -587,6 +803,113 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
                 variant="primary"
                 className="whitespace-nowrap"
                 icon={<FiSave className="mr-1" />}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ------------------------ the layouts ------------------------
+
+            A branch may keep several arrangements of one paper and print one
+            of them. Its own row rather than another cell in the strip above:
+            the strip says WHICH PAPER is being drawn, and this says WHICH
+            DRAWING -- two different questions, and crowding them together is
+            how somebody comes to think the Paper dropdown is what they saved
+            under. */}
+        <div className="mt-2 grid grid-cols-1 gap-x-3 gap-y-2 border-t border-[rgb(var(--c-border))] pt-2 sm:grid-cols-2 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <span className={SUB_LABEL}>Saved layouts</span>
+            <Select
+              value={layoutId === null ? 'new' : String(layoutId)}
+              onChange={(event) => {
+                if (event.target.value === 'new') return;
+                const picked = layouts.find((one) => String(one.id) === event.target.value);
+                // ⚠️ Asked before the work goes. Switching layouts REPLACES what
+                // is on screen, and an hour's arrangement is not something to
+                // lose to a mis-click on a dropdown.
+                if (
+                  dirty &&
+                  // eslint-disable-next-line no-alert
+                  !window.confirm('Leave this layout? What you changed here is not saved.')
+                ) {
+                  return;
+                }
+                openLayout(picked ?? null);
+              }}
+              className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-sm text-[rgb(var(--c-text))] outline-none dark:bg-boxdark"
+            >
+              {/* Only while there is one. An option for something that does not
+                  exist is a way of choosing it, and there is nothing to choose. */}
+              {layoutId === null ? (
+                <option value="new">{layoutName} — not saved yet</option>
+              ) : null}
+              {layouts.map((one) => (
+                <option key={one.id} value={one.id}>
+                  {one.name}
+                  {one.is_default ? ' — prints' : ''}
+                </option>
+              ))}
+            </Select>
+            <p className="mt-0.5 text-[0.65rem] leading-snug text-gray-500 dark:text-gray-400">
+              {layouts.length
+                ? 'Only the one marked “prints” comes out of the printer.'
+                : 'Nothing saved for this branch yet — it prints the built-in layout.'}
+            </p>
+          </div>
+
+          <div className="lg:col-span-3">
+            <span className={SUB_LABEL}>Name of this layout</span>
+            <Input
+              value={layoutName}
+              maxLength={64}
+              placeholder="Default"
+              onChange={(event) => setLayoutName(event.target.value)}
+              className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-sm text-[rgb(var(--c-text))] outline-none dark:bg-boxdark"
+            />
+            <p className="mt-0.5 text-[0.65rem] leading-snug text-gray-500 dark:text-gray-400">
+              What the branch calls it. “Order”, “Order — no prices”.
+            </p>
+          </div>
+
+          <div className="sm:col-span-2 lg:col-span-5">
+            <span className={SUB_LABEL} aria-hidden="true">
+              &nbsp;
+            </span>
+
+            <div className="flex flex-wrap gap-2 lg:justify-end">
+              <ButtonLoading
+                onClick={startNewLayout}
+                label="New layout"
+                size="sm"
+                disabled={saving || deleting}
+                className="whitespace-nowrap"
+                icon={<FiCopy className="mr-1" />}
+              />
+
+              {/* Shown only where it would do something. A button that is
+                  always there and nearly always disabled teaches people to
+                  stop reading it. */}
+              {layoutId && printingId !== layoutId ? (
+                <ButtonLoading
+                  onClick={() => save(true)}
+                  label="Print this one"
+                  size="sm"
+                  buttonLoading={saving}
+                  disabled={saving || deleting}
+                  variant="primary"
+                  className="whitespace-nowrap"
+                  icon={<FiCheckCircle className="mr-1" />}
+                />
+              ) : null}
+
+              <ButtonLoading
+                onClick={removeLayout}
+                label="Delete"
+                size="sm"
+                buttonLoading={deleting}
+                disabled={!layoutId || saving || deleting}
+                className="whitespace-nowrap"
+                icon={<FiTrash2 className="mr-1" />}
               />
             </div>
           </div>
