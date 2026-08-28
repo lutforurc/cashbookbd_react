@@ -281,6 +281,32 @@ export interface LayoutRoom {
   taken_by?: string | null;
 
   /**
+   * The morning a taken room comes back, as YYYY-MM-DD.
+   *
+   * ⚠️ The morning AFTER its last booked night: a guest who sleeps the 1st
+   * leaves on the 2nd, and the 2nd is the day the room can be sold again.
+   *
+   * Null on a room that is free now, and null on one booked past the horizon
+   * the server looks to — a date a year out is not an answer anybody acts on.
+   */
+  free_from?: string | null;
+
+  /**
+   * The stay the tile is coloured for: its own dates, its deadline, and who is
+   * in the room.
+   *
+   * ⚠️ `guests` are the people upstairs, not the booker -- a company books and
+   * a driver sleeps. Empty until they arrive, because the names are taken at
+   * check-in. `guests_more` counts the ones a tooltip does not list; two names
+   * and a count is the shape of an answer, six is a document.
+   */
+  stay_from?: string | null;
+  stay_to?: string | null;
+  hold_until?: string | null;
+  guests?: string[];
+  guests_more?: number;
+
+  /**
    * The beds, where they can be bought one at a time.
    *
    * Empty on a room sold only whole — listing its beds would invite somebody to
