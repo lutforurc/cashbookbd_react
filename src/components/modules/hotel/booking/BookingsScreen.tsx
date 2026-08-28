@@ -1541,15 +1541,15 @@ const BookingsScreen = ({ user }: any) => {
                     <span className="font-medium text-black dark:text-white">
                       {availability.free_count} free
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {availability.check_in_date} → {availability.check_out_date} ·{' '}
+                    <span className="text-xs text-gray-700 dark:text-gray-100">
+                      { formatDate(availability.check_in_date) } → { formatDate (availability.check_out_date) } ·{' '}
                       {nights} {nights === 1 ? 'night' : 'nights'}
                     </span>
                     {/* Said out loud, every time. It is the one thing about this
                         screen that somebody could reasonably get wrong. */}
-                    <span className="text-xs italic text-gray-400">
+                    {/* <span className="text-xs italic text-gray-400">
                       what was free a moment ago — a room is not yours until it is booked
-                    </span>
+                    </span> */}
                   </div>
 
                   {/* The key. It carries the badge as well as the colour,
@@ -1564,7 +1564,7 @@ const BookingsScreen = ({ user }: any) => {
                         >
                           {entry.badge}
                         </span>
-                        <span className="text-gray-600 dark:text-gray-300">{entry.label}</span>
+                        <span className="text-gray-700 dark:text-gray-100">{entry.label}</span>
                       </span>
                     ))}
                   </div>
