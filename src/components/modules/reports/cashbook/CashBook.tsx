@@ -111,6 +111,16 @@ const CashBook = (user: any) => {
  
 
   const runCashBook = () => {
+    // ⚠️ Both boxes, before anything is asked of the server. Clearing one is
+    // allowed -- the date field lets it happen on purpose -- and dayjs(null)
+    // formats to the string "Invalid Date", which went off to the API as though
+    // it were a date and came back with nothing, looking like a report with no
+    // rows rather than a question nobody could answer.
+    if (!startDate || !endDate) {
+      toast.error('Both dates are needed — a cash book runs between two of them.');
+      return;
+    }
+
     const startD = dayjs(startDate).format('YYYY-MM-DD');
     const endD = dayjs(endDate).format('YYYY-MM-DD');
 

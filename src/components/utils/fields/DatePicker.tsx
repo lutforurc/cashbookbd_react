@@ -31,7 +31,35 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
   const safeSelectedDate =
     selectedDate instanceof Date && !Number.isNaN(selectedDate.getTime()) ? selectedDate : null;
 
+  /**
+   * ⚠️ A HALF-TYPED YEAR IS NOT A DATE.
+   *
+   * The box parses on every keystroke against dd/MM/yyyy, and `yyyy` happily
+   * reads what is left mid-edit: backspace once through 20/07/2026 and "202" is
+   * the year 202, a perfectly valid date somewhere in the third century. It was
+   * committed to the state and read back as 20/07/0202 -- the field appeared to
+   * corrupt itself under a single keypress.
+   *
+   * So a date is only taken when its year is one a ledger could be about.
+   * Anything else is left uncommitted: react-datepicker goes on showing exactly
+   * what was typed, the state keeps the last real date, and the moment the
+   * fourth digit lands the value is taken as normal.
+   *
+   * ⚠️ Null is NOT rejected. Clearing the box is a thing people do on purpose --
+   * a filter with no date on it is a question worth asking -- and refusing it
+   * would be the other half of the same complaint.
+   */
+  const plausible = (date: Date | null) => {
+    if (date === null) return true;
+
+    const year = date.getFullYear();
+
+    return year >= 1900 && year <= 2200;
+  };
+
   const handleDateChange = (date: Date | null) => {
+    if (!plausible(date)) return;
+
     setSelectedDate(date);
     setCurrentDate(date);
 
