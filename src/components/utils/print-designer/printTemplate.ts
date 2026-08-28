@@ -91,6 +91,25 @@ export type TableColumn = {
   /** Share of the table width, in percent. Columns are normalised at render. */
   width?: number;
   align?: Align;
+  /**
+   * A second value, printed UNDER the first in the same cell.
+   *
+   * A hotel bill wants the room on one line and what the room offers beneath
+   * it: "MB / 101 Deluxe Twin — 27th to 29th", then "AC, two single beds,
+   * private bath, hot water, veranda and breakfast". That is one thing said in
+   * two registers, not two columns -- a column of its own would put the
+   * sentence beside the price and pull the table apart.
+   *
+   * ⚠️ It is a FIELD, not a fixed string. The sentence differs per row, and a
+   * paper that typed it once would print the deluxe twin's description against
+   * the single room below it.
+   *
+   * Empty on a row that has nothing to say, and then the line simply is not
+   * drawn -- no blank second line, no cell taller than its neighbours.
+   */
+  subField?: string;
+  /** Draw the second line in brackets, the way a note under a name reads. */
+  subInBrackets?: boolean;
 };
 
 export type SignatureItem = {
@@ -648,6 +667,10 @@ export const HOTEL_BILL_FIELDS: FieldDef[] = [
 export const HOTEL_BILL_LINE_FIELDS: FieldDef[] = [
   { key: 'sl', name: 'Sl. No.', group: 'folio' },
   { key: 'description', name: 'Description', group: 'folio' },
+  // The same line with the room's type in it. Offered beside the plain one so
+  // that a paper already laid out goes on printing exactly what it printed
+  // yesterday.
+  { key: 'description_with_type', name: 'Description & Type', group: 'folio' },
   { key: 'charge_type', name: 'Charge Type', group: 'folio' },
   // ⚠️ A row is one room over a RUN of nights, so its date is a FROM and a TO.
   // They are equal on a single night, and the description already reads as a
@@ -655,6 +678,13 @@ export const HOTEL_BILL_LINE_FIELDS: FieldDef[] = [
   { key: 'stay_date', name: 'Date', group: 'folio', format: 'date' },
   { key: 'stay_date_to', name: 'Date To', group: 'folio', format: 'date' },
   { key: 'room', name: 'Room', group: 'folio' },
+  // The room and what it is let as, in one phrase -- "MB / 101 Deluxe Twin".
+  { key: 'room_with_type', name: 'Room & Type', group: 'folio' },
+  { key: 'room_type', name: 'Room Type', group: 'folio' },
+  // ⚠️ The TYPE's description, which is where a sentence true of every Deluxe
+  // Twin belongs -- written once on the Room Types screen rather than onto
+  // forty-four rooms, where the one with the typo prints it on a guest's bill.
+  { key: 'room_type_description', name: 'Room Type Description', group: 'folio' },
   // ⚠️ WHAT THE ROOM IS, not what the line is. A bill naming "Deluxe 302" and
   // nothing else leaves the guest's own accountant with no record of what was
   // paid for. Offered rather than printed: neither is in any shipped layout, so
@@ -1285,7 +1315,22 @@ const hotelBill = (): PrintTemplate => ({
       totalRowLabel: 'Grand Total',
       columns: [
         { field: 'sl', label: 'Sl.', width: 6, align: 'center' },
-        { field: 'description', label: 'Description', width: 40, align: 'left' },
+        // ⚠️ The room, WHAT IT WAS LET AS, and the dates on one line, with the
+        // type's own sentence beneath it in brackets. A bill naming "MB / 101"
+        // and nothing else leaves the guest's own accountant with no record of
+        // what was paid for -- and the sentence is the type's, so it is written
+        // once on the Room Types screen rather than onto every room.
+        //
+        // The second line is simply not drawn where a type has nothing to say,
+        // so a property that never fills those in prints what it always did.
+        {
+          field: 'description_with_type',
+          label: 'Description',
+          width: 40,
+          align: 'left',
+          subField: 'room_type_description',
+          subInBrackets: true,
+        },
         { field: 'quantity', label: 'Qty', width: 8, align: 'right' },
         { field: 'unit_rate', label: 'Rate', width: 13, align: 'right' },
         { field: 'base_amount', label: 'Amount', width: 15, align: 'right' },
@@ -1552,6 +1597,10 @@ const tableColumns = (value: any): TableColumn[] =>
       label: typeof item.label === 'string' ? item.label : undefined,
       width: bounded(item.width, 3, 100, 10),
       align: align(item.align, isNumericField(String(item.field)) ? 'right' : 'left'),
+      // Absent on every column saved before this existed, which is every one:
+      // no paper gains a second line it did not ask for.
+      subField: typeof item.subField === 'string' && item.subField ? item.subField : undefined,
+      subInBrackets: item.subInBrackets === true,
     }));
 
 /**

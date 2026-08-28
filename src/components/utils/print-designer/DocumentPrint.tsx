@@ -674,14 +674,38 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           <tbody>
             {pageRows.map((row, rowIndex) => (
               <tr key={row?.id ?? rowIndex} className="avoid-break">
-                {columns.map((column, index) => (
-                  <td
-                    key={`${column.field}-${index}`}
-                    className={`${border} px-1 py-0.5 align-top ${alignClass[column.align ?? 'left']}`}
-                  >
-                    {cell(row, startIndex + rowIndex, column.field)}
-                  </td>
-                ))}
+                {columns.map((column, index) => {
+                  /**
+                   * The second line, where a column asks for one.
+                   *
+                   * ⚠️ Drawn only when the row HAS something to say. An empty
+                   * sub-line still occupies a line box, and a table where some
+                   * rows carry one and some do not would step up and down the
+                   * page for nothing.
+                   *
+                   * Smaller and lighter than the line above it: it is what the
+                   * room offers, read after the room has been found, not
+                   * alongside it.
+                   */
+                  const sub = column.subField
+                    ? String(cell(row, startIndex + rowIndex, column.subField) ?? '').trim()
+                    : '';
+
+                  return (
+                    <td
+                      key={`${column.field}-${index}`}
+                      className={`${border} px-1 py-0.5 align-top ${alignClass[column.align ?? 'left']}`}
+                    >
+                      {cell(row, startIndex + rowIndex, column.field)}
+
+                      {sub ? (
+                        <div className="text-[0.85em] leading-snug opacity-80">
+                          {column.subInBrackets ? `(${sub})` : sub}
+                        </div>
+                      ) : null}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
 

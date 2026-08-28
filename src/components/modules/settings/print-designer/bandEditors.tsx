@@ -533,6 +533,9 @@ export const TableBandEditor: React.FC<{
   band: TableBand;
   onChange: (band: TableBand) => void;
 }> = ({ band, onChange }) => {
+  // Which paper is being laid out, for the sub-line picker below: a bill's
+  // second line may only offer a bill's fields.
+  const docType = useDocType();
   const { handlers, rowClass } = useRowDrag();
   const move = (from: number, to: number) =>
     onChange({ ...band, columns: reorder(band.columns, from, to) });
@@ -658,6 +661,45 @@ export const TableBandEditor: React.FC<{
             >
               <FiTrash2 />
             </Button>
+
+            {/* ⚠️ A SECOND LINE IN THE SAME CELL, not another column.
+                A hotel bill wants the room on one line and what the room offers
+                beneath it -- one thing said in two registers. Given a column of
+                its own, the sentence would sit beside the price and pull the
+                table apart.
+
+                On its own row of the editor because it is the odd one out: the
+                controls above describe the column, this describes what goes
+                under it. */}
+            <div className="flex w-full items-center gap-2 pl-6">
+              <span className="shrink-0 text-[0.65rem] uppercase tracking-wide text-slate-400">
+                Under it
+              </span>
+
+              <Select
+                value={column.subField ?? ''}
+                draggable={false}
+                onChange={(event) => update(index, { subField: event.target.value || undefined })}
+                className="min-w-0 flex-1 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1 py-0.5 text-xs outline-none dark:bg-boxdark"
+              >
+                <option value="">Nothing</option>
+                {lineFieldsFor(docType)
+                  .filter((entry) => entry.key !== column.field)
+                  .map((entry) => (
+                    <option key={entry.key} value={entry.key}>
+                      {entry.name}
+                    </option>
+                  ))}
+              </Select>
+
+              {column.subField ? (
+                <CheckRow
+                  checked={column.subInBrackets === true}
+                  onChange={(subInBrackets) => update(index, { subInBrackets })}
+                  label="In brackets"
+                />
+              ) : null}
+            </div>
           </li>
         ))}
       </ul>
