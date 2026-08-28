@@ -699,7 +699,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                       {cell(row, startIndex + rowIndex, column.field)}
 
                       {sub ? (
-                        <div className="text-[0.85em] leading-snug opacity-80">
+                        <div className="text-[0.80em] leading-snug ">
                           {column.subInBrackets ? `(${sub})` : sub}
                         </div>
                       ) : null}
