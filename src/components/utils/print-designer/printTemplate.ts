@@ -460,11 +460,6 @@ export const FIELD_CATALOG: FieldDef[] = [
   { key: 'branch_address', name: 'Branch Address', group: 'voucher' },
   { key: 'notes', name: 'Notes', group: 'voucher' },
   { key: 'printed_at', name: 'Print Time', group: 'voucher' },
-  // ⚠️ The order paper keeps its OWN catalogue, so a field added to the challan's
-  // never reaches it -- which is how the signature line came to offer no way of
-  // naming anybody. Who is at the printer belongs on every paper that is signed.
-  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
-  { key: 'created_by', name: 'Prepared By (voucher)', group: 'voucher' },
 
   // Who carried it
   { key: 'vehicle_no', name: 'Vehicle No', group: 'transport' },
@@ -531,6 +526,13 @@ export const ORDER_FIELD_CATALOG: FieldDef[] = [
   { key: 'branch_address', name: 'Branch Address', group: 'voucher' },
   { key: 'notes', name: 'Notes', group: 'voucher' },
   { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+  // ⚠️ The order paper keeps its OWN catalogue, so a field added to the challan's
+  // never reaches it -- which is how its signature line came to offer no way of
+  // naming anybody. Who is at the printer belongs on every paper that is signed.
+  // Both facts, and see the note beside printed_by in FIELD_CATALOG for why:
+  // the creator raised the order, the person at the printer signs this copy.
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  { key: 'created_by', name: 'Prepared By (voucher)', group: 'voucher' },
 
   // What was agreed
   { key: 'product_name', name: 'Product Name', group: 'order' },
