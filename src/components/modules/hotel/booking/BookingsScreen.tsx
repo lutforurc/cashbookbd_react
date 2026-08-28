@@ -1259,74 +1259,115 @@ const BookingsScreen = ({ user }: any) => {
       {
         key: 'action',
         header: 'Action',
-        // Four links on a checked-in row. Left narrower they wrap.
-        headerClass: 'text-center w-64',
+        // Five slots wide -- see the grid below. Left narrower they wrap.
+        headerClass: 'text-center w-80',
         cellClass: 'text-center',
         render: (row: any) => {
           if (['cancelled', 'expired'].includes(row.status)) {
             return <span className="text-xs text-gray-400">—</span>;
           }
 
+          /**
+           * ⚠️ FIVE FIXED SLOTS, and the empty ones are the point.
+           *
+           * The links were laid out centred, and a row's set depends on where
+           * its stay has got to -- a confirmed booking offers four, a
+           * checked-in one five. Centred, that put every link in a different
+           * place on every row: Cancel sat at five different distances down a
+           * single column, and the eye had to read each row to find the one it
+           * wanted rather than going straight down.
+           *
+           * One column per ACTION, always in the same order, so Cancel is
+           * always last and Bill always third. A row that cannot offer an
+           * action leaves its slot empty rather than closing the gap -- which
+           * is what keeps the column straight, and says at a glance which stays
+           * have started and which have not.
+           *
+           * ⚠️ The tracks are SIZED TO THEIR WORDS, not five equal fifths.
+           * Equal fifths gave "Bill" the same room as "Check out", and the
+           * longer word ran straight over Cancel beside it -- two links sharing
+           * the same pixels, one of them the destructive one. Fixed widths keep
+           * every row on the same tracks while letting each hold what it has
+           * to say.
+           */
+          const link = 'text-xs font-medium hover:underline whitespace-nowrap';
+
           return (
-            <div className="flex items-center justify-center gap-3">
+            <div className="grid grid-cols-[3rem_4.25rem_2.75rem_4.75rem_3.5rem] items-center justify-items-center gap-x-1">
               {/* ⚠️ Only while the stay can still change. A checked-out or
                   cancelled booking is history -- its nights are the register of
                   who was here and its bill is made -- and the server refuses it
                   anyway. Offering the link would be offering a refusal. */}
-              {!['checked_out', 'cancelled', 'expired'].includes(row.status) ? (
-                <button
-                  type="button"
-                  onClick={() => openEdit(row)}
-                  className="text-xs font-medium text-primary hover:underline dark:text-secondary"
-                >
-                  Edit
-                </button>
-              ) : null}
+              <span>
+                {!['checked_out', 'cancelled', 'expired'].includes(row.status) ? (
+                  <button
+                    type="button"
+                    onClick={() => openEdit(row)}
+                    className={`${link} text-primary dark:text-secondary`}
+                  >
+                    Edit
+                  </button>
+                ) : null}
+              </span>
 
               {/* Named for what it does rather than for the stage it is.
                   "Check in" is what the desk calls it; "allotment" is what
-                  the spec calls it, and nobody at a desk says that. */}
-              <button
-                type="button"
-                onClick={() => navigate(`${routes.hotel_booking_check_in}/${row.id}`)}
-                className="text-xs font-medium text-primary hover:underline dark:text-secondary"
-              >
-                {row.status === 'checked_in' ? 'Guests' : 'Check in'}
-              </button>
+                  the spec calls it, and nobody at a desk says that.
+
+                  One slot for both because they are the same door: before the
+                  guests arrive it takes them in, afterwards it shows who came. */}
+              <span>
+                <button
+                  type="button"
+                  onClick={() => navigate(`${routes.hotel_booking_check_in}/${row.id}`)}
+                  className={`${link} text-primary dark:text-secondary`}
+                >
+                  {row.status === 'checked_in' ? 'Guests' : 'Check in'}
+                </button>
+              </span>
 
               {/* The bill. Offered on every live booking rather than only on a
                   checked-in one: an advance is taken on the telephone, long
                   before anybody arrives. */}
-              <button
-                type="button"
-                onClick={() => navigate(`${routes.hotel_booking_folio}/${row.id}`)}
-                className="text-xs font-medium text-primary hover:underline dark:text-secondary"
-              >
-                Bill
-              </button>
+              <span>
+                <button
+                  type="button"
+                  onClick={() => navigate(`${routes.hotel_booking_folio}/${row.id}`)}
+                  className={`${link} text-primary dark:text-secondary`}
+                >
+                  Bill
+                </button>
+              </span>
 
               {/* Only on a stay that has actually started. Offered on a hold
                   or a confirmed booking it would be a button that can only
                   ever answer "these guests have not been checked in". */}
-              {row.status === 'checked_in' ? (
-                <button
-                  type="button"
-                  onClick={() => navigate(`${routes.hotel_booking_check_out}/${row.id}`)}
-                  className="text-xs font-medium text-primary hover:underline dark:text-secondary"
-                >
-                  Check out
-                </button>
-              ) : null}
+              <span>
+                {row.status === 'checked_in' ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`${routes.hotel_booking_check_out}/${row.id}`)}
+                    className={`${link} text-primary dark:text-secondary`}
+                  >
+                    Check out
+                  </button>
+                ) : null}
+              </span>
 
-              {row.status === 'checked_out' ? null : (
-                <button
-                  type="button"
-                  onClick={() => askToCancel(row)}
-                  className="text-xs font-medium text-danger hover:underline dark:text-red-400"
-                >
-                  Cancel
-                </button>
-              )}
+              {/* ⚠️ Last, always, and the only red one. A destructive action
+                  that moves about the row is one somebody eventually presses by
+                  aiming at where it was on the row above. */}
+              <span>
+                {row.status === 'checked_out' ? null : (
+                  <button
+                    type="button"
+                    onClick={() => askToCancel(row)}
+                    className={`${link} text-danger dark:text-red-400`}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </span>
             </div>
           );
         },
