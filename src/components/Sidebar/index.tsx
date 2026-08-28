@@ -2350,7 +2350,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.print_template_designer}
                                 className={subMenuLinkClass}
                               >
-                                Challan Layout
+                                Print Template Designer
                               </NavLink>
                             </li>
                           )}
