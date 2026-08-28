@@ -1508,7 +1508,9 @@ const BookingsScreen = ({ user }: any) => {
                     forget();
                   }}
                 />
-                <div className="pb-0.5">
+                {/* No padding under it: the row is items-end, so anything below
+                    the button lifts it off the line the fields sit on. */}
+                <div>
                   <ButtonLoading
                     onClick={check}
                     buttonLoading={checking}
@@ -1519,8 +1521,7 @@ const BookingsScreen = ({ user }: any) => {
                 </div>
               </div>
 
-              {/* Drawn only once there is something painted. A colour chooser
-                  over an empty grid is a control with nothing to control. */}
+
               {availability ? (
                 <div className="mt-3 w-56">
                   <DropdownCommon
