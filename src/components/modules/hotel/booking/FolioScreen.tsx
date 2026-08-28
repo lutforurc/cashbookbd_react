@@ -161,6 +161,179 @@ const VoucherMark = ({ vrNo }: { vrNo?: string | null }) =>
     </span>
   );
 
+/**
+ * A charge line as it is read, with its dates in the local order.
+ *
+ * ⚠️ The description is STORED as "MB / 501 — 2026-08-30" -- written when the
+ * night was billed, and read back by the voucher narration and anything else
+ * that quotes a folio line. It is not rewritten here: the stored words are the
+ * record, and a screen that edited them would leave the paper and the ledger
+ * saying two different things about one charge.
+ *
+ * So the date is turned round for the eye only, the same way the rest of these
+ * screens write one. The printed bill does its own rebuild -- shorter, because
+ * paper is narrower than a table -- and neither touches what is stored.
+ */
+const asRead = (text?: string | null): string =>
+  String(text ?? '').replace(
+    /(\d{4})-(\d{2})-(\d{2})/g,
+    (_all, year, month, day) => `${day}/${month}/${year}`,
+  );
+
+/**
+ * The calendar day a stored stay_date means, as YYYY-MM-DD.
+ *
+ * ⚠️ IT ARRIVES AS A UTC TIMESTAMP. The column holds 2026-08-27 and the API
+ * serialises it as "2026-08-26T18:00:00.000000Z" -- the same instant six hours
+ * west, which is the day BEFORE. Read as text it printed 26/08 for a night
+ * slept on the 27th, and cutting the date out of the front of the string was
+ * how the bill came to read "26/08/2026T18:00:00.000000Z".
+ *
+ * So the local day is taken from a parsed instant, and a value that is already
+ * a plain date is left alone -- pushing that one through `new Date` is the same
+ * trap the other way round, west of Greenwich.
+ */
+const dayOf = (value?: string | null): string => {
+  const text = String(value ?? '');
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+
+  const at = new Date(text);
+
+  if (Number.isNaN(at.getTime())) return '';
+
+  return [
+    at.getFullYear(),
+    String(at.getMonth() + 1).padStart(2, '0'),
+    String(at.getDate()).padStart(2, '0'),
+  ].join('-');
+};
+
+/**
+ * The nights of one room, folded into the runs they actually form.
+ *
+ * "30/08/2026 — 01/09/2026, 05/09/2026" -- three consecutive nights as a range
+ * and the odd one after the gap named on its own. ⚠️ The GAP IS THE POINT: read
+ * as one range, 30/08 to 05/09 would charge two nights the guest did not have,
+ * and a reader adding the bill up by hand could not make it agree.
+ */
+const foldNights = (dates: string[]): string => {
+  const days = [...new Set(dates.map(dayOf).filter(Boolean))].sort();
+
+  if (!days.length) return '';
+
+  const runs: string[][] = [];
+
+  days.forEach((day) => {
+    const run = runs[runs.length - 1];
+    const previous = run?.[run.length - 1];
+
+    // ⚠️ Compared as calendar days built from their own parts, never by
+    // subtracting two parsed strings: an hour of daylight saving, or a value
+    // that arrived as an instant rather than a date, makes "one day apart"
+    // 23 or 25 hours and the run breaks where it should not.
+    const follows = previous ? nextDay(previous) === day : false;
+
+    if (follows) run.push(day);
+    else runs.push([day]);
+  });
+
+  return runs
+    .map((run) =>
+      run.length > 1 ? `${asRead(run[0])} — ${asRead(run[run.length - 1])}` : asRead(run[0]),
+    )
+    .join(', ');
+};
+
+/** The day after a YYYY-MM-DD, as YYYY-MM-DD. */
+const nextDay = (day: string): string => {
+  const [year, month, date] = day.split('-').map(Number);
+  const at = new Date(year, month - 1, date + 1);
+
+  return [
+    at.getFullYear(),
+    String(at.getMonth() + 1).padStart(2, '0'),
+    String(at.getDate()).padStart(2, '0'),
+  ].join('-');
+};
+
+/**
+ * The bill, with a room's nights on one line instead of one line each.
+ *
+ * A three-night stay in three rooms filled the table with nine rows saying the
+ * same two things nine times, and finding the restaurant charge underneath
+ * meant reading past all of them.
+ *
+ * ⚠️ WHAT MERGES IS DELIBERATELY NARROW -- the same room, the same charge type,
+ * and the same rates. A stay that crosses a tariff change has two rates on it,
+ * and one row cannot honestly carry two figures. The folio keeps its line per
+ * night underneath either way; this is only how the table is read.
+ *
+ * ⚠️ ROOM NIGHTS ONLY. A hall carries a resource_id too, and folding on that
+ * alone would put the morning, the afternoon and the evening of one day into a
+ * single row -- three sales of one hall, with which sittings were sold no
+ * longer on the paper. A restaurant charge repeated three times is three things
+ * bought on three occasions, and the guest reads them as three.
+ *
+ * Amounts are summed, which is the only honest thing a merged row can show, and
+ * the voucher numbers are listed where a run was posted in more than one batch.
+ */
+const foldBill = (lines: any[]): any[] => {
+  const out: any[] = [];
+  const at = new Map<string, number>();
+
+  lines.forEach((line) => {
+    const foldable = Boolean(line?.resource_id) && line?.charge_type === 'room_rent';
+
+    const key = foldable
+      ? [
+          line.resource_id,
+          line.charge_type,
+          line.unit_rate,
+          line.service_charge_rate,
+          line.vat_rate,
+        ].join('|')
+      : null;
+
+    if (key === null || !at.has(key)) {
+      if (key !== null) at.set(key, out.length);
+
+      out.push({
+        ...line,
+        // ⚠️ Only a foldable line collects nights. Without this a restaurant
+        // charge had its stay date appended to a description that never
+        // carried one -- "Launce-4 — 26/08/2026".
+        _nights: foldable && line?.stay_date ? [line.stay_date] : [],
+        _vouchers: [line?.vr_no],
+      });
+
+      return;
+    }
+
+    const row = out[at.get(key) as number];
+
+    row.base_amount = Number(row.base_amount ?? 0) + Number(line.base_amount ?? 0);
+    row.service_charge_amount =
+      Number(row.service_charge_amount ?? 0) + Number(line.service_charge_amount ?? 0);
+    row.vat_amount = Number(row.vat_amount ?? 0) + Number(line.vat_amount ?? 0);
+    row.line_total = Number(row.line_total ?? 0) + Number(line.line_total ?? 0);
+
+    if (line.stay_date) row._nights.push(line.stay_date);
+    row._vouchers.push(line?.vr_no);
+  });
+
+  return out.map((row, index) => ({
+    ...row,
+    // Numbered as they are drawn. Keeping the folio's own line numbers would
+    // print 1, 4, 7, 10 down a column of four rows.
+    line_no: index + 1,
+    description: row._nights.length
+      ? `${String(row.description ?? '').split(' — ')[0]} — ${foldNights(row._nights)}`
+      : row.description,
+    vr_no: [...new Set(row._vouchers.filter(Boolean))].join(', '),
+  }));
+};
+
 const FolioScreen = () => {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
@@ -316,7 +489,7 @@ const FolioScreen = () => {
         header: 'Charge',
         render: (row: any) => (
           <div>
-            <div className="text-black dark:text-white">{row.description}</div>
+            <div className="text-black dark:text-white">{asRead(row.description)}</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
               {(row.charge_type ?? '').replace('_', ' ')}
             </div>
@@ -1023,7 +1196,7 @@ const FolioScreen = () => {
       <div className="mb-2 text-sm font-medium text-black dark:text-white">The bill</div>
       <Table
         columns={lineColumns}
-        data={folio.lines ?? []}
+        data={foldBill(folio.lines ?? [])}
         noDataMessage="Nothing on the bill yet. Press Bill the nights to put the rooms on it."
       />
 
