@@ -165,7 +165,7 @@ const SalesLedger = (user: any) => {
   } | null>(null);
 
   // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Rows + Font controls (like your screenshot)
-  const [rowsPerPage, setRowsPerPage] = useState<number>(12);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(10);
 
   // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Print

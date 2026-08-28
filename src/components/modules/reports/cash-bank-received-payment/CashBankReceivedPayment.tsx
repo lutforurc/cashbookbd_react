@@ -62,7 +62,7 @@ const CashBankReceivedPayment = ({ user }: { user: any }) => {
   const [rows, setRows] = useState<CashBankSummaryRow[]>([]);
   const [bankDetails, setBankDetails] = useState<BankDetailRow[]>([]);
   const [loading, setLoading] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(12);
+  const [rowsPerPage, setRowsPerPage] = useState(0);
   const [fontSize, setFontSize] = useState(12);
 
   useEffect(() => {

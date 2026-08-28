@@ -97,7 +97,7 @@ const ProductLedgerData = (user: any) => {
   const [selectedLedgerOption, setSelectedLedgerOption] = useState<any>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(12);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);

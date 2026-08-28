@@ -40,7 +40,7 @@ const FestivalBonus = ({ user }: any) => {
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [tableData, setTableData] = useState<any[]>([]);
   const [fontSize, setFontSize] = useState<number>(11);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(20);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(0);
   const [shouldPrint, setShouldPrint] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);

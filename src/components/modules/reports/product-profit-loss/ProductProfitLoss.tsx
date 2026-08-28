@@ -169,7 +169,7 @@ const ProductProfitLoss = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportRows, setReportRows] = useState<ProductProfitRow[]>([]);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(12);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
   const [summary, setSummary] = useState({

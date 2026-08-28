@@ -117,7 +117,7 @@ const ProductStockNormal = ({ user }: any) => {
   const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
-  const [perPage, setPerPage] = useState<number>(20);
+  const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [brandId, setBrandId] = useState<number | string | null>(null);
 

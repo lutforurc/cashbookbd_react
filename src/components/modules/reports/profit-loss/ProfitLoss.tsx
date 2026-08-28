@@ -96,7 +96,7 @@ const ProfitLoss = (user: any) => {
   const [endDate, setEndDate] = useState<Date | null>(null);
 
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [perPage, setPerPage] = useState<number>(12);
+  const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedExpenseDetail, setSelectedExpenseDetail] =

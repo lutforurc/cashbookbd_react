@@ -210,7 +210,7 @@ const GroupPurchaseSales = () => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [report, setReport] = useState<NormalizedReport>({ months: [], sections: [] });
   const [loading, setLoading] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(14);
+  const [rowsPerPage, setRowsPerPage] = useState(0);
   const [fontSize, setFontSize] = useState(9);
 
   useEffect(() => {

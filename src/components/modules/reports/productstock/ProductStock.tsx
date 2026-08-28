@@ -135,7 +135,7 @@ const ProductStock = ({ user }: any) => {
   const [brandId, setBrandId] = useState<string | null>(''); // null Ã Â¦Â¹Ã Â¦Â¤Ã Â§â€¡ Ã Â¦ÂªÃ Â¦Â¾Ã Â¦Â°Ã Â¦Â¬Ã Â§â€¡
 
   const printRef = useRef<HTMLDivElement>(null);
-  const [perPage, setPerPage] = useState<number>(35);
+  const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(11);
 
 

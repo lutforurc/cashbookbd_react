@@ -1,5 +1,5 @@
 ﻿import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ButtonLoading,
   PrintButton,
@@ -51,10 +51,23 @@ import { reportDescription as description } from '../../../utils/utils-functions
 // that run came back with them from the store. Both are gone: the report opens
 // on this branch's current transaction date with an empty table, and shows
 // figures only for the question actually asked.
+//
+// ⚠️ BUT A ROUND TRIP IS NOT A NEW VISIT, and that is a different question.
+// Opening a voucher from a row and coming back landed on the transaction date
+// again, so a clerk working through the 19th of August was returned to today
+// after every correction and had to type the range in once more.
+//
+// The applied range rides in the ADDRESS BAR for that -- and only there. Coming
+// back lands on the URL that was left, so the range comes with it; opening the
+// report from the menu carries no query and gets the transaction date, which is
+// what the paragraph above insists on. Nothing is remembered between sessions,
+// nothing is inherited from whoever used the browser last, and a range that
+// looks wrong can be read off the URL rather than guessed at.
 const CashBook = (user: any) => {
   const dispatch = useDispatch();
   const highlightRules = useHighlightRules();
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const cashBookData = useSelector((state) => state.cashBook);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -64,7 +77,7 @@ const CashBook = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [isSelected, setIsSelected] = useState<number | string>('');
-  const [perPage, setPerPage] = useState<number>(15);
+  const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(10);
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);
@@ -102,6 +115,15 @@ const CashBook = (user: any) => {
     const endD = dayjs(endDate).format('YYYY-MM-DD');
 
     dispatch(getCashBook({ branchId, startDate: startD, endDate: endD }));
+
+    // ⚠️ Written on APPLY, not on every change of a date box. What goes in the
+    // address bar is the question that was actually asked -- a half-typed range
+    // nobody ran is not somewhere to come back to.
+    //
+    // replace, so pressing Apply four times does not put four entries in the
+    // history for Back to walk out of one at a time.
+    setParams({ from: startD, to: endD }, { replace: true });
+
     setFilterOpen(false);
   };
 
@@ -133,7 +155,43 @@ const CashBook = (user: any) => {
   };
 
   const handleResetFilters = () => {
+    // ⚠️ The range goes with it. With the applied one in the address bar, a
+    // Reset that only shut the panel would leave the report on a range the
+    // screen was no longer showing -- and no way back to the default short of
+    // editing the URL by hand.
+    const onDate = transactionDate();
+
+    if (onDate) {
+      setStartDate(onDate);
+      setEndDate(onDate);
+    }
+
+    setParams({}, { replace: true });
     setFilterOpen(false);
+  };
+
+  /** This branch's working date, as the branch dropdown reports it. */
+  const transactionDate = (): Date | null => {
+    const said = branchDdlData?.protectedData?.transactionDate;
+
+    if (!said) return null;
+
+    const [day, month, year] = said.split('/');
+
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  };
+
+  /**
+   * A date out of the address bar, or null where there is none.
+   *
+   * Read by hand rather than handed to `new Date`: 'YYYY-MM-DD' with no zone is
+   * read as UTC midnight, and east of Greenwich that is still the day before --
+   * the range would come back one day short of the one that was left.
+   */
+  const fromUrl = (key: string): Date | null => {
+    const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(params.get(key) ?? '');
+
+    return parts ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3])) : null;
   };
 
   useEffect(() => {
@@ -142,13 +200,18 @@ const CashBook = (user: any) => {
       branchDdlData?.protectedData?.transactionDate
     ) {
       setDropdownData(branchDdlData?.protectedData?.data);
-      const [day, month, year] =
-        branchDdlData?.protectedData?.transactionDate.split('/');
-      const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-      setStartDate(parsedDate);
-      setEndDate(parsedDate);
+
+      // ⚠️ The address bar wins where it has something to say. Coming back from
+      // a voucher lands on the URL that was left, so the range that was being
+      // worked on is still there; arriving from the menu carries no query and
+      // gets the branch's transaction date, which is what a fresh visit means.
+      const from = fromUrl('from');
+      const to = fromUrl('to');
+      const onDate = transactionDate();
+
+      setStartDate(from ?? onDate);
+      setEndDate(to ?? from ?? onDate);
       setBranchId(user.user.branch_id);
-    } else {
     }
   }, [branchDdlData?.protectedData?.data]);
 

@@ -53,7 +53,7 @@ const CatWiseInOut = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
 
-  const [perPage, setPerPage] = useState(20);
+  const [perPage, setPerPage] = useState(0);
   const [fontSize, setFontSize] = useState(11);
 
   const printRef = useRef<HTMLDivElement>(null);

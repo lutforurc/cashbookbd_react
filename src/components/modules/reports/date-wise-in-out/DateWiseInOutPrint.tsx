@@ -26,6 +26,10 @@ type DateWiseInOutDetailPrintProps = {
 };
 
 const chunkRows = <T,>(rows: T[], rowsPerPage: number): T[][] => {
+  // ⚠️ Zero means ONE PAGE. `|| 12` read it as "nothing said" and broke the
+  // sheet into twelves instead.
+  if (rowsPerPage <= 0) return [rows];
+
   const perPage = Math.max(Number(rowsPerPage) || 12, 1);
   const pages: T[][] = [];
 

@@ -118,7 +118,7 @@ const DateWiseInOut = ({ user }: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(12);
+  const [rowsPerPage, setRowsPerPage] = useState(0);
   const [fontSize, setFontSize] = useState(10);
   const [detailLoadingDate, setDetailLoadingDate] = useState('');
   const [detailPrintReady, setDetailPrintReady] = useState(false);

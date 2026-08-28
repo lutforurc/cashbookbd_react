@@ -89,7 +89,7 @@ const BankBook = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [isSelected, setIsSelected] = useState<number | string>('');
-  const [perPage, setPerPage] = useState<number>(12);
+  const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);

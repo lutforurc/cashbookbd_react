@@ -94,7 +94,7 @@ const ClosingStockReport = ({ user }: any) => {
   const [rows, setRows] = useState<StockRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [perPage, setPerPage] = useState(12);
+  const [perPage, setPerPage] = useState(0);
   const [fontSize, setFontSize] = useState(12);
 
   const printRef = useRef<HTMLDivElement>(null);

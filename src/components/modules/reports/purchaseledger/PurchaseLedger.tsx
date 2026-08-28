@@ -126,7 +126,7 @@ const PurchaseLedger = (user: any) => {
   const restoredFilterRef = useRef(false);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
-  const [perPage, setPerPage] = useState<number>(12);
+  const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [approvingId, setApprovingId] = useState<number | null>(null);
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);

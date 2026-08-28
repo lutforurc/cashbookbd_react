@@ -36,7 +36,7 @@ const LoanLedger = (user: any) => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [branchPad, setBranchPad] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
-  const [perPage, setPerPage] = useState<number>(12);
+  const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const voucherRegistryRef = useRef<any>(null); 
 

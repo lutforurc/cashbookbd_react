@@ -69,7 +69,7 @@ const ConnectedMember = (user: any) => {
   const [groups, setGroups] = useState<ConnectedMemberGroup[]>([]);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [rowsPerPage, setRowsPerPage] = useState(0);
   const [fontSize, setFontSize] = useState(12);
 
   useEffect(() => {

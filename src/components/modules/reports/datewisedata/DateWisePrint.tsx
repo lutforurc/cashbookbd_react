@@ -24,6 +24,12 @@ type Props = {
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
+  // ⚠️ A size of nothing means ONE PAGE, not a step of nothing. Without this
+  // the loop below advances by zero and never ends: the tab locks and the array
+  // grows until the browser gives up. Zero is the ordinary way to ask for an
+  // unbroken statement, so it reached here the moment anybody typed it.
+  if (size <= 0) return [data];
+
   const out: T[][] = [];
   for (let i = 0; i < data.length; i += size) out.push(data.slice(i, i + size));
   return out;

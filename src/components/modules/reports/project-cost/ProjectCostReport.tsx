@@ -95,7 +95,7 @@ const ProjectCostReport = ({ user }: any) => {
 
   const [loading, setLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [perPage, setPerPage] = useState<number>(12);
+  const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);

@@ -197,7 +197,7 @@ const OrderWithProduct = ({
   const [requestedOrderId, setRequestedOrderId] = useState<string | number | null>(orderId ?? null);
   const [branchId, setBranchId] = useState<string | number>(auth?.me?.branch_id ?? '');
   const [dropdownData, setDropdownData] = useState<any[]>([]);
-  const [perPage, setPerPage] = useState<number>(12);
+  const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
 

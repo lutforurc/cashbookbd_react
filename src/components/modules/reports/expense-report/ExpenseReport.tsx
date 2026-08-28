@@ -235,7 +235,7 @@ const ExpenseReport = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [perPage, setPerPage] = useState<number>(40);
+  const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(10);
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedL3Id, setExpandedL3Id] = useState<number | null>(null);

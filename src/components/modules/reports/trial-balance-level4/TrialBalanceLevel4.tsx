@@ -147,7 +147,7 @@ const TrialBalanceLevel4 = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(40);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(10);
   const [filterOpen, setFilterOpen] = useState(false);
 

@@ -25,6 +25,11 @@ type Props = {
 
 const num = (value: unknown) => Number(String(value ?? 0).replace(/,/g, '')) || 0;
 const chunkRows = <T,>(rows: T[], size: number) => {
+  // ⚠️ Zero means ONE PAGE -- an unbroken statement -- and `|| 12` swallowed
+  // it: asked for a continuous print you got twelve rows to a sheet, with
+  // nothing on screen to say the setting had been ignored.
+  if (size <= 0) return [rows];
+
   const pageSize = Math.max(1, Number(size) || 12);
   const pages: T[][] = [];
   for (let index = 0; index < rows.length; index += pageSize) pages.push(rows.slice(index, index + pageSize));

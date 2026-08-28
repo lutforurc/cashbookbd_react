@@ -56,7 +56,7 @@ const SalarySheet = ({ user }: any) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [perPage, setPerPage] = useState<number>(10);
+  const [perPage, setPerPage] = useState<number>(0);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [meta, setMeta] = useState<any[]>([]);

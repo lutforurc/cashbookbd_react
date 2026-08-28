@@ -45,7 +45,7 @@ const MonthlyReport = (user: any) => {
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [rows, setRows] = useState<MonthlyReportRow[]>([]);
   const [loading, setLoading] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(30);
+  const [rowsPerPage, setRowsPerPage] = useState(0);
   const [fontSize, setFontSize] = useState(12);
 
   useEffect(() => {

@@ -140,7 +140,7 @@ const ElectronicsBusinessSales = () => {
   const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
   const previousReceivedBeforeCashRef = useRef('');
   const printRef = useRef<HTMLDivElement>(null);
-  const [perPage, setPerPage] = useState<number>(12);
+  const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
