@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { FiPlus, FiRotateCcw } from 'react-icons/fi';
+import { FiPlus, FiRotateCcw, FiSave, FiX } from 'react-icons/fi';
 
+import ActionButtons from '../../utils/fields/ActionButton';
 import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import Table from '../../utils/others/Table';
@@ -172,38 +173,41 @@ const ChargeTypesTab = () => {
     },
     {
       key: 'actions',
-      header: '',
-      headerClass: 'w-40 text-right',
-      cellClass: 'text-right',
+      header: 'Action',
+      headerClass: 'w-28 text-center',
+      cellClass: 'text-center',
       render: (row: any) => (
-        <div className="flex justify-end gap-2 text-xs">
-          <button
-            type="button"
-            onClick={() =>
+        <div className="flex items-center justify-center gap-2">
+          <ActionButtons
+            row={row}
+            showEdit
+            handleEdit={(r: any) =>
               setForm({
-                code: row.code,
-                name: row.name,
-                coa4_id: row.coa4_id ?? '',
-                default_rate: row.default_rate ?? '',
-                sort_order: row.sort_order,
+                code: r.code,
+                name: r.name,
+                coa4_id: r.coa4_id ?? '',
+                default_rate: r.default_rate ?? '',
+                sort_order: r.sort_order,
                 locked: true,
               })
             }
-            className="font-medium text-primary hover:underline dark:text-secondary"
-          >
-            Edit
-          </button>
+          />
 
           {/* Only where this company has written a row of its own. A shipped
-              type has nothing of theirs to put back. */}
+              type has nothing of theirs to put back.
+
+              Not the trash icon ActionButtons offers: this deletes nothing the
+              user can see, it puts the shipped type back -- which is what the
+              same arrow means in the note under the table. */}
           {row.is_overridden ? (
             <button
               type="button"
               onClick={() => reset(row)}
-              className="font-medium text-danger hover:underline"
+              aria-label="Put the shipped version back"
+              className="btn btn-sm btn-outline flex h-5 w-5 cursor-pointer items-center justify-center"
               title="Remove this company’s own version and go back to the one that ships"
             >
-              Reset
+              <FiRotateCcw className="text-lg text-red-600" />
             </button>
           ) : null}
         </div>
@@ -225,7 +229,7 @@ const ChargeTypesTab = () => {
         <ButtonLoading
           onClick={() => setForm(form ? null : blank())}
           label={form ? 'Close' : 'Add a charge type'}
-          icon={<FiPlus size={16} />}
+          icon={form ? <FiX size={16} /> : <FiPlus size={16} />}
         />
       </div>
 
@@ -301,6 +305,7 @@ const ChargeTypesTab = () => {
             <ButtonLoading
               onClick={save}
               buttonLoading={saving}
+              icon={<FiSave className="h-5 w-5" />}
               label="Save"
               variant="primary"
             />

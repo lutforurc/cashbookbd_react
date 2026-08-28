@@ -5,11 +5,16 @@ import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
 import {
   FiArrowLeft,
+  FiBriefcase,
   FiCalendar,
+  FiDownload,
   FiLogOut,
   FiPlus,
   FiPrinter,
   FiRepeat,
+  FiUpload,
+  FiUser,
+  FiX,
 } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -28,6 +33,7 @@ import {
   defaultTemplate,
   normalizeTemplate,
 } from '../../../utils/print-designer/printTemplate';
+import { FIELD_LABEL } from '../../../../theme/fieldStyles';
 import httpService from '../../../services/httpService';
 import { API_HOTEL_FOLIO_URL, API_HOTEL_PARTY_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
@@ -860,7 +866,7 @@ const FolioScreen = () => {
             )
           }
           label={charge ? 'Close' : 'Add a charge'}
-          icon={<FiPlus size={16} />}
+          icon={charge ? <FiX size={16} /> : <FiPlus size={16} />}
           disabled={!!folio.chart_missing?.length}
         />
         <ButtonLoading
@@ -883,7 +889,7 @@ const FolioScreen = () => {
             )
           }
           label={payment ? 'Close' : 'Take money'}
-          icon={<FiPlus size={16} />}
+          icon={payment ? <FiX size={16} /> : <FiPlus size={16} />}
           disabled={!!folio.chart_missing?.length}
         />
         {/* ⚠️ Prints what is ON the bill, and does not bill anything on the way.
@@ -926,7 +932,7 @@ const FolioScreen = () => {
               setMoving(moving ? null : { party: null, reason: '' })
             }
             label={moving ? 'Close' : 'Bill it to…'}
-            icon={<FiRepeat size={16} />}
+            icon={moving ? <FiX size={16} /> : <FiRepeat size={16} />}
           />
         ) : null}
       </div>
@@ -949,10 +955,12 @@ const FolioScreen = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-            <div>
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            {/* Labelled the way InputElement labels its own field, so the two
+                labels sit on one line and the two boxes under them do too. */}
+            <div className="flex flex-col text-left">
+              <label htmlFor="bill_to_party_id" className={FIELD_LABEL}>
                 To whom
-              </span>
+              </label>
               <DdlMultiline
                 id="bill_to_party_id"
                 name="to_party_id"
@@ -995,9 +1003,17 @@ const FolioScreen = () => {
           </p>
 
           <div className="mt-3">
+            {/* The icon says who ends up paying, which is what the label says too. */}
             <ButtonLoading
               onClick={moveBill}
               buttonLoading={saving}
+              icon={
+                moving.party ? (
+                  <FiBriefcase className="h-5 w-5" />
+                ) : (
+                  <FiUser className="h-5 w-5" />
+                )
+              }
               label={
                 moving.party ? `Move it to ${moving.party.label}` : 'Move it back to the guest'
               }
@@ -1096,6 +1112,7 @@ const FolioScreen = () => {
             <ButtonLoading
               onClick={saveCharge}
               buttonLoading={saving}
+              icon={<FiPlus className="h-5 w-5" />}
               label="Add to the bill"
               variant="primary"
             />
@@ -1183,9 +1200,17 @@ const FolioScreen = () => {
           </p>
 
           <div className="mt-3">
+            {/* Money in or money out, which is the only thing the two labels differ on. */}
             <ButtonLoading
               onClick={savePayment}
               buttonLoading={saving}
+              icon={
+                payment.purpose === 'refund' ? (
+                  <FiUpload className="h-5 w-5" />
+                ) : (
+                  <FiDownload className="h-5 w-5" />
+                )
+              }
               label={payment.purpose === 'refund' ? 'Give it back' : 'Take the money'}
               variant="primary"
             />
