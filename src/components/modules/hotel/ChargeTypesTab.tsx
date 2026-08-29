@@ -39,6 +39,7 @@ const blank = () => ({
   name: '',
   coa4_id: '',
   default_rate: '',
+  vat_rate: '',
   sort_order: 50,
 });
 
@@ -92,6 +93,7 @@ const ChargeTypesTab = () => {
         name: form.name,
         coa4_id: form.coa4_id || null,
         default_rate: form.default_rate === '' ? null : form.default_rate,
+        vat_rate: form.vat_rate === '' ? 0 : form.vat_rate,
         sort_order: form.sort_order,
       });
 
@@ -153,6 +155,26 @@ const ChargeTypesTab = () => {
         row.default_rate ? money(row.default_rate) : <span className="text-gray-400">—</span>,
     },
     {
+      key: 'vat_rate',
+      header: 'VAT',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      // ⚠️ Read when the charge is billed and copied onto the line. Food is 5%
+      // where a room is 15% -- which is the whole reason the rate lives per
+      // type rather than once on the bill.
+      render: (row: any) =>
+        Number(row.vat_rate) ? (
+          <span className="text-black dark:text-white">{Number(row.vat_rate)}%</span>
+        ) : (
+          <span
+            className="text-amber-700 dark:text-amber-300"
+            title="Bills with no VAT until a rate is set here."
+          >
+            0%
+          </span>
+        ),
+    },
+    {
       key: 'by_hand',
       header: 'On the folio',
       headerClass: 'text-center',
@@ -187,6 +209,7 @@ const ChargeTypesTab = () => {
                 name: r.name,
                 coa4_id: r.coa4_id ?? '',
                 default_rate: r.default_rate ?? '',
+                vat_rate: r.vat_rate ?? '',
                 sort_order: r.sort_order,
                 locked: true,
               })
@@ -284,6 +307,18 @@ const ChargeTypesTab = () => {
               value={String(form.default_rate ?? '')}
               onChange={(e: any) => setForm({ ...form, default_rate: e.target.value })}
               description="Fills the box in. Leave it empty where there is no standing price."
+            />
+            <InputElement
+              id="charge_vat_rate"
+              name="vat_rate"
+              label="VAT %"
+              type="number"
+              min={0}
+              max={100}
+              placeholder="5"
+              value={String(form.vat_rate ?? '')}
+              onChange={(e: any) => setForm({ ...form, vat_rate: e.target.value })}
+              description="5 on food where a room is 15. Copied onto the bill line when it is billed."
             />
             <InputElement
               id="charge_sort_order"

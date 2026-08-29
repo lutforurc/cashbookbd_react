@@ -4451,3 +4451,119 @@ Buildable, and each its own piece of work rather than a loose end:
 §8's own estimate for the whole of it is **~100 days for site 1**. What has been
 built is the first release and the six pieces since; what is listed above is the
 rest of that estimate, not a tail of odds and ends.
+
+---
+
+## 37. VAT per item, a discount at the end — §6.3 settled, 2026-08-29
+
+The client answered §6.3 three times in one day, and the third answer is the
+one that is built. The first two are recorded here because the code carries the
+scars of both, and because somebody will otherwise "fix" it back.
+
+| asked | answered | built |
+|---|---|---|
+| morning | One VAT and one service charge **per invoice**, discount off first | built, then undone |
+| midday | Both taxes on the room & charges; discount off the **gross** | order kept — see below |
+| evening | **VAT is the item's**: 15% air conditioned, 7.5% not, 5% food. VAT falls on the service charge too | **this** |
+
+### The rule
+
+```
+a line:   quantity × rate = base
+          service charge on the base          (one rate for the property)
+          VAT on base PLUS service charge     (this item's own rate)
+the bill: the lines added up → gross → discount off the gross → net → round once
+```
+
+The client's own example: 100 of rent with a 5 service charge is taxed on **105**.
+3,000 at 5% service and 15% VAT is 150 and 472.50.
+
+⚠️ **The discount comes off LAST, after the tax, and that is deliberate.** The
+guest pays less; the government is still owed VAT on the full tariff, and the
+hotel carries the difference out of its own takings. It is not the cheaper
+reading and it was chosen with that said out loud.
+
+### Where a rate lives
+
+| screen | what it holds | why there |
+|---|---|---|
+| **Room Types** | `hotel_room_types.vat_rate` | air-conditioned or not is a fact about the TYPE. Not read off the Facilities ticks: those are what a guest is offered, and a tick removed must never move a tax rate |
+| **Charges** | `hotel_booking_charge_types.vat_rate` | food is 5% where a room is 15% |
+| **Service Charge** (was "Taxes") | `hotel_booking_tax_rates`, charge type `bill` | one figure for the property. Not a tax at all — the hotel's own takings |
+
+⚠️ **No dates on the rates**, by the client's decision. Editing one changes what
+the NEXT line is billed at and nothing else, because every folio line still
+copies the rate it was billed at onto itself. That freeze is not optional: it is
+what lets a bill be reprinted years later exactly as it was paid.
+
+⚠️ **A hall had no type, and therefore no rate.** Every sitting of a community
+centre billed at nought, silently, because the lookup goes through the room's
+type and a hall has none. The patch creates a "Hall & Community Centre" type at
+nought and puts the halls under it; the folio now marks a line that found no rate
+in amber rather than printing a quiet dash.
+
+### The discount
+
+Percentage or amount, never both. A percentage follows the bill as it grows.
+⚠️ **A reason is required** — the difference between "the manager agreed 500 off
+for the broken air conditioner" and money simply not collected is one sentence,
+and this is where it is kept, with who allowed it and when. It is debited to
+**HOTEL_DISCOUNT_ALLOWED**, never taken off the rent: a room let at 6,000 with
+600 off is a 6,000 room and a 600 discount, and a hotel that records it as a
+5,400 room can no longer answer what its rooms are worth.
+
+### What the ledger does
+
+`HotelVoucher::postFolio` posts the DIFFERENCE between what the bill now comes to
+and what the books have already been told, which `hotel_booking_master.posted_*`
+remembers. So a discount allowed after the nights were posted raises a voucher
+with no new line on it, deltas may be negative (written as the opposite entry),
+and `posted_*` is written in the same transaction as the voucher. It is not a
+cache.
+
+Checked on staging inside a rolled-back transaction: 84,740 at 10%/15% with 5%
+off posted Dr party 17,096 / Cr service 8,050.30 / Cr VAT 13,283 / Dr discount
+4,237 / Dr rounding 0.30 — balanced. Pressing again posted nothing. Raising the
+discount to 10% posted only the difference, also balanced.
+
+### The paper
+
+Room & Charges → Service Charge → VAT → **Gross** → Discount → **Net Amount**,
+with a rule over each figure that is a sum. Discount and Net Amount are not
+printed on a bill that has neither; Rounding and In Words are off by the client's
+decision (the rounding still happens, and the ledger still has a head for the
+poisha). The line table carries a narrow **VAT** column saying which RATE applied
+— the money is grouped by rate in the footing, where it can be divided back out:
+per line it never could be, because 393.75 is not 15% of 2,500.
+
+### Where it lives
+
+| | |
+|---|---|
+| Arithmetic | `BookingFolioDetail::line()` and `::totalsOf()` — the only copies |
+| Which rate | `App\Services\Hotel\ItemTax` |
+| Posting | `HotelVoucher::postFolio()` |
+| Discount | `FolioController::discount()`, `bookings/folio/{id}/discount` |
+| Service charge screen | `TaxRateController`, `hotel-setup/tax-rates` |
+| Schema & migration | `AddUnitTypeToBuildingUnits`: `runHotelBillTaxDiscountSchema()`, `runHotelPerItemVatSchema()`, `carryForwardHotelTaxRates()`, `runHotelHallRoomTypeSchema()`, `ensureHotelDiscountHead()`, `runHotelBillTotalsLayout()` |
+
+### Going live
+
+⚠️ **`carryForwardHotelTaxRates()` is the one that matters.** Until this the rate
+was looked up per charge type; from now it is read off the room type and the
+charge type. A property that had answered its consultant would find every bill at
+nought the morning after the deploy, with the old rows still sitting there
+looking right. The patch copies what they had set onto the new screens — room
+rent's VAT onto the room types, hall rent's onto the hall type, each other code
+onto its charge type, and the service charge onto the `bill` row. Nothing is
+invented: only a company's own rows are read, and only fields still at nought are
+written.
+
+⚠️ **No rate is ever seeded by the patch.** A rate typed by a patch is a wrong
+bill printed silently in somebody else's hotel, and wrong in the direction that
+takes money from a guest. Every install ships at nought; the figures are typed on
+the three screens, where a person can be asked where the number came from. The
+one exception is the demo property, which is already behind `--hotel-demo`.
+
+Deploy order: `php artisan patch:add-unit-type`, then `route:clear` (the new
+`tax-rates` and `folio/{id}/discount` routes 404 without it), then the front end.

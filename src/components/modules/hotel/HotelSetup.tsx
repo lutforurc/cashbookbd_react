@@ -10,6 +10,7 @@ import {
   FiDollarSign,
   FiClock,
   FiCheckSquare,
+  FiPercent,
 } from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -22,6 +23,7 @@ import FloorsTab from './FloorsTab';
 import RoomTypesTab from './RoomTypesTab';
 import FacilitiesTab from './FacilitiesTab';
 import ChargeTypesTab from './ChargeTypesTab';
+import TaxRatesTab from './TaxRatesTab';
 import RoomsTab from './RoomsTab';
 import SlotsTab from './SlotsTab';
 import LayoutTab from './LayoutTab';
@@ -62,7 +64,8 @@ type TabKey =
   | 'rooms'
   | 'slots'
   | 'layout'
-  | 'charges';
+  | 'charges'
+  | 'taxes';
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[] = [
   { key: 'buildings', label: 'Buildings', icon: <FiHome size={15} />, hint: 'Blocks and zones' },
@@ -86,6 +89,12 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
   // Last, because it is the only tab that is optional: a property that never
   // opens it bills exactly as it would have. See ChargeTypesTab.
   { key: 'charges', label: 'Charges', icon: <FiDollarSign size={15} />, hint: 'What a bill may say' },
+  // Beside the charges, because the two are the money half of the setup: what a
+  // bill may say, and what is added on top of it. Last of the two because a
+  // property has to be able to bill before it can decide what to tax.
+  // ⚠️ The service charge only. VAT is the item's -- 15% on an air-conditioned
+  // room, 7.5% without, 5% on food -- and is set on Room Types and Charges.
+  { key: 'taxes', label: 'Service Charge', icon: <FiPercent size={15} />, hint: 'One rate, the property’s own' },
 ];
 
 const TAB_KEYS = TABS.map((t) => t.key);
@@ -248,6 +257,11 @@ const HotelSetup = ({ user }: any) => {
               another's belong in the same account, and a per-branch list would
               be two answers to one bookkeeping question. */}
           {tab === 'charges' && <ChargeTypesTab />}
+          {/* ⚠️ No branchId either, and for a stronger reason than the two
+              above: VAT is a rate a COMPANY is registered at. Two properties of
+              one company charging different VAT is not a setting, it is a
+              return that will not reconcile. */}
+          {tab === 'taxes' && <TaxRatesTab />}
         </>
       )}
     </div>

@@ -140,6 +140,13 @@ const declared = (key: string, raw: any, source: any): string => {
     return dayjs(raw).isValid() ? dayjs(raw).format('DD/MM/YYYY') : String(raw);
   }
 
+  // "15%" and "7.5%" -- a rate as somebody says it. The trailing noughts go:
+  // "15.00%" beside "7.50%" reads as two kinds of thing, and a bill is read by
+  // people rather than parsed.
+  if (field?.format === 'percent') {
+    return `${Number(raw).toFixed(2).replace(/\.?0+$/, '')}%`;
+  }
+
   return String(raw);
 };
 
@@ -472,10 +479,95 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
     );
 
     const TotalsBlock: React.FC<{ band: TotalsBand }> = ({ band }) => {
+      /**
+       * ⚠️ NOUGHT COUNTS AS EMPTY HERE, and only here.
+       *
+       * A money field formats 0 as a dash, which is not blank -- so
+       * `hideIfEmpty` never hid one, and a bill with no discount printed
+       * "Discount : —" under every stay. The line then invites the question
+       * every time, and the answer is always "none was given".
+       *
+       * Kept to the totals: an info field showing a real nought -- nights,
+       * children, a serial -- means nought and must print.
+       */
+      const nothing = (field: string) =>
+        blank(value(field)) || (isNumericField(field) && num(basic?.[field]) === 0);
+
+      /**
+       * A line that comes to the same figure as another one, and is therefore
+       * saying nothing. See InfoItem.hideIfEqualTo -- "Gross 3,600 / Net Amount
+       * 3,600" on an undiscounted bill sends the reader hunting for a
+       * difference that is not there.
+       */
+      // ⚠️ Compared as PRINTED, not as stored. A bill of 3,018.75 rounds to
+      // 3,019 and its net is 3,019 exactly -- two different numbers that reach
+      // the paper as one, so comparing the stored figures left "Gross 3,019 /
+      // Net Amount 3,019" sitting there being the same line twice. What matters
+      // is whether the reader is being shown the same thing.
+      const repeats = (item: (typeof band.items)[number]) =>
+        !!item.hideIfEqualTo && value(item.field) === value(item.hideIfEqualTo);
+
       const visible = band.items.filter(
-        (item) => !(item.hideIfEmpty && blank(value(item.field))),
+        (item) => !(item.hideIfEmpty && nothing(item.field)) && !repeats(item),
       );
       if (!visible.length) return null;
+
+      /**
+       * The footing, measured against the TABLE'S OWN COLUMNS.
+       *
+       *   value  -- exactly the last column, so the colon lands on that
+       *             column's left rule and the figures stand under the money
+       *             they foot;
+       *   label  -- as wide as the longest word in it and no wider, so a rule
+       *             across the footing starts where the reading does;
+       *   the rest of the width is empty and carries no rule -- a line running
+       *             out to the left margin points at nothing.
+       *
+       * ⚠️ The value column is read from the table band rather than guessed, so
+       * a tenant who drags a column wider drags the footing with it. Without
+       * this the block was
+       * `min-w-[45%]` floated right, which put a wide figure onto two lines the
+       * moment a bill ran to six digits -- the one thing that must never happen
+       * to an amount.
+       */
+      const footedTo = (() => {
+        const table = template.bands.find(
+          (one): one is TableBand => one.type === 'table' && one.show,
+        );
+
+        const columns = table?.columns ?? [];
+
+        // Under three columns there is no "last but two" to measure a label
+        // against, and the old floated block is the better answer.
+        if (columns.length < 3) return null;
+
+        const raw = columns.map((column) => Math.max(3, num(column.width) || 10));
+        const total = raw.reduce((sum, width) => sum + width, 0) || 1;
+        const share = (width: number) => (width / total) * 100;
+
+        const value = share(raw[raw.length - 1]);
+
+        // ⚠️ THE LABELS ARE MEASURED, not given a share of the table. Handed a
+        // column of its own -- Rate and Amount's width, say -- the block began
+        // wherever those columns happened to begin, with a stretch of empty
+        // paper between the rule's left end and the first letter under it. The
+        // widest word decides instead, so the footing is as narrow as the words
+        // in it and the rule starts where the reading does.
+        //
+        // `ch` is the width of a nought in the paper's own face, which is what
+        // these labels are mostly made of; the extra rem is the gap before the
+        // colon. Both survive the print stylesheet's font size, which a figure
+        // in pixels would not.
+        const widest = Math.max(
+          8,
+          ...visible.map((item) => (item.label ?? fieldName(item.field)).length),
+        );
+
+        return {
+          value: `${value.toFixed(3)}%`,
+          label: `calc(${widest}ch + 1rem)`,
+        };
+      })();
 
       const side =
         band.align === 'left'
@@ -507,26 +599,54 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         );
       }
 
+      // Footed to the table's last column where there is a table to foot to;
+      // otherwise the old floated block, which is right for a paper that has
+      // no line items at all.
       return (
         <div className={'mb-2 flex ' + side}>
-          <table className="min-w-[45%]">
+          {/* ⚠️ table-fixed, and it is the whole reason the widths hold. Under
+              the default auto layout a colgroup is a SUGGESTION: the first
+              column here is empty, so the browser gave it no width at all and
+              let the labels -- and the rule across them -- stretch back to the
+              left margin, exactly what the widths were written to prevent. The
+              product table above is fixed for the same reason. */}
+          <table className={footedTo ? 'w-full table-fixed' : 'min-w-[45%]'}>
+            {footedTo ? (
+              <colgroup>
+                {/* Empty, and it carries no rule: the footing starts where the
+                    labels start, not at the left margin. */}
+                <col />
+                <col style={{ width: footedTo.label }} />
+                <col style={{ width: '1.2em' }} />
+                <col style={{ width: footedTo.value }} />
+              </colgroup>
+            ) : null}
             <tbody>
-              {visible.map((item, index) => (
-                <tr key={`${item.field}-${index}`}>
-                  <td className="pr-3 text-right font-semibold">
-                    {item.label ?? fieldName(item.field)}
-                  </td>
-                  <td className="pr-1 text-right">:</td>
-                  <td
-                    className={
-                      'font-bold ' +
-                      (isNumericField(item.field) ? 'text-right' : 'text-left')
-                    }
-                  >
-                    {value(item.field)}
-                  </td>
-                </tr>
-              ))}
+              {visible.map((item, index) => {
+                // A rule where a sum happens -- above the gross, the net and
+                // the balance. Drawn on the cells rather than the row, which
+                // browsers ignore on a collapsed table; and never on the first
+                // line drawn, where it would only underline the table above.
+                const rule = item.ruleAbove && index > 0 ? 'border-t border-gray-800 ' : '';
+
+                return (
+                  <tr key={`${item.field}-${index}`}>
+                    {footedTo ? <td /> : null}
+                    <td className={`${rule}pr-3 text-right font-semibold`}>
+                      {item.label ?? fieldName(item.field)}
+                    </td>
+                    <td className={`${rule}pr-1 text-right`}>:</td>
+                    <td
+                      className={
+                        `${rule}font-bold ` +
+                        (isNumericField(item.field) ? 'text-right' : 'text-left')
+                      }
+                    >
+                      {value(item.field)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

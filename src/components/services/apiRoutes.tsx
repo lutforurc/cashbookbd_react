@@ -985,6 +985,15 @@ export const API_HOTEL_BILL_URL = `${API_BASE_URL}/hotel-setup/bookings/bill`;
 // own version of it, which overrides the shipped row rather than changing it.
 export const API_HOTEL_CHARGE_TYPE_URL = `${API_BASE_URL}/hotel-setup/charge-types`;
 
+// What the property charges in VAT and service charge, and from when.
+//
+// ⚠️ ONE RATE FOR THE WHOLE BILL, not one per charge type (§6.3 as settled
+// 2026-08-29), with the discount taken off before either of them. A history
+// rather than a setting: a new rate is a new row with its own start date, so a
+// bill printed last year can still be explained. Nothing here reaches a bill
+// already made — every bill freezes its two rates the day it is first billed.
+export const API_HOTEL_TAX_RATE_URL = `${API_BASE_URL}/hotel-setup/tax-rates`;
+
 // Is the room ready? The stem suffixes /move/{id} and /history/{id}.
 //
 // ⚠️ Cleanliness and occupancy are different questions. Whether a bed is SOLD

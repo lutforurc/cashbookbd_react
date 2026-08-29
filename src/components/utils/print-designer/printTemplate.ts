@@ -82,6 +82,30 @@ export type InfoItem = {
    * to fill in by hand at the gate.
    */
   hideIfEmpty?: boolean;
+  /**
+   * Leave the line off when it comes to the same figure as another one.
+   *
+   * ⚠️ For a total that only exists to show a SUBTRACTION. "Gross 3,600 / Net
+   * Amount 3,600" on a bill nobody discounted says the same thing twice and
+   * makes the reader look for the difference between them. With something taken
+   * off, the two differ and both are worth printing.
+   *
+   * Compared as numbers, so 3,600 and 3,600.00 are the same figure. Only the
+   * totals block honours it -- see TotalsBlock.
+   */
+  hideIfEqualTo?: string;
+  /**
+   * A rule across the line, above this one.
+   *
+   * ⚠️ Where a SUM happens, which is how a bill is read: the tax lines are
+   * added to make the gross, the discount comes off to make the net, and what
+   * was paid comes off to make what is owed. A rule over each of those three
+   * says "the figures above this add up to this" without a word.
+   *
+   * Drawn only where the line is drawn -- a rule over a line hidden for having
+   * nothing to say would be a rule under nothing.
+   */
+  ruleAbove?: boolean;
 };
 
 /** One column of the product table. */
@@ -394,11 +418,12 @@ export type FieldDef = {
    * are untouched -- their cases still run first and behave exactly as they
    * always did.
    *
-   *   money  a figure with thousand separators
-   *   date   DD/MM/YYYY, the way the desk reads a date
-   *   words  the figure at `from`, spelled out
+   *   money    a figure with thousand separators
+   *   date     DD/MM/YYYY, the way the desk reads a date
+   *   words    the figure at `from`, spelled out
+   *   percent  a rate as somebody says it -- "15%", "7.5%"
    */
-  format?: 'money' | 'date' | 'words';
+  format?: 'money' | 'date' | 'words' | 'percent';
   /** For `format: 'words'` -- which key holds the figure to spell. */
   from?: string;
 };
@@ -667,9 +692,24 @@ export const HOTEL_BILL_FIELDS: FieldDef[] = [
   ...HOTEL_STAY_FIELDS,
 
   { key: 'bill_base', name: 'Room & Charges', group: 'bill', numeric: true, format: 'money' },
+  // ⚠️ WHAT CAME OFF, and it comes off the GROSS -- after the service charge
+  // and the VAT, which are both worked out on the room and charges. A guest
+  // handed a bill for less than the tariff has to be able to see the
+  // subtraction; a bill that quietly shows smaller rents cannot be checked
+  // against the rate card.
+  { key: 'bill_discount', name: 'Discount', group: 'bill', numeric: true, format: 'money' },
+  // Gross less discount, before the single rounding. `bill_rounded` is what is
+  // actually asked for.
+  { key: 'bill_net', name: 'Net (before rounding)', group: 'bill', numeric: true, format: 'money' },
   { key: 'bill_service_charge', name: 'Service Charge', group: 'bill', numeric: true, format: 'money' },
   // ⚠️ On the BILL this is right and required -- the tax falls due here.
   { key: 'bill_vat', name: 'VAT', group: 'bill', numeric: true, format: 'money' },
+  // ⚠️ RATE BY RATE, as a sentence: "15% on 3,000.00 = 450.00; 5% on 800.00 =
+  // 40.00". One bill carries several rates -- an air-conditioned room at 15%,
+  // dinner at 5% -- and a single VAT figure cannot be checked by the guest's
+  // accountant or by an officer. Empty on a bill with one rate, where the line
+  // above already says it.
+  { key: 'bill_vat_summary', name: 'VAT By Rate', group: 'bill' },
   { key: 'bill_gross', name: 'Total (exact)', group: 'bill', numeric: true, format: 'money' },
   { key: 'bill_rounding', name: 'Rounding', group: 'bill', numeric: true, format: 'money' },
   // What is actually asked for at the counter.
@@ -718,9 +758,15 @@ export const HOTEL_BILL_LINE_FIELDS: FieldDef[] = [
   { key: 'quantity', name: 'Quantity', group: 'folio', numeric: true },
   { key: 'unit_rate', name: 'Rate', group: 'folio', numeric: true, format: 'money' },
   { key: 'base_amount', name: 'Amount', group: 'folio', numeric: true, format: 'money' },
-  { key: 'service_charge_rate', name: 'Service %', group: 'folio', numeric: true },
+  { key: 'service_charge_rate', name: 'Service %', group: 'folio', numeric: true, format: 'percent' },
   { key: 'service_charge_amount', name: 'Service Charge', group: 'folio', numeric: true, format: 'money' },
-  { key: 'vat_rate', name: 'VAT %', group: 'folio', numeric: true },
+  // ⚠️ THE RATE, NOT THE MONEY, is what a line is best at saying. One bill
+  // carries several -- 15% on an air-conditioned room, 7.5% on a fan one, 5% on
+  // dinner -- and the guest's question is which rate applied to what. The money
+  // is grouped by rate in the footing, where it can be divided back out and
+  // checked; per line it never would be, because the VAT falls on the service
+  // charge as well and 393.75 is not 15% of 2,500.
+  { key: 'vat_rate', name: 'VAT %', group: 'folio', numeric: true, format: 'percent' },
   { key: 'vat_amount', name: 'VAT', group: 'folio', numeric: true, format: 'money' },
   { key: 'line_total', name: 'Line Total', group: 'folio', numeric: true, format: 'money' },
 ];
@@ -1352,15 +1398,26 @@ const hotelBill = (): PrintTemplate => ({
         {
           field: 'description_with_type',
           label: 'Description',
-          width: 40,
+          width: 45,
           align: 'left',
           subField: 'room_type_description',
           subInBrackets: true,
         },
-        { field: 'quantity', label: 'Qty', width: 8, align: 'right' },
+        { field: 'quantity', label: 'Qty', width: 7, align: 'right' },
         { field: 'unit_rate', label: 'Rate', width: 13, align: 'right' },
-        { field: 'base_amount', label: 'Amount', width: 15, align: 'right' },
-        { field: 'line_total', label: 'Total', width: 18, align: 'right' },
+        // ⚠️ AND NOTHING AFTER IT. There was a "Total" column carrying the
+        // line's own tax, and it footed to nothing: the column added up to
+        // 3,019 while "Room & Charges" underneath said 2,500, and the reader was
+        // left to work out that the difference was the tax listed further down.
+        // The tax is stated once, in the footing, on the whole bill -- so the
+        // last money column here is what the footing starts from.
+        { field: 'base_amount', label: 'Amount', width: 17, align: 'right' },
+        // ⚠️ WHICH RATE, not how much. A bill carries several -- 15% on an
+        // air-conditioned room, 7.5% on a fan one, 5% on dinner -- and the
+        // question a guest asks is which one applied to what. One narrow column
+        // answers it; the money is grouped by rate in the footing, where it can
+        // be divided back out and checked.
+        { field: 'vat_rate', label: 'VAT', width: 7, align: 'right' },
       ],
     }),
     band<TotalsBand>({
@@ -1372,17 +1429,51 @@ const hotelBill = (): PrintTemplate => ({
       // against the one above it.
       layout: 'rows',
       items: [
+        // ⚠️ THE ORDER IS THE ARITHMETIC, and it is the client's (2026-08-29):
+        // the two taxes fall on the room and charges, they add up to the gross,
+        // and the discount comes off THAT. A paper that put the discount higher
+        // would be showing a subtraction the figures below it did not do.
         { field: 'bill_base', label: 'Room & Charges' },
         // Both hidden when zero: a property whose rates are still at zero --
         // which is every install until the client's consultant answers §6.3 --
         // should print a bill with no tax lines on it, not two zeroes.
         { field: 'bill_service_charge', label: 'Service Charge', hideIfEmpty: true },
         { field: 'bill_vat', label: 'VAT', hideIfEmpty: true },
-        { field: 'bill_rounding', label: 'Rounding', hideIfEmpty: true },
-        { field: 'bill_rounded', label: 'Grand Total' },
-        { field: 'bill_words', label: 'In Words' },
+        // Drawn only where the bill carries more than one rate -- see the field.
+        { field: 'bill_vat_summary', label: 'VAT by rate', hideIfEmpty: true },
+        // Ruled off above: the charges and the two taxes add up to this.
+        { field: 'bill_gross', label: 'Gross', ruleAbove: true },
+        // Hidden on a bill with no discount: a paper that prints "Discount —"
+        // on every stay invites the question every time, and the answer is
+        // always "none was given".
+        { field: 'bill_discount', label: 'Discount', hideIfEmpty: true },
+        // ⚠️ No Rounding line, by the client's decision. The rounding still
+        // happens -- §6.3 rounds the bill once to the nearest taka, and the
+        // ledger still has a head for the poisha -- it simply is not a line the
+        // guest is shown. `bill_rounding` stays in the catalogue for a property
+        // that wants it back.
+        //
+        // What is actually asked for at the counter: gross less discount,
+        // rounded once.
+        //
+        // ⚠️ Off the paper on a bill nobody discounted, where it is the gross
+        // again -- the same figure printed twice makes the reader hunt for a
+        // difference that is not there. It comes back the moment something is
+        // taken off, and on the rare bill where §6.3's rounding moved the total
+        // by a few poisha.
+        // Ruled off above: the discount comes off the gross to make this.
+        {
+          field: 'bill_rounded',
+          label: 'Net Amount',
+          hideIfEqualTo: 'bill_gross',
+          ruleAbove: true,
+        },
+        // ⚠️ No "In Words" line either, by the same decision. The field stays in
+        // the catalogue -- a property that wants the amount spelled out adds it
+        // back in the designer -- it is simply not on the bill as it ships.
         { field: 'bill_paid', label: 'Paid' },
-        { field: 'bill_due', label: 'Balance Due' },
+        // And again: what was paid comes off what is owed.
+        { field: 'bill_due', label: 'Balance Due', ruleAbove: true },
       ],
     }),
     band<NotesBand>({
@@ -1606,6 +1697,13 @@ const bounded = (value: any, min: number, max: number, fallback: number) => {
   return Number.isFinite(number) ? Math.min(max, Math.max(min, number)) : fallback;
 };
 
+/**
+ * ⚠️ EVERY KEY A SAVED ITEM MAY CARRY HAS TO BE NAMED HERE, and forgetting one
+ * fails silently: this rebuilds each item from the keys it knows, so anything
+ * absent from the list is dropped on the way in. A rule that was in the
+ * database, and a line meant to hide itself, simply never reached the paper --
+ * and nothing anywhere said why.
+ */
 const infoItems = (value: any): InfoItem[] =>
   (Array.isArray(value) ? value : [])
     .filter((item) => item && typeof item.field === 'string' && item.field)
@@ -1613,6 +1711,12 @@ const infoItems = (value: any): InfoItem[] =>
       field: String(item.field),
       label: typeof item.label === 'string' ? item.label : undefined,
       hideIfEmpty: Boolean(item.hideIfEmpty),
+      // Off unless a field is named -- a bad value must not hide a total.
+      hideIfEqualTo:
+        typeof item.hideIfEqualTo === 'string' && item.hideIfEqualTo
+          ? item.hideIfEqualTo
+          : undefined,
+      ruleAbove: Boolean(item.ruleAbove),
     }));
 
 const tableColumns = (value: any): TableColumn[] =>

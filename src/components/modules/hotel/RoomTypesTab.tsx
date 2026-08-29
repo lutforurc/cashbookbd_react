@@ -140,6 +140,29 @@ const RoomTypesTab = ({ branchId }: { branchId: number }) => {
         render: (row: any) => money(row.default_seat_rent),
       },
       {
+        key: 'vat_rate',
+        header: 'VAT',
+        headerClass: 'text-right',
+        cellClass: 'text-right',
+        /**
+         * ⚠️ NOT a form filler like the rents beside it -- this one is READ when
+         * a night is billed. A rent is copied into a room and the room owns it
+         * afterwards, because two Deluxes may be priced differently; tax is not
+         * like that, it follows the category the revenue board defined.
+         *
+         * Nought is drawn as nought rather than as a dash: a room type nobody
+         * has set a rate on bills at nothing, and that is worth seeing.
+         */
+        render: (row: any) =>
+          Number(row.vat_rate) ? (
+            <span className="text-black dark:text-white">{Number(row.vat_rate)}%</span>
+          ) : (
+            <span className="text-amber-700 dark:text-amber-300" title="Bills with no VAT until a rate is set here.">
+              0%
+            </span>
+          ),
+      },
+      {
         key: 'rooms_count',
         header: 'Rooms',
         headerClass: 'text-center',
@@ -259,7 +282,30 @@ const RoomTypesTab = ({ branchId }: { branchId: number }) => {
                 value={String(form.default_seat_rent ?? '')}
                 onChange={set('default_seat_rent')}
               />
+              <InputElement
+                id="vat_rate"
+                name="vat_rate"
+                label="VAT %"
+                type="number"
+                min={0}
+                max={100}
+                placeholder="15"
+                title="15 where the room is air conditioned, 7.5 where it is not — this property's own figures, from its VAT consultant."
+                value={String(form.vat_rate ?? '')}
+                onChange={set('vat_rate')}
+                description="Read when a night is billed and copied onto the bill line."
+              />
             </div>
+
+            {/* ⚠️ Said out loud, because it is the opposite of the rents above
+                it. A rent is a form filler -- change it and the rooms that
+                exist keep their own. The VAT is read at billing time, so
+                changing it changes what the NEXT bill is made at; bills already
+                made keep the rate they were made at. */}
+            <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+              The VAT is not a form filler like the rents. It is read when a night is billed, so a
+              change here reaches the next bill — never one already made.
+            </p>
 
             <div className="mt-2">
               <InputElement

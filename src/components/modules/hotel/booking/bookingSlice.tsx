@@ -374,6 +374,34 @@ export const folioCharge = createAsyncThunk<
 });
 
 /**
+ * Allow a discount on the whole bill, or take one back.
+ *
+ * ⚠️ ONCE, ON THE BILL, AND BEFORE THE TAX (§6.3 as settled 2026-08-29). Sent
+ * as a percentage or as an amount, never both -- a bill carrying "10%" and
+ * "500 off" cannot say which one it charged. Both at nought clears it.
+ *
+ * ⚠️ It moves the LEDGER as well as the bill. A discount allowed after the
+ * nights are already posted raises a voucher of its own -- Dr Hotel Discount
+ * Allowed, less owed by the guest -- which is why the answer is the whole folio
+ * again rather than an acknowledgement.
+ */
+export const folioDiscount = createAsyncThunk<
+  { message: string; data: any },
+  { id: number; [key: string]: any },
+  { rejectValue: string }
+>('hotelBooking/folioDiscount', async ({ id, ...payload }, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_HOTEL_FOLIO_URL}/${id}/discount`, payload);
+    if (res.data?.success === true) {
+      return { message: res.data?.message || 'Saved', data: unwrap(res) };
+    }
+    return rejectWithValue(res.data?.message || 'Could not save the discount');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not save the discount'));
+  }
+});
+
+/**
  * Take money, or give some back.
  *
  * ⚠️ This does not touch the bill. An advance is a liability until the nights
@@ -775,7 +803,7 @@ const bookingSlice = createSlice({
     // type is registered twice, so a thunk may appear in exactly one of these
     // lists. These three answer with the WHOLE folio and replace it; the three
     // below throw the availability list away instead.
-    [folioBill, folioCharge, folioReceive].forEach((thunk: any) => {
+    [folioBill, folioCharge, folioReceive, folioDiscount].forEach((thunk: any) => {
       builder
         .addCase(thunk.pending, (state: any) => {
           state.saving = true;

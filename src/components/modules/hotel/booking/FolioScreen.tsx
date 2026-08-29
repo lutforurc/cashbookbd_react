@@ -9,6 +9,7 @@ import {
   FiCalendar,
   FiDownload,
   FiLogOut,
+  FiPercent,
   FiPlus,
   FiPrinter,
   FiRepeat,
@@ -46,6 +47,7 @@ import {
   clearFolio,
   folioBill,
   folioCharge,
+  folioDiscount,
   folioReceive,
   folioRead,
   tillList,
@@ -363,6 +365,16 @@ const FolioScreen = () => {
   const [payment, setPayment] = useState<any>(null);
 
   /**
+   * The open discount panel: how much, which way, and why.
+   *
+   * ⚠️ `mode` is not decoration. A percentage follows the bill as it grows and
+   * an amount does not, so which of the two was meant is part of the answer --
+   * and sending both is refused by the server, because a bill carrying "10%"
+   * and "500 off" cannot say which one it charged.
+   */
+  const [discount, setDiscount] = useState<any>(null);
+
+  /**
    * The open "move this bill" panel: who it is going to, and why.
    *
    * ⚠️ `party: null` inside an OPEN panel means "back to the guest", which is
@@ -515,6 +527,19 @@ const FolioScreen = () => {
     ? folio.charge_types
     : FALLBACK_CHARGE_OPTIONS;
 
+  /**
+   * Does any line on this bill carry tax of its OWN?
+   *
+   * ⚠️ Only bills made before 2026-08-29 do. The tax is the whole bill's now --
+   * one service charge, one VAT, worked out once and shown in the summary above
+   * the table -- so on a bill made since, those two columns would be a column of
+   * dashes on every row. Drawn only where there is something in them, which is
+   * how an old bill goes on reprinting exactly as it was paid.
+   */
+  const perLineTax = (folio?.lines ?? []).some(
+    (line: any) => Number(line.service_charge_amount) || Number(line.vat_amount),
+  );
+
   const lineColumns = useMemo(
     () => [
       {
@@ -574,40 +599,62 @@ const FolioScreen = () => {
         cellClass: 'text-right',
         render: (row: any) => money(row.base_amount),
       },
-      {
-        key: 'service_charge_amount',
-        header: 'Service',
-        headerClass: 'text-right',
-        cellClass: 'text-right',
-        // ⚠️ The rate is shown from the column, never worked back out of the
-        // money. A rate divided out of a rounded amount is a rate that drifts.
-        render: (row: any) =>
-          Number(row.service_charge_amount) ? (
-            <div>
-              <div>{money(row.service_charge_amount)}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {row.service_charge_rate}%
-              </div>
-            </div>
-          ) : (
-            <span className="text-gray-400">—</span>
-          ),
-      },
-      {
-        key: 'vat_amount',
-        header: 'VAT',
-        headerClass: 'text-right',
-        cellClass: 'text-right',
-        render: (row: any) =>
-          Number(row.vat_amount) ? (
-            <div>
-              <div>{money(row.vat_amount)}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">{row.vat_rate}%</div>
-            </div>
-          ) : (
-            <span className="text-gray-400">—</span>
-          ),
-      },
+      // The two columns of an OLD bill, drawn only on one. See perLineTax.
+      ...(perLineTax
+        ? [
+            {
+              key: 'service_charge_amount',
+              header: 'Service',
+              headerClass: 'text-right',
+              cellClass: 'text-right',
+              // ⚠️ The rate is shown from the column, never worked back out of
+              // the money. A rate divided out of a rounded amount is a rate
+              // that drifts.
+              render: (row: any) =>
+                Number(row.service_charge_amount) ? (
+                  <div>
+                    <div>{money(row.service_charge_amount)}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {row.service_charge_rate}%
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-gray-400">—</span>
+                ),
+            },
+            {
+              key: 'vat_amount',
+              header: 'VAT',
+              headerClass: 'text-right',
+              cellClass: 'text-right',
+              /**
+               * ⚠️ A LINE AT NOUGHT IS SAID OUT LOUD, in amber. The rate comes
+               * from the room's type or the charge's type, and a room whose type
+               * nobody set -- or a hall created without one -- finds nothing and
+               * bills untaxed. That is exactly what happened to the halls: every
+               * sitting of a community centre went out at nought and no screen
+               * mentioned it.
+               *
+               * Not refused, because a bill is printed with a guest standing
+               * there. Said, so somebody can put the rate in.
+               */
+              render: (row: any) =>
+                Number(row.vat_amount) ? (
+                  <div>
+                    <div>{money(row.vat_amount)}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{row.vat_rate}%</div>
+                  </div>
+                ) : (
+                  <span
+                    className="text-xs text-amber-700 dark:text-amber-300"
+                    title="No VAT rate was found for this item — set it on the Room Types or Charges screen. Lines already billed keep what they were billed at."
+                  >
+                    no rate
+                  </span>
+                ),
+            },
+          ]
+        : []),
       {
         key: 'line_total',
         header: 'Total',
@@ -626,7 +673,7 @@ const FolioScreen = () => {
         render: (row: any) => <VoucherMark vrNo={row.vr_no} />,
       },
     ],
-    [],
+    [perLineTax],
   );
 
   const paymentColumns = useMemo(
@@ -735,6 +782,41 @@ const FolioScreen = () => {
       const result = await dispatch(folioCharge({ id: Number(id), ...charge })).unwrap();
       toast.success(result.message);
       setCharge(null);
+    } catch (error: any) {
+      toast.error(String(error));
+    }
+  };
+
+  /**
+   * Allow a discount on the whole bill, or take one back.
+   *
+   * ⚠️ ONE OF THE TWO BOXES, never both. Whichever the panel is in, the other is
+   * sent as nought -- and both nought is how a discount is removed, which is why
+   * the reason is only insisted on when something is actually being given away.
+   */
+  const saveDiscount = async () => {
+    const percent = Number(discount?.discount_rate) || 0;
+    const amount = Number(discount?.discount_amount) || 0;
+
+    const giving = discount?.mode === 'percent' ? percent : amount;
+
+    if (giving > 0 && !String(discount?.reason ?? '').trim()) {
+      toast.error('Say why the discount was allowed — it goes on the record beside the figure.');
+      return;
+    }
+
+    try {
+      const result = await dispatch(
+        folioDiscount({
+          id: Number(id),
+          discount_rate: discount?.mode === 'percent' ? percent : 0,
+          discount_amount: discount?.mode === 'percent' ? 0 : amount,
+          reason: String(discount?.reason ?? '').trim() || null,
+        }),
+      ).unwrap();
+
+      toast.success(result.message);
+      setDiscount(null);
     } catch (error: any) {
       toast.error(String(error));
     }
@@ -889,9 +971,83 @@ const FolioScreen = () => {
           </div>
         </div>
 
-        {totals?.rounding ? (
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            Rounded once on the total: {money(totals.gross)} → {money(totals.rounded)}
+        {/* ⚠️ HOW THE CHARGED FIGURE WAS ARRIVED AT, in the order it is worked
+            out (client, 2026-08-29): what was sold, the service charge and the
+            VAT on THAT, the gross they add up to, and the discount off the
+            gross. One line rather than a table -- a guest asking "why 3,097" is
+            asking about four numbers, and four numbers read across a line the
+            way a sentence does.
+
+            Each part is drawn only where it is not nothing. A property that
+            charges no VAT should not have a "VAT 0.00" on every screen; what it
+            should have is a bill that says what it says. */}
+        {totals ? (
+          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+            <span>
+              Charges <strong className="text-black dark:text-white">{money(totals.base)}</strong>
+            </span>
+
+            {Number(totals.service_charge) ? (
+              <span>
+                service {Number(totals.service_charge_rate) ? `${Number(totals.service_charge_rate)}% ` : ''}
+                <strong className="text-black dark:text-white">{money(totals.service_charge)}</strong>
+              </span>
+            ) : null}
+
+            {/* ⚠️ RATE BY RATE, because one bill carries several: 15% on an
+                air-conditioned room, 7.5% on a fan one, 5% on dinner. A single
+                "VAT 15%" over the sum of them would be a claim the arithmetic
+                does not support. Only the rates actually used are named, and a
+                bill with one of them reads as it always did. */}
+            {Number(totals.vat) ? (
+              <span>
+                VAT{' '}
+                {(totals.vat_bands ?? []).length > 1
+                  ? (totals.vat_bands ?? [])
+                      .map((band: any) => `${Number(band.rate)}% ${money(band.vat)}`)
+                      .join(' · ')
+                  : null}
+                {(totals.vat_bands ?? []).length > 1 ? null : (
+                  <>
+                    {(totals.vat_bands ?? [])[0]?.rate
+                      ? `${Number((totals.vat_bands ?? [])[0].rate)}% `
+                      : ''}
+                    <strong className="text-black dark:text-white">{money(totals.vat)}</strong>
+                  </>
+                )}
+              </span>
+            ) : null}
+
+            {/* The gross is only worth a word where tax made it differ from the
+                charges above it. */}
+            {Number(totals.gross) !== Number(totals.base) ? (
+              <span>
+                gross <strong className="text-black dark:text-white">{money(totals.gross)}</strong>
+              </span>
+            ) : null}
+
+            {Number(totals.discount) ? (
+              <span className="text-primary dark:text-secondary">
+                less discount{' '}
+                {Number(totals.discount_rate) ? `${Number(totals.discount_rate)}% ` : ''}
+                <strong>{money(totals.discount)}</strong>
+              </span>
+            ) : null}
+
+            {totals.rounding ? (
+              <span>
+                rounded {money(totals.net)} → {money(totals.rounded)}
+              </span>
+            ) : null}
+          </p>
+        ) : null}
+
+        {/* Who allowed it and why, kept beside the figure it explains. A
+            discount whose reason lives only in the database is a discount
+            nobody at the desk can answer a question about. */}
+        {booking?.discount_reason ? (
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Discount: {booking.discount_reason}
           </p>
         ) : null}
       </div>
@@ -963,6 +1119,39 @@ const FolioScreen = () => {
           icon={payment ? <FiX size={16} /> : <FiPlus size={16} />}
           disabled={!!folio.chart_missing?.length}
         />
+        {/* What comes OFF the bill. Beside the two buttons that put things on
+            it, because it is the same kind of act.
+
+            ⚠️ Not offered where it cannot be honoured: a stay already checked
+            out has a bill that has been settled and printed, and one on a
+            company with no Discount Allowed head has nowhere for the money to
+            be debited to. Both are refusals the server would make; offering the
+            button anyway would be offering one. */}
+        {booking?.status !== 'checked_out'
+        && booking?.status !== 'cancelled'
+        && folio.can_discount !== false ? (
+          <ButtonLoading
+            onClick={() =>
+              setDiscount(
+                discount
+                  ? null
+                  : {
+                      // Whichever way it was given last time, so reopening the
+                      // panel shows what is actually on the bill rather than an
+                      // empty box beside a discount that exists.
+                      mode: Number(booking?.discount_rate) > 0 ? 'percent' : 'amount',
+                      discount_rate: Number(booking?.discount_rate) || '',
+                      discount_amount: Number(booking?.discount_amount) || '',
+                      reason: booking?.discount_reason ?? '',
+                    },
+              )
+            }
+            label={discount ? 'Close' : Number(totals?.discount) ? 'Discount…' : 'Give a discount'}
+            icon={discount ? <FiX size={16} /> : <FiPercent size={16} />}
+            disabled={!!folio.chart_missing?.length}
+          />
+        ) : null}
+
         {/* ⚠️ Prints what is ON the bill, and does not bill anything on the way.
             A stay whose nights nobody has billed prints an empty table, which
             is correct -- it is what the guest has been charged. Disabled while
@@ -1176,8 +1365,8 @@ const FolioScreen = () => {
             />
           </div>
           <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            The VAT and service charge in force on that date are applied and frozen onto the
-            line.
+            The line carries what was sold and what it cost. VAT and service charge are the whole
+            bill&rsquo;s, worked out once at the rates this bill was opened at.
           </p>
           <div className="mt-3">
             <ButtonLoading
@@ -1185,6 +1374,96 @@ const FolioScreen = () => {
               buttonLoading={saving}
               icon={<FiPlus className="h-5 w-5" />}
               label="Add to the bill"
+              variant="primary"
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {discount ? (
+        <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
+          <div className="mb-2 text-sm font-medium text-black dark:text-white">
+            Discount on this bill
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
+            <DropdownCommon
+              id="discount_mode"
+              name="mode"
+              label="Given as"
+              data={[
+                { id: 'percent', name: 'A percentage' },
+                { id: 'amount', name: 'An amount' },
+              ]}
+              value={discount.mode}
+              onChange={(e: any) => setDiscount({ ...discount, mode: e.target.value })}
+              description="A percentage follows the bill; an amount is the amount."
+            />
+
+            {discount.mode === 'percent' ? (
+              <InputElement
+                id="discount_rate"
+                name="discount_rate"
+                label="Percent off"
+                type="number"
+                min={0}
+                max={100}
+                value={String(discount.discount_rate ?? '')}
+                onChange={(e: any) => setDiscount({ ...discount, discount_rate: e.target.value })}
+                description="Of the gross — charges plus service and VAT."
+              />
+            ) : (
+              <InputElement
+                id="discount_amount"
+                name="discount_amount"
+                label="Amount off"
+                type="number"
+                min={0}
+                value={String(discount.discount_amount ?? '')}
+                onChange={(e: any) => setDiscount({ ...discount, discount_amount: e.target.value })}
+                description="Never more than the bill itself."
+              />
+            )}
+
+            <div className="md:col-span-2">
+              <InputElement
+                id="discount_reason"
+                name="reason"
+                label="Why"
+                placeholder="Manager agreed — air conditioning out on the first night"
+                value={discount.reason ?? ''}
+                onChange={(e: any) => setDiscount({ ...discount, reason: e.target.value })}
+                description="Kept on the booking beside the figure, with who allowed it."
+              />
+            </div>
+          </div>
+
+          {/* ⚠️ Said plainly, because it is the part that surprises people. The
+              discount comes off the GROSS -- the tax is worked out on the full
+              tariff first -- and where the nights are already in the books,
+              saving this writes a voucher of its own rather than editing one. */}
+          <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+            Taken off the gross, after the service charge and VAT — both of those are worked out
+            on the room and charges. Debited to <strong>Hotel Discount Allowed</strong>, never
+            taken off the rent: a room let at 6,000 with 600 off is a 6,000 room and a 600
+            discount.
+            {Number(totals?.discount)
+              ? ' Setting both boxes to nought removes the discount that is on this bill.'
+              : ''}
+          </p>
+
+          <div className="mt-3">
+            <ButtonLoading
+              onClick={saveDiscount}
+              buttonLoading={saving}
+              icon={<FiPercent className="h-5 w-5" />}
+              label={
+                (discount.mode === 'percent'
+                  ? Number(discount.discount_rate)
+                  : Number(discount.discount_amount)) > 0
+                  ? 'Allow the discount'
+                  : 'Remove the discount'
+              }
               variant="primary"
             />
           </div>
