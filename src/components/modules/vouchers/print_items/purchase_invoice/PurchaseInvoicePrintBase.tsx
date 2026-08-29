@@ -20,7 +20,8 @@ type Props = {
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
-  if (!Array.isArray(data) || size <= 0) return [[]];
+  if (!Array.isArray(data)) return [[]];
+  if (size <= 0) return [data];
   const out: T[][] = [];
   for (let i = 0; i < data.length; i += size) {
     out.push(data.slice(i, i + size));
@@ -163,7 +164,9 @@ const PurchaseInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>(
 
     const config = variantConfig[variant];
     const fs = Math.max(fontSize + config.fontAdjust, 8);
-    const pageRows = Math.min(rowsPerPage, config.rowsLimit);
+    // A zero (the rows box left on "All") means the sheet decides, not an empty page.
+    const askedRows = Number(rowsPerPage);
+    const pageRows = askedRows > 0 ? Math.min(askedRows, config.rowsLimit) : config.rowsLimit;
     const pages = chunkRows(meta.details, pageRows);
     const isHalf = variant.startsWith('half');
 
