@@ -159,7 +159,7 @@ const MonthlyReport = (user: any) => {
               name="monthly-report-rows"
               label=""
               value={String(rowsPerPage)}
-              onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 30)}
+              onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 0)}
               type="text"
               className="w-full! rounded-none text-center text-sm font-bold"
             />

@@ -176,7 +176,11 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
     const transactionRows = Array.isArray(order?.transaction_rows) && order.transaction_rows.length > 0
       ? order.transaction_rows
       : buildFallbackTransactions(order);
-    const pages = chunkRows(transactionRows, rowsPerPage);
+    // Zero is "All": one page holding every row. The page size is needed as a
+    // real number further down -- the running due and the serial both count in
+    // it -- and a literal 0 there made the due read from index -1.
+    const pageSize = Number(rowsPerPage) > 0 ? Number(rowsPerPage) : transactionRows.length;
+    const pages = chunkRows(transactionRows, pageSize);
     const printablePages = pages.length > 0 ? pages : [[]];
     const cumulativeDueAmounts = calculateCumulativeDueAmounts(transactionRows);
 
@@ -210,7 +214,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
 
 		        {printablePages.map((pageRows, pageIndex) => {
 		          const pageTotals = calculateTransactionTotals(pageRows);
-		          const pageEndDue = getPageEndDue(cumulativeDueAmounts, pageIndex, rowsPerPage);
+		          const pageEndDue = getPageEndDue(cumulativeDueAmounts, pageIndex, pageSize);
 		          const isLastPage = pageIndex === printablePages.length - 1;
 
           return (
@@ -370,12 +374,12 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                     const receive = toNumber(row.receive);
                     const paymentOrReceive = freight > 0 ? freight : receive;
                     const amount = toNumber(row.amount) || (weight * rate);
-                    const due = cumulativeDueAmounts[pageIndex * rowsPerPage + index] ?? 0;
+                    const due = cumulativeDueAmounts[pageIndex * pageSize + index] ?? 0;
 
                     return (
                       <tr key={row.id}>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">
-                          {pageIndex * rowsPerPage + index + 1}
+                          {pageIndex * pageSize + index + 1}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">
                           {row.vr_no || '-'}

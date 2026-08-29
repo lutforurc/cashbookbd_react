@@ -195,7 +195,7 @@ const ConnectedMember = (user: any) => {
               name="connected-member-rows"
               label=""
               value={String(rowsPerPage)}
-              onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 20)}
+              onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 0)}
               type="text"
               className="w-full! rounded-none text-center text-sm font-bold"
             />

@@ -920,7 +920,9 @@ const SalesLedger = (user: any) => {
     const v = Number(e.target.value);
     if (!Number.isFinite(v)) return;
 
-    const safe = Math.max(1, Math.min(100, v));
+    // A cleared box is 0 -- "All", one unbroken page. Math.max(1, ...) used to
+    // turn that into a single row per sheet.
+    const safe = v > 0 ? Math.min(100, v) : 0;
     setRowsPerPage(safe);
   };
 

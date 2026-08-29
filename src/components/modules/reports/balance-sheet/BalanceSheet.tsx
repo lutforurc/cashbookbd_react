@@ -437,7 +437,7 @@ const BalanceSheet = (user: any) => {
                   id="bs-per-page"
                   label=""
                   value={perPage}
-                  onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
+                  onChange={(e: any) => setPerPage(Number(e.target.value) || 0)}
                   className="w-20! text-center"
                 />
                 <PrintFontInput
@@ -480,7 +480,7 @@ const BalanceSheet = (user: any) => {
                     id="bs-per-page"
                     label=""
                     value={perPage}
-                    onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
+                    onChange={(e: any) => setPerPage(Number(e.target.value) || 0)}
                     className="w-20! text-center"
                   />
                   <PrintFontInput

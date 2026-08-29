@@ -416,7 +416,7 @@ const CollectionSheet = (user: any) => {
                 value={draft.rows ?? rowsPerPage}
                 onChange={(event) => {
                   setDraft((current) => ({ ...current, rows: event.target.value }));
-                  setRowsPerPage(Number(event.target.value) || 16);
+                  setRowsPerPage(Number(event.target.value) || 0);
                 }}
                 onBlur={() =>
                   setDraft((current) => ({

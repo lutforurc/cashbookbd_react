@@ -47,10 +47,14 @@ const paginateGroupedRows = (
     let currentPage: any[] = [];
     let rowCounter = 0;
 
+    // Zero is "All": one unbroken page. Left as 0, every `rowCounter >= 0`
+    // check below fired and each row got a sheet of its own.
+    const pageSize = rowsPerPage > 0 ? rowsPerPage : Infinity;
+
     for (const [category, items] of Object.entries(grouped)) {
 
         // Category header
-        if (rowCounter >= rowsPerPage) {
+        if (rowCounter >= pageSize) {
             pages.push(currentPage);
             currentPage = [];
             rowCounter = 0;
@@ -60,7 +64,7 @@ const paginateGroupedRows = (
 
         // Actual items
         items.forEach((row) => {
-            if (rowCounter >= rowsPerPage) {
+            if (rowCounter >= pageSize) {
                 pages.push(currentPage);
                 currentPage = [];
                 rowCounter = 0;
@@ -75,7 +79,7 @@ const paginateGroupedRows = (
             0
         );
 
-        if (rowCounter >= rowsPerPage) {
+        if (rowCounter >= pageSize) {
             pages.push(currentPage);
             currentPage = [];
             rowCounter = 0;

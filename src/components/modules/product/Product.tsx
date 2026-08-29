@@ -110,7 +110,7 @@ const Product = (user: any) => {
   const canDeleteVoucher = hasPermission(settings?.data?.permissions, 'voucher.delete');
 
   const [fontSize, setFontSize] = useState<number>(12);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(25);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(0);
 
   /* ================= INIT ================= */
   useEffect(() => {
@@ -576,7 +576,7 @@ const Product = (user: any) => {
     if (!isNaN(value)) {
       setRowsPerPage(value);
     } else {
-      setRowsPerPage(10);
+      setRowsPerPage(0); // cleared box = All
     }
   };
 

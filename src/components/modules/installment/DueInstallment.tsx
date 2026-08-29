@@ -45,7 +45,7 @@ const DueInstallment = (user: any) => {
   const [dueOnly, setDueOnly] = useState<boolean>(true);
   const [status, setStatus] = useState<string | null>(null);
   const [upComingDays, setUpComingDays] = useState<number | null>(7);
-  const [pageSize, setPageSize] = useState<number | null>(5);
+  const [pageSize, setPageSize] = useState<number | null>(0);
   const [fontSize, setFontSize] = useState<number>(10);
   const [showModal, setShowModal] = useState(false);
   const [showPaymentsModal, setShowPaymentsModal] = useState(false);
@@ -180,7 +180,7 @@ const DueInstallment = (user: any) => {
     if (!isNaN(parsedValue)) {
       setPageSize(parsedValue);
     } else {
-      setPageSize(10); // Reset if input is invalid
+      setPageSize(0); // cleared box = All
     }
   };
 

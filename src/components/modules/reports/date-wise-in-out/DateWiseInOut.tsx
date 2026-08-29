@@ -452,7 +452,7 @@ const DateWiseInOut = ({ user }: any) => {
               name="rowsPerPage"
               label="Rows"
               value={String(rowsPerPage)}
-              onChange={(event) => setRowsPerPage(Number(event.target.value) || 12)}
+              onChange={(event) => setRowsPerPage(Number(event.target.value) || 0)}
               type="text"
               className="w-22! text-center text-sm font-medium"
             />

@@ -202,7 +202,7 @@ const BankInformation = () => {
               name="bank-info-rows"
               label=""
               value={String(rowsPerPage)}
-              onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 12)}
+              onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 0)}
               type="text"
               className="w-full! rounded-none text-center text-sm font-bold"
             />

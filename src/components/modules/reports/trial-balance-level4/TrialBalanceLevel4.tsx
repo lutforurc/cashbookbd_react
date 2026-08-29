@@ -486,7 +486,7 @@ const TrialBalanceLevel4 = (user: any) => {
                   id="tbl4-rows-per-page"
                   label=""
                   value={rowsPerPage}
-                  onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 20)}
+                  onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 0)}
                   className="w-20! text-center"
                 />
                 <PrintFontInput
@@ -529,7 +529,7 @@ const TrialBalanceLevel4 = (user: any) => {
                     id="tbl4-rows-per-page"
                     label=""
                     value={rowsPerPage}
-                    onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 20)}
+                    onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 0)}
                     className="w-20! text-center"
                   />
                   <PrintFontInput

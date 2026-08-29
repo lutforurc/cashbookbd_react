@@ -836,7 +836,7 @@ const OrderWithProduct = ({
                     name="rows"
                     type="number"
                     value={String(perPage)}
-                    onChange={(e) => setPerPage(Number(e.target.value) || 12)}
+                    onChange={(e) => setPerPage(Number(e.target.value) || 0)}
                     placeholder="Rows"
                     label=""
                     className="w-full! border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] text-center"

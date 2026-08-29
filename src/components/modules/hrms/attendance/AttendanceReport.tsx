@@ -170,7 +170,7 @@ const AttendanceReport = ({
     status: defaultStatus,
     approval_status: '',
   });
-  const [overtimeRowsPerPage, setOvertimeRowsPerPage] = useState('12');
+  const [overtimeRowsPerPage, setOvertimeRowsPerPage] = useState('0');
   const [overtimePrintFontSize, setOvertimePrintFontSize] = useState('12');
 
   useEffect(() => {
@@ -490,7 +490,7 @@ const AttendanceReport = ({
               onChange={(e) => {
                 if (/^\d*$/.test(e.target.value)) setOvertimeRowsPerPage(e.target.value);
               }}
-              onBlur={() => setOvertimeRowsPerPage(String(Math.max(1, Number(overtimeRowsPerPage) || 12)))}
+              onBlur={() => setOvertimeRowsPerPage(String(Math.max(0, Number(overtimeRowsPerPage) || 0)))}
               title="Rows per page for print"
               className="w-20 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-center text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:text-[rgb(var(--c-text))]"
             />
@@ -532,7 +532,7 @@ const AttendanceReport = ({
               rows={overtimeMatrixRows}
               dayTotals={overtimeDayTotals}
               grandTotal={overtimeGrandTotal}
-              rowsPerPage={Number(overtimeRowsPerPage) || 12}
+              rowsPerPage={Number(overtimeRowsPerPage) || 0}
               fontSize={Number(overtimePrintFontSize) || 12}
             />
           </div>

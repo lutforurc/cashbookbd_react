@@ -89,7 +89,7 @@ const LowStockProducts = () => {
   const [brandId, setBrandId] = useState<number | string>('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [printRowsPerPage, setPrintRowsPerPage] = useState(12);
+  const [printRowsPerPage, setPrintRowsPerPage] = useState(0);
   const [printFontSize, setPrintFontSize] = useState(12);
 
   useEffect(() => {
@@ -171,7 +171,7 @@ const LowStockProducts = () => {
 
   const handlePrintRowsPerPageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
-    setPrintRowsPerPage(Number.isFinite(value) && value > 0 ? value : 12);
+    setPrintRowsPerPage(Number.isFinite(value) && value > 0 ? value : 0); // cleared box = All
   };
 
   const handlePrintFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {

@@ -520,7 +520,7 @@ const ProductLedgerData = (user: any) => {
                   name="rowsPerPage"
                   label=""
                   value={rowsPerPage.toString()}
-                  onChange={(e) => setRowsPerPage(Number(e.target.value) || 12)}
+                  onChange={(e) => setRowsPerPage(Number(e.target.value) || 0)}
                   type="text"
                   className="font-medium text-sm w-20! text-center"
                 />
@@ -567,7 +567,7 @@ const ProductLedgerData = (user: any) => {
                     name="rowsPerPage"
                     label=""
                     value={rowsPerPage.toString()}
-                    onChange={(e) => setRowsPerPage(Number(e.target.value) || 12)}
+                    onChange={(e) => setRowsPerPage(Number(e.target.value) || 0)}
                     type="text"
                     className="font-medium text-sm w-20! text-center"
                   />

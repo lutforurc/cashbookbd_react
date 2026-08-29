@@ -180,7 +180,7 @@ const ElectronicsBusinessSales = () => {
     if (!isNaN(value)) {
       setPerPage(value);
     } else {
-      setPerPage(10); // Reset if input is invalid
+      setPerPage(0); // cleared box = All
     }
   };
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {

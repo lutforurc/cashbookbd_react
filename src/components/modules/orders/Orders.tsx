@@ -360,7 +360,7 @@ const Orders = () => {
   const [resetButtonLoading, setResetButtonLoading] = useState(false);
   const [page, setPage] = useState(Number(persistedOrdersListState.page ?? 1));
   const [perPage, setPerPage] = useState(Number(persistedOrdersListState.perPage ?? 10));
-  const [printRowsPerPage, setPrintRowsPerPage] = useState(Number(persistedOrdersListState.printRowsPerPage ?? 12));
+  const [printRowsPerPage, setPrintRowsPerPage] = useState(Number(persistedOrdersListState.printRowsPerPage ?? 0));
   const [printFontSize, setPrintFontSize] = useState(Number(persistedOrdersListState.printFontSize ?? 10));
   // Bumped by Apply so the list is fetched again even when nothing in the
   // filters has changed. The screen remembers its filters between visits, so
@@ -534,7 +534,7 @@ const Orders = () => {
   };
   const handlePrintRowsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number.parseInt(e.target.value, 10);
-    setPrintRowsPerPage(Number.isFinite(value) && value > 0 ? value : 12);
+    setPrintRowsPerPage(Number.isFinite(value) && value > 0 ? value : 0); // cleared box = All
   };
   const handlePrintFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number.parseInt(e.target.value, 10);

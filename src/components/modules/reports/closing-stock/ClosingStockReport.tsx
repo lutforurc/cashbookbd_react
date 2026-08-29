@@ -244,7 +244,7 @@ const ClosingStockReport = ({ user }: any) => {
               name="stockDetailsRows"
               label=""
               value={perPage.toString()}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPerPage(Number(e.target.value) || 12)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPerPage(Number(e.target.value) || 0)}
               type="text"
               className="font-medium text-sm w-full! text-center"
             />

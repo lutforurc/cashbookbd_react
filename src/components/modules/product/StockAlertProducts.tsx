@@ -147,7 +147,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [days, setDays] = useState(90);
-  const [printRowsPerPage, setPrintRowsPerPage] = useState(12);
+  const [printRowsPerPage, setPrintRowsPerPage] = useState(0);
   const [printFontSize, setPrintFontSize] = useState(12);
 
   useEffect(() => {
@@ -363,7 +363,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
 
   const handlePrintRowsPerPageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
-    setPrintRowsPerPage(Number.isFinite(value) && value > 0 ? value : 12);
+    setPrintRowsPerPage(Number.isFinite(value) && value > 0 ? value : 0); // cleared box = All
   };
 
   const handlePrintFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {

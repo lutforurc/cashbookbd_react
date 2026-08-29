@@ -463,7 +463,7 @@ const ProjectIncomeReport = ({ user }: any) => {
  placeholder="Rows"
  className="w-20! text-center"
  value={perPage}
- onChange={(e) => setPerPage(Number(e.target.value) || 12)}
+ onChange={(e) => setPerPage(Number(e.target.value) || 0)}
             />
             <PrintFontInput
  type="number"

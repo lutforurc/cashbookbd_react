@@ -352,7 +352,7 @@ const SalarySheet = ({ user }: any) => {
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-    setPerPage(!isNaN(value) ? value : 10);
+    setPerPage(!isNaN(value) ? value : 0); // cleared box = All
   };
 
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {

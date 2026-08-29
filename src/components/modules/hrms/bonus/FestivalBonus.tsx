@@ -387,7 +387,7 @@ const FestivalBonus = ({ user }: any) => {
                     label=""
                     value={rowsPerPage.toString()}
                     // onChange={handlePerPageChange}
-                    onChange={(e) => setRowsPerPage(Number(e.target.value) || 18)}
+                    onChange={(e) => setRowsPerPage(Number(e.target.value) || 0)}
                     type='text'
                     className="mt-0 w-20! text-center"
                   />
