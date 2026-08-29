@@ -108,6 +108,21 @@ const STATUS_OPTIONS = [
   { id: 'hold', name: 'Tentative hold' },
 ];
 
+/**
+ * What kind of sale the list is about.
+ *
+ * ⚠️ Rooms and halls by default, and the default matters. A restaurant serves
+ * more people in a fortnight than the rooms take in a year, so a list holding
+ * both would bury the stays this screen exists to run -- the desk would be
+ * paging past lunches to find who is arriving tonight. Asked for by name, the
+ * meals come on their own; asked for together, everything the property sold.
+ */
+const KIND_OPTIONS = [
+  { id: 'stay', name: 'Rooms & halls' },
+  { id: 'walk_in', name: 'Walk-in only' },
+  { id: 'all', name: 'Everything' },
+];
+
 const FILTER_OPTIONS = [
   { id: '', name: 'All bookings' },
   { id: 'confirmed', name: 'Confirmed' },
@@ -442,6 +457,8 @@ const BookingsScreen = ({ user }: any) => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  /** Rooms and halls, the meals on their own, or both. See KIND_OPTIONS. */
+  const [kindFilter, setKindFilter] = useState('stay');
   const [form, setForm] = useState<any>(null);
   const [building, setBuilding] = useState('');
 
@@ -566,9 +583,10 @@ const BookingsScreen = ({ user }: any) => {
         per_page: 10,
         q: debouncedSearch,
         status: statusFilter || undefined,
+        kind: kindFilter,
       }),
     );
-  }, [dispatch, branchId, page, debouncedSearch, statusFilter]);
+  }, [dispatch, branchId, page, debouncedSearch, statusFilter, kindFilter]);
 
   useEffect(() => {
     load();
@@ -576,7 +594,7 @@ const BookingsScreen = ({ user }: any) => {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter]);
+  }, [debouncedSearch, statusFilter, kindFilter]);
 
   const buildingChoices = useMemo(
     () => (buildingOptions ?? []).map((o: DdlOption) => ({ id: o.value, name: o.label })),
@@ -1075,6 +1093,15 @@ const BookingsScreen = ({ user }: any) => {
 
       toast.success(result.message);
       setWarning(null);
+
+      // ⚠️ A walk-in just saved must not vanish. The list shows rooms and halls
+      // by default, so a meal sold would be filed away the moment it was
+      // written -- and the next thing the clerk does is press Bill on that very
+      // row. Asked for by name, it is there waiting.
+      if (isWalkIn && kindFilter === 'stay') {
+        setKindFilter('walk_in');
+      }
+
       closeForm();
       load();
     } catch (error: any) {
@@ -1286,8 +1313,19 @@ const BookingsScreen = ({ user }: any) => {
       {
         key: 'booking_type',
         header: 'Type',
-        render: (row: any) =>
-          (row.booking_type ?? '').charAt(0).toUpperCase() + (row.booking_type ?? '').slice(1),
+        // ⚠️ Named from the list the form offers, so the word in the column is
+        // the word the clerk picked. Capitalising the stored value printed
+        // "Walk_in", which reads like a column name that escaped from the
+        // database. Anything unknown -- a type added by a newer server -- keeps
+        // the old treatment rather than showing nothing.
+        render: (row: any) => {
+          const stored = String(row.booking_type ?? '');
+
+          return (
+            TYPE_OPTIONS.find((one) => one.id === stored)?.name ||
+            stored.charAt(0).toUpperCase() + stored.slice(1).replace(/_/g, ' ')
+          );
+        },
       },
       {
         key: 'status',
@@ -1543,6 +1581,16 @@ const BookingsScreen = ({ user }: any) => {
         toolbar={
           <>
             <SearchInput search={search} setSearchValue={setSearch} className="w-56" />
+            <div className="w-44">
+              <DropdownCommon
+                id="booking_kind_filter"
+                name="booking_kind_filter"
+                label="Sold"
+                data={KIND_OPTIONS}
+                value={kindFilter}
+                onChange={(e: any) => setKindFilter(e.target.value)}
+              />
+            </div>
             <div className="w-48">
               <DropdownCommon
                 id="booking_status_filter"
