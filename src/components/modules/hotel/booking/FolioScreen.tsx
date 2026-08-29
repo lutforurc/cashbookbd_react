@@ -319,6 +319,12 @@ const foldBill = (lines: any[]): any[] => {
 
     const row = out[at.get(key) as number];
 
+    // ⚠️ The QUANTITY adds up too, now that the table shows it. Left at the
+    // first night's own figure, a folded row read "1 × 6,000 = 18,000" -- three
+    // nights' money against one night's count, which is the arithmetic a guest
+    // querying the bill would check first. Safe to sum: the rate is part of the
+    // fold key, so every line in a row was sold at the same price.
+    row.quantity = Number(row.quantity ?? 0) + Number(line.quantity ?? 0);
     row.base_amount = Number(row.base_amount ?? 0) + Number(line.base_amount ?? 0);
     row.service_charge_amount =
       Number(row.service_charge_amount ?? 0) + Number(line.service_charge_amount ?? 0);
@@ -529,21 +535,44 @@ const FolioScreen = () => {
           </div>
         ),
       },
+      /**
+       * ⚠️ HOW THE AMOUNT WAS ARRIVED AT, in columns of its own.
+       *
+       * The two used to hide in a grey line under Amount, and only on a line
+       * whose quantity was not one -- so three nights at 6,000 said so, while a
+       * single night at 18,000 and a hall at 18,000 looked identical. A guest
+       * querying a bill asks how many and at what price, and the answer has to
+       * be on the row rather than worked back out of the total.
+       *
+       * Shown on every line, ones included: a column that appears and vanishes
+       * down the page is read as a fault.
+       */
+      {
+        key: 'quantity',
+        header: 'Qty',
+        headerClass: 'text-right',
+        cellClass: 'text-right',
+        render: (row: any) => {
+          const qty = Number(row.quantity ?? 0);
+
+          // Whole nights as "3", never "3.00" -- but a half day of a hall is
+          // still a half, so the decimals are kept where there are any.
+          return Number.isFinite(qty) ? (qty % 1 === 0 ? String(qty) : qty.toFixed(2)) : '—';
+        },
+      },
+      {
+        key: 'unit_rate',
+        header: 'Rate',
+        headerClass: 'text-right',
+        cellClass: 'text-right',
+        render: (row: any) => money(row.unit_rate),
+      },
       {
         key: 'base_amount',
         header: 'Amount',
         headerClass: 'text-right',
         cellClass: 'text-right',
-        render: (row: any) => (
-          <div>
-            <div>{money(row.base_amount)}</div>
-            {Number(row.quantity) !== 1 ? (
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {row.quantity} × {money(row.unit_rate)}
-              </div>
-            ) : null}
-          </div>
-        ),
+        render: (row: any) => money(row.base_amount),
       },
       {
         key: 'service_charge_amount',

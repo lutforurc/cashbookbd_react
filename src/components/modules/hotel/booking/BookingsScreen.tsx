@@ -718,9 +718,15 @@ const BookingsScreen = ({ user }: any) => {
           const stated = Number(row.stated_adults ?? 0) + Number(row.stated_children ?? 0);
 
           return (
-            <div className="flex flex-col items-left w-28 gap-0.5">
+            <div className="flex w-28 flex-col items-stretch gap-0.5">
+              {/* ⚠️ ONE HEIGHT FOR EVERY CHIP, set here rather than left to
+                  what is inside it. Padded to fit its own text, a chip carrying
+                  a guest count "(3)" or a word that wraps came out taller than
+                  the one above it, and a column of badges that step up and down
+                  the page reads as a fault rather than a list. Fixed height,
+                  full width, the word centred in what is left. */}
               <span
-                className={`inline-block rounded border px-2 py-0.5 text-[0.65rem] font-semibold ${
+                className={`inline-flex h-5.5 w-full items-center justify-center rounded border px-2 text-[0.65rem] font-semibold leading-none ${
                   look?.className ?? ''
                 }`}
               >
