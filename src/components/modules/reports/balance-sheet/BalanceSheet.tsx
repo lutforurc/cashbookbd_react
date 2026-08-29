@@ -543,10 +543,14 @@ const BalanceSheet = (user: any) => {
               />
             </div>
 
-            <NetProfitDebugPanel
-              branchName={appliedBranchName}
-              values={netProfitDebug}
-            />
+            {/* Diagnostics belong with a problem, not with every clean sheet.
+                They show themselves when the two sides do not agree. */}
+            {showDifferenceDebug && (
+              <NetProfitDebugPanel
+                branchName={appliedBranchName}
+                values={netProfitDebug}
+              />
+            )}
 
             {showDifferenceDebug && (
               <div className="rounded-sm border border-amber-200 bg-amber-50 shadow-default dark:border-amber-500/20 dark:bg-amber-500/10">
@@ -568,68 +572,37 @@ const BalanceSheet = (user: any) => {
               </div>
             )}
 
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              <SectionCard
-                title="Assets"
-                accent="from-emerald-500 to-teal-600"
-                groups={assets}
-                totalLabel="Total Assets"
-                totalValue={totals.assets}
-                totalColumns={totals.assetsColumns}
-                perPage={perPage}
-                fontSize={fontSize}
-                onGroupClick={(group) => setSelectedGroup({ title: "Assets", group })}
-              />
-              <div className="space-y-6">
-                <SectionCard
-                  title="Liabilities"
-                  accent="from-sky-500 to-blue-600"
-                  groups={liabilities}
-                  totalLabel="Total Liabilities"
-                  totalValue={totals.liabilities}
-                  totalColumns={totals.liabilitiesColumns}
-                  perPage={perPage}
-                  fontSize={fontSize}
-                  onGroupClick={(group) =>
-                    setSelectedGroup({ title: "Liabilities", group })
-                  }
-                />
-                <SectionCard
-                  title="Equity"
-                  accent="from-violet-500 to-indigo-600"
-                  groups={equity}
-                  totalLabel="Total Equity"
-                  totalValue={totals.equity}
-                  totalColumns={totals.equityColumns}
-                  perPage={perPage}
-                  fontSize={fontSize}
-                  onGroupClick={(group) => setSelectedGroup({ title: "Equity", group })}
-                />
+            <div className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+              <div className="border-b border-[rgb(var(--c-border))] px-5 py-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
+                      Balance Sheet
+                    </h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {branchName}, {reportDates.start ? dayjs(reportDates.start).format("DD/MM/YYYY") : "-"} to{" "}
+                      {reportDates.end ? dayjs(reportDates.end).format("DD/MM/YYYY") : "-"}
+                    </p>
+                  </div>
+                  <div className="rounded-sm bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                    As on {reportDates.asOn ? dayjs(reportDates.asOn).format("DD/MM/YYYY") : "-"}
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-5 shadow-default">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h4 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                    Final Position
-                  </h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    As on {reportDates.asOn ? dayjs(reportDates.asOn).format("DD/MM/YYYY") : "-"} for {branchName}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Liabilities + Equity
-                  </p>
-                  <p className="text-xl font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                    {formatAmount(totals.liabilitiesAndEquity)}
-                  </p>
-                </div>
+              <div className="p-5">
+                <BalanceSheetTable
+                  assets={assets}
+                  liabilities={liabilities}
+                  equity={equity}
+                  totals={totals}
+                  fontSize={fontSize}
+                  onGroupClick={(title, group) => setSelectedGroup({ title, group })}
+                />
               </div>
 
               {Math.abs(totals.difference) > 0.009 && (
-                <div className="mt-4 rounded-sm border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-600/40 dark:bg-amber-500/10 dark:text-amber-200">
+                <div className="mx-5 mb-5 rounded-sm border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-600/40 dark:bg-amber-500/10 dark:text-amber-200">
                   Difference detected: {formatAmount(totals.difference)}. Please review opening, movement, or group mapping.
                 </div>
               )}
@@ -666,6 +639,10 @@ const BalanceSheet = (user: any) => {
 
 const normalizeGroup = (group: ReportGroup) => ({
   group_name: group.group_name || "",
+  // The printed sheet carries all three columns, so all three travel with it.
+  opening: toNum(group.opening),
+  movement: toNum(group.movement),
+  closing: toNum(group.closing || group.total),
   total: toNum(group.closing || group.total),
   items: (group.items || []).map((item) => ({
     name: item.name || "",
@@ -856,109 +833,200 @@ const SummaryCard = ({
   );
 };
 
-const SectionCard = ({
-  title,
-  accent,
-  groups,
-  totalLabel,
-  totalValue,
-  totalColumns,
-  perPage,
+/**
+ * The sheet as one running table, the way it prints: the sections announce
+ * themselves in a band, their accounts follow numbered straight through, and
+ * each section closes on its own total. A row still opens its accounts.
+ */
+type SheetLine =
+  | { kind: "section"; label: string }
+  | {
+      kind: "item";
+      key: string;
+      serial: number;
+      section: string;
+      group: ReportGroup;
+      label: string;
+      itemCount: number;
+      columns: ColumnTotals;
+    }
+  | { kind: "total"; label: string; columns: ColumnTotals; strong?: boolean };
+
+const BalanceSheetTable = ({
+  assets,
+  liabilities,
+  equity,
+  totals,
   fontSize,
   onGroupClick,
 }: {
-  title: string;
-  accent: string;
-  groups: ReportGroup[];
-  totalLabel: string;
-  totalValue: number;
-  totalColumns: ColumnTotals;
-  perPage: number;
+  assets: ReportGroup[];
+  liabilities: ReportGroup[];
+  equity: ReportGroup[];
+  totals: {
+    assetsColumns: ColumnTotals;
+    liabilitiesColumns: ColumnTotals;
+    equityColumns: ColumnTotals;
+  };
   fontSize: number;
-  onGroupClick: (group: ReportGroup) => void;
+  onGroupClick: (title: string, group: ReportGroup) => void;
 }) => {
-  const rows = useMemo(() => {
-    return groups.map((group, index) => ({
-      key: `${group.group_name || "group"}-${index}-group`,
-      rawGroup: group,
-      label: group.group_name || "",
-      opening: toNum(group.opening),
-      movement: toNum(group.movement),
-      closing: toNum(group.closing || group.total),
-      itemCount: (group.items || []).length,
-    }));
-  }, [groups]);
+  const lines = useMemo(() => {
+    const out: SheetLine[] = [];
+    let serial = 0;
 
-  const visibleRows = rows.slice(0, Math.max(perPage, rows.length));
+    const pushSection = (
+      title: string,
+      groups: ReportGroup[],
+      totalLabel: string,
+      columns: ColumnTotals,
+    ) => {
+      if (groups.length === 0) return;
+
+      out.push({ kind: "section", label: title });
+
+      groups.forEach((group, index) => {
+        serial += 1;
+        out.push({
+          kind: "item",
+          key: `${title}-${group.group_name || "group"}-${index}`,
+          serial,
+          section: title,
+          group,
+          label: group.group_name || "-",
+          itemCount: (group.items || []).length,
+          columns: {
+            opening: toNum(group.opening),
+            movement: toNum(group.movement),
+            closing: toNum(group.closing || group.total),
+          },
+        });
+      });
+
+      out.push({ kind: "total", label: totalLabel, columns });
+    };
+
+    pushSection("Assets", assets, "Total Assets", totals.assetsColumns);
+    pushSection("Liabilities", liabilities, "Liabilities Total", totals.liabilitiesColumns);
+    pushSection("Equity", equity, "Equity Total", totals.equityColumns);
+
+    out.push({
+      kind: "total",
+      label: "Total Liabilities & Equity",
+      strong: true,
+      columns: {
+        opening: totals.liabilitiesColumns.opening + totals.equityColumns.opening,
+        movement: totals.liabilitiesColumns.movement + totals.equityColumns.movement,
+        closing: totals.liabilitiesColumns.closing + totals.equityColumns.closing,
+      },
+    });
+
+    return out;
+  }, [assets, equity, liabilities, totals]);
+
+  const cell = "border border-[rgb(var(--c-border))] px-3 py-2";
 
   return (
-    <div className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
-      <div className={`bg-linear-to-r ${accent} px-5 py-4 text-white`}>
-        <h3 className="text-lg font-bold">{title}</h3>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full">
-          <thead>
-            <tr className="border-b border-[rgb(var(--c-border))]">
-              <th className="px-5 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Particulars
-              </th>
-              <th className="px-5 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Opening
-              </th>
-              <th className="px-5 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Movement
-              </th>
-              <th className="px-5 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Closing
-              </th>
-            </tr>
-          </thead>
-          <tbody style={{ fontSize: `${fontSize}px` }}>
-            {visibleRows.map((row) => (
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse" style={{ fontSize: `${fontSize}px` }}>
+        <thead>
+          <tr className="bg-slate-100 dark:bg-slate-800">
+            <th className={`${cell} w-16 text-center font-semibold text-slate-700 dark:text-slate-200`}>
+              Serial
+            </th>
+            <th className={`${cell} text-left font-semibold text-slate-700 dark:text-slate-200`}>
+              Description
+            </th>
+            <th className={`${cell} w-40 text-right font-semibold text-slate-700 dark:text-slate-200`}>
+              Opening
+            </th>
+            <th className={`${cell} w-40 text-right font-semibold text-slate-700 dark:text-slate-200`}>
+              Movement
+            </th>
+            <th className={`${cell} w-40 text-right font-semibold text-slate-700 dark:text-slate-200`}>
+              Closing
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {lines.map((line, index) => {
+            if (line.kind === "section") {
+              return (
+                <tr key={`${line.label}-${index}`} className="bg-slate-100 dark:bg-slate-800">
+                  <td
+                    colSpan={5}
+                    className={`${cell} font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200`}
+                  >
+                    {line.label}
+                  </td>
+                </tr>
+              );
+            }
+
+            if (line.kind === "total") {
+              return (
+                <tr
+                  key={`${line.label}-${index}`}
+                  className={line.strong ? "bg-slate-100 dark:bg-slate-800" : ""}
+                >
+                  <td
+                    colSpan={2}
+                    className={`${cell} text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}
+                  >
+                    {line.label}
+                  </td>
+                  <td className={`${cell} text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}>
+                    {thousandSeparator(line.columns.opening)}
+                  </td>
+                  <td className={`${cell} text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}>
+                    {thousandSeparator(line.columns.movement)}
+                  </td>
+                  <td className={`${cell} text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}>
+                    {thousandSeparator(line.columns.closing)}
+                  </td>
+                </tr>
+              );
+            }
+
+            return (
               <tr
-                key={row.key}
-                onClick={() => onGroupClick(row.rawGroup)}
-                className="cursor-pointer border-b border-[rgb(var(--c-border))] bg-slate-50 transition hover:bg-slate-100 last:border-b-0 dark:bg-slate-800/50 dark:hover:bg-slate-800"
+                key={line.key}
+                onClick={() => onGroupClick(line.section, line.group)}
+                className="cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
               >
-                <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-100">
+                <td className={`${cell} text-center text-slate-700 dark:text-slate-200`}>
+                  {line.serial}
+                </td>
+                <td className={`${cell} text-slate-800 dark:text-slate-100`}>
                   <div className="flex items-center justify-between gap-3">
-                    <span>{row.label}</span>
+                    <span>{line.label}</span>
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                      {row.itemCount} item{row.itemCount === 1 ? "" : "s"}
+                      {line.itemCount} item{line.itemCount === 1 ? "" : "s"}
                     </span>
                   </div>
                 </td>
-                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(row.opening)}
+                <td className={`${cell} text-right text-slate-900 dark:text-[rgb(var(--c-text))]`}>
+                  {thousandSeparator(line.columns.opening)}
                 </td>
-                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(row.movement)}
+                <td className={`${cell} text-right text-slate-900 dark:text-[rgb(var(--c-text))]`}>
+                  {thousandSeparator(line.columns.movement)}
                 </td>
-                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(row.closing)}
+                <td className={`${cell} text-right text-slate-900 dark:text-[rgb(var(--c-text))]`}>
+                  {thousandSeparator(line.columns.closing)}
                 </td>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="border-t-2 border-[rgb(var(--c-border))]">
-              <td className="px-5 py-4 font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                {totalLabel}
-              </td>
-              <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                {thousandSeparator(totalColumns.opening)}
-              </td>
-              <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                {thousandSeparator(totalColumns.movement)}
-              </td>
-              <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                {thousandSeparator(totalColumns.closing || totalValue)}
+            );
+          })}
+
+          {lines.length === 0 && (
+            <tr>
+              <td colSpan={5} className={`${cell} py-6 text-center text-slate-500`}>
+                No balance sheet data found
               </td>
             </tr>
-          </tfoot>
-        </table>
-      </div>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };
