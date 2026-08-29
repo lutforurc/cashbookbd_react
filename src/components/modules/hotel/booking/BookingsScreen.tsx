@@ -92,10 +92,15 @@ import formatDate, { formatDayMonthYear } from '../../../utils/utils-functions/f
 const TYPE_OPTIONS: { id: BookingType; name: string }[] = [
   { id: 'individual', name: 'Individual' },
   { id: 'group', name: 'Group' },
-  // Corporate is deliberately absent. It is the one type that decides the bill
-  // goes to a company and the money comes later (6.4), which needs a payer to
-  // point at -- and the party picker belongs with the billing screen. The API
-  // accepts it already; this list gains it the day there is somebody to name.
+  // The bill goes to a company and the money comes later (6.4), so it needs a
+  // payer to point at. The server refuses a corporate booking that names none.
+  { id: 'corporate', name: 'Corporate' },
+  // ⚠️ A sale with no room behind it -- somebody who walks in for a meal. It
+  // takes no room, bed or hall, holds no inventory and is never checked in;
+  // what it has is a folio and a bill, which is the whole reason it exists:
+  // the restaurant's money lands where the room's does, under the same charge
+  // types, on the same reports.
+  { id: 'walk_in', name: 'Walk-in (no room)' },
 ];
 
 const STATUS_OPTIONS = [
@@ -634,6 +639,32 @@ const BookingsScreen = ({ user }: any) => {
     forget();
   };
 
+  /**
+   * ⚠️ Turning a booking into a walk-in sale PUTS BACK whatever it was
+   * holding. The server refuses a walk-in that names a room -- rightly, since
+   * a booking with a room on it is a stay whatever the dropdown says -- and
+   * without this the clerk would pick two rooms, change the type, and be
+   * refused by a sentence about rooms they can no longer see.
+   */
+  const chooseType = (e: any) => {
+    const chosen = e.target.value;
+
+    if (chosen === 'walk_in') {
+      setPicked([]);
+      setPickedSeats([]);
+      setPickedSittings([]);
+    }
+
+    setForm((prev: any) => ({
+      ...prev,
+      booking_type: chosen,
+      // Nothing is held, so there is nothing to hold ON to. The server forces
+      // this as well; setting it here keeps the form from showing a state the
+      // booking will not be saved in.
+      status: chosen === 'walk_in' ? 'confirmed' : prev.status,
+    }));
+  };
+
   const openNew = () => {
     setForm(blankBooking());
     forget();
@@ -915,6 +946,14 @@ const BookingsScreen = ({ user }: any) => {
 
   const anyPicked = picked.length + pickedSeats.length + pickedSittings.length;
 
+  /**
+   * ⚠️ A walk-in sale holds nothing, so nearly every rule on this form is
+   * about somebody else. No room to pick, no availability to check, no nights
+   * to price, no hold to keep and nobody to check in -- what is left is who
+   * bought it, and a bill to put the meal on afterwards.
+   */
+  const isWalkIn = form?.booking_type === 'walk_in';
+
   // Room rents summed across the nights. Never a bed rate divided or multiplied
   // into a room one -- these are whole-room lets and nothing else (2.8).
   // Rooms at the room rate, beds at their own. Added, never derived from one
@@ -969,7 +1008,7 @@ const BookingsScreen = ({ user }: any) => {
   });
 
   const save = async () => {
-    if (!anyPicked) {
+    if (!anyPicked && !isWalkIn) {
       toast.error('Pick at least one room, bed or sitting');
       return;
     }
@@ -1170,18 +1209,27 @@ const BookingsScreen = ({ user }: any) => {
       {
         key: 'stay',
         header: 'Stay',
-        render: (row: any) => (
-          <div className="text-xs">
-            <div className="font-xs text-black dark:text-white">
-              { formatDate(row.check_in_date) } → { formatDate(row.check_out_date) }
+        render: (row: any) =>
+          // ⚠️ A walk-in sale has no stay to show. Left to the arrow below it
+          // would read "27/08 → 27/08, 0 nights", which looks like a booking
+          // somebody got wrong rather than a meal somebody sold.
+          row.booking_type === 'walk_in' ? (
+            <div className="text-xs">
+              <div className="font-xs text-black dark:text-white">{formatDate(row.check_in_date)}</div>
+              <div className="text-gray-500 dark:text-gray-400">Walk-in, no room</div>
             </div>
-            {/* Nights, not days. The number the database worked out from the
-                two dates, so the screen cannot disagree with the booking. */}
-            <div className="text-gray-500 dark:text-gray-400">
-              {row.nights} {Number(row.nights) === 1 ? 'night' : 'nights'}
+          ) : (
+            <div className="text-xs">
+              <div className="font-xs text-black dark:text-white">
+                { formatDate(row.check_in_date) } → { formatDate(row.check_out_date) }
+              </div>
+              {/* Nights, not days. The number the database worked out from the
+                  two dates, so the screen cannot disagree with the booking. */}
+              <div className="text-gray-500 dark:text-gray-400">
+                {row.nights} {Number(row.nights) === 1 ? 'night' : 'nights'}
+              </div>
             </div>
-          </div>
-        ),
+          ),
       },
       {
         key: 'stated_rooms',
@@ -1360,13 +1408,19 @@ const BookingsScreen = ({ user }: any) => {
                   One slot for both because they are the same door: before the
                   guests arrive it takes them in, afterwards it shows who came. */}
               <span>
-                <button
-                  type="button"
-                  onClick={() => navigate(`${routes.hotel_booking_check_in}/${row.id}`)}
-                  className={`${link} text-primary dark:text-secondary`}
-                >
-                  {row.status === 'checked_in' ? 'Guests' : 'Check in'}
-                </button>
+                {/* ⚠️ Never on a walk-in sale. There is no room to allot and
+                    nobody to put in it -- the screen behind this link asks
+                    which room the guests are in, and the server refuses a room
+                    this booking does not hold. */}
+                {row.booking_type !== 'walk_in' ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`${routes.hotel_booking_check_in}/${row.id}`)}
+                    className={`${link} text-primary dark:text-secondary`}
+                  >
+                    {row.status === 'checked_in' ? 'Guests' : 'Check in'}
+                  </button>
+                ) : null}
               </span>
 
               {/* The bill. Offered on every live booking rather than only on a
@@ -1515,6 +1569,8 @@ const BookingsScreen = ({ user }: any) => {
               // already exists reads as taking a second one, and the number on
               // the button is what somebody checks before pressing it.
               `Save ${form.booking_no ?? 'booking'}`
+            : isWalkIn
+            ? 'Save walk-in sale'
             : anyPicked
             ? `Book ${[
                 picked.length ? `${picked.length} ${picked.length === 1 ? 'room' : 'rooms'}` : null,
@@ -1532,8 +1588,53 @@ const BookingsScreen = ({ user }: any) => {
         form={
           form && (
             <>
+              {/* 0 -- WHAT IS BEING SOLD, above everything else, because it
+                  decides whether the rest of this form is about a room at all.
+                  It used to sit in section 3, which is drawn only once a room
+                  has been picked -- so a walk-in sale, which never picks one,
+                  could not be reached from there. */}
+              {/* ⚠️ items-start, not items-end. The type carries a line of
+                  description under it and the date does not, so bottom-aligning
+                  the row hung the date's label level with the middle of the
+                  type's box -- two fields on one line that did not look like
+                  one line. */}
+              <div className="grid grid-cols-1 items-start gap-2 md:grid-cols-4">
+                <DropdownCommon
+                  id="booking_type"
+                  name="booking_type"
+                  label="Type"
+                  data={TYPE_OPTIONS}
+                  value={form.booking_type}
+                  onChange={chooseType}
+                  description={
+                    isWalkIn
+                      ? // Said in full in the panel below, where there is room
+                        // for it. Repeating it here only made the row uneven.
+                        undefined
+                      : 'Corporate is billed to a company, not to the guest.'
+                  }
+                />
+
+                {/* The day it was served. A walk-in has no arriving and no
+                    leaving, so it is asked for once and both dates are set
+                    from it -- the nights between them come out at nought,
+                    which is the truth about a sale with no stay. */}
+                {isWalkIn ? (
+                  <InputDatePicker
+                    id="walk_in_date"
+                    name="check_in_date"
+                    label="Date"
+                    selectedDate={asDate(form.check_in_date)}
+                    setSelectedDate={setDate('check_in_date')}
+                    setCurrentDate={setDate('check_in_date')}
+                    className="w-full"
+                  />
+                ) : null}
+              </div>
+
               {/* 1 -- the question */}
-              <div className="grid grid-cols-1 items-end gap-2 md:grid-cols-4">
+              {!isWalkIn ? (
+              <div className="mt-3 grid grid-cols-1 items-end gap-2 md:grid-cols-4">
                 <InputDatePicker
                   id="check_in_date"
                   name="check_in_date"
@@ -1575,9 +1676,21 @@ const BookingsScreen = ({ user }: any) => {
                   />
                 </div>
               </div>
+              ) : null}
 
+              {/* A walk-in sale has nothing to look up and nothing to pick, so
+                  the whole middle of this form is skipped. What it needs is a
+                  name to bill and, afterwards, the meal itself -- which is
+                  added on the bill, where every charge is added. */}
+              {isWalkIn ? (
+                <div className="mt-3 rounded border border-stroke p-3 text-sm text-gray-600 dark:border-strokedark dark:text-gray-300">
+                  No room, bed or hall is held by a walk-in sale. Save it, then open its
+                  <span className="font-medium text-black dark:text-white"> Bill </span>
+                  and add what was sold — restaurant, catering, laundry.
+                </div>
+              ) : null}
 
-              {availability ? (
+              {availability && !isWalkIn ? (
                 <div className="mt-3 w-56">
                   <DropdownCommon
                     id="booking_colour_mode"
@@ -1591,7 +1704,7 @@ const BookingsScreen = ({ user }: any) => {
               ) : null}
 
               {/* 2 -- the answer */}
-              {availability ? (
+              {availability && !isWalkIn ? (
                 <div className="mt-4">
                   <div className="mb-2 flex flex-wrap items-baseline gap-x-3 text-sm">
                     <span className="font-medium text-black dark:text-white">
@@ -1875,26 +1988,39 @@ const BookingsScreen = ({ user }: any) => {
               {/* 3 -- who it is for. Drawn only once there is something to book,
                   because asking for a guest's name before there is a room to put
                   them in is a form in the wrong order. */}
-              {anyPicked ? (
+              {anyPicked || isWalkIn ? (
                 <>
                   <div className="mt-4 rounded border border-stroke p-3 dark:border-strokedark">
                     <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                       <span className="text-sm font-medium text-black dark:text-white">
-                        {[
-                          ...pickedRooms.map((room) => room.display_name),
-                          // Named by room and bed together: "GDN / 301 bed 2"
-                          // is what the clerk says out loud, and "bed 2" alone
-                          // means nothing across four dormitories.
-                          ...pickedBeds.map(({ seat, room }) => `${room.display_name} bed ${seat.code}`),
-                        ].join(', ')}
+                        {isWalkIn
+                          ? 'Walk-in sale'
+                          : [
+                              ...pickedRooms.map((room) => room.display_name),
+                              // Named by room and bed together: "GDN / 301 bed 2"
+                              // is what the clerk says out loud, and "bed 2" alone
+                              // means nothing across four dormitories.
+                              ...pickedBeds.map(({ seat, room }) => `${room.display_name} bed ${seat.code}`),
+                            ].join(', ')}
                       </span>
                       <span className="text-sm">
-                        <span className="text-gray-500 dark:text-gray-400">
-                          {anyPicked} × {nights} {nights === 1 ? 'night' : 'nights'} ·{' '}
-                        </span>
-                        <span className="font-semibold text-black dark:text-white">
-                          {money(total)}
-                        </span>
+                        {isWalkIn ? (
+                          // No rooms and no nights, so there is nothing to
+                          // price here. What it comes to is decided on the
+                          // bill, one charge at a time.
+                          <span className="text-gray-500 dark:text-gray-400">
+                            Nothing held · priced on the bill
+                          </span>
+                        ) : (
+                          <>
+                            <span className="text-gray-500 dark:text-gray-400">
+                              {anyPicked} × {nights} {nights === 1 ? 'night' : 'nights'} ·{' '}
+                            </span>
+                            <span className="font-semibold text-black dark:text-white">
+                              {money(total)}
+                            </span>
+                          </>
+                        )}
                       </span>
                     </div>
 
@@ -1939,25 +2065,22 @@ const BookingsScreen = ({ user }: any) => {
                     </div>
 
                     <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-4">
-                      <DropdownCommon
-                        id="booking_type"
-                        name="booking_type"
-                        label="Type"
-                        data={TYPE_OPTIONS}
-                        value={form.booking_type}
-                        onChange={set('booking_type')}
-                        description="Corporate needs a company to bill, which comes with the billing screen."
-                      />
-                      <DropdownCommon
-                        id="booking_status"
-                        name="booking_status"
-                        label="Confirmed or held"
-                        data={STATUS_OPTIONS}
-                        value={form.status}
-                        onChange={set('status')}
-                        description={`A hold keeps the rooms for ${holdLength(times?.hold_hours)}, then the beds go back on sale.`}
-                      />
-                      <div className="md:col-span-2">
+                      {/* ⚠️ Not on a walk-in. A hold keeps a bed off sale until
+                          a deadline; this sale holds no bed, so the choice
+                          would mean nothing and the sweep would expire a meal
+                          that has been eaten. The server forces it confirmed. */}
+                      {!isWalkIn ? (
+                        <DropdownCommon
+                          id="booking_status"
+                          name="booking_status"
+                          label="Confirmed or held"
+                          data={STATUS_OPTIONS}
+                          value={form.status}
+                          onChange={set('status')}
+                          description={`A hold keeps the rooms for ${holdLength(times?.hold_hours)}, then the beds go back on sale.`}
+                        />
+                      ) : null}
+                      <div className={isWalkIn ? 'md:col-span-3' : 'md:col-span-2'}>
                         <InputElement
                           id="booking_notes"
                           name="notes"

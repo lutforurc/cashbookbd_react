@@ -8,7 +8,7 @@
 
 import { LayoutBuilding } from '../types';
 
-export type BookingType = 'individual' | 'group' | 'corporate';
+export type BookingType = 'individual' | 'group' | 'corporate' | 'walk_in';
 
 export type BookingStatus =
   | 'hold'

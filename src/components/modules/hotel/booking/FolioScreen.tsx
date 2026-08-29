@@ -30,6 +30,7 @@ import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
 import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
 import {
   PrintTemplate,
+  asWalkInBill,
   defaultTemplate,
   normalizeTemplate,
 } from '../../../utils/print-designer/printTemplate';
@@ -420,10 +421,20 @@ const FolioScreen = () => {
         return;
       }
 
+      const layout = payload.layout
+        ? normalizeTemplate(payload.layout, docType)
+        : defaultTemplate(docType);
+
       setPaper({
-        template: payload.layout
-          ? normalizeTemplate(payload.layout, docType)
-          : defaultTemplate(docType),
+        // ⚠️ A walk-in sale is billed on the hotel's own bill, and its stay
+        // rows are taken off it here rather than in the designer. The branch
+        // keeps ONE bill layout, customised however it likes; the meal simply
+        // does not print the four questions -- check-in, check-out, nights,
+        // room -- that a room's bill asks and a plate of food cannot answer.
+        template:
+          docType === 'hotel_bill' && folio?.booking?.booking_type === 'walk_in'
+            ? asWalkInBill(layout)
+            : layout,
         data: {
           basic: payload.basic ?? null,
           products: payload.products ?? [],
@@ -857,22 +868,28 @@ const FolioScreen = () => {
       </div>
 
       <div className="mb-2 flex flex-wrap gap-2">
-        <ButtonLoading
-          onClick={billNights}
-          buttonLoading={saving}
-          label={
-            folio.unbilled_nights
-              ? `Bill ${folio.unbilled_nights} ${
-                  folio.unbilled_nights === 1 ? 'night' : 'nights'
-                }`
-              : 'Nights all billed'
-          }
-          variant={folio.unbilled_nights ? 'primary' : 'default'}
-          icon={<FiCalendar size={16} />}
-          // Billing raises a journal, so an unready chart stops it as surely as
-          // having nothing to bill does.
-          disabled={!folio.unbilled_nights || !!folio.chart_missing?.length}
-        />
+        {/* ⚠️ Not on a walk-in sale. It holds no room and has no nights, so the
+            button could only ever answer "every night is billed already" --
+            true, and no help to somebody looking for the meal they served.
+            What that bill is made of is added by hand, one charge at a time. */}
+        {booking?.booking_type !== 'walk_in' ? (
+          <ButtonLoading
+            onClick={billNights}
+            buttonLoading={saving}
+            label={
+              folio.unbilled_nights
+                ? `Bill ${folio.unbilled_nights} ${
+                    folio.unbilled_nights === 1 ? 'night' : 'nights'
+                  }`
+                : 'Nights all billed'
+            }
+            variant={folio.unbilled_nights ? 'primary' : 'default'}
+            icon={<FiCalendar size={16} />}
+            // Billing raises a journal, so an unready chart stops it as surely as
+            // having nothing to bill does.
+            disabled={!folio.unbilled_nights || !!folio.chart_missing?.length}
+          />
+        ) : null}
         <ButtonLoading
           onClick={() =>
             setCharge(
@@ -892,7 +909,16 @@ const FolioScreen = () => {
                 ? null
                 : {
                     purpose: 'advance',
-                    amount: '',
+                    // ⚠️ WHAT IS OWED, ready to take. It is the figure the desk
+                    // asks the guest for nine times in ten, and it was being
+                    // read off the corner of the screen and typed back in --
+                    // which is where a 450 becomes a 45. Still a plain field:
+                    // a guest paying half, or rounding up, types over it.
+                    //
+                    // Blank where nothing is owed. A bill already settled, or
+                    // one in credit, has no amount to suggest, and a nought
+                    // sitting in the box reads as a figure somebody meant.
+                    amount: balance > 0 ? balance.toFixed(2) : '',
                     method: 'cash',
                     payment_date: today(),
                     reference: '',
@@ -1238,7 +1264,11 @@ const FolioScreen = () => {
       <Table
         columns={lineColumns}
         data={foldBill(folio.lines ?? [])}
-        noDataMessage="Nothing on the bill yet. Press Bill the nights to put the rooms on it."
+        noDataMessage={
+          booking?.booking_type === 'walk_in'
+            ? 'Nothing on the bill yet. Press Add a charge to put what was sold on it.'
+            : 'Nothing on the bill yet. Press Bill the nights to put the rooms on it.'
+        }
       />
 
       <div className="mb-2 mt-5 text-sm font-medium text-black dark:text-white">Money</div>

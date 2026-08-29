@@ -1876,3 +1876,62 @@ export const ADDABLE_BANDS: AddableBand[] = [
       band<SignatureBand>({ id, type: 'signature', show: true, space: 40, items: [{ label: 'Signature' }] }),
   },
 ];
+
+/**
+ * The same bill, for a sale that had no room behind it.
+ *
+ * ⚠️ A WALK-IN SALE IS BILLED ON THE HOTEL'S OWN BILL, deliberately -- the
+ * money belongs in the same folio, the same charge types and the same reports
+ * as a room's. What it must not do is print a room's questions: a meal has no
+ * check-in, no check-out, no nights and no room list, and a layout that asks
+ * for them prints a dash against each one. Four dashes down a bill read as a
+ * paper somebody filled in badly, not as a paper that was never about rooms.
+ *
+ * Applied to whatever layout the branch actually uses -- its own from the
+ * designer, or the shipped default -- so a property that has customised its
+ * bill keeps every other change it made. It takes rows away and never adds a
+ * field the layout did not have, with one exception: if dropping the stay
+ * leaves the paper with no date at all, the booking date goes back in, because
+ * an undated bill is not a bill.
+ */
+export const asWalkInBill = (template: PrintTemplate): PrintTemplate => {
+  /** Facts that exist only because somebody slept here. */
+  const stayOnly = new Set([
+    'check_in_date',
+    'check_out_date',
+    'nights',
+    'room_list',
+    'room_count',
+    'stated_rooms',
+  ]);
+
+  const dated = new Set(['booking_date', 'check_in_date', 'check_out_date']);
+
+  return {
+    ...template,
+    bands: template.bands.map((band) => {
+      if (band.type === 'info') {
+        const kept = (band as InfoBand).items.filter((item) => !stayOnly.has(item.field));
+        const hasDate = kept.some((item) => dated.has(item.field));
+
+        return {
+          ...band,
+          items: hasDate ? kept : [{ field: 'booking_date', label: 'Date' }, ...kept],
+        } as InfoBand;
+      }
+
+      // "Room & Charges" against a plate of food. The figure is right and the
+      // word is not, and it is the one line of a bill everybody reads.
+      if (band.type === 'totals') {
+        return {
+          ...band,
+          items: (band as TotalsBand).items.map((item) =>
+            item.field === 'bill_base' ? { ...item, label: 'Charges' } : item,
+          ),
+        } as TotalsBand;
+      }
+
+      return band;
+    }),
+  };
+};
