@@ -30,11 +30,13 @@ import { clockTime, money, useDebounced } from '../setupHelpers';
 import { DdlOption, LayoutBuilding, LayoutRoom, LayoutSeat } from '../types';
 import {
   availabilityRead,
+  billRead,
   bookingCancel,
   bookingList,
   bookingSave,
   bookingRead,
   bookingUpdate,
+  folioRead,
   hallsRead,
   cancellationRead,
   clearAvailability,
@@ -437,6 +439,10 @@ const BookingsScreen = ({ user }: any) => {
   const [statusFilter, setStatusFilter] = useState('');
   const [form, setForm] = useState<any>(null);
   const [building, setBuilding] = useState('');
+
+  // The booking whose bill is being fetched -- one row at a time, so the turning
+  // link is on the line the clerk actually pressed. See openBill below.
+  const [openingBill, setOpeningBill] = useState<number | null>(null);
 
   // Read beside availability, from the same "Check" press, over the same dates.
   const halls = useSelector((state: any) => state.hotelBooking.halls);
@@ -1111,6 +1117,43 @@ const BookingsScreen = ({ user }: any) => {
     }
   };
 
+  /**
+   * Open the bill only once the bill is in hand.
+   *
+   * ⚠️ The folio is read HERE, before the route changes, and not by the screen
+   * we are going to. Navigating first took the list away at the press and left
+   * the clerk on an empty screen for as long as the read took, then dropped
+   * the bill in -- so pressing Bill looked like it CLOSED the list, and the
+   * bill looked like it arrived by itself a moment later. Read first and the
+   * list stays put under the finger, with only the link itself turning, and
+   * the bill is whole the moment it opens.
+   *
+   * A read that fails now leaves the clerk on the list with the reason, rather
+   * than on a blank bill screen.
+   */
+  const openBill = useCallback(
+    async (bookingId: number) => {
+      setOpeningBill(bookingId);
+
+      try {
+        await Promise.all([
+          dispatch(folioRead(bookingId)).unwrap(),
+          // Who owes it, fetched in the same breath because the bill screen
+          // wants both -- but NOT unwrapped: the screen copes without it, and
+          // a bill nobody has moved is not worth refusing to open the folio.
+          dispatch(billRead(bookingId)),
+        ]);
+
+        navigate(`${routes.hotel_booking_folio}/${bookingId}`);
+      } catch (error: any) {
+        toast.error(String(error));
+      } finally {
+        setOpeningBill(null);
+      }
+    },
+    [dispatch, navigate],
+  );
+
   const columns = useMemo(
     () => [
       { key: 'serial_no', header: '#', headerClass: 'w-14 text-center', cellClass: 'text-center' },
@@ -1328,14 +1371,26 @@ const BookingsScreen = ({ user }: any) => {
 
               {/* The bill. Offered on every live booking rather than only on a
                   checked-in one: an advance is taken on the telephone, long
-                  before anybody arrives. */}
+                  before anybody arrives.
+
+                  ⚠️ The wait happens HERE, on the link, not on the next screen
+                  -- see openBill. The spinner takes the word's place inside the
+                  same slot so the row does not shuffle while it turns. */}
               <span>
                 <button
                   type="button"
-                  onClick={() => navigate(`${routes.hotel_booking_folio}/${row.id}`)}
-                  className={`${link} text-primary dark:text-secondary`}
+                  onClick={() => openBill(row.id)}
+                  disabled={openingBill === row.id}
+                  className={`${link} text-primary disabled:opacity-70 dark:text-secondary`}
                 >
-                  Bill
+                  {openingBill === row.id ? (
+                    <span
+                      aria-label="Opening the bill"
+                      className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent align-middle"
+                    />
+                  ) : (
+                    'Bill'
+                  )}
                 </button>
               </span>
 
@@ -1373,7 +1428,7 @@ const BookingsScreen = ({ user }: any) => {
         },
       },
     ],
-    [branchId],
+    [branchId, openingBill, openBill],
   );
 
   const branchName = branches.find((b: any) => String(b.id) === String(branchId))?.name;
