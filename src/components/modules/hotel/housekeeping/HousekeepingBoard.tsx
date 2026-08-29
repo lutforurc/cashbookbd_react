@@ -10,6 +10,8 @@ import { Button } from '../../../../pages/UiElements/CustomButtons';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { Textarea } from '../../../utils/fields/FormControls';
 
+import { shortFloor } from '../PropertyGrid';
+
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
 import { API_HOTEL_HOUSEKEEPING_URL } from '../../../services/apiRoutes';
@@ -145,6 +147,78 @@ const HousekeepingBoard = () => {
 
   const rooms = (board?.rooms ?? []).filter((room: any) => !filter || room.status === filter);
 
+  // The property drawn the way the Layout tab and the booking screen draw it:
+  // one card per block, floors stacked with the top one at the top. A
+  // housekeeper looking for ANX/203 reads one card and one row, not forty-six
+  // cards; and somebody who has learned where 302 is on the setup screen does
+  // not have to learn a second arrangement here.
+  //
+  // Built by walking the list rather than sorting it: the server already sends
+  // the rooms by block, then floor number, then room number, and a sort here
+  // would be a second opinion about that order.
+  const blocks: {
+    id: any;
+    name: string;
+    code: string;
+    count: number;
+    floors: { id: any; label: string; title?: string; rooms: any[] }[];
+  }[] = [];
+
+  rooms.forEach((room: any) => {
+    const blockId = room.building_id ?? room.building ?? '';
+    let block = blocks[blocks.length - 1];
+
+    if (!block || block.id !== blockId) {
+      block = {
+        id: blockId,
+        // A room in no block still has to go somewhere it can be found.
+        name: room.building_name || room.building || 'Elsewhere on the property',
+        code: room.building_name && room.building !== room.building_name ? room.building : '',
+        count: 0,
+        floors: [],
+      };
+      blocks.push(block);
+    }
+
+    block.count += 1;
+
+    const floorId = room.floor_id ?? '';
+    let floor = block.floors[block.floors.length - 1];
+
+    if (!floor || floor.id !== floorId) {
+      floor = {
+        id: floorId,
+        // One rule for what goes in the gutter, and it lives with the grid that
+        // invented it: "5th Floor" does not fit there, "5F" does.
+        label: room.floor_no === null || room.floor_no === undefined
+          ? '—'
+          : shortFloor({ floor_no: room.floor_no } as any),
+        title: room.floor_name
+          || 'Rooms with no floor. A resort’s cottages have none, and none is invented for them.',
+        rooms: [],
+      };
+      block.floors.push(floor);
+    }
+
+    floor.rooms.push(room);
+  });
+
+  // Top floor at the top: which end is up is a fact about the drawing, not
+  // about the data, so it is turned over here and not on the server.
+  //
+  // The rooms that belong to no floor go under the lot rather than above it --
+  // a hall and a community centre have none, and turning the stack over had
+  // been standing them on the roof.
+  blocks.forEach((block) => {
+    block.floors.reverse();
+
+    const loose = block.floors.filter((floor) => !floor.id);
+
+    if (loose.length) {
+      block.floors = block.floors.filter((floor) => floor.id).concat(loose);
+    }
+  });
+
   if (loading && !board) return <Loader />;
 
   return (
@@ -197,65 +271,103 @@ const HousekeepingBoard = () => {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-        {rooms.map((room: any) => {
-          const paint = look(room.status);
-
-          return (
-            <div
-              key={room.id}
-              className={`rounded border p-2 ${paint.className}`}
-            >
-              <div className="flex items-baseline justify-between gap-1">
-                <span className="text-sm font-semibold">{room.name}</span>
-                <button
-                  type="button"
-                  onClick={() => openHistory(room)}
-                  title="What has happened to this room"
-                  className="opacity-70 hover:opacity-100"
-                >
-                  <FiClock size={13} />
-                </button>
-              </div>
-
-              {/* ⚠️ Occupancy, said separately from cleanliness. A dirty room
-                  somebody is still asleep in is a different job from a dirty
-                  room that is empty. */}
-              <div className="mt-0.5 text-[0.65rem] leading-tight opacity-80">
-                {room.occupied ? <div>{room.guest}</div> : <div>empty</div>}
-                {room.notes ? <div className="italic">{room.notes}</div> : null}
-              </div>
-
-              <div className="mt-2 flex flex-wrap gap-1">
-                {STATES.filter((s) => s.id !== room.status).map((state) => (
-                  <button
-                    key={state.id}
-                    type="button"
-                    disabled={saving}
-                    onClick={() => {
-                      // ⚠️ The only state with a dialog behind it. It takes the
-                      // room off the market until a person clears it, so it has
-                      // to say why — everything else is one press, because
-                      // somebody with an armful of sheets will not confirm
-                      // forty dialogs.
-                      if (state.id === 'out_of_order') {
-                        setBlocking(room);
-                        setReason('');
-                        return;
-                      }
-
-                      move(room, state.id);
-                    }}
-                    className="rounded border border-current/30 bg-white/50 px-1.5 py-0.5 text-[0.6rem] font-medium hover:bg-white/80 disabled:opacity-50 dark:bg-black/20 dark:hover:bg-black/40"
-                  >
-                    {state.name}
-                  </button>
-                ))}
-              </div>
+      {blocks.map((block) => (
+        <div
+          key={String(block.id)}
+          className="mb-4 rounded border border-stroke dark:border-strokedark"
+        >
+          {/* The block named the way the layout grid names it -- full name,
+              code beside it -- and under it how many rooms are on show, so a
+              filtered board says "3 rooms" rather than leaving somebody to
+              count the cards. */}
+          <div className="border-b border-stroke px-3 py-2 dark:border-strokedark">
+            <div className="flex items-baseline gap-2">
+              <span className="font-semibold text-black dark:text-white">{block.name}</span>
+              {block.code ? <span className="text-xs text-gray-400">{block.code}</span> : null}
             </div>
-          );
-        })}
-      </div>
+            <div className="text-xs text-gray-700 dark:text-gray-200">
+              {block.count} {block.count === 1 ? 'room' : 'rooms'}
+            </div>
+          </div>
+
+          {/* One gap for both directions, as on the layout grid: the column
+              spaces the floors and the grid spaces the cards, and they are the
+              same number, so a room sits as far from the one above it as from
+              the one beside it. */}
+          <div className="flex flex-col gap-2 p-2">
+            {block.floors.map((floor) => (
+              <div key={String(floor.id)} className="flex items-start gap-2">
+                {/* The floor marker, in ink and no colour: on this board colour
+                    means a state, and a filled chip in the gutter would join
+                    that conversation with nothing to say. */}
+                <span
+                  title={floor.title}
+                  className="w-10 shrink-0 pt-2 text-center text-sm font-bold text-gray-700 dark:text-gray-200"
+                >
+                  {floor.label}
+                </span>
+
+                <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                  {floor.rooms.map((room: any) => {
+                    const paint = look(room.status);
+
+                    return (
+                      <div key={room.id} className={`rounded border p-2 ${paint.className}`}>
+                        <div className="flex items-baseline justify-between gap-1">
+                          <span className="text-sm font-semibold">{room.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => openHistory(room)}
+                            title="What has happened to this room"
+                            className="opacity-70 hover:opacity-100"
+                          >
+                            <FiClock size={13} />
+                          </button>
+                        </div>
+
+                        {/* ⚠️ Occupancy, said separately from cleanliness. A dirty
+                            room somebody is still asleep in is a different job from a
+                            dirty room that is empty. */}
+                        <div className="mt-0.5 text-[0.65rem] leading-tight opacity-80">
+                          {room.occupied ? <div>{room.guest}</div> : <div>empty</div>}
+                          {room.notes ? <div className="italic">{room.notes}</div> : null}
+                        </div>
+
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {STATES.filter((s) => s.id !== room.status).map((state) => (
+                            <button
+                              key={state.id}
+                              type="button"
+                              disabled={saving}
+                              onClick={() => {
+                                // ⚠️ The only state with a dialog behind it. It
+                                // takes the room off the market until a person clears
+                                // it, so it has to say why — everything else is one
+                                // press, because somebody with an armful of sheets will
+                                // not confirm forty dialogs.
+                                if (state.id === 'out_of_order') {
+                                  setBlocking(room);
+                                  setReason('');
+                                  return;
+                                }
+
+                                move(room, state.id);
+                              }}
+                              className="rounded border border-current/30 bg-white/50 px-1.5 py-0.5 text-[0.6rem] font-medium hover:bg-white/80 disabled:opacity-50 dark:bg-black/20 dark:hover:bg-black/40"
+                            >
+                              {state.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
 
       {!rooms.length ? (
         <p className="rounded border border-stroke p-6 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
