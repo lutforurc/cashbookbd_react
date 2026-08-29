@@ -17,6 +17,7 @@ const ROUTES = {
   admin_in_app_messages: '/admin/in-app-messages',
   admin_in_app_message_create: '/admin/in-app-messages/create',
   admin_in_app_message_edit: '/admin/in-app-messages/edit/:id',
+  business_types: '/admin/business-types',
   inventory_systems: '/admin/inventory-systems',
   tutorial_videos: '/admin/tutorial-videos',
   highlight_rules: '/admin/highlight-rules',

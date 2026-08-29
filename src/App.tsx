@@ -226,6 +226,7 @@ import SubscriptionAdmin from './components/modules/subscription/SubscriptionAdm
 import AdminNotifications from './components/modules/admin-notifications/AdminNotifications';
 import AdminInAppMessages from './components/modules/in-app-messages/AdminInAppMessages';
 import AdminInAppMessageForm from './components/modules/in-app-messages/AdminInAppMessageForm';
+import BusinessType from './components/modules/business-type/BusinessType';
 import InventorySystem from './components/modules/inventory-system/InventorySystem';
 import TutorialVideos from './components/modules/tutorial-videos/TutorialVideos';
 import HighlightRules from './components/modules/highlight-rules/HighlightRules';
@@ -337,6 +338,7 @@ function App() {
                 <Route path={routes.admin_in_app_messages} element={<AdminInAppMessages />} />
                 <Route path={routes.admin_in_app_message_create} element={<AdminInAppMessageForm />} />
                 <Route path={routes.admin_in_app_message_edit} element={<AdminInAppMessageForm />} />
+                <Route path={routes.business_types} element={<BusinessType />} />
                 <Route path={routes.inventory_systems} element={<InventorySystem />} />
                 <Route path={routes.tutorial_videos} element={<TutorialVideos />} />
               </Route>

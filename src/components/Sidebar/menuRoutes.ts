@@ -166,6 +166,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.reseller_admin,
     routes.admin_notifications,
     routes.admin_in_app_messages,
+    routes.business_types,
     routes.inventory_systems,
     routes.tutorial_videos,
     routes.highlight_rules,

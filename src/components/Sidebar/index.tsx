@@ -159,6 +159,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'reseller_admin', title: "Resellers" },
     { id: 'admin_notifications', title: "Admin Notifications" },
     { id: 'admin_in_app_messages', title: "In-App Messages" },
+    { id: 'business_types', title: "Business Types" },
     { id: 'inventory_systems', title: "Inventory Systems" },
     { id: 'tutorial_videos', title: "Tutorial Videos" },
     { id: 'highlight_rules', title: "Highlight Rules" },
@@ -2451,6 +2452,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   className={subMenuLinkClass}
                                 >
                                   In-App Messages
+                                </NavLink>
+                              </li>
+                            )}
+                          {(hasPermission(permissions, 'reseller.view') ||
+                            hasPermission(permissions, 'subscription.view') ||
+                            hasPermission(permissions, 'all.user.view')) && (
+                              <li style={subSlot('admin', 'business_types')}>
+                                <NavLink
+                                  to={routes.business_types}
+                                  className={subMenuLinkClass}
+                                >
+                                  Business Types
                                 </NavLink>
                               </li>
                             )}

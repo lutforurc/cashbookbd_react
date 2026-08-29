@@ -202,6 +202,11 @@ export const API_PROFILE_COVER_URL = `${API_BASE_URL}/user/profile-cover`;
 // Admin Notifications (platform admin broadcasts)
 export const API_ADMIN_NOTIFICATIONS_URL = `${API_BASE_URL}/admin/notifications`;
 
+// Business Type lookup (platform admin CRUD + open ddl for branch settings).
+// The registration form reads its own public copy -- see API_REGISTER_BUSINESS_TYPES_URL.
+export const API_ADMIN_BUSINESS_TYPES_URL = `${API_BASE_URL}/admin/business-types`;
+export const API_BUSINESS_TYPES_DDL_URL = `${API_BASE_URL}/business-types/ddl`;
+
 // Inventory System lookup (platform admin CRUD + open ddl for branch settings)
 export const API_ADMIN_INVENTORY_SYSTEMS_URL = `${API_BASE_URL}/admin/inventory-systems`;
 export const API_INVENTORY_SYSTEMS_DDL_URL = `${API_BASE_URL}/inventory-systems/ddl`;
