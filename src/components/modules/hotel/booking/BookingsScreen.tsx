@@ -7,6 +7,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import InputElement from '../../../utils/fields/InputElement';
+import InputDatePicker from '../../../utils/fields/DatePicker';
 import SearchInput from '../../../utils/fields/SearchInput';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { Textarea } from '../../../utils/fields/FormControls';
@@ -25,7 +26,6 @@ import {
   clearCancellation,
   tillList,
 } from './bookingSlice';
-import { BookingType } from './types';
 import formatDate, { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 
 /**
@@ -51,20 +51,6 @@ import formatDate, { formatDayMonthYear } from '../../../utils/utils-functions/f
  * it -- see `goToForm`.
  */
 
-const TYPE_OPTIONS: { id: BookingType; name: string }[] = [
-  { id: 'individual', name: 'Individual' },
-  { id: 'group', name: 'Group' },
-  // The bill goes to a company and the money comes later (6.4), so it needs a
-  // payer to point at. The server refuses a corporate booking that names none.
-  { id: 'corporate', name: 'Corporate' },
-  // ⚠️ A sale with no room behind it -- somebody who walks in for a meal. It
-  // takes no room, bed or hall, holds no inventory and is never checked in;
-  // what it has is a folio and a bill, which is the whole reason it exists:
-  // the restaurant's money lands where the room's does, under the same charge
-  // types, on the same reports.
-  { id: 'walk_in', name: 'Walk-in (no room)' },
-];
-
 /**
  * What kind of sale the list is about.
  *
@@ -79,6 +65,28 @@ const KIND_OPTIONS = [
   { id: 'walk_in', name: 'Walk-in only' },
   { id: 'all', name: 'Everything' },
 ];
+
+/**
+ * A stored 'YYYY-MM-DD' as a day on this calendar, and back again.
+ *
+ * ⚠️ Read and written by parts, never through `new Date(value)` or
+ * `toISOString()`. A bare date string is parsed as UTC, so east of Greenwich it
+ * comes back as the evening before -- a filter set to the 27th would ask the
+ * server for the 26th, and the picker would show a day the clerk did not pick.
+ */
+const asDate = (value?: string | null): Date | null => {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '');
+
+  return parts ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3])) : null;
+};
+
+const asText = (date: Date | null): string => {
+  if (!date) return '';
+
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+
+  return `${date.getFullYear()}-${month}-${String(date.getDate()).padStart(2, '0')}`;
+};
 
 const FILTER_OPTIONS = [
   { id: '', name: 'All bookings' },
@@ -380,6 +388,21 @@ const BookingsScreen = ({ user }: any) => {
   const kindFilter = params.get('kind') || 'stay';
 
   /**
+   * The arrival dates the list is about, either end of it optional.
+   *
+   * ⚠️ By ARRIVAL, not by overlap. "Bookings touching these dates" would pull
+   * in a fortnight's stay because one of its nights fell in the range, which is
+   * a different question from the one the desk asks this list -- who is coming
+   * between these two dates. It is also the date the list is ordered by, so the
+   * rows that come back are the rows the range cut, in the order they were in.
+   *
+   * Empty is a real answer at either end: a start with no end is everything
+   * from that day on, an end with no start is everything up to it.
+   */
+  const dateFrom = params.get('from') ?? '';
+  const dateTo = params.get('to') ?? '';
+
+  /**
    * One place that writes the address, so nothing can move a filter and forget
    * the page.
    *
@@ -459,9 +482,11 @@ const BookingsScreen = ({ user }: any) => {
         q: debouncedSearch,
         status: statusFilter || undefined,
         kind: kindFilter,
+        date_from: dateFrom || undefined,
+        date_to: dateTo || undefined,
       }),
     );
-  }, [dispatch, branchId, page, debouncedSearch, statusFilter, kindFilter]);
+  }, [dispatch, branchId, page, debouncedSearch, statusFilter, kindFilter, dateFrom, dateTo]);
 
   useEffect(() => {
     load();
@@ -630,8 +655,8 @@ const BookingsScreen = ({ user }: any) => {
       {
         key: 'stated_rooms',
         header: 'Holds',
-        headerClass: 'text-center',
-        cellClass: 'text-center',
+        headerClass: 'text-left',
+        cellClass: 'text-left',
         /**
          * ⚠️ ROOMS AND SITTINGS SAID SEPARATELY. This column used to show
          * stated_rooms, which counts a hall as one room -- so a wedding taking
@@ -643,13 +668,17 @@ const BookingsScreen = ({ user }: any) => {
           const rooms = Number(row.rooms_held ?? row.stated_rooms ?? 0);
           const sittings = Number(row.sittings_held ?? 0);
 
-          if (!rooms && !sittings) return 0;
+          // What was held and who it was held for, one under the other. Two
+          // columns for that was two glances at the same booking.
+          const guests = `${row.stated_adults ?? '-'}${
+            row.stated_children ? ` + ${row.stated_children}` : ''
+          }`;
 
           return (
-            <span className="inline-flex flex-col items-center leading-tight">
+            <span className="inline-flex flex-col items-left leading-tight">
               {rooms ? (
                 <span className="text-black dark:text-white">
-                  {rooms} {rooms === 1 ? 'room' : 'rooms'}
+                  {rooms} {rooms === 1 ? 'Room' : 'Rooms'}
                 </span>
               ) : null}
 
@@ -658,41 +687,19 @@ const BookingsScreen = ({ user }: any) => {
                   left as another number in a column of numbers. */}
               {sittings ? (
                 <span className="text-xs font-medium text-primary dark:text-secondary">
-                  {sittings} {sittings === 1 ? 'sitting' : 'sittings'}
+                  {sittings} {sittings === 1 ? 'Sitting' : 'Sittings'}
                 </span>
               ) : null}
-            </span>
-          );
-        },
-      },
-      {
-        key: 'guests',
-        header: 'Guests',
-        headerClass: 'text-center',
-        cellClass: 'text-center',
-        render: (row: any) => (
-          <span
-            title="Adults and children as stated at booking. What actually arrives is recorded at check-in."
-          >
-            {row.stated_adults}
-            {row.stated_children ? ` + ${row.stated_children}` : ''}
-          </span>
-        ),
-      },
-      {
-        key: 'booking_type',
-        header: 'Type',
-        // ⚠️ Named from the list the form offers, so the word in the column is
-        // the word the clerk picked. Capitalising the stored value printed
-        // "Walk_in", which reads like a column name that escaped from the
-        // database. Anything unknown -- a type added by a newer server -- keeps
-        // the old treatment rather than showing nothing.
-        render: (row: any) => {
-          const stored = String(row.booking_type ?? '');
 
-          return (
-            TYPE_OPTIONS.find((one) => one.id === stored)?.name ||
-            stored.charAt(0).toUpperCase() + stored.slice(1).replace(/_/g, ' ')
+              {!rooms && !sittings ? <span className="text-black dark:text-white">-</span> : null}
+
+              <span
+                className="text-xs text-gray-500 dark:text-gray-200"
+                title="Adults and children as stated at booking. What actually arrives is recorded at check-in."
+              >
+                { Number (guests) > 0 ? `${guests} Guest` : null}
+              </span>
+            </span>
           );
         },
       },
@@ -948,11 +955,48 @@ const BookingsScreen = ({ user }: any) => {
         // note={`Rooms are held from the night of arrival up to, but not including, the night of departure — the 15th to the 18th is three nights. Whole rooms only for now; a room sold by the bed says so in the list.${branchName ? ` Booking into: ${branchName}.` : ''}`}
         toolbar={
           <>
+            {/* Labelled, because everything beside it is: an unlabelled box
+                in a row of labelled ones sits a line lower than the rest and
+                reads as something other than a filter. */}
             <SearchInput
+              id="booking_search"
+              label="Search"
               search={search}
               setSearchValue={(value: string) => setFilter({ q: value })}
               className="w-56"
             />
+            {/* The app's own calendar, the one every other date field on the
+                module uses -- so a date is typed and read here the way it is
+                on the booking form, dd/MM/yyyy, rather than in whatever shape
+                the browser's native picker happens to speak.
+
+                ⚠️ Either end on its own is a question worth asking -- "from
+                today onwards", "everything up to the end of the month" -- so
+                neither box requires the other, and clearing one is allowed. */}
+            <div className="w-40">
+              <InputDatePicker
+                id="booking_date_from"
+                name="booking_date_from"
+                label="Start Date"
+                placeholder="Start Date"
+                selectedDate={asDate(dateFrom)}
+                setSelectedDate={(date: Date | null) => setFilter({ from: asText(date) })}
+                setCurrentDate={() => undefined}
+                className="w-full"
+              />
+            </div>
+            <div className="w-40">
+              <InputDatePicker
+                id="booking_date_to"
+                name="booking_date_to"
+                label="End Date"
+                placeholder="End Date"
+                selectedDate={asDate(dateTo)}
+                setSelectedDate={(date: Date | null) => setFilter({ to: asText(date) })}
+                setCurrentDate={() => undefined}
+                className="w-full"
+              />
+            </div>
             <div className="w-44">
               <DropdownCommon
                 id="booking_kind_filter"
