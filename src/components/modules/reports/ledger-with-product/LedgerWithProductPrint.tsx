@@ -140,6 +140,25 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     ].filter(Boolean) as [string, unknown][];
     const footerFs = fs;
 
+    /** The totals bar. Printed once, at the end of the last page's rows. */
+    const summaryBar = (
+      <div
+        className="mt-1 flex w-full shrink-0 flex-nowrap items-center justify-between gap-x-2 overflow-hidden border border-gray-900 px-2 py-1 font-bold text-gray-900"
+        style={{
+          fontSize: footerFs,
+          lineHeight: 1.15,
+          WebkitPrintColorAdjust: 'exact',
+          printColorAdjust: 'exact',
+        }}
+      >
+        {footerItems.map(([label, value]) => (
+          <div key={label} className="min-w-0 whitespace-nowrap">
+            <span>{label}:</span> <span>{formatSummaryAmount(value)}</span>
+          </div>
+        ))}
+      </div>
+    );
+
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
         <PrintStyles orientation="landscape" />
@@ -199,26 +218,40 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
           thead { display: table-header-group; }
 
           /*
-            And a row is not cut in half. A break through the middle of a line
-            puts the top of the figures on one sheet and their tails on the
-            next, which reads as two rows that are each half wrong.
+            ⚠️ AND A ROW IS NEVER CUT IN HALF -- said of the cells as well as
+            the row. A break through the middle of a line puts the top of the
+            figures on one sheet and their tails on the next, which reads as two
+            rows that are each half wrong. Chrome honours this on the row, and
+            on a row of several lines it needs hearing on the cell that is
+            actually tall: the description, with its remarks and order number
+            under it, is what a break lands in the middle of.
           */
-          tr { break-inside: avoid; page-break-inside: avoid; }
+          tr, td, th {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            -webkit-column-break-inside: avoid;
+          }
 
           /*
-            ⚠️ ROOM KEPT FOR THE PINNED FOOT. On an unbroken run the software
-            line is position:fixed, which is how it comes back on every sheet --
-            and being fixed it is out of the flow, so without this the last rows
-            of each sheet run underneath it. That is the very fault that took
-            the line out of the foot in the first place; the space is the half
-            that was missing then.
+            ⚠️ AND THE SOFTWARE LINE COMES WITH IT, at the foot of every sheet.
+            A table footer group is repeated by the browser at the bottom of
+            each sheet the table crosses, in the flow, which is the whole
+            reason it is the mechanism for this and position:fixed is not.
 
-            10mm: the line is 10px at most, plus its rule and padding, with the
-            rest as margin for error. Costing one row a sheet is the right way
-            round -- the alternative is a row with a footer printed through it.
+            Nothing to repeat on a numbered run: each page there is its own
+            table with its own line under it, and the tfoot is not drawn at all.
+          */
+          tfoot { display: table-footer-group; }
+
+          /*
+            ⚠️ AND NO FLOOR UNDER AN UNBROKEN RUN. min-height is a sheet's worth
+            of height, which on a two-row ledger holds the block open to the
+            full sheet and pushes the repeated foot -- rows, totals and all --
+            down onto a second page that has nothing else on it. A run as tall
+            as its rows cannot do that.
           */
           .print-page.ledger-continuous {
-            padding-bottom: 10mm !important;
+            min-height: 0 !important;
           }
         `}</style>
         {pages.map((pageRows, pageIndex) => (
@@ -352,27 +385,51 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     </td>
                   </tr>
                 ))}
+
+                {/*
+                  ⚠️ ON AN UNBROKEN RUN THE TOTALS ARE A ROW OF THE TABLE, not a
+                  bar underneath it. The software line below is a tfoot, and a
+                  tfoot prints AFTER everything the table holds -- so a summary
+                  left outside the table would have come after the line rather
+                  than above it, on the one page that carries both.
+                */}
+                {continuous && pageIndex === pages.length - 1 ? (
+                  <tr>
+                    <td colSpan={12} className="border-0 p-0">
+                      {summaryBar}
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
+
+              {/*
+                ⚠️ THE FOOT OF EVERY SHEET, AND THE BROWSER PUTS IT THERE.
+
+                position:fixed was tried and is not to be trusted: Chrome
+                repainted the line at the TOP of the second sheet and every one
+                after it, straight across the column headings. A table footer
+                group is the mechanism meant for this -- the browser repeats it
+                at the foot of each sheet the table crosses, IN FLOW, so it can
+                neither land in the wrong place nor be printed through by the
+                rows above it.
+
+                Space above it is real space for the same reason: pt-3 is white
+                the rows cannot enter, where padding on the page block reserved
+                nothing at all -- a block spanning eight sheets has one foot, at
+                the end of the eighth.
+              */}
+              {continuous ? (
+                <tfoot>
+                  <tr>
+                    <td colSpan={12} className="border-0 p-0 pt-3">
+                      <PrintFooter fontSize={fs} />
+                    </td>
+                  </tr>
+                </tfoot>
+              ) : null}
             </table>
 
-            {pageIndex === pages.length - 1 ? (
-              <div
-                className="mt-1 flex w-full shrink-0 flex-nowrap items-center justify-between gap-x-2 overflow-hidden border border-gray-900 px-2 py-1 font-bold text-gray-900"
-                style={{
-                  fontSize: footerFs,
-                  lineHeight: 1.15,
-                  WebkitPrintColorAdjust: 'exact',
-                  printColorAdjust: 'exact',
-                }}
-              >
-                {footerItems.map(([label, value]) => (
-                  <div key={label} className="min-w-0 whitespace-nowrap">
-                    <span>{label}:</span>{' '}
-                    <span>{formatSummaryAmount(value)}</span>
-                  </div>
-                ))}
-              </div>
-            ) : null}
+            {!continuous && pageIndex === pages.length - 1 ? summaryBar : null}
 
             {/*
               ⚠️ TWO FEET, BECAUSE THERE ARE TWO WAYS THIS REPORT IS BROKEN UP.
@@ -392,9 +449,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               .ledger-continuous, and the note there about why this line was
               taken out of the foot once before.
             */}
-            {continuous ? (
-              <PrintFooter fixed fontSize={fs} />
-            ) : (
+            {continuous ? null : (
               <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} />
             )}
           </div>
