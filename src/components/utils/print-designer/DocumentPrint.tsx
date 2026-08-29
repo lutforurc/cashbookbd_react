@@ -708,7 +708,12 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                   return (
                     <td
                       key={`${column.field}-${index}`}
-                      className={`${border} px-1 py-0.5 align-top ${alignClass[column.align ?? 'left']}`}
+                      // ⚠️ Middle, not top. A row is as tall as its tallest
+                      // cell -- and one column carries two lines, the room and
+                      // what it was let as -- so the figures beside it hung
+                      // from the top of a box twice their height, reading as
+                      // though they belonged to the line above.
+                      className={`${border} px-1 py-0.5 align-middle ${alignClass[column.align ?? 'left']}`}
                     >
                       {cell(row, startIndex + rowIndex, column.field)}
 
