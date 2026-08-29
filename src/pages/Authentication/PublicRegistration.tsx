@@ -6,14 +6,15 @@ import { toast } from 'react-toastify';
 import ROUTES from '../../components/services/appRoutes';
 import {
   API_CSRF_COOKIES,
+  API_REGISTER_BUSINESS_TYPES_URL,
   API_REGISTER_REQUEST_OTP_URL,
 } from '../../components/services/apiRoutes';
 import httpService from '../../components/services/httpService';
 import InputElement from '../../components/utils/fields/InputElement';
 import { Button, ButtonLoading } from '../UiElements/CustomButtons';
 import HelmetTitle from '../../components/utils/others/HelmetTitle';
-import { FIELD_BASE, FIELD_TEXTAREA } from '../../theme/fieldStyles';
-import { Input, Textarea } from '../../components/utils/fields/FormControls';
+import { FIELD_BASE, FIELD_SELECT, FIELD_TEXTAREA } from '../../theme/fieldStyles';
+import { Input, Select, Textarea } from '../../components/utils/fields/FormControls';
 
 type RegistrationForm = {
   company_name: string;
@@ -25,6 +26,7 @@ type RegistrationForm = {
   password_confirmation: string;
   // branch_name: string;
   contact_person: string;
+  business_type_id: string;
   // notes: string;
 };
 
@@ -38,6 +40,7 @@ const initialForm: RegistrationForm = {
   password_confirmation: '',
   // branch_name: '',
   contact_person: '',
+  business_type_id: '',
   // notes: '',
 };
 
@@ -55,13 +58,38 @@ const PublicRegistration: React.FC = () => {
     return Number.isInteger(raw) && raw > 0 ? raw : null;
   }, [search]);
 
+  // The trades on offer, read from the public list rather than hardcoded: the
+  // ids are auto-increment and seeded per installation, so "Hotel / Motel" is 9
+  // in one database and 11 in another. A list written into this file would send
+  // whichever number it was compiled with.
+  const [businessTypes, setBusinessTypes] = useState<{ id: number; name: string }[]>([]);
+
+  React.useEffect(() => {
+    let alive = true;
+
+    httpService
+      .get(API_REGISTER_BUSINESS_TYPES_URL)
+      .then((response) => {
+        if (!alive) return;
+        setBusinessTypes(response?.data?.data?.business_types ?? []);
+      })
+      // Silent, and deliberately: the field is optional and the API falls back
+      // to the default type on its own, so a list that will not load must not
+      // stop somebody registering with a toast they can do nothing about.
+      .catch(() => undefined);
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const [formData, setFormData] = useState<RegistrationForm>(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -165,18 +193,19 @@ const PublicRegistration: React.FC = () => {
       setSubmitting(true);
 
       await httpService.get(API_CSRF_COOKIES);
-      const response = await httpService.post(
-        API_REGISTER_REQUEST_OTP_URL,
-        // The plan rides along only when the pricing card sent one. The API
-        // re-checks that it is active before it provisions anything, and falls
-        // back to the default plan when it is absent or unusable.
-        selectedPlanId ? { ...formData, plan_id: selectedPlanId } : formData
-        // ,
-        // {
-        //   xsrfHeaderName: 'X-XSRF-TOKEN',
-        //   withCredentials: true,
-        // },
-      );
+
+      const payload: Record<string, any> = { ...formData };
+
+      // Left out entirely rather than sent empty: the API takes the field as
+      // nullable, and an empty string is not a number.
+      if (!payload.business_type_id) delete payload.business_type_id;
+
+      // The plan rides along only when the pricing card sent one. The API
+      // re-checks that it is active before it provisions anything, and falls
+      // back to the default plan when it is absent or unusable.
+      if (selectedPlanId) payload.plan_id = selectedPlanId;
+
+      const response = await httpService.post(API_REGISTER_REQUEST_OTP_URL, payload);
 
       const successMessage =
         response?.data?.message ||
@@ -186,12 +215,16 @@ const PublicRegistration: React.FC = () => {
       toast.success(successMessage);
       if (otpSession) sessionStorage.setItem('public_register_otp_session', otpSession);
       sessionStorage.setItem('public_register_mobile', formData.mobile);
-      sessionStorage.setItem(REGISTRATION_PAYLOAD_KEY, JSON.stringify(formData));
+      // What was SENT, not what was typed. The OTP screen posts this straight
+      // back when somebody asks for the code again, so anything the form added
+      // on the way out -- the plan, the business type -- has to be in it, or a
+      // resend would quietly register on different terms from the first try.
+      sessionStorage.setItem(REGISTRATION_PAYLOAD_KEY, JSON.stringify(payload));
       navigate(ROUTES.public_register_otp, {
         state: {
           mobile: formData.mobile,
           otp_session: otpSession,
-          registrationPayload: formData,
+          registrationPayload: payload,
         },
       });
     } catch (error: any) {
@@ -325,6 +358,34 @@ const PublicRegistration: React.FC = () => {
                   placeholder="H # 123, Road # 45, Gulshan, Dhaka."
                   className={`${FIELD_BASE} w-full px-4 py-2.5`}
                 />
+              </div>
+
+              {/* The trade the company is in. It decides which dashboard opens
+                  and which menus are drawn, so it is asked here rather than
+                  defaulted and corrected later on the branch screen.
+                  Optional: left blank, the API writes the same default it
+                  always wrote. */}
+              <div className="md:col-span-2">
+                <label className="mb-2 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
+                  Business Type
+                </label>
+                {/* Horizontal padding only. FIELD_SELECT already carries the
+                    one control height, and a select given vertical padding on
+                    top of it pushes its own text past the bottom edge -- an
+                    input centres its text inside the box, a select does not. */}
+                <Select
+                  name="business_type_id"
+                  value={formData.business_type_id}
+                  onChange={handleChange}
+                  className={`${FIELD_SELECT} w-full px-4`}
+                >
+                  <option value="">Select Business Type</option>
+                  {businessTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.name}
+                    </option>
+                  ))}
+                </Select>
               </div>
 
               <div>

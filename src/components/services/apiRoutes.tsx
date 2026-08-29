@@ -116,6 +116,8 @@ export const API_LOGIN_URL = `${API_BASE_URL}/login`;
 export const API_FORGOT_PASSWORD_REQUEST_OTP_URL = `${API_BASE_URL}/forgot-password/request-otp`;
 export const API_FORGOT_PASSWORD_VERIFY_OTP_URL = `${API_BASE_URL}/forgot-password/verify-otp`;
 export const API_FORGOT_PASSWORD_RESET_URL = `${API_BASE_URL}/forgot-password/reset`;
+// Public: the registration form has no token to read the branch-settings list with.
+export const API_REGISTER_BUSINESS_TYPES_URL = `${API_BASE_URL}/register/business-types`;
 export const API_REGISTER_REQUEST_OTP_URL = `${API_BASE_URL}/register/request-otp`;
 export const API_REGISTER_VERIFY_OTP_URL = `${API_BASE_URL}/register/verify-otp`;
 export const API_SUBSCRIPTION_PLANS_URL = `${API_BASE_URL}/subscription/plans`;

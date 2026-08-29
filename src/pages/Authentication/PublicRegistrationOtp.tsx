@@ -30,6 +30,10 @@ type RegisterPayload = {
   branch_name: string;
   contact_person: string;
   notes?: string;
+  // Carried through from the form so a resend asks for the same company on the
+  // same terms. Optional: a session stored before these existed has neither.
+  business_type_id?: string;
+  plan_id?: number;
 };
 
 const REGISTRATION_PAYLOAD_KEY = 'public_register_payload';
