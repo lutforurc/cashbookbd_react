@@ -58,96 +58,27 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
 const SUMMARY_ROW_ALLOWANCE = 1;
 
 /**
- * The summary bar and the software line hold the foot of the page and never
- * move. So the last page — the only one carrying the summary — has room for
- * fewer rows than the rest: when its share is full, the rows that no longer fit
- * are carried onto a page of their own instead of pushing the foot down the
- * sheet and printing over it.
- */
-/*
-  Filling a page by measuring is not open to us: the print block is mounted
-  inside a `hidden` div, so every element measures zero until the browser is
-  already printing it. So the height is worked out from what the markup is
-  known to produce.
-
-  The numbers below are deliberately generous. Under-filling a page costs a
-  finger of white at the foot; over-filling costs a sheet that carries rows
-  past the paper edge with no letterhead and no footer, and the operator
-  cannot tell it happened. The letterhead allowance is the loosest of them,
-  because a branch may print an image one.
-*/
-const MM_PX = 96 / 25.4;
-/** Landscape A4 less the page margins -- the same figure --print-page-height carries. */
-const PAGE_PX = 198 * MM_PX;
-/** .print-page's own top padding. */
-const PAGE_PADDING_PX = 8 * MM_PX;
-/** The letterhead, whether it is drawn or an uploaded image. */
-const LETTERHEAD_PX = 120;
-/** The title and the two columns of party and report detail under it. */
-const HEADING_PX = 110;
-const LINE_RATIO = 1.15;
-/** py-[2px] top and bottom, and the cell border. */
-const ROW_CHROME_PX = 5;
-
-/**
- * Lines the description column takes -- the tallest cell in the row, and so
- * the one that sets its height.
- */
-const rowLineCount = (row: any) =>
-  1 + (row?.remarks ? 1 : 0) + (row?.order_number ? 1 : 0);
-
-const rowHeightPx = (row: any, fs: number) =>
-  ROW_CHROME_PX + rowLineCount(row) * fs * LINE_RATIO;
-
-/**
- * As many rows as the sheet will hold, rather than a number somebody chose.
+ * ⚠️ THE ROWS BOX LEFT EMPTY NOW MEANS WHAT IT MEANS EVERYWHERE ELSE: every row
+ * on one unbroken run, and the browser breaks the sheets.
  *
- * A fixed count has to be set for the worst row on the report -- a three-line
- * description -- so a ledger of one-line entries printed ten rows to a sheet
- * and left two thirds of the paper empty, over twenty-four sheets.
+ * It used to mean something else here -- "fit as many rows as the paper takes",
+ * worked out by adding up guessed row heights against a guessed page budget,
+ * because the print block is mounted inside a `hidden` div and measures zero
+ * until it is already printing. The guesses were deliberately generous (a
+ * letterhead allowance of 120px, a heading of 110), since under-filling costs a
+ * finger of white and over-filling silently prints rows off the edge of the
+ * sheet.
+ *
+ * That white was the whole problem. A clerk who had asked for All watched the
+ * report break early with a hand's depth of empty paper at the foot, on a
+ * screen where thirty-nine other reports take All to mean no break at all --
+ * and no guess, however carefully tuned, ever closes that gap: the rows are
+ * different heights, so there is always a last one that did not fit.
+ *
+ * What is lost is the letterhead on the second sheet and after, which is what
+ * every other report in this app does -- one letterhead, a repeating column
+ * header, and the page number at the foot.
  */
-const fitRows = <T,>(data: T[], fs: number): T[][] => {
-  if (!Array.isArray(data) || data.length === 0) return [[]];
-
-  const footPx = Math.min(fs, 10) * 1.2 + 6;
-  const theadPx = fs * LINE_RATIO + 18;
-  const summaryPx = Math.min(fs, 10) * LINE_RATIO + 10;
-  const budget = PAGE_PX - PAGE_PADDING_PX - LETTERHEAD_PX - HEADING_PX - theadPx - footPx;
-
-  const pages: T[][] = [];
-  let page: T[] = [];
-  let used = 0;
-
-  for (const row of data) {
-    const height = rowHeightPx(row, fs);
-    // At least one row per page, however tall it is: a page of none would
-    // loop for ever and print nothing.
-    if (page.length > 0 && used + height > budget) {
-      pages.push(page);
-      page = [];
-      used = 0;
-    }
-    page.push(row);
-    used += height;
-  }
-  if (page.length > 0) pages.push(page);
-
-  // The summary bar rides on the last page and takes a row's worth of room
-  // with it, so what no longer fits moves to a sheet of its own.
-  const last = pages[pages.length - 1];
-  if (pages.length > 0 && last.length > 1) {
-    let tail = last.reduce((sum, row) => sum + rowHeightPx(row, fs), 0);
-    const carried: T[] = [];
-    while (last.length > 1 && tail + summaryPx > budget) {
-      const moved = last.pop() as T;
-      tail -= rowHeightPx(moved, fs);
-      carried.unshift(moved);
-    }
-    if (carried.length > 0) pages.push(carried);
-  }
-
-  return pages;
-};
 
 const paginateRows = <T,>(data: T[], size: number): T[][] => {
   const chunks = chunkRows(data, size);
@@ -185,9 +116,10 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     ref,
   ) => {
     const fs = Number.isFinite(fontSize) ? fontSize : 9;
-    // A number in the Rows box is an instruction and is obeyed exactly.
-    // Left empty, the sheet decides -- see fitRows.
-    const pages = rowsPerPage > 0 ? paginateRows(rows, rowsPerPage) : fitRows(rows, fs);
+    // A number in the Rows box is an instruction and is obeyed exactly. Left
+    // empty, the whole report is one run and the paper decides where it breaks.
+    const asked = Number(rowsPerPage);
+    const pages = asked > 0 ? paginateRows(rows, asked) : [rows];
     const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
     const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
     const printablePartyName = partyName || '-';
@@ -250,6 +182,26 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
           .print-page:last-child {
             page-break-after: auto !important;
           }
+
+          /*
+            ⚠️ WHAT CARRIES ACROSS WHEN THE ROWS BOX IS LEFT EMPTY. The whole
+            report is then one block and the browser decides where the sheets
+            end -- so the column header has to come with it, or every sheet
+            after the first is a wall of figures with nothing saying which
+            column is the rate and which the balance.
+
+            No effect at all on a numbered run: each page there is its own
+            table, and a table that does not cross a sheet has nothing to
+            repeat.
+          */
+          thead { display: table-header-group; }
+
+          /*
+            And a row is not cut in half. A break through the middle of a line
+            puts the top of the figures on one sheet and their tails on the
+            next, which reads as two rows that are each half wrong.
+          */
+          tr { break-inside: avoid; page-break-inside: avoid; }
         `}</style>
         {pages.map((pageRows, pageIndex) => (
           <div
