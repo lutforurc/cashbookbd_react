@@ -706,8 +706,8 @@ const BookingsScreen = ({ user }: any) => {
       {
         key: 'status',
         header: 'Status',
-        headerClass: 'text-center',
-        cellClass: 'text-center',
+        headerClass: 'text-left',
+        cellClass: 'text-left',
         render: (row: any) => {
           const look = STATUS_LOOK[row.status];
 
@@ -718,7 +718,7 @@ const BookingsScreen = ({ user }: any) => {
           const stated = Number(row.stated_adults ?? 0) + Number(row.stated_children ?? 0);
 
           return (
-            <div className="flex flex-col items-center gap-0.5">
+            <div className="flex flex-col items-left w-28 gap-0.5">
               <span
                 className={`inline-block rounded border px-2 py-0.5 text-[0.65rem] font-semibold ${
                   look?.className ?? ''
