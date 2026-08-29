@@ -838,6 +838,8 @@ const SummaryCard = ({
  * themselves in a band, their accounts follow numbered straight through, and
  * each section closes on its own total. A row still opens its accounts.
  */
+type SheetSide = "debit" | "credit";
+
 type SheetLine =
   | { kind: "section"; label: string }
   | {
@@ -845,12 +847,19 @@ type SheetLine =
       key: string;
       serial: number;
       section: string;
+      side: SheetSide;
       group: ReportGroup;
       label: string;
       itemCount: number;
       columns: ColumnTotals;
     }
-  | { kind: "total"; label: string; columns: ColumnTotals; strong?: boolean };
+  | {
+      kind: "total";
+      label: string;
+      side: SheetSide;
+      columns: ColumnTotals;
+      strong?: boolean;
+    };
 
 const BalanceSheetTable = ({
   assets,
@@ -878,6 +887,7 @@ const BalanceSheetTable = ({
     const pushSection = (
       title: string,
       groups: ReportGroup[],
+      side: SheetSide,
       totalLabel: string,
       columns: ColumnTotals,
     ) => {
@@ -892,6 +902,7 @@ const BalanceSheetTable = ({
           key: `${title}-${group.group_name || "group"}-${index}`,
           serial,
           section: title,
+          side,
           group,
           label: group.group_name || "-",
           itemCount: (group.items || []).length,
@@ -903,16 +914,17 @@ const BalanceSheetTable = ({
         });
       });
 
-      out.push({ kind: "total", label: totalLabel, columns });
+      out.push({ kind: "total", label: totalLabel, side, columns });
     };
 
-    pushSection("Assets", assets, "Total Assets", totals.assetsColumns);
-    pushSection("Liabilities", liabilities, "Liabilities Total", totals.liabilitiesColumns);
-    pushSection("Equity", equity, "Equity Total", totals.equityColumns);
+    pushSection("Assets", assets, "debit", "Total Assets", totals.assetsColumns);
+    pushSection("Liabilities", liabilities, "credit", "Liabilities Total", totals.liabilitiesColumns);
+    pushSection("Equity", equity, "credit", "Equity Total", totals.equityColumns);
 
     out.push({
       kind: "total",
       label: "Total Liabilities & Equity",
+      side: "credit",
       strong: true,
       columns: {
         opening: totals.liabilitiesColumns.opening + totals.equityColumns.opening,
@@ -925,27 +937,58 @@ const BalanceSheetTable = ({
   }, [assets, equity, liabilities, totals]);
 
   const cell = "border border-[rgb(var(--c-border))] px-3 py-2";
+  // The Dr and Cr columns hold one figure each and nothing else, so they are
+  // kept narrow -- the description takes the width they give back.
+  const moneyCell =
+    "border border-[rgb(var(--c-border))] w-24 px-1 py-2 text-right whitespace-nowrap";
+  const headCell = `${cell} font-semibold text-slate-700 dark:text-slate-200`;
+  const moneyHeadCell = `${moneyCell} text-center font-semibold text-slate-700 dark:text-slate-200`;
+
+  /** The six money cells of one row: Opening, Movement and Closing, Dr then Cr. */
+  const amountCells = (side: SheetSide, columns: ColumnTotals, bold: boolean) => {
+    const cellClass = `${moneyCell} ${
+      bold
+        ? "font-bold text-slate-900 dark:text-[rgb(var(--c-text))]"
+        : "text-slate-900 dark:text-[rgb(var(--c-text))]"
+    }`;
+
+    return (["opening", "movement", "closing"] as const).flatMap((column) => [
+      <td key={`${column}-dr`} className={cellClass}>
+        {side === "debit" ? formatAmount(columns[column]) : "-"}
+      </td>,
+      <td key={`${column}-cr`} className={cellClass}>
+        {side === "credit" ? formatAmount(columns[column]) : "-"}
+      </td>,
+    ]);
+  };
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse" style={{ fontSize: `${fontSize}px` }}>
         <thead>
           <tr className="bg-slate-100 dark:bg-slate-800">
-            <th className={`${cell} w-16 text-center font-semibold text-slate-700 dark:text-slate-200`}>
+            <th rowSpan={2} className={`${headCell} w-16 text-center`}>
               Serial
             </th>
-            <th className={`${cell} text-left font-semibold text-slate-700 dark:text-slate-200`}>
+            <th rowSpan={2} className={`${headCell} text-left`}>
               Description
             </th>
-            <th className={`${cell} w-40 text-right font-semibold text-slate-700 dark:text-slate-200`}>
+            <th colSpan={2} className={`${headCell} px-1 text-center`}>
               Opening
             </th>
-            <th className={`${cell} w-40 text-right font-semibold text-slate-700 dark:text-slate-200`}>
+            <th colSpan={2} className={`${headCell} px-1 text-center`}>
               Movement
             </th>
-            <th className={`${cell} w-40 text-right font-semibold text-slate-700 dark:text-slate-200`}>
+            <th colSpan={2} className={`${headCell} px-1 text-center`}>
               Closing
             </th>
+          </tr>
+          <tr className="bg-slate-100 dark:bg-slate-800">
+            {["Dr", "Cr", "Dr", "Cr", "Dr", "Cr"].map((label, index) => (
+              <th key={`${label}-${index}`} className={moneyHeadCell}>
+                {label}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -954,7 +997,7 @@ const BalanceSheetTable = ({
               return (
                 <tr key={`${line.label}-${index}`} className="bg-slate-100 dark:bg-slate-800">
                   <td
-                    colSpan={5}
+                    colSpan={8}
                     className={`${cell} font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200`}
                   >
                     {line.label}
@@ -975,15 +1018,7 @@ const BalanceSheetTable = ({
                   >
                     {line.label}
                   </td>
-                  <td className={`${cell} text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}>
-                    {thousandSeparator(line.columns.opening)}
-                  </td>
-                  <td className={`${cell} text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}>
-                    {thousandSeparator(line.columns.movement)}
-                  </td>
-                  <td className={`${cell} text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}>
-                    {thousandSeparator(line.columns.closing)}
-                  </td>
+                  {amountCells(line.side, line.columns, true)}
                 </tr>
               );
             }
@@ -1005,27 +1040,47 @@ const BalanceSheetTable = ({
                     </span>
                   </div>
                 </td>
-                <td className={`${cell} text-right text-slate-900 dark:text-[rgb(var(--c-text))]`}>
-                  {thousandSeparator(line.columns.opening)}
-                </td>
-                <td className={`${cell} text-right text-slate-900 dark:text-[rgb(var(--c-text))]`}>
-                  {thousandSeparator(line.columns.movement)}
-                </td>
-                <td className={`${cell} text-right text-slate-900 dark:text-[rgb(var(--c-text))]`}>
-                  {thousandSeparator(line.columns.closing)}
-                </td>
+                {amountCells(line.side, line.columns, false)}
               </tr>
             );
           })}
 
           {lines.length === 0 && (
             <tr>
-              <td colSpan={5} className={`${cell} py-6 text-center text-slate-500`}>
+              <td colSpan={8} className={`${cell} py-6 text-center text-slate-500`}>
                 No balance sheet data found
               </td>
             </tr>
           )}
         </tbody>
+        {lines.length > 0 && (
+          <tfoot>
+            <tr className="bg-slate-100 dark:bg-slate-800">
+              <td
+                colSpan={2}
+                className={`${cell} text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}
+              >
+                Grand Total
+              </td>
+              {(["opening", "movement", "closing"] as const).flatMap((column) => [
+                <td
+                  key={`grand-${column}-dr`}
+                  className={`${moneyCell} font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}
+                >
+                  {formatAmount(totals.assetsColumns[column])}
+                </td>,
+                <td
+                  key={`grand-${column}-cr`}
+                  className={`${moneyCell} font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}
+                >
+                  {formatAmount(
+                    totals.liabilitiesColumns[column] + totals.equityColumns[column],
+                  )}
+                </td>,
+              ])}
+            </tr>
+          </tfoot>
+        )}
       </table>
     </div>
   );
@@ -1048,14 +1103,16 @@ const GroupDetailsModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-999 overflow-y-auto bg-slate-950/50 px-4 py-3"
+      // Above the sidebar (z-9999) and the header (z-99999) -- at z-999 the
+      // sidebar was drawn over the dialog and swallowed its left edge.
+      className="fixed inset-0 z-100000 overflow-y-auto bg-slate-950/50 px-4 py-3"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="mx-auto flex min-h-full w-full max-w-5xl items-start justify-center">
-      <div className="my-2 flex max-h-[92vh] w-full flex-col overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-5 py-4">
+      <div className="mx-auto flex min-h-full w-full max-w-3xl items-start justify-center sm:items-center">
+      <div className="my-2 flex max-h-[88vh] w-full flex-col overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-4 py-3 sm:px-5 sm:py-4">
           <div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
               {title}: {group.group_name || "Details"}
@@ -1073,8 +1130,8 @@ const GroupDetailsModal = ({
           </Button>
         </div>
 
-        <div className="shrink-0 border-b border-[rgb(var(--c-border))] bg-slate-50 px-5 py-4 dark:bg-slate-900/40">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="shrink-0 border-b border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 sm:px-5 sm:py-4 dark:bg-slate-900/40">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
             <ModalStat label="Opening" value={toNum(group.opening)} />
             <ModalStat label="Movement" value={toNum(group.movement)} />
             <ModalStat label="Closing" value={toNum(group.closing || group.total)} />
@@ -1082,20 +1139,20 @@ const GroupDetailsModal = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 pb-5">
+        <div className="flex-1 overflow-x-auto overflow-y-auto px-4 pb-4 sm:px-5 sm:pb-5">
           <table className="min-w-full">
             <thead>
               <tr className="sticky top-0 z-20 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
+                <th className="px-2 py-2 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
                   Particular
                 </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
+                <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
                   Opening
                 </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
+                <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
                   Movement
                 </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
+                <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
                   Closing
                 </th>
               </tr>
@@ -1107,16 +1164,16 @@ const GroupDetailsModal = ({
                     key={`${item.coa4_id || index}-${item.name || "item"}`}
                     className="border-b border-[rgb(var(--c-border))] last:border-b-0"
                   >
-                    <td className="px-4 py-3 text-slate-800 dark:text-slate-100">
+                    <td className="px-2 py-2 text-slate-800 dark:text-slate-100">
                       {item.name || "-"}
                     </td>
-                    <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-200">
+                    <td className="px-2 py-2 text-right whitespace-nowrap text-slate-700 dark:text-slate-200">
                       {formatAmount(toNum(item.opening))}
                     </td>
-                    <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-200">
+                    <td className="px-2 py-2 text-right whitespace-nowrap text-slate-700 dark:text-slate-200">
                       {formatAmount(toNum(item.movement))}
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-slate-900 dark:text-[rgb(var(--c-text))]">
+                    <td className="px-2 py-2 text-right font-medium whitespace-nowrap text-slate-900 dark:text-[rgb(var(--c-text))]">
                       {formatAmount(toNum(item.closing || item.balance))}
                     </td>
                   </tr>
@@ -1149,11 +1206,11 @@ const ModalStat = ({
   value: number;
   isCount?: boolean;
 }) => (
-  <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
+  <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
       {label}
     </p>
-    <p className="mt-2 text-lg font-bold text-slate-900 dark:text-[rgb(var(--c-text))]">
+    <p className="mt-1 text-base font-bold whitespace-nowrap text-slate-900 dark:text-[rgb(var(--c-text))]">
       {isCount ? value : formatAmount(value)}
     </p>
   </div>
