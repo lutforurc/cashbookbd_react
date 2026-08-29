@@ -232,7 +232,9 @@ DateWiseInOutPrint.displayName = 'DateWiseInOutPrint';
 export const DateWiseInOutDetailPrint = React.forwardRef<HTMLDivElement, DateWiseInOutDetailPrintProps>(
   ({ detailDate, detailRows, productName, showProductColumn = false, rowsPerPage, fontSize }, ref) => {
     const productPages = useMemo(() => {
-      const perPage = Math.max(Number(rowsPerPage) || 12, 1);
+      // Zero is "All" — one page per product, however long it runs. `|| 12`
+      // read it as "nothing said" and broke the sheet into twelves instead.
+      const perPage = Math.max(Number(rowsPerPage) || 0, 0);
       const groups = new Map<string, { productName: string; purchase: InOutDetailRow[]; sales: InOutDetailRow[] }>();
       const fallbackProductName = productName && productName !== 'All Products' ? productName : '';
 
@@ -257,11 +259,14 @@ export const DateWiseInOutDetailPrint = React.forwardRef<HTMLDivElement, DateWis
 
       return Array.from(groups.values()).flatMap((group, productIndex) => {
         const maxRows = Math.max(group.purchase.length, group.sales.length);
-        const pageCount = Math.max(Math.ceil(maxRows / perPage), 1);
+        // A zero page size must never reach the division: maxRows / 0 is
+        // Infinity, and Array.from({ length: Infinity }) hangs the tab.
+        const pageSize = perPage > 0 ? perPage : Math.max(maxRows, 1);
+        const pageCount = Math.max(Math.ceil(maxRows / pageSize), 1);
 
         return Array.from({ length: pageCount }, (_, pageIndex) => {
-          const start = pageIndex * perPage;
-          const end = start + perPage;
+          const start = pageIndex * pageSize;
+          const end = start + pageSize;
           const isLastProductPage = pageIndex === pageCount - 1;
 
           return {

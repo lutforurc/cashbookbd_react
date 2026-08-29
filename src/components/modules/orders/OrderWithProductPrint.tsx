@@ -231,7 +231,9 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
         balance: row.balance ?? cumulativeBalance,
       };
     });
-    const pages = chunkRows(printableRows, Math.max(rowsPerPage, 1));
+    // Zero is "All" — chunkRows answers it with one page. Math.max(_, 1) used to
+    // turn that into one row per page.
+    const pages = chunkRows(printableRows, Math.max(Number(rowsPerPage) || 0, 0));
     const orderTypeLabel = getOrderTypeLabel(payload?.order_type);
     const partyLabel = orderTypeLabel === 'Purchase' ? 'Supplier Name' : 'Customer Name';
     const partyName = payload?.customer?.name || payload?.supplier?.name || '-';

@@ -60,7 +60,9 @@ type Props = {
 ======================= */
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
-  if (!Array.isArray(data) || size <= 0) return [];
+  if (!Array.isArray(data)) return [];
+  // Zero is "All": one unbroken sheet. Returning [] printed nothing at all.
+  if (size <= 0) return [data];
   const chunks: T[][] = [];
   for (let i = 0; i < data.length; i += size) {
     chunks.push(data.slice(i, i + size));

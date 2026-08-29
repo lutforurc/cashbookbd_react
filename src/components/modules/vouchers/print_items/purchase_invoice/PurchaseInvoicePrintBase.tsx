@@ -164,9 +164,10 @@ const PurchaseInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>(
 
     const config = variantConfig[variant];
     const fs = Math.max(fontSize + config.fontAdjust, 8);
-    // A zero (the rows box left on "All") means the sheet decides, not an empty page.
+    // An empty rows box ("All") means every item on one unbroken page, however
+    // many there are. A number is the exception: break the sheet at that count.
     const askedRows = Number(rowsPerPage);
-    const pageRows = askedRows > 0 ? Math.min(askedRows, config.rowsLimit) : config.rowsLimit;
+    const pageRows = askedRows > 0 ? Math.min(askedRows, config.rowsLimit) : 0;
     const pages = chunkRows(meta.details, pageRows);
     const isHalf = variant.startsWith('half');
 

@@ -38,8 +38,13 @@ const chunkRows = <T,>(rows: T[], size: number) => {
 
 const CashBankReceivedPaymentPrint = forwardRef<HTMLDivElement, Props>(
   ({ rows, bankDetails, projectName, startDate, endDate, rowsPerPage = 12, fontSize = 12, branch }, ref) => {
-    const pages = chunkRows(rows, Math.min(Math.max(1, rowsPerPage), 12));
-    const bankPages = bankDetails.length ? chunkRows(bankDetails, Math.min(Math.max(1, rowsPerPage), 12)) : [];
+    // Zero is "All": it reaches chunkRows untouched and comes back as one page.
+    // Clamping to 1..12 before the call turned a continuous print into one row
+    // per sheet, which is what the guard inside chunkRows exists to prevent.
+    const askedRows = Number(rowsPerPage) || 0;
+    const pageSize = askedRows > 0 ? Math.min(askedRows, 12) : 0;
+    const pages = chunkRows(rows, pageSize);
+    const bankPages = bankDetails.length ? chunkRows(bankDetails, pageSize) : [];
     const totalPages = pages.length + bankPages.length;
     const totals = useMemo(() => rows.reduce((sum, row) => [
       sum[0] + num(row.cash_debit), sum[1] + num(row.cash_credit),
@@ -53,7 +58,7 @@ const CashBankReceivedPaymentPrint = forwardRef<HTMLDivElement, Props>(
       <style>{`@media print {.cash-bank-print-page { box-sizing: border-box; height: var(--print-page-height); min-height: 0; max-height: var(--print-page-height); break-inside: avoid; page-break-inside: avoid; overflow: hidden; } .cash-bank-print-page.break-after { break-after: page; page-break-after: always; } }`}</style>
       {pages.map((pageRows, pageIndex) => {
         const lastPage = pageIndex === pages.length - 1;
-        const offset = pageIndex * Math.max(1, Number(rowsPerPage) || 12);
+        const offset = pageIndex * pageSize;
         return <div key={pageIndex} className={`print-page cash-bank-print-page ${(pageIndex + 1) < totalPages ? 'break-after' : ''}`}>
           <PadPrinting branch={branch} />
           <div className="mb-2" style={{ fontSize: fs }}><h1 className="text-center text-xl font-bold">Cash &amp; Bank (Received &amp; Payment)</h1><div className="flex justify-between"><span><b>Branch:</b> {projectName || '-'}</span><span><b>Period:</b> {startDate} to {endDate}</span></div></div>
@@ -66,7 +71,7 @@ const CashBankReceivedPaymentPrint = forwardRef<HTMLDivElement, Props>(
       })}
       {bankPages.map((pageBanks, bankPageIndex) => {
         const pageNumber = pages.length + bankPageIndex + 1;
-        const offset = bankPageIndex * Math.min(Math.max(1, rowsPerPage), 12);
+        const offset = bankPageIndex * pageSize;
         return <div key={`bank-${bankPageIndex}`} className={`print-page cash-bank-print-page ${pageNumber < totalPages ? 'break-after' : ''}`}>
           <PadPrinting branch={branch} />
           <div className="mb-2" style={{ fontSize: fs }}><h1 className="text-center text-xl font-bold">Bank-wise Details</h1><div className="flex justify-between"><span><b>Branch:</b> {projectName || '-'}</span><span><b>Period:</b> {startDate} to {endDate}</span></div></div>
