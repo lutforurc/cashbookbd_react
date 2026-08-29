@@ -443,28 +443,27 @@ const FolioScreen = () => {
   }, [dispatch, id]);
 
   /**
-   * ⚠️ The bookings list READS THIS FOLIO BEFORE IT NAVIGATES, so arriving by
-   * that link the bill is already in hand. Reading it again would ask the
-   * server for what we are holding and -- the part that shows -- would make the
-   * clerk wait a second time for the same bill, which is exactly the wait the
-   * list took on itself to be rid of.
+   * ⚠️ READ ON EVERY MOUNT, even though the bookings list has just read this
+   * same folio before navigating here.
    *
-   * Only the FIRST mount may skip, and only for the booking actually asked for.
-   * A reload, a URL typed by hand, or any later change of `id` finds nothing of
-   * its own here and reads normally.
+   * Skipping the read when the store already held the right folio was tried,
+   * and it is not safe: the cleanup below CLEARS the folio, and a teardown that
+   * lands after this screen has decided not to read leaves it holding nothing
+   * with nothing on its way -- which is the blank "That bill could not be
+   * opened." Nothing in React promises this effect runs after the last cleanup
+   * of whatever it replaced.
+   *
+   * The second read costs nothing that shows, which is the point: the folio is
+   * already in the store, so `loading && !folio` is false and the screen draws
+   * the bill straight away while the read refreshes it underneath. The wait the
+   * clerk sees was already paid on the list.
    */
-  const firstMount = useRef(true);
-
   useEffect(() => {
-    const alreadyRead = firstMount.current && Number(folio?.booking?.id) === Number(id);
-    firstMount.current = false;
-
-    if (!alreadyRead) load();
+    load();
 
     // Who owes it, read beside the bill itself. The folio's balance says what
     // the BOOKING owes; this says who owes it, and they are two questions.
-    // Read here too if the list's own attempt at it came back with nothing.
-    if (id && !(alreadyRead && bill)) dispatch(billRead(Number(id)));
+    if (id) dispatch(billRead(Number(id)));
 
     return () => {
       dispatch(clearFolio());
