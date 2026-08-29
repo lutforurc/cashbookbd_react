@@ -134,6 +134,7 @@ import LabourItemList from './components/modules/labour/LabourItemList';
 import LabourItemAdd from './components/modules/labour/LabourItemAdd';
 import HotelSetup from './components/modules/hotel/HotelSetup';
 import BookingsScreen from './components/modules/hotel/booking/BookingsScreen';
+import BookingFormScreen from './components/modules/hotel/booking/BookingFormScreen';
 import HallBookingScreen from './components/modules/hotel/booking/HallBookingScreen';
 import AllotmentScreen from './components/modules/hotel/booking/AllotmentScreen';
 import FolioScreen from './components/modules/hotel/booking/FolioScreen';
@@ -570,6 +571,20 @@ function App() {
               }
             >
               <Route path={routes.hotel_bookings} element={<BookingsScreen user={me} />} />
+              {/*
+                Taking a booking and changing one are the same page, told apart
+                by whether an id is on the end -- the same shape as check-in,
+                the bill and check-out, and under the same permission as the
+                list it is reached from.
+              */}
+              <Route
+                path={routes.hotel_booking_new}
+                element={<BookingFormScreen user={me} />}
+              />
+              <Route
+                path={`${routes.hotel_booking_edit}/:id`}
+                element={<BookingFormScreen user={me} />}
+              />
               <Route
                 path={routes.hotel_hall_bookings}
                 element={<HallBookingScreen user={me} />}

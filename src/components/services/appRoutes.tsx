@@ -357,6 +357,16 @@ const ROUTES = {
   // and this is opened every day.
   hotel_bookings: '/hotel/bookings',
   hotel_hall_bookings: '/hotel/hall-bookings',
+  // Taking a booking, and changing one -- its own page rather than a panel
+  // folded out above the list. The form carries a whole property's
+  // availability grid and its halls, and it needs an address of its own: a
+  // half-filled booking could not be reopened, the browser's Back closed
+  // nothing, and nobody could send a colleague a link to the booking in
+  // question.
+  hotel_booking_new: '/hotel/bookings/new',
+  // The same page with the booking's id on the end, the way check-in, the bill
+  // and check-out already read.
+  hotel_booking_edit: '/hotel/bookings/edit',
   // Checking a booking in is its own page, reached from a row with the booking
   // id on the end. A coach party is twelve rooms of five guests, and sixty rows
   // of six fields is not something a dialog holds.

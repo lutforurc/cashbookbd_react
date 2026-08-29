@@ -1,45 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiSearch } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import InputElement from '../../../utils/fields/InputElement';
-import InputDatePicker from '../../../utils/fields/DatePicker';
 import SearchInput from '../../../utils/fields/SearchInput';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { Textarea } from '../../../utils/fields/FormControls';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
 import routes from '../../../services/appRoutes';
 import SetupShell from '../SetupShell';
-import PropertyGrid from '../PropertyGrid';
-import {
-  BOOKING_COLOUR_MODES,
-  BOOKING_LOOKS,
-  ColourMode,
-  buildTypeIndex,
-  lookOf,
-} from '../layoutPalette';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { buildingDdl } from '../hotelSetupSlice';
 import { clockTime, money, useDebounced } from '../setupHelpers';
-import { DdlOption, LayoutBuilding, LayoutRoom, LayoutSeat } from '../types';
 import {
-  availabilityRead,
   billRead,
   bookingCancel,
   bookingList,
-  bookingSave,
-  bookingRead,
-  bookingUpdate,
   folioRead,
-  hallsRead,
   cancellationRead,
-  clearAvailability,
   clearBookings,
   clearCancellation,
   tillList,
@@ -48,45 +29,26 @@ import { BookingType } from './types';
 import formatDate, { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 
 /**
- * Bookings -- what is free on a set of dates, and taking it.
+ * Bookings -- the list, and the doors out of it.
  *
- * BOTH STAGES OF SPEC 6.5, from one list. A booking and its guest list are not
- * captured at the same time: this is the telephone call -- who is booking, the
- * dates, which rooms, how many people -- and the Check in action on a row
- * reopens the SAME booking on the day they arrive, for the names and the NIDs.
- * One record opened twice, never two mechanisms, which is why allotment is a
- * panel over this list rather than a screen somewhere else.
+ * ⚠️ TAKING A BOOKING IS A PAGE OF ITS OWN, and used to be a panel folded out
+ * above this table. What that panel held -- a whole property's availability
+ * grid, its halls with their sittings, the party's details -- had outgrown a
+ * fold-out by a long way, and none of it had an address: a half-filled booking
+ * could not be reopened, Back closed nothing, and nobody could send a colleague
+ * a link to the booking they were arguing about. New and Edit navigate to
+ * BookingFormScreen; nothing on this screen writes a booking any more.
  *
- * BOTH WAYS OF SELLING A ROOM. A room sold whole is picked as a tile; a room
- * sold by the bed opens its beds and they are picked one at a time, each at its
- * own rent. One booking may hold both -- a family in a room and their drivers
- * in a dormitory is one party and one bill.
+ * What is left is a list and five doors: Edit, Check in, the Bill, Check out
+ * and Cancel. One booking is opened by four different screens over its life --
+ * one record, never four mechanisms -- and this is the page that knows where
+ * they all are.
  *
- * ⚠️ The two rents are never derived from each other (2.8). The screen adds up
- * what was picked; it never divides a room rate across beds, and never sums
- * beds into a room rate.
- *
- *
- * THE THING THIS SCREEN MUST NOT PRETEND
- * --------------------------------------
- *
- * The availability list is what was free at the moment it was read. It is not a
- * reservation, nothing here holds anything, and two clerks may be looking at
- * the same free room. That is not a flaw to be papered over -- it is what any
- * availability screen is, and the alternative (reserving on view) fills a hotel
- * with rooms held by people who wandered off.
- *
- * So the screen is built to be honest about it rather than to hide it:
- *
- *   * The list is thrown away the moment a date changes, and after every save.
- *     A stale list of "free" rooms is the one way this screen could mislead
- *     somebody into thinking a room was already theirs.
- *   * A clash on save is shown as the server's own sentence -- somebody took it
- *     while this form was open, and NOTHING was booked -- rather than as a
- *     failure. The clerk's next move is to look again, and the message says so.
- *   * Changing a date drops the rooms already picked, rather than keeping
- *     them against nights nobody has checked. Losing a selection is a small
- *     annoyance; booking the 20th while looking at the 15th is not.
+ * ⚠️ THE FILTERS AND THE PAGE RIDE IN THE ADDRESS. They were state, which was
+ * fine while the form never left the screen; now that it does, state would mean
+ * a clerk who saved a booking from page three of the held ones came back to
+ * page one of everything. The form carries this address with it and returns to
+ * it -- see `goToForm`.
  */
 
 const TYPE_OPTIONS: { id: BookingType; name: string }[] = [
@@ -101,11 +63,6 @@ const TYPE_OPTIONS: { id: BookingType; name: string }[] = [
   // the restaurant's money lands where the room's does, under the same charge
   // types, on the same reports.
   { id: 'walk_in', name: 'Walk-in (no room)' },
-];
-
-const STATUS_OPTIONS = [
-  { id: 'confirmed', name: 'Confirmed' },
-  { id: 'hold', name: 'Tentative hold' },
 ];
 
 /**
@@ -179,27 +136,6 @@ const STATUS_LOOK: Record<string, { className: string; label: string }> = {
   },
 };
 
-const asDate = (value?: string | null) => (value ? new Date(value) : null);
-
-const asText = (date: Date | null) => {
-  if (!date) return '';
-
-  // Local parts, not toISOString(): a night is a calendar date at the desk, and
-  // converting through UTC moves it a day for half the world.
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-
-  return `${date.getFullYear()}-${month}-${String(date.getDate()).padStart(2, '0')}`;
-};
-
-const today = () => asText(new Date());
-
-const tomorrow = () => {
-  const date = new Date();
-  date.setDate(date.getDate() + 1);
-
-  return asText(date);
-};
-
 /**
  * A stored 'YYYY-MM-DD HH:MM:SS' as a moment on this clock.
  *
@@ -225,25 +161,6 @@ const parseStamp = (value: string): Date | null => {
     Number(sec ?? 0),
   );
 };
-
-/**
- * A number of hours as somebody says it -- "an hour", "two days".
- *
- * ⚠️ The form used to say "seven days" in fixed words. The property holds its
- * rooms for as long as its own branch settings say, and a screen that names a
- * different number is a screen the desk will believe over the sweep.
- */
-const holdLength = (hours?: number): string => {
-  if (!hours || hours < 1) return 'a while';
-  if (hours === 1) return 'an hour';
-  if (hours < 24) return `${hours} hours`;
-  if (hours % 24 !== 0) return `${hours} hours`;
-
-  const days = hours / 24;
-
-  return days === 1 ? 'a day' : `${days} days`;
-};
-
 /**
  * "3:45 PM". The hour a person says, not a twenty-four hour stamp.
  *
@@ -415,21 +332,25 @@ const HoldDeadline = ({ until }: { until?: string | null }) => {
   );
 };
 
-const blankBooking = () => ({
-  check_in_date: today(),
-  check_out_date: tomorrow(),
-  booking_type: 'individual' as BookingType,
-  status: 'confirmed',
-  booker_name: '',
-  booker_mobile: '',
-  stated_adults: 1,
-  stated_children: 0,
-  notes: '',
-});
-
 const BookingsScreen = ({ user }: any) => {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  /**
+   * ⚠️ THE FILTERS AND THE PAGE LIVE IN THE ADDRESS, not in this component.
+   *
+   * They were state, and state is lost the moment the screen is left -- which
+   * used not to matter, because taking a booking never left it. It does now:
+   * New and Edit are pages of their own, and a clerk on page three of the held
+   * bookings who saved one would have come back to page one of everything.
+   *
+   * ⚠️ Not sessionStorage, for the reason the Cash Book gives: a range put back
+   * from storage is one somebody asked for a week ago, on a browser they share.
+   * An address is asked for by whoever is standing there, it survives a reload,
+   * and it can be sent to a colleague.
+   */
+  const [params, setParams] = useSearchParams();
 
   // One selector per value, each returning something the store already holds.
   //
@@ -439,11 +360,8 @@ const BookingsScreen = ({ user }: any) => {
   // day, next to a toast library that dispatches on a timer.
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const bookings = useSelector((state: any) => state.hotelBooking.bookings);
-  const availability = useSelector((state: any) => state.hotelBooking.availability);
   const loading = useSelector((state: any) => state.hotelBooking.loading);
-  const checking = useSelector((state: any) => state.hotelBooking.checking);
   const saving = useSelector((state: any) => state.hotelBooking.saving);
-  const buildingOptions = useSelector((state: any) => state.hotelSetup.buildingOptions);
   const times = useSelector((state: any) => state.hotelBooking.times);
 
   // What cancelling the booking in the dialog would do to its money, and the
@@ -454,20 +372,38 @@ const BookingsScreen = ({ user }: any) => {
   // From the signed-in user's own property, which covers almost everybody.
   // The effect below covers the account that has none.
   const [branchId, setBranchId] = useState<number | null>(user?.branch_id ?? null);
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+
+  const page = Math.max(1, Number(params.get('page')) || 1);
+  const search = params.get('q') ?? '';
+  const statusFilter = params.get('status') ?? '';
   /** Rooms and halls, the meals on their own, or both. See KIND_OPTIONS. */
-  const [kindFilter, setKindFilter] = useState('stay');
-  const [form, setForm] = useState<any>(null);
-  const [building, setBuilding] = useState('');
+  const kindFilter = params.get('kind') || 'stay';
+
+  /**
+   * One place that writes the address, so nothing can move a filter and forget
+   * the page.
+   *
+   * ⚠️ Any filter change goes back to page one. Page three of the confirmed
+   * bookings is not page three of anything else, and a list that keeps the
+   * number while changing the question shows an empty table with a pager
+   * underneath it.
+   */
+  const setFilter = (next: Record<string, string>) => {
+    const asked = new URLSearchParams(params);
+
+    Object.entries(next).forEach(([key, value]) => {
+      if (value) asked.set(key, value);
+      else asked.delete(key);
+    });
+
+    if (!('page' in next)) asked.delete('page');
+
+    setParams(asked, { replace: true });
+  };
 
   // The booking whose bill is being fetched -- one row at a time, so the turning
   // link is on the line the clerk actually pressed. See openBill below.
   const [openingBill, setOpeningBill] = useState<number | null>(null);
-
-  // Read beside availability, from the same "Check" press, over the same dates.
-  const halls = useSelector((state: any) => state.hotelBooking.halls);
 
   // The booking being cancelled, and why. Held here rather than asked for by
   // window.prompt: the browser's own box is the wrong shape for a question that
@@ -487,60 +423,6 @@ const BookingsScreen = ({ user }: any) => {
    */
   const [refund, setRefund] = useState('');
   const [refundTill, setRefundTill] = useState<any>('');
-  const [picked, setPicked] = useState<number[]>([]);
-
-  // Beds are their own selection, kept apart from rooms because the server
-  // takes them apart: room_ids are let whole, seat_ids one bed at a time, and
-  // folding them into one list would lose which is which.
-  const [pickedSeats, setPickedSeats] = useState<number[]>([]);
-
-  /**
-   * The sittings taken, as (hall, date, sitting).
-   *
-   * ⚠️ A HALL IS NOT A ROOM WITH A CHECKBOX. A room is picked once for the
-   * whole stay; a hall is picked per DAY -- the evening of the 28th and the
-   * evening of the 29th are two different things to sell, and a wedding takes
-   * one of them and not the other. So this is a list of triples rather than a
-   * list of ids.
-   */
-  const [pickedSittings, setPickedSittings] = useState<
-    { resource_id: number; slot_id: number; date: string; hall: string; sitting: string; rent: number }[]
-  >([]);
-
-  // Whose beds are on show. One room at a time -- six dormitories opened at
-  // once is a wall of beds under a grid that was drawn to be glanced at.
-  const [openBeds, setOpenBeds] = useState<LayoutRoom | null>(null);
-
-  /**
-   * What dropping these nights would cost, read before the clerk confirms.
-   *
-   * ⚠️ A BILLED NIGHT DROPPED IS MONEY LEFT ON THE BILL. Nothing takes a
-   * line off a folio -- a credit note is §6.2 and is not built -- so the guest
-   * goes on being charged for a night they will not sleep until somebody
-   * adjusts it by hand. The server counts them; this is where the count is put
-   * in front of somebody before it happens.
-   */
-  const [warning, setWarning] = useState<any>(null);
-
-  /**
-   * What this booking held when it was opened for editing.
-   *
-   * ⚠️ ITS OWN ROOMS COME BACK MARKED "BOOKED" -- by itself. The grid
-   * kills booked tiles so nobody takes a room somebody else has, which is right
-   * for a new booking and wrong here: the clerk could not untick them, so
-   * nothing could ever be dropped. And once unticked they would go dead again,
-   * so a mis-click could not be undone without closing the form.
-   *
-   * Kept as its own list rather than read off `picked`, for that second reason.
-   */
-  const [ownRooms, setOwnRooms] = useState<number[]>([]);
-  const [ownSittings, setOwnSittings] = useState<string[]>([]);
-
-  // What the tiles are painted by. Availability first, because that is the
-  // question being asked here -- but the other two are kept, so a clerk can ask
-  // "which of the free ones is a Deluxe" without leaving the screen.
-  const [mode, setMode] = useState<ColourMode>('booking_state');
-
 
   const debouncedSearch = useDebounced(search);
 
@@ -566,13 +448,6 @@ const BookingsScreen = ({ user }: any) => {
     setBranchId(Number(branches[0].id));
   }, [branches, branchId]);
 
-  useEffect(() => {
-    if (!branchId) return;
-
-    dispatch(buildingDdl({ branch_id: branchId }));
-    setPage(1);
-  }, [dispatch, branchId]);
-
   const load = useCallback(() => {
     if (!branchId) return;
 
@@ -592,528 +467,22 @@ const BookingsScreen = ({ user }: any) => {
     load();
   }, [load]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, statusFilter, kindFilter]);
-
-  const buildingChoices = useMemo(
-    () => (buildingOptions ?? []).map((o: DdlOption) => ({ id: o.value, name: o.label })),
-    [buildingOptions],
-  );
-
-  const buildings: LayoutBuilding[] = availability?.buildings ?? [];
-  const nights = availability?.nights ?? 0;
-
-  const rooms: LayoutRoom[] = useMemo(
-    () =>
-      buildings.flatMap((b) => [...b.floors.flatMap((f) => f.rooms), ...b.unfloored]),
-    [buildings],
-  );
-
-  // Keyed by room type id, exactly as the Layout tab does it, so that renaming
-  // "Deluxe" does not repaint the property and the two screens agree on which
-  // colour a type is.
-  const typeIndex = useMemo(
-    () => buildTypeIndex(rooms.map((r) => r.room_type_id).filter((id): id is number => id != null)),
-    [rooms],
-  );
-
   /**
-   * The key, built from what is actually drawn.
+   * Open the form on its own page, and tell it the way back.
    *
-   * Not a fixed list: a property with nothing held tonight should not be shown a
-   * key for "booked". Deduplicated on the badge, which is what the tile prints.
+   * ⚠️ `from` is this address, filters and page and all. The form returns to
+   * it after a save, so a clerk working through the held bookings on page three
+   * lands back on page three of the held bookings rather than at the top of
+   * everything.
    */
-  const legend = useMemo(() => {
-    const seen = new Map<string, { className: string; badge: string; label: string }>();
-
-    rooms.forEach((room) => {
-      const look = lookOf(room, mode, typeIndex);
-      if (!seen.has(look.badge + look.label)) seen.set(look.badge + look.label, look);
+  const goToForm = (path: string) =>
+    navigate(`${path}${branchId ? `?branch=${branchId}` : ''}`, {
+      state: { from: `${location.pathname}${location.search}` },
     });
 
-    return [...seen.values()];
-  }, [rooms, mode, typeIndex]);
+  const openNew = () => goToForm(routes.hotel_booking_new);
 
-  /**
-   * Any change to the question throws the answer away.
-   *
-   * Not merely tidy: a list of free rooms read for the 15th, still on screen
-   * after the date is changed to the 20th, is a screen actively lying about
-   * which nights it checked.
-   */
-  const forget = () => {
-    dispatch(clearAvailability());
-    setPicked([]);
-    setPickedSeats([]);
-    setOpenBeds(null);
-  };
-
-  const set = (field: string) => (e: any) =>
-    setForm((prev: any) => ({ ...prev, [field]: e.target.value }));
-
-  const setDate = (field: string) => (date: Date | null) => {
-    setForm((prev: any) => ({ ...prev, [field]: asText(date) }));
-    forget();
-  };
-
-  /**
-   * ⚠️ Turning a booking into a walk-in sale PUTS BACK whatever it was
-   * holding. The server refuses a walk-in that names a room -- rightly, since
-   * a booking with a room on it is a stay whatever the dropdown says -- and
-   * without this the clerk would pick two rooms, change the type, and be
-   * refused by a sentence about rooms they can no longer see.
-   */
-  const chooseType = (e: any) => {
-    const chosen = e.target.value;
-
-    if (chosen === 'walk_in') {
-      setPicked([]);
-      setPickedSeats([]);
-      setPickedSittings([]);
-    }
-
-    setForm((prev: any) => ({
-      ...prev,
-      booking_type: chosen,
-      // Nothing is held, so there is nothing to hold ON to. The server forces
-      // this as well; setting it here keeps the form from showing a state the
-      // booking will not be saved in.
-      status: chosen === 'walk_in' ? 'confirmed' : prev.status,
-    }));
-  };
-
-  const openNew = () => {
-    setForm(blankBooking());
-    forget();
-  };
-
-  /**
-   * Open an existing booking in the same form it was taken in.
-   *
-   * ⚠️ The three lists come from the server rather than being worked out
-   * here: which resource is a bed and which is a hall is a question with one
-   * right answer, and a second copy of that answer on the client is one that
-   * will drift.
-   */
-  const openEdit = async (row: any) => {
-    try {
-      const booking: any = await dispatch(bookingRead(row.id)).unwrap();
-
-      setBuilding('');
-      setForm({
-        id: booking.id,
-        booking_no: booking.booking_no,
-        status: booking.status,
-        booking_type: booking.booking_type ?? 'individual',
-        check_in_date: String(booking.check_in_date ?? '').slice(0, 10),
-        check_out_date: String(booking.check_out_date ?? '').slice(0, 10),
-        booker_name: booking.booker_name ?? '',
-        booker_mobile: booking.booker_mobile ?? '',
-        stated_adults: booking.stated_adults ?? 0,
-        stated_children: booking.stated_children ?? 0,
-        notes: booking.notes ?? '',
-      });
-
-      setOwnRooms((booking.room_ids ?? []).map((id: any) => Number(id)));
-      setOwnSittings(
-        (booking.sittings ?? []).map(
-          (one: any) => `${one.resource_id}|${one.slot_id}|${one.date}`,
-        ),
-      );
-
-      setPicked((booking.room_ids ?? []).map((id: any) => Number(id)));
-      setPickedSeats((booking.seat_ids ?? []).map((id: any) => Number(id)));
-      setPickedSittings(
-        (booking.sittings ?? []).map((one: any) => ({
-          resource_id: Number(one.resource_id),
-          slot_id: Number(one.slot_id),
-          date: one.date,
-          hall: one.hall ?? '',
-          sitting: one.sitting ?? '',
-          rent: Number(one.rent ?? 0),
-        })),
-      );
-
-      // ⚠️ The grids are read straight away, over the booking's own dates.
-      // Without them the form shows what is held but not what else is free,
-      // and the clerk cannot add anything -- which is half the reason to edit.
-      await checkFor(
-        String(booking.check_in_date ?? '').slice(0, 10),
-        String(booking.check_out_date ?? '').slice(0, 10),
-        false,
-      );
-    } catch (error: any) {
-      toast.error(String(error));
-    }
-  };
-
-  const closeForm = () => {
-    setForm(null);
-    setOwnRooms([]);
-    setOwnSittings([]);
-    setWarning(null);
-    forget();
-  };
-
-  const check = () => {
-    if (!form?.check_in_date || !form?.check_out_date) {
-      toast.error('Give the dates first — arriving and leaving');
-      return;
-    }
-
-    return checkFor(form.check_in_date, form.check_out_date, true);
-  };
-
-  /**
-   * Read what is free over a range.
-   *
-   * ⚠️ `clearPicks` is FALSE when a booking is opened for editing. The
-   * rooms it already holds are shown as picked, and wiping them would make an
-   * edit look like an empty booking -- one Save away from being emptied.
-   */
-  const checkFor = async (from: string, to: string, clearPicks: boolean) => {
-    if (clearPicks) {
-      setPicked([]);
-      setPickedSeats([]);
-      setPickedSittings([]);
-    }
-
-    try {
-      const result = await dispatch(
-        availabilityRead({
-          branch_id: branchId,
-          check_in_date: from,
-          check_out_date: to,
-          building_id: building || undefined,
-        }),
-      ).unwrap();
-
-      if (!result.free_count) {
-        toast.info('Nothing is free on those dates.');
-      }
-    } catch (error: any) {
-      toast.error(String(error));
-    }
-
-    // ⚠️ THE SITTINGS INSIDE THE SAME NIGHTS, in one read rather than one
-    // per day. The stay runs to the morning of check-out, and nobody holds a
-    // hall on the morning they leave -- so the run ends the night before.
-    //
-    // ⚠️ Its failure is NOT the room screen's failure. A property with no
-    // hall, or no sittings defined, answers 404 with a sentence saying so --
-    // which is true and completely uninteresting to a clerk booking rooms. It
-    // is swallowed, and the hall section simply does not appear.
-    try {
-      const lastNight = new Date(to);
-      lastNight.setDate(lastNight.getDate() - 1);
-
-      await dispatch(
-        hallsRead({
-          branch_id: branchId,
-          date_from: from,
-          date_to: asText(lastNight),
-          building_id: building || undefined,
-        }),
-      ).unwrap();
-    } catch {
-      // No halls on this property, or no sittings yet. Nothing to say.
-    }
-  };
-
-  /**
-   * Clicking a room means two different things, and the room says which.
-   *
-   * A room with beds for sale opens them; anything else is picked as a room.
-   * The alternative -- a second control on the tile -- would put a button on
-   * something the size of a postage stamp, and the tile already carries three
-   * things.
-   */
-  const toggle = (room: LayoutRoom) => {
-    // ⚠️ Blocked, unless it is OURS. A room this booking already holds comes
-    // back from availability marked "taken" -- by this very booking -- and
-    // returning early here left the tile clickable but dead: the clerk pressed
-    // it and nothing happened, which reads worse than a disabled tile.
-    const ours = picked.includes(room.id) || ownRooms.includes(room.id);
-
-    if (room.blocked_reason && !ours) return;
-
-    if (room.seats?.length) {
-      setOpenBeds((prev) => (prev?.id === room.id ? null : room));
-      return;
-    }
-
-    setPicked((prev) =>
-      prev.includes(room.id) ? prev.filter((id) => id !== room.id) : [...prev, room.id],
-    );
-  };
-
-  const toggleSeat = (seat: LayoutSeat) => {
-    if (seat.state !== 'free') return;
-
-    setPickedSeats((prev) =>
-      prev.includes(seat.id) ? prev.filter((id) => id !== seat.id) : [...prev, seat.id],
-    );
-  };
-
-  const pickedRooms = useMemo(
-    () => rooms.filter((room) => picked.includes(room.id)),
-    [rooms, picked],
-  );
-
-  /** The chosen beds, each with the room it is in, for the summary line. */
-  const pickedBeds = useMemo(
-    () =>
-      rooms.flatMap((room) =>
-        (room.seats ?? [])
-          .filter((seat) => pickedSeats.includes(seat.id))
-          .map((seat) => ({ seat, room })),
-      ),
-    [rooms, pickedSeats],
-  );
-
-  /** One hall, one day, one sitting -- the identity of a cell. */
-  const sittingKey = (hallId: number, slotId: number, on: string) => `${hallId}|${slotId}|${on}`;
-
-  const hallRows: any[] = halls?.halls ?? [];
-
-  // ⚠️ DECLARED AFTER WHAT IT READS. `const` does not hoist: placed above
-  // hallRows this threw "Cannot access 'hallRows' before initialization" on the
-  // first render, and the whole bookings screen came up blank -- a syntax the
-  // build is perfectly happy with.
-  /**
-   * The hall rows folded into one card per hall, days inside it.
-   *
-   * ⚠️ The server sends one row per hall PER DAY, which is the right shape
-   * for the lock and the wrong one for the eye: three days of one hall would
-   * draw three headings for the same room. Folded here rather than there,
-   * because the flat shape is what the booking form posts back.
-   */
-  const hallCards = useMemo(() => {
-    const byHall = new Map<number, any>();
-
-    for (const row of hallRows) {
-      if (!byHall.has(row.id)) {
-        byHall.set(row.id, {
-          id: row.id,
-          code: row.code,
-          name: row.name || row.code,
-          capacity: row.capacity,
-          rent: row.rent,
-          days: [],
-        });
-      }
-
-      byHall.get(row.id).days.push({ date: row.date, sittings: row.sittings });
-    }
-
-    return [...byHall.values()];
-  }, [hallRows]);
-
-  /**
-   * What a sitting cell looks like -- the ROOM GRID's own palette.
-   *
-   * ⚠️ Teal is free and rose is booked on both halves of this screen. A
-   * second colour scheme for halls would mean learning twice which colour can
-   * be clicked, on one page, in one act.
-   */
-  const lookOfSitting = (cell: any, isChosen: boolean) => {
-    if (isChosen) return BOOKING_LOOKS.checked_in ?? BOOKING_LOOKS.booked;
-    if (cell.state === 'free') return BOOKING_LOOKS.free;
-    if (cell.state === 'closed') return BOOKING_LOOKS.closed ?? BOOKING_LOOKS.booked;
-
-    return BOOKING_LOOKS[cell.state] ?? BOOKING_LOOKS.booked;
-  };
-
-  const chosenSittings = useMemo(
-    () => new Set(pickedSittings.map((one) => sittingKey(one.resource_id, one.slot_id, one.date))),
-    [pickedSittings],
-  );
-
-  const toggleSitting = (row: any, cell: any, on?: string) => {
-    const date = on ?? row.date;
-    const at = sittingKey(row.id, cell.slot_id, date);
-
-    // ⚠️ Free, or already ours. Anything else belongs to another booking.
-    if (cell.state !== 'free' && !chosenSittings.has(at) && !ownSittings.includes(at)) {
-      return;
-    }
-
-    setPickedSittings((prev) =>
-      chosenSittings.has(at)
-        ? prev.filter((one) => sittingKey(one.resource_id, one.slot_id, one.date) !== at)
-        : [
-            ...prev,
-            {
-              resource_id: row.id,
-              slot_id: cell.slot_id,
-              date,
-              hall: row.name || row.code,
-              sitting: cell.slot,
-              rent: Number(row.rent ?? 0),
-            },
-          ],
-    );
-  };
-
-  // ⚠️ A SITTING IS NOT MULTIPLIED BY THE NIGHTS. A room costs its rent
-  // once per night; a hall costs its rent once per sitting taken, and a
-  // three-night stay with one wedding in it is one hall charge. Folding it into
-  // the room total would quote a wedding three times over.
-  const sittingsTotal = pickedSittings.reduce((sum, one) => sum + one.rent, 0);
-
-  const anyPicked = picked.length + pickedSeats.length + pickedSittings.length;
-
-  /**
-   * ⚠️ A walk-in sale holds nothing, so nearly every rule on this form is
-   * about somebody else. No room to pick, no availability to check, no nights
-   * to price, no hold to keep and nobody to check in -- what is left is who
-   * bought it, and a bill to put the meal on afterwards.
-   */
-  const isWalkIn = form?.booking_type === 'walk_in';
-
-  // Room rents summed across the nights. Never a bed rate divided or multiplied
-  // into a room one -- these are whole-room lets and nothing else (2.8).
-  // Rooms at the room rate, beds at their own. Added, never derived from one
-  // another -- see 2.8 and the note at the top.
-  const total = useMemo(
-    () =>
-      pickedRooms.reduce((sum, room) => sum + Number(room.rent ?? 0) * nights, 0) +
-      pickedBeds.reduce((sum, { seat }) => sum + Number(seat.rent ?? 0) * nights, 0) +
-      // ⚠️ NOT multiplied by the nights. A room earns its rent once per
-      // night; a hall earns its rent once per SITTING taken, and a three-night
-      // stay with one wedding in it is one hall charge. Multiplying here would
-      // quote that wedding three times over.
-      sittingsTotal,
-    [pickedRooms, pickedBeds, nights, sittingsTotal],
-  );
-
-  /**
-   * What the form is asking for, in the server's own words.
-   *
-   * ⚠️ Built ONCE and used three times -- the dry run, the write, and the
-   * retry after the warning. Three copies of this object would be three chances
-   * for the figure the clerk was shown to differ from the one that was applied.
-   */
-  const payloadOf = () => ({
-    branch_id: branchId,
-    room_ids: picked,
-    seat_ids: pickedSeats,
-    sittings: pickedSittings.map((one) => ({
-      resource_id: one.resource_id,
-      slot_id: one.slot_id,
-      date: one.date,
-    })),
-    check_in_date: form.check_in_date,
-    check_out_date: form.check_out_date,
-    booker_name: form.booker_name,
-    booker_mobile: form.booker_mobile || undefined,
-    stated_adults: Number(form.stated_adults) || 0,
-    stated_children: Number(form.stated_children) || 0,
-    notes: form.notes || undefined,
-
-    // ⚠️ THE FORM ASKED AND NOTHING SENT IT. "Confirmed or held" sat on the
-    // edit screen, the clerk moved it to Confirmed, the save succeeded and the
-    // booking stayed held -- the answer never left the browser, and the server
-    // did not validate it either. A control that does nothing is worse than no
-    // control: the desk believes the guest is confirmed and the sweep releases
-    // their room.
-    //
-    // Sent on every edit, including the ones that do not move it: the server
-    // compares it with what the booking already is and treats "the same" as no
-    // change at all.
-    status: form.status,
-  });
-
-  const save = async () => {
-    if (!anyPicked && !isWalkIn) {
-      toast.error('Pick at least one room, bed or sitting');
-      return;
-    }
-
-    if (!form.booker_name?.trim()) {
-      toast.error('Who is booking?');
-      return;
-    }
-
-    // ⚠️ AN EDIT ASKS FIRST. A night that is already billed cannot be dropped
-    // -- the server refuses it -- so the dry run is what turns that refusal
-    // into something the clerk reads BEFORE filling the form in, instead of an
-    // error after pressing Save. A new booking has nothing to drop and goes
-    // straight through.
-    if (form.id && !warning) {
-      try {
-        const preview: any = await dispatch(
-          bookingUpdate({ ...payloadOf(), id: form.id, dry_run: true }),
-        ).unwrap();
-
-        // `refused` is the server's own word for it. The count is read as well,
-        // so a server that has not been updated yet still stops here rather
-        // than sending a change it is about to reject.
-        if (preview?.data?.refused || Number(preview?.data?.billed_dropping ?? 0) > 0) {
-          setWarning(preview.data);
-
-          return;
-        }
-      } catch (error: any) {
-        toast.error(String(error));
-
-        return;
-      }
-    }
-
-    try {
-      const result = await dispatch(
-        form.id
-          ? bookingUpdate({ ...payloadOf(), id: form.id })
-          : bookingSave({
-          branch_id: branchId,
-          room_ids: picked,
-          seat_ids: pickedSeats,
-          // ⚠️ One booking, one folio, one bill. The server takes rooms and
-          // sittings in the same request and stretches the stay's dates over
-          // both -- which is why a wedding with rooms for the guests is not two
-          // bookings and two bills.
-          sittings: pickedSittings.map((one) => ({
-            resource_id: one.resource_id,
-            slot_id: one.slot_id,
-            date: one.date,
-          })),
-          check_in_date: form.check_in_date,
-          check_out_date: form.check_out_date,
-          booking_type: form.booking_type,
-          status: form.status,
-          booker_name: form.booker_name,
-          booker_mobile: form.booker_mobile || undefined,
-          stated_adults: Number(form.stated_adults) || 0,
-          stated_children: Number(form.stated_children) || 0,
-          notes: form.notes || undefined,
-        }),
-      ).unwrap();
-
-      toast.success(result.message);
-      setWarning(null);
-
-      // ⚠️ A walk-in just saved must not vanish. The list shows rooms and halls
-      // by default, so a meal sold would be filed away the moment it was
-      // written -- and the next thing the clerk does is press Bill on that very
-      // row. Asked for by name, it is there waiting.
-      if (isWalkIn && kindFilter === 'stay') {
-        setKindFilter('walk_in');
-      }
-
-      closeForm();
-      load();
-    } catch (error: any) {
-      // Usually the clash: somebody took one of these rooms while the form was
-      // open. The server's sentence says that, and says nothing was booked --
-      // which is what the clerk has to know before trying again.
-      toast.error(String(error));
-      setPicked([]);
-      setPickedSeats([]);
-      setPickedSittings([]);
-    }
-  };
+  const openEdit = (row: any) => goToForm(`${routes.hotel_booking_edit}/${row.id}`);
 
   /**
    * Fill the refund in once the server has said how much there is.
@@ -1567,7 +936,6 @@ const BookingsScreen = ({ user }: any) => {
             defaultValue={branchId ? String(branchId) : ''}
             onChange={(e: any) => {
               setBranchId(e.target.value === '' ? null : Number(e.target.value));
-              closeForm();
             }}
             className="w-full text-sm"
             branchDdl={branches}
@@ -1580,7 +948,11 @@ const BookingsScreen = ({ user }: any) => {
         // note={`Rooms are held from the night of arrival up to, but not including, the night of departure — the 15th to the 18th is three nights. Whole rooms only for now; a room sold by the bed says so in the list.${branchName ? ` Booking into: ${branchName}.` : ''}`}
         toolbar={
           <>
-            <SearchInput search={search} setSearchValue={setSearch} className="w-56" />
+            <SearchInput
+              search={search}
+              setSearchValue={(value: string) => setFilter({ q: value })}
+              className="w-56"
+            />
             <div className="w-44">
               <DropdownCommon
                 id="booking_kind_filter"
@@ -1588,7 +960,7 @@ const BookingsScreen = ({ user }: any) => {
                 label="Sold"
                 data={KIND_OPTIONS}
                 value={kindFilter}
-                onChange={(e: any) => setKindFilter(e.target.value)}
+                onChange={(e: any) => setFilter({ kind: e.target.value })}
               />
             </div>
             <div className="w-48">
@@ -1598,644 +970,35 @@ const BookingsScreen = ({ user }: any) => {
                 label="Show"
                 data={FILTER_OPTIONS}
                 value={statusFilter}
-                onChange={(e: any) => setStatusFilter(e.target.value)}
+                onChange={(e: any) => setFilter({ status: e.target.value })}
               />
             </div>
-
-            {/* ⚠️ It belongs to the room grid, not to the list -- so it is only
-                here while the grid is, which is while a booking is being taken.
-                On its own row under the dates it was one small box adrift
-                between the form and the rooms; up here it stands with the other
-                two things that decide what is shown. */}
-            {availability && !isWalkIn ? (
-              <div className="w-44">
-                <DropdownCommon
-                  id="booking_colour_mode"
-                  name="booking_colour_mode"
-                  label="Colour by"
-                  data={BOOKING_COLOUR_MODES}
-                  value={mode}
-                  onChange={(e: any) => setMode(e.target.value as ColourMode)}
-                />
-              </div>
-            ) : null}
           </>
         }
-        formOpen={form !== null}
-        // The shell says "Edit Booking" and keeps the row open when this is
-        // true, which is exactly what an edit wants.
-        editing={!!form?.id}
+        // ⚠️ THE FORM IS A PAGE OF ITS OWN NOW -- /hotel/bookings/new, and the
+        // same page with an id on the end for an edit. Nothing folds out above
+        // this table any more, so the shell is left holding a toolbar, a table
+        // and a pager, which is what a list is.
+        formOpen={false}
+        editing={false}
         onNew={openNew}
-        onCancel={closeForm}
-        onSave={save}
-        saving={saving}
-        saveLabel={
-          form?.id
-            ? // ⚠️ An edit is not a booking. "Book 2 rooms" on a booking that
-              // already exists reads as taking a second one, and the number on
-              // the button is what somebody checks before pressing it.
-              `Save ${form.booking_no ?? 'booking'}`
-            : isWalkIn
-            ? 'Save walk-in sale'
-            : anyPicked
-            ? `Book ${[
-                picked.length ? `${picked.length} ${picked.length === 1 ? 'room' : 'rooms'}` : null,
-                pickedSeats.length
-                  ? `${pickedSeats.length} ${pickedSeats.length === 1 ? 'bed' : 'beds'}`
-                  : null,
-                pickedSittings.length
-                  ? `${pickedSittings.length} ${pickedSittings.length === 1 ? 'sitting' : 'sittings'}`
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(' and ')}`
-            : 'Book'
-        }
-        form={
-          form && (
-            <>
-              {/* 0 -- WHAT IS BEING SOLD, above everything else, because it
-                  decides whether the rest of this form is about a room at all.
-                  It used to sit in section 3, which is drawn only once a room
-                  has been picked -- so a walk-in sale, which never picks one,
-                  could not be reached from there. */}
-              {/* ⚠️ ONE LINE, AND CAPPED. On a wide monitor a four-column grid
-                  across the whole page gives every field a quarter of 1700
-                  pixels: a date box a hand's width across, a Type dropdown with
-                  three empty columns beside it, and a form that reads as
-                  scattered parts rather than one question. The cap is what
-                  keeps the fields the size of what goes in them.
-
-                  items-end, so the button sits on the line the fields sit on.
-                  Nothing in this row carries a description any more -- the one
-                  that did lifted the row out of true, and what it said is said
-                  below, when it applies. */}
-              <div className="grid max-w-6xl grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                <DropdownCommon
-                  id="booking_type"
-                  name="booking_type"
-                  label="Type"
-                  data={TYPE_OPTIONS}
-                  value={form.booking_type}
-                  onChange={chooseType}
-                />
-
-                {/* The day it was served. A walk-in has no arriving and no
-                    leaving, so it is asked for once and both dates are set
-                    from it -- the nights between them come out at nought,
-                    which is the truth about a sale with no stay. */}
-                {isWalkIn ? (
-                  <InputDatePicker
-                    id="walk_in_date"
-                    name="check_in_date"
-                    label="Date"
-                    selectedDate={asDate(form.check_in_date)}
-                    setSelectedDate={setDate('check_in_date')}
-                    setCurrentDate={setDate('check_in_date')}
-                    className="w-full"
-                  />
-                ) : (
-                  <>
-                    <InputDatePicker
-                      id="check_in_date"
-                      name="check_in_date"
-                      label="Arriving"
-                      selectedDate={asDate(form.check_in_date)}
-                      setSelectedDate={setDate('check_in_date')}
-                      setCurrentDate={setDate('check_in_date')}
-                      className="w-full"
-                    />
-                    <InputDatePicker
-                      id="check_out_date"
-                      name="check_out_date"
-                      label="Leaving"
-                      selectedDate={asDate(form.check_out_date)}
-                      setSelectedDate={setDate('check_out_date')}
-                      setCurrentDate={setDate('check_out_date')}
-                      className="w-full"
-                    />
-                    <DropdownCommon
-                      id="booking_building"
-                      name="booking_building"
-                      label="Building"
-                      data={[{ id: '', name: 'Anywhere on the property' }, ...buildingChoices]}
-                      value={building}
-                      onChange={(e: any) => {
-                        setBuilding(e.target.value);
-                        forget();
-                      }}
-                    />
-                    {/* No padding under it: the row is items-end, so anything
-                        below the button lifts it off the line the fields sit
-                        on. */}
-                    <div>
-                      <ButtonLoading
-                        onClick={check}
-                        buttonLoading={checking}
-                        label="See what is free"
-                        variant="primary"
-                        icon={<FiSearch size={16} />}
-                      />
-                    </div>
-
-                  </>
-                )}
-              </div>
-
-              {/* Said where it applies rather than under the dropdown for ever.
-                  A hint that is always there is furniture; one that appears
-                  when the answer needs it is read. */}
-              {form.booking_type === 'corporate' ? (
-                <p className="mt-1 max-w-6xl text-xs text-gray-500 dark:text-gray-400">
-                  Corporate is billed to a company, not to the guest — name the company on the bill.
-                </p>
-              ) : null}
-
-              {/* A walk-in sale has nothing to look up and nothing to pick, so
-                  the whole middle of this form is skipped. What it needs is a
-                  name to bill and, afterwards, the meal itself -- which is
-                  added on the bill, where every charge is added. */}
-              {isWalkIn ? (
-                <div className="mt-3 rounded border border-stroke p-3 text-sm text-gray-600 dark:border-strokedark dark:text-gray-300">
-                  No room, bed or hall is held by a walk-in sale. Save it, then open its
-                  <span className="font-medium text-black dark:text-white"> Bill </span>
-                  and add what was sold — restaurant, catering, laundry.
-                </div>
-              ) : null}
-
-              {/* 2 -- the answer */}
-              {availability && !isWalkIn ? (
-                <div className="mt-4">
-                  <div className="mb-2 flex flex-wrap items-baseline gap-x-3 text-sm">
-                    <span className="font-medium text-black dark:text-white">
-                      {availability.free_count} free
-                    </span>
-                    <span className="text-xs text-gray-700 dark:text-gray-100">
-                      { formatDate(availability.check_in_date) } → { formatDate (availability.check_out_date) } ·{' '}
-                      {nights} {nights === 1 ? 'night' : 'nights'}
-                    </span>
-                    {/* Said out loud, every time. It is the one thing about this
-                        screen that somebody could reasonably get wrong. */}
-                    {/* <span className="text-xs italic text-gray-400">
-                      what was free a moment ago — a room is not yours until it is booked
-                    </span> */}
-                  </div>
-
-                  {/* The key. It carries the badge as well as the colour,
-                      because the colour is the half that does not survive a
-                      grey printer -- and because FREE and BKD are read faster
-                      than teal and rose are told apart. */}
-                  <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                    {legend.map((entry) => (
-                      <span key={entry.badge + entry.label} className="flex items-center gap-1.5 text-xs">
-                        <span
-                          className={`flex h-4 w-9 items-center justify-center rounded border text-[0.5rem] font-bold ${entry.className}`}
-                        >
-                          {entry.badge}
-                        </span>
-                        <span className="text-gray-700 dark:text-gray-100">{entry.label}</span>
-                      </span>
-                    ))}
-                  </div>
-
-                  {buildings.length ? (
-                    <PropertyGrid
-                      buildings={buildings}
-                      mode={mode}
-                      typeIndex={typeIndex}
-                      selectedIds={[...picked, ...(openBeds ? [openBeds.id] : [])]}
-                      ownIds={ownRooms}
-                      onSelect={toggle}
-                      // Tiles that carry a reason stop being clickable -- but
-                      // keep their colour and their tooltip, because WHY is the
-                      // whole of what the clerk needs.
-                      picking
-                      summaryOf={(building) => {
-                        const chosen = building.floors
-                          .flatMap((f) => f.rooms)
-                          .concat(building.unfloored)
-                          .filter((room) => picked.includes(room.id));
-
-                        const bedsHere = building.floors
-                          .flatMap((f) => f.rooms)
-                          .concat(building.unfloored)
-                          .flatMap((room) => (room.seats ?? []).filter((s) => pickedSeats.includes(s.id)));
-
-                        if (!chosen.length && !bedsHere.length) return null;
-
-                        const here =
-                          chosen.reduce((sum, room) => sum + Number(room.rent ?? 0) * nights, 0) +
-                          bedsHere.reduce((sum, seat) => sum + Number(seat.rent ?? 0) * nights, 0);
-
-                        return `${[
-                          chosen.length ? `${chosen.length} ${chosen.length === 1 ? 'room' : 'rooms'}` : null,
-                          bedsHere.length ? `${bedsHere.length} ${bedsHere.length === 1 ? 'bed' : 'beds'}` : null,
-                        ]
-                          .filter(Boolean)
-                          .join(' + ')} picked here · ${money(here)}`;
-                      }}
-                    />
-                  ) : (
-                    <p className="rounded border border-stroke p-4 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
-                      No rooms match. Try another building, or set the property up first.
-                    </p>
-                  )}
-
-                  {/* The beds of one room, under the grid rather than inside a
-                      tile. A tile is the size of a postage stamp and already
-                      carries three things; six beds with their prices do not go
-                      in it, and a popover over a scrolling row would be clipped
-                      by the same overflow that shaved the selection ring. */}
-                  {openBeds ? (
-                    <div className="mt-3 rounded border border-primary/50 bg-primary/5 p-3">
-                      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-                        <span className="text-sm font-medium text-black dark:text-white">
-                          Beds in {openBeds.display_name}
-                          <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">
-                            sold by the bed — pick the ones you want
-                          </span>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setOpenBeds(null)}
-                          className="text-xs font-medium text-primary hover:underline dark:text-secondary"
-                        >
-                          Close
-                        </button>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        {(rooms.find((r) => r.id === openBeds.id)?.seats ?? []).map((seat) => {
-                          const chosen = pickedSeats.includes(seat.id);
-                          const free = seat.state === 'free';
-
-                          return (
-                            <button
-                              key={seat.id}
-                              type="button"
-                              disabled={!free}
-                              onClick={() => toggleSeat(seat)}
-                              title={seat.taken_by ?? undefined}
-                              className={`w-28 rounded border px-2 py-1.5 text-left text-xs transition ${
-                                !free
-                                  ? 'cursor-not-allowed border-rose-400 bg-rose-100 text-rose-900 dark:bg-rose-500/25 dark:text-rose-50'
-                                  : chosen
-                                    ? 'border-primary bg-primary/20 ring-1 ring-inset ring-primary'
-                                    : 'border-teal-400 bg-teal-100 text-teal-900 hover:brightness-95 dark:bg-teal-500/25 dark:text-teal-50 dark:hover:brightness-125'
-                              }`}
-                            >
-                              <div className="flex items-baseline justify-between gap-1">
-                                <span className="font-semibold">Bed {seat.code}</span>
-                                <span className="text-[0.55rem] font-bold uppercase opacity-70">
-                                  {free ? (chosen ? 'TAKING' : 'FREE') : 'TAKEN'}
-                                </span>
-                              </div>
-                              {/* Its own rent, never the room's divided by the
-                                  beds -- see the note at the top. */}
-                              <div className="text-[0.65rem] opacity-80">
-                                {money(seat.rent)}
-                                <span className="opacity-70"> / night</span>
-                              </div>
-                              {seat.name ? (
-                                <div className="truncate text-[0.6rem] opacity-70">{seat.name}</div>
-                              ) : null}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {/* ⚠️ THE HALLS, INSIDE THE SAME STAY. A room is picked once
-                      for the whole booking; a hall is picked per DAY, because
-                      the evening of the 28th and the evening of the 29th are
-                      two different things to sell.
-
-                      Drawn only where the property has halls AND sittings --
-                      a hotel without a function room never sees this, and the
-                      read that fills it fails quietly for exactly that
-                      reason. */}
-                  {hallRows.length ? (
-                    <div className="mt-4">
-                      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-                        <span className="text-sm font-medium text-black dark:text-white">
-                          Halls and function spaces
-                          <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-300">
-                            sold by the sitting, not by the night
-                          </span>
-                        </span>
-
-                        {pickedSittings.length ? (
-                          <button
-                            type="button"
-                            onClick={() => setPickedSittings([])}
-                            className="text-xs font-medium text-primary hover:underline dark:text-secondary"
-                          >
-                            Clear sittings
-                          </button>
-                        ) : null}
-                      </div>
-
-                      {/*  + W + ONE CARD PER HALL, drawn the way a BUILDING is drawn --
-                          a heading, then a row per day, then a tile per
-                          sitting. The room grid stands right above this one,
-                          and a table of tick-boxes underneath it was a second
-                          visual language on one screen: the clerk had to learn
-                          twice which colour meant taken.
-
-                          The colours are the room grid's own (layoutPalette),
-                          so teal is free and rose is booked in both halves. */}
-                      <div className="flex flex-wrap items-start gap-4">
-                        {hallCards.map((card: any) => (
-                          <div
-                            key={card.id}
-                            className="rounded border border-stroke dark:border-strokedark"
-                          >
-                            <div className="border-b border-stroke px-3 py-2 dark:border-strokedark">
-                              <div className="flex items-baseline gap-2">
-                                <span className="font-semibold text-black dark:text-white">
-                                  {card.name}
-                                </span>
-                                <span className="text-xs text-gray-300">{card.code}</span>
-                              </div>
-
-                              <div className="text-xs text-gray-500 dark:text-gray-200">
-                                {card.capacity ? `${card.capacity} seats` : 'no seating set'}
-                                {/* \u00a72.8: on a hall the rent is the price of ONE
-                                    sitting. The room card beside it means the
-                                    other thing by "rent". */}
-                                {card.rent === null
-                                  ? ' · no rate set'
-                                  : ` · ${money(card.rent)} a sitting`}
-                              </div>
-                            </div>
-
-                            <div className="px-3 py-2">
-                              {card.days.map((day: any) => (
-                                <div key={day.date} className="flex items-center gap-2 py-1">
-                                  {/* The day label sits where a floor number
-                                      sits on the room grid, for the same
-                                      reason: the eye runs down it. */}
-                                  <span className="w-16 shrink-0 text-[0.8rem] text-gray-500 dark:text-gray-200 mr-1">
-                                    {formatDate(day.date)}
-                                  </span>
-
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {day.sittings.map((cell: any) => {
-                                      const on = sittingKey(card.id, cell.slot_id, day.date);
-                                      const isChosen = chosenSittings.has(on);
-                                      const look = lookOfSitting(cell, isChosen);
-
-                                      const dead =
-                                        cell.state !== 'free'
-                                        && !isChosen
-                                        && !ownSittings.includes(on);
-
-                                      return (
-                                        <button
-                                          key={cell.slot_id}
-                                          type="button"
-                                          disabled={dead}
-                                          onClick={() => toggleSitting(card, cell, day.date)}
-                                          title={
-                                            cell.blocked_reason
-                                            || cell.taken_by
-                                            || cell.label
-                                            || cell.slot
-                                          }
-                                          className={`flex w-28 flex-col items-start gap-0.5 rounded border px-2 py-1.5 text-left ${look.className} ${
-                                            dead ? 'cursor-not-allowed opacity-60' : ''
-                                          } ${isChosen ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-boxdark' : ''}`}
-                                        >
-                                          <span className="flex w-full items-baseline justify-between gap-1">
-                                            <span className="text-[0.8rem] font-semibold leading-none">
-                                              {cell.slot}
-                                            </span>
-                                            {/* Beside the colour, never
-                                                instead of it -- the same rule
-                                                the room tiles follow. */}
-                                            <span className="text-[0.5rem] font-bold uppercase leading-none opacity-70">
-                                              {look.badge}
-                                            </span>
-                                          </span>
-
-                                          {/* The reason is a sentence, not a
-                                              colour: "roof leak" and "held for
-                                              the whole day" are different
-                                              problems. */}
-                                          <span className="text-[0.55rem] leading-tight opacity-80">
-                                            {cell.blocked_reason || cell.taken_by || ''}
-                                          </span>
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <p className="mt-4 rounded border border-dashed border-stroke p-6 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
-                  Pick the dates, then <strong>See what is free</strong>.
-                </p>
-              )}
-
-              {/* 3 -- who it is for. Drawn only once there is something to book,
-                  because asking for a guest's name before there is a room to put
-                  them in is a form in the wrong order. */}
-              {anyPicked || isWalkIn ? (
-                <>
-                  <div className="mt-4 max-w-6xl rounded border border-stroke p-3 dark:border-strokedark">
-                    <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-                      <span className="text-sm font-medium text-black dark:text-white">
-                        {isWalkIn
-                          ? 'Walk-in sale'
-                          : [
-                              ...pickedRooms.map((room) => room.display_name),
-                              // Named by room and bed together: "GDN / 301 bed 2"
-                              // is what the clerk says out loud, and "bed 2" alone
-                              // means nothing across four dormitories.
-                              ...pickedBeds.map(({ seat, room }) => `${room.display_name} bed ${seat.code}`),
-                            ].join(', ')}
-                      </span>
-                      <span className="text-sm">
-                        {isWalkIn ? (
-                          // No rooms and no nights, so there is nothing to
-                          // price here. What it comes to is decided on the
-                          // bill, one charge at a time.
-                          <span className="text-gray-500 dark:text-gray-400">
-                            Nothing held · priced on the bill
-                          </span>
-                        ) : (
-                          <>
-                            <span className="text-gray-500 dark:text-gray-400">
-                              {anyPicked} × {nights} {nights === 1 ? 'night' : 'nights'} ·{' '}
-                            </span>
-                            <span className="font-semibold text-black dark:text-white">
-                              {money(total)}
-                            </span>
-                          </>
-                        )}
-                      </span>
-                    </div>
-
-                    {/* ⚠️ A NAME IS NOT THE SAME WIDTH AS A COUNT OF CHILDREN.
-                        Four equal columns gave "0" a box as wide as the name on
-                        the telephone, which is what made this block read as
-                        scattered parts. Six columns, and each field takes what
-                        goes in it: name and mobile two apiece, the two counts
-                        one each. */}
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
-                      <div className="xl:col-span-2">
-                        <InputElement
-                          id="booker_name"
-                          name="booker_name"
-                          label="Who is booking"
-                          placeholder="The name on the telephone"
-                          title="Not necessarily the guest, and not a customer account. A father booking beds for three students is neither — guests are recorded at check-in."
-                          value={form.booker_name}
-                          onChange={set('booker_name')}
-                        />
-                      </div>
-                      <div className="xl:col-span-2">
-                        <InputElement
-                          id="booker_mobile"
-                          name="booker_mobile"
-                          label="Mobile"
-                          placeholder="01711000000"
-                          value={form.booker_mobile ?? ''}
-                          onChange={set('booker_mobile')}
-                        />
-                      </div>
-                      <InputElement
-                        id="stated_adults"
-                        name="stated_adults"
-                        label="Adults"
-                        type="number"
-                        min={0}
-                        title="What was stated on the telephone. Over capacity warns at the desk; it never blocks."
-                        value={String(form.stated_adults ?? 0)}
-                        onChange={set('stated_adults')}
-                      />
-                      <InputElement
-                        id="stated_children"
-                        name="stated_children"
-                        label="Children"
-                        type="number"
-                        min={0}
-                        title="Children count as guests for towels and soap. What counts as a child is a setting the client has not answered yet."
-                        value={String(form.stated_children ?? 0)}
-                        onChange={set('stated_children')}
-                      />
-                    </div>
-
-                    <div className="mt-3 grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-6">
-                      {/* ⚠️ Not on a walk-in. A hold keeps a bed off sale until
-                          a deadline; this sale holds no bed, so the choice
-                          would mean nothing and the sweep would expire a meal
-                          that has been eaten. The server forces it confirmed. */}
-                      {!isWalkIn ? (
-                        <div className="xl:col-span-2">
-                          <DropdownCommon
-                            id="booking_status"
-                            name="booking_status"
-                            label="Confirmed or held"
-                            data={STATUS_OPTIONS}
-                            value={form.status}
-                            onChange={set('status')}
-                            description={`A hold keeps the rooms for ${holdLength(times?.hold_hours)}, then the beds go back on sale.`}
-                          />
-                        </div>
-                      ) : null}
-                      <div className={isWalkIn ? 'sm:col-span-2 xl:col-span-6' : 'sm:col-span-2 xl:col-span-4'}>
-                        <InputElement
-                          id="booking_notes"
-                          name="notes"
-                          label="Notes"
-                          placeholder="Late arrival, sea-facing asked for…"
-                          value={form.notes ?? ''}
-                          onChange={set('notes')}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
-                    Guest names, NIDs and which bed each takes are recorded when they arrive, not
-                    now. All the rooms are booked together — if one of them has gone in the
-                    meantime, none is booked and you are told which.
-                  </p>
-                </>
-              ) : null}
-            </>
-          )
-        }
+        onCancel={() => undefined}
+        onSave={() => undefined}
+        saving={false}
+        form={null}
         columns={columns}
         rows={bookings?.data ?? []}
         loading={loading}
         emptyMessage="No bookings yet. Press New Booking, pick the dates, and see what is free."
         page={page}
         totalPages={Math.ceil((bookings?.total ?? 0) / (bookings?.per_page || 10))}
-        onPageChange={setPage}
+        onPageChange={(next: number) => setFilter({ page: String(next) })}
       />
 
       {/* The app's own dialog, not the browser's. It can say what cancelling
           does -- which is not obvious, because the booking stays and only the
           nights go back -- and the reason it takes is the one the record
           keeps. */}
-      {/* ⚠️ NOT A WARNING ANY MORE -- A REFUSAL, EXPLAINED.
-          It offered "Change it anyway", and the charge then stayed on the folio
-          with nothing able to take it off: a guest moved 101 → 102 → 103 on one
-          night ended up holding one room and owing for three, each with its own
-          posted voucher. The server refuses it now, so the button that offered
-          to do it would be offering something that cannot happen -- hence
-          `disabled`, with the message carrying the reason and the way out. */}
-      <ConfirmModal
-        show={warning !== null}
-        title="These nights are already billed"
-        confirmLabel="Cannot be dropped"
-        cancelLabel="Close"
-        disabled
-        className="bg-primary hover:bg-primary/90"
-        loading={saving}
-        onCancel={() => setWarning(null)}
-        // Belt and braces. The button is disabled, so this cannot be reached --
-        // and if it ever were, closing is the one thing that must not write.
-        onConfirm={() => setWarning(null)}
-        message={
-          <>
-            <span className="block">
-              <strong className="text-danger dark:text-red-400">
-                {warning?.billed_dropping} of the nights being dropped {Number(warning?.billed_dropping) === 1 ? 'is' : 'are'} on the bill.
-              </strong>{' '}
-              A billed night cannot be taken off a booking — the charge is posted to the
-              ledger with a voucher against it, and nothing here can unwrite that.
-            </span>
-
-            {(warning?.billed_lines ?? []).length ? (
-              <span className="mt-2 block text-xs text-gray-600 dark:text-gray-300">
-                {(warning?.billed_lines ?? [])
-                  .map((line: any) => `${line.description} · ${money(line.amount)}`)
-                  .join(', ')}
-              </span>
-            ) : null}
-
-            {/* A refusal that only refuses teaches people to stop using the
-                screen. This is what is still open to them. */}
-            <span className="mt-2 block text-xs text-gray-600 dark:text-gray-300">
-              Rooms and sittings may still be added, dates extended, and any night that
-              has not been billed dropped. A guest who is really leaving a room is
-              checked out of it, which keeps what was billed.
-            </span>
-          </>
-        }
-      />
-
       <ConfirmModal
         show={Boolean(cancelling)}
         title="Cancel this booking"
