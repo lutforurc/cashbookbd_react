@@ -119,7 +119,9 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     // A number in the Rows box is an instruction and is obeyed exactly. Left
     // empty, the whole report is one run and the paper decides where it breaks.
     const asked = Number(rowsPerPage);
-    const pages = asked > 0 ? paginateRows(rows, asked) : [rows];
+    /** One unbroken run, the sheets cut by the browser rather than by us. */
+    const continuous = !(asked > 0);
+    const pages = continuous ? [rows] : paginateRows(rows, asked);
     const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
     const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
     const printablePartyName = partyName || '-';
@@ -202,11 +204,29 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
             next, which reads as two rows that are each half wrong.
           */
           tr { break-inside: avoid; page-break-inside: avoid; }
+
+          /*
+            ⚠️ ROOM KEPT FOR THE PINNED FOOT. On an unbroken run the software
+            line is position:fixed, which is how it comes back on every sheet --
+            and being fixed it is out of the flow, so without this the last rows
+            of each sheet run underneath it. That is the very fault that took
+            the line out of the foot in the first place; the space is the half
+            that was missing then.
+
+            10mm: the line is 10px at most, plus its rule and padding, with the
+            rest as margin for error. Costing one row a sheet is the right way
+            round -- the alternative is a row with a footer printed through it.
+          */
+          .print-page.ledger-continuous {
+            padding-bottom: 10mm !important;
+          }
         `}</style>
         {pages.map((pageRows, pageIndex) => (
           <div
             key={pageIndex}
-            className={`print-page ${pageIndex !== pages.length - 1 ? 'ledger-break-after' : ''}`}
+            className={`print-page ${continuous ? 'ledger-continuous' : ''} ${
+              pageIndex !== pages.length - 1 ? 'ledger-break-after' : ''
+            }`}
           >
             <PadPrinting />
             <div className="mb-1">
@@ -217,16 +237,8 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <div>
-                    <span className="font-semibold">Branch:</span> {branchName || '-'}
-                  </div>
-                  <div>
                     <span className="font-semibold">Name:</span> {printablePartyName}
                   </div>
-                  {ledgerPage ? (
-                    <div>
-                      <span className="font-semibold">Ledger Page:</span> {ledgerPage}
-                    </div>
-                  ) : null}
                   {printableMobile.length >= 5 && (
                     <div>
                       <span className="font-semibold">Mobile:</span> {formatMobile(printableMobile, mobileFormat)}
@@ -363,13 +375,28 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
             ) : null}
 
             {/*
-              The software line sits here, in the page's normal flow, rather than
-              coming from a position:fixed footer — pinned outside the flow, it
-              was painted over the summary row whenever the rows reached the foot
-              of the page. mt-auto holds it at the bottom of the flex column, so
-              it keeps the same spot on every page and the rows stop above it.
+              ⚠️ TWO FEET, BECAUSE THERE ARE TWO WAYS THIS REPORT IS BROKEN UP.
+
+              A NUMBERED RUN cuts its own pages, so each page block carries its
+              own line in the normal flow. mt-auto holds it at the bottom of the
+              flex column: it keeps the same spot on every sheet, the rows stop
+              above it, and it can say which page of how many this is because we
+              are the ones who decided.
+
+              AN UNBROKEN RUN is one block and the browser cuts it, so a line in
+              the flow appears once, at the very end -- which is what was
+              reported: eight sheets and the software line on the last of them.
+              The pinned form is repainted on every printed sheet instead, and
+              carries no page count, since nothing here can count pages somebody
+              else decided on. The space it needs is reserved above -- see
+              .ledger-continuous, and the note there about why this line was
+              taken out of the foot once before.
             */}
-            <PrintFooter page={pageIndex + 1} total={pages.length} />
+            {continuous ? (
+              <PrintFooter fixed fontSize={fs} />
+            ) : (
+              <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} />
+            )}
           </div>
         ))}
       </div>
