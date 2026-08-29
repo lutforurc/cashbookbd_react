@@ -1601,6 +1601,24 @@ const BookingsScreen = ({ user }: any) => {
                 onChange={(e: any) => setStatusFilter(e.target.value)}
               />
             </div>
+
+            {/* ⚠️ It belongs to the room grid, not to the list -- so it is only
+                here while the grid is, which is while a booking is being taken.
+                On its own row under the dates it was one small box adrift
+                between the form and the rooms; up here it stands with the other
+                two things that decide what is shown. */}
+            {availability && !isWalkIn ? (
+              <div className="w-44">
+                <DropdownCommon
+                  id="booking_colour_mode"
+                  name="booking_colour_mode"
+                  label="Colour by"
+                  data={BOOKING_COLOUR_MODES}
+                  value={mode}
+                  onChange={(e: any) => setMode(e.target.value as ColourMode)}
+                />
+              </div>
+            ) : null}
           </>
         }
         formOpen={form !== null}
@@ -1641,12 +1659,18 @@ const BookingsScreen = ({ user }: any) => {
                   It used to sit in section 3, which is drawn only once a room
                   has been picked -- so a walk-in sale, which never picks one,
                   could not be reached from there. */}
-              {/* ⚠️ items-start, not items-end. The type carries a line of
-                  description under it and the date does not, so bottom-aligning
-                  the row hung the date's label level with the middle of the
-                  type's box -- two fields on one line that did not look like
-                  one line. */}
-              <div className="grid grid-cols-1 items-start gap-2 md:grid-cols-4">
+              {/* ⚠️ ONE LINE, AND CAPPED. On a wide monitor a four-column grid
+                  across the whole page gives every field a quarter of 1700
+                  pixels: a date box a hand's width across, a Type dropdown with
+                  three empty columns beside it, and a form that reads as
+                  scattered parts rather than one question. The cap is what
+                  keeps the fields the size of what goes in them.
+
+                  items-end, so the button sits on the line the fields sit on.
+                  Nothing in this row carries a description any more -- the one
+                  that did lifted the row out of true, and what it said is said
+                  below, when it applies. */}
+              <div className="grid max-w-6xl grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-5">
                 <DropdownCommon
                   id="booking_type"
                   name="booking_type"
@@ -1654,13 +1678,6 @@ const BookingsScreen = ({ user }: any) => {
                   data={TYPE_OPTIONS}
                   value={form.booking_type}
                   onChange={chooseType}
-                  description={
-                    isWalkIn
-                      ? // Said in full in the panel below, where there is room
-                        // for it. Repeating it here only made the row uneven.
-                        undefined
-                      : 'Corporate is billed to a company, not to the guest.'
-                  }
                 />
 
                 {/* The day it was served. A walk-in has no arriving and no
@@ -1677,53 +1694,61 @@ const BookingsScreen = ({ user }: any) => {
                     setCurrentDate={setDate('check_in_date')}
                     className="w-full"
                   />
-                ) : null}
+                ) : (
+                  <>
+                    <InputDatePicker
+                      id="check_in_date"
+                      name="check_in_date"
+                      label="Arriving"
+                      selectedDate={asDate(form.check_in_date)}
+                      setSelectedDate={setDate('check_in_date')}
+                      setCurrentDate={setDate('check_in_date')}
+                      className="w-full"
+                    />
+                    <InputDatePicker
+                      id="check_out_date"
+                      name="check_out_date"
+                      label="Leaving"
+                      selectedDate={asDate(form.check_out_date)}
+                      setSelectedDate={setDate('check_out_date')}
+                      setCurrentDate={setDate('check_out_date')}
+                      className="w-full"
+                    />
+                    <DropdownCommon
+                      id="booking_building"
+                      name="booking_building"
+                      label="Building"
+                      data={[{ id: '', name: 'Anywhere on the property' }, ...buildingChoices]}
+                      value={building}
+                      onChange={(e: any) => {
+                        setBuilding(e.target.value);
+                        forget();
+                      }}
+                    />
+                    {/* No padding under it: the row is items-end, so anything
+                        below the button lifts it off the line the fields sit
+                        on. */}
+                    <div>
+                      <ButtonLoading
+                        onClick={check}
+                        buttonLoading={checking}
+                        label="See what is free"
+                        variant="primary"
+                        icon={<FiSearch size={16} />}
+                      />
+                    </div>
+
+                  </>
+                )}
               </div>
 
-              {/* 1 -- the question */}
-              {!isWalkIn ? (
-              <div className="mt-3 grid grid-cols-1 items-end gap-2 md:grid-cols-4">
-                <InputDatePicker
-                  id="check_in_date"
-                  name="check_in_date"
-                  label="Arriving"
-                  selectedDate={asDate(form.check_in_date)}
-                  setSelectedDate={setDate('check_in_date')}
-                  setCurrentDate={setDate('check_in_date')}
-                  className="w-full"
-                />
-                <InputDatePicker
-                  id="check_out_date"
-                  name="check_out_date"
-                  label="Leaving"
-                  selectedDate={asDate(form.check_out_date)}
-                  setSelectedDate={setDate('check_out_date')}
-                  setCurrentDate={setDate('check_out_date')}
-                  className="w-full"
-                />
-                <DropdownCommon
-                  id="booking_building"
-                  name="booking_building"
-                  label="Building"
-                  data={[{ id: '', name: 'Anywhere on the property' }, ...buildingChoices]}
-                  value={building}
-                  onChange={(e: any) => {
-                    setBuilding(e.target.value);
-                    forget();
-                  }}
-                />
-                {/* No padding under it: the row is items-end, so anything below
-                    the button lifts it off the line the fields sit on. */}
-                <div>
-                  <ButtonLoading
-                    onClick={check}
-                    buttonLoading={checking}
-                    label="See what is free"
-                    variant="primary"
-                    icon={<FiSearch size={16} />}
-                  />
-                </div>
-              </div>
+              {/* Said where it applies rather than under the dropdown for ever.
+                  A hint that is always there is furniture; one that appears
+                  when the answer needs it is read. */}
+              {form.booking_type === 'corporate' ? (
+                <p className="mt-1 max-w-6xl text-xs text-gray-500 dark:text-gray-400">
+                  Corporate is billed to a company, not to the guest — name the company on the bill.
+                </p>
               ) : null}
 
               {/* A walk-in sale has nothing to look up and nothing to pick, so
@@ -1735,19 +1760,6 @@ const BookingsScreen = ({ user }: any) => {
                   No room, bed or hall is held by a walk-in sale. Save it, then open its
                   <span className="font-medium text-black dark:text-white"> Bill </span>
                   and add what was sold — restaurant, catering, laundry.
-                </div>
-              ) : null}
-
-              {availability && !isWalkIn ? (
-                <div className="mt-3 w-56">
-                  <DropdownCommon
-                    id="booking_colour_mode"
-                    name="booking_colour_mode"
-                    label="Colour by"
-                    data={BOOKING_COLOUR_MODES}
-                    value={mode}
-                    onChange={(e: any) => setMode(e.target.value as ColourMode)}
-                  />
                 </div>
               ) : null}
 
@@ -2038,7 +2050,7 @@ const BookingsScreen = ({ user }: any) => {
                   them in is a form in the wrong order. */}
               {anyPicked || isWalkIn ? (
                 <>
-                  <div className="mt-4 rounded border border-stroke p-3 dark:border-strokedark">
+                  <div className="mt-4 max-w-6xl rounded border border-stroke p-3 dark:border-strokedark">
                     <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                       <span className="text-sm font-medium text-black dark:text-white">
                         {isWalkIn
@@ -2072,24 +2084,34 @@ const BookingsScreen = ({ user }: any) => {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
-                      <InputElement
-                        id="booker_name"
-                        name="booker_name"
-                        label="Who is booking"
-                        placeholder="The name on the telephone"
-                        title="Not necessarily the guest, and not a customer account. A father booking beds for three students is neither — guests are recorded at check-in."
-                        value={form.booker_name}
-                        onChange={set('booker_name')}
-                      />
-                      <InputElement
-                        id="booker_mobile"
-                        name="booker_mobile"
-                        label="Mobile"
-                        placeholder="01711000000"
-                        value={form.booker_mobile ?? ''}
-                        onChange={set('booker_mobile')}
-                      />
+                    {/* ⚠️ A NAME IS NOT THE SAME WIDTH AS A COUNT OF CHILDREN.
+                        Four equal columns gave "0" a box as wide as the name on
+                        the telephone, which is what made this block read as
+                        scattered parts. Six columns, and each field takes what
+                        goes in it: name and mobile two apiece, the two counts
+                        one each. */}
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
+                      <div className="xl:col-span-2">
+                        <InputElement
+                          id="booker_name"
+                          name="booker_name"
+                          label="Who is booking"
+                          placeholder="The name on the telephone"
+                          title="Not necessarily the guest, and not a customer account. A father booking beds for three students is neither — guests are recorded at check-in."
+                          value={form.booker_name}
+                          onChange={set('booker_name')}
+                        />
+                      </div>
+                      <div className="xl:col-span-2">
+                        <InputElement
+                          id="booker_mobile"
+                          name="booker_mobile"
+                          label="Mobile"
+                          placeholder="01711000000"
+                          value={form.booker_mobile ?? ''}
+                          onChange={set('booker_mobile')}
+                        />
+                      </div>
                       <InputElement
                         id="stated_adults"
                         name="stated_adults"
@@ -2112,23 +2134,25 @@ const BookingsScreen = ({ user }: any) => {
                       />
                     </div>
 
-                    <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-4">
+                    <div className="mt-3 grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-6">
                       {/* ⚠️ Not on a walk-in. A hold keeps a bed off sale until
                           a deadline; this sale holds no bed, so the choice
                           would mean nothing and the sweep would expire a meal
                           that has been eaten. The server forces it confirmed. */}
                       {!isWalkIn ? (
-                        <DropdownCommon
-                          id="booking_status"
-                          name="booking_status"
-                          label="Confirmed or held"
-                          data={STATUS_OPTIONS}
-                          value={form.status}
-                          onChange={set('status')}
-                          description={`A hold keeps the rooms for ${holdLength(times?.hold_hours)}, then the beds go back on sale.`}
-                        />
+                        <div className="xl:col-span-2">
+                          <DropdownCommon
+                            id="booking_status"
+                            name="booking_status"
+                            label="Confirmed or held"
+                            data={STATUS_OPTIONS}
+                            value={form.status}
+                            onChange={set('status')}
+                            description={`A hold keeps the rooms for ${holdLength(times?.hold_hours)}, then the beds go back on sale.`}
+                          />
+                        </div>
                       ) : null}
-                      <div className={isWalkIn ? 'md:col-span-3' : 'md:col-span-2'}>
+                      <div className={isWalkIn ? 'sm:col-span-2 xl:col-span-6' : 'sm:col-span-2 xl:col-span-4'}>
                         <InputElement
                           id="booking_notes"
                           name="notes"
