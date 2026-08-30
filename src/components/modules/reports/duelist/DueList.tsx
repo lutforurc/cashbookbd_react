@@ -242,12 +242,11 @@ const DueList = (user: any) => {
                 <p className={label === '90+' && amount > 0 ? 'text-danger' : ''}>
                   {amount > 0 ? thousandSeparator(amount) : '-'}
                 </p>
+                {/* Red like the figure above it: the age is the same warning said a
+                    second way, not a footnote to it. Paired with the green under
+                    Last Paid, a row reads across in one glance -- old money on the
+                    right, recent money in the middle. */}
                 {label === '90+' && amount > 0 && row.oldest_days > 90 ? (
-                  {/* Red like the figure above it: the age is the same warning
-                      said a second way, not a footnote to it. Paired with the
-                      green under Last Paid, a row can be read across in one
-                      glance -- old money on the right, recent money in the
-                      middle. */}
                   <p className="text-[0.65rem] text-danger">{formatAge(row.oldest_age)}</p>
                 ) : null}
               </>
