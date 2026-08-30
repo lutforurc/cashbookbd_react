@@ -18,7 +18,7 @@ import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { useReactToPrint } from 'react-to-print';
 import { isBranchSettingOn, isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
-import Checkbox from '../../../utils/fields/Checkbox';
+import ToggleSwitch from '../../../utils/utils-functions/ToggleSwitch';
 
 
 
@@ -351,15 +351,16 @@ const DueList = (user: any) => {
                 />
               </>
             )}
-            <Checkbox
-              id="show_ageing"
-              name="show_ageing"
-              label="Ageing"
-              checked={showAgeing}
-              onChange={() => setShowAgeing((on) => !on)}
-              className="pb-2"
-              labelClassName="cursor-pointer text-sm whitespace-nowrap"
-            />
+            {/* The wrapper carries the padding, because the switch sits in a row
+                of fields whose labels stand above them and would otherwise ride
+                high against them. */}
+            <div className="pb-2">
+              <ToggleSwitch
+                label="Ageing"
+                checked={showAgeing}
+                onChange={setShowAgeing}
+              />
+            </div>
             <PrintRowsInput
  id="perPage"
  name="perPage"
@@ -394,11 +395,7 @@ const DueList = (user: any) => {
           oldest open debt is taken as the one paid. The same closing balance
           would sit in a different column if payments were applied newest-first,
           and anybody reading these numbers to a customer should know that. */}
-      {showAgeing ? (
-        <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
-         
-        </p>
-      ) : null}
+
 
       <div className='overflow-y-auto overflow-x-auto'>
         {dueList.isLoading && <Loader />}
