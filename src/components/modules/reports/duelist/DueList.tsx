@@ -19,6 +19,7 @@ import { useReactToPrint } from 'react-to-print';
 import { isBranchSettingOn, isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import ToggleSwitch from '../../../utils/utils-functions/ToggleSwitch';
+import formatAge from '../../../utils/utils-functions/formatAge';
 
 
 
@@ -185,7 +186,8 @@ const DueList = (user: any) => {
      *
      * The oldest bucket carries the age of the oldest unpaid item, because
      * "90+" says nothing about whether that is ninety-one days or three years,
-     * and the difference decides who is telephoned first.
+     * and the difference decides who is telephoned first. It is said in years
+     * and months -- "1y 1m 10d" -- since nobody holds what 400 days means.
      */
     ...(showAgeing
       ? ['0-30', '31-60', '61-90', '90+'].map((label) => ({
@@ -203,7 +205,7 @@ const DueList = (user: any) => {
                   {amount > 0 ? thousandSeparator(amount) : '-'}
                 </p>
                 {label === '90+' && amount > 0 && row.oldest_days > 90 ? (
-                  <p className="text-[0.65rem] text-gray-500">{row.oldest_days} days</p>
+                  <p className="text-[0.65rem] text-gray-500">{formatAge(row.oldest_age)}</p>
                 ) : null}
               </>
             );

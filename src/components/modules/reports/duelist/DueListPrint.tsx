@@ -6,6 +6,7 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 import { useSelector } from "react-redux";
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import { isBranchSettingOn } from '../../../utils/userFeatureSettings';
+import formatAge, { Age } from '../../../utils/utils-functions/formatAge';
 
 
 type DueRow = {
@@ -19,6 +20,7 @@ type DueRow = {
   credit?: number;
   ageing?: { label: string; amount: number }[];
   oldest_days?: number;
+  oldest_age?: Age;
 };
 
 /** The four ages, in the order they are printed. */
@@ -168,6 +170,15 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                               className="border border-gray-900 px-2 py-1 text-right align-middle"
                             >
                               {aged(row, label) > 0 ? thousandSeparator(aged(row, label)) : "-"}
+
+                              {/* Only against the oldest bucket, and only once
+                                  it is past ninety days: below that the column
+                                  heading already says the age closely enough. */}
+                              {label === '90+' && aged(row, label) > 0 && Number(row.oldest_days) > 90 ? (
+                                <div style={{ fontSize: Math.max(fs - 3, 5) }} className="text-gray-600">
+                                  {formatAge(row.oldest_age)}
+                                </div>
+                              ) : null}
                             </td>
                           ))
                         : null}
