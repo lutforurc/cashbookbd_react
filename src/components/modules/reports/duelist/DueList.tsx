@@ -201,13 +201,14 @@ const DueList = (user: any) => {
                     them across the row: how old the debt is, and how recently
                     the money moved. The design token, not a raw colour, so it
                     follows the theme like every other coloured figure here. */}
-                <p className="text-[0.65rem] text-success">{formatAge(row.last_paid_age)}</p>
+                <p className="text-xs text-success">{formatAge(row.last_paid_age)}</p>
               </>
             ) : (
               // Said in a word rather than left blank: an empty cell reads as
               // "not known", and never having paid at all is the strongest
-              // thing this column has to say.
-              <p className="text-gray-500">never</p>
+              // thing this column has to say -- so it is said in the colour the
+              // report uses for trouble, not the grey it uses for asides.
+              <p className="text-danger">never</p>
             )
           ),
         }]
