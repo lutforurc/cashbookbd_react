@@ -176,6 +176,40 @@ const DueList = (user: any) => {
     },
 
     /**
+     * When they last handed money over.
+     *
+     * Sits before the buckets because it is about the party, not about a
+     * bucket, and because the two are read against each other: a debt in 90+
+     * whose owner paid last week is a slow account, and the same debt with no
+     * payment since January is a different problem needing a different call.
+     *
+     * ⚠️ Counts RECEIPT vouchers only. A credit also arises from a return, a
+     * discount or a journal adjustment, and none of those is the party paying
+     * -- printing one here would say somebody paid when nobody did.
+     */
+    ...(showAgeing
+      ? [{
+          key: 'last_paid',
+          header: 'Last Paid',
+          headerClass: 'text-center w-28',
+          cellClass: 'text-center w-28',
+          render: (row: any) => (
+            row.last_paid ? (
+              <>
+                <p>{dayjs(row.last_paid).format('DD/MM/YYYY')}</p>
+                <p className="text-[0.65rem] text-gray-500">{formatAge(row.last_paid_age)}</p>
+              </>
+            ) : (
+              // Said in a word rather than left blank: an empty cell reads as
+              // "not known", and never having paid at all is the strongest
+              // thing this column has to say.
+              <p className="text-gray-500">never</p>
+            )
+          ),
+        }]
+      : []),
+
+    /**
      * The four buckets, built from the row's own ageing rather than counted
      * here.
      *

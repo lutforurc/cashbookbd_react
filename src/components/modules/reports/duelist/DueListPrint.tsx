@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import { isBranchSettingOn } from '../../../utils/userFeatureSettings';
 import formatAge, { Age } from '../../../utils/utils-functions/formatAge';
+import dayjs from 'dayjs';
 
 
 type DueRow = {
@@ -21,6 +22,8 @@ type DueRow = {
   ageing?: { label: string; amount: number }[];
   oldest_days?: number;
   oldest_age?: Age;
+  last_paid?: string | null;
+  last_paid_age?: Age;
 };
 
 /** The four ages, in the order they are printed. */
@@ -101,6 +104,9 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                   <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-20 text-center">Area</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-24 text-right">Debit</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-24 text-right">Credit</th>
+                  {showAgeing ? (
+                    <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-24 text-center">Last Paid</th>
+                  ) : null}
                   {showAgeing
                     ? BUCKETS.map((label) => (
                         <th
@@ -162,6 +168,20 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                           bucket total that disagreed with the balance beside it
                           would be argued over long after anyone could re-run
                           the report. */}
+                      {showAgeing ? (
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center align-middle">
+                          {row.last_paid ? (
+                            <>
+                              <div>{dayjs(row.last_paid).format('DD/MM/YYYY')}</div>
+                              <div style={{ fontSize: Math.max(fs - 3, 5) }} className="text-gray-600">
+                                {formatAge(row.last_paid_age)}
+                              </div>
+                            </>
+                          ) : (
+                            'never'
+                          )}
+                        </td>
+                      ) : null}
                       {showAgeing
                         ? BUCKETS.map((label) => (
                             <td
@@ -187,7 +207,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                 ) : (
                   <tr>
                     <td
-                      colSpan={showAgeing ? 9 : 5}
+                      colSpan={showAgeing ? 10 : 5}
                       className="border border-gray-900 px-3 py-6 text-center text-gray-500"
                     >
                       No data found
