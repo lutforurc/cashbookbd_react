@@ -1010,3 +1010,10 @@ export const API_HOTEL_HOUSEKEEPING_URL = `${API_BASE_URL}/hotel-setup/housekeep
 // depreciated into that branch's accounts.
 export const API_ASSET_CATEGORY_URL = `${API_BASE_URL}/asset/categories`;
 export const API_ASSET_REGISTER_URL = `${API_BASE_URL}/asset/register`;
+
+// The yearly charge. The stem suffixes /plan, /run and /reverse/{id}.
+//
+// ⚠️ /plan is read before /run is pressed, and both come from the same
+// arithmetic on the server — a run writes a voucher into the books, so what it
+// would do is put in front of a person before it does it.
+export const API_ASSET_DEPRECIATION_URL = `${API_BASE_URL}/asset/depreciation`;

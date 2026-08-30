@@ -1,39 +1,49 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
-import { FiPackage, FiTag } from 'react-icons/fi';
+import { FiPackage, FiTag, FiTrendingDown } from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 
 import AssetCategoriesTab from './AssetCategoriesTab';
+import AssetDepreciationTab from './AssetDepreciationTab';
 import AssetRegisterTab from './AssetRegisterTab';
 
 /**
  * Fixed assets — the categories, and the register of the things themselves.
  *
- * ⚠️ TWO TABS, TWO SCOPES, and the difference is not cosmetic. A CATEGORY is the
+ * ⚠️ THREE TABS, TWO SCOPES, and the difference is not cosmetic. A CATEGORY is the
  * company's: "vehicles at 20%" is one bookkeeping decision, and two branches
  * with two rates for one class of thing is a schedule nobody can foot. An ASSET
  * stands somewhere — it belongs to a branch, and is depreciated into that
  * branch's accounts. So the property chooser above applies to the register and
- * not to the categories, which is why it is drawn inside this screen rather than
- * inside either tab.
+ * the yearly run but not to the categories, which is why it is drawn inside this
+ * screen rather than inside any one tab.
  *
  * ⚠️ CATEGORIES COME FIRST because an asset cannot be entered without one — the
  * rate it wears out at comes from there. The tab order is the order of the job.
  *
- * Depreciation joins them as a third tab when it is built: the arithmetic and
- * the tables are already in place (see App\Services\Asset\Depreciation), and
- * what is missing is the run that writes the rows and raises the voucher.
+ * ⚠️ DEPRECIATION IS A THIRD TAB RATHER THAN A BUTTON ON THE REGISTER, because
+ * it is a different act: the first two describe what the company owns, and this
+ * one writes a voucher into the books. It answers to its own permission for the
+ * same reason.
  */
 
-type TabKey = 'categories' | 'register';
+type TabKey = 'categories' | 'register' | 'depreciation';
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[] = [
   { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: 'Rates and heads' },
   { key: 'register', label: 'Register', icon: <FiPackage size={15} />, hint: 'What the company owns' },
+  // Last, because it cannot be done until the other two are: an asset needs a
+  // category to take its rate from, and a category needs its ledger heads.
+  {
+    key: 'depreciation',
+    label: 'Depreciation',
+    icon: <FiTrendingDown size={15} />,
+    hint: 'The yearly charge',
+  },
 ];
 
 const TAB_KEYS = TABS.map((one) => one.key);
@@ -87,7 +97,7 @@ const AssetSetup = ({ user }: any) => {
       {/* Drawn only where there is a choice, and only on the register: a
           category belongs to the company, so a property chooser above it would
           be asking a question that has no effect. */}
-      {tab === 'register' && branches.length > 1 ? (
+      {tab !== 'categories' && branches.length > 1 ? (
         <div className="mb-3 w-64">
           <label className="text-sm text-black dark:text-white">Property</label>
           <BranchDropdown
@@ -125,7 +135,9 @@ const AssetSetup = ({ user }: any) => {
         })}
       </div>
 
-      {tab === 'categories' ? <AssetCategoriesTab /> : <AssetRegisterTab branchId={branchId} />}
+      {tab === 'categories' ? <AssetCategoriesTab /> : null}
+      {tab === 'register' ? <AssetRegisterTab branchId={branchId} /> : null}
+      {tab === 'depreciation' ? <AssetDepreciationTab branchId={branchId} /> : null}
     </div>
   );
 };
