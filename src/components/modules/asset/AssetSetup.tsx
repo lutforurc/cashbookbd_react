@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
-import { FiPackage, FiTag, FiTrendingDown } from 'react-icons/fi';
+import { FiFileText, FiPackage, FiTag, FiTrendingDown } from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
@@ -10,6 +10,7 @@ import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import AssetCategoriesTab from './AssetCategoriesTab';
 import AssetDepreciationTab from './AssetDepreciationTab';
 import AssetRegisterTab from './AssetRegisterTab';
+import AssetScheduleTab from './AssetScheduleTab';
 
 /**
  * Fixed assets — the categories, and the register of the things themselves.
@@ -31,7 +32,7 @@ import AssetRegisterTab from './AssetRegisterTab';
  * same reason.
  */
 
-type TabKey = 'categories' | 'register' | 'depreciation';
+type TabKey = 'categories' | 'register' | 'depreciation' | 'schedule';
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[] = [
   { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: 'Rates and heads' },
@@ -43,6 +44,15 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
     label: 'Depreciation',
     icon: <FiTrendingDown size={15} />,
     hint: 'The yearly charge',
+  },
+  // ⚠️ The paper an auditor asks for first, and the only place the register
+  // and the ledger can be seen agreeing. Last because it reads what the other
+  // three wrote.
+  {
+    key: 'schedule',
+    label: 'Schedule',
+    icon: <FiFileText size={15} />,
+    hint: 'The year-end note',
   },
 ];
 
@@ -75,6 +85,11 @@ const AssetSetup = ({ user }: any) => {
   const [branchId, setBranchId] = useState<number | null>(user?.branch_id ?? null);
 
   const branches: any[] = branchDdlData?.protectedData?.data ?? [];
+
+  // Named on the printed schedule: a page headed only "Schedule of Fixed
+  // Assets" says nothing about which property's assets it is a schedule of.
+  const branchName =
+    branches.find((one: any) => Number(one.id) === Number(branchId))?.name ?? undefined;
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -138,6 +153,9 @@ const AssetSetup = ({ user }: any) => {
       {tab === 'categories' ? <AssetCategoriesTab /> : null}
       {tab === 'register' ? <AssetRegisterTab branchId={branchId} /> : null}
       {tab === 'depreciation' ? <AssetDepreciationTab branchId={branchId} /> : null}
+      {tab === 'schedule' ? (
+        <AssetScheduleTab branchId={branchId} branchName={branchName} />
+      ) : null}
     </div>
   );
 };

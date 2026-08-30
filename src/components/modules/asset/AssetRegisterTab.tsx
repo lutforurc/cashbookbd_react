@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { FiPlus, FiSave, FiTrash2, FiX } from 'react-icons/fi';
+import { FiLogOut, FiPlus, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 
 import ActionButtons from '../../utils/fields/ActionButton';
 import InputElement from '../../utils/fields/InputElement';
@@ -13,7 +13,7 @@ import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 
 import httpService from '../../services/httpService';
-import { API_ASSET_REGISTER_URL } from '../../services/apiRoutes';
+import { API_ASSET_DISPOSAL_URL, API_ASSET_REGISTER_URL } from '../../services/apiRoutes';
 import { money } from '../hotel/setupHelpers';
 
 /**
@@ -72,6 +72,8 @@ const STATUS_NAMES: Record<string, string> = {
   written_off: 'Written off',
 };
 
+const today = () => asText(new Date());
+
 const blank = () => ({
   category_id: '',
   code: '',
@@ -97,6 +99,19 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>(null);
+
+  /**
+   * The open disposal panel, and what the entry would be.
+   *
+   * ⚠️ The plan is fetched from the server rather than worked out here. Selling
+   * an asset writes off a cost that has stood in the balance sheet for years,
+   * and the legs a person agrees to have to be the legs that get posted.
+   */
+  const [leaving, setLeaving] = useState<any>(null);
+  const [plan, setPlan] = useState<any>(null);
+
+  /** The years charged against one asset, opened from its row. */
+  const [history, setHistory] = useState<any>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -198,6 +213,76 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
     }
   };
 
+  /**
+   * Open the disposal panel, and ask the server what the entry would be.
+   *
+   * ⚠️ Asked BEFORE anything is typed, and asked again whenever the date or the
+   * money changes: the depreciation owed up to the day it goes is part of the
+   * entry, and it moves with the date.
+   */
+  const askDisposal = async (row: any, over: any = {}) => {
+    const asked = { disposed_on: today(), proceeds: '', till_coa4_id: '', status: 'disposed', note: '', ...over };
+
+    setLeaving({ ...row, ...asked });
+
+    try {
+      const res = await httpService.get(`${API_ASSET_DISPOSAL_URL}/plan/${row.id}`, {
+        params: {
+          disposed_on: asked.disposed_on,
+          proceeds: asked.proceeds === '' ? 0 : asked.proceeds,
+          till_coa4_id: asked.till_coa4_id || undefined,
+        },
+      });
+
+      setPlan(res?.data?.data?.data ?? res?.data?.data ?? null);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Could not work the disposal out');
+      setLeaving(null);
+    }
+  };
+
+  const dispose = async () => {
+    if (!leaving?.disposed_on) {
+      toast.error('Which day did it go?');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const res = await httpService.post(`${API_ASSET_DISPOSAL_URL}/store/${leaving.id}`, {
+        disposed_on: leaving.disposed_on,
+        proceeds: leaving.proceeds === '' ? 0 : leaving.proceeds,
+        till_coa4_id: leaving.till_coa4_id || null,
+        status: leaving.status,
+        note: leaving.note || null,
+      });
+
+      // Held longer than a toast usually is: it says whether the sale made a
+      // gain or a loss, which is the thing somebody wants to write down.
+      toast.success(res?.data?.message || 'Done', { autoClose: 8000 });
+      setLeaving(null);
+      setPlan(null);
+      load();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Could not dispose of it');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /** Every year charged against one asset, as it was charged. */
+  const openHistory = async (row: any) => {
+    try {
+      const res = await httpService.get(`${API_ASSET_REGISTER_URL}/edit/${row.id}`);
+      const data = res?.data?.data?.data ?? res?.data?.data ?? {};
+
+      setHistory({ asset: row, rows: data.depreciations ?? [], wdv: data.written_down_value });
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Could not read its depreciation');
+    }
+  };
+
   const columns = [
     {
       key: 'code',
@@ -258,11 +343,19 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
               {money(row.written_down_value)}
             </div>
             {brought || here ? (
-              <div className="text-xs text-gray-500 dark:text-gray-400">
+              // ⚠️ The years are one click away rather than a screen away: the
+              // question "why is it worth that" is asked of this cell, so the
+              // answer opens from it.
+              <button
+                type="button"
+                onClick={() => openHistory(row)}
+                className="text-xs text-gray-500 underline dark:text-gray-400"
+                title="Every year charged against this asset, as it was charged"
+              >
                 {brought ? `${money(brought)} brought forward` : ''}
                 {brought && here ? ' · ' : ''}
-                {here ? `${money(here)} charged here` : ''}
-              </div>
+                {here ? `${money(here)} over ${row.years_charged} year(s)` : ''}
+              </button>
             ) : (
               <div className="text-xs text-gray-500 dark:text-gray-400">nothing charged yet</div>
             )}
@@ -310,6 +403,20 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
               })
             }
           />
+
+          {/* ⚠️ Only while it is still in use. An asset that has already
+              gone cannot go twice, and the row says which it is. */}
+          {row.status === 'in_use' ? (
+            <button
+              type="button"
+              onClick={() => askDisposal(row)}
+              aria-label="Sell or write off"
+              title="Sell it, or write it off"
+              className="btn btn-sm btn-outline flex h-5 w-5 cursor-pointer items-center justify-center"
+            >
+              <FiLogOut className="text-lg text-amber-600" />
+            </button>
+          ) : null}
 
           {!Number(row.charged_here) ? (
             <button
@@ -523,6 +630,238 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
               label="Save"
               variant="primary"
             />
+          </div>
+        </div>
+      ) : null}
+
+      {/* ⚠️ SHOWN LEG BY LEG BEFORE IT IS DONE. Selling an asset writes off a
+          cost that has stood in the balance sheet for years, charges the
+          depreciation owed up to the day it went, and puts whatever is left
+          through the profit and loss. None of that is something to discover
+          afterwards. */}
+      {leaving ? (
+        <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
+          <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+            <div className="text-sm font-medium text-black dark:text-white">
+              {leaving.status === 'written_off' ? 'Write off' : 'Sell'} — {leaving.name}{' '}
+              <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
+                {leaving.code}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setLeaving(null);
+                setPlan(null);
+              }}
+              className="text-xs text-gray-500 underline dark:text-gray-400"
+            >
+              Close
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
+            <DropdownCommon
+              id="disposal_status"
+              name="status"
+              label="What happened"
+              data={[
+                { id: 'disposed', name: 'Sold' },
+                { id: 'written_off', name: 'Written off / scrapped' },
+              ]}
+              value={leaving.status}
+              onChange={(e: any) => askDisposal(leaving, { ...leaving, status: e.target.value })}
+            />
+
+            <div>
+              <InputDatePicker
+                id="disposal_on"
+                name="disposed_on"
+                label="On"
+                selectedDate={asDate(leaving.disposed_on)}
+                setSelectedDate={(date: Date | null) =>
+                  askDisposal(leaving, { ...leaving, disposed_on: asText(date) })
+                }
+                setCurrentDate={() => undefined}
+                className="w-full"
+              />
+              <p className="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                Depreciation is charged to this day.
+              </p>
+            </div>
+
+            <InputElement
+              id="disposal_proceeds"
+              name="proceeds"
+              label="Money received"
+              type="number"
+              min={0}
+              value={String(leaving.proceeds ?? '')}
+              onChange={(e: any) => setLeaving({ ...leaving, proceeds: e.target.value })}
+              onBlur={() => askDisposal(leaving, leaving)}
+              disabled={leaving.status === 'written_off'}
+              description={
+                leaving.status === 'written_off'
+                  ? 'A write-off fetches nothing.'
+                  : 'Leave empty if nothing was received.'
+              }
+            />
+
+            <DropdownCommon
+              id="disposal_till"
+              name="till_coa4_id"
+              label="Into which account"
+              data={[
+                { id: '', name: 'Not chosen' },
+                ...(plan?.tills ?? []).map((one: any) => ({
+                  id: one.id,
+                  name: `${one.name} (${one.group_name})`,
+                })),
+              ]}
+              value={leaving.till_coa4_id ?? ''}
+              onChange={(e: any) =>
+                askDisposal(leaving, { ...leaving, till_coa4_id: e.target.value })
+              }
+              description="Where the money went."
+            />
+          </div>
+
+          <div className="mt-2">
+            <InputElement
+              id="disposal_note"
+              name="note"
+              label="Note"
+              placeholder="Sold to Karim Traders, receipt 4471"
+              value={leaving.note ?? ''}
+              onChange={(e: any) => setLeaving({ ...leaving, note: e.target.value })}
+            />
+          </div>
+
+          {plan ? (
+            <div className="mt-3 rounded border border-stroke p-3 text-sm dark:border-strokedark">
+              <div className="mb-2 flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                <span>
+                  Cost <strong className="text-black dark:text-white">{money(plan.cost)}</strong>
+                </span>
+                <span>
+                  Depreciation so far{' '}
+                  <strong className="text-black dark:text-white">{money(plan.accumulated)}</strong>
+                </span>
+                {Number(plan.catch_up?.amount) ? (
+                  <span className="text-primary dark:text-secondary">
+                    plus {plan.catch_up.days} day(s) to the day it went{' '}
+                    <strong>{money(plan.catch_up.amount)}</strong>
+                  </span>
+                ) : null}
+                <span>
+                  Worth on the day{' '}
+                  <strong className="text-black dark:text-white">
+                    {money(plan.written_down_value)}
+                  </strong>
+                </span>
+              </div>
+
+              {/* The entry itself. Somebody signing this off reads legs, not a
+                  summary — so the legs are what is shown. */}
+              {(plan.legs ?? []).map((leg: any, index: number) => (
+                <div
+                  key={`${leg.coa4_id}-${index}`}
+                  className="flex flex-wrap items-baseline justify-between gap-2 border-b border-stroke py-1 text-xs last:border-0 dark:border-strokedark"
+                >
+                  <span className="text-gray-600 dark:text-gray-300">
+                    {leg.head ?? leg.coa4_id}{' '}
+                    <span className="text-gray-400">{leg.note ? `· ${leg.note}` : ''}</span>
+                  </span>
+                  <span className="font-medium text-black dark:text-white">
+                    {Number(leg.debit) ? `Dr ${money(leg.debit)}` : `Cr ${money(leg.credit)}`}
+                  </span>
+                </div>
+              ))}
+
+              <div className="mt-2 text-sm font-semibold">
+                {Number(plan.gain) ? (
+                  <span className="text-success dark:text-emerald-400">
+                    Gain {money(plan.gain)}
+                  </span>
+                ) : Number(plan.loss) ? (
+                  <span className="text-danger dark:text-red-400">Loss {money(plan.loss)}</span>
+                ) : (
+                  <span className="text-gray-500 dark:text-gray-400">No gain or loss</span>
+                )}
+              </div>
+
+              {plan.ready_to_dispose === false ? (
+                <p className="mt-2 rounded border border-amber-400 bg-amber-50 p-2 text-xs leading-snug text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+                  This category has no gain-or-loss head yet, so the entry cannot be written.
+                  Choose it on the Categories tab.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className="mt-3">
+            <ButtonLoading
+              onClick={dispose}
+              buttonLoading={saving}
+              icon={<FiLogOut className="h-5 w-5" />}
+              label={leaving.status === 'written_off' ? 'Write it off' : 'Sell it'}
+              variant="primary"
+              disabled={plan?.ready_to_dispose === false}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {/* Every year charged against one asset, as it was charged — opened from
+          the "worth now" cell, which is where the question is asked. */}
+      {history ? (
+        <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
+          <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+            <div className="text-sm font-medium text-black dark:text-white">
+              {history.asset.name} — every year charged
+            </div>
+            <button
+              type="button"
+              onClick={() => setHistory(null)}
+              className="text-xs text-gray-500 underline dark:text-gray-400"
+            >
+              Close
+            </button>
+          </div>
+
+          {Number(history.asset.opening_accum_dep) ? (
+            <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-stroke py-1 text-xs dark:border-strokedark">
+              <span className="text-gray-600 dark:text-gray-300">
+                Brought forward from the old books
+              </span>
+              <span className="text-black dark:text-white">
+                {money(history.asset.opening_accum_dep)}
+              </span>
+            </div>
+          ) : null}
+
+          {history.rows.length ? (
+            history.rows.map((one: any) => (
+              <div
+                key={one.id}
+                className="flex flex-wrap items-baseline justify-between gap-2 border-b border-stroke py-1 text-xs last:border-0 dark:border-strokedark"
+              >
+                <span className="text-gray-600 dark:text-gray-300">
+                  {onTheDay(String(one.year_ending).slice(0, 10))} · {Number(one.rate)}% ·{' '}
+                  {one.days} day(s) · on {money(one.opening_wdv)}
+                </span>
+                <span className="text-black dark:text-white">{money(one.amount)}</span>
+              </div>
+            ))
+          ) : (
+            <p className="py-1 text-xs text-gray-500 dark:text-gray-400">
+              Nothing charged by this system yet.
+            </p>
+          )}
+
+          <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2 text-sm font-semibold">
+            <span className="text-black dark:text-white">Worth now</span>
+            <span className="text-black dark:text-white">{money(history.wdv)}</span>
           </div>
         </div>
       ) : null}

@@ -1017,3 +1017,14 @@ export const API_ASSET_REGISTER_URL = `${API_BASE_URL}/asset/register`;
 // arithmetic on the server — a run writes a voucher into the books, so what it
 // would do is put in front of a person before it does it.
 export const API_ASSET_DEPRECIATION_URL = `${API_BASE_URL}/asset/depreciation`;
+
+// The Schedule of Fixed Assets — the note the year-end accounts print, and the
+// only place the register and the ledger can be seen agreeing.
+export const API_ASSET_SCHEDULE_URL = `${API_BASE_URL}/asset/schedule`;
+
+// Selling one, or writing it off. /plan/{id} shows the entry leg by leg;
+// /store/{id} writes it.
+//
+// ⚠️ It also charges the depreciation owed up to the day it went — otherwise
+// the June run would charge a year against a thing that left in September.
+export const API_ASSET_DISPOSAL_URL = `${API_BASE_URL}/asset/disposal`;
