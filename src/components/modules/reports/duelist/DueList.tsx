@@ -197,7 +197,11 @@ const DueList = (user: any) => {
             row.last_paid ? (
               <>
                 <p>{dayjs(row.last_paid).format('DD/MM/YYYY')}</p>
-                <p className="text-[0.65rem] text-gray-500">{formatAge(row.last_paid_age)}</p>
+                {/* Green against the red of the 90+ column, so the eye can pair
+                    them across the row: how old the debt is, and how recently
+                    the money moved. The design token, not a raw colour, so it
+                    follows the theme like every other coloured figure here. */}
+                <p className="text-[0.65rem] text-success">{formatAge(row.last_paid_age)}</p>
               </>
             ) : (
               // Said in a word rather than left blank: an empty cell reads as
