@@ -1,21 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
-import { FiFileText, FiPackage, FiTag, FiTrendingDown } from 'react-icons/fi';
+import {
+  FiCheckSquare,
+  FiFileText,
+  FiPackage,
+  FiTag,
+  FiTool,
+  FiTrendingDown,
+} from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 
 import AssetCategoriesTab from './AssetCategoriesTab';
+import AssetCwipTab from './AssetCwipTab';
 import AssetDepreciationTab from './AssetDepreciationTab';
 import AssetRegisterTab from './AssetRegisterTab';
 import AssetScheduleTab from './AssetScheduleTab';
+import AssetVerificationTab from './AssetVerificationTab';
 
 /**
  * Fixed assets — the categories, and the register of the things themselves.
  *
- * ⚠️ THREE TABS, TWO SCOPES, and the difference is not cosmetic. A CATEGORY is the
+ * ⚠️ SIX TABS, TWO SCOPES, and the difference is not cosmetic. A CATEGORY is the
  * company's: "vehicles at 20%" is one bookkeeping decision, and two branches
  * with two rates for one class of thing is a schedule nobody can foot. An ASSET
  * stands somewhere — it belongs to a branch, and is depreciated into that
@@ -32,11 +41,27 @@ import AssetScheduleTab from './AssetScheduleTab';
  * same reason.
  */
 
-type TabKey = 'categories' | 'register' | 'depreciation' | 'schedule';
+type TabKey =
+  | 'categories'
+  | 'register'
+  | 'cwip'
+  | 'depreciation'
+  | 'schedule'
+  | 'verification';
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[] = [
   { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: 'Rates and heads' },
   { key: 'register', label: 'Register', icon: <FiPackage size={15} />, hint: 'What the company owns' },
+  // ⚠️ Between the register and the charge, because that is where it sits in
+  // life: a thing being built is not in the register yet and is not depreciated
+  // yet. The day it is finished it joins the first and starts answering to the
+  // second.
+  {
+    key: 'cwip',
+    label: 'Under construction',
+    icon: <FiTool size={15} />,
+    hint: 'Not an asset yet',
+  },
   // Last, because it cannot be done until the other two are: an asset needs a
   // category to take its rate from, and a category needs its ledger heads.
   {
@@ -53,6 +78,17 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
     label: 'Schedule',
     icon: <FiFileText size={15} />,
     hint: 'The year-end note',
+  },
+  // ⚠️ Counting is not accounting, which is why it sits at the end and answers
+  // to the register's permission rather than the one that writes vouchers.
+  // Whoever walks round the building with a phone is not the person who posts
+  // the depreciation, and requiring that permission would put the count in the
+  // hands of the one person too busy to do it.
+  {
+    key: 'verification',
+    label: 'Verification',
+    icon: <FiCheckSquare size={15} />,
+    hint: 'Is it still there',
   },
 ];
 
@@ -152,9 +188,13 @@ const AssetSetup = ({ user }: any) => {
 
       {tab === 'categories' ? <AssetCategoriesTab /> : null}
       {tab === 'register' ? <AssetRegisterTab branchId={branchId} /> : null}
+      {tab === 'cwip' ? <AssetCwipTab branchId={branchId} /> : null}
       {tab === 'depreciation' ? <AssetDepreciationTab branchId={branchId} /> : null}
       {tab === 'schedule' ? (
         <AssetScheduleTab branchId={branchId} branchName={branchName} />
+      ) : null}
+      {tab === 'verification' ? (
+        <AssetVerificationTab branchId={branchId} branchName={branchName} />
       ) : null}
     </div>
   );

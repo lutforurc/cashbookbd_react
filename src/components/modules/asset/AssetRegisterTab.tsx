@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiLogOut, FiPlus, FiSave, FiTrash2, FiX } from 'react-icons/fi';
+import { FiClipboard, FiLogOut, FiPlus, FiPrinter, FiSave, FiTrash2, FiX } from 'react-icons/fi';
+import { useReactToPrint } from 'react-to-print';
 
 import ActionButtons from '../../utils/fields/ActionButton';
 import InputElement from '../../utils/fields/InputElement';
@@ -15,6 +17,9 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import httpService from '../../services/httpService';
 import { API_ASSET_DISPOSAL_URL, API_ASSET_REGISTER_URL } from '../../services/apiRoutes';
 import { money } from '../hotel/setupHelpers';
+
+import AssetCarePanel from './AssetCarePanel';
+import AssetLabelsPrint from './AssetLabelsPrint';
 
 /**
  * The register: every asset the company owns, one row each.
@@ -93,7 +98,15 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
   const [categories, setCategories] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [search, setSearch] = useState('');
+  /**
+   * ⚠️ SEEDED FROM THE ADDRESS, because that is where a scanned sticker lands.
+   * The QR on a label holds a link to this screen with ?q=<code>, so somebody
+   * standing in front of the thing with a phone arrives at its row rather than
+   * at four hundred rows and a search box. Read once, into ordinary state:
+   * whatever is typed afterwards is the person's, not the link's.
+   */
+  const [params] = useSearchParams();
+  const [search, setSearch] = useState(params.get('q') ?? '');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
@@ -112,6 +125,22 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
 
   /** The years charged against one asset, opened from its row. */
   const [history, setHistory] = useState<any>(null);
+
+  /**
+   * Who is holding one asset, whether it was there, and what it has cost to
+   * keep -- opened from its row, and touching no ledger.
+   */
+  const [caring, setCaring] = useState<any>(null);
+
+  /**
+   * ⚠️ LABELS ARE PRINTED FOR WHAT IS ON THE SCREEN, not for the whole
+   * register. Somebody labelling a store filters to that store's category or
+   * searches for it, and prints the page in front of them -- printing four
+   * hundred stickers to put up twelve is how the first attempt goes wrong.
+   */
+  const labelsRef = useRef<HTMLDivElement>(null);
+
+  const printLabels = useReactToPrint({ contentRef: labelsRef, documentTitle: 'Asset labels' });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -377,7 +406,7 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
     {
       key: 'actions',
       header: 'Action',
-      headerClass: 'w-28 text-center',
+      headerClass: 'w-32 text-center',
       cellClass: 'text-center',
       render: (row: any) => (
         <div className="flex items-center justify-center gap-2">
@@ -417,6 +446,19 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
               <FiLogOut className="text-lg text-amber-600" />
             </button>
           ) : null}
+
+          {/* Who has it, whether it was there, what it has cost to keep.
+              Shown for a disposed asset too: the questions asked after
+              something has gone are exactly the ones this answers. */}
+          <button
+            type="button"
+            onClick={() => setCaring(row)}
+            aria-label="Custody, counts and upkeep"
+            title="Who has it, whether it was there, what it has cost to keep"
+            className="btn btn-sm btn-outline flex h-5 w-5 cursor-pointer items-center justify-center"
+          >
+            <FiClipboard className="text-lg text-primary dark:text-secondary" />
+          </button>
 
           {!Number(row.charged_here) ? (
             <button
@@ -481,6 +523,15 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
           label={form ? 'Close' : 'Add an asset'}
           icon={form ? <FiX size={16} /> : <FiPlus size={16} />}
         />
+
+        {/* Stickers for the rows listed above -- filter first, then print. */}
+        {rows.length ? (
+          <ButtonLoading
+            onClick={printLabels}
+            label="Print labels"
+            icon={<FiPrinter size={16} />}
+          />
+        ) : null}
       </div>
 
       {form ? (
@@ -866,11 +917,15 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
         </div>
       ) : null}
 
+      {caring ? <AssetCarePanel asset={caring} onClose={() => setCaring(null)} /> : null}
+
       <Table
         columns={columns}
         data={rows}
         noDataMessage="Nothing in the register yet. Add a category first, then the assets that belong to it."
       />
+
+      <AssetLabelsPrint ref={labelsRef} rows={rows} />
 
       {totalPages > 1 ? (
         <div className="mt-3">

@@ -1028,3 +1028,37 @@ export const API_ASSET_SCHEDULE_URL = `${API_BASE_URL}/asset/schedule`;
 // ⚠️ It also charges the depreciation owed up to the day it went — otherwise
 // the June run would charge a year against a thing that left in September.
 export const API_ASSET_DISPOSAL_URL = `${API_BASE_URL}/asset/disposal`;
+
+// The three things that happen to an asset and never reach the ledger: who is
+// holding it, whether it is still there, and what it has cost to keep.
+//
+// ⚠️ NONE OF THEM POSTS ANYTHING. A repair bill is paid through the ordinary
+// expense voucher; the cost kept against an asset here is its service history,
+// so that "is this worth keeping" has an answer beside the asset rather than in
+// somebody's head.
+//
+// /history/{id} reads all three at once — one round trip draws the whole panel.
+export const API_ASSET_HISTORY_URL = `${API_BASE_URL}/asset/history`;
+export const API_ASSET_CUSTODY_URL = `${API_BASE_URL}/asset/custody`;
+export const API_ASSET_VERIFY_URL = `${API_BASE_URL}/asset/verify`;
+export const API_ASSET_MAINTENANCE_URL = `${API_BASE_URL}/asset/maintenance`;
+
+// The count as a round: every asset, what the count said — and, the column that
+// is the point of it, what nobody has looked at yet.
+export const API_ASSET_VERIFICATION_ROUND_URL = `${API_BASE_URL}/asset/verification-round`;
+
+// Who an asset can be handed to. An empty list is an ordinary answer: plenty of
+// companies never set the HRMS up, and their custody log names the holder in
+// writing instead.
+export const API_ASSET_PEOPLE_URL = `${API_BASE_URL}/asset/people`;
+
+// What is being built: cost gathered under its own balance sheet head until the
+// day it is finished, when it becomes one asset and starts to wear out.
+//
+// ⚠️ The list and its cost lines POST NOTHING — every bill was paid through an
+// ordinary voucher coded to the work-in-progress head. Only /capitalise/{id}
+// writes an entry, and it is the one under the permission that writes vouchers.
+//
+// The stem suffixes /store, /delete/{id}, /costs/{id}, /costs/delete/{id},
+// /plan/{id} and /capitalise/{id}.
+export const API_ASSET_CWIP_URL = `${API_BASE_URL}/asset/cwip`;
