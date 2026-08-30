@@ -113,6 +113,26 @@ const DueList = (user: any) => {
     }
   }, [branchDdlData?.protectedData?.data]);
 
+  /**
+   * How recently the money moved, said in colour.
+   *
+   * ⚠️ The edges are the bucket edges -- 30 and 90 -- and must stay that way.
+   * The two columns are read across one row, so a green Last Paid beside a red
+   * 90+ balance has to mean "old debt, but they are still paying". If the
+   * thresholds drifted apart, the same row would say a party is both current
+   * and delinquent, and the reader would have no way to tell which half to
+   * believe.
+   *
+   * Chosen on the day count rather than the years and months, because months
+   * cannot be compared without knowing which ones they were.
+   */
+  const lastPaidTone = (days: number | null | undefined) => {
+    if (days === null || days === undefined) return 'text-danger';
+    if (days <= 30) return 'text-success';
+    if (days <= 90) return 'text-warning';
+    return 'text-danger';
+  };
+
   const columns = [
     {
       key: 'sl_number',
@@ -201,7 +221,9 @@ const DueList = (user: any) => {
                     them across the row: how old the debt is, and how recently
                     the money moved. The design token, not a raw colour, so it
                     follows the theme like every other coloured figure here. */}
-                <p className="text-xs text-success">{formatAge(row.last_paid_age)}</p>
+                <p className={`text-xs ${lastPaidTone(row.last_paid_days)}`}>
+                  {formatAge(row.last_paid_age)}
+                </p>
               </>
             ) : (
               // Said in a word rather than left blank: an empty cell reads as
