@@ -39,12 +39,14 @@ const DueList = (user: any) => {
   /**
    * How old the money is, beside how much of it there is.
    *
-   * Off by default, and drawn only when asked for. Four more columns on a
-   * six-column report is a different table, and most of the time somebody
-   * opening this wants the list of names and the figures -- the ageing is what
-   * they come back for when they are deciding who to telephone first.
+   * ⚠️ On by default. It was off to begin with, on the reasoning that four more
+   * columns make a different table and most visits only want the names and the
+   * figures. That was wrong: the first person to open the report after the
+   * ageing was built could not find it, and a switch nobody knows to look for
+   * is the same as no feature. Whoever wants the shorter table can turn it off,
+   * which is the easier thing to discover of the two.
    */
-  const [showAgeing, setShowAgeing] = useState(false);
+  const [showAgeing, setShowAgeing] = useState(true);
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
@@ -190,7 +192,7 @@ const DueList = (user: any) => {
           key: `ageing_${label}`,
           header: label === '90+' ? '90+ days' : `${label} d`,
           headerClass: 'text-right',
-          cellClass: 'text-right',
+          cellClass: 'text-right w-24',
           render: (row: any) => {
             const bucket = (row.ageing ?? []).find((b: any) => b.label === label);
             const amount = Number(bucket?.amount ?? 0);
@@ -394,8 +396,7 @@ const DueList = (user: any) => {
           and anybody reading these numbers to a customer should know that. */}
       {showAgeing ? (
         <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
-          Ageing counts from the voucher date, and applies each payment to the
-          oldest unpaid amount first. The four columns add up to Debit.
+         
         </p>
       ) : null}
 
