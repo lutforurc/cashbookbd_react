@@ -1062,3 +1062,44 @@ export const API_ASSET_PEOPLE_URL = `${API_BASE_URL}/asset/people`;
 // The stem suffixes /store, /delete/{id}, /costs/{id}, /costs/delete/{id},
 // /plan/{id} and /capitalise/{id}.
 export const API_ASSET_CWIP_URL = `${API_BASE_URL}/asset/cwip`;
+
+// Ticking the bank statement off against the books.
+//
+// ⚠️ NOTHING HERE POSTS. What the two sides cannot explain -- charges,
+// interest, a cheque nobody entered -- is SHOWN as a difference, and an ordinary
+// voucher is passed for it. The stem suffixes /accounts, /tick, /close and
+// /reopen/{id}; the bare stem is the statement itself.
+export const API_BANK_RECONCILIATION_URL = `${API_BASE_URL}/bank-reconciliation`;
+
+// The cheque register: which cheque, drawn on which bank, dated when, and what
+// became of it.
+//
+// ⚠️ Banking and clearing POST NOTHING -- they are facts about a piece of
+// paper. /dishonour/{id} is the exception and turns the receipt voucher around
+// leg for leg; /dishonour/plan/{id} shows those legs first.
+export const API_CHEQUE_REGISTER_URL = `${API_BASE_URL}/cheque-register`;
+
+// Who owes what, and for how long -- both ways round.
+//
+// ⚠️ It posts nothing. /terms is the one thing it writes: how many days a
+// party gets to pay, which re-ages every bill of theirs at once.
+export const API_AGEING_URL = `${API_BASE_URL}/ageing`;
+
+// Closing the year: every profit-and-loss head emptied into capital, so the new
+// year starts from nothing.
+//
+// ⚠️ The heaviest act in the accounts. /plan shows it leg by leg before /run
+// writes it, and /reverse/{id} undoes one with a contra voucher.
+export const API_YEAR_CLOSING_URL = `${API_BASE_URL}/year-closing`;
+
+// What was meant to be spent, against what was.
+//
+// ⚠️ The actuals are never stored -- they are read from the ledger on every
+// request, so an edited voucher moves the report at once.
+export const API_BUDGET_URL = `${API_BASE_URL}/budget`;
+
+// Who changed which voucher, and when. Reading only.
+//
+// ⚠️ /voucher/{id} is everything ever recorded about one voucher; the bare
+// stem is the browsable window, which is the part that did not exist before.
+export const API_AUDIT_TRAIL_URL = `${API_BASE_URL}/audit-trail`;

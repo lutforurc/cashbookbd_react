@@ -133,6 +133,12 @@ import LabourCategoryAdd from './components/modules/labour/LabourCategoryAdd';
 import LabourItemList from './components/modules/labour/LabourItemList';
 import LabourItemAdd from './components/modules/labour/LabourItemAdd';
 import AssetSetup from './components/modules/asset/AssetSetup';
+import BankReconciliation from './components/modules/bank/BankReconciliation';
+import ChequeRegister from './components/modules/bank/ChequeRegister';
+import AgeingReport from './components/modules/accounts/AgeingReport';
+import YearClosing from './components/modules/accounts/YearClosing';
+import BudgetScreen from './components/modules/accounts/BudgetScreen';
+import AuditTrail from './components/modules/accounts/AuditTrail';
 import HotelSetup from './components/modules/hotel/HotelSetup';
 import BookingsScreen from './components/modules/hotel/booking/BookingsScreen';
 import BookingFormScreen from './components/modules/hotel/booking/BookingFormScreen';
@@ -557,6 +563,99 @@ function App() {
               }
             >
               <Route path={routes.asset_setup} element={<AssetSetup user={me} />} />
+            </Route>
+
+            {/*
+              Ticking the bank statement off against the books. Its own
+              permission rather than the bank voucher ones: reconciling is a
+              monthly checking job, and reaching it through the voucher
+              permissions would mean giving whoever does it the right to write
+              vouchers as well.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['bank.reconciliation.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.bank_reconciliation} element={<BankReconciliation />} />
+            </Route>
+
+            {/*
+              The cheque register. ⚠️ cheque.register.view, NOT
+              check.register.view -- the latter gates the real estate module's
+              own instalment-cheque screen, and one key for both would open each
+              to the other's holder.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['cheque.register.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.cheque_register} element={<ChequeRegister />} />
+            </Route>
+
+            {/* Who owes what, and for how long. Reading only. */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['ageing.report.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.ageing_report} element={<AgeingReport />} />
+            </Route>
+
+            {/*
+              Closing the year. Its own permission, and the heaviest of the four
+              accounts keys: it empties every profit and loss head into capital
+              and settles what the year earned.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['year.closing.run']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.year_closing} element={<YearClosing user={me} />} />
+            </Route>
+
+            {/* What was meant to be spent, against what was. */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['budget.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.budget} element={<BudgetScreen user={me} />} />
+            </Route>
+
+            {/* Who changed which voucher, and when. Reading only. */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['audit.trail.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.audit_trail} element={<AuditTrail />} />
             </Route>
 
             <Route

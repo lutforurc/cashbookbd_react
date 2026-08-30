@@ -356,6 +356,31 @@ const ROUTES = {
   // tabs. Depreciation joins them here when it is built.
   asset_setup: '/asset/setup',
 
+  // Ticking the bank statement off against the books. Under /accounts because
+  // that is where the cash and bank vouchers live, and this is the monthly job
+  // that checks them.
+  bank_reconciliation: '/accounts/bank/reconciliation',
+
+  // The cheque register -- the paper, beside the vouchers that record the money.
+  // ⚠️ Not the real estate module's own instalment-cheque screen, which is
+  // routes.unit_payment_list and answers to check.register.view.
+  cheque_register: '/accounts/cheque-register',
+
+  // Who owes what, and for how long. A report, under Reports, because that is
+  // where somebody looks for it -- not under the vouchers it reads.
+  ageing_report: '/reports/ageing',
+
+  // Closing the year. Under /accounts because it writes a voucher -- it is an
+  // act, not a report, however much it looks like one.
+  year_closing: '/accounts/year-closing',
+
+  // What was meant to be spent, against what was.
+  budget: '/accounts/budget',
+
+  // Who changed which voucher, and when. Under reports because it is read, not
+  // done -- and its own permission, so the people it records do not gate it.
+  audit_trail: '/reports/audit-trail',
+
   hotel_setup: '/hotel/setup',
   // Bookings are a screen of their own, not a sixth tab: setup is done once
   // and this is opened every day.

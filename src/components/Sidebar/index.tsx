@@ -36,6 +36,10 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'accounts/cash/payment', title: "Cash Payment" },
     { id: 'accounts/bank/receive', title: "Bank Received" },
     { id: 'accounts/bank/payment', title: "Bank Payment" },
+    { id: 'accounts/bank/reconciliation', title: "Bank Reconciliation" },
+    { id: 'accounts/cheque-register', title: "Cheque Register" },
+    { id: 'accounts/year-closing', title: "Year Closing" },
+    { id: 'accounts/budget', title: "Budget" },
     { id: 'installment_list', title: "Installments" },
     { id: 'employee_loan', title: "Employee Loan" },
     { id: 'accounts/journal', title: "Journal" },
@@ -67,6 +71,8 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   'reports': [
     { id: 'reports/cashbook', title: "Cash Book" },
     { id: 'report_bankbook', title: "Bank Book" },
+    { id: 'ageing_report', title: "Ageing" },
+    { id: 'audit_trail', title: "Audit Trail" },
     { id: 'cash_bank_received_payment', title: "Cash &amp; Bank Summary" },
     { id: 'profit_loss', title: "Profit Loss" },
     { id: 'product_profit_loss', title: "Product Profit Loss" },
@@ -771,6 +777,46 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+                          {hasPermission(permissions, 'bank.reconciliation.view') && (
+                            <li style={subSlot('transaction', 'accounts/bank/reconciliation')}>
+                              <NavLink
+                                to={routes.bank_reconciliation}
+                                className={subMenuLinkClass}
+                              >
+                                Bank Reconciliation
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'cheque.register.view') && (
+                            <li style={subSlot('transaction', 'accounts/cheque-register')}>
+                              <NavLink
+                                to={routes.cheque_register}
+                                className={subMenuLinkClass}
+                              >
+                                Cheque Register
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'year.closing.run') && (
+                            <li style={subSlot('transaction', 'accounts/year-closing')}>
+                              <NavLink
+                                to={routes.year_closing}
+                                className={subMenuLinkClass}
+                              >
+                                Year Closing
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'budget.view') && (
+                            <li style={subSlot('transaction', 'accounts/budget')}>
+                              <NavLink
+                                to={routes.budget}
+                                className={subMenuLinkClass}
+                              >
+                                Budget
+                              </NavLink>
+                            </li>
+                          )}
                           
                           {hasPermission(permissions, 'installment.create') && (
                             <li style={subSlot('transaction', 'installment_list')}>
@@ -1173,6 +1219,28 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Bank Book
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'ageing.report.view') && (
+                            <li style={subSlot('reports', 'ageing_report')}>
+                              <NavLink
+                                to={routes.ageing_report}
+                                className={subMenuLinkClass}
+                              >
+                                Ageing
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'audit.trail.view') && (
+                            <li style={subSlot('reports', 'audit_trail')}>
+                              <NavLink
+                                to={routes.audit_trail}
+                                className={subMenuLinkClass}
+                              >
+                                Audit Trail
                               </NavLink>
                             </li>
                           )}
