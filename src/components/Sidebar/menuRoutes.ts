@@ -121,6 +121,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     '/real-estate/project-activities',
     '/real-estate/unit-types/create',
   ],
+  'asset': [routes.asset_setup],
   'hotel': [
     routes.hotel_setup,
     routes.hotel_bookings,

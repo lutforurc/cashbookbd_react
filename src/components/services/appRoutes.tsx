@@ -352,6 +352,10 @@ const ROUTES = {
 
   // Hotel. One screen with four tabs, because buildings, floors, room types
   // and rooms are one sitting of setup rather than four errands.
+  // Fixed assets: the categories and the register, on one screen with two
+  // tabs. Depreciation joins them here when it is built.
+  asset_setup: '/asset/setup',
+
   hotel_setup: '/hotel/setup',
   // Bookings are a screen of their own, not a sixth tab: setup is done once
   // and this is opened every day.

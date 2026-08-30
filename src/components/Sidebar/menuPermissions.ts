@@ -155,6 +155,11 @@ export const MENU_PERMISSIONS = {
     'hotel.resource.view',
     'hotel.booking.view',
   ],
+  // Fixed assets. Either key opens the menu: whoever keeps the register needs
+  // to see the rates, and whoever sets the rates needs to see what is filed
+  // under them. Granted to nobody when the patch creates them, so the menu does
+  // not appear until somebody hands them out.
+  asset: ['asset.category.view', 'asset.register.view'],
   reseller: ['reseller.dashboard.view'],
   subscription_history: ['subscription.view', 'subscription.history'],
   customer_dashboard: ['customer.dashboard'],

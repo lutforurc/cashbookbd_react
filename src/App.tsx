@@ -132,6 +132,7 @@ import LabourCategoryList from './components/modules/labour/LabourCategoryList';
 import LabourCategoryAdd from './components/modules/labour/LabourCategoryAdd';
 import LabourItemList from './components/modules/labour/LabourItemList';
 import LabourItemAdd from './components/modules/labour/LabourItemAdd';
+import AssetSetup from './components/modules/asset/AssetSetup';
 import HotelSetup from './components/modules/hotel/HotelSetup';
 import BookingsScreen from './components/modules/hotel/booking/BookingsScreen';
 import BookingFormScreen from './components/modules/hotel/booking/BookingFormScreen';
@@ -539,6 +540,25 @@ function App() {
               hotel.room.type.view has to be enough to reach the tab it gates,
               or that permission names a screen its holder can never see.
             */}
+            {/*
+              Fixed assets -- the categories and the register on one screen.
+              Either permission opens it: whoever keeps the register needs to
+              see the rates their assets wear out at, and whoever sets the rates
+              needs to see what is filed under them. The screen itself draws
+              only the tabs the holder can use.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['asset.category.view', 'asset.register.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.asset_setup} element={<AssetSetup user={me} />} />
+            </Route>
+
             <Route
               element={
                 <RequirePermission

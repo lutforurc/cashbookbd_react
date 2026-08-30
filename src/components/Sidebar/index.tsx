@@ -128,6 +128,9 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'real_estate_project_cost_report', title: "Project Cost Report" },
     { id: 'real_estate_project_income_report', title: "Project Income Report" },
   ],
+  'asset': [
+    { id: 'asset_setup', title: "Assets" },
+  ],
   'hotel': [
     { id: 'hotel_bookings', title: "Bookings" },
     { id: 'hotel_hall_bookings', title: "Hall Booking" },
@@ -235,6 +238,7 @@ export const SIDEBAR_MENUS = [
   { id: 'requisition', title: 'Requisition' },
   { id: 'real-estate', title: 'Real Estate' },
   { id: 'hotel', title: 'Hotel' },
+  { id: 'asset', title: 'Assets' },
   { id: 'products', title: 'Products' },
   { id: 'labour_items', title: 'Labour Items' },
   { id: 'admin', title: 'Admin' },
@@ -260,6 +264,7 @@ import {
   FiHome,
   FiLayers,
   FiKey,
+  FiPackage,
   FiMapPin,
   FiPieChart,
   FiServer,
@@ -1916,6 +1921,80 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     )}
                   </SidebarLinkGroup>
                 )}
+
+
+              {/*
+                Fixed assets.
+
+                Gated on permission alone, like Hotel below and for the same
+                reason: a business type read from an auto-increment id is 9 in
+                one tenant's database and 11 in another's. The three asset
+                permissions are granted to nobody when the patch creates them,
+                which draws the same line and cannot drift between installs.
+
+                One entry today -- the categories and the register share a
+                screen. Depreciation and the schedule join it here, which is why
+                it is a group rather than a bare link.
+              */}
+              {hasMenuPermission(permissions, 'asset') && (
+                <SidebarLinkGroup
+                  activeCondition={isMenuActive('asset', pathname)}
+                  menuId="asset"
+                  style={menuSlot('asset')}
+                  open={openMenu === 'asset'}
+                  handleClick={() => handleMenuClick('asset')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4
+                          ${isMenuActive('asset', pathname) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiPackage className="-ml-1" />
+                        Assets
+                        <FiChevronRight
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
+                            }`}
+                        />
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('asset').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
+
+                          <li style={subSlot('asset', 'asset_setup')}>
+                            <NavLink to={routes.asset_setup} className={subMenuLinkClass}>
+                              Categories &amp; Register
+                            </NavLink>
+                          </li>
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
 
 
               {/*

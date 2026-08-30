@@ -1001,3 +1001,12 @@ export const API_HOTEL_TAX_RATE_URL = `${API_BASE_URL}/hotel-setup/tax-rates`;
 // room can be occupied and dirty at once. Only `out_of_order` changes what the
 // booking screens may do — it takes the room off the market entirely.
 export const API_HOTEL_HOUSEKEEPING_URL = `${API_BASE_URL}/hotel-setup/housekeeping`;
+
+// Fixed assets — the categories that decide how fast a kind of thing wears out,
+// and the register of the things themselves.
+//
+// ⚠️ A category is the COMPANY's and an asset is the BRANCH's. A rate is one
+// bookkeeping decision for the whole company; an asset stands somewhere and is
+// depreciated into that branch's accounts.
+export const API_ASSET_CATEGORY_URL = `${API_BASE_URL}/asset/categories`;
+export const API_ASSET_REGISTER_URL = `${API_BASE_URL}/asset/register`;
