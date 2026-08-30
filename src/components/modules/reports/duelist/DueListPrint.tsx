@@ -17,7 +17,16 @@ type DueRow = {
   area_id?: string | number;
   debit?: number;
   credit?: number;
+  ageing?: { label: string; amount: number }[];
+  oldest_days?: number;
 };
+
+/** The four ages, in the order they are printed. */
+const BUCKETS = ['0-30', '31-60', '61-90', '90+'];
+
+/** A row's own figure for one bucket. Absent means nothing owed, not unknown. */
+const aged = (row: DueRow, label: string) =>
+  Number(row.ageing?.find((b) => b.label === label)?.amount ?? 0);
 
 type Props = {
   rows: DueRow[];
@@ -25,6 +34,13 @@ type Props = {
   title?: string;
   rowsPerPage?: number;
   fontSize?: number;
+  /**
+   * Follows the screen's own switch, rather than deciding for itself.
+   *
+   * Somebody who turned the ageing off and then pressed Print meant to print
+   * the list they were looking at.
+   */
+  showAgeing?: boolean;
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
@@ -35,7 +51,7 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
 };
 
 const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ rows, endDate, title = "Due List", rowsPerPage = 20, fontSize = 10 }, ref) => {
+  ({ rows, endDate, title = "Due List", rowsPerPage = 20, fontSize = 10, showAgeing = false }, ref) => {
     const rowsArr = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(rowsArr, rowsPerPage);
     const fs = fontSize;
@@ -62,6 +78,16 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
               <div className="text-xs mt-1">
                 <span className="font-semibold">As On:</span> {endDate || "-"}
               </div>
+
+              {/* On the paper, not only the screen. The buckets are the result
+                  of a rule -- payments applied oldest-first, because a receipt
+                  here never names the bill it settles -- and the page will be
+                  read by somebody who never saw the screen. */}
+              {showAgeing ? (
+                <div className="text-xs mt-1">
+                  Ageing from voucher date, oldest unpaid amount settled first.
+                </div>
+              ) : null}
             </div>
 
             {/* Table */}
@@ -73,6 +99,17 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                   <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-20 text-center">Area</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-24 text-right">Debit</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-24 text-right">Credit</th>
+                  {showAgeing
+                    ? BUCKETS.map((label) => (
+                        <th
+                          key={label}
+                          style={{ fontSize: fs }}
+                          className="border border-gray-900 py-2 px-2 w-20 text-right"
+                        >
+                          {label === '90+' ? '90+ d' : label}
+                        </th>
+                      ))
+                    : null}
                 </tr>
               </thead>
 
@@ -116,12 +153,30 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                       >
                         {Number(row.credit) > 0 ? thousandSeparator(Number(row.credit)) : "-"}
                       </td>
+
+                      {/* ⚠️ These four add up to Debit, and the server checks
+                          that they do for every row -- see ageing_check.php.
+                          A printed page outlives the screen it came from, so a
+                          bucket total that disagreed with the balance beside it
+                          would be argued over long after anyone could re-run
+                          the report. */}
+                      {showAgeing
+                        ? BUCKETS.map((label) => (
+                            <td
+                              key={label}
+                              style={{ fontSize: fs }}
+                              className="border border-gray-900 px-2 py-1 text-right align-middle"
+                            >
+                              {aged(row, label) > 0 ? thousandSeparator(aged(row, label)) : "-"}
+                            </td>
+                          ))
+                        : null}
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={showAgeing ? 9 : 5}
                       className="border border-gray-900 px-3 py-6 text-center text-gray-500"
                     >
                       No data found

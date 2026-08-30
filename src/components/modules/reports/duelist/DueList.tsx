@@ -18,6 +18,7 @@ import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { useReactToPrint } from 'react-to-print';
 import { isBranchSettingOn, isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+import Checkbox from '../../../utils/fields/Checkbox';
 
 
 
@@ -34,6 +35,16 @@ const DueList = (user: any) => {
   // as true -- which is why the mobile number and address were on the report
   // with the branch switch turned off.
   const showAddress = isBranchSettingOn(settings, 'due_list_with_address');
+
+  /**
+   * How old the money is, beside how much of it there is.
+   *
+   * Off by default, and drawn only when asked for. Four more columns on a
+   * six-column report is a different table, and most of the time somebody
+   * opening this wants the list of names and the figures -- the ageing is what
+   * they come back for when they are deciding who to telephone first.
+   */
+  const [showAgeing, setShowAgeing] = useState(false);
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
@@ -159,7 +170,44 @@ const DueList = (user: any) => {
           <p>{row.credit > 0 ? thousandSeparator(row.credit) : '-'}</p>
         </>
       )
-    }
+    },
+
+    /**
+     * The four buckets, built from the row's own ageing rather than counted
+     * here.
+     *
+     * ⚠️ They add up to the Debit column beside them, and that is checked on
+     * the server for every row -- see ageing_check.php. A bucket total that
+     * disagreed with the balance next to it would still look authoritative,
+     * and somebody would chase the wrong customer on it.
+     *
+     * The oldest bucket carries the age of the oldest unpaid item, because
+     * "90+" says nothing about whether that is ninety-one days or three years,
+     * and the difference decides who is telephoned first.
+     */
+    ...(showAgeing
+      ? ['0-30', '31-60', '61-90', '90+'].map((label) => ({
+          key: `ageing_${label}`,
+          header: label === '90+' ? '90+ days' : `${label} d`,
+          headerClass: 'text-right',
+          cellClass: 'text-right',
+          render: (row: any) => {
+            const bucket = (row.ageing ?? []).find((b: any) => b.label === label);
+            const amount = Number(bucket?.amount ?? 0);
+
+            return (
+              <>
+                <p className={label === '90+' && amount > 0 ? 'text-danger' : ''}>
+                  {amount > 0 ? thousandSeparator(amount) : '-'}
+                </p>
+                {label === '90+' && amount > 0 && row.oldest_days > 90 ? (
+                  <p className="text-[0.65rem] text-gray-500">{row.oldest_days} days</p>
+                ) : null}
+              </>
+            );
+          },
+        }))
+      : []),
   ];
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -301,6 +349,15 @@ const DueList = (user: any) => {
                 />
               </>
             )}
+            <Checkbox
+              id="show_ageing"
+              name="show_ageing"
+              label="Ageing"
+              checked={showAgeing}
+              onChange={() => setShowAgeing((on) => !on)}
+              className="pb-2"
+              labelClassName="cursor-pointer text-sm whitespace-nowrap"
+            />
             <PrintRowsInput
  id="perPage"
  name="perPage"
@@ -328,6 +385,20 @@ const DueList = (user: any) => {
           </div>
         </div>
       </div>
+      {/* ⚠️ Said on the screen, because the buckets are not a fact about which
+          bill was paid -- they are the result of a rule.
+
+          A receipt in this system does not name the invoice it settles, so the
+          oldest open debt is taken as the one paid. The same closing balance
+          would sit in a different column if payments were applied newest-first,
+          and anybody reading these numbers to a customer should know that. */}
+      {showAgeing ? (
+        <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+          Ageing counts from the voucher date, and applies each payment to the
+          oldest unpaid amount first. The four columns add up to Debit.
+        </p>
+      ) : null}
+
       <div className='overflow-y-auto overflow-x-auto'>
         {dueList.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} /> {/* Ensure data is always an array */}
@@ -341,6 +412,7 @@ const DueList = (user: any) => {
             title="Due List"
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
+            showAgeing={showAgeing}
           />
         </div>
       </div>
