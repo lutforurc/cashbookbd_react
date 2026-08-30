@@ -416,11 +416,6 @@ const ChequeRegister = () => {
   return (
     <div>
       <HelmetTitle title="Cheque Register" />
-
-      <h2 className="mb-3 text-center text-xl font-semibold text-black dark:text-white">
-        Cheque Register
-      </h2>
-
       {/* ⚠️ At the top, in words: what is waiting to be banked and what is about
           to be presented. This is the question the screen is opened with. */}
       {due.length ? (

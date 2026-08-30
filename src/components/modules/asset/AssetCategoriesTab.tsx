@@ -41,6 +41,7 @@ const blank = () => ({
   asset_coa4_id: '',
   accum_dep_coa4_id: '',
   dep_expense_coa4_id: '',
+  disposal_coa4_id: '',
   notes: '',
   sort_order: 50,
 });
@@ -108,6 +109,7 @@ const AssetCategoriesTab = () => {
         asset_coa4_id: form.asset_coa4_id || null,
         accum_dep_coa4_id: form.accum_dep_coa4_id || null,
         dep_expense_coa4_id: form.dep_expense_coa4_id || null,
+        disposal_coa4_id: form.disposal_coa4_id || null,
         notes: form.notes || null,
         sort_order: form.sort_order,
       });
@@ -186,6 +188,19 @@ const AssetCategoriesTab = () => {
             <div className="text-gray-500 dark:text-gray-400">
               charged to {row.expense_head_name}
             </div>
+            {/* ⚠️ The fourth head is only needed to SELL, so its absence is
+                said quietly rather than as a fault: a category that cannot be
+                disposed of is perfectly able to be depreciated, and confusing
+                the two sends somebody hunting for a problem that is not there. */}
+            {row.ready_to_dispose ? (
+              <div className="text-gray-500 dark:text-gray-400">
+                sold through {row.disposal_head_name}
+              </div>
+            ) : (
+              <div className="text-amber-700 dark:text-amber-300">
+                no gain-or-loss head — cannot be sold yet
+              </div>
+            )}
           </div>
         ) : (
           // ⚠️ Said here rather than left for June. A category with no heads
@@ -226,6 +241,7 @@ const AssetCategoriesTab = () => {
                 asset_coa4_id: one.asset_coa4_id ?? '',
                 accum_dep_coa4_id: one.accum_dep_coa4_id ?? '',
                 dep_expense_coa4_id: one.dep_expense_coa4_id ?? '',
+                disposal_coa4_id: one.disposal_coa4_id ?? '',
                 notes: one.notes ?? '',
                 sort_order: one.sort_order,
               })
@@ -340,6 +356,24 @@ const AssetCategoriesTab = () => {
               value={form.dep_expense_coa4_id}
               onChange={(e: any) => setForm({ ...form, dep_expense_coa4_id: e.target.value })}
               description="This year’s expense. Profit and loss."
+            />
+          </div>
+
+          {/* ⚠️ THE FOURTH HEAD, AND IT ARRIVED LATE. The first three are what
+              depreciation needs; this one is what SELLING needs, and a category
+              can be perfectly able to depreciate and unable to dispose. Without
+              it on this form there was no way to give a category its gain-or-loss
+              head at all, so the disposal panel refused every sale with a
+              message pointing at a box that did not exist. */}
+          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
+            <DropdownCommon
+              id="disposal_coa4_id"
+              name="disposal_coa4_id"
+              label="Gain or loss on sale"
+              data={headOptions(expenseHeads)}
+              value={form.disposal_coa4_id}
+              onChange={(e: any) => setForm({ ...form, disposal_coa4_id: e.target.value })}
+              description="Only needed to sell or write one off. Profit and loss."
             />
           </div>
 

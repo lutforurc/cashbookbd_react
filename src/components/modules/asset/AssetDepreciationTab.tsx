@@ -216,6 +216,24 @@ const AssetDepreciationTab = ({ branchId }: { branchId?: number | null }) => {
   const total = (plan?.totals ?? []).reduce((sum: number, one: any) => sum + Number(one.amount), 0);
 
   /**
+   * The foot of the table: what the page in front of somebody adds up to.
+   *
+   * ⚠️ THIS IS NOT THE SAME FIGURE AS THE BUTTON'S, and it must not pretend
+   * to be. The table lists every asset in the register -- including the ones
+   * already charged this year and the ones held up by a category with no ledger
+   * heads -- while the button charges only what is left to charge. Two totals
+   * that quietly disagree is the worst thing a page like this can do, so the
+   * difference is said in words underneath rather than hidden by leaving rows
+   * out of the sum.
+   */
+  const rows: any[] = plan?.rows ?? [];
+
+  const sumOf = (key: string) =>
+    rows.reduce((sum: number, one: any) => sum + Number(one[key] ?? 0), 0);
+
+  const shownDepreciation = sumOf('amount');
+
+  /**
    * ⚠️ A DEAD BUTTON HAS TO SAY WHY IT IS DEAD. "Nothing to charge" over a
    * register full of assets reads as "no depreciation is due" — which is the
    * one thing it does not mean when every category is waiting for its ledger
@@ -335,8 +353,44 @@ const AssetDepreciationTab = ({ branchId }: { branchId?: number | null }) => {
 
       <Table
         columns={columns}
-        data={plan?.rows ?? []}
+        data={rows}
         noDataMessage="No assets in this property’s register for that year."
+        footerRows={
+          rows.length
+            ? [
+                [
+                  {
+                    label: `Total — ${rows.length} asset(s)`,
+                    className: 'text-black dark:text-white',
+                  },
+                  { label: money(sumOf('opening_wdv')), className: 'text-right' },
+                  // Rate and days are not things that add up. A column of
+                  // percentages with a total under it is a column somebody will
+                  // one day try to read.
+                  { label: '', className: 'text-right' },
+                  { label: '', className: 'text-right' },
+                  {
+                    label: (
+                      <div className="text-right">
+                        <div>{money(shownDepreciation)}</div>
+                        {/* ⚠️ Said only when the two figures differ, and then
+                            plainly: the rest is already in the books, or is
+                            waiting for its category's ledger heads. */}
+                        {Math.abs(shownDepreciation - total) > 0.005 ? (
+                          <div className="text-xs font-normal text-gray-500 dark:text-gray-400">
+                            {money(total)} of it left to charge
+                          </div>
+                        ) : null}
+                      </div>
+                    ),
+                    className: 'text-right',
+                  },
+                  { label: money(sumOf('closing_wdv')), className: 'text-right' },
+                  { label: '' },
+                ],
+              ]
+            : undefined
+        }
       />
 
       {/* The years already charged here, so somebody can look one up rather

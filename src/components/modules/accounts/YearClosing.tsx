@@ -217,7 +217,7 @@ const YearClosing = ({ user }: any) => {
             ]}
             value={capital}
             onChange={(e: any) => setCapital(e.target.value)}
-            description="Capital, or retained earnings — a balance sheet head."
+            // description="Capital, or retained earnings — a balance sheet head."
           />
         </div>
 
