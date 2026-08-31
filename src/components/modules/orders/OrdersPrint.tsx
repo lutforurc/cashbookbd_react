@@ -15,6 +15,8 @@ type OrderSummary = {
   salesQuantity?: number;
   purchaseTrxQuantity?: number;
   salesTrxQuantity?: number;
+  purchaseAmount?: number;
+  salesAmount?: number;
 };
 
 type Props = {
@@ -74,6 +76,25 @@ const getLinkedRemainingQuantity = (row: any) => {
 const getLinkedOrderCount = (row: any) =>
   toNumber(row?.linked_order_count ?? row?.linked_orders_count);
 
+// What an order is worth. The API sends the amount it computed from the order's
+// own lines; older payloads carry no amount at all, and for those a single rate
+// across the ordered quantity is the closest honest answer.
+const getOrderAmount = (row: any) => {
+  if (row?.total_amount !== undefined && row?.total_amount !== null && row?.total_amount !== '') {
+    return toNumber(row.total_amount);
+  }
+
+  const items = Array.isArray(row?.items) ? row.items : [];
+  if (items.length > 0) {
+    return items.reduce((sum: number, item: any) => {
+      const lineAmount = toNumber(item?.line_amount);
+      return sum + (lineAmount !== 0 ? lineAmount : toNumber(item?.order_rate) * toNumber(item?.total_order));
+    }, 0);
+  }
+
+  return toNumber(row?.order_rate) * toNumber(row?.total_order);
+};
+
 const buildSummary = (rows: any[]): OrderSummary =>
   (Array.isArray(rows) ? rows : []).reduce(
     (acc, row) => {
@@ -91,11 +112,13 @@ const buildSummary = (rows: any[]): OrderSummary =>
         acc.purchaseQuantity = Number(acc.purchaseQuantity || 0) + toNumber(row?.total_order);
         acc.purchaseTrxQuantity =
           Number(acc.purchaseTrxQuantity || 0) + toNumber(row?.trx_quantity);
+        acc.purchaseAmount = Number(acc.purchaseAmount || 0) + getOrderAmount(row);
       }
       if (toNumber(row?.order_type) === 2) {
         acc.salesQuantity = Number(acc.salesQuantity || 0) + toNumber(row?.total_order);
         acc.salesTrxQuantity =
           Number(acc.salesTrxQuantity || 0) + toNumber(row?.trx_quantity);
+        acc.salesAmount = Number(acc.salesAmount || 0) + getOrderAmount(row);
       }
 
       return acc;
@@ -111,6 +134,8 @@ const buildSummary = (rows: any[]): OrderSummary =>
       salesQuantity: 0,
       purchaseTrxQuantity: 0,
       salesTrxQuantity: 0,
+      purchaseAmount: 0,
+      salesAmount: 0,
     },
   );
 
@@ -137,6 +162,9 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
     const salesTrxBalance =
       toNumber(grandSummary.salesQuantity) - toNumber(grandSummary.salesTrxQuantity);
     const trxDefQuantity = purchaseTrxBalance - salesTrxBalance;
+    const purchaseAmount = toNumber(grandSummary.purchaseAmount);
+    const salesAmount = toNumber(grandSummary.salesAmount);
+    const amountDifference = purchaseAmount - salesAmount;
     const fs = Number.isFinite(fontSize) ? fontSize : 12;
     const printTextStyle = { fontSize: fs, lineHeight: 1.28 };
 
@@ -288,6 +316,16 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                           DO Trx. Bal. Qty: {thousandSeparator(salesTrxBalance)}
                         </span>
                         Trx. Def. Qty: {thousandSeparator(trxDefQuantity)}
+                      </td>
+                    </tr>
+                    <tr className="font-semibold">
+                      <td
+                        style={printTextStyle}
+                        className="border border-gray-900 px-2 py-1 text-center"
+                      >
+                        PO Amount: {thousandSeparator(purchaseAmount)}
+                        <span className="mx-6">DO Amount: {thousandSeparator(salesAmount)}</span>
+                        Amt Difference: {thousandSeparator(amountDifference)}
                       </td>
                     </tr>
                   </tbody>

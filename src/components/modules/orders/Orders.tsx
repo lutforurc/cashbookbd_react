@@ -66,6 +66,25 @@ const getPersistedOrdersListState = () => {
 const getOrderRemainingQuantity = (row: any) =>
   toNumber(row?.total_order) - toNumber(row?.trx_quantity);
 
+// What an order is worth. The API sends the amount it computed from the order's
+// own lines; older payloads carry no amount at all, and for those a single rate
+// across the ordered quantity is the closest honest answer.
+const getOrderAmount = (row: any) => {
+  if (row?.total_amount !== undefined && row?.total_amount !== null && row?.total_amount !== '') {
+    return toNumber(row.total_amount);
+  }
+
+  const items = Array.isArray(row?.items) ? row.items : [];
+  if (items.length > 0) {
+    return items.reduce((sum: number, item: any) => {
+      const lineAmount = toNumber(item?.line_amount);
+      return sum + (lineAmount !== 0 ? lineAmount : toNumber(item?.order_rate) * toNumber(item?.total_order));
+    }, 0);
+  }
+
+  return toNumber(row?.order_rate) * toNumber(row?.total_order);
+};
+
 const getLinkedRemainingQuantity = (row: any) => {
   const totalOrder = row?.total_order;
   const linkedQuantity = row?.linked_quantity;
@@ -564,9 +583,11 @@ const Orders = () => {
         acc.remainingQuantity += getLinkedRemainingQuantity(row);
         if (toNumber(row?.order_type) === 1) {
           acc.purchaseQuantity += toNumber(row?.total_order);
+          acc.purchaseAmount += getOrderAmount(row);
         }
         if (toNumber(row?.order_type) === 2) {
           acc.salesQuantity += toNumber(row?.total_order);
+          acc.salesAmount += getOrderAmount(row);
         }
         return acc;
       },
@@ -579,6 +600,8 @@ const Orders = () => {
         remainingQuantity: 0,
         purchaseQuantity: 0,
         salesQuantity: 0,
+        purchaseAmount: 0,
+        salesAmount: 0,
       },
     );
   }, [tableData]);
@@ -620,6 +643,12 @@ const Orders = () => {
       salesQuantity:
         pickFirstNumber(apiSummarySource, ['sales_quantity', 'total_sales_quantity']) ??
         derivedSummary.salesQuantity,
+      purchaseAmount:
+        pickFirstNumber(apiSummarySource, ['purchase_amount', 'total_purchase_amount']) ??
+        derivedSummary.purchaseAmount,
+      salesAmount:
+        pickFirstNumber(apiSummarySource, ['sales_amount', 'total_sales_amount']) ??
+        derivedSummary.salesAmount,
       purchaseTrxQuantity:
         pickFirstNumber(apiSummarySource, ['purchase_trx_quantity', 'total_purchase_trx_quantity']) ?? 0,
       salesTrxQuantity:
@@ -661,6 +690,11 @@ const Orders = () => {
           value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity),
           highlight: true,
         },
+        {
+          key: 'po-amt',
+          label: 'PO Amount',
+          value: thousandSeparator(summary.purchaseAmount),
+        },
       );
     } else if (orderType === '2') {
       items.push(
@@ -679,6 +713,11 @@ const Orders = () => {
           label: 'DO Bal. Qty',
           value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity),
           highlight: true,
+        },
+        {
+          key: 'do-amt',
+          label: 'DO Amount',
+          value: thousandSeparator(summary.salesAmount),
         },
       );
     } else {
@@ -710,6 +749,24 @@ const Orders = () => {
           key: 'trx-def-qty',
           label: 'Trx. Def. Qty',
           value: thousandSeparator(((summary.purchaseQuantity - summary.purchaseTrxQuantity) - (summary.salesQuantity - summary.salesTrxQuantity))),
+          highlight: true,
+        },
+        // The same three balances read in money: what was ordered in, what was
+        // ordered out, and the gap between the two.
+        {
+          key: 'po-amt',
+          label: 'PO Amount',
+          value: thousandSeparator(summary.purchaseAmount),
+        },
+        {
+          key: 'do-amt',
+          label: 'DO Amount',
+          value: thousandSeparator(summary.salesAmount),
+        },
+        {
+          key: 'amt-difference',
+          label: 'Amt Difference',
+          value: thousandSeparator(summary.purchaseAmount - summary.salesAmount),
           highlight: true,
         },
         // {
