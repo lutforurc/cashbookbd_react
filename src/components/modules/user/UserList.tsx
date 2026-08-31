@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
+import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 import { generateUserTemporaryPassword, getUser, toggleUserStatus } from './userSlice';
 import Loader from '../../../common/Loader';
 import { FiCheckSquare, FiEdit2, FiKey, FiPlus } from 'react-icons/fi';
@@ -18,6 +19,7 @@ import FormToggleField from '../../utils/utils-functions/FormToggleField';
 
 const UserList = () => {
   const userList = useSelector((state) => state.users);
+  const mobileFormat = useMobileFormat();
   const settings = useSelector((state: any) => state.settings);  const subscription = useSelector((state: any) => state.subscription);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -278,6 +280,13 @@ const UserList = () => {
     {
       key: 'email',
       header: 'Email',
+    },
+    {
+      key: 'phone',
+      header: 'Mobile',
+      // Its own column beside the email rather than tucked under it: this is
+      // the list somebody opens when they need to reach one of these people.
+      render: (row: any) => formatMobile(row?.phone, mobileFormat) || '-',
     },
     {
       key: 'role',
