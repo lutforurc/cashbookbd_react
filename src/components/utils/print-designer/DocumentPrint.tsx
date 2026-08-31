@@ -61,6 +61,21 @@ const blank = (value: any) =>
   value === null || value === undefined || String(value).trim() === '';
 
 /**
+ * A registration number as it should appear on paper.
+ *
+ * ⚠️ One function because a designed sheet can carry the SAME field twice --
+ * `vehicle_no` is in the catalogue both as a document field and as a line
+ * column -- and the two are read together on one page. Formatted in one place
+ * and raw in the other, the header and the table would disagree about the same
+ * lorry, which is the version of this bug that shipped: the header was raised
+ * and the column printed whatever the typist's caps-lock had been.
+ *
+ * Settled on the way to the paper rather than at entry, so it fixes the sales
+ * already in the books without rewriting a column the accounts may match on.
+ */
+const plate = (value: any) => (blank(value) ? '' : formatTransportationNumber(value));
+
+/**
  * How tall a page stands in the designer's preview.
  *
  * A4 at the 96dpi a browser lays out in, less the 76px the preview's paper
@@ -299,14 +314,10 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           // books. Correcting it on the way to the paper fixes the old ones too,
           // and does not quietly rewrite a column the accounts may match on.
           //
-          // formatTransportationNumber first, which is what the sales and
-          // purchase invoices already put a vehicle number through -- it tidies
-          // the spacing around the dashes. Those two then uppercase the result
-          // with a CSS class; this returns a string rather than markup, so it
-          // does the same in code. Same value, same look, three papers.
-          return blank(basic?.vehicle_no)
-            ? ''
-            : formatTransportationNumber(basic.vehicle_no).toUpperCase();
+          // Through the same plate() the line columns use, so a sheet carrying
+          // this field in its header and in its table cannot print the one
+          // lorry two ways.
+          return plate(basic?.vehicle_no);
         case 'truck_fare':
           // NULL and 0 are different answers here. Nobody agreeing a fare
           // leaves the line blank -- which in a boxed pad is a rule for the
@@ -366,6 +377,14 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           return thousandSeparator(num(row?.[key]));
         case 'warranty_days':
           return num(row?.warranty_days) ? `${num(row.warranty_days)} days` : '';
+        case 'vehicle_no':
+          // ⚠️ Named here rather than left to the default below, which returns
+          // String(raw) -- the stored text exactly as typed. That is what put
+          // "dmt-13-1641" in a column of "DMT-11-7226" on a delivered order
+          // sheet: down a column of registration numbers, which is the only
+          // reason they are printed, a case difference reads as a different
+          // lorry rather than the same one typed in a hurry.
+          return plate(row?.vehicle_no);
         default: {
           // The same union as the info band above: a declared format first,
           // then the plain numeric columns.
