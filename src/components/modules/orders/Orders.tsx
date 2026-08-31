@@ -796,20 +796,30 @@ const Orders = () => {
       [
         {
           label: (
-            <div className="flex flex-wrap items-center justify-center gap-2">
+            /*
+              One row, always. A narrow screen shrinks the cards -- tighter
+              padding, smaller type -- rather than folding the last of them onto
+              a second line, where a total reads as if it belonged to another
+              set. Below the width even the small cards need, the row scrolls
+              sideways: a figure clipped mid-digit would be worse than one the
+              reader has to reach for.
+            */
+            <div className="flex flex-nowrap items-stretch justify-center gap-1 overflow-x-auto xl:gap-2">
               {summaryItems.map((item) => (
                 <div
                   key={item.key}
-                  className={`min-w-[140px] rounded border px-3 py-2 text-left shadow-sm ${
+                  className={`shrink-0 rounded border px-1.5 py-1 text-left shadow-sm sm:px-2 xl:min-w-[140px] xl:px-3 xl:py-2 ${
  item.highlight
  ? 'border-amber-400 bg-amber-50 text-amber-900 dark:border-amber-400/70 dark:bg-amber-400/10 dark:text-amber-200'
  : 'border-[rgb(var(--c-border))] bg-white text-slate-700 dark:bg-slate-800 dark:text-slate-200'
  }`}
                 >
-                  <div className="text-[11px] font-semibold uppercase tracking-wide opacity-80">
+                  <div className="whitespace-nowrap text-[9px] font-semibold uppercase tracking-wide opacity-80 sm:text-[10px] xl:text-[11px]">
                     {item.label}
                   </div>
-                  <div className="text-base font-bold leading-tight">{item.value}</div>
+                  <div className="whitespace-nowrap text-[11px] font-bold leading-tight sm:text-xs lg:text-sm xl:text-base">
+                    {item.value}
+                  </div>
                 </div>
               ))}
             </div>
