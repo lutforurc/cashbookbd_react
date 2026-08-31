@@ -5,6 +5,7 @@ import { useReactToPrint } from 'react-to-print';
 
 import InputDatePicker from '../../utils/fields/DatePicker';
 import InputElement from '../../utils/fields/InputElement';
+import FormToggleField from '../../utils/utils-functions/FormToggleField';
 import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 
@@ -155,14 +156,18 @@ const AssetVerificationTab = ({
           />
         </div>
 
-        <label className="mb-2 flex items-center gap-2 text-sm text-black dark:text-white">
-          <input
-            type="checkbox"
+        {/* The app's own switch, so it matches every other toggle in the
+            product. h-8.5 rather than a margin: this bar aligns on items-end,
+            and a switch hung off the bottom of a taller box sits at a
+            different line from the date field and the button beside it. */}
+        <div className="flex h-8.5 items-center whitespace-nowrap">
+          <FormToggleField
+            label="Only what is left"
             checked={onlyLeft}
-            onChange={(e) => setOnlyLeft(e.target.checked)}
+            onChange={setOnlyLeft}
+            className=""
           />
-          Only what is left
-        </label>
+        </div>
 
         <ButtonLoading onClick={print} label="Print the list" icon={<FiPrinter size={16} />} />
       </div>
