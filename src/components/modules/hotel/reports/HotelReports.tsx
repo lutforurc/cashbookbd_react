@@ -14,12 +14,13 @@ import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
+import { userCurrentBranch } from '../../branch/branchSlice';
 import { money, useDebounced } from '../setupHelpers';
 // The string form. formatDate returns JSX, which is right inside markup but
 // wrong anywhere a string is wanted -- and every use here is inside a cell that
 // also holds other text.
 import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
-import { clearReports, collectionRead, registerRead } from './reportSlice';
+import { clearReports, collectionRead, performanceRead, registerRead } from './reportSlice';
 import RegisterPrint from './RegisterPrint';
 
 /**
@@ -42,6 +43,19 @@ import RegisterPrint from './RegisterPrint';
  * direction lives in the purpose -- so the server signs every row once and
  * every total here reads that sign rather than the amount. A screen that added
  * the amounts up would tell somebody the drawer holds more than it does.
+ *
+ * ⚠️ PERFORMANCE IS NOT THE CALENDAR'S THREE FIGURES, and the difference is
+ * stated on the tab rather than left to be discovered. The calendar answers the
+ * DESK -- per bed, with holds counted as occupied, because a held bed cannot be
+ * sold to anybody else tonight. This answers the OWNER -- per room, which is
+ * what ADR means everywhere in the trade, and holds excluded, because a
+ * telephone call that expires overnight is not a month's takings. Two screens
+ * saying "Occupancy" and meaning different things is the one thing that would
+ * make both useless, so both say which they are.
+ *
+ * ⚠️ AND THE TAB ONLY EXISTS ON A PROPERTY THAT LETS ROOMS. Occupancy of a
+ * construction firm is not a small number, it is not a question -- and every
+ * figure would read nought, which is indistinguishable from a bad month.
  */
 
 const MODES = [
@@ -71,6 +85,12 @@ const asText = (date: Date | null) => {
 
 const today = () => asText(new Date());
 
+/** The first of this month — where a performance question starts by default. */
+const monthStart = () => {
+  const now = new Date();
+  return asText(new Date(now.getFullYear(), now.getMonth(), 1));
+};
+
 const TAB = 'rounded-t border-b-2 px-4 py-2 text-sm font-medium transition';
 
 /** One figure with its name under it — the row of counts at the top. */
@@ -81,16 +101,70 @@ const Count = ({ label, value, tone }: { label: string; value: number; tone?: st
   </div>
 );
 
+/**
+ * A headline figure, with the division that produced it written underneath.
+ *
+ * ⚠️ The sum is on the tile deliberately. These three are quoted at meetings by
+ * people who did not run the report, and "62.5% — 30 of 48 room-nights" can be
+ * argued with, where a bare 62.5% can only be believed or disbelieved.
+ */
+const Figure = ({
+  label,
+  value,
+  working,
+  lead,
+}: {
+  label: string;
+  value: string;
+  working?: string;
+  lead?: boolean;
+}) => (
+  <div
+    className={`rounded border px-3 py-2 ${
+      lead
+        ? 'border-primary bg-primary/5 dark:border-secondary dark:bg-secondary/10'
+        : 'border-stroke dark:border-strokedark'
+    }`}
+  >
+    <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</div>
+    <div
+      className={`text-xl font-semibold ${
+        lead ? 'text-primary dark:text-secondary' : 'text-black dark:text-white'
+      }`}
+    >
+      {value}
+    </div>
+    {working ? (
+      <div className="mt-0.5 text-[0.7rem] leading-tight text-gray-500 dark:text-gray-400">
+        {working}
+      </div>
+    ) : null}
+  </div>
+);
+
 const HotelReports = () => {
   const dispatch = useDispatch<any>();
 
   const register = useSelector((state: any) => state.hotelReport.register);
   const collection = useSelector((state: any) => state.hotelReport.collection);
+  const performance = useSelector((state: any) => state.hotelReport.performance);
+  const reportError = useSelector((state: any) => state.hotelReport.error);
   const loading = useSelector((state: any) => state.hotelReport.loading);
   const branchDdl = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings?.data);
+  const currentBranch = useSelector((state: any) => state.branchList?.currentBranch);
 
-  const [tab, setTab] = useState<'register' | 'collection'>('register');
+  /**
+   * ⚠️ Read off `is_lodging`, which the server works out from the business
+   * type's NAME — never off `business_type_id`. The ids are auto-increment and
+   * seeded per install, so "Hotel / Motel" is 10 in one tenant's database and
+   * could be 9 in another's; a number written here would hide the tab from a
+   * hotel somewhere. This is the same reasoning that kept the sidebar's Hotel
+   * menu off a business-type check in the first place.
+   */
+  const isLodging = currentBranch?.is_lodging === true;
+
+  const [tab, setTab] = useState<'register' | 'collection' | 'performance'>('register');
   const [branchId, setBranchId] = useState<string>('');
 
   const [date, setDate] = useState(today());
@@ -100,6 +174,12 @@ const HotelReports = () => {
   const [from, setFrom] = useState(today());
   const [to, setTo] = useState(today());
   const [method, setMethod] = useState('');
+
+  // Its own pair of dates rather than the collection tab's. That one opens on
+  // today, which is the right question for a drawer and a useless one for
+  // occupancy: a single night's ADR is one booking's rate.
+  const [runFrom, setRunFrom] = useState(monthStart());
+  const [runTo, setRunTo] = useState(today());
 
   const term = useDebounced(search, 400);
 
@@ -112,9 +192,15 @@ const HotelReports = () => {
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
 
+    // The business type, for the Performance tab. Asked for only when it is
+    // not already in the store — every other screen that needs it does the
+    // same, and a report should not be the reason a lookup is refetched.
+    if (currentBranch?.is_lodging === undefined) dispatch(userCurrentBranch());
+
     return () => {
       dispatch(clearReports());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
 
   useEffect(() => {
@@ -141,6 +227,26 @@ const HotelReports = () => {
   useEffect(() => {
     if (tab === 'collection') loadCollection();
   }, [tab, loadCollection]);
+
+  const loadPerformance = useCallback(() => {
+    if (!branchId) return;
+    dispatch(performanceRead({ from: runFrom, to: runTo, branch_id: branchId }));
+  }, [dispatch, runFrom, runTo, branchId]);
+
+  useEffect(() => {
+    if (tab === 'performance') loadPerformance();
+  }, [tab, loadPerformance]);
+
+  /**
+   * A tab that stops being allowed cannot stay open.
+   *
+   * Switching to a property that does not let rooms leaves the reader looking
+   * at the last hotel's occupancy under this branch's name — which is the one
+   * mistake a figure people quote must not make.
+   */
+  useEffect(() => {
+    if (tab === 'performance' && currentBranch?.is_lodging === false) setTab('register');
+  }, [tab, currentBranch?.is_lodging]);
 
   const registerColumns = useMemo(
     () => [
@@ -255,8 +361,128 @@ const HotelReports = () => {
     [],
   );
 
+  /**
+   * Occupancy as a bar as well as a number.
+   *
+   * A column of percentages down a month is thirty numbers nobody compares.
+   * The same column with a bar behind it is a shape, and the shape is the
+   * question — which nights were empty.
+   */
+  const OccupancyCell = ({ value }: { value: number }) => (
+    <div className="flex items-center justify-end gap-2">
+      <div className="h-1.5 w-16 overflow-hidden rounded bg-gray-200 dark:bg-gray-700">
+        <div
+          className="h-full rounded bg-primary dark:bg-secondary"
+          style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+        />
+      </div>
+      <span className="w-14 text-right tabular-nums">{value.toFixed(2)}%</span>
+    </div>
+  );
+
+  const dailyColumns = useMemo(
+    () => [
+      {
+        key: 'date',
+        header: 'Night',
+        render: (row: any) => (
+          <span className="whitespace-nowrap">{formatDayMonthYear(row.date)}</span>
+        ),
+      },
+      {
+        key: 'sold',
+        header: 'Rooms sold',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        render: (row: any) => `${row.sold} / ${row.room_nights_available}`,
+      },
+      {
+        key: 'occupancy',
+        header: 'Occupancy',
+        headerClass: 'text-right',
+        cellClass: 'text-right',
+        render: (row: any) => <OccupancyCell value={Number(row.occupancy)} />,
+      },
+      {
+        key: 'revenue',
+        header: 'Room revenue',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        render: (row: any) => money(row.revenue),
+      },
+      {
+        key: 'adr',
+        header: 'ADR',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        // Nought rooms sold has no average rate, and printing 0.00 would put a
+        // night with no guests in the same column as a night given away free.
+        render: (row: any) =>
+          row.sold ? money(row.adr) : <span className="text-gray-400">—</span>,
+      },
+      {
+        key: 'revpar',
+        header: 'RevPAR',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        render: (row: any) => money(row.revpar),
+      },
+    ],
+    [],
+  );
+
+  const roomTypeColumns = useMemo(
+    () => [
+      { key: 'name', header: 'Room type' },
+      {
+        key: 'rooms',
+        header: 'Rooms',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+      },
+      {
+        key: 'sold',
+        header: 'Room-nights sold',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        render: (row: any) => `${row.sold} / ${row.room_nights_available}`,
+      },
+      {
+        key: 'occupancy',
+        header: 'Occupancy',
+        headerClass: 'text-right',
+        cellClass: 'text-right',
+        render: (row: any) => <OccupancyCell value={Number(row.occupancy)} />,
+      },
+      {
+        key: 'revenue',
+        header: 'Room revenue',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        render: (row: any) => money(row.revenue),
+      },
+      {
+        key: 'adr',
+        header: 'ADR',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        render: (row: any) =>
+          row.sold ? money(row.adr) : <span className="text-gray-400">—</span>,
+      },
+      {
+        key: 'revpar',
+        header: 'RevPAR',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        render: (row: any) => money(row.revpar),
+      },
+    ],
+    [],
+  );
+
   const counts = register?.counts;
   const totals = collection?.totals;
+  const run = performance?.totals;
 
   return (
     <div>
@@ -285,6 +511,22 @@ const HotelReports = () => {
         >
           Collection
         </button>
+
+        {/* Only on a property that lets rooms. The server refuses the figures
+            for anything else anyway — this is so nobody is invited to ask. */}
+        {isLodging ? (
+          <button
+            type="button"
+            onClick={() => setTab('performance')}
+            className={`${TAB} ${
+              tab === 'performance'
+                ? 'border-primary text-primary dark:border-secondary dark:text-secondary'
+                : 'border-transparent text-gray-500 dark:text-gray-400'
+            }`}
+          >
+            Performance
+          </button>
+        ) : null}
       </div>
 
       <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
@@ -301,7 +543,28 @@ const HotelReports = () => {
           />
         </div>
 
-        {tab === 'register' ? (
+        {tab === 'performance' ? (
+          <>
+            <InputDatePicker
+              id="performance_from"
+              name="run_from"
+              label="From"
+              selectedDate={runFrom ? new Date(runFrom) : null}
+              setSelectedDate={(d: Date | null) => setRunFrom(asText(d))}
+              setCurrentDate={(d: Date | null) => setRunFrom(asText(d))}
+              className="w-full"
+            />
+            <InputDatePicker
+              id="performance_to"
+              name="run_to"
+              label="To"
+              selectedDate={runTo ? new Date(runTo) : null}
+              setSelectedDate={(d: Date | null) => setRunTo(asText(d))}
+              setCurrentDate={(d: Date | null) => setRunTo(asText(d))}
+              className="w-full"
+            />
+          </>
+        ) : tab === 'register' ? (
           <>
             <InputDatePicker
               id="register_date"
@@ -361,9 +624,102 @@ const HotelReports = () => {
         )}
       </div>
 
-      {loading && !register && !collection ? <Loader /> : null}
+      {loading && !register && !collection && !performance ? <Loader /> : null}
 
-      {tab === 'register' ? (
+      {tab === 'performance' ? (
+        <>
+          {/* The server's refusal, shown rather than swallowed. It says WHY —
+              usually that this property does not let rooms by the night. */}
+          {!performance && reportError ? (
+            <p className="rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+              {reportError}
+            </p>
+          ) : null}
+
+          {run ? (
+            <>
+              <div className="mb-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
+                <Figure
+                  label="Occupancy"
+                  value={`${run.occupancy}%`}
+                  working={`${run.room_nights_sold} of ${run.room_nights_available} room-nights`}
+                />
+                <Figure
+                  label="ADR"
+                  value={money(run.adr)}
+                  working="per room-night SOLD"
+                />
+                {/* ⚠️ The lead figure, and deliberately so. Occupancy can be
+                    bought with discounts and ADR can be had by selling three
+                    rooms at a high rate. RevPAR is the only one of the three
+                    that both of those show up in. */}
+                <Figure
+                  label="RevPAR"
+                  value={money(run.revpar)}
+                  working="per room the property HAS"
+                  lead
+                />
+                <Figure
+                  label="Room revenue"
+                  value={money(run.revenue)}
+                  working={`${performance.rooms} rooms over ${performance.days} nights`}
+                />
+              </div>
+
+              <div className="mb-3 flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-300">
+                {/* The dormitory's own answer, kept small. On a property let by
+                    the bed the room figure understates how full the building
+                    was: one guest in a four-bed room is a full room and a
+                    quarter of the beds, and both are true at once (§2.5). */}
+                <span>
+                  <strong className="text-black dark:text-white">Beds:</strong>{' '}
+                  {run.bed_nights_sold} of {run.bed_nights_available} bed-nights ({run.bed_occupancy}
+                  %)
+                </span>
+
+                {run.held_room_nights ? (
+                  <span className="text-amber-700 dark:text-amber-300">
+                    <strong>{run.held_room_nights} room-nights are on hold</strong> and are not in
+                    any figure above — a hold is a telephone call that expires on its own.
+                  </span>
+                ) : null}
+              </div>
+
+              <p className="mb-4 rounded border border-stroke bg-gray-50 p-2.5 text-xs leading-snug text-gray-600 dark:border-strokedark dark:bg-meta-4/40 dark:text-gray-300">
+                {/* ⚠️ Every one of these three sentences is a figure somebody
+                    would otherwise argue about in a meeting, so they are said
+                    on the report rather than left in the code. */}
+                Rooms only — halls and community centres are let by the sitting, not the night, and
+                counting them would push occupancy past 100%. Confirmed, checked-in and checked-out
+                stays count; holds do not. Rent is the <strong>full tariff</strong>: a room let at
+                6,000 with 600 off is a 6,000 room and a 600 discount, so a discount lowers the
+                takings and never the ADR. Measured against the {performance.rooms} rooms this
+                property has <strong>today</strong> — a floor opened last week makes last month read
+                low.
+              </p>
+
+              <div className="mb-2 text-sm font-semibold text-black dark:text-white">
+                By room type
+              </div>
+              <Table
+                columns={roomTypeColumns}
+                data={performance?.by_room_type ?? []}
+                noDataMessage="No rooms set up for this property."
+                className="mb-6"
+              />
+
+              <div className="mb-2 text-sm font-semibold text-black dark:text-white">
+                Night by night
+              </div>
+              <Table
+                columns={dailyColumns}
+                data={performance?.daily ?? []}
+                noDataMessage="No nights in that range."
+              />
+            </>
+          ) : null}
+        </>
+      ) : tab === 'register' ? (
         <>
           {counts ? (
             <div className="mb-3 grid grid-cols-3 gap-2 sm:max-w-md">

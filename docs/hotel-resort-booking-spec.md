@@ -4567,3 +4567,168 @@ one exception is the demo property, which is already behind `--hotel-demo`.
 
 Deploy order: `php artisan patch:add-unit-type`, then `route:clear` (the new
 `tax-rates` and `folio/{id}/discount` routes 404 without it), then the front end.
+
+---
+
+## 38. Occupancy, ADR and RevPAR — phase 10 opened, 2026-08-31
+
+The three figures an owner asks for daily. Phase 10 in §8 is "Dashboard + KPIs";
+this is the report half of it, which is the half that has a right answer.
+
+### They were half here already, and that is the interesting part
+
+The month view in §31 has carried `occupancy`, `adr` and `revpar` since it was
+built. It is **not the same measurement**, and two screens saying "Occupancy"
+and meaning different things would make both useless — so neither hides which
+it is:
+
+| | Calendar month (§31) | Performance (this) |
+|---|---|---|
+| unit | **bed** | **room**, with beds as a second figure |
+| holds | counted as occupied | **excluded**, stated separately |
+| range | one anchored month | any range, up to 366 nights |
+| grouping | per night | per night **and per room type** |
+| permission | `hotel.booking.view` (the desk) | `hotel.report.view` (the owner) |
+
+Both are right for who asks them. A held bed cannot be sold to anybody else
+tonight, so the desk must see it as full; a telephone call that expires
+overnight is not a month's takings, so an owner must not. And ADR means the
+average **room** rate everywhere in the trade — a per-bed ADR under that name
+would be quoted at a bank.
+
+### The arithmetic
+
+```
+occupancy = room-nights sold / room-nights available
+ADR       = room revenue     / room-nights sold
+RevPAR    = room revenue     / room-nights available      ( = ADR × occupancy )
+```
+
+- **Rooms only.** Halls and community centres are let by the sitting (§2.8,
+  §36); a hall earning three times on one date would push occupancy past 100%
+  and drag ADR to a figure describing nothing. Ticketed items likewise.
+- **A room-night is `COUNT(DISTINCT room_resource_id, stay_date)`** over
+  `hotel_booking_resource_details` at `slot_id = 0`. Two of four beds sold is
+  one room-night: the room cannot be let whole either way.
+- **Sold = confirmed, checked_in, checked_out.** Not `Booking::LIVE_STATUSES`,
+  which includes a hold — that list answers "what still holds inventory", a
+  different question. Cancelled and expired need no filter: releasing a night
+  DELETES the row, because the row is the lock.
+- **Rent is the full tariff.** §37's rule: a 6,000 room with 600 off is a 6,000
+  room and a 600 discount, so a discount lowers takings and never ADR.
+- ⚠️ **The denominator is today's room count**, used for every night in the
+  range. Nothing records when a room entered service, so a property that opened
+  a floor last week reads low for last month. Said on the screen, not only here.
+  §31 carries the same caveat for the same reason.
+
+### Shown only on a property that lets rooms
+
+The owner's requirement, and it could not be `business_type_id == 10`: the ids
+are auto-increment and seeded per install, so "Hotel / Motel" is 10 here and
+could be 9 elsewhere. This is the same trap that kept the sidebar's Hotel menu
+off a business-type check.
+
+`App\Services\Hotel\PropertyType` matches the business type's **name** instead —
+normalised to letters, then searched for hotel / motel / resort / guesthouse /
+lodge. Resort counts: same inventory, same engine, §1 covers both sites.
+
+Two doors, and the second is the one that matters: the front end hides the tab,
+and the endpoint refuses with the reason. A hidden tab is one URL away, and on
+a branch with no rooms every figure reads nought — which is indistinguishable
+from a bad month.
+
+`user/current-branch` now also answers `business_type` (the name) and
+`is_lodging`, added **beside** `business_type_id`, which everything reading it
+today goes on reading.
+
+### Where it lives
+
+| | |
+|---|---|
+| Figures | `HotelReportController::performance()` and its four privates |
+| Lodging test | `App\Services\Hotel\PropertyType` |
+| Route | `GET hotel-setup/reports/performance` |
+| Branch payload | `UserController::apiUserCurrentBranch()` |
+| Screen | `hotel/reports/HotelReports.tsx` — third tab |
+| Store | `reports/reportSlice.tsx` → `performanceRead` |
+
+**No schema change and no new table.** Everything is counted out of the nights
+table, which has been an occupancy record all along.
+
+Checked against the demo property (44 rooms, 104 beds, 26–31 August): 30
+room-nights sold of 264, 11.36% occupancy, ADR 4,583.33, RevPAR 520.83, revenue
+137,500 — the room-type table sums back to all four totals, and ADR × occupancy
+reproduces RevPAR. A branch flipped to Construction inside a rolled-back
+transaction was refused 422 with the reason.
+
+**Deploy:** `route:clear`, then the front end. Nothing else.
+
+### Still not built in phase 10
+
+The **dashboard tiles** — these three figures on the landing page rather than
+on a report somebody opens. That is `DashboardIndex`, which maps
+`business_type_id` to a component and has no entry for a hotel; adding one is
+its own small piece of work and it should read `is_lodging` rather than extend
+the id map.
+
+### 38.1 A dashboard of its own, 2026-08-31
+
+§38 left the tiles out. The first attempt put them back as a strip on top of the
+generic dashboard, and that was the wrong shape — **a motel does not want the
+shop's dashboard with a hotel band above it.** Today Sales, Today Purchase, New
+Customers and Low Stock read nought on that property forever, and four dead
+tiles at the top of a page teach a person the page is not worth opening.
+
+So `dashboard/HotelDashboard.tsx` replaces it, and `DashboardIndex` sends a
+lodging property there **before** it reaches the business-type-id map.
+
+⚠️ **Before, and by `is_lodging` rather than by number.** That map is
+`business_type_id`, and the ids are auto-increment and seeded per install: 10 is
+"Hotel / Motel" here and could be Real Estate elsewhere. `is_lodging` is worked
+out on the server from the type's NAME (`PropertyType`, §38), so it travels —
+and it covers Resort, which is the same inventory sold the same way.
+
+### What is on it
+
+| band / card | answers |
+|---|---|
+| **Tonight** | in the building · arriving · leaving · **free tonight** · not ready |
+| **The month** | occupancy · ADR · **RevPAR** (the lead figure) · room revenue |
+| Night by night | a bar per night, empty ones included — the gaps are the question |
+| By room type | rooms, occupancy bar, ADR — a floor at 40% beside one at 95% |
+| Money this month | received, given back, **netted** in hand, by method, unposted |
+| Cash book | trx date, today received / payment, balance — a hotel still has a drawer |
+
+Six widgets, hidden and reordered through the existing Customize control under
+its own `hotel` dashboard key, so a desk and an owner can each keep their own.
+
+### Four decisions worth keeping
+
+- **Free tonight is rooms LESS sold LESS held.** `performance` grew `held` and
+  `free` per night for this. A room on hold is neither sold nor free, and
+  counting it free is how a desk promises a bed somebody is already waiting on.
+- **Nothing is counted twice.** Every figure comes from `reports/performance`,
+  `reports/register`, `reports/collection` and `housekeeping` — the same
+  answers those screens show. Two occupancy numbers that disagree by a rounding
+  rule is the failure guarded against everywhere else here, and a dashboard is
+  where somebody would spot it.
+- **A band that cannot be read disappears; it never shows an error.** The four
+  reads settle one at a time rather than through `Promise.all`, so a clerk who
+  holds the desk's permission and not the owner's gets the bands they are
+  allowed and blank space where the others would be. One rejection in an
+  all-or-nothing wait would have blanked the page for them.
+- **Tonight is the CALENDAR date, never the branch's transaction date.** The
+  books may be closed to July while a guest sleeps here in August.
+
+⚠️ **`reports/register` grew `counts_only`.** Every row of that report carries a
+guest's name, mobile and NATIONAL ID — it is the paper a police officer asks
+for. Fetching the list to render "2 in the building" would have put it in the
+browser of everybody who opens a dashboard, where nothing displays it and
+nothing needed it. The flag returns the three counts and an empty `rows`.
+
+⚠️ **Housekeeping counts every top-level resource, not only rooms** — a hall
+needs cleaning too — so "not ready" is not out of the 44. The tile says what is
+dirty and what is being done, and quotes no denominator, deliberately.
+
+**Deploy:** `route:clear` (already needed for §38), then the front end. No
+schema change.

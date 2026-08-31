@@ -960,6 +960,17 @@ export const API_HOTEL_REGISTER_URL = `${API_BASE_URL}/hotel-setup/reports/regis
 // than the drawer holds.
 export const API_HOTEL_COLLECTION_URL = `${API_BASE_URL}/hotel-setup/reports/collection`;
 
+// How the property DID — occupancy, ADR and RevPAR over any range of dates,
+// with the shape of each night and each room type under them.
+//
+// ⚠️ NOT THE SAME THREE FIGURES AS THE CALENDAR'S, and the two must never be
+// quoted at each other. The calendar answers the desk — per BED, holds counted
+// as occupied, because a held bed cannot be sold to anybody else. This answers
+// the owner — per ROOM (which is what ADR means everywhere in the trade) and
+// holds excluded, because a telephone call that expires overnight is not a
+// month's takings.
+export const API_HOTEL_PERFORMANCE_URL = `${API_BASE_URL}/hotel-setup/reports/performance`;
+
 // How full a month was, night by night, with ADR and RevPAR against it.
 //
 // ⚠️ ADR and RevPAR are different divisions — per bed SOLD and per bed the

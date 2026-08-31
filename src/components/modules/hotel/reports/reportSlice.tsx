@@ -1,7 +1,11 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import httpService from '../../../services/httpService';
-import { API_HOTEL_COLLECTION_URL, API_HOTEL_REGISTER_URL } from '../../../services/apiRoutes';
+import {
+  API_HOTEL_COLLECTION_URL,
+  API_HOTEL_PERFORMANCE_URL,
+  API_HOTEL_REGISTER_URL,
+} from '../../../services/apiRoutes';
 
 /**
  * Reading the property back: who was here, and what came in.
@@ -57,9 +61,31 @@ export const collectionRead = createAsyncThunk<any, Record<string, any>, { rejec
   },
 );
 
+/**
+ * Occupancy, ADR and RevPAR over a range of dates.
+ *
+ * ⚠️ The server REFUSES a property that does not let rooms by the night, and
+ * the refusal carries the reason. The screen hides the tab on the same answer,
+ * so this rejection is the second door rather than the first — but it is the
+ * one that cannot be got past by typing a URL.
+ */
+export const performanceRead = createAsyncThunk<any, Record<string, any>, { rejectValue: string }>(
+  'hotelReport/performanceRead',
+  async (params, { rejectWithValue }) => {
+    try {
+      const res = await httpService.get(API_HOTEL_PERFORMANCE_URL, { params });
+      if (res.data?.success === true) return unwrap(res);
+      return rejectWithValue(res.data?.message || 'Could not read the figures');
+    } catch (error: any) {
+      return rejectWithValue(said(error, 'Could not read the figures'));
+    }
+  },
+);
+
 interface ReportState {
   register: any | null;
   collection: any | null;
+  performance: any | null;
   loading: boolean;
   error: string | null;
 }
@@ -67,6 +93,7 @@ interface ReportState {
 const initialState: ReportState = {
   register: null,
   collection: null,
+  performance: null,
   loading: false,
   error: null,
 };
@@ -88,7 +115,13 @@ const reportSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    [registerRead, collectionRead].forEach((thunk: any) => {
+    const slotOf: Record<string, 'register' | 'collection' | 'performance'> = {
+      [registerRead.typePrefix]: 'register',
+      [collectionRead.typePrefix]: 'collection',
+      [performanceRead.typePrefix]: 'performance',
+    };
+
+    [registerRead, collectionRead, performanceRead].forEach((thunk: any) => {
       builder
         .addCase(thunk.pending, (state: any) => {
           state.loading = true;
@@ -99,9 +132,9 @@ const reportSlice = createSlice({
           state.error = action.payload || 'Failed';
           // ⚠️ Blanked rather than left standing. A stale register on screen
           // under a date the server refused is a list of names attached to the
-          // wrong night, and somebody would read it as an answer.
-          if (thunk === registerRead) state.register = null;
-          else state.collection = null;
+          // wrong night, and somebody would read it as an answer. The same goes
+          // for an occupancy figure: it is a number people quote out loud.
+          state[slotOf[thunk.typePrefix]] = null;
         });
     });
 
@@ -113,6 +146,10 @@ const reportSlice = createSlice({
       .addCase(collectionRead.fulfilled, (state, action) => {
         state.loading = false;
         state.collection = action.payload;
+      })
+      .addCase(performanceRead.fulfilled, (state, action) => {
+        state.loading = false;
+        state.performance = action.payload;
       });
   },
 });
