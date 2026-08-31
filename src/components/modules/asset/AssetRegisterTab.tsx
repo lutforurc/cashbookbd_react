@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiClipboard, FiLogOut, FiPlus, FiPrinter, FiTrash2, FiX } from 'react-icons/fi';
+import { FiArrowLeft, FiClipboard, FiLogOut, FiPlus, FiPrinter, FiTrash2 } from 'react-icons/fi';
 import { useReactToPrint } from 'react-to-print';
 
 import ActionButtons from '../../utils/fields/ActionButton';
@@ -98,6 +98,24 @@ const blank = () => ({
   notes: '',
 });
 
+/** A saved asset as a draft. One place, so opening an edit cannot drift. */
+const draftOf = (one: any, locked: boolean) => ({
+  id: one.id,
+  category_id: one.category_id,
+  code: one.code,
+  name: one.name,
+  description: one.description ?? '',
+  serial_no: one.serial_no ?? '',
+  location: one.location ?? '',
+  purchase_date: String(one.purchase_date ?? '').slice(0, 10),
+  cost: one.cost,
+  opening_accum_dep: one.opening_accum_dep,
+  opening_as_on: String(one.opening_as_on ?? '').slice(0, 10),
+  notes: one.notes ?? '',
+  // What the server will refuse to move, said before the refusal.
+  locked,
+});
+
 const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
   const [rows, setRows] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -110,7 +128,7 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
    * at four hundred rows and a search box. Read once, into ordinary state:
    * whatever is typed afterwards is the person's, not the link's.
    */
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const [search, setSearch] = useState(params.get('q') ?? '');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -146,6 +164,96 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
   const labelsRef = useRef<HTMLDivElement>(null);
 
   const printLabels = useReactToPrint({ contentRef: labelsRef, documentTitle: 'Asset labels' });
+
+  /**
+   * ⚠️ THE FORM IS A PAGE OF ITS OWN, and the address says which.
+   * `?form=new` is a new asset, `?form=12` is that one being edited, and
+   * nothing at all is the list. The two are never on screen together: a form
+   * and the rows it is about, stacked, is a screen where somebody edits one
+   * asset while looking at another.
+   *
+   * In the address for the reason AssetSetup already puts its tab there — a
+   * reload comes back to the same place, the browser's Back button means what
+   * it looks like it means, and a link can be sent to somebody.
+   */
+  const asked = params.get('form');
+
+  const openForm = (id?: any) => {
+    const at = new URLSearchParams(params);
+    at.set('form', id ? String(id) : 'new');
+    // Pushed, so Back from the form returns to the list.
+    setParams(at);
+  };
+
+  const closeForm = () => {
+    const at = new URLSearchParams(params);
+    at.delete('form');
+    // Replaced, so pressing Back after closing does not reopen the form.
+    setParams(at, { replace: true });
+  };
+
+  /**
+   * The draft follows the address.
+   *
+   * ⚠️ SEEDED FROM THE LISTED ROW WHERE THERE IS ONE, because `locked` is
+   * only on the list: it is `charged_here > 0`, worked out by the index query.
+   * Where the row is not on this page — a link opened cold, or a filter that
+   * excludes it — the asset is fetched and `locked` derived from the same sum
+   * over its own depreciation rows, which is the identical rule rather than a
+   * second one.
+   *
+   * It must not throw away what somebody is typing when the rows reload, hence
+   * the guards on the draft already open.
+   */
+  useEffect(() => {
+    if (!asked) {
+      setForm(null);
+      return;
+    }
+
+    if (asked === 'new') {
+      setForm((current: any) => (current && !current.id ? current : blank()));
+      return;
+    }
+
+    if (form && String(form.id) === asked) return;
+
+    const listed = rows.find((row: any) => String(row.id) === asked);
+
+    if (listed) {
+      setForm(draftOf(listed, Number(listed.charged_here) > 0));
+      return;
+    }
+
+    let alive = true;
+
+    httpService
+      .get(`${API_ASSET_REGISTER_URL}/edit/${asked}`)
+      .then((res) => {
+        if (!alive) return;
+
+        const payload = res?.data?.data?.data ?? res?.data?.data ?? {};
+        const asset = payload.asset;
+
+        if (!asset) return;
+
+        const charged = (payload.depreciations ?? []).reduce(
+          (sum: number, one: any) => sum + Number(one?.amount ?? 0),
+          0,
+        );
+
+        setForm(draftOf(asset, charged > 0));
+      })
+      .catch(() => {
+        // Left null, and the page below says the asset could not be found
+        // rather than opening a blank form that would save as a new one.
+      });
+
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asked, rows]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -222,7 +330,9 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
       });
 
       toast.success(res?.data?.message || 'Saved');
-      setForm(null);
+      // Back to the list, which is also what clears the draft — the effect
+      // above follows the address rather than the other way round.
+      closeForm();
       load();
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Could not save it');
@@ -418,24 +528,7 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
           <ActionButtons
             row={row}
             showEdit
-            handleEdit={(one: any) =>
-              setForm({
-                id: one.id,
-                category_id: one.category_id,
-                code: one.code,
-                name: one.name,
-                description: one.description ?? '',
-                serial_no: one.serial_no ?? '',
-                location: one.location ?? '',
-                purchase_date: String(one.purchase_date ?? '').slice(0, 10),
-                cost: one.cost,
-                opening_accum_dep: one.opening_accum_dep,
-                opening_as_on: String(one.opening_as_on ?? '').slice(0, 10),
-                notes: one.notes ?? '',
-                // What the server will refuse to move, said before the refusal.
-                locked: Number(one.charged_here) > 0,
-              })
-            }
+            handleEdit={(one: any) => openForm(one.id)}
           />
 
           {/* ⚠️ Only while it is still in use. An asset that has already
@@ -483,6 +576,45 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
 
   if (loading && !rows.length) return <Loader />;
 
+  /*
+   * THE FORM PAGE. One thing on it, and a way back.
+   *
+   * ⚠️ An id that answers to nothing reaches here as a mislaid link — an
+   * asset somebody has since removed, or a number typed by hand. It is said
+   * plainly rather than opening a blank form, which would look like a new
+   * asset and save as one.
+   */
+  if (asked) {
+    return (
+      <div>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-base font-semibold text-black dark:text-white">
+            {asked === 'new' ? 'New asset' : `Editing ${form?.name || 'an asset'}`}
+          </h3>
+          <ButtonLoading
+            onClick={closeForm}
+            label="Back to the list"
+            icon={<FiArrowLeft size={16} />}
+          />
+        </div>
+
+        {form ? (
+          <AssetRegisterForm
+            form={form}
+            onChange={setForm}
+            onSave={save}
+            saving={saving}
+            categoryOptions={categoryOptions}
+          />
+        ) : (
+          <p className="rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+            That asset could not be found — it may have been removed. Go back and pick one.
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-end gap-2">
@@ -524,9 +656,9 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
         </div>
 
         <ButtonLoading
-          onClick={() => setForm(form ? null : blank())}
-          label={form ? 'Close' : 'Add an asset'}
-          icon={form ? <FiX size={16} /> : <FiPlus size={16} />}
+          onClick={() => openForm()}
+          label="Add an asset"
+          icon={<FiPlus size={16} />}
         />
 
         {/* Stickers for the rows listed above -- filter first, then print. */}
@@ -538,16 +670,6 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
           />
         ) : null}
       </div>
-
-      {form ? (
-        <AssetRegisterForm
-          form={form}
-          onChange={setForm}
-          onSave={save}
-          saving={saving}
-          categoryOptions={categoryOptions}
-        />
-      ) : null}
 
       {/* ⚠️ SHOWN LEG BY LEG BEFORE IT IS DONE. Selling an asset writes off a
           cost that has stood in the balance sheet for years, charges the

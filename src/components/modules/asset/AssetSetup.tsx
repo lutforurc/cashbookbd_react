@@ -111,6 +111,13 @@ const AssetSetup = ({ user }: any) => {
   const setTab = (next: TabKey) => {
     const at = new URLSearchParams(params);
     at.set('tab', next);
+    /*
+     * ⚠️ The form is dropped on the way. A tab carries `?form=` for its own
+     * entry page, and the tabs share one query string — left in place, leaving
+     * a half-typed category by the Register tab would have opened a blank NEW
+     * ASSET form, on a tab the person had only meant to look at.
+     */
+    at.delete('form');
     // replace, not push: flicking between two tabs must not put two entries in
     // the history for one visit.
     setParams(at, { replace: true });

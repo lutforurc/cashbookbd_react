@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiPlus, FiTrash2, FiX } from 'react-icons/fi';
+import { FiArrowLeft, FiPlus, FiTrash2 } from 'react-icons/fi';
 
 import ActionButtons from '../../utils/fields/ActionButton';
 import Table from '../../utils/others/Table';
@@ -51,6 +52,21 @@ const blank = () => ({
 
 const percent = (value: any) => `${Number(value ?? 0)}%`;
 
+/** A saved row as a draft. One place, so opening an edit cannot drift. */
+const draftOf = (one: any) => ({
+  id: one.id,
+  name: one.name,
+  code: one.code ?? '',
+  rate: one.rate,
+  residual_value: one.residual_value,
+  asset_coa4_id: one.asset_coa4_id ?? '',
+  accum_dep_coa4_id: one.accum_dep_coa4_id ?? '',
+  dep_expense_coa4_id: one.dep_expense_coa4_id ?? '',
+  disposal_coa4_id: one.disposal_coa4_id ?? '',
+  notes: one.notes ?? '',
+  sort_order: one.sort_order,
+});
+
 const AssetCategoriesTab = () => {
   const [rows, setRows] = useState<any[]>([]);
   const [balanceSheetHeads, setBalanceSheetHeads] = useState<any[]>([]);
@@ -59,6 +75,63 @@ const AssetCategoriesTab = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>(null);
+
+  /**
+   * ⚠️ THE FORM IS A PAGE OF ITS OWN, and the address says which. `?form=new`
+   * is a new category, `?form=12` is that one being edited, and nothing at all
+   * is the list. The two are never on screen together: a form and the rows it
+   * is about, stacked, is a screen where somebody edits one row while looking
+   * at another.
+   *
+   * In the address rather than in a piece of state for the reason AssetSetup
+   * already puts its tab there — a reload comes back to the same place, the
+   * browser's Back button means what it looks like it means, and a link can be
+   * sent to somebody.
+   */
+  const [params, setParams] = useSearchParams();
+  const asked = params.get('form');
+
+  const openForm = (id?: any) => {
+    const at = new URLSearchParams(params);
+    at.set('form', id ? String(id) : 'new');
+    // Pushed, so Back from the form returns to the list.
+    setParams(at);
+  };
+
+  const closeForm = () => {
+    const at = new URLSearchParams(params);
+    at.delete('form');
+    // Replaced, so pressing Back after closing does not reopen the form.
+    setParams(at, { replace: true });
+  };
+
+  /**
+   * The draft follows the address.
+   *
+   * ⚠️ It reads the rows, so it reruns when they reload — and it must not
+   * throw away what somebody is typing when that happens. Hence the guards:
+   * a draft already open for this id, or a new one already started, is left
+   * exactly as it is.
+   */
+  useEffect(() => {
+    if (!asked) {
+      setForm(null);
+      return;
+    }
+
+    if (asked === 'new') {
+      setForm((current: any) => (current && !current.id ? current : blank()));
+      return;
+    }
+
+    setForm((current: any) => {
+      if (current && String(current.id) === asked) return current;
+
+      const one = rows.find((row: any) => String(row.id) === asked);
+
+      return one ? draftOf(one) : current;
+    });
+  }, [asked, rows]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -114,7 +187,9 @@ const AssetCategoriesTab = () => {
       // charged the server says so in a sentence, and that sentence is the
       // answer to the question somebody editing a rate is really asking.
       toast.success(res?.data?.message || 'Saved', { autoClose: 6000 });
-      setForm(null);
+      // Back to the list, which is also what clears the draft — the effect
+      // above follows the address rather than the other way round.
+      closeForm();
       load();
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Could not save it');
@@ -227,21 +302,7 @@ const AssetCategoriesTab = () => {
           <ActionButtons
             row={row}
             showEdit
-            handleEdit={(one: any) =>
-              setForm({
-                id: one.id,
-                name: one.name,
-                code: one.code ?? '',
-                rate: one.rate,
-                residual_value: one.residual_value,
-                asset_coa4_id: one.asset_coa4_id ?? '',
-                accum_dep_coa4_id: one.accum_dep_coa4_id ?? '',
-                dep_expense_coa4_id: one.dep_expense_coa4_id ?? '',
-                disposal_coa4_id: one.disposal_coa4_id ?? '',
-                notes: one.notes ?? '',
-                sort_order: one.sort_order,
-              })
-            }
+            handleEdit={(one: any) => openForm(one.id)}
           />
 
           {/* Only where nothing is filed under it. A category holding assets
@@ -265,6 +326,48 @@ const AssetCategoriesTab = () => {
 
   if (loading && !rows.length) return <Loader />;
 
+  /*
+   * THE FORM PAGE. One thing on it, and a way back.
+   *
+   * ⚠️ An id that is not in the list reaches here as a mislaid link — a
+   * category somebody has since removed, or a number typed by hand. It is said
+   * plainly rather than opening a blank form, which would look like a new
+   * category and save as one.
+   */
+  if (asked) {
+    return (
+      <div>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-base font-semibold text-black dark:text-white">
+            {asked === 'new' ? 'New category' : `Editing ${form?.name || 'a category'}`}
+          </h3>
+          <ButtonLoading onClick={closeForm} label="Back to the list" icon={<FiArrowLeft size={16} />} />
+        </div>
+
+        {note ? (
+          <p className="mb-3 rounded border border-stroke p-2.5 text-xs leading-snug text-gray-600 dark:border-strokedark dark:text-gray-300">
+            {note}
+          </p>
+        ) : null}
+
+        {form ? (
+          <AssetCategoryForm
+            form={form}
+            onChange={setForm}
+            onSave={save}
+            saving={saving}
+            balanceSheetHeads={balanceSheetHeads}
+            expenseHeads={expenseHeads}
+          />
+        ) : (
+          <p className="rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+            That category is not in the list — it may have been removed. Go back and pick one.
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
       {note ? (
@@ -275,22 +378,11 @@ const AssetCategoriesTab = () => {
 
       <div className="mb-2">
         <ButtonLoading
-          onClick={() => setForm(form ? null : blank())}
-          label={form ? 'Close' : 'Add a category'}
-          icon={form ? <FiX size={16} /> : <FiPlus size={16} />}
+          onClick={() => openForm()}
+          label="Add a category"
+          icon={<FiPlus size={16} />}
         />
       </div>
-
-      {form ? (
-        <AssetCategoryForm
-          form={form}
-          onChange={setForm}
-          onSave={save}
-          saving={saving}
-          balanceSheetHeads={balanceSheetHeads}
-          expenseHeads={expenseHeads}
-        />
-      ) : null}
 
       <Table
         columns={columns}
