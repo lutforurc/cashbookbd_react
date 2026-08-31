@@ -86,6 +86,16 @@ const CashBook = (user: any) => {
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [showRemoveApprovalConfirm, setShowRemoveApprovalConfirm] = useState(false);
   const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
+
+  /**
+   * Whether the range in the address bar has already been run on this visit.
+   *
+   * A ref, not state: the effect that restores the range can fire again when
+   * the branch list resolves, and re-running would refetch a report already on
+   * screen. Setting it must not itself cause a render either, or the guard
+   * would be the reason for the render it is guarding against.
+   */
+  const answered = useRef(false);
   const printRef = useRef<HTMLDivElement>(null); 
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
@@ -130,9 +140,20 @@ const CashBook = (user: any) => {
     // address bar is the question that was actually asked -- a half-typed range
     // nobody ran is not somewhere to come back to.
     //
+    // The branch goes in with the dates. It is half the question: a cash book
+    // is a range AND a branch, and coming back to the right fortnight of the
+    // wrong branch would put someone else's figures under the heading being
+    // read. Only written where one is chosen, so a bare ?from=&to= is never
+    // handed back a branch of "".
+    //
     // replace, so pressing Apply four times does not put four entries in the
     // history for Back to walk out of one at a time.
-    setParams({ from: startD, to: endD }, { replace: true });
+    setParams(
+      branchId == null
+        ? { from: startD, to: endD }
+        : { from: startD, to: endD, branch: String(branchId) },
+      { replace: true },
+    );
 
     setFilterOpen(false);
   };
@@ -218,10 +239,35 @@ const CashBook = (user: any) => {
       const from = fromUrl('from');
       const to = fromUrl('to');
       const onDate = transactionDate();
+      const asked = Number(params.get('branch')) || null;
+      const branch = asked ?? user.user.branch_id;
 
       setStartDate(from ?? onDate);
       setEndDate(to ?? from ?? onDate);
-      setBranchId(user.user.branch_id);
+      setBranchId(branch);
+
+      // ⚠️ And then ASK it. Restoring the boxes without running the report left
+      // the screen stating a question above the words "No data found" -- which
+      // reads as an answer, and a false one: an empty cash book for a range
+      // that has vouchers in it. Coming back from editing a voucher is the
+      // common way in, and the edit itself is what the reader wants to see.
+      //
+      // Dispatched with these values rather than through runCashBook(), which
+      // reads the state this effect has only just asked React to set and would
+      // otherwise send the previous render's dates.
+      //
+      // Only where the URL carried a range: arriving from the menu is not
+      // somebody returning to anything, and firing a report nobody asked for
+      // would put a wait on the plain act of opening the screen.
+      if (from && !answered.current) {
+        answered.current = true;
+
+        dispatch(getCashBook({
+          branchId: branch,
+          startDate: dayjs(from).format('YYYY-MM-DD'),
+          endDate: dayjs(to ?? from).format('YYYY-MM-DD'),
+        }));
+      }
     }
   }, [branchDdlData?.protectedData?.data]);
 
