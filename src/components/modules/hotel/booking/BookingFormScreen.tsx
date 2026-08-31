@@ -10,9 +10,12 @@ import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import InputElement from '../../../utils/fields/InputElement';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
+import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
+import httpService from '../../../services/httpService';
+import { API_HOTEL_PARTY_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
 import PropertyGrid from '../PropertyGrid';
 import {
@@ -124,6 +127,32 @@ const holdLength = (hours?: number): string => {
   return days === 1 ? 'a day' : `${days} days`;
 };
 
+/**
+ * The companies this property already has on its customer list.
+ *
+ * ⚠️ A DROPDOWN, NEVER A TYPED NAME, and that is the whole reason it is
+ * here. Typed, "ABC Traders" and "ABC traders" are two companies to every
+ * query ever written afterwards, and nobody can say which is the real one. It
+ * answers a party ID, so the question the desk actually asks -- who from this
+ * company stayed, on which nights, and what is still owed -- has one thing to
+ * group by.
+ *
+ * ⚠️ It answers `cust_party_infos.id`, which is what `billed_to_party_id`
+ * points at. The chart dropdowns elsewhere in this app answer coa4 ids and are
+ * NOT interchangeable with it.
+ */
+const findParties = async (typed: string) => {
+  const res = await httpService.get(API_HOTEL_PARTY_URL, { params: { q: typed } });
+  const rows = res?.data?.data?.data ?? res?.data?.data ?? [];
+
+  return (Array.isArray(rows) ? rows : []).map((party: any) => ({
+    value: String(party.id),
+    label: party.name,
+    label_2: party.mobile || '',
+    label_3: party.idfr_code || '',
+  }));
+};
+
 const blankBooking = () => ({
   check_in_date: today(),
   check_out_date: tomorrow(),
@@ -200,6 +229,14 @@ const BookingFormScreen = ({ user }: any) => {
    * off a folio -- a credit note is §6.2 and is not built -- so the server
    * refuses it, and this is where the refusal is put in front of somebody.
    */
+  /**
+   * The company a corporate booking is billed to.
+   *
+   * ⚠️ Held as the whole chosen option, not just its id, because the picker
+   * needs the label back to show what was chosen. Only the id is sent.
+   */
+  const [billedTo, setBilledTo] = useState<any>(null);
+
   const [warning, setWarning] = useState<any>(null);
 
   /**
@@ -344,6 +381,11 @@ const BookingFormScreen = ({ user }: any) => {
       setPickedSittings([]);
     }
 
+    // ⚠️ Dropped the moment the type stops being corporate. Left behind, an
+    // Individual booking would have gone to the server carrying a company to
+    // bill -- which the server accepts, and which nothing on screen would say.
+    if (chosen !== 'corporate') setBilledTo(null);
+
     setForm((prev: any) => ({
       ...prev,
       booking_type: chosen,
@@ -380,6 +422,18 @@ const BookingFormScreen = ({ user }: any) => {
         stated_children: booking.stated_children ?? 0,
         notes: booking.notes ?? '',
       });
+
+      // Who the bill goes to, so a corporate booking reopened says so instead
+      // of showing an empty box on the one screen where that answer decides
+      // whether the guest pays or a company is invoiced.
+      setBilledTo(
+        booking.billed_to_party_id
+          ? {
+              value: String(booking.billed_to_party_id),
+              label: booking.billed_to_party_name || `Party #${booking.billed_to_party_id}`,
+            }
+          : null,
+      );
 
       setOwnRooms((booking.room_ids ?? []).map((id: any) => Number(id)));
       setOwnSittings(
@@ -715,6 +769,14 @@ const BookingFormScreen = ({ user }: any) => {
       return;
     }
 
+    // ⚠️ Asked here as well as on the server, and the server keeps the last
+    // word. This one only saves the clerk a round trip that ends in a refusal
+    // -- the reason for it is in the controller, beside the rule.
+    if (!form.id && form.booking_type === 'corporate' && !billedTo?.value) {
+      toast.error('Which company is billed? Pick one from the list.');
+      return;
+    }
+
     // ⚠️ AN EDIT ASKS FIRST. A night that is already billed cannot be dropped
     // -- the server refuses it -- so the dry run is what turns that refusal
     // into something the clerk reads BEFORE filling the form in, instead of an
@@ -761,6 +823,12 @@ const BookingFormScreen = ({ user }: any) => {
           check_in_date: form.check_in_date,
           check_out_date: form.check_out_date,
           booking_type: form.booking_type,
+          // Only where it means something. Sent on an individual booking it
+          // would quietly bill a company nobody on this screen agreed to.
+          billed_to_party_id:
+            form.booking_type === 'corporate' && billedTo?.value
+              ? Number(billedTo.value)
+              : undefined,
           status: form.status,
           booker_name: form.booker_name,
           booker_mobile: form.booker_mobile || undefined,
@@ -974,13 +1042,53 @@ const BookingFormScreen = ({ user }: any) => {
         )}
       </div>
 
-      {/* Said where it applies rather than under the dropdown for ever.
-          A hint that is always there is furniture; one that appears
-          when the answer needs it is read. */}
+      {/* ⚠️ THE BOX THE HINT USED TO POINT AT. The hint said "name the
+          company on the bill" and there was nowhere to name one, so every
+          corporate booking was refused by the server for a field the form had
+          never had. Said where it applies rather than under the dropdown for
+          ever: a hint that is always there is furniture; one that appears when
+          the answer needs it is read. */}
       {form.booking_type === 'corporate' ? (
-        <p className="mt-1 max-w-6xl text-xs text-gray-500 dark:text-gray-400">
-          Corporate is billed to a company, not to the guest — name the company on the bill.
-        </p>
+        <div className="mt-2 max-w-lg">
+          <label
+            htmlFor="billed_to_party_id"
+            className="mb-1 block text-sm text-black dark:text-white"
+          >
+            Billed to <span className="text-danger">*</span>
+          </label>
+
+          <DdlMultiline
+            id="billed_to_party_id"
+            name="billed_to_party_id"
+            fetchOptions={findParties}
+            defaultOptions
+            value={billedTo}
+            onSelect={(chosen: any) => setBilledTo(chosen)}
+            placeholder="Search a company by name, mobile or code"
+            isDisabled={Boolean(form.id)}
+          />
+
+          <p className="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
+            {form.id ? (
+              /* ⚠️ Shown, not editable, and the sentence says where to go
+                 instead. The save on an edit does not carry this field, so a
+                 live picker here would be a control that quietly does nothing
+                 -- worse than no control, because the clerk would believe the
+                 bill had moved. Moving it IS a voucher (§6.4), which is why it
+                 belongs at check-out and not on this form. */
+              <>
+                Set when the booking was made. To send the bill somewhere else, move it at
+                check-out — that is a voucher, so the money follows it.
+              </>
+            ) : (
+              <>
+                Corporate is billed to a company, not to the guest. Picked from the customer
+                list rather than typed, so every stay this company pays for can be found under
+                one name.
+              </>
+            )}
+          </p>
+        </div>
       ) : null}
 
       {/* A walk-in sale has nothing to look up and nothing to pick, so
