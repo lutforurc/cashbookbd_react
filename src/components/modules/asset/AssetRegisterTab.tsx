@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiClipboard, FiLogOut, FiPlus, FiPrinter, FiSave, FiTrash2, FiX } from 'react-icons/fi';
+import { FiClipboard, FiLogOut, FiPlus, FiPrinter, FiTrash2, FiX } from 'react-icons/fi';
 import { useReactToPrint } from 'react-to-print';
 
 import ActionButtons from '../../utils/fields/ActionButton';
@@ -19,6 +19,7 @@ import { API_ASSET_DISPOSAL_URL, API_ASSET_REGISTER_URL } from '../../services/a
 import { money } from '../hotel/setupHelpers';
 
 import AssetCarePanel from './AssetCarePanel';
+import AssetRegisterForm from './AssetRegisterForm';
 import AssetLabelsPrint from './AssetLabelsPrint';
 
 /**
@@ -37,9 +38,13 @@ import AssetLabelsPrint from './AssetLabelsPrint';
  * ⚠️ AN OLD ASSET BRINGS ITS DEPRECIATION AS A MEMORY. Something carried over
  * from the old books is already in the ledger — its cost in the asset head, its
  * accumulated depreciation in the depreciation head, put there by whoever wrote
- * the opening entries. The two boxes below record it and post NOTHING; posting
- * again would double both sides of the balance sheet. The form says so, because
- * a box that quietly does nothing is one somebody will fill in twice.
+ * the opening entries. The two boxes record it and post NOTHING; posting again
+ * would double both sides of the balance sheet. The form says so, because a box
+ * that quietly does nothing is one somebody will fill in twice.
+ *
+ * The boxes themselves are in AssetRegisterForm — this reads the register,
+ * saves a row, removes one and sells one, and holds the draft while it is being
+ * typed. The same split already made with AssetCarePanel.
  */
 
 const asText = (date: Date | null) => {
@@ -535,154 +540,13 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
       </div>
 
       {form ? (
-        <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
-            <InputElement
-              id="asset_code"
-              name="code"
-              label="Code"
-              placeholder="VEH-001"
-              value={form.code}
-              onChange={(e: any) => setForm({ ...form, code: e.target.value })}
-              description="What goes on the sticker."
-            />
-            <div className="md:col-span-2">
-              <InputElement
-                id="asset_name"
-                name="name"
-                label="Asset"
-                placeholder="Toyota Hiace, Dhaka Metro Ga 11-2233"
-                value={form.name}
-                onChange={(e: any) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-            <DropdownCommon
-              id="asset_category"
-              name="category_id"
-              label="Category"
-              data={[{ id: '', name: 'Choose one' }, ...categoryOptions.slice(1)]}
-              value={form.category_id}
-              onChange={(e: any) => setForm({ ...form, category_id: e.target.value })}
-              description="The rate comes from here."
-            />
-          </div>
-
-          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-4">
-            <InputDatePicker
-              id="asset_purchase_date"
-              name="purchase_date"
-              label="Bought on"
-              selectedDate={asDate(form.purchase_date)}
-              setSelectedDate={(date: Date | null) =>
-                setForm({ ...form, purchase_date: asText(date) })
-              }
-              setCurrentDate={() => undefined}
-              className="w-full"
-            />
-            <InputElement
-              id="asset_cost"
-              name="cost"
-              label="Cost"
-              type="number"
-              min={0}
-              value={String(form.cost ?? '')}
-              onChange={(e: any) => setForm({ ...form, cost: e.target.value })}
-              disabled={form.locked}
-              description={
-                form.locked
-                  ? 'Frozen — a year has been charged against it.'
-                  : 'What it cost. This never changes afterwards.'
-              }
-            />
-            <InputElement
-              id="asset_serial"
-              name="serial_no"
-              label="Serial no"
-              value={form.serial_no ?? ''}
-              onChange={(e: any) => setForm({ ...form, serial_no: e.target.value })}
-            />
-            <InputElement
-              id="asset_location"
-              name="location"
-              label="Where it is"
-              placeholder="Head office, second floor"
-              value={form.location ?? ''}
-              onChange={(e: any) => setForm({ ...form, location: e.target.value })}
-            />
-          </div>
-
-          {/* ⚠️ THE HALF THAT POSTS NOTHING, and it says so. An asset carried
-              over from the old books is already in the ledger; these two boxes
-              are what this system has to be told so that its own arithmetic
-              starts in the right place. */}
-          <div className="mt-3 rounded border border-stroke p-3 dark:border-strokedark">
-            <div className="mb-2 text-sm font-medium text-black dark:text-white">
-              Brought forward from the old books
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
-              <InputElement
-                id="asset_opening_dep"
-                name="opening_accum_dep"
-                label="Depreciation so far"
-                type="number"
-                min={0}
-                value={String(form.opening_accum_dep ?? '')}
-                onChange={(e: any) => setForm({ ...form, opening_accum_dep: e.target.value })}
-                disabled={form.locked}
-                description="What has already been charged against it."
-              />
-              <div>
-                <InputDatePicker
-                  id="asset_opening_as_on"
-                  name="opening_as_on"
-                  label="As on"
-                  selectedDate={asDate(form.opening_as_on)}
-                  setSelectedDate={(date: Date | null) =>
-                    setForm({ ...form, opening_as_on: asText(date) })
-                  }
-                  setCurrentDate={() => undefined}
-                  className="w-full"
-                />
-                <p className="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
-                  The day that figure was true.
-                </p>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-xs leading-snug text-gray-500 dark:text-gray-400">
-                  Leave both empty for something bought new. For an asset carried over, enter what
-                  it <strong>originally cost</strong> above and what has been charged against it
-                  here — not what it is worth now.
-                  <br />
-                  <strong>Nothing is posted from this box.</strong> Those figures are already in
-                  the ledger from the old books&rsquo; opening entries; posting them again would
-                  double both the asset and the depreciation.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-2">
-            <InputElement
-              id="asset_notes"
-              name="notes"
-              label="Note"
-              placeholder="Optional"
-              value={form.notes ?? ''}
-              onChange={(e: any) => setForm({ ...form, notes: e.target.value })}
-            />
-          </div>
-
-          <div className="mt-3">
-            <ButtonLoading
-              onClick={save}
-              buttonLoading={saving}
-              icon={<FiSave className="h-5 w-5" />}
-              label="Save"
-              variant="primary"
-            />
-          </div>
-        </div>
+        <AssetRegisterForm
+          form={form}
+          onChange={setForm}
+          onSave={save}
+          saving={saving}
+          categoryOptions={categoryOptions}
+        />
       ) : null}
 
       {/* ⚠️ SHOWN LEG BY LEG BEFORE IT IS DONE. Selling an asset writes off a

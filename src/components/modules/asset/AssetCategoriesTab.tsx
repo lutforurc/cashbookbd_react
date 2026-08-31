@@ -1,16 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { FiPlus, FiSave, FiTrash2, FiX } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiX } from 'react-icons/fi';
 
 import ActionButtons from '../../utils/fields/ActionButton';
-import InputElement from '../../utils/fields/InputElement';
-import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import Table from '../../utils/others/Table';
 import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 
 import httpService from '../../services/httpService';
 import { API_ASSET_CATEGORY_URL } from '../../services/apiRoutes';
+import AssetCategoryForm from './AssetCategoryForm';
 
 /**
  * What kinds of thing this company owns, how fast each wears out, and where its
@@ -31,6 +30,10 @@ import { API_ASSET_CATEGORY_URL } from '../../services/apiRoutes';
  * ⚠️ A category with no heads is kept and edited like any other. It simply
  * cannot be depreciated — and the row says so, so that it is discovered here
  * rather than in June when the run refuses.
+ *
+ * The boxes themselves are in AssetCategoryForm — this reads the list, saves a
+ * category and removes one, and holds the draft while it is being typed. The
+ * same split AssetRegisterTab already makes with AssetCarePanel.
  */
 
 const blank = () => ({
@@ -78,13 +81,6 @@ const AssetCategoriesTab = () => {
   useEffect(() => {
     load();
   }, [load]);
-
-  const headOptions = (heads: any[]) => [
-    // ⚠️ Named, not blank. "Not chosen yet" is a real state here — the category
-    // can be saved without it — so the first line says which state it is.
-    { id: '', name: 'Not chosen yet' },
-    ...heads.map((head: any) => ({ id: head.id, name: `${head.name} — ${head.group_name}` })),
-  ];
 
   const save = async () => {
     if (!form?.name?.trim()) {
@@ -286,127 +282,14 @@ const AssetCategoriesTab = () => {
       </div>
 
       {form ? (
-        <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
-            <InputElement
-              id="asset_category_name"
-              name="name"
-              label="Category"
-              placeholder="Vehicles"
-              value={form.name}
-              onChange={(e: any) => setForm({ ...form, name: e.target.value })}
-            />
-            <InputElement
-              id="asset_category_code"
-              name="code"
-              label="Code"
-              placeholder="VEH"
-              value={form.code ?? ''}
-              onChange={(e: any) => setForm({ ...form, code: e.target.value })}
-              description="Optional. Handy on a sticker."
-            />
-            <InputElement
-              id="asset_category_rate"
-              name="rate"
-              label="Rate %"
-              type="number"
-              min={0}
-              max={100}
-              placeholder="20"
-              value={String(form.rate ?? '')}
-              onChange={(e: any) => setForm({ ...form, rate: e.target.value })}
-              description="A year, of what the asset is still worth."
-            />
-            <InputElement
-              id="asset_category_residual"
-              name="residual_value"
-              label="Stops at"
-              type="number"
-              min={0}
-              value={String(form.residual_value ?? 1)}
-              onChange={(e: any) => setForm({ ...form, residual_value: e.target.value })}
-              description="One taka, so the asset never vanishes off the books."
-            />
-          </div>
-
-          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
-            <DropdownCommon
-              id="asset_coa4_id"
-              name="asset_coa4_id"
-              label="Asset head"
-              data={headOptions(balanceSheetHeads)}
-              value={form.asset_coa4_id}
-              onChange={(e: any) => setForm({ ...form, asset_coa4_id: e.target.value })}
-              description="Where what it cost sits. Balance sheet."
-            />
-            <DropdownCommon
-              id="accum_dep_coa4_id"
-              name="accum_dep_coa4_id"
-              label="Accumulated depreciation"
-              data={headOptions(balanceSheetHeads)}
-              value={form.accum_dep_coa4_id}
-              onChange={(e: any) => setForm({ ...form, accum_dep_coa4_id: e.target.value })}
-              description="Grows underneath the asset. Balance sheet."
-            />
-            <DropdownCommon
-              id="dep_expense_coa4_id"
-              name="dep_expense_coa4_id"
-              label="Depreciation charge"
-              data={headOptions(expenseHeads)}
-              value={form.dep_expense_coa4_id}
-              onChange={(e: any) => setForm({ ...form, dep_expense_coa4_id: e.target.value })}
-              description="This year’s expense. Profit and loss."
-            />
-          </div>
-
-          {/* ⚠️ THE FOURTH HEAD, AND IT ARRIVED LATE. The first three are what
-              depreciation needs; this one is what SELLING needs, and a category
-              can be perfectly able to depreciate and unable to dispose. Without
-              it on this form there was no way to give a category its gain-or-loss
-              head at all, so the disposal panel refused every sale with a
-              message pointing at a box that did not exist. */}
-          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
-            <DropdownCommon
-              id="disposal_coa4_id"
-              name="disposal_coa4_id"
-              label="Gain or loss on sale"
-              data={headOptions(expenseHeads)}
-              value={form.disposal_coa4_id}
-              onChange={(e: any) => setForm({ ...form, disposal_coa4_id: e.target.value })}
-              description="Only needed to sell or write one off. Profit and loss."
-            />
-          </div>
-
-          <div className="mt-2">
-            <InputElement
-              id="asset_category_notes"
-              name="notes"
-              label="Note"
-              placeholder="Optional — where the rate came from"
-              value={form.notes ?? ''}
-              onChange={(e: any) => setForm({ ...form, notes: e.target.value })}
-            />
-          </div>
-
-          {/* ⚠️ The two things somebody typing a rate needs told, and neither is
-              obvious from the form: the charge falls every year rather than
-              staying flat, and a rate changed later does not reach back. */}
-          <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
-            Reducing balance: 20% of 100,000 is 20,000 in the first full year and 16,000 in the
-            next, because the second year is charged on 80,000. Changing a rate here reaches the
-            next run — every year already charged keeps the rate it was charged at.
-          </p>
-
-          <div className="mt-3">
-            <ButtonLoading
-              onClick={save}
-              buttonLoading={saving}
-              icon={<FiSave className="h-5 w-5" />}
-              label="Save"
-              variant="primary"
-            />
-          </div>
-        </div>
+        <AssetCategoryForm
+          form={form}
+          onChange={setForm}
+          onSave={save}
+          saving={saving}
+          balanceSheetHeads={balanceSheetHeads}
+          expenseHeads={expenseHeads}
+        />
       ) : null}
 
       <Table
