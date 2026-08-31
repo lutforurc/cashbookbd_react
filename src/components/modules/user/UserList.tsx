@@ -14,6 +14,7 @@ import SearchInput from '../../utils/fields/SearchInput';
 import routes from '../../services/appRoutes';
 import { hasPermission } from '../../utils/permissionChecker';
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
+import FormToggleField from '../../utils/utils-functions/FormToggleField';
 
 const UserList = () => {
   const userList = useSelector((state) => state.users);
@@ -27,6 +28,17 @@ const UserList = () => {
     hasPermission(userPermissions, 'user.store') ||
     hasPermission(userPermissions, 'all.user.add');
 
+  /**
+   * ⚠️ WHO GETS THE WHOLE LIST. Without `all.user.view` this screen is one
+   * company's people, which is what it has always been. With it, the toggle
+   * below appears and the list can be widened to every company on the
+   * platform. The server asks the same question again — and asks it of the
+   * platform company first — so a tenant who somehow holds the permission
+   * still sees only their own; this only decides whether the switch is worth
+   * showing.
+   */
+  const canViewAllCompanies = hasPermission(userPermissions, 'all.user.view');
+
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,15 +49,16 @@ const UserList = () => {
   const [temporaryPasswordLoadingId, setTemporaryPasswordLoadingId] = useState<string | null>(null);
   const [statusBusyId, setStatusBusyId] = useState<string | null>(null);
   const [statusOverrides, setStatusOverrides] = useState<Record<string, number>>({});
+  // Off, and the list is this company's people. On, it is everybody's, and the
+  // Company column appears with them — a list of names from four companies with
+  // no company against them is a list nobody can read.
+  const [allCompanies, setAllCompanies] = useState(false);
   const maxUsers = subscription?.current?.max_users;
   const currentUsers = Number(userList?.data?.total || 0);
   const userLimitReached = typeof maxUsers === 'number' && maxUsers > 0 && currentUsers >= maxUsers;
 
-
-  console.log('====================================');
-  console.log("settings", settings?.data?.user?.id === 1, settings?.data?.permissions);
-  console.log('====================================');
-
+  // Every list request asks the same question, so it is asked in one place.
+  const showEveryCompany = canViewAllCompanies && allCompanies;
 
   const handleSelectChange = (page: any) => {
     setPerPage(page.target.value);
@@ -58,16 +71,16 @@ const UserList = () => {
   const handleSearchButton = () => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(getUser({ page: 1, perPage, search })); // Use 'search' instead
+    dispatch(getUser({ page: 1, perPage, search, allTenantUsers: showEveryCompany })); // Use 'search' instead
   };
 
   useEffect(() => {
-    dispatch(getUser({ page, perPage, search }));
+    dispatch(getUser({ page, perPage, search, allTenantUsers: showEveryCompany }));
     if (userList?.data?.total) {
       setTotalPages(Math.ceil(userList?.data?.total / perPage));
       setTableData(userList.data.data);
     }
-  }, [page, perPage, userList?.data?.total]);
+  }, [page, perPage, showEveryCompany, userList?.data?.total]);
 
   useEffect(() => {
     setTableData(userList.data.data);
@@ -248,6 +261,16 @@ const UserList = () => {
       key: 'name',
       header: 'User Name',
     },
+    // Only carried while the list spans more than one company. A column that
+    // says the same word on every row is a column in the way.
+    ...(showEveryCompany
+      ? [
+          {
+            key: 'company',
+            header: 'Company',
+          },
+        ]
+      : []),
     {
       key: 'branch',
       header: 'Working Branch',
@@ -351,6 +374,24 @@ const UserList = () => {
               icon={<FiCheckSquare />}
             />
           </div>
+
+          {/* Shown only to whoever holds `all.user.view`. For everybody else
+              there is no switch, because there is nothing behind it: the
+              server would hand them their own company either way. */}
+          {canViewAllCompanies && (
+            <div className="flex h-8.5 items-center whitespace-nowrap">
+              <FormToggleField
+                label="All companies"
+                checked={allCompanies}
+                onChange={(checked) => {
+                  setAllCompanies(checked);
+                  setPage(1);
+                  setCurrentPage(1);
+                }}
+                className=""
+              />
+            </div>
+          )}
         </div>
         {canCreateUser && (
           <ButtonLoading
