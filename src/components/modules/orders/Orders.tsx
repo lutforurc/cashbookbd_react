@@ -725,7 +725,7 @@ const Orders = () => {
    * visible.
    */
   /**
-   * The twelve figures under the list. Always these twelve, in this order.
+   * The nine figures under the list. Always these nine, in this order.
    *
    * ⚠️ NOT VARIED BY THE ORDER-TYPE FILTER, and it used to be: choosing
    * Purchase Order dropped every DO tile, choosing Sales Order dropped the PO
@@ -778,27 +778,12 @@ const Orders = () => {
         highlight: true,
       },
 
-      /*
-       * The money undivided: what was ordered, what has moved against it, and
-       * what is short. The same question whichever way the goods were going,
-       * which is why these three are not split by direction. The last is
-       * subtracted from the two printed beside it, so the row adds up in front
-       * of whoever reads it.
-       */
-      { key: 'order-amt', label: 'Order Amount', value: money(summary.totalAmount) },
-      { key: 'trx-amt', label: 'Trx. Amount', value: money(summary.trxAmount) },
-      {
-        key: 'trx-def-amt',
-        label: 'Trx. Def. Amount',
-        value: money(summary.totalAmount - summary.trxAmount),
-        highlight: true,
-      },
 
       /*
-       * ⚠️ AND THE SAME MONEY SPLIT BY DIRECTION -- a different question,
-       * not a repeat of the three above. Those say how far the orders have
-       * been fulfilled; these say how much came IN against how much went OUT,
-       * and the last is the position between them.
+       * ⚠️ THE MONEY, SPLIT BY DIRECTION: how much came IN against how much
+       * went OUT, and the position between them. Not how far the orders have
+       * been fulfilled -- that is the quantity half above, and the undivided
+       * money tiles that used to sit here were removed for saying it twice.
        *
        * Negative where more went out than came in: the goods came off earlier
        * stock, or something does not reconcile. A person reads it; it is not
