@@ -1077,7 +1077,8 @@ const BookingsScreen = ({ user }: any) => {
               {cancelling?.booker_name ? ` · ${cancelling.booker_name}` : ''}
             </span>
             <span className="mt-1 block text-sm text-[rgb(var(--c-text-muted))]">
-              {cancelling?.check_in_date} → {cancelling?.check_out_date} ·{' '}
+              {formatDayMonthYear(cancelling?.check_in_date)} →{' '}
+              {formatDayMonthYear(cancelling?.check_out_date)} ·{' '}
               {cancelling?.stated_rooms} {cancelling?.stated_rooms === 1 ? 'room' : 'rooms'}
             </span>
 

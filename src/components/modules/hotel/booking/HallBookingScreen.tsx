@@ -13,6 +13,7 @@ import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
 import routes from '../../../services/appRoutes';
+import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import { money } from '../setupHelpers';
 import { bookingSave, hallsRead } from './bookingSlice';
 
@@ -333,7 +334,7 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
               >
                 <FiCalendar size={12} />
                 <span className="text-black dark:text-white">
-                  {one.hall} · {one.sitting} · {one.date}
+                  {one.hall} · {one.sitting} · {formatDayMonthYear(one.date)}
                 </span>
                 <button
                   type="button"
@@ -427,7 +428,7 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
             </span>
 
             <span className="mt-2 block">
-              {picked.map((one) => `${one.hall} · ${one.sitting} · ${one.date}`).join(', ')}
+              {picked.map((one) => `${one.hall} · ${one.sitting} · ${formatDayMonthYear(one.date)}`).join(', ')}
             </span>
 
             {/* The bill is not made here -- the sittings are held at the rate

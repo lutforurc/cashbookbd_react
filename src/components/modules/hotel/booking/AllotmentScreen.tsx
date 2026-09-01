@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -11,6 +11,9 @@ import Checkbox from '../../../utils/fields/Checkbox';
 import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import routes from '../../../services/appRoutes';
+import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
+import httpService from '../../../services/httpService';
+import { API_HOTEL_GUEST_URL } from '../../../services/apiRoutes';
 
 import { allotmentRead, allotSave, clearAllotment } from './bookingSlice';
 import { AllotmentRoom, Guest } from './types';
@@ -88,6 +91,14 @@ const AllotmentScreen = () => {
   const [openRoom, setOpenRoom] = useState<number | null>(null);
   const [draft, setDraft] = useState<Guest[]>([]);
 
+  // Which room is open, readable from a callback that was made before the
+  // answer came back. See fillOpenRoom.
+  const openRoomRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    openRoomRef.current = openRoom;
+  }, [openRoom]);
+
   useEffect(() => {
     if (!bookingId) return;
 
@@ -127,16 +138,33 @@ const AllotmentScreen = () => {
 
   const open = (room: AllotmentRoom) => {
     setOpenRoom(room.room_id);
+    // Set here as well as in the effect: the lookup below is started in this
+    // same tick, and the effect has not run yet.
+    openRoomRef.current = room.room_id;
 
     // Reopening a room shows what is already recorded, so a correction is an
     // edit rather than a retype. A room with nobody starts with one line rather
     // than none -- an empty form with an Add button is one click of ceremony
     // before the first name.
-    setDraft(room.guests.length ? room.guests.map((guest) => ({ ...guest })) : [firstGuest()]);
+    const rows = room.guests.length
+      ? room.guests.map((guest) => ({ ...guest }))
+      : [firstGuest()];
+
+    setDraft(rows);
+
+    /*
+     * ⚠️ AND LOOK THE NUMBER UP AS THE ROOM OPENS, not when the mobile box
+     * is left. On an individual booking that box is filled from the booking
+     * itself the moment this row is made, so nobody ever types in it and a
+     * blur never happens -- the clerk would sit looking at a name and a
+     * telephone number with the NID box empty and no reason to touch it.
+     */
+    void fillOpenRoom(room.room_id, rows);
   };
 
   const close = () => {
     setOpenRoom(null);
+    openRoomRef.current = null;
     setDraft([]);
   };
 
@@ -144,6 +172,115 @@ const AllotmentScreen = () => {
     setDraft((prev) =>
       prev.map((guest, i) => (i === index ? { ...guest, [field]: e.target.value } : guest)),
     );
+
+  /**
+   * What the register already holds against a telephone number.
+   *
+   * ⚠️ SO A RETURNING GUEST IS NOT ASKED FOR THEIR NID TWICE. Somebody who
+   * stayed here in March already handed over a national id and an address;
+   * making them read it out again is what makes a register get filled in
+   * badly.
+   *
+   * ⚠️ EMPTY BOXES ONLY, each checked on its own. A guest whose address has
+   * changed types the new one, and this must not put the old one back. Nothing
+   * already typed is touched.
+   *
+   * ⚠️ AGE COMES ACROSS TOO, by the owner's decision. It is the one field
+   * that goes stale on its own -- somebody who was 34 last year is 35 now --
+   * and unlike a changed address nothing about it looks wrong on screen. The
+   * desk has to check it; a date of birth would be the fix that does not
+   * depend on anybody remembering.
+   */
+  const fillFromRegister = async (rows: Guest[]): Promise<Guest[]> => {
+    const filled = await Promise.all(
+      rows.map(async (guest) => {
+        const typed = String(guest.mobile ?? '');
+
+        // A part-typed number matches half the register, so the server refuses
+        // it. No point asking.
+        if (typed.replace(/\D+/g, '').length < 10) return guest;
+
+        // Somebody already recorded needs nothing filled in.
+        if (
+          String(guest.national_id ?? '').trim() &&
+          String(guest.address ?? '').trim() &&
+          String(guest.age ?? '').trim()
+        ) {
+          return guest;
+        }
+
+        try {
+          const res = await httpService.get(API_HOTEL_GUEST_URL, { params: { mobile: typed } });
+          const found = res?.data?.data?.data ?? null;
+
+          if (!found?.found) return guest;
+
+          const onFile = found.guest ?? {};
+          const keep = (current: any, previous: any) =>
+            String(current ?? '').trim() === '' && previous ? previous : current;
+
+          return {
+            ...guest,
+            name: keep(guest.name, onFile.name ?? found.name),
+            national_id: keep(guest.national_id, onFile.national_id),
+            address: keep(guest.address, onFile.address),
+            gender: guest.gender ? guest.gender : (onFile.gender ?? guest.gender),
+            // Same rule as the rest: only into an empty box. A clerk who has
+            // already asked and typed the right age keeps it.
+            age:
+              guest.age === null || guest.age === undefined || String(guest.age) === ''
+                ? (onFile.age ?? guest.age)
+                : guest.age,
+          };
+        } catch (error) {
+          // A lookup that fails changes nothing. The desk types it.
+          return guest;
+        }
+      }),
+    );
+
+    return filled;
+  };
+
+  /**
+   * Run on the rows of one room and put the answers back.
+   *
+   * ⚠️ The room is checked before the draft is replaced. A clerk who opened
+   * a room, saw the lookup was slow and closed it again must not have the
+   * answers land in the room they opened next.
+   */
+  const fillOpenRoom = async (roomId: number, rows: Guest[]) => {
+    const filled = await fillFromRegister(rows);
+
+    /*
+     * ⚠️ READ THROUGH A REF, not through the openRoom in this closure and
+     * not by setting one piece of state from inside another's updater. The
+     * closure's value is whatever it was when the room opened, which is what
+     * we are trying to check has not changed; and a setDraft called from
+     * inside a setOpenRoom updater runs during a state update, which React
+     * runs twice in development and is not a place to put an effect.
+     *
+     * The check itself matters: a clerk who opened a room, saw the lookup was
+     * slow and closed it again must not have the answers land in the room they
+     * opened next.
+     */
+    if (openRoomRef.current !== roomId) return;
+
+    setDraft(filled);
+  };
+
+  /**
+   * The same lookup again when a clerk types a different number into a row.
+   *
+   * It runs over every row rather than the one just left, which costs nothing:
+   * a row already carrying an NID and an address is skipped without asking the
+   * server at all.
+   */
+  const lookUpGuest = () => {
+    if (openRoom === null) return;
+
+    void fillOpenRoom(openRoom, draft);
+  };
 
   const save = async (room: AllotmentRoom) => {
     const filled = draft.filter((guest) => guest.name?.trim());
@@ -231,7 +368,7 @@ const AllotmentScreen = () => {
               Checking in {booking?.booking_no}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {booking?.check_in_date} → {booking?.check_out_date}
+              {formatDayMonthYear(booking?.check_in_date)} → {formatDayMonthYear(booking?.check_out_date)}
               {booking?.nights ? ` · ${booking.nights} night${booking.nights === 1 ? '' : 's'}` : ''}
               {booking?.booker_name ? ` · booked by ${booking.booker_name}` : ''}
               {booking?.booker_mobile ? ` · ${booking.booker_mobile}` : ''}
@@ -331,6 +468,7 @@ const AllotmentScreen = () => {
                         placeholder="One per room"
                         value={guest.mobile ?? ''}
                         onChange={set(index, 'mobile')}
+                        onBlur={lookUpGuest}
                       />
                     </div>
                     <div className="md:col-span-2">

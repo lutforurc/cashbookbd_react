@@ -113,11 +113,15 @@ const Figure = ({
   value,
   working,
   lead,
+  hint,
 }: {
   label: string;
   value: string;
   working?: string;
   lead?: boolean;
+  /** What the label is short for, on hover. ADR and RevPAR are initials and
+      the tile has no room to spell them out. */
+  hint?: string;
 }) => (
   <div
     className={`rounded border px-3 py-2 ${
@@ -126,7 +130,14 @@ const Figure = ({
         : 'border-stroke dark:border-strokedark'
     }`}
   >
-    <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</div>
+    <div
+      className={`text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 ${
+        hint ? 'cursor-help decoration-dotted underline-offset-2 hover:underline' : ''
+      }`}
+      title={hint}
+    >
+      {label}
+    </div>
     <div
       className={`text-xl font-semibold ${
         lead ? 'text-primary dark:text-secondary' : 'text-black dark:text-white'
@@ -646,6 +657,7 @@ const HotelReports = () => {
                 />
                 <Figure
                   label="ADR"
+                  hint="Average Daily Rate — room revenue divided by the room-nights actually sold"
                   value={money(run.adr)}
                   working="per room-night SOLD"
                 />
@@ -655,6 +667,7 @@ const HotelReports = () => {
                     that both of those show up in. */}
                 <Figure
                   label="RevPAR"
+                  hint="Revenue Per Available Room — room revenue divided by every room-night the property had, sold or not"
                   value={money(run.revpar)}
                   working="per room the property HAS"
                   lead

@@ -932,6 +932,12 @@ export const API_HOTEL_CHECKOUT_URL = `${API_BASE_URL}/hotel-setup/bookings/chec
 // chart dropdowns return — billed_to_party_id points at the party master.
 export const API_HOTEL_PARTY_URL = `${API_BASE_URL}/hotel-setup/bookings/parties`;
 
+// Has this telephone number stayed here before?
+//
+// ⚠️ Answers a name and a count of stays. NOT a national id -- the register
+// it reads carries them, and nothing on the booking form needs one.
+export const API_HOTEL_GUEST_URL = `${API_BASE_URL}/hotel-setup/bookings/guest`;
+
 // Where money may be taken — this company's own cash and bank heads.
 //
 // ⚠️ Answers acc_coa_level4s.id, which is what `coa4_id` on a payment wants —

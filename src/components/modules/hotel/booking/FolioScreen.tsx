@@ -39,6 +39,7 @@ import { FIELD_LABEL } from '../../../../theme/fieldStyles';
 import httpService from '../../../services/httpService';
 import { API_HOTEL_FOLIO_URL, API_HOTEL_PARTY_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
+import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import { money } from '../setupHelpers';
 import {
   billRead,
@@ -682,7 +683,7 @@ const FolioScreen = () => {
       {
         key: 'payment_date',
         header: 'Date',
-        render: (row: any) => String(row.payment_date ?? '').slice(0, 10),
+        render: (row: any) => formatDayMonthYear(row.payment_date),
       },
       {
         key: 'purpose',
@@ -932,7 +933,8 @@ const FolioScreen = () => {
               {booking?.booking_no}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {booking?.booker_name} · {booking?.check_in_date} → {booking?.check_out_date}
+              {booking?.booker_name} · {formatDayMonthYear(booking?.check_in_date)} →{' '}
+              {formatDayMonthYear(booking?.check_out_date)}
             </div>
           </div>
 
@@ -1286,7 +1288,7 @@ const FolioScreen = () => {
               <div className="mb-1 font-medium text-black dark:text-white">Where it has been</div>
               {bill.history.map((row: any) => (
                 <div key={row.id} className="text-gray-600 dark:text-gray-300">
-                  {row.date}: {row.from} → {row.to}, {money(row.amount)}
+                  {formatDayMonthYear(row.date)}: {row.from} → {row.to}, {money(row.amount)}
                   {row.voucher_no ? (
                     <span className="ml-1 font-mono text-[0.65rem]">{row.voucher_no}</span>
                   ) : null}

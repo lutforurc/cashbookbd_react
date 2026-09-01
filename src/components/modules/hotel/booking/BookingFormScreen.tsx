@@ -15,7 +15,7 @@ import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
 import httpService from '../../../services/httpService';
-import { API_HOTEL_PARTY_URL } from '../../../services/apiRoutes';
+import { API_HOTEL_GUEST_URL, API_HOTEL_PARTY_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
 import PropertyGrid from '../PropertyGrid';
 import {
@@ -27,7 +27,7 @@ import {
 } from '../layoutPalette';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { buildingDdl } from '../hotelSetupSlice';
-import { clockTime, money } from '../setupHelpers';
+import { clockTime, money, useDebounced } from '../setupHelpers';
 import { DdlOption, LayoutBuilding, LayoutRoom, LayoutSeat } from '../types';
 import {
   availabilityRead,
@@ -237,6 +237,15 @@ const BookingFormScreen = ({ user }: any) => {
    */
   const [billedTo, setBilledTo] = useState<any>(null);
 
+  /**
+   * Who this telephone number turned out to be, if anybody.
+   *
+   * Kept so the form can SAY it recognised them. Filling the name silently
+   * would look like the box typing itself, and a clerk who did not notice
+   * would not know to check it is still the right person on the line.
+   */
+  const [returning, setReturning] = useState<any>(null);
+
   const [warning, setWarning] = useState<any>(null);
 
   /**
@@ -304,6 +313,63 @@ const BookingFormScreen = ({ user }: any) => {
 
     return asked ? `${path}?${asked}` : path;
   };
+  /**
+   * The desk types a mobile; if that telephone has stayed here before, the
+   * name fills itself in.
+   *
+   * ⚠️ IT NEVER OVERWRITES A NAME ALREADY TYPED. A clerk correcting a
+   * spelling, or booking for somebody else on a shared telephone, would
+   * otherwise watch their own typing replaced. Empty box only.
+   *
+   * ⚠️ AND IT SAYS SO ON SCREEN. A box that fills itself with no explanation
+   * reads as a glitch, and the clerk has to know it came from a past stay so
+   * they can check it is still the right person on the line.
+   *
+   * Debounced, because it fires on a field somebody is mid-way through typing.
+   * The server refuses a partial number rather than matching half the
+   * register, so the early calls simply answer "not found".
+   */
+  const dialled = useDebounced(form?.booker_mobile ?? '', 500);
+
+  useEffect(() => {
+    const number = String(dialled ?? '').replace(/\D+/g, '');
+
+    if (number.length < 10) {
+      setReturning(null);
+      return;
+    }
+
+    let alive = true;
+
+    httpService
+      .get(API_HOTEL_GUEST_URL, { params: { mobile: dialled, branch_id: branchId } })
+      .then((res) => {
+        if (!alive) return;
+
+        const found = res?.data?.data?.data ?? null;
+
+        if (!found?.found) {
+          setReturning(null);
+          return;
+        }
+
+        setReturning(found);
+        setForm((prev: any) =>
+          prev && !String(prev.booker_name ?? '').trim()
+            ? { ...prev, booker_name: found.name }
+            : prev,
+        );
+      })
+      .catch(() => {
+        // A lookup that fails changes nothing. The clerk types the name.
+        if (alive) setReturning(null);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [dialled, branchId]);
+
   const buildingChoices = useMemo(
     () => (buildingOptions ?? []).map((o: DdlOption) => ({ id: o.value, name: o.label })),
     [buildingOptions],
@@ -1451,6 +1517,20 @@ const BookingFormScreen = ({ user }: any) => {
                   value={form.booker_mobile ?? ''}
                   onChange={set('booker_mobile')}
                 />
+
+                {/* ⚠️ Said out loud, because the name box filled itself. Without
+                    this the clerk sees a box type on its own and has no way to
+                    know it came from a past stay -- or to think of checking it
+                    is still the right person on the line. The count of stays
+                    is here because it is the thing worth knowing: a fourth
+                    visit is a regular, and the desk treats them as one. */}
+                {returning ? (
+                  <p className="mt-1 text-xs leading-snug text-primary dark:text-secondary">
+                    Stayed here before — <strong>{returning.name}</strong>
+                    {returning.stays > 1 ? `, ${returning.stays} stays` : ''}
+                    {returning.last_stay ? `, last ${formatDate(returning.last_stay)}` : ''}.
+                  </p>
+                ) : null}
               </div>
               <InputElement
                 id="stated_adults"

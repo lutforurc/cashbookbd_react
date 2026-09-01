@@ -15,6 +15,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import httpService from '../../services/httpService';
 import routes from '../../services/appRoutes';
+import { formatDayMonthYear } from '../../utils/utils-functions/formatDate';
 import {
   API_HOTEL_COLLECTION_URL,
   API_HOTEL_HOUSEKEEPING_URL,
@@ -98,6 +99,7 @@ const Tile = ({
   icon,
   tone,
   lead,
+  hint,
 }: {
   label: string;
   value: string;
@@ -105,6 +107,15 @@ const Tile = ({
   icon?: JSX.Element;
   tone?: string;
   lead?: boolean;
+  /**
+   * What the label is short for, on hover.
+   *
+   * ⚠️ ADR and RevPAR are initials, and the tile has no room to spell
+   * them out -- but somebody seeing them for the first time cannot guess
+   * either, and the line underneath says how the figure was worked out rather
+   * than what it is called.
+   */
+  hint?: string;
 }) => (
   <div
     className={`flex flex-col justify-between px-4 py-3 shadow-sm ring-1 transition hover:shadow-md ${
@@ -113,9 +124,14 @@ const Tile = ({
         : 'bg-white ring-slate-200 dark:bg-gray-800 dark:ring-gray-700'
     }`}
   >
-    <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-400">
+    <div
+      className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-400"
+      title={hint}
+    >
       {icon}
-      <span className="truncate">{label}</span>
+      <span className={`truncate ${hint ? 'cursor-help decoration-dotted underline-offset-2 hover:underline' : ''}`}>
+        {label}
+      </span>
     </div>
     <div className={`mt-1 text-2xl font-bold ${tone ?? 'text-slate-700 dark:text-slate-100'}`}>
       {value}
@@ -258,7 +274,7 @@ const HotelDashboard = () => {
           </h1>
           <p className="text-xs text-slate-400">
             {run?.from && run?.to
-              ? `This month so far · ${run.from} to ${run.to}`
+              ? `This month so far · ${formatDayMonthYear(run.from)} to ${formatDayMonthYear(run.to)}`
               : 'Reading the property…'}
           </p>
         </div>
@@ -338,12 +354,18 @@ const HotelDashboard = () => {
             value={`${totals.occupancy}%`}
             working={`${totals.room_nights_sold} of ${totals.room_nights_available} room-nights`}
           />
-          <Tile label="ADR" value={money(totals.adr)} working="per room-night SOLD" />
+          <Tile
+            label="ADR"
+            hint="Average Daily Rate — room revenue divided by the room-nights actually sold"
+            value={money(totals.adr)}
+            working="per room-night SOLD"
+          />
           {/* ⚠️ The lead figure. Occupancy can be bought with discounts and ADR
               can be had by selling three rooms at a high rate; RevPAR is the
               only one of the three that both of those show up in. */}
           <Tile
             label="RevPAR"
+            hint="Revenue Per Available Room — room revenue divided by every room-night the property had, sold or not"
             value={money(totals.revpar)}
             working="per room the property HAS"
             lead

@@ -16,6 +16,7 @@ import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import httpService from '../../../services/httpService';
 import { API_HOTEL_PARTY_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
+import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import { money } from '../setupHelpers';
 import { checkoutRead, checkoutSave, clearCheckout } from './bookingSlice';
 
@@ -171,7 +172,7 @@ const CheckOutScreen = () => {
         key: 'stay_date',
         header: 'Night',
         render: (row: any) => (
-          <span className="text-black dark:text-white">{row.stay_date}</span>
+          <span className="text-black dark:text-white">{formatDayMonthYear(row.stay_date)}</span>
         ),
       },
       {
@@ -329,7 +330,7 @@ const CheckOutScreen = () => {
               {booking?.booking_no}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {booking?.booker_name} · booked {booking?.check_in_date} →{' '}
+              {booking?.booker_name} · booked {formatDayMonthYear(booking?.check_in_date)} →{' '}
               {plan.booked_out_on}
             </div>
           </div>
