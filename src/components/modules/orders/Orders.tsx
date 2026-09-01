@@ -782,25 +782,25 @@ const Orders = () => {
     const doBalanceAmt = summary.salesAmount - summary.salesTrxAmount;
 
     return [
-      { key: 'trx-qty', label: 'Total Trx Qty', value: money(summary.totalTrxQuantity) },
-      { key: 'po-trx-qty', label: 'PO Trx Qty', value: money(summary.purchaseTrxQuantity) },
-      { key: 'do-trx-qty', label: 'DO Trx Qty', value: money(summary.salesTrxQuantity) },
+      { key: 'trx-qty', label: 'Total Trx Qty', value: formatNumberOrDash(summary.totalTrxQuantity) },
+      { key: 'po-trx-qty', label: 'PO Trx Qty', value: formatNumberOrDash(summary.purchaseTrxQuantity) },
+      { key: 'do-trx-qty', label: 'DO Trx Qty', value: formatNumberOrDash(summary.salesTrxQuantity) },
       {
         key: 'po-bal-qty',
         label: 'PO Trx. Bal. Qty',
-        value: money(poBalanceQty),
+        value: formatNumberOrDash(poBalanceQty),
         highlight: true,
       },
       {
         key: 'do-bal-qty',
         label: 'DO Trx. Bal. Qty',
-        value: money(doBalanceQty),
+        value: formatNumberOrDash(doBalanceQty),
         highlight: true,
       },
       {
         key: 'trx-def-qty',
         label: 'Trx. Def. Qty',
-        value: money(poBalanceQty - doBalanceQty),
+        value: formatNumberOrDash(poBalanceQty - doBalanceQty),
         highlight: true,
       },
 
@@ -818,14 +818,14 @@ const Orders = () => {
        * It cannot be done a row at a time. One order is a purchase or a sale,
        * never both, so the subtraction only means anything over a set of them.
        */
-      { key: 'po-trx-amt', label: 'PO Trx Amt', value: money(summary.purchaseTrxAmount) },
-      { key: 'do-trx-amt', label: 'DO Trx Amt', value: money(summary.salesTrxAmount) },
-      {
-        key: 'trx-amt-balance',
-        label: 'Balance Amt',
-        value: money(summary.purchaseTrxAmount - summary.salesTrxAmount),
-        highlight: true,
-      },
+      // { key: 'po-trx-amt', label: 'PO Trx Amt', value: money(summary.purchaseTrxAmount) },
+      // { key: 'do-trx-amt', label: 'DO Trx Amt', value: money(summary.salesTrxAmount) },
+      // {
+      //   key: 'trx-amt-balance',
+      //   label: 'Balance Amt',
+      //   value: money(summary.purchaseTrxAmount - summary.salesTrxAmount),
+      //   highlight: true,
+      // },
 
       /*
        * ⚠️ AND WHAT IS STILL TO COME -- the money twin of the three
@@ -847,17 +847,17 @@ const Orders = () => {
       {
         key: 'po-trx-bal-amt',
         label: 'PO Trx Bal Amt',
-        value: money(poBalanceAmt),
+        value: formatNumberOrDash(poBalanceAmt),
       },
       {
         key: 'do-trx-bal-amt',
         label: 'DO Trx Bal Amt',
-        value: money(doBalanceAmt),
+        value: formatNumberOrDash(doBalanceAmt),
       },
       {
         key: 'trx-bal-amt-balance',
         label: 'Balance Amount',
-        value: money(poBalanceAmt - doBalanceAmt),
+        value: formatNumberOrDash(poBalanceAmt - doBalanceAmt),
         highlight: true,
       },
     ];
@@ -973,7 +973,7 @@ const Orders = () => {
       }
     } catch (error) {
       console.error(error);
-      toast.error('Order print data load ÃƒÂ Ã‚Â¦Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¦Ã‚Â°ÃƒÂ Ã‚Â¦Ã‚Â¾ ÃƒÂ Ã‚Â¦Ã‚Â¯ÃƒÂ Ã‚Â¦Ã‚Â¾ÃƒÂ Ã‚Â§Ã…Â¸ÃƒÂ Ã‚Â¦Ã‚Â¨ÃƒÂ Ã‚Â¦Ã‚Â¿ÃƒÂ Ã‚Â¥Ã‚Â¤');
+      toast.error('Order print data load failed.');
     } finally {
       setPrintingOrderId(null);
     }
