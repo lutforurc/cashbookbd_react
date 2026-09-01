@@ -584,10 +584,12 @@ const Orders = () => {
         if (toNumber(row?.order_type) === 1) {
           acc.purchaseQuantity += toNumber(row?.total_order);
           acc.purchaseAmount += getOrderAmount(row);
+          acc.purchaseTrxAmount += toNumber(row?.trx_amount);
         }
         if (toNumber(row?.order_type) === 2) {
           acc.salesQuantity += toNumber(row?.total_order);
           acc.salesAmount += getOrderAmount(row);
+          acc.salesTrxAmount += toNumber(row?.trx_amount);
         }
         return acc;
       },
@@ -602,6 +604,8 @@ const Orders = () => {
         salesQuantity: 0,
         purchaseAmount: 0,
         salesAmount: 0,
+        purchaseTrxAmount: 0,
+        salesTrxAmount: 0,
       },
     );
   }, [tableData]);
@@ -649,6 +653,24 @@ const Orders = () => {
       salesAmount:
         pickFirstNumber(apiSummarySource, ['sales_amount', 'total_sales_amount']) ??
         derivedSummary.salesAmount,
+      /*
+       * ⚠️ WHAT MOVED, NOT WHAT WAS ORDERED. purchaseAmount and salesAmount
+       * above are what the orders are WORTH; these are what has actually gone
+       * in and out against them, and on a live company the two pairs are
+       * nowhere near each other because plenty of orders are part delivered.
+       *
+       * ⚠️ FROM THE SERVER ONLY, with no fall back to the rows on screen —
+       * exactly as the Trx quantities beside them do it, and for the same
+       * reason. The server totals every row the filter matched; this page
+       * holds ten of them. Falling back would put a page's figure under a
+       * whole-filter heading, and it would CHANGE when somebody turned to page
+       * two, with nothing saying why. A figure that is missing announces
+       * itself; a figure that is quietly the wrong scope does not.
+       */
+      purchaseTrxAmount:
+        pickFirstNumber(apiSummarySource, ['purchase_trx_amount', 'total_purchase_trx_amount']) ?? 0,
+      salesTrxAmount:
+        pickFirstNumber(apiSummarySource, ['sales_trx_amount', 'total_sales_trx_amount']) ?? 0,
       purchaseTrxQuantity:
         pickFirstNumber(apiSummarySource, ['purchase_trx_quantity', 'total_purchase_trx_quantity']) ?? 0,
       salesTrxQuantity:
@@ -695,6 +717,11 @@ const Orders = () => {
           label: 'PO Amount',
           value: thousandSeparator(summary.purchaseAmount),
         },
+        {
+          key: 'po-trx-amt',
+          label: 'PO Trx Amt',
+          value: thousandSeparator(summary.purchaseTrxAmount),
+        },
       );
     } else if (orderType === '2') {
       items.push(
@@ -718,6 +745,11 @@ const Orders = () => {
           key: 'do-amt',
           label: 'DO Amount',
           value: thousandSeparator(summary.salesAmount),
+        },
+        {
+          key: 'do-trx-amt',
+          label: 'DO Trx Amt',
+          value: thousandSeparator(summary.salesTrxAmount),
         },
       );
     } else {
@@ -753,20 +785,50 @@ const Orders = () => {
         },
         // The same three balances read in money: what was ordered in, what was
         // ordered out, and the gap between the two.
+        // {
+        //   key: 'po-amt',
+        //   label: 'PO Amount',
+        //   value: thousandSeparator(summary.purchaseAmount),
+        // },
+        // {
+        //   key: 'do-amt',
+        //   label: 'DO Amount',
+        //   value: thousandSeparator(summary.salesAmount),
+        // },
+        // {
+        //   key: 'amt-difference',
+        //   label: 'Amt Difference',
+        //   value: thousandSeparator(summary.purchaseAmount - summary.salesAmount),
+        //   highlight: true,
+        // },
+
+        /*
+         * ⚠️ AND THE SAME THREE AGAIN IN WHAT ACTUALLY MOVED. The three
+         * above are what the orders are WORTH -- paper. These are what has
+         * gone in and out against them, and the two pairs are nowhere near
+         * each other because plenty of orders are only part delivered. Both
+         * are shown because both get asked for, and they are named apart so
+         * that one is never quoted for the other.
+         *
+         * The last one is a POSITION: bought less sold, in money. Negative
+         * where more went out than came in -- which means it came off earlier
+         * stock, or that something does not reconcile. A person reads it; it
+         * is not clamped.
+         */
         {
-          key: 'po-amt',
-          label: 'PO Amount',
-          value: thousandSeparator(summary.purchaseAmount),
+          key: 'po-trx-amt',
+          label: 'PO Trx Amt',
+          value: thousandSeparator(summary.purchaseTrxAmount),
         },
         {
-          key: 'do-amt',
-          label: 'DO Amount',
-          value: thousandSeparator(summary.salesAmount),
+          key: 'do-trx-amt',
+          label: 'DO Trx Amt',
+          value: thousandSeparator(summary.salesTrxAmount),
         },
         {
-          key: 'amt-difference',
-          label: 'Amt Difference',
-          value: thousandSeparator(summary.purchaseAmount - summary.salesAmount),
+          key: 'trx-amt-balance',
+          label: 'Balance Amt',
+          value: thousandSeparator(summary.purchaseTrxAmount - summary.salesTrxAmount),
           highlight: true,
         },
         // {
@@ -1133,6 +1195,15 @@ const Orders = () => {
        *
        * The balance is the server's own subtraction, so the three add up on
        * the page exactly as a reader takes the middle from the top.
+       *
+       * ⚠️ THESE ARE NOT "PO Trx" AND "DO Trx" AND MUST NOT BE LABELLED SO.
+       * They were, briefly, and the column stopped reconciling for the person
+       * reading it -- rightly, because it was describing one order two ways
+       * and calling them two directions. A row IS a purchase order or a sales
+       * order, never both: `order_type` decides, and whichever it is, these
+       * three are that one order's worth, what has moved against it, and the
+       * gap. Bought-against-sold is a subtraction across a SET of orders and
+       * lives in the summary above, where both sides exist.
        */
       render: (data: any) => (
         <p className="text-right">
