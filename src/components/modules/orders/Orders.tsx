@@ -581,6 +581,13 @@ const Orders = () => {
         );
         acc.linkedQuantity += toNumber(row?.linked_quantity);
         acc.remainingQuantity += getLinkedRemainingQuantity(row);
+
+        // The three money columns, added down. Not split by order type: these
+        // answer "what was ordered, what has moved, what is short", which is
+        // the same question whichever way the goods were going.
+        acc.totalAmount += getOrderAmount(row);
+        acc.trxAmount += toNumber(row?.trx_amount);
+
         if (toNumber(row?.order_type) === 1) {
           acc.purchaseQuantity += toNumber(row?.total_order);
           acc.purchaseAmount += getOrderAmount(row);
@@ -602,6 +609,8 @@ const Orders = () => {
         salesQuantity: 0,
         purchaseAmount: 0,
         salesAmount: 0,
+        totalAmount: 0,
+        trxAmount: 0,
       },
     );
   }, [tableData]);
@@ -643,6 +652,16 @@ const Orders = () => {
       salesQuantity:
         pickFirstNumber(apiSummarySource, ['sales_quantity', 'total_sales_quantity']) ??
         derivedSummary.salesQuantity,
+      // ⚠️ The API's figures cover every row the filter matched; the derived
+      // ones only the page on screen. So the fallback is a smaller number, not
+      // a wrong shape -- worth knowing before reading a total that disagrees
+      // with a printed one.
+      totalAmount:
+        pickFirstNumber(apiSummarySource, ['total_amount', 'total_order_amount']) ??
+        derivedSummary.totalAmount,
+      trxAmount:
+        pickFirstNumber(apiSummarySource, ['trx_amount', 'total_trx_amount']) ??
+        derivedSummary.trxAmount,
       purchaseAmount:
         pickFirstNumber(apiSummarySource, ['purchase_amount', 'total_purchase_amount']) ??
         derivedSummary.purchaseAmount,
@@ -751,22 +770,31 @@ const Orders = () => {
           value: thousandSeparator(((summary.purchaseQuantity - summary.purchaseTrxQuantity) - (summary.salesQuantity - summary.salesTrxQuantity))),
           highlight: true,
         },
-        // The same three balances read in money: what was ordered in, what was
-        // ordered out, and the gap between the two.
+        // ⚠️ The three money columns added down, NOT purchases against sales.
+        //
+        // They used to be PO Amount, DO Amount and the gap between them, which
+        // read as a comparison of two unrelated piles: filter to sales alone
+        // and PO Amount fell to a dash while the difference became the whole of
+        // DO Amount, negative -- a figure that looked like a shortfall and was
+        // only the absence of purchases.
+        //
+        // These three are the totals of the columns directly above them, so a
+        // reader can add a column up and land on the tile, and Trx. Def. Amount
+        // means the same thing here as Trx. Def. Qty does beside it.
         {
-          key: 'po-amt',
-          label: 'PO Amount',
-          value: thousandSeparator(summary.purchaseAmount),
+          key: 'order-amt',
+          label: 'Order Amount',
+          value: thousandSeparator(summary.totalAmount),
         },
         {
-          key: 'do-amt',
-          label: 'DO Amount',
-          value: thousandSeparator(summary.salesAmount),
+          key: 'trx-amt',
+          label: 'Trx. Amount',
+          value: thousandSeparator(summary.trxAmount),
         },
         {
-          key: 'amt-difference',
-          label: 'Amt Difference',
-          value: thousandSeparator(summary.purchaseAmount - summary.salesAmount),
+          key: 'trx-def-amt',
+          label: 'Trx. Def. Amount',
+          value: thousandSeparator(summary.totalAmount - summary.trxAmount),
           highlight: true,
         },
         // {
