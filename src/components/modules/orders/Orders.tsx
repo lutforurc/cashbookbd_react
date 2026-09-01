@@ -709,11 +709,6 @@ const Orders = () => {
           value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity),
           highlight: true,
         },
-        {
-          key: 'po-amt',
-          label: 'PO Amount',
-          value: thousandSeparator(summary.purchaseAmount),
-        },
       );
     } else if (orderType === '2') {
       items.push(
@@ -732,11 +727,6 @@ const Orders = () => {
           label: 'DO Bal. Qty',
           value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity),
           highlight: true,
-        },
-        {
-          key: 'do-amt',
-          label: 'DO Amount',
-          value: thousandSeparator(summary.salesAmount),
         },
       );
     } else {
@@ -770,33 +760,6 @@ const Orders = () => {
           value: thousandSeparator(((summary.purchaseQuantity - summary.purchaseTrxQuantity) - (summary.salesQuantity - summary.salesTrxQuantity))),
           highlight: true,
         },
-        // ⚠️ The three money columns added down, NOT purchases against sales.
-        //
-        // They used to be PO Amount, DO Amount and the gap between them, which
-        // read as a comparison of two unrelated piles: filter to sales alone
-        // and PO Amount fell to a dash while the difference became the whole of
-        // DO Amount, negative -- a figure that looked like a shortfall and was
-        // only the absence of purchases.
-        //
-        // These three are the totals of the columns directly above them, so a
-        // reader can add a column up and land on the tile, and Trx. Def. Amount
-        // means the same thing here as Trx. Def. Qty does beside it.
-        {
-          key: 'order-amt',
-          label: 'Order Amount',
-          value: thousandSeparator(summary.totalAmount),
-        },
-        {
-          key: 'trx-amt',
-          label: 'Trx. Amount',
-          value: thousandSeparator(summary.trxAmount),
-        },
-        {
-          key: 'trx-def-amt',
-          label: 'Trx. Def. Amount',
-          value: thousandSeparator(summary.totalAmount - summary.trxAmount),
-          highlight: true,
-        },
         // {
         //   key: 'po-qty',
         //   label: 'PO Qty',
@@ -815,6 +778,43 @@ const Orders = () => {
         // },
       );
     }
+
+    /**
+     * The three money figures, on every view.
+     *
+     * ⚠️ Outside the branch above, because they are the totals of three columns
+     * the list ALWAYS draws -- purchase, sales or both. Inside it they existed
+     * only when no type was chosen, and picking Purchase swapped them for a
+     * single "PO Amount": the same number as Order Amount, under a different
+     * name, with what had moved and what was short gone from the screen
+     * altogether. Somebody narrowing to one type is not asking to be told less
+     * about it.
+     *
+     * The old PO Amount and DO Amount tiles are gone rather than kept beside
+     * these. Under a type filter each was Order Amount exactly, and two tiles
+     * carrying one figure under two names invite the reader to add them.
+     *
+     * Trx. Def. Amount is subtracted here, from the same two figures printed
+     * above it, so the row adds up in front of whoever reads it.
+     */
+    items.push(
+      {
+        key: 'order-amt',
+        label: 'Order Amount',
+        value: thousandSeparator(summary.totalAmount),
+      },
+      {
+        key: 'trx-amt',
+        label: 'Trx. Amount',
+        value: thousandSeparator(summary.trxAmount),
+      },
+      {
+        key: 'trx-def-amt',
+        label: 'Trx. Def. Amount',
+        value: thousandSeparator(summary.totalAmount - summary.trxAmount),
+        highlight: true,
+      },
+    );
 
     return items;
   }, [orderType, summary]);
