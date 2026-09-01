@@ -1112,6 +1112,39 @@ const Orders = () => {
       ),
     },
     {
+      key: 'order_amount',
+      header: (
+        <p className="text-right">
+          <span className="block">Order Amount</span>
+          <span className="block">Trx. Amount</span>
+          <span className="block">Balance Amount</span>
+        </p>
+      ),
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      /**
+       * The same three lines as the quantity column beside it, in money.
+       *
+       * ⚠️ All three arrive computed. None is worked out here, and none should
+       * be: a multi-product order has a rate per product, so an amount derived
+       * on screen from the order's single rate would price one product at
+       * another's rate -- and would do it silently, on the column somebody
+       * reads to decide what is still owed on a contract.
+       *
+       * The balance is the server's own subtraction, so the three add up on
+       * the page exactly as a reader takes the middle from the top.
+       */
+      render: (data: any) => (
+        <p className="text-right">
+          <span className="block">{formatNumberOrDash(data.total_amount)}</span>
+          <span className="block">{formatNumberOrDash(data.trx_amount)}</span>
+          <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+            {formatNumberOrDash(data.balance_amount)}
+          </span>
+        </p>
+      ),
+    },
+    {
       key: 'order_rate',
       header: (
         <p className="text-right">
