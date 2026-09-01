@@ -48,6 +48,22 @@ const onTheDay = (value?: string | null): string => {
   return parts ? `${parts[3]}/${parts[2]}/${parts[1]}` : '—';
 };
 
+/**
+ * A figure on the schedule, with a nought shown as a dash.
+ *
+ * ⚠️ A SCHEDULE IS READ DOWN ITS COLUMNS. Eight columns of "0.00" on a
+ * class of asset that saw no movement all year is eight figures the eye has
+ * to check and discard; a dash is read as "nothing happened" without being
+ * read at all, and the two rows that DID move stand out. It is how the
+ * printed sheet has always shown them -- thousandSeparator does this by
+ * itself -- and screen and paper have to agree on a page an auditor signs.
+ *
+ * Two decimal places are kept rather than following the branch setting: the
+ * charge on a nearly written-off asset is 2.01, and a schedule that footed to
+ * a rounded 2 would not foot at all.
+ */
+const figure = (value: any) => (Number(value ?? 0) === 0 ? '-' : money(value));
+
 const AssetScheduleTab = ({
   branchId,
   branchName,
@@ -100,56 +116,56 @@ const AssetScheduleTab = ({
       header: 'Cost at 1 July',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => money(row.opening_cost),
+      render: (row: any) => figure(row.opening_cost),
     },
     {
       key: 'additions',
       header: 'Additions',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => money(row.additions),
+      render: (row: any) => figure(row.additions),
     },
     {
       key: 'disposals_cost',
       header: 'Disposals',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => money(row.disposals_cost),
+      render: (row: any) => figure(row.disposals_cost),
     },
     {
       key: 'closing_cost',
       header: 'Cost at 30 June',
       headerClass: 'text-right',
       cellClass: 'text-right font-medium',
-      render: (row: any) => money(row.closing_cost),
+      render: (row: any) => figure(row.closing_cost),
     },
     {
       key: 'opening_dep',
       header: 'Dep. at 1 July',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => money(row.opening_dep),
+      render: (row: any) => figure(row.opening_dep),
     },
     {
       key: 'charge',
       header: 'For the year',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => money(row.charge),
+      render: (row: any) => figure(row.charge),
     },
     {
       key: 'closing_dep',
       header: 'Dep. at 30 June',
       headerClass: 'text-right',
       cellClass: 'text-right font-medium',
-      render: (row: any) => money(row.closing_dep),
+      render: (row: any) => figure(row.closing_dep),
     },
     {
       key: 'closing_wdv',
       header: 'Written down',
       headerClass: 'text-right',
       cellClass: 'text-right font-semibold',
-      render: (row: any) => money(row.closing_wdv),
+      render: (row: any) => figure(row.closing_wdv),
     },
   ];
 
@@ -211,23 +227,23 @@ const AssetScheduleTab = ({
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Cost at 30 June</span>
               <span className="font-medium text-black dark:text-white">
-                {money(total.closing_cost)}
+                {figure(total.closing_cost)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Depreciation</span>
               <span className="font-medium text-black dark:text-white">
-                {money(total.closing_dep)}
+                {figure(total.closing_dep)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Charged this year</span>
-              <span className="font-medium text-black dark:text-white">{money(total.charge)}</span>
+              <span className="font-medium text-black dark:text-white">{figure(total.charge)}</span>
             </div>
             <div className="flex justify-between">
               <span className="font-semibold text-black dark:text-white">Written down value</span>
               <span className="font-semibold text-black dark:text-white">
-                {money(total.closing_wdv)}
+                {figure(total.closing_wdv)}
               </span>
             </div>
           </div>
@@ -235,9 +251,9 @@ const AssetScheduleTab = ({
           {/* The two subtractions a reader checks first, written out so nobody
               has to do them on the corner of the page. */}
           <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
-            {money(total.opening_cost)} + {money(total.additions)} − {money(total.disposals_cost)} ={' '}
-            {money(total.closing_cost)} · {money(total.opening_dep)} + {money(total.charge)} −{' '}
-            {money(total.disposals_dep)} = {money(total.closing_dep)}
+            {figure(total.opening_cost)} + {figure(total.additions)} − {figure(total.disposals_cost)} ={' '}
+            {figure(total.closing_cost)} · {figure(total.opening_dep)} + {figure(total.charge)} −{' '}
+            {figure(total.disposals_dep)} = {figure(total.closing_dep)}
           </p>
         </div>
       ) : null}
