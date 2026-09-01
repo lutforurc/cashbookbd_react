@@ -193,7 +193,8 @@ const RoomTypesTab = ({ branchId }: { branchId: number }) => {
   return (
     <SetupShell
       noun="Room Type"
-      note="These rents fill the room form in. They are not prices — each room keeps its own, so editing a type here never repriced a room that already exists."
+      // note="These rents fill the room form in. They are not prices — each room keeps its own, so editing a type here never repriced a room that already exists."
+      note=""
       formOpen={form !== null}
       editing={!!form?.id}
       onNew={() => setForm(blankRoomType())}

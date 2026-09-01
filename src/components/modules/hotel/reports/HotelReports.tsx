@@ -730,13 +730,7 @@ const HotelReports = () => {
           ) : null}
 
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs leading-snug text-gray-500 dark:text-gray-400">
-              {/* ⚠️ The distinction the whole report turns on, said where
-                  somebody reads the report rather than only in the code. */}
-              Who actually <strong>slept here</strong> on this night — read from the nights the
-              booking holds, so a guest who left early is not on the nights after they went.
-            </p>
-
+     
             <ButtonLoading
               onClick={() => {
                 if (!register?.rows?.length) {

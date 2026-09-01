@@ -534,7 +534,8 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
   return (
     <SetupShell
       noun="Room"
-      note={`Every room is split into beds, because a bed is what a booking locks. Selling a room whole is booking all of its beds at once — there is no second count to keep in step.${branchName ? ` Setting up: ${branchName}.` : ''}`}
+      // note={`Every room is split into beds, because a bed is what a booking locks. Selling a room whole is booking all of its beds at once — there is no second count to keep in step.${branchName ? ` Setting up: ${branchName}.` : ''}`}
+      note=""
       toolbar={
         <>
           <SearchInput search={search} setSearchValue={setSearch} className="w-56" />

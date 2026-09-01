@@ -193,7 +193,8 @@ const FacilitiesTab = () => {
   return (
     <SetupShell
       noun="Facility"
-      note="What a room offers, as a tick list — so 'AC' is one facility across the property rather than three spellings of it. Editing a row here changes the wording on every room that has it."
+      // note="What a room offers, as a tick list — so 'AC' is one facility across the property rather than three spellings of it. Editing a row here changes the wording on every room that has it."
+      note=""
       toolbar={
         <>
           <SearchInput search={search} setSearchValue={setSearch} className="w-56" />

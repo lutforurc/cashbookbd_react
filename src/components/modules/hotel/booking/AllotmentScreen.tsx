@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiArrowLeft, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiArrowLeft, FiPlus, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
@@ -103,14 +103,36 @@ const AllotmentScreen = () => {
 
   const back = () => navigate(routes.hotel_bookings);
 
+  /**
+   * The first line of a room nobody has been recorded in yet.
+   *
+   * ⚠️ Only for an INDIVIDUAL booking, where the person who booked is the
+   * person who arrives: the name and mobile were already taken at the top of
+   * the booking, and the desk was copying them back out of the header into the
+   * first row by hand. A group, a corporate account or a walk-in books for
+   * somebody else -- there the booker's name in a guest row would be a wrong
+   * name in the police register, so those still start empty.
+   *
+   * It is a STARTING POINT and nothing more. Both boxes stay editable, and a
+   * room that already has guests shows what was recorded rather than this.
+   */
+  const firstGuest = (): Guest =>
+    booking?.booking_type === 'individual'
+      ? {
+          ...blankGuest(),
+          name: booking?.booker_name?.trim() ?? '',
+          mobile: booking?.booker_mobile?.trim() ?? '',
+        }
+      : blankGuest();
+
   const open = (room: AllotmentRoom) => {
     setOpenRoom(room.room_id);
 
     // Reopening a room shows what is already recorded, so a correction is an
-    // edit rather than a retype. A room with nobody starts with one empty line
-    // rather than none -- an empty form with an Add button is one click of
-    // ceremony before the first name.
-    setDraft(room.guests.length ? room.guests.map((guest) => ({ ...guest })) : [blankGuest()]);
+    // edit rather than a retype. A room with nobody starts with one line rather
+    // than none -- an empty form with an Add button is one click of ceremony
+    // before the first name.
+    setDraft(room.guests.length ? room.guests.map((guest) => ({ ...guest })) : [firstGuest()]);
   };
 
   const close = () => {
@@ -401,12 +423,17 @@ const AllotmentScreen = () => {
                   ) : null}
 
                   <div className="ml-auto flex gap-2">
-                    <ButtonLoading onClick={close} label="Cancel" />
+                    {/* Named icons, the same pair the booking form uses. Left
+                        to itself the button draws an arrow, so Cancel and Save
+                        arrived wearing the same one -- two buttons that do
+                        opposite things and look alike at a glance. */}
+                    <ButtonLoading onClick={close} label="Cancel" icon={<FiX size={16} />} />
                     <ButtonLoading
                       onClick={() => save(room)}
                       buttonLoading={saving}
                       label="Save this room"
                       variant="primary"
+                      icon={<FiSave size={16} />}
                     />
                   </div>
                 </div>

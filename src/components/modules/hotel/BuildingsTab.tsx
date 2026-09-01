@@ -141,7 +141,8 @@ const BuildingsTab = ({ branchId }: { branchId: number }) => {
   return (
     <SetupShell
       noun="Building"
-      note="A building here is a location, not a separate set of books. Room numbers repeat between buildings — 101 in the main block and 101 in the annexe are two different rooms, and the screens tell them apart by the short label."
+      // note="A building here is a location, not a separate set of books. Room numbers repeat between buildings — 101 in the main block and 101 in the annexe are two different rooms, and the screens tell them apart by the short label."
+      note=""
       toolbar={
         <SearchInput search={search} setSearchValue={setSearch} className="w-64" />
       }

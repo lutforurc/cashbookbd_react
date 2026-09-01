@@ -182,7 +182,8 @@ const SlotsTab = ({ branchId }: { branchId: number }) => {
   return (
     <SetupShell
       noun="Sitting"
-      note="Only halls and community centres use these — rooms are sold by the night. Two sittings may not share an hour, or one hall could hold two events at once."
+      // note="Only halls and community centres use these — rooms are sold by the night. Two sittings may not share an hour, or one hall could hold two events at once."
+      note=""
       toolbar={
         <div className="w-44">
           <DropdownCommon

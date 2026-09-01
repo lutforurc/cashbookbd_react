@@ -155,7 +155,8 @@ const FloorsTab = ({ branchId }: { branchId: number }) => {
   return (
     <SetupShell
       noun="Floor"
-      note="Optional. Cottages and single-storey blocks need none — leave this tab empty and the rooms simply carry no floor."
+      // note="Optional. Cottages and single-storey blocks need none — leave this tab empty and the rooms simply carry no floor."
+      note=""
       toolbar={
         <div className="w-56">
           <DropdownCommon
