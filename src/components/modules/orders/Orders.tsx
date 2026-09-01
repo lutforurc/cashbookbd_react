@@ -54,6 +54,28 @@ const formatNumberOrDash = (value: any) => {
   return numericValue === 0 ? '-' : thousandSeparator(numericValue);
 };
 
+/**
+ * The same, but a nought is written as a nought.
+ *
+ * ⚠️ For the MONEY column, where a dash reads as "not worked out". The
+ * three lines there are a subtraction somebody checks in their head -- top
+ * less middle is bottom -- and a dash in the middle breaks the sum on the
+ * page: nothing minus nothing is not the top line. Nought says "nothing has
+ * moved against this order", which is the true and useful answer.
+ *
+ * The quantity columns keep the dash. There a blank means "no such line" as
+ * often as it means zero, and a column of noughts would be noise.
+ *
+ * The nought is taken by formatting a 1 and swapping the digit, so the
+ * branch's decimal setting still decides how it looks: "1" -> "0",
+ * "1.00" -> "0.00".
+ */
+const formatNumberOrZero = (value: any) => {
+  const shown = formatNumberOrDash(value);
+
+  return shown === '-' ? thousandSeparator(1).replace(/^1/, '0') : shown;
+};
+
 const getPersistedOrdersListState = () => {
   try {
     const state = window.sessionStorage.getItem(ORDERS_LIST_STATE_KEY);
@@ -705,7 +727,7 @@ const Orders = () => {
   }, [apiSummarySource, derivedSummary]);
 
   /**
-   * The nine figures under the list. Always these nine, in this order.
+   * The twelve figures under the list. Always these twelve, in this order.
    *
    * ⚠️ NOT VARIED BY THE ORDER-TYPE FILTER, and it used to be: filtering to
    * Purchase Order dropped every DO tile and the balance with them, and
@@ -755,6 +777,10 @@ const Orders = () => {
     const poBalanceQty = summary.purchaseQuantity - summary.purchaseTrxQuantity;
     const doBalanceQty = summary.salesQuantity - summary.salesTrxQuantity;
 
+    // What is ordered less what has happened, in money, per side.
+    const poBalanceAmt = summary.purchaseAmount - summary.purchaseTrxAmount;
+    const doBalanceAmt = summary.salesAmount - summary.salesTrxAmount;
+
     return [
       { key: 'trx-qty', label: 'Total Trx Qty', value: money(summary.totalTrxQuantity) },
       { key: 'po-trx-qty', label: 'PO Trx Qty', value: money(summary.purchaseTrxQuantity) },
@@ -798,6 +824,40 @@ const Orders = () => {
         key: 'trx-amt-balance',
         label: 'Balance Amt',
         value: money(summary.purchaseTrxAmount - summary.salesTrxAmount),
+        highlight: true,
+      },
+
+      /*
+       * ⚠️ AND WHAT IS STILL TO COME -- the money twin of the three
+       * quantity tiles above, and NOT a repeat of the three beside them.
+       * Those say what has already moved; these say what has not:
+       *
+       *     PO Trx Bal Amt = (ordered  - received) x rate
+       *     DO Trx Bal Amt = (ordered  - issued)   x rate
+       *
+       * The same subtraction both times -- what was ordered less what has
+       * happened -- named by the side it falls on, because on a purchase the
+       * goods are received and on a sale they are issued.
+       *
+       * Derived from figures the summary already carries rather than asked of
+       * the server again: purchase_amount less purchase_trx_amount IS the sum
+       * of every purchase row's balance, to the poisha. A second server-side
+       * total would be a second place for the same number to be wrong.
+       */
+      {
+        key: 'po-trx-bal-amt',
+        label: 'PO Trx Bal Amt',
+        value: money(poBalanceAmt),
+      },
+      {
+        key: 'do-trx-bal-amt',
+        label: 'DO Trx Bal Amt',
+        value: money(doBalanceAmt),
+      },
+      {
+        key: 'trx-bal-amt-balance',
+        label: 'Balance Amount',
+        value: money(poBalanceAmt - doBalanceAmt),
         highlight: true,
       },
     ];
@@ -1127,8 +1187,8 @@ const Orders = () => {
       key: 'order_amount',
       header: (
         <p className="text-right">
-          <span className="block">Order Amount</span>
-          <span className="block">Trx. Amount</span>
+          <span className="block">PO Trx Bal Amt</span>
+          <span className="block">DO Trx Bal Amt</span>
           <span className="block">Balance Amount</span>
         </p>
       ),
@@ -1146,7 +1206,8 @@ const Orders = () => {
        * The balance is the server's own subtraction, so the three add up on
        * the page exactly as a reader takes the middle from the top.
        *
-       * ⚠️ THESE ARE NOT "PO Trx" AND "DO Trx" AND MUST NOT BE LABELLED SO.
+       * ⚠️ NOT "PO Trx"/"DO Trx", AND NOT "PO Trx Bal"/"DO Trx Bal".
+       * Both namings have been tried on this column and both had to come off.
        * They were, briefly, and the column stopped reconciling for the person
        * reading it -- rightly, because it was describing one order two ways
        * and calling them two directions. A row IS a purchase order or a sales
@@ -1169,10 +1230,10 @@ const Orders = () => {
        */
       render: (data: any) => (
         <p className="text-right">
-          <span className="block">{formatNumberOrDash(data.total_amount)}</span>
-          <span className="block">{formatNumberOrDash(data.trx_amount)}</span>
+          <span className="block">{formatNumberOrZero(data.total_amount)}</span>
+          <span className="block">{formatNumberOrZero(data.trx_amount)}</span>
           <span className="block text-green-500 dark:text-yellow-300 font-semibold">
-            {formatNumberOrDash(data.balance_amount)}
+            {formatNumberOrZero(data.balance_amount)}
           </span>
         </p>
       ),
