@@ -1155,35 +1155,27 @@ const Orders = () => {
        * gap. Bought-against-sold is a subtraction across a SET of orders and
        * lives in the summary above, where both sides exist.
        */
-      render: (data: any) => {
-        /**
-         * The outstanding figure, signed by which way the goods are going.
-         *
-         * ⚠️ A purchase order's balance is money about to leave, so it is
-         * written negative; a sales order's is money about to arrive and takes
-         * no sign. The same 66,60,000 means opposite things on the two, and the
-         * list shows both kinds one under the other -- without the sign a
-         * reader running down the column adds a payable to a receivable.
-         *
-         * Only ever ADDED to a positive balance. A dash means nothing is
-         * outstanding and must not become "-​-", and an over-delivered order is
-         * already negative from the arithmetic -- signing it again would flip
-         * its meaning back.
-         */
-        const balance = toNumber(data.balance_amount);
-        const owed = formatNumberOrDash(balance);
-        const isPurchase = Number(data.order_type) === 1;
-
-        return (
-          <p className="text-right">
-            <span className="block">{formatNumberOrDash(data.total_amount)}</span>
-            <span className="block">{formatNumberOrDash(data.trx_amount)}</span>
-            <span className="block text-green-500 dark:text-yellow-300 font-semibold">
-              {isPurchase && balance > 0 ? `-${owed}` : owed}
-            </span>
-          </p>
-        );
-      },
+      /*
+       * ⚠️ NO MINUS IS PUT ON A PURCHASE. One briefly was -- the reasoning
+       * being that a PO's balance is money about to leave while a DO's is
+       * money about to arrive, so the two should not be added down the column.
+       * Removed by the owner's decision: the column reads what is OUTSTANDING,
+       * and outstanding is a quantity of money, not a direction. Which way it
+       * goes is the order's type, which the row already says.
+       *
+       * A minus can still appear here, and it is not this: it means the server
+       * subtracted to less than nothing, an order delivered beyond what was
+       * ordered. That one is arithmetic and must not be hidden.
+       */
+      render: (data: any) => (
+        <p className="text-right">
+          <span className="block">{formatNumberOrDash(data.total_amount)}</span>
+          <span className="block">{formatNumberOrDash(data.trx_amount)}</span>
+          <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+            {formatNumberOrDash(data.balance_amount)}
+          </span>
+        </p>
+      ),
     },
     {
       key: 'order_rate',
