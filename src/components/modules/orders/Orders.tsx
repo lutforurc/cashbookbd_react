@@ -685,173 +685,106 @@ const Orders = () => {
     };
   }, [apiSummarySource, derivedSummary]);
 
+  /**
+   * The nine figures under the list. Always these nine, in this order.
+   *
+   * ⚠️ NOT VARIED BY THE ORDER-TYPE FILTER, and it used to be: filtering to
+   * Purchase Order dropped every DO tile and the balance with them, and
+   * filtering to Sales Order dropped the other half. A strip whose tiles come
+   * and go is one nobody can read across two screenshots, and the balance --
+   * the figure the whole strip exists for -- vanished in exactly the two views
+   * somebody would go looking for it.
+   *
+   * Filtered to one side, the other side reads nought. That is the honest
+   * answer to "how much was sold?" when the filter says purchases only, and it
+   * is a far better answer than the tile not being there.
+   *
+   * ⚠️ A NOUGHT IS PRINTED AS A NOUGHT here, not as the dash thousandSeparator
+   * gives everywhere else. On a row a dash means "nothing to say"; on a total
+   * it reads as "not calculated", which is the one thing these must never look
+   * like -- they were genuinely missing once, and the difference has to stay
+   * visible.
+   */
   const summaryItems = useMemo(() => {
-    const items = [
+    const money = (value: number) => {
+      const shown = thousandSeparator(value);
+
+      if (shown !== '-') return shown;
+
+      // A nought, written to whatever decimal places this branch is set to.
+      // Taken from formatting a 1 rather than read from the settings again:
+      // one place decides how a number looks here, and this cannot drift from
+      // it. "1" -> "0", "1.00" -> "0.00".
+      return thousandSeparator(1).replace(/^1/, '0');
+    };
+
+    const poBalanceQty = summary.purchaseQuantity - summary.purchaseTrxQuantity;
+    const doBalanceQty = summary.salesQuantity - summary.salesTrxQuantity;
+
+    return [
       {
         key: 'trx-qty',
         label: 'Total Trx Qty',
-        value: thousandSeparator(summary.totalTrxQuantity),
+        value: money(summary.totalTrxQuantity),
+      },
+      {
+        key: 'po-trx-qty',
+        label: 'PO Trx Qty',
+        value: money(summary.purchaseTrxQuantity),
+      },
+      {
+        key: 'do-trx-qty',
+        label: 'DO Trx Qty',
+        value: money(summary.salesTrxQuantity),
+      },
+      {
+        key: 'po-bal-qty',
+        label: 'PO Trx. Bal. Qty',
+        value: money(poBalanceQty),
+        highlight: true,
+      },
+      {
+        key: 'do-bal-qty',
+        label: 'DO Trx. Bal. Qty',
+        value: money(doBalanceQty),
+        highlight: true,
+      },
+      {
+        key: 'trx-def-qty',
+        label: 'Trx. Def. Qty',
+        value: money(poBalanceQty - doBalanceQty),
+        highlight: true,
+      },
+
+      /*
+       * ⚠️ WHAT MOVED, NOT WHAT WAS ORDERED. The order amounts -- what the
+       * orders are WORTH -- are a different pair and are deliberately not
+       * here; on a live company the two are nowhere near each other, because
+       * plenty of orders are only part delivered.
+       *
+       * The last one is a POSITION: bought less sold, in money. Negative where
+       * more went out than came in, which means it came off earlier stock or
+       * that something does not reconcile. A person reads it; it is not
+       * clamped.
+       */
+      {
+        key: 'po-trx-amt',
+        label: 'PO Trx Amt',
+        value: money(summary.purchaseTrxAmount),
+      },
+      {
+        key: 'do-trx-amt',
+        label: 'DO Trx Amt',
+        value: money(summary.salesTrxAmount),
+      },
+      {
+        key: 'trx-amt-balance',
+        label: 'Balance Amt',
+        value: money(summary.purchaseTrxAmount - summary.salesTrxAmount),
+        highlight: true,
       },
     ];
-
-    if (orderType === '1') {
-      items.push(
-        {
-          key: 'po-trx-qty',
-          label: 'PO Trx Qty',
-          value: thousandSeparator(summary.purchaseTrxQuantity),
-        },
-        {
-          key: 'po-qty',
-          label: 'PO Qty',
-          value: thousandSeparator(summary.purchaseQuantity),
-        },
-        {
-          key: 'po-bal-qty',
-          label: 'PO Bal. Qty',
-          value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity),
-          highlight: true,
-        },
-        {
-          key: 'po-amt',
-          label: 'PO Amount',
-          value: thousandSeparator(summary.purchaseAmount),
-        },
-        {
-          key: 'po-trx-amt',
-          label: 'PO Trx Amt',
-          value: thousandSeparator(summary.purchaseTrxAmount),
-        },
-      );
-    } else if (orderType === '2') {
-      items.push(
-        {
-          key: 'do-trx-qty',
-          label: 'DO Trx Qty',
-          value: thousandSeparator(summary.salesTrxQuantity),
-        },
-        {
-          key: 'do-qty',
-          label: 'DO Qty',
-          value: thousandSeparator(summary.salesQuantity),
-        },
-        {
-          key: 'do-bal-qty',
-          label: 'DO Bal. Qty',
-          value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity),
-          highlight: true,
-        },
-        {
-          key: 'do-amt',
-          label: 'DO Amount',
-          value: thousandSeparator(summary.salesAmount),
-        },
-        {
-          key: 'do-trx-amt',
-          label: 'DO Trx Amt',
-          value: thousandSeparator(summary.salesTrxAmount),
-        },
-      );
-    } else {
-      items.push(
-        {
-          key: 'po-trx-qty',
-          label: 'PO Trx Qty',
-          value: thousandSeparator(summary.purchaseTrxQuantity),
-        },
-        {
-          key: 'do-trx-qty',
-          label: 'DO Trx Qty',
-          value: thousandSeparator(summary.salesTrxQuantity),
-        },
-        {
-          key: 'po-bal-qty',
-          label: 'PO Trx. Bal. Qty',
-          value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity),
-          highlight: true,
-        },
-       
-        {
-          key: 'do-bal-qty',
-          label: 'DO Trx. Bal. Qty',
-          value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity),
-          highlight: true,
-        },
-        {
-          key: 'trx-def-qty',
-          label: 'Trx. Def. Qty',
-          value: thousandSeparator(((summary.purchaseQuantity - summary.purchaseTrxQuantity) - (summary.salesQuantity - summary.salesTrxQuantity))),
-          highlight: true,
-        },
-        // The same three balances read in money: what was ordered in, what was
-        // ordered out, and the gap between the two.
-        // {
-        //   key: 'po-amt',
-        //   label: 'PO Amount',
-        //   value: thousandSeparator(summary.purchaseAmount),
-        // },
-        // {
-        //   key: 'do-amt',
-        //   label: 'DO Amount',
-        //   value: thousandSeparator(summary.salesAmount),
-        // },
-        // {
-        //   key: 'amt-difference',
-        //   label: 'Amt Difference',
-        //   value: thousandSeparator(summary.purchaseAmount - summary.salesAmount),
-        //   highlight: true,
-        // },
-
-        /*
-         * ⚠️ AND THE SAME THREE AGAIN IN WHAT ACTUALLY MOVED. The three
-         * above are what the orders are WORTH -- paper. These are what has
-         * gone in and out against them, and the two pairs are nowhere near
-         * each other because plenty of orders are only part delivered. Both
-         * are shown because both get asked for, and they are named apart so
-         * that one is never quoted for the other.
-         *
-         * The last one is a POSITION: bought less sold, in money. Negative
-         * where more went out than came in -- which means it came off earlier
-         * stock, or that something does not reconcile. A person reads it; it
-         * is not clamped.
-         */
-        {
-          key: 'po-trx-amt',
-          label: 'PO Trx Amt',
-          value: thousandSeparator(summary.purchaseTrxAmount),
-        },
-        {
-          key: 'do-trx-amt',
-          label: 'DO Trx Amt',
-          value: thousandSeparator(summary.salesTrxAmount),
-        },
-        {
-          key: 'trx-amt-balance',
-          label: 'Balance Amt',
-          value: thousandSeparator(summary.purchaseTrxAmount - summary.salesTrxAmount),
-          highlight: true,
-        },
-        // {
-        //   key: 'po-qty',
-        //   label: 'PO Qty',
-        //   value: thousandSeparator(summary.purchaseQuantity),
-        // },
-        // {
-        //   key: 'do-qty',
-        //   label: 'DO Qty',
-        //   value: thousandSeparator(summary.salesQuantity),
-        // },
-        // {
-        //   key: 'po-do-bal-qty',
-        //   label: 'Order Bal. Qty',
-        //   value: thousandSeparator(summary.purchaseQuantity - summary.salesQuantity),
-        //   highlight: true,
-        // },
-      );
-    }
-
-    return items;
-  }, [orderType, summary]);
+  }, [summary]);
 
   const footerRows = useMemo(
     () => [
@@ -1173,48 +1106,7 @@ const Orders = () => {
         </p>
       ),
     },
-    {
-      key: 'order_amount',
-      header: (
-        <p className="text-right">
-          <span className="block">Order Amount</span>
-          <span className="block">Trx. Amount</span>
-          <span className="block">Balance Amount</span>
-        </p>
-      ),
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      /**
-       * The same three lines as the quantity column beside it, in money.
-       *
-       * ⚠️ All three arrive computed. None is worked out here, and none should
-       * be: a multi-product order has a rate per product, so an amount derived
-       * on screen from the order's single rate would price one product at
-       * another's rate -- and would do it silently, on the column somebody
-       * reads to decide what is still owed on a contract.
-       *
-       * The balance is the server's own subtraction, so the three add up on
-       * the page exactly as a reader takes the middle from the top.
-       *
-       * ⚠️ THESE ARE NOT "PO Trx" AND "DO Trx" AND MUST NOT BE LABELLED SO.
-       * They were, briefly, and the column stopped reconciling for the person
-       * reading it -- rightly, because it was describing one order two ways
-       * and calling them two directions. A row IS a purchase order or a sales
-       * order, never both: `order_type` decides, and whichever it is, these
-       * three are that one order's worth, what has moved against it, and the
-       * gap. Bought-against-sold is a subtraction across a SET of orders and
-       * lives in the summary above, where both sides exist.
-       */
-      render: (data: any) => (
-        <p className="text-right">
-          <span className="block">{formatNumberOrDash(data.total_amount)}</span>
-          <span className="block">{formatNumberOrDash(data.trx_amount)}</span>
-          <span className="block text-green-500 dark:text-yellow-300 font-semibold">
-            {formatNumberOrDash(data.balance_amount)}
-          </span>
-        </p>
-      ),
-    },
+    
     {
       key: 'order_rate',
       header: (
@@ -1261,6 +1153,48 @@ const Orders = () => {
           </p>
         );
       },
+    },
+    {
+      key: 'order_amount',
+      header: (
+        <p className="text-right">
+          <span className="block">Order Amt</span>
+          <span className="block">Trx. Amt</span>
+          <span className="block">Balance Amt</span>
+        </p>
+      ),
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      /**
+       * The same three lines as the quantity column beside it, in money.
+       *
+       * ⚠️ All three arrive computed. None is worked out here, and none should
+       * be: a multi-product order has a rate per product, so an amount derived
+       * on screen from the order's single rate would price one product at
+       * another's rate -- and would do it silently, on the column somebody
+       * reads to decide what is still owed on a contract.
+       *
+       * The balance is the server's own subtraction, so the three add up on
+       * the page exactly as a reader takes the middle from the top.
+       *
+       * ⚠️ THESE ARE NOT "PO Trx" AND "DO Trx" AND MUST NOT BE LABELLED SO.
+       * They were, briefly, and the column stopped reconciling for the person
+       * reading it -- rightly, because it was describing one order two ways
+       * and calling them two directions. A row IS a purchase order or a sales
+       * order, never both: `order_type` decides, and whichever it is, these
+       * three are that one order's worth, what has moved against it, and the
+       * gap. Bought-against-sold is a subtraction across a SET of orders and
+       * lives in the summary above, where both sides exist.
+       */
+      render: (data: any) => (
+        <p className="text-right">
+          <span className="block">{formatNumberOrDash(data.total_amount)}</span>
+          <span className="block">{formatNumberOrDash(data.trx_amount)}</span>
+          <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+            {formatNumberOrDash(data.balance_amount)}
+          </span>
+        </p>
+      ),
     },
     {
       key: 'linked_summary',
