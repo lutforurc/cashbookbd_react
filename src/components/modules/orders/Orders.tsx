@@ -1134,15 +1134,35 @@ const Orders = () => {
        * The balance is the server's own subtraction, so the three add up on
        * the page exactly as a reader takes the middle from the top.
        */
-      render: (data: any) => (
-        <p className="text-right">
-          <span className="block">{formatNumberOrDash(data.total_amount)}</span>
-          <span className="block">{formatNumberOrDash(data.trx_amount)}</span>
-          <span className="block text-green-500 dark:text-yellow-300 font-semibold">
-            {formatNumberOrDash(data.balance_amount)}
-          </span>
-        </p>
-      ),
+      render: (data: any) => {
+        /**
+         * The outstanding figure, signed by which way the goods are going.
+         *
+         * ⚠️ A purchase order's balance is money about to leave, so it is
+         * written negative; a sales order's is money about to arrive and takes
+         * no sign. The same 66,60,000 means opposite things on the two, and the
+         * list shows both kinds one under the other -- without the sign a
+         * reader running down the column adds a payable to a receivable.
+         *
+         * Only ever ADDED to a positive balance. A dash means nothing is
+         * outstanding and must not become "-​-", and an over-delivered order is
+         * already negative from the arithmetic -- signing it again would flip
+         * its meaning back.
+         */
+        const balance = toNumber(data.balance_amount);
+        const owed = formatNumberOrDash(balance);
+        const isPurchase = Number(data.order_type) === 1;
+
+        return (
+          <p className="text-right">
+            <span className="block">{formatNumberOrDash(data.total_amount)}</span>
+            <span className="block">{formatNumberOrDash(data.trx_amount)}</span>
+            <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+              {isPurchase && balance > 0 ? `-${owed}` : owed}
+            </span>
+          </p>
+        );
+      },
     },
     {
       key: 'order_rate',
