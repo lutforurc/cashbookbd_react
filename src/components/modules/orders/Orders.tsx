@@ -591,10 +591,12 @@ const Orders = () => {
         if (toNumber(row?.order_type) === 1) {
           acc.purchaseQuantity += toNumber(row?.total_order);
           acc.purchaseAmount += getOrderAmount(row);
+          acc.purchaseTrxAmount += toNumber(row?.trx_amount);
         }
         if (toNumber(row?.order_type) === 2) {
           acc.salesQuantity += toNumber(row?.total_order);
           acc.salesAmount += getOrderAmount(row);
+          acc.salesTrxAmount += toNumber(row?.trx_amount);
         }
         return acc;
       },
@@ -611,6 +613,8 @@ const Orders = () => {
         salesAmount: 0,
         totalAmount: 0,
         trxAmount: 0,
+        purchaseTrxAmount: 0,
+        salesTrxAmount: 0,
       },
     );
   }, [tableData]);
@@ -668,6 +672,24 @@ const Orders = () => {
       salesAmount:
         pickFirstNumber(apiSummarySource, ['sales_amount', 'total_sales_amount']) ??
         derivedSummary.salesAmount,
+      /*
+       * ⚠️ WHAT MOVED, NOT WHAT WAS ORDERED. purchaseAmount and salesAmount
+       * above are what the orders are WORTH; these are what has actually gone
+       * in and out against them, and on a live company the two pairs are
+       * nowhere near each other because plenty of orders are part delivered.
+       *
+       * ⚠️ FROM THE SERVER ONLY, with no fall back to the rows on screen —
+       * exactly as the Trx quantities beside them do it, and for the same
+       * reason. The server totals every row the filter matched; this page
+       * holds ten of them. Falling back would put a page's figure under a
+       * whole-filter heading, and it would CHANGE when somebody turned to page
+       * two, with nothing saying why. A figure that is missing announces
+       * itself; a figure that is quietly the wrong scope does not.
+       */
+      purchaseTrxAmount:
+        pickFirstNumber(apiSummarySource, ['purchase_trx_amount', 'total_purchase_trx_amount']) ?? 0,
+      salesTrxAmount:
+        pickFirstNumber(apiSummarySource, ['sales_trx_amount', 'total_sales_trx_amount']) ?? 0,
       purchaseTrxQuantity:
         pickFirstNumber(apiSummarySource, ['purchase_trx_quantity', 'total_purchase_trx_quantity']) ?? 0,
       salesTrxQuantity:
@@ -682,142 +704,119 @@ const Orders = () => {
     };
   }, [apiSummarySource, derivedSummary]);
 
+  /**
+   * The nine figures under the list. Always these nine, in this order.
+   *
+   * ⚠️ NOT VARIED BY THE ORDER-TYPE FILTER, and it used to be: filtering to
+   * Purchase Order dropped every DO tile and the balance with them, and
+   * filtering to Sales Order dropped the other half. A strip whose tiles come
+   * and go is one nobody can read across two screenshots, and the balance --
+   * the figure the whole strip exists for -- vanished in exactly the two views
+   * somebody would go looking for it.
+   *
+   * Filtered to one side, the other side reads nought. That is the honest
+   * answer to "how much was sold?" when the filter says purchases only, and it
+   * is a far better answer than the tile not being there.
+   *
+   * ⚠️ A NOUGHT IS PRINTED AS A NOUGHT here, not as the dash thousandSeparator
+   * gives everywhere else. On a row a dash means "nothing to say"; on a total
+   * it reads as "not calculated", which is the one thing these must never look
+   * like -- they were genuinely missing once, and the difference has to stay
+   * visible.
+   */
+  /**
+   * The twelve figures under the list. Always these twelve, in this order.
+   *
+   * ⚠️ NOT VARIED BY THE ORDER-TYPE FILTER, and it used to be: choosing
+   * Purchase Order dropped every DO tile, choosing Sales Order dropped the PO
+   * half, and the balance went with them both times -- so the figure the strip
+   * exists for vanished in exactly the two views somebody would go looking for
+   * it in. Filtered to one side the other side reads nought, which is the
+   * honest answer to "how much was sold" when the filter says purchases only,
+   * and a far better one than the tile not being there.
+   *
+   * ⚠️ A NOUGHT IS PRINTED AS A NOUGHT, not as the dash used everywhere
+   * else. On a row a dash means "nothing to say"; on a total it reads as "not
+   * calculated" -- which these genuinely were for a while before the API
+   * shipped, and the two states have to stay distinguishable.
+   */
   const summaryItems = useMemo(() => {
-    const items = [
-      {
-        key: 'trx-qty',
-        label: 'Total Trx Qty',
-        value: thousandSeparator(summary.totalTrxQuantity),
-      },
-    ];
+    const money = (value: number) => {
+      const shown = thousandSeparator(value);
 
-    if (orderType === '1') {
-      items.push(
-        {
-          key: 'po-trx-qty',
-          label: 'PO Trx Qty',
-          value: thousandSeparator(summary.purchaseTrxQuantity),
-        },
-        {
-          key: 'po-qty',
-          label: 'PO Qty',
-          value: thousandSeparator(summary.purchaseQuantity),
-        },
-        {
-          key: 'po-bal-qty',
-          label: 'PO Bal. Qty',
-          value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity),
-          highlight: true,
-        },
-      );
-    } else if (orderType === '2') {
-      items.push(
-        {
-          key: 'do-trx-qty',
-          label: 'DO Trx Qty',
-          value: thousandSeparator(summary.salesTrxQuantity),
-        },
-        {
-          key: 'do-qty',
-          label: 'DO Qty',
-          value: thousandSeparator(summary.salesQuantity),
-        },
-        {
-          key: 'do-bal-qty',
-          label: 'DO Bal. Qty',
-          value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity),
-          highlight: true,
-        },
-      );
-    } else {
-      items.push(
-        {
-          key: 'po-trx-qty',
-          label: 'PO Trx Qty',
-          value: thousandSeparator(summary.purchaseTrxQuantity),
-        },
-        {
-          key: 'do-trx-qty',
-          label: 'DO Trx Qty',
-          value: thousandSeparator(summary.salesTrxQuantity),
-        },
-        {
-          key: 'po-bal-qty',
-          label: 'PO Trx. Bal. Qty',
-          value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity),
-          highlight: true,
-        },
-       
-        {
-          key: 'do-bal-qty',
-          label: 'DO Trx. Bal. Qty',
-          value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity),
-          highlight: true,
-        },
-        {
-          key: 'trx-def-qty',
-          label: 'Trx. Def. Qty',
-          value: thousandSeparator(((summary.purchaseQuantity - summary.purchaseTrxQuantity) - (summary.salesQuantity - summary.salesTrxQuantity))),
-          highlight: true,
-        },
-        // {
-        //   key: 'po-qty',
-        //   label: 'PO Qty',
-        //   value: thousandSeparator(summary.purchaseQuantity),
-        // },
-        // {
-        //   key: 'do-qty',
-        //   label: 'DO Qty',
-        //   value: thousandSeparator(summary.salesQuantity),
-        // },
-        // {
-        //   key: 'po-do-bal-qty',
-        //   label: 'Order Bal. Qty',
-        //   value: thousandSeparator(summary.purchaseQuantity - summary.salesQuantity),
-        //   highlight: true,
-        // },
-      );
-    }
+      if (shown !== '-') return shown;
 
-    /**
-     * The three money figures, on every view.
-     *
-     * ⚠️ Outside the branch above, because they are the totals of three columns
-     * the list ALWAYS draws -- purchase, sales or both. Inside it they existed
-     * only when no type was chosen, and picking Purchase swapped them for a
-     * single "PO Amount": the same number as Order Amount, under a different
-     * name, with what had moved and what was short gone from the screen
-     * altogether. Somebody narrowing to one type is not asking to be told less
-     * about it.
-     *
-     * The old PO Amount and DO Amount tiles are gone rather than kept beside
-     * these. Under a type filter each was Order Amount exactly, and two tiles
-     * carrying one figure under two names invite the reader to add them.
-     *
-     * Trx. Def. Amount is subtracted here, from the same two figures printed
-     * above it, so the row adds up in front of whoever reads it.
-     */
-    items.push(
+      // A nought, written to whatever decimal places this branch is set to.
+      // Taken from formatting a 1 rather than reading the setting again: one
+      // place decides how a number looks, and this cannot drift from it.
+      return thousandSeparator(1).replace(/^1/, '0');
+    };
+
+    const poBalanceQty = summary.purchaseQuantity - summary.purchaseTrxQuantity;
+    const doBalanceQty = summary.salesQuantity - summary.salesTrxQuantity;
+
+    return [
+      { key: 'trx-qty', label: 'Total Trx Qty', value: money(summary.totalTrxQuantity) },
+      { key: 'po-trx-qty', label: 'PO Trx Qty', value: money(summary.purchaseTrxQuantity) },
+      { key: 'do-trx-qty', label: 'DO Trx Qty', value: money(summary.salesTrxQuantity) },
       {
-        key: 'order-amt',
-        label: 'Order Amount',
-        value: thousandSeparator(summary.totalAmount),
+        key: 'po-bal-qty',
+        label: 'PO Trx. Bal. Qty',
+        value: money(poBalanceQty),
+        highlight: true,
       },
       {
-        key: 'trx-amt',
-        label: 'Trx. Amount',
-        value: thousandSeparator(summary.trxAmount),
+        key: 'do-bal-qty',
+        label: 'DO Trx. Bal. Qty',
+        value: money(doBalanceQty),
+        highlight: true,
       },
+      {
+        key: 'trx-def-qty',
+        label: 'Trx. Def. Qty',
+        value: money(poBalanceQty - doBalanceQty),
+        highlight: true,
+      },
+
+      /*
+       * The money undivided: what was ordered, what has moved against it, and
+       * what is short. The same question whichever way the goods were going,
+       * which is why these three are not split by direction. The last is
+       * subtracted from the two printed beside it, so the row adds up in front
+       * of whoever reads it.
+       */
+      { key: 'order-amt', label: 'Order Amount', value: money(summary.totalAmount) },
+      { key: 'trx-amt', label: 'Trx. Amount', value: money(summary.trxAmount) },
       {
         key: 'trx-def-amt',
         label: 'Trx. Def. Amount',
-        value: thousandSeparator(summary.totalAmount - summary.trxAmount),
+        value: money(summary.totalAmount - summary.trxAmount),
         highlight: true,
       },
-    );
 
-    return items;
-  }, [orderType, summary]);
+      /*
+       * ⚠️ AND THE SAME MONEY SPLIT BY DIRECTION -- a different question,
+       * not a repeat of the three above. Those say how far the orders have
+       * been fulfilled; these say how much came IN against how much went OUT,
+       * and the last is the position between them.
+       *
+       * Negative where more went out than came in: the goods came off earlier
+       * stock, or something does not reconcile. A person reads it; it is not
+       * clamped.
+       *
+       * It cannot be done a row at a time. One order is a purchase or a sale,
+       * never both, so the subtraction only means anything over a set of them.
+       */
+      { key: 'po-trx-amt', label: 'PO Trx Amt', value: money(summary.purchaseTrxAmount) },
+      { key: 'do-trx-amt', label: 'DO Trx Amt', value: money(summary.salesTrxAmount) },
+      {
+        key: 'trx-amt-balance',
+        label: 'Balance Amt',
+        value: money(summary.purchaseTrxAmount - summary.salesTrxAmount),
+        highlight: true,
+      },
+    ];
+  }, [summary]);
 
   const footerRows = useMemo(
     () => [
@@ -1161,6 +1160,15 @@ const Orders = () => {
        *
        * The balance is the server's own subtraction, so the three add up on
        * the page exactly as a reader takes the middle from the top.
+       *
+       * ⚠️ THESE ARE NOT "PO Trx" AND "DO Trx" AND MUST NOT BE LABELLED SO.
+       * They were, briefly, and the column stopped reconciling for the person
+       * reading it -- rightly, because it was describing one order two ways
+       * and calling them two directions. A row IS a purchase order or a sales
+       * order, never both: `order_type` decides, and whichever it is, these
+       * three are that one order's worth, what has moved against it, and the
+       * gap. Bought-against-sold is a subtraction across a SET of orders and
+       * lives in the summary above, where both sides exist.
        */
       render: (data: any) => {
         /**
