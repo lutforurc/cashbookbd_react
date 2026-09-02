@@ -5,6 +5,7 @@ import {
   FiCheckSquare,
   FiFileText,
   FiPackage,
+  FiRepeat,
   FiTag,
   FiTool,
   FiTrendingDown,
@@ -19,6 +20,7 @@ import AssetCwipTab from './AssetCwipTab';
 import AssetDepreciationTab from './AssetDepreciationTab';
 import AssetRegisterTab from './AssetRegisterTab';
 import AssetScheduleTab from './AssetScheduleTab';
+import AssetHandoverTab from './AssetHandoverTab';
 import AssetVerificationTab from './AssetVerificationTab';
 
 /**
@@ -47,6 +49,7 @@ type TabKey =
   | 'cwip'
   | 'depreciation'
   | 'schedule'
+  | 'handovers'
   | 'verification';
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[] = [
@@ -78,6 +81,18 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
     label: 'Schedule',
     icon: <FiFileText size={15} />,
     hint: 'The year-end note',
+  },
+  // ⚠️ Beside the count rather than beside the register, because the two are
+  // the same kind of work: both are about where a thing physically is, both are
+  // done by whoever walks the building, and both answer to the register's
+  // permission rather than the one that writes vouchers. Putting it here also
+  // leaves Depreciation and Schedule next to each other, which is one job read
+  // in two parts.
+  {
+    key: 'handovers',
+    label: 'Handovers',
+    icon: <FiRepeat size={15} />,
+    hint: 'Who has what',
   },
   // ⚠️ Counting is not accounting, which is why it sits at the end and answers
   // to the register's permission rather than the one that writes vouchers.
@@ -200,6 +215,7 @@ const AssetSetup = ({ user }: any) => {
       {tab === 'schedule' ? (
         <AssetScheduleTab branchId={branchId} branchName={branchName} />
       ) : null}
+      {tab === 'handovers' ? <AssetHandoverTab branchId={branchId} /> : null}
       {tab === 'verification' ? (
         <AssetVerificationTab branchId={branchId} branchName={branchName} />
       ) : null}
