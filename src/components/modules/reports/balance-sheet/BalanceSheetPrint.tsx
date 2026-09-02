@@ -426,10 +426,31 @@ const BalanceSheetPrint = ({
                       if (line.kind === "subtotal") {
                         return (
                           <tr key={`${line.label}-${index}`} className={line.indent ? "" : "font-semibold"}>
+                            {/* ⚠️ No left padding, and no wrapping.
+
+                                The cell is right-aligned, so a left padding
+                                cannot indent anything -- the text hugs the far
+                                edge either way. All the old pl-12 did was take
+                                48px off the width, which is what broke "Less:
+                                Accumulated Depreciation" across two lines: a
+                                label wrapped by padding that was drawing
+                                nothing. The bold on the Net and Total lines is
+                                what tells these two apart, as it already was.
+
+                                nowrap on the indented line only. That one is a
+                                fixed phrase this file writes itself, so it can
+                                be held to one line safely. The Net and Total
+                                labels are built from a section's name, which a
+                                branch chooses -- forbidding those to wrap would
+                                let one long name push the table wider than the
+                                paper, trading a folded heading for a report
+                                that no longer fits. */}
                             <td
                               colSpan={2}
                               style={{ fontSize: fs }}
-                              className={`border border-gray-900 py-0.5 pr-2 text-right ${line.indent ? "pl-12" : "pl-8"}`}
+                              className={`border border-gray-900 py-0.5 px-2 text-right${
+                                line.indent ? " whitespace-nowrap" : ""
+                              }`}
                             >
                               {line.label}
                             </td>
