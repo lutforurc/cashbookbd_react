@@ -16,6 +16,7 @@ type BalanceSheetItem = {
 
 type BalanceSheetGroup = {
   group_name?: string;
+  is_contra?: boolean;
   total?: number;
   opening?: number;
   movement?: number;
@@ -32,6 +33,12 @@ type BalanceSheetPrintProps = {
   assets: BalanceSheetGroup[];
   liabilities: BalanceSheetGroup[];
   equity: BalanceSheetGroup[];
+  /** The chart's level-2 grouping. Absent from an older server; see buildLines. */
+  sections?: {
+    assets?: BalanceSheetSection[];
+    liabilities?: BalanceSheetSection[];
+    equity?: BalanceSheetSection[];
+  };
   totals: {
     assets: number;
     liabilities: number;
@@ -56,7 +63,9 @@ type BalanceSheetPrintProps = {
  */
 type PrintLine =
   | { kind: "section"; label: string }
+  | { kind: "subsection"; label: string }
   | { kind: "item"; serial: number; name: string; side: Side; amounts: ColumnAmounts }
+  | { kind: "subtotal"; label: string; side: Side; amounts: ColumnAmounts; indent?: boolean }
   | { kind: "total"; label: string; side: Side; amounts: ColumnAmounts };
 
 type Side = "debit" | "credit";
@@ -102,10 +111,25 @@ const chunkLines = (lines: PrintLine[], size: number): PrintLine[][] => {
   return out.length > 0 ? out : [[]];
 };
 
+type BalanceSheetSection = {
+  name?: string;
+  groups?: BalanceSheetGroup[];
+  columns?: ColumnAmounts;
+  total?: number | string;
+  has_contra?: boolean;
+  cost_columns?: ColumnAmounts;
+  depreciation_columns?: ColumnAmounts;
+};
+
 const buildLines = (
   assets: BalanceSheetGroup[],
   liabilities: BalanceSheetGroup[],
   equity: BalanceSheetGroup[],
+  sections: {
+    assets?: BalanceSheetSection[];
+    liabilities?: BalanceSheetSection[];
+    equity?: BalanceSheetSection[];
+  },
   sectionTotals: {
     assets: ColumnAmounts;
     liabilities: ColumnAmounts;
@@ -141,9 +165,79 @@ const buildLines = (
     lines.push({ kind: "total", label: totalLabel, side, amounts: totalAmounts });
   };
 
-  pushSection("Assets", assets, "debit", "Total Assets", sectionTotals.assets);
-  pushSection("Liabilities", liabilities, "credit", "Liabilities Total", sectionTotals.liabilities);
-  pushSection("Equity", equity, "credit", "Equity Total", sectionTotals.equity);
+  /**
+   * One level-2 group of the chart.
+   *
+   * ⚠️ A section that deducts prints cost, less, net -- and does NOT also
+   * list the contra group among the others. Two lines at the same level invite
+   * the reader to add them, and adding depreciation to cost is the mistake this
+   * layout exists to prevent. Same rule as the screen.
+   */
+  const pushSubSection = (section: BalanceSheetSection, side: Side) => {
+    const groups = section.groups ?? [];
+    const shown = section.has_contra ? groups.filter((g) => !g.is_contra) : groups;
+
+    if (groups.length === 0) return;
+
+    lines.push({ kind: "subsection", label: section.name || "-" });
+
+    shown.forEach((group) => {
+      serial += 1;
+      lines.push({ kind: "item", serial, name: group.group_name || "-", side, amounts: groupAmounts(group) });
+    });
+
+    const zero = { opening: 0, movement: 0, closing: 0 };
+
+    if (section.has_contra) {
+      const dep = section.depreciation_columns ?? zero;
+
+      lines.push({
+        kind: "subtotal",
+        label: "Less: Accumulated Depreciation",
+        side,
+        indent: true,
+        amounts: {
+          opening: -1 * Number(dep.opening ?? 0),
+          movement: -1 * Number(dep.movement ?? 0),
+          closing: -1 * Number(dep.closing ?? 0),
+        },
+      });
+      lines.push({ kind: "subtotal", label: `Net ${section.name}`, side, amounts: section.columns ?? zero });
+
+      return;
+    }
+
+    lines.push({ kind: "subtotal", label: `Total ${section.name}`, side, amounts: section.columns ?? zero });
+  };
+
+  const pushSectioned = (
+    title: string,
+    list: BalanceSheetSection[],
+    side: Side,
+    totalLabel: string,
+    totalAmounts: ColumnAmounts,
+  ) => {
+    if (list.length === 0) return;
+
+    lines.push({ kind: "section", label: title });
+    list.forEach((section) => pushSubSection(section, side));
+    lines.push({ kind: "total", label: totalLabel, side, amounts: totalAmounts });
+  };
+
+  const hasSections =
+    (sections.assets?.length ?? 0) > 0 ||
+    (sections.liabilities?.length ?? 0) > 0 ||
+    (sections.equity?.length ?? 0) > 0;
+
+  if (hasSections) {
+    pushSectioned("Assets", sections.assets ?? [], "debit", "Total Assets", sectionTotals.assets);
+    pushSectioned("Liabilities", sections.liabilities ?? [], "credit", "Total Liabilities", sectionTotals.liabilities);
+    pushSectioned("Equity", sections.equity ?? [], "credit", "Total Equity", sectionTotals.equity);
+  } else {
+    pushSection("Assets", assets, "debit", "Total Assets", sectionTotals.assets);
+    pushSection("Liabilities", liabilities, "credit", "Liabilities Total", sectionTotals.liabilities);
+    pushSection("Equity", equity, "credit", "Equity Total", sectionTotals.equity);
+  }
 
   lines.push({
     kind: "total",
@@ -164,6 +258,7 @@ const BalanceSheetPrint = ({
   assets,
   liabilities,
   equity,
+  sections,
   totals,
 }: BalanceSheetPrintProps) => {
   const fs = Number.isFinite(fontSize) ? Number(fontSize) : 12;
@@ -178,7 +273,7 @@ const BalanceSheetPrint = ({
   const equityColumns = totals.equityColumns || { opening: 0, movement: 0, closing: totals.equity };
   const liabilitiesAndEquityColumns = addAmounts(liabilitiesColumns, equityColumns);
 
-  const lines = buildLines(assets, liabilities, equity, {
+  const lines = buildLines(assets, liabilities, equity, sections ?? {}, {
     assets: assetsColumns,
     liabilities: liabilitiesColumns,
     equity: equityColumns,
@@ -309,6 +404,36 @@ const BalanceSheetPrint = ({
                             >
                               {line.label}
                             </td>
+                          </tr>
+                        );
+                      }
+
+                      if (line.kind === "subsection") {
+                        return (
+                          <tr key={`${line.label}-${index}`} className="bg-gray-50 font-medium">
+                            <td
+                              colSpan={8}
+                              style={{ fontSize: fs }}
+                              className="border border-gray-900 py-0.5 pl-6 pr-2 text-left"
+                            >
+                              {line.label}
+                            </td>
+                          </tr>
+                        );
+                      }
+
+                      /* The level-2 subtotal, and the "Less:" line above it. */
+                      if (line.kind === "subtotal") {
+                        return (
+                          <tr key={`${line.label}-${index}`} className={line.indent ? "" : "font-semibold"}>
+                            <td
+                              colSpan={2}
+                              style={{ fontSize: fs }}
+                              className={`border border-gray-900 py-0.5 pr-2 text-right ${line.indent ? "pl-12" : "pl-8"}`}
+                            >
+                              {line.label}
+                            </td>
+                            {amountCells(line.side, line.amounts, totalFs, !line.indent)}
                           </tr>
                         );
                       }

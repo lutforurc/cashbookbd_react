@@ -36,6 +36,8 @@ type ReportItem = {
 
 type ReportGroup = {
   group_name?: string;
+  /** Set by the server on a group that is deducted from the others beside it. */
+  is_contra?: boolean;
   opening?: number | string;
   movement?: number | string;
   closing?: number | string;
@@ -47,6 +49,29 @@ type ColumnTotals = {
   opening: number;
   movement: number;
   closing: number;
+};
+
+/**
+ * A level-2 group of the chart — Current Assets, Fixed Asset, Current
+ * Liability, Capital Account — holding the level-3 groups under it.
+ *
+ * ⚠️ The structure is the CHART's, not this screen's. Every one of these names
+ * is a row somebody set up in the chart of accounts, so what the balance sheet
+ * shows and what the accountant filed agree by construction rather than by a
+ * mapping kept in step by hand.
+ */
+type ReportSection = {
+  name?: string;
+  groups?: ReportGroup[];
+  columns?: ColumnTotals;
+  total?: number | string;
+  /** Set where the section carries a deduction — fixed assets and their depreciation. */
+  has_contra?: boolean;
+  cost?: number | string;
+  cost_columns?: ColumnTotals;
+  depreciation?: number | string;
+  depreciation_columns?: ColumnTotals;
+  net?: number | string;
 };
 
 const toNum = (value: any) => {
@@ -131,6 +156,25 @@ const BalanceSheet = (user: any) => {
 
     return null;
   }, [balanceSheetState?.data]);
+
+  /**
+   * The sectioned shape, where the server sends one.
+   *
+   * ⚠️ Falls back to the flat arrays below, so a screen pointed at a server
+   * that has not been updated still draws a balance sheet rather than an empty
+   * page — the old one, without the Current/Fixed split.
+   */
+  const sections = useMemo(
+    () => ({
+      assets: (apiData?.sections?.assets ?? []) as ReportSection[],
+      liabilities: (apiData?.sections?.liabilities ?? []) as ReportSection[],
+      equity: (apiData?.sections?.equity ?? []) as ReportSection[],
+    }),
+    [apiData?.sections],
+  );
+
+  const hasSections =
+    sections.assets.length > 0 || sections.liabilities.length > 0 || sections.equity.length > 0;
 
   const assets: ReportGroup[] = Array.isArray(apiData?.assets) ? apiData.assets : [];
   const liabilities: ReportGroup[] = Array.isArray(apiData?.liabilities)
@@ -595,6 +639,8 @@ const BalanceSheet = (user: any) => {
                   assets={assets}
                   liabilities={liabilities}
                   equity={equity}
+                  sections={sections}
+                  hasSections={hasSections}
                   totals={totals}
                   fontSize={fontSize}
                   onGroupClick={(title, group) => setSelectedGroup({ title, group })}
@@ -622,6 +668,7 @@ const BalanceSheet = (user: any) => {
             assets={assets.map(normalizeGroup)}
             liabilities={liabilities.map(normalizeGroup)}
             equity={equity.map(normalizeGroup)}
+            sections={sections}
             totals={totals}
           />
         </div>
@@ -842,6 +889,8 @@ type SheetSide = "debit" | "credit";
 
 type SheetLine =
   | { kind: "section"; label: string }
+  | { kind: "subsection"; label: string }
+  | { kind: "subtotal"; label: string; side: SheetSide; columns: ColumnTotals; indent?: boolean }
   | {
       kind: "item";
       key: string;
@@ -865,6 +914,8 @@ const BalanceSheetTable = ({
   assets,
   liabilities,
   equity,
+  sections,
+  hasSections,
   totals,
   fontSize,
   onGroupClick,
@@ -872,6 +923,8 @@ const BalanceSheetTable = ({
   assets: ReportGroup[];
   liabilities: ReportGroup[];
   equity: ReportGroup[];
+  sections: { assets: ReportSection[]; liabilities: ReportSection[]; equity: ReportSection[] };
+  hasSections: boolean;
   totals: {
     assetsColumns: ColumnTotals;
     liabilitiesColumns: ColumnTotals;
@@ -917,9 +970,100 @@ const BalanceSheetTable = ({
       out.push({ kind: "total", label: totalLabel, side, columns });
     };
 
-    pushSection("Assets", assets, "debit", "Total Assets", totals.assetsColumns);
-    pushSection("Liabilities", liabilities, "credit", "Liabilities Total", totals.liabilitiesColumns);
-    pushSection("Equity", equity, "credit", "Equity Total", totals.equityColumns);
+    /**
+     * One level-2 group: its heading, the groups under it, and a subtotal.
+     *
+     * ⚠️ A SECTION THAT DEDUCTS PRINTS THE SUM, NOT TWO LINES. Fixed assets are
+     * shown as cost, less accumulated depreciation, net — the contra group is
+     * NOT also listed among the others, because two lines at the same level
+     * invite a reader to add them, and adding depreciation to cost is the one
+     * mistake this layout exists to prevent.
+     */
+    const pushSubSection = (parent: string, section: ReportSection, side: SheetSide) => {
+      const groups = section.groups ?? [];
+      const shown = section.has_contra ? groups.filter((g) => !g.is_contra) : groups;
+
+      if (groups.length === 0) return;
+
+      out.push({ kind: "subsection", label: section.name || "-" });
+
+      shown.forEach((group, index) => {
+        serial += 1;
+        out.push({
+          kind: "item",
+          key: `${parent}-${section.name}-${group.group_name || "group"}-${index}`,
+          serial,
+          section: parent,
+          side,
+          group,
+          label: group.group_name || "-",
+          itemCount: (group.items || []).length,
+          columns: {
+            opening: toNum(group.opening),
+            movement: toNum(group.movement),
+            closing: toNum(group.closing ?? group.total),
+          },
+        });
+      });
+
+      if (section.has_contra) {
+        // Printed positive under a heading that already says Less, because
+        // a bracketed negative under "Less" reads as a double negative.
+        const dep = section.depreciation_columns ?? { opening: 0, movement: 0, closing: 0 };
+
+        out.push({
+          kind: "subtotal",
+          label: "Less: Accumulated Depreciation",
+          side,
+          indent: true,
+          columns: {
+            opening: -1 * toNum(dep.opening),
+            movement: -1 * toNum(dep.movement),
+            closing: -1 * toNum(dep.closing),
+          },
+        });
+
+        out.push({
+          kind: "subtotal",
+          label: `Net ${section.name}`,
+          side,
+          columns: section.columns ?? { opening: 0, movement: 0, closing: 0 },
+        });
+
+        return;
+      }
+
+      out.push({
+        kind: "subtotal",
+        label: `Total ${section.name}`,
+        side,
+        columns: section.columns ?? { opening: 0, movement: 0, closing: 0 },
+      });
+    };
+
+    const pushSectioned = (
+      title: string,
+      list: ReportSection[],
+      side: SheetSide,
+      totalLabel: string,
+      columns: ColumnTotals,
+    ) => {
+      if (list.length === 0) return;
+
+      out.push({ kind: "section", label: title });
+      list.forEach((section) => pushSubSection(title, section, side));
+      out.push({ kind: "total", label: totalLabel, side, columns });
+    };
+
+    if (hasSections) {
+      pushSectioned("Assets", sections.assets, "debit", "Total Assets", totals.assetsColumns);
+      pushSectioned("Liabilities", sections.liabilities, "credit", "Total Liabilities", totals.liabilitiesColumns);
+      pushSectioned("Equity", sections.equity, "credit", "Total Equity", totals.equityColumns);
+    } else {
+      pushSection("Assets", assets, "debit", "Total Assets", totals.assetsColumns);
+      pushSection("Liabilities", liabilities, "credit", "Liabilities Total", totals.liabilitiesColumns);
+      pushSection("Equity", equity, "credit", "Equity Total", totals.equityColumns);
+    }
 
     out.push({
       kind: "total",
@@ -934,7 +1078,7 @@ const BalanceSheetTable = ({
     });
 
     return out;
-  }, [assets, equity, liabilities, totals]);
+  }, [assets, equity, hasSections, liabilities, sections, totals]);
 
   const cell = "border border-[rgb(var(--c-border))] px-3 py-2";
   // The Dr and Cr columns hold one figure each and nothing else, so they are
@@ -1002,6 +1146,37 @@ const BalanceSheetTable = ({
                   >
                     {line.label}
                   </td>
+                </tr>
+              );
+            }
+
+            if (line.kind === "subsection") {
+              return (
+                <tr key={`${line.label}-${index}`} className="bg-slate-50 dark:bg-slate-800/50">
+                  <td colSpan={8} className={`${cell} pl-6 font-medium text-slate-600 dark:text-slate-300`}>
+                    {line.label}
+                  </td>
+                </tr>
+              );
+            }
+
+            /* A level-2 subtotal, and the "Less:" line above it. Indented under
+               the groups it sums so the eye reads down the column and stops. */
+            if (line.kind === "subtotal") {
+              return (
+                <tr key={`${line.label}-${index}`}>
+                  <td className={cell} />
+                  <td className={`${cell} ${line.indent ? "pl-10" : "pl-6 font-semibold"} text-slate-700 dark:text-slate-200`}>
+                    {line.label}
+                  </td>
+                  {(["opening", "movement", "closing"] as const).flatMap((column) => [
+                    <td key={`${line.label}-${column}-dr`} className={moneyCell}>
+                      {line.side === "debit" ? formatAmount(line.columns[column]) : "-"}
+                    </td>,
+                    <td key={`${line.label}-${column}-cr`} className={moneyCell}>
+                      {line.side === "credit" ? formatAmount(line.columns[column]) : "-"}
+                    </td>,
+                  ])}
                 </tr>
               );
             }
