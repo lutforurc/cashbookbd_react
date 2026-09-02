@@ -1006,16 +1006,46 @@ const TrialBalanceLevel3 = (user: any) => {
                       {selectedLevel4Rows.length > 0 && (
                         <div className="overflow-x-auto">
                           <table className="min-w-full table-fixed text-left text-sm text-slate-700 dark:text-slate-200">
+                            {/* ⚠️ STACKED, LIKE THE BALANCE SHEET'S. Six headings
+                                reading "Opening Dr, Opening Cr, Movement Dr..."
+                                make the reader parse each one to find the pair
+                                it belongs to. Said once above and Dr/Cr under
+                                it, the three periods are three blocks the eye
+                                lands on, and the two columns inside each are
+                                obviously a pair. Same table on two reports
+                                should not be read two ways. */}
                             <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300">
                               <tr>
-                                <th className="w-16 px-3 py-3 text-center">Sl. No</th>
-                                <th className="w-80 px-3 py-3">COA L4 Name</th>
-                                <th className="w-32 px-3 py-3 text-right">Opening Dr</th>
-                                <th className="w-32 px-3 py-3 text-right">Opening Cr</th>
-                                <th className="w-32 px-3 py-3 text-right">Movement Dr</th>
-                                <th className="w-32 px-3 py-3 text-right">Movement Cr</th>
-                                <th className="w-32 px-3 py-3 text-right">Closing Dr</th>
-                                <th className="w-32 px-3 py-3 text-right">Closing Cr</th>
+                                <th rowSpan={2} className="w-16 px-3 pt-3 pb-3 text-center align-middle">
+                                  Sl. No
+                                </th>
+                                <th rowSpan={2} className="w-80 px-3 pt-3 pb-3 align-middle">
+                                  COA L4 Name
+                                </th>
+                                <th colSpan={2} className="w-64 px-3 pt-3 pb-1 text-center">
+                                  Opening
+                                </th>
+                                <th colSpan={2} className="w-64 px-3 pt-3 pb-1 text-center">
+                                  Movement
+                                </th>
+                                <th colSpan={2} className="w-64 px-3 pt-3 pb-1 text-center">
+                                  Closing
+                                </th>
+                              </tr>
+                              <tr>
+                                {/* Centred, like the table above this panel. The
+                                    figures underneath are right aligned, as
+                                    money should be, but a two-letter heading
+                                    pushed to the same edge drifts away from the
+                                    column it names. */}
+                                {["Dr", "Cr", "Dr", "Cr", "Dr", "Cr"].map((label, index) => (
+                                  <th
+                                    key={`${label}-${index}`}
+                                    className="w-32 px-3 pb-3 text-center font-semibold"
+                                  >
+                                    {label}
+                                  </th>
+                                ))}
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200 bg-[rgb(var(--c-table-body))] dark:divide-slate-700">
