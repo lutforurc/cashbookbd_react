@@ -9,6 +9,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 
 import httpService from '../../services/httpService';
 import {
+  API_ASSET_BRANCHES_URL,
   API_ASSET_CUSTODY_URL,
   API_ASSET_HISTORY_URL,
   API_ASSET_MAINTENANCE_URL,
@@ -78,6 +79,7 @@ type Section = 'custody' | 'count' | 'upkeep';
 const AssetCarePanel = ({ asset, onClose }: { asset: any; onClose: () => void }) => {
   const [data, setData] = useState<any>(null);
   const [people, setPeople] = useState<any[]>([]);
+  const [branches, setBranches] = useState<any[]>([]);
   const [section, setSection] = useState<Section>('custody');
   const [saving, setSaving] = useState(false);
 
@@ -90,8 +92,7 @@ const AssetCarePanel = ({ asset, onClose }: { asset: any; onClose: () => void })
     action: 'issued',
     on_date: today(),
     employee_id: '',
-    holder_name: '',
-    location: '',
+    to_branch_id: '',
     condition_note: '',
   });
 
@@ -127,12 +128,20 @@ const AssetCarePanel = ({ asset, onClose }: { asset: any; onClose: () => void })
   }, [load]);
 
   useEffect(() => {
-    // ⚠️ A failure here is not worth a message. No staff list simply means the
-    // holder is named in writing, which the form allows anyway.
+    // ⚠️ A failure here is not worth a message of its own -- the form says what
+    // it can offer, and an empty list is one of the things it can say. It
+    // matters more than it did: a holder is now CHOSEN from this list, so an
+    // empty one means nobody can be named, and the form has to admit that
+    // rather than show a box that cannot be filled.
     httpService
       .get(API_ASSET_PEOPLE_URL)
       .then((res: any) => setPeople(res?.data?.data?.data ?? []))
       .catch(() => setPeople([]));
+
+    httpService
+      .get(API_ASSET_BRANCHES_URL)
+      .then((res: any) => setBranches(res?.data?.data?.data ?? []))
+      .catch(() => setBranches([]));
   }, []);
 
   const send = async (url: string, body: any, done: () => void) => {
@@ -151,15 +160,10 @@ const AssetCarePanel = ({ asset, onClose }: { asset: any; onClose: () => void })
   };
 
   const handOver = () => {
-    if (
-      hand.action === 'issued' &&
-      !hand.employee_id &&
-      !hand.holder_name.trim() &&
-      !hand.location.trim()
-    ) {
+    if (hand.action === 'issued' && !hand.employee_id && !hand.to_branch_id) {
       // Said here as well as by the server: a form that has to be submitted to
       // learn what it wants is a form that gets abandoned.
-      toast.error('Say who took it, or where it went.');
+      toast.error('Say who took it, or which branch it went to.');
       return;
     }
 
@@ -168,9 +172,11 @@ const AssetCarePanel = ({ asset, onClose }: { asset: any; onClose: () => void })
       {
         action: hand.action,
         on_date: hand.on_date,
+        // ⚠️ Ids only. The names are looked up on the server from the same two
+        // lists these dropdowns were filled from, so what is written down
+        // cannot be a name the form never offered.
         employee_id: hand.employee_id || null,
-        holder_name: hand.holder_name || null,
-        location: hand.location || null,
+        to_branch_id: hand.to_branch_id || null,
         condition_note: hand.condition_note || null,
       },
       () =>
@@ -178,8 +184,7 @@ const AssetCarePanel = ({ asset, onClose }: { asset: any; onClose: () => void })
           action: 'issued',
           on_date: today(),
           employee_id: '',
-          holder_name: '',
-          location: '',
+          to_branch_id: '',
           condition_note: '',
         }),
     );
@@ -322,9 +327,18 @@ const AssetCarePanel = ({ asset, onClose }: { asset: any; onClose: () => void })
               className="w-full"
             />
 
-            {/* ⚠️ Both boxes, always. A laptop goes to a person; a generator
-                goes to a site and answers to whoever is there. Insisting on a
-                name from the payroll would make somebody invent one. */}
+            {/* ⚠️ Both boxes are now CHOSEN FROM A LIST, not typed. A laptop
+                still goes to a person and a generator still goes to a site --
+                either box alone is enough -- but the person comes from the staff
+                list and the site from the branch list.
+
+                Free text let one man be "Rafiq", "Rafiq, driver" and "rafique"
+                across three handovers, and the asset he was holding could not be
+                found under any of them. That is the whole use of this log.
+
+                An empty list says so instead of offering an empty box: on a
+                system with no staff entered, the answer is to enter them, and a
+                box that cannot be filled would not have said that. */}
             {hand.action === 'issued' ? (
               <>
                 {people.length ? (
@@ -333,32 +347,48 @@ const AssetCarePanel = ({ asset, onClose }: { asset: any; onClose: () => void })
                     name="employee_id"
                     label="To whom"
                     data={[
-                      { id: '', name: 'Nobody on the payroll' },
+                      { id: '', name: 'Not to a person' },
                       ...people.map((one: any) => ({ id: one.id, name: one.name })),
                     ]}
                     value={hand.employee_id}
                     onChange={(e: any) => setHand({ ...hand, employee_id: e.target.value })}
                   />
                 ) : (
-                  <InputElement
-                    id="custody_holder"
-                    name="holder_name"
-                    label="To whom"
-                    placeholder="Rafiq, driver"
-                    value={hand.holder_name}
-                    onChange={(e: any) => setHand({ ...hand, holder_name: e.target.value })}
-                    description="A name in writing is enough."
-                  />
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      To whom
+                    </label>
+                    <p className="rounded border border-stroke px-3 py-2 text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
+                      Nobody on the staff list yet
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Add employees first, or send it to a branch instead.
+                    </p>
+                  </div>
                 )}
 
-                <InputElement
-                  id="custody_location"
-                  name="location"
-                  label="Or where it went"
-                  placeholder="Mirpur site office"
-                  value={hand.location}
-                  onChange={(e: any) => setHand({ ...hand, location: e.target.value })}
-                />
+                {branches.length ? (
+                  <DropdownCommon
+                    id="custody_branch"
+                    name="to_branch_id"
+                    label="Or which branch"
+                    data={[
+                      { id: '', name: 'Not to a branch' },
+                      ...branches.map((one: any) => ({ id: one.id, name: one.name })),
+                    ]}
+                    value={hand.to_branch_id}
+                    onChange={(e: any) => setHand({ ...hand, to_branch_id: e.target.value })}
+                  />
+                ) : (
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Or which branch
+                    </label>
+                    <p className="rounded border border-stroke px-3 py-2 text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
+                      No branch you can issue to
+                    </p>
+                  </div>
+                )}
               </>
             ) : (
               <div className="md:col-span-2">

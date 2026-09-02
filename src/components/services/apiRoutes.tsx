@@ -1068,6 +1068,7 @@ export const API_ASSET_VERIFICATION_ROUND_URL = `${API_BASE_URL}/asset/verificat
 // companies never set the HRMS up, and their custody log names the holder in
 // writing instead.
 export const API_ASSET_PEOPLE_URL = `${API_BASE_URL}/asset/people`;
+export const API_ASSET_BRANCHES_URL = `${API_BASE_URL}/asset/asset-branches`;
 
 // What is being built: cost gathered under its own balance sheet head until the
 // day it is finished, when it becomes one asset and starts to wear out.
