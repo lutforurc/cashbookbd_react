@@ -14,7 +14,8 @@
       "Bash(where.exe php *)",
       "Read(//c//**)",
       "Read(//f//**)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Read(//f/All_Database/www/cashbook_api/app/Console/Commands/**)"
     ],
     "additionalDirectories": [
       "F:\\All_Database\\www\\cashbook_api\\config",

@@ -1235,77 +1235,25 @@ const Orders = () => {
       key: 'order_amount',
       header: (
         <p className="text-right">
-          <span className="block">PO Trx Bal Amt</span>
+          <span className="block">Order Amount</span>
           <span className="block">DO Trx Bal Amt</span>
           <span className="block">Balance Amount</span>
         </p>
       ),
       headerClass: 'text-right',
       cellClass: 'text-right',
-      /**
-       * The same three lines as the quantity column beside it, in money.
-       *
-       * ⚠️ All three arrive computed. None is worked out here, and none should
-       * be: a multi-product order has a rate per product, so an amount derived
-       * on screen from the order's single rate would price one product at
-       * another's rate -- and would do it silently, on the column somebody
-       * reads to decide what is still owed on a contract.
-       *
-       * The balance is the server's own subtraction, so the three add up on
-       * the page exactly as a reader takes the middle from the top.
-       *
-       * ⚠️ The order's worth and what has moved against it are NOT here any
-       * more -- they were, under these headings, which is what stopped the
-       * column reconciling. What is here is the outstanding figure only.
-       * They were, briefly, and the column stopped reconciling for the person
-       * reading it -- rightly, because it was describing one order two ways
-       * and calling them two directions. A row IS a purchase order or a sales
-       * order, never both: `order_type` decides, and whichever it is, these
-       * three are that one order's worth, what has moved against it, and the
-       * gap. Bought-against-sold is a subtraction across a SET of orders and
-       * lives in the summary above, where both sides exist.
-       */
-      /*
-       * ⚠️ NO MINUS IS PUT ON A PURCHASE. One briefly was -- the reasoning
-       * being that a PO's balance is money about to leave while a DO's is
-       * money about to arrive, so the two should not be added down the column.
-       * Removed by the owner's decision: the column reads what is OUTSTANDING,
-       * and outstanding is a quantity of money, not a direction. Which way it
-       * goes is the order's type, which the row already says.
-       *
-       * A minus can still appear here, and it is not this: it means the server
-       * subtracted to less than nothing, an order delivered beyond what was
-       * ordered. That one is arithmetic and must not be hidden.
-       */
+      
       render: (data: any) => {
-        /*
-         * The row's outstanding money, put on the side the order belongs to.
-         *
-         *     PO Trx Bal Amt = (ordered - received) x rate   -- purchase rows
-         *     DO Trx Bal Amt = (ordered - issued)   x rate   -- sales rows
-         *
-         * Both are the same subtraction the server already did and sent as
-         * balance_amount; which line it lands on is decided by order_type, and
-         * the other line is nought because this row has no such side. A row is
-         * a purchase order or a sales order, never both.
-         *
-         * ⚠️ SO THE THIRD LINE IS ± THE FIRST TWO, ALWAYS. With one side
-         * always nought, PO less DO can only be the filled figure or its
-         * negative -- a sales row reads negative here. It is the owner's stated
-         * formula and is kept literally; the summary above is where the same
-         * subtraction has both sides to work with and means something on its
-         * own.
-         */
+        // {formatNumberOrDash(Number(data.total_order) - Number(data.trx_quantity))}
         const outstanding = toNumber(data.balance_amount);
         const isPurchase = Number(data.order_type) === 1;
-
         const poBalance = isPurchase ? outstanding : 0;
         const doBalance = isPurchase ? 0 : outstanding;
 
         return (
           <p className="text-right">
-            <span className="block">{formatNumberOrDash ( Math.abs (poBalance))}</span>
-            <span className="block">{formatNumberOrDash(  Math.abs (doBalance))}</span>
+            <span className="block">{formatNumberOrDash(Math.abs(getOrderAmount(data)))}</span>
+            <span className="block">{formatNumberOrDash(Math.abs(getOrderAmount(data)) - Math.abs ( poBalance - doBalance))}</span>
             <span className="block text-green-500 dark:text-yellow-300 font-semibold">
               {formatNumberOrDash( Math.abs ( poBalance - doBalance))}
             </span>
