@@ -40,7 +40,7 @@ const Buttons = () => {
 
             <Link
               to="#"
-              className="inline-flex items-center justify-center rounded-md border border-primary py-4 px-10 text-center font-medium text-primary hover:bg-opacity-90 lg:px-8 xl:px-10"
+              className="inline-flex items-center justify-center rounded-md border border-primary py-4 px-10 text-center font-medium text-primary lg:px-8 xl:px-10"
             >
               Button
             </Link>
@@ -70,7 +70,7 @@ const Buttons = () => {
 
             <Link
               to="#"
-              className="inline-flex items-center justify-center rounded-md border border-meta-3 py-4 px-10 text-center font-medium text-meta-3 hover:bg-opacity-90 lg:px-8 xl:px-10"
+              className="inline-flex items-center justify-center rounded-md border border-meta-3 py-4 px-10 text-center font-medium text-meta-3 lg:px-8 xl:px-10"
             >
               Button
             </Link>
@@ -100,7 +100,7 @@ const Buttons = () => {
 
             <Link
               to="#"
-              className="inline-flex items-center justify-center rounded-md border border-black py-4 px-10 text-center font-medium text-[rgb(var(--c-text))] hover:bg-opacity-90 lg:px-8 xl:px-10"
+              className="inline-flex items-center justify-center rounded-md border border-black py-4 px-10 text-center font-medium text-[rgb(var(--c-text))] lg:px-8 xl:px-10"
             >
               Button
             </Link>
@@ -198,7 +198,7 @@ const Buttons = () => {
 
             <Link
               to="#"
-              className="inline-flex items-center justify-center gap-2.5 border border-primary py-4 px-10 text-center font-medium text-primary hover:bg-opacity-90 lg:px-8 xl:px-10"
+              className="inline-flex items-center justify-center gap-2.5 border border-primary py-4 px-10 text-center font-medium text-primary lg:px-8 xl:px-10"
             >
               <span>
                 <svg
@@ -316,7 +316,7 @@ const Buttons = () => {
 
             <Link
               to="#"
-              className="inline-flex items-center justify-center gap-2.5 rounded-md border border-primary py-4 px-10 text-center font-medium text-primary hover:bg-opacity-90 lg:px-8 xl:px-10"
+              className="inline-flex items-center justify-center gap-2.5 rounded-md border border-primary py-4 px-10 text-center font-medium text-primary lg:px-8 xl:px-10"
             >
               <span>
                 <svg
@@ -435,7 +435,7 @@ const Buttons = () => {
 
             <Link
               to="#"
-              className="inline-flex items-center justify-center gap-2.5 rounded-full border border-primary py-4 px-10 text-center font-medium text-primary hover:bg-opacity-90 lg:px-8 xl:px-10"
+              className="inline-flex items-center justify-center gap-2.5 rounded-full border border-primary py-4 px-10 text-center font-medium text-primary lg:px-8 xl:px-10"
             >
               <span>
                 <svg

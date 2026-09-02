@@ -690,7 +690,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         <InputElement
           type="text"
           value={String(Number(row.month_days) || selectedMonthDays)}
-          className={`${READONLY_FIGURE} w-24 !md:w-20`}
+          className={`${READONLY_FIGURE} w-24`}
           disabled={true}
         />
       ),
@@ -721,7 +721,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         <InputElement
           type="text"
           value={thousandSeparator(Number(row.monthly_basic_salary) || 0)}
-          className={`${READONLY_FIGURE} w-24 !md:w-20`}
+          className={`${READONLY_FIGURE} w-24`}
           onChange={() => undefined}
           disabled={true}
         />
@@ -736,7 +736,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         <InputElement
           type="text"
           value={thousandSeparator(proratedBasicSalary(row))}
-          className={`${READONLY_FIGURE} w-24 !md:w-20`}
+          className={`${READONLY_FIGURE} w-24`}
           onChange={() => undefined}
           disabled={true}
         />
@@ -753,7 +753,7 @@ const SalarySheetGenerate = ({ user }: any) => {
             <InputElement
               type="text"
               value={thousandSeparator(proratedOtherAllowance(row))}
-              className={`${READONLY_FIGURE} w-24 !md:w-20`}
+              className={`${READONLY_FIGURE} w-24`}
               onChange={() => undefined}
               disabled={true}
             />
@@ -771,7 +771,7 @@ const SalarySheetGenerate = ({ user }: any) => {
             <InputElement
               type="text"
               value={thousandSeparator(Number(row.ot_rate || 0))}
-              className={`${READONLY_FIGURE} w-24 !md:w-20`}
+              className={`${READONLY_FIGURE} w-24`}
               onChange={() => undefined}
               disabled={true}
             />
@@ -808,7 +808,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       render: (row: SalaryRow) => (
         <AmountInput
           value={row.loan_balance}
-          className="text-right w-30 !md:w-30 font-semibold text-red-600 dark:text-red-400"
+          className="text-right w-30 font-semibold text-red-600 dark:text-red-400"
           onChange={(value) => handleInputChange(row.id, "loan_balance", value)}
         />
       ),

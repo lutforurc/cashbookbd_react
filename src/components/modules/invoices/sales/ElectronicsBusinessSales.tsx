@@ -962,9 +962,22 @@ const ElectronicsBusinessSales = () => {
                     onChange={handleInstallmentChange}
                   />
                 </div>
+                {/*
+                  The dimming behind this dialog used to be `bg-opacity-50` with
+                  no colour to be half-opaque OF, so it painted nothing: the
+                  dialog floated over a live, undimmed page. Tailwind 4 dropped
+                  the utility outright, so it is not even a class any more.
+                  Every other dialog in the app writes `bg-black/NN`.
+
+                  ⚠️ pt, not mt. Margin on an inset-0 element moves its top edge
+                  down, so a backdrop that finally has a colour would have left
+                  the top 200px of the page undimmed. Padding puts the dialog
+                  where the margin used to and still covers the screen, which is
+                  what the sibling dialogs do.
+                */}
                 {showInstallmentPopup && (
-                  <div className="fixed inset-0 bg-opacity-50 flex mt-50 items-start justify-center z-50">
-                    <div className="bg-white dark:bg-black p-6 rounded border-solid border-2 border-black dark:border-white shadow-lg w-96">
+                  <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 pt-50">
+                    <div className="bg-white dark:bg-black p-6 rounded border-solid border-2 border-black dark:border-white shadow-lg w-96 max-w-full">
                       <h3 className="text-lg font-bold mb-4 text-gray-700 dark:text-[rgb(var(--c-text))]">
                         Installment Details
                       </h3>

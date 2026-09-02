@@ -12,7 +12,16 @@ const InvoiceChangesTable = ({ changes }) => {
         Invoice Changes
       </h4>
 
-      <table className="w-full text-sm border mb-4 border-[rgb(var(--c-border))]">
+      {/*
+        Field / Before / After, and the values are money -- so the columns have
+        a width below which they stop being readable and start wrapping every
+        cell onto three lines. The scroller lets the table keep that width and
+        move sideways instead, which is what the shared Table does everywhere
+        else. Without the min-width the scroller would never engage: a w-full
+        table cannot outgrow its own container.
+      */}
+      <div className="mb-4 overflow-x-auto">
+      <table className="w-full min-w-104 text-sm border border-[rgb(var(--c-border))]">
         <thead className="bg-[rgb(var(--c-table-head))]">
           <tr>
             <th className="border px-2 py-1 dark:border-gray-700">Field</th>
@@ -31,6 +40,7 @@ const InvoiceChangesTable = ({ changes }) => {
           ))}
         </tbody>
       </table>
+      </div>
     </>
   );
 };
