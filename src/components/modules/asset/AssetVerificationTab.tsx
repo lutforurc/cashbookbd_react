@@ -109,7 +109,8 @@ const AssetVerificationTab = ({
    * if it refuses. A count is walked at walking pace — a spinner between every
    * chair and the next would make the screen slower than the paper it replaces.
    */
-  const tick = async (row: any, found: string) => {
+  /** `found` of null takes the tick back, leaving the row not looked at yet. */
+  const tick = async (row: any, found: string | null) => {
     const was = data.rows;
 
     setData({
@@ -131,7 +132,10 @@ const AssetVerificationTab = ({
       load();
     } catch (error: any) {
       setData({ ...data, rows: was });
-      toast.error(error?.response?.data?.message || 'Could not record it');
+      toast.error(
+        error?.response?.data?.message ||
+          (found === null ? 'Could not take it back' : 'Could not record it'),
+      );
     }
   };
 
@@ -233,20 +237,33 @@ const AssetVerificationTab = ({
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-center gap-1">
-                      {CHOICES.map((choice) => (
-                        <button
-                          key={choice.id}
-                          type="button"
-                          onClick={() => tick(row, choice.id)}
-                          className={`rounded border px-2 py-1 text-xs transition ${
-                            row.found === choice.id
-                              ? choice.on
-                              : 'border-stroke text-gray-500 hover:text-black dark:border-strokedark dark:text-gray-400 dark:hover:text-white'
-                          }`}
-                        >
-                          {choice.label}
-                        </button>
-                      ))}
+                      {CHOICES.map((choice) => {
+                        const picked = row.found === choice.id;
+
+                        return (
+                          <button
+                            key={choice.id}
+                            type="button"
+                            /* Clicking the one already chosen takes it back.
+                               Switching between the three worked; putting the
+                               row back to "not looked at yet" did not, so a
+                               mis-click became a finding nobody could undo --
+                               and on this screen a wrong "Not there" is the
+                               start of a search for something that never went
+                               missing. */
+                            onClick={() => tick(row, picked ? null : choice.id)}
+                            title={picked ? 'Click again to take this back' : undefined}
+                            aria-pressed={picked}
+                            className={`rounded border px-2 py-1 text-xs transition ${
+                              picked
+                                ? choice.on
+                                : 'border-stroke text-gray-500 hover:text-black dark:border-strokedark dark:text-gray-400 dark:hover:text-white'
+                            }`}
+                          >
+                            {choice.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </td>
                 </tr>
