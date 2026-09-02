@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import { FiChevronRight } from 'react-icons/fi';
+
 import InputDatePicker from '../../utils/fields/DatePicker';
 import InputElement from '../../utils/fields/InputElement';
-import FormToggleField from '../../utils/utils-functions/FormToggleField';
 import Loader from '../../../common/Loader';
+
+import AssetCarePanel from './AssetCarePanel';
 
 import httpService from '../../services/httpService';
 import { API_ASSET_MOVEMENTS_URL } from '../../services/apiRoutes';
@@ -12,11 +15,14 @@ import { API_ASSET_MOVEMENTS_URL } from '../../services/apiRoutes';
 /**
  * The handover register: what is out of the building, and who signed for it.
  *
- * ⚠️ THE TOP HALF IS THE REGISTER; THE BOTTOM HALF IS THE EVIDENCE. What is out
- * now is the question somebody actually opens this for — the generator that has
- * not come back, the laptop with a man who left. The log underneath is what that
- * claim rests on, and it is worth nothing on its own: nobody reads forty rows to
- * work out which four things are missing.
+ * ⚠️ ONE QUESTION, ANSWERED ONCE: what is out, and with whom. The generator that
+ * has not come back, the laptop with a man who left.
+ *
+ * ⚠️ AND ONE ASSET'S STORY IS TOLD BY THAT ASSET'S OWN PANEL. A branch-wide list
+ * of movements sat under this table and read as noise — five rows for one bike
+ * interleaved with two other assets, so following one thing meant stepping over
+ * the others. Clicking a row opens the panel the register already uses, rather
+ * than a second history to drift from the first.
  *
  * ⚠️ WHAT IS OUT IS WORKED OUT ON THE SERVER, from each asset's latest movement.
  * Not counted again here. Two ways of deciding who is holding something is two
@@ -58,7 +64,9 @@ const AssetHandoverTab = ({ branchId }: { branchId: number | string }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
-  const [onlyOut, setOnlyOut] = useState(true);
+
+  /** The asset whose own panel is open, if any. */
+  const [caring, setCaring] = useState<any>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -91,7 +99,6 @@ const AssetHandoverTab = ({ branchId }: { branchId: number | string }) => {
       .some((one: string) => String(one).toLowerCase().includes(search.trim().toLowerCase()));
 
   const out = (data?.out ?? []).filter(matches);
-  const rows = (data?.rows ?? []).filter(matches);
 
   return (
     <div className="p-4">
@@ -119,12 +126,6 @@ const AssetHandoverTab = ({ branchId }: { branchId: number | string }) => {
           />
         </div>
 
-        {/* Matches the count's own switch, and sits the same way: h-8.5 rather
-            than a margin, because this bar aligns on items-end and a switch
-            hung off a taller box lands on a different line from the date. */}
-        <div className="flex h-8.5 items-center whitespace-nowrap">
-          <FormToggleField label="Only what is out" checked={onlyOut} onChange={setOnlyOut} className="" />
-        </div>
       </div>
 
       {/* ⚠️ What is out comes first and in words. It is the number the register
@@ -148,12 +149,25 @@ const AssetHandoverTab = ({ branchId }: { branchId: number | string }) => {
               <th className="px-3 py-2 text-right text-sm font-medium text-black dark:text-white">
                 Days out
               </th>
+              {/* Narrow and unlabelled: the chevron is the affordance, not a
+                  column of its own worth a heading. */}
+              <th className="w-8" />
             </tr>
           </thead>
           <tbody>
             {out.length ? (
               out.map((row: any) => (
-                <tr key={row.asset_id} className="border-b border-stroke dark:border-strokedark">
+                /* ⚠️ The whole row opens it, and the chevron says so. A row that
+                   does something has to look like it does -- without the cursor,
+                   the hover and the mark on the right, this is a table nobody
+                   would think to click, and the history would be as hidden as it
+                   was before. */
+                <tr
+                  key={row.asset_id}
+                  onClick={() => setCaring(row)}
+                  title={`Open ${row.name}`}
+                  className="cursor-pointer border-b border-stroke transition-colors hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
+                >
                   <td className="px-3 py-2">
                     <p className="text-black dark:text-white">{row.name}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{row.code}</p>
@@ -164,11 +178,14 @@ const AssetHandoverTab = ({ branchId }: { branchId: number | string }) => {
                   {/* Plain, however long it has been. A register that shouted at
                       ninety days would be reporting a rule nobody has set. */}
                   <td className="px-3 py-2 text-right text-black dark:text-white">{row.days_out}</td>
+                  <td className="px-3 py-2 text-right text-gray-400">
+                    <FiChevronRight size={16} />
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="px-3 py-6 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={6} className="px-3 py-6 text-center text-gray-500 dark:text-gray-400">
                   {search.trim() ? 'Nothing out matches that.' : 'Everything is in hand.'}
                 </td>
               </tr>
@@ -177,58 +194,28 @@ const AssetHandoverTab = ({ branchId }: { branchId: number | string }) => {
         </table>
       </div>
 
-      {!onlyOut ? (
-        <>
-          <h4 className="mb-2 mt-6 text-sm font-medium text-black dark:text-white">
-            Every movement, newest first
-          </h4>
+      {/* ⚠️ The register's own panel, not a copy of it. It shows the movements,
+          the counts and the upkeep for this one asset -- and it can hand the
+          asset out or take it back, which is the natural next act for somebody
+          looking at a register of things that are out.
 
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto">
-              <thead>
-                <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                  <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">On</th>
-                  <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">Asset</th>
-                  <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">With</th>
-                  <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">At</th>
-                  <th className="px-3 py-2 text-right text-sm font-medium text-black dark:text-white">
-                    What happened
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length ? (
-                  rows.map((row: any) => (
-                    <tr key={row.id} className="border-b border-stroke dark:border-strokedark">
-                      <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{onTheDay(row.on_date)}</td>
-                      <td className="px-3 py-2">
-                        <p className="text-black dark:text-white">{row.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{row.code}</p>
-                      </td>
-                      <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{row.with || '—'}</td>
-                      <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{row.at || '—'}</td>
-                      <td
-                        className={`px-3 py-2 text-right ${
-                          row.action === 'issued'
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-success dark:text-emerald-400'
-                        }`}
-                      >
-                        {row.action === 'issued' ? 'Issued' : 'Returned'}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="px-3 py-6 text-center text-gray-500 dark:text-gray-400">
-                      Nothing has been handed out yet.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </>
+          So the register is reloaded when it closes: a return taken there has
+          to change the list that sent you into it, or the screen would sit
+          there insisting the thing is still with somebody. */}
+      {caring ? (
+        <AssetCarePanel
+          asset={{
+            id: caring.asset_id,
+            name: caring.name,
+            code: caring.code,
+            location: caring.location,
+            cost: caring.cost,
+          }}
+          onClose={() => {
+            setCaring(null);
+            load();
+          }}
+        />
       ) : null}
     </div>
   );
