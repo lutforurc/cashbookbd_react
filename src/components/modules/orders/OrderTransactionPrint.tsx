@@ -376,6 +376,21 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                     const amount = toNumber(row.amount) || (weight * rate);
                     const due = cumulativeDueAmounts[pageIndex * pageSize + index] ?? 0;
 
+                    /**
+                     * A money row -- a receipt or a payment against this order,
+                     * not a delivery.
+                     *
+                     * It carries no lorry, no quantity, no rate and no invoice
+                     * value: four cells of dashes with the account name squeezed
+                     * into the first. Merged into one cell they read as what
+                     * they are -- "CITY BANK BANK-SME", or "Cash".
+                     *
+                     * A delivery row always answers 0 to `receive` (the server
+                     * writes it so), and it always has a weight or a value, so
+                     * the two cannot be mistaken for each other.
+                     */
+                    const isMoneyRow = receive > 0 && weight === 0 && amount === 0;
+
                     return (
                       <tr key={row.id}>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">
@@ -387,18 +402,32 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">
                           {row.date || '-'}
                         </td>
-                        <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">
-                          { formatTransportationNumber (row.vehicle_no) || '-'}
-                        </td>
-                        <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                          {thousandSeparator(weight)} 
-                        </td>
-                        <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                          {thousandSeparator(rate)}
-                        </td>
-                        <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                          {thousandSeparator(amount)}
-                        </td>
+                        {isMoneyRow ? (
+                          /* ⚠️ Not through formatTransportationNumber: what sits
+                             here is an account name, not a lorry plate. */
+                          <td
+                            colSpan={4}
+                            style={{ fontSize: fs }}
+                            className="border border-black px-2 py-2 text-left"
+                          >
+                            {row.vehicle_no || '-'}
+                          </td>
+                        ) : (
+                          <>
+                            <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">
+                              { formatTransportationNumber (row.vehicle_no) || '-'}
+                            </td>
+                            <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
+                              {thousandSeparator(weight)} 
+                            </td>
+                            <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
+                              {thousandSeparator(rate)}
+                            </td>
+                            <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
+                              {thousandSeparator(amount)}
+                            </td>
+                          </>
+                        )}
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
                           {paymentOrReceive > 0 ? thousandSeparator(paymentOrReceive) : '-'}
                         </td>

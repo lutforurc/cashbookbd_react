@@ -165,6 +165,16 @@ const declared = (key: string, raw: any, source: any): string => {
   return String(raw);
 };
 
+/**
+ * The columns a money row has nothing to say in.
+ *
+ * Kept as a list rather than "everything between the date and the money"
+ * because a branch designs its own table: it may leave the unit out, or put the
+ * vehicle last. Naming the fields means the merge follows the layout instead of
+ * assuming one.
+ */
+const MONEY_ROW_MERGE_FIELDS = ['vehicle_no', 'qty', 'unit', 'qty_unit', 'price', 'amount'];
+
 const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
   ({ template, data, preview = false }, ref) => {
     const mobileFormat = useMobileFormat();
@@ -825,9 +835,64 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
             </thead>
           ) : null}
           <tbody>
-            {pageRows.map((row, rowIndex) => (
+            {pageRows.map((row, rowIndex) => {
+              /**
+               * A money row -- a receipt or a payment against this order, not a
+               * delivery.
+               *
+               * ⚠️ IT HAS NOTHING TO PUT IN THE DELIVERY COLUMNS. No lorry, no
+               * quantity, no rate, no invoice value: four cells of dashes with
+               * the account name squeezed into the first of them. Merged into
+               * one cell they read as what they are -- "City Bank Bank-SME", or
+               * "Cash".
+               *
+               * A delivery row always answers 0 to `received` unless it carries
+               * a freight charge, and then it has a quantity and a value too --
+               * so the two cannot be mistaken for each other.
+               */
+              const isMoneyRow =
+                num(row?.received) > 0 && !num(row?.qty) && !num(row?.amount);
+
+              // Only the run of delivery columns is merged, wherever the branch
+              // put them: the invoice number, the date, the money and the due
+              // are still that row's own and stay in their own cells.
+              const mergeFrom = isMoneyRow
+                ? columns.findIndex((column) => MONEY_ROW_MERGE_FIELDS.includes(column.field))
+                : -1;
+
+              let mergeTo = mergeFrom;
+
+              while (
+                mergeTo >= 0 &&
+                mergeTo + 1 < columns.length &&
+                MONEY_ROW_MERGE_FIELDS.includes(columns[mergeTo + 1].field)
+              ) {
+                mergeTo += 1;
+              }
+
+              return (
               <tr key={row?.id ?? rowIndex} className="avoid-break">
                 {columns.map((column, index) => {
+                  // Swallowed by the merged cell to their left.
+                  if (mergeFrom >= 0 && index > mergeFrom && index <= mergeTo) {
+                    return null;
+                  }
+
+                  if (index === mergeFrom) {
+                    return (
+                      <td
+                        key={`${column.field}-${index}`}
+                        colSpan={mergeTo - mergeFrom + 1}
+                        // Left, not centred: the name is words, and words in a
+                        // table of figures read from the left edge like every
+                        // other piece of text on the paper.
+                        className={`${border} px-1 py-0.5 align-middle text-left`}
+                      >
+                        {String(row?.vehicle_no ?? '').trim() || '-'}
+                      </td>
+                    );
+                  }
+
                   /**
                    * The second line, where a column asks for one.
                    *
@@ -865,7 +930,8 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                   );
                 })}
               </tr>
-            ))}
+              );
+            })}
 
             {/* Empty ruled lines under the last product, so a short challan
                 still fills its table and nobody can write a line in after it
