@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -127,8 +127,39 @@ const AllotmentScreen = () => {
    * It is a STARTING POINT and nothing more. Both boxes stay editable, and a
    * room that already has guests shows what was recorded rather than this.
    */
+  /**
+   * Has the person who booked already been written into one of these rooms?
+   *
+   * ⚠️ ONE PERSON SLEEPS IN ONE ROOM. On a booking of four rooms the booker's
+   * name was offered as the first line of every one of them, so a clerk working
+   * down the list put the same man in 501, 502, 503 and 504 -- four people in
+   * the police register, one of whom was in the building. Once he is recorded
+   * anywhere on this booking the next room starts empty.
+   *
+   * Matched on the mobile where the booking has one, because two guests may
+   * share a name and a family often does; on the name where it has not.
+   */
+  const bookerAlreadyRecorded = useMemo(() => {
+    const name = booking?.booker_name?.trim().toLowerCase() ?? '';
+    const mobile = booking?.booker_mobile?.trim() ?? '';
+
+    if (!name && !mobile) {
+      return false;
+    }
+
+    return rooms.some((room) =>
+      (room.guests ?? []).some((guest) => {
+        if (mobile && String(guest.mobile ?? '').trim() === mobile) {
+          return true;
+        }
+
+        return !!name && String(guest.name ?? '').trim().toLowerCase() === name;
+      }),
+    );
+  }, [rooms, booking?.booker_name, booking?.booker_mobile]);
+
   const firstGuest = (): Guest =>
-    booking?.booking_type === 'individual'
+    booking?.booking_type === 'individual' && !bookerAlreadyRecorded
       ? {
           ...blankGuest(),
           name: booking?.booker_name?.trim() ?? '',
