@@ -426,6 +426,9 @@ const ROUTES = {
   // against a building, sometimes for an event, and works its quantities out
   // from the amenity kits. It saves an ordinary material issue either way.
   hotel_amenity_issue: '/hotel/amenity-issue',
+  // The form is a page of its own: the list is what somebody opens, and a form
+  // above it made the first thing on screen the one thing nobody came to read.
+  hotel_amenity_issue_new: '/hotel/amenity-issue/new',
 
   notFound: '*',
 };
