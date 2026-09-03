@@ -4732,3 +4732,267 @@ dirty and what is being done, and quotes no denominator, deliberately.
 
 **Deploy:** `route:clear` (already needed for §38), then the front end. No
 schema change.
+
+---
+
+## 39. The kit, and where an issue went — phase 5 finished, 2026-09-03
+
+§34.2 left phase 5 with two tables missing and gave the reason: the kits were
+not worth having until an issue could say which room or which event it was for,
+and that meant changing `material_issue_master` — a table the construction
+module has live on fifteen sites. That change is now made, and it is the half of
+this section worth reading carefully.
+
+### What was already working, and what was not
+
+Soap, towels and kitchen material have always reached the books. They leave the
+store by hand through Material Issue, one stock movement on one voucher, and the
+cost lands as a period expense (§5). Nothing about that changed and nothing
+needed to.
+
+What was missing was **attribution and a yardstick**: nothing said which
+building the goods went to, nothing said which event they fed, and there was no
+standard to measure an issue against. Three things closed that.
+
+| | |
+|---|---|
+| `hotel_amenity_kits` | the standard supply list for one room type |
+| `hotel_amenity_kit_items` | which product, how many, and **per room or per guest** |
+| `material_issue_master` +2 | `hotel_building_id` (§6.6) and `hotel_booking_id` (§6.7), both nullable |
+
+### ⚠️ Per room and per guest is the whole reason the item table exists
+
+A tissue box is the room's, however many people are in it. A towel is each
+guest's. The expectation for one room-night is §6.1's own arithmetic:
+
+```
+expected = room items × 1 + guest items × the guests in that room that night
+```
+
+Written in exactly one place — `AmenityKitItem::expectedFor()` — so the report,
+the screen and the check script cannot drift into three answers.
+
+### ⚠️ Per night, never once per stay
+
+A dormitory changes hands night by night. A three-night booking with four guests
+one night and two the next does not reconcile against a per-stay figure, which
+is why the nights table is grouped by **(night, room, booking)** and not by
+booking. The booking is in the key because two bookings can share one dormitory
+room on one night and each brings its own register.
+
+Room-basis lines are still counted **once per room-night** — the first holder
+carries them. Two bookings sharing a room get one tissue box between them,
+because that is what the room receives.
+
+### ⚠️ Guests come from the register where there is one, and the beds where there is not
+
+`hotel_booking_guests` is filled in at check-in because the police ask for it. A
+booking that has not arrived has none, and for those the **beds held are the
+people expected** — a room let whole holds all of its beds, which is what a
+housekeeper stocks it for anyway. Children count, exactly as §6.5 says: a child
+uses a towel.
+
+### ⚠️ The two columns on a live table, and why they did not wait
+
+`material_issue_master` belongs to the construction module. Both new columns are
+NULL, nothing that existed before reads them, and a construction issue saved
+tomorrow is byte for byte the row it would have been yesterday.
+
+**One thing did change for everybody: `project_id` is no longer required.** It
+could not stay — a hotel issuing soap to a building has no project and never
+will, so the form could not be saved at all. The requirement moved up a level
+rather than being dropped:
+
+> An issue must name **a project or a building**. Naming neither is refused, in
+> the controller, before anything is written.
+
+No foreign keys point from that table into the hotel's. A constraint there would
+stop a property deleting a building because the store once sent soap to it — the
+hotel does not get to hold the store ledger hostage. Same reasoning
+`hotel_booking_charge_types` uses for `coa4_id`.
+
+### ⚠️ The booking tag is optional, and the percentage is what guards it
+
+§6.7 made two conditions, and both are met:
+
+- **Optional.** Staff meals, guests' breakfast and general use belong to no
+  event. A mandatory field is one a clerk fills with any event to get the form
+  saved, and wrong data is worse than an empty field.
+- **The report says how much was tagged.** *"Issues this range 4,20,000 — 78%
+  assigned to an event."* Without that line a half-filled figure reads as
+  complete and every event looks cheaper than it was. It is the lead tile on the
+  screen.
+
+**The money is the cost layers' own.** An issue carries no rate — it is a
+quantity movement — so the value is read back from
+`inventory_details.purchase_price`, what the stock actually left at, through the
+issue's voucher. Nothing is re-priced and nothing new is stored.
+
+### The variance is not an accusation
+
+Amenities are issued in **batches** (OPEN-3, the client's own answer — the kit is
+the yardstick, not a per-check-in movement). A property that issues a month of
+soap on the 1st reads wildly over on the 1st and under for the rest of the
+month. Only the range as a whole means anything, which is why there is no
+per-night breakdown on the report and the dates default to a month.
+
+Two more rules the table follows, both said on the screen:
+
+- **Matched by product, not by a flag.** The products a kit names *are* the
+  amenities; anything else that left the store that month is somebody else's
+  material. A product on no kit does not appear — "+5, expected 0" beside a kit
+  line reads as an overissue when it is a bag of cement.
+- **A room type with no kit expects nothing, and is named for it.** Not counted
+  as a zero. A room type nobody has standardised is not a room type that needs
+  nothing.
+
+### Where it lives
+
+| | |
+|---|---|
+| Schema | `AddUnitTypeToBuildingUnits::runHotelAmenitySchema()` |
+| Models | `App\Models\Hotel\AmenityKit`, `AmenityKitItem` |
+| Kits API | `Hotel\AmenityKitController` — 3 routes under `hotel-setup/amenity-kits` |
+| Report | `HotelReportController::amenityVariance()` + 4 privates, `hotel-setup/reports/amenity-variance` |
+| Issue form | `Inventory\MaterialIssueController`, `MaterialIssue\MaterialIssueMaster` (+2 relations) |
+| Screens | `hotel/AmenityKitsTab.tsx` (setup, new tab), `hotel/reports/HotelReports.tsx` (fourth tab), `material-issue/MaterialIssue.tsx`, `MaterialIssueList.tsx` |
+| Store | `reports/reportSlice.tsx` → `amenityRead` |
+
+**No new permission.** Kits sit under `hotel.resource.view`, with the rooms and
+room types — whoever describes a room decides what it holds. The report sits
+under `hotel.report.view`, with the other three. Nothing to grant, nothing to
+sync, and the desk's audience is unchanged.
+
+⚠️ **The report does NOT refuse a property that lets no rooms**, unlike §38's
+performance figures. A community centre issues kitchen material for its events
+and needs the tagging half; the room half simply comes back empty, which on a
+property with no rooms is the truth rather than a bad month.
+
+⚠️ **The two hotel fields on the issue form are drawn only where `is_lodging`**,
+the answer §38 added to `user/current-branch` — worked out from the business
+type's NAME, never from `business_type_id`. Fifteen sites that have no answer
+for either question see the form they have always seen.
+
+### Checked
+
+`hotel_amenity_check.php` — **23 assertions**, every block inside a transaction
+that is rolled back, nothing wiped. The four worth naming:
+
+- a per-room line ignores the guests; a per-guest line multiplies by them
+- **a second name on the register raises the per-guest line by one for each
+  NIGHT that room is held** — and the room's own line does not move at all
+- the same product twice on one kit is refused, and saving a kit **replaces** its
+  list rather than merging into it
+- an issue naming neither a project nor a building is refused, and another
+  branch's booking cannot be tagged onto this one's soap
+
+`hotel_report_check.php` still passes its 26 — the report controller only grew.
+
+Two blocks skip themselves on this database because it holds one property: the
+foreign room type and the stranger's booking have nothing to borrow from.
+
+**Deploy:** `patch:add-unit-type` (it creates the two tables and adds the two
+columns, guarded and safe run twice), then `route:clear`, then the front end.
+
+### What is left
+
+Phase 5 is now complete — housekeeping (§34) and amenities (this). Unbuilt, and
+each its own piece of work:
+
+1. **Events and catering** (phase 6, seven tables) — *motel site only*.
+2. **Ticketing** (six tables) — *resort site only*.
+3. **Rate plans** — still blocked on §6.2, as §32 explains.
+
+Still waiting on the client, unchanged: the VAT and service-charge **rates**
+(§37 built the mechanism; the rows are all nought), rate-card rules, early
+check-in and late check-out charges, the §6.1 gender rule, cancellation
+percentages, the child age (OPEN-13) and Mushak 6.3 / EFD (OPEN-6).
+
+### 39.1 A screen of the hotel's own — Amenity Issue, 2026-09-03
+
+§39 left one thing on human memory: somebody has to work out that a month of
+occupied rooms owes 240 soaps, and type it. That arithmetic is now a button on
+a screen of the hotel's own — **Hotel → Amenity Issue**.
+
+⚠️ **The construction Material Issue form is back exactly as it was.** The first
+attempt put the building, the event and the button on that form behind an
+`is_lodging` test. It worked, and it was the wrong shape: the two jobs look
+alike and are not. A site issues cement against a PROJECT and writes a work item
+on every line; a hotel issues soap against a BUILDING, sometimes for an EVENT,
+and works its quantities out from the kits. One form doing both is a form where
+half the boxes never apply, on whichever site you are standing.
+
+⚠️ **Both screens save the SAME thing.** Same endpoint
+(`material-issue/store`), same voucher, same stock movement, same reports —
+what leaves the store from the hotel's screen is indistinguishable from what
+leaves it from the other, and deliberately so. Only the form differs.
+
+⚠️ **No property chooser on it.** The server writes the issue and its voucher
+into the CALLER's branch (`MaterialIssueController::apiStore` reads
+`Auth::user()->branch_id`), so a dropdown offering another property would be a
+lie the first time somebody used it. The screen says which store it issues
+from instead.
+
+**It fills a form in. It does not issue anything.** The quantities land in the
+line table where they can be changed, and nothing leaves the store until Save.
+
+⚠️ **That editable step is the whole design.** Generating the issue outright —
+on check-in, or nightly — would make `actual` equal `expected` by construction:
+the variance would be nought for ever and the report a mirror of the kit. The
+question the report exists to ask is whether what went out matched the standard,
+and only a human taking stock out can answer it. What is automated here is the
+arithmetic, not the decision. (OPEN-3's answer stands: batch issue is primary.)
+
+⚠️ **The answer is what is STILL owed** — expected less what has already gone
+out over those nights. So pressing it twice over the same dates brings back
+nothing the second time, and a range overlapping a batch already given out
+returns only the remainder. No flag on the issue, no lock, no extra table: the
+subtraction *is* the guard.
+
+⚠️ **Nothing is ever negative.** A property that issued a month of soap on the
+1st has more out than the nights so far expected; that is over-issue for the
+variance report to show, not a minus line on a form about to be saved. Settled
+products drop off the list rather than sitting at nought — a pre-filled row of
+zeroes is a row somebody has to delete.
+
+⚠️ **It ends yesterday.** `stay_date` is the night SLEPT, and tonight has not
+been. A range ending today would stock rooms against guests who may still
+cancel at six o'clock.
+
+⚠️ **Either permission — `material.issue.create` OR `hotel.resource.view`.** It
+is read from the Material Issue form by a storekeeper who may hold nothing of
+the hotel's, and a button on a screen where it can never work is worse than no
+button. `AmenityKitController::denyUnlessEither()`, which still answers with
+`denyUnlessPermitted()`'s own refusal so the shape is the one every endpoint
+gives.
+
+**The arithmetic moved into a service.** `App\Services\Hotel\AmenityExpectation`
+now holds the nights, the guests and the issued-so-far query; the report and
+this button both call it. Two copies would be a report saying 240 beside a
+button filling in 260, and nobody could tell which one the kit meant.
+
+| | |
+|---|---|
+| Service | `App\Services\Hotel\AmenityExpectation` — `kits()`, `expected()`, `issued()`, `names()` |
+| Endpoint | `GET hotel-setup/amenity-kits/due` → `AmenityKitController::due()` |
+| Screen | `hotel/amenity/AmenityIssue.tsx` — the form, the button, its two dates, the editable lines and the recent-issue list |
+| Menu | Hotel → **Amenity Issue**, beside Housekeeping (`routes.hotel_amenity_issue`) |
+
+Lines are **added** to what is on the form, never over it: a product already
+listed is left exactly as somebody typed it, and only what is missing is
+appended.
+
+**Checked:** `hotel_amenity_check.php` is now **29 assertions** — the new block
+proves the subtraction (half issued, half owed), that a settled product leaves
+the list, and that over-issue never comes back negative. `hotel_report_check.php`
+still passes its 26 after the service extraction.
+
+**Deploy:** `route:clear`, then the front end. No schema change.
+
+⚠️ `project_id` stays nullable on the API and the "a project OR a building" rule
+stays with it — that is what lets the hotel's screen save at all. The
+construction form is untouched and still sends a project, exactly as before.
+
+Still not automated, deliberately: somebody must press it. If that turns out to
+be the weak point, the answer is a **badge** on the menu — "9 days of make-up
+not issued" — not an automatic issue.

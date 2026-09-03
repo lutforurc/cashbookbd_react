@@ -11,6 +11,7 @@ import {
   FiClock,
   FiCheckSquare,
   FiPercent,
+  FiPackage,
 } from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -22,6 +23,7 @@ import BuildingsTab from './BuildingsTab';
 import FloorsTab from './FloorsTab';
 import RoomTypesTab from './RoomTypesTab';
 import FacilitiesTab from './FacilitiesTab';
+import AmenityKitsTab from './AmenityKitsTab';
 import ChargeTypesTab from './ChargeTypesTab';
 import TaxRatesTab from './TaxRatesTab';
 import RoomsTab from './RoomsTab';
@@ -63,6 +65,7 @@ type TabKey =
   | 'facilities'
   | 'rooms'
   | 'slots'
+  | 'kits'
   | 'layout'
   | 'charges'
   | 'taxes';
@@ -85,6 +88,14 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
   // After the inventory, because a sitting is a way of SELLING something that
   // has to exist first -- and only halls and community centres use them.
   { key: 'slots', label: 'Sittings', icon: <FiClock size={15} />, hint: 'How a hall is sold' },
+  // After the rooms, because a kit is written against a room TYPE and there is
+  // nothing to stock until the property has been described. Before the money
+  // tabs, because it is still a fact about the room rather than about the bill.
+  //
+  // ⚠️ It issues nothing. The kit is the standard an issue is measured against
+  // -- see AmenityKitsTab -- and soap goes on leaving the store through Material
+  // Issue exactly as before.
+  { key: 'kits', label: 'Amenity Kits', icon: <FiPackage size={15} />, hint: 'What a room is made up with' },
   { key: 'layout', label: 'Layout', icon: <FiMap size={15} />, hint: 'The property drawn' },
   // Last, because it is the only tab that is optional: a property that never
   // opens it bills exactly as it would have. See ChargeTypesTab.
@@ -251,6 +262,7 @@ const HotelSetup = ({ user }: any) => {
           {tab === 'facilities' && <FacilitiesTab />}
           {tab === 'rooms' && <RoomsTab branchId={branchId} branchName={branchName} />}
           {tab === 'slots' && <SlotsTab branchId={branchId} />}
+          {tab === 'kits' && <AmenityKitsTab branchId={branchId} />}
           {tab === 'layout' && <LayoutTab branchId={branchId} />}
           {/* ⚠️ No branchId. Charge types and the heads they earn into are the
               COMPANY's, not a property's -- one hotel's laundry income and

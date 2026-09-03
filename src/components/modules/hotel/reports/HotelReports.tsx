@@ -20,7 +20,13 @@ import { money, useDebounced } from '../setupHelpers';
 // wrong anywhere a string is wanted -- and every use here is inside a cell that
 // also holds other text.
 import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
-import { clearReports, collectionRead, performanceRead, registerRead } from './reportSlice';
+import {
+  amenityRead,
+  clearReports,
+  collectionRead,
+  performanceRead,
+  registerRead,
+} from './reportSlice';
 import RegisterPrint from './RegisterPrint';
 
 /**
@@ -159,6 +165,7 @@ const HotelReports = () => {
   const register = useSelector((state: any) => state.hotelReport.register);
   const collection = useSelector((state: any) => state.hotelReport.collection);
   const performance = useSelector((state: any) => state.hotelReport.performance);
+  const amenity = useSelector((state: any) => state.hotelReport.amenity);
   const reportError = useSelector((state: any) => state.hotelReport.error);
   const loading = useSelector((state: any) => state.hotelReport.loading);
   const branchDdl = useSelector((state: any) => state.branchDdl);
@@ -175,7 +182,9 @@ const HotelReports = () => {
    */
   const isLodging = currentBranch?.is_lodging === true;
 
-  const [tab, setTab] = useState<'register' | 'collection' | 'performance'>('register');
+  const [tab, setTab] = useState<'register' | 'collection' | 'performance' | 'amenity'>(
+    'register',
+  );
   const [branchId, setBranchId] = useState<string>('');
 
   const [date, setDate] = useState(today());
@@ -247,6 +256,18 @@ const HotelReports = () => {
   useEffect(() => {
     if (tab === 'performance') loadPerformance();
   }, [tab, loadPerformance]);
+
+  // The same pair of dates as the performance tab, deliberately. Both ask about
+  // a stretch of nights rather than about a day, and a second pair to keep in
+  // step would be two answers to "which month am I looking at".
+  const loadAmenity = useCallback(() => {
+    if (!branchId) return;
+    dispatch(amenityRead({ from: runFrom, to: runTo, branch_id: branchId }));
+  }, [dispatch, runFrom, runTo, branchId]);
+
+  useEffect(() => {
+    if (tab === 'amenity') loadAmenity();
+  }, [tab, loadAmenity]);
 
   /**
    * A tab that stops being allowed cannot stay open.
@@ -491,6 +512,103 @@ const HotelReports = () => {
     [],
   );
 
+  /**
+   * Expected against issued, one row per product.
+   *
+   * ⚠️ Sorted by the SIZE of the gap, server-side, so the line worth looking at
+   * is the first one. A table sorted by name buries a soap variance of +400
+   * under an alphabet.
+   */
+  const varianceColumns = useMemo(
+    () => [
+      { key: 'product_name', header: 'Product' },
+      {
+        key: 'basis',
+        header: 'Counted',
+        render: (row: any) => (
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {row.basis === 'guest' ? 'per guest' : row.basis === 'room' ? 'per room' : row.basis}
+          </span>
+        ),
+      },
+      {
+        key: 'expected',
+        header: 'Expected',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        render: (row: any) => `${Number(row.expected)} ${row.unit_name ?? ''}`,
+      },
+      {
+        key: 'issued',
+        header: 'Issued',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        render: (row: any) => `${Number(row.issued)} ${row.unit_name ?? ''}`,
+      },
+      {
+        key: 'variance',
+        header: 'Gap',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        /**
+         * ⚠️ Coloured, but neither colour means "wrong". Over is amber because
+         * it is the one worth asking about; under is plain, because a batch
+         * that has not gone out yet looks exactly like it.
+         */
+        render: (row: any) => (
+          <span
+            className={
+              Number(row.variance) > 0
+                ? 'text-amber-700 dark:text-amber-300'
+                : 'text-black dark:text-white'
+            }
+          >
+            {Number(row.variance) > 0 ? '+' : ''}
+            {Number(row.variance)}
+            {row.variance_pct === null ? null : (
+              <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
+                ({Number(row.variance) > 0 ? '+' : ''}
+                {row.variance_pct}%)
+              </span>
+            )}
+          </span>
+        ),
+      },
+    ],
+    [],
+  );
+
+  /** What each tagged event cost the store. */
+  const eventColumns = useMemo(
+    () => [
+      { key: 'booking_no', header: 'Booking' },
+      {
+        key: 'booker_name',
+        header: 'In the name of',
+        render: (row: any) => row.booker_name || <span className="text-gray-400">—</span>,
+      },
+      {
+        key: 'date',
+        header: 'From',
+        render: (row: any) => (row.date ? formatDayMonthYear(row.date) : '—'),
+      },
+      {
+        key: 'issues',
+        header: 'Issues',
+        headerClass: 'text-center',
+        cellClass: 'text-center',
+      },
+      {
+        key: 'value',
+        header: 'Material cost',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        render: (row: any) => money(row.value),
+      },
+    ],
+    [],
+  );
+
   const counts = register?.counts;
   const totals = collection?.totals;
   const run = performance?.totals;
@@ -538,6 +656,21 @@ const HotelReports = () => {
             Performance
           </button>
         ) : null}
+
+        {/* ⚠️ NOT behind isLodging, unlike Performance. A community centre with
+            no rooms still issues kitchen material for its events, and the
+            tagging half of this report is the only place that can be read. */}
+        <button
+          type="button"
+          onClick={() => setTab('amenity')}
+          className={`${TAB} ${
+            tab === 'amenity'
+              ? 'border-primary text-primary dark:border-secondary dark:text-secondary'
+              : 'border-transparent text-gray-500 dark:text-gray-400'
+          }`}
+        >
+          Amenity &amp; issues
+        </button>
       </div>
 
       <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
@@ -554,7 +687,7 @@ const HotelReports = () => {
           />
         </div>
 
-        {tab === 'performance' ? (
+        {tab === 'performance' || tab === 'amenity' ? (
           <>
             <InputDatePicker
               id="performance_from"
@@ -635,9 +768,99 @@ const HotelReports = () => {
         )}
       </div>
 
-      {loading && !register && !collection && !performance ? <Loader /> : null}
+      {loading && !register && !collection && !performance && !amenity ? <Loader /> : null}
 
-      {tab === 'performance' ? (
+      {tab === 'amenity' ? (
+        <>
+          {!amenity && reportError ? (
+            <p className="rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+              {reportError}
+            </p>
+          ) : null}
+
+          {amenity ? (
+            <>
+              <div className="mb-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
+                <Figure
+                  label="Room-nights"
+                  value={String(amenity.coverage?.room_nights ?? 0)}
+                  working={`${amenity.coverage?.guest_nights ?? 0} guest-nights, over ${amenity.days} night(s)`}
+                />
+                <Figure
+                  label="Kits"
+                  value={String(amenity.coverage?.kits ?? 0)}
+                  working="room types with a standard"
+                />
+                <Figure
+                  label="Issued this range"
+                  value={money(amenity.issues?.value)}
+                  working={`${amenity.issues?.count ?? 0} issue(s), at what the stock left at`}
+                />
+                {/* ⚠️ The lead figure of this half, and §6.7 made it a condition
+                    of building the column at all. A per-event food cost read off
+                    a half-tagged month is every event looking cheaper than it
+                    was, with nothing on the figure itself to show it. */}
+                <Figure
+                  label="Tagged to an event"
+                  value={`${amenity.issues?.tagged_pct ?? 0}%`}
+                  working={`${money(amenity.issues?.tagged_value)} of ${money(
+                    amenity.issues?.value,
+                  )}`}
+                  lead
+                />
+              </div>
+
+              {amenity.caveats?.length ? (
+                <div className="mb-3 space-y-1">
+                  {amenity.caveats.map((line: string) => (
+                    <p
+                      key={line}
+                      className="rounded border border-amber-400 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50"
+                    >
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+
+              <div className="mb-2 text-sm font-semibold text-black dark:text-white">
+                Expected against issued
+              </div>
+              <Table
+                columns={varianceColumns}
+                data={amenity.rows ?? []}
+                noDataMessage="No kits are set up for this property yet — there is nothing to measure the issues against. Hotel Setup → Amenity Kits."
+                className="mb-3"
+              />
+
+              <p className="mb-6 rounded border border-stroke bg-gray-50 p-2.5 text-xs leading-snug text-gray-600 dark:border-strokedark dark:bg-meta-4/40 dark:text-gray-300">
+                {/* ⚠️ Every sentence here is something somebody would otherwise
+                    read backwards off the table above. */}
+                Expected is <strong>per night</strong>: per-room lines once for each room-night,
+                per-guest lines for every person in the room that night — from the guest register
+                where the desk has filled it in, and from the beds held where it has not. Issued is
+                every material issue of those products from this property in the range, whoever it
+                went to. Amenities are issued in <strong>batches</strong>, so a month issued on the
+                1st reads over on the 1st and under afterwards — only the range as a whole means
+                anything. A product on no kit is not counted here at all.
+              </p>
+
+              <div className="mb-2 text-sm font-semibold text-black dark:text-white">
+                What each event ate
+              </div>
+              <Table
+                columns={eventColumns}
+                data={amenity.issues?.by_booking ?? []}
+                noDataMessage="No issue in this range names a booking. Nothing is wrong — staff meals and general use have none — but per-event cost cannot be worked out for the ones that do."
+              />
+
+              <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                {amenity.issues?.note}
+              </p>
+            </>
+          ) : null}
+        </>
+      ) : tab === 'performance' ? (
         <>
           {/* The server's refusal, shown rather than swallowed. It says WHY —
               usually that this property does not let rooms by the night. */}

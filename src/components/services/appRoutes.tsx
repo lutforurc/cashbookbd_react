@@ -420,6 +420,12 @@ const ROUTES = {
   // sitting done once, and this is opened every morning by somebody who does
   // nothing else in the system.
   hotel_housekeeping: '/hotel/housekeeping',
+  // Soap, towels and kitchen material leaving the store. A screen of the
+  // hotel's own rather than two fields on the construction issue form: a site
+  // issues against a project and writes a work item per line; a hotel issues
+  // against a building, sometimes for an event, and works its quantities out
+  // from the amenity kits. It saves an ordinary material issue either way.
+  hotel_amenity_issue: '/hotel/amenity-issue',
 
   notFound: '*',
 };

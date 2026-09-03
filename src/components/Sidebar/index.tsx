@@ -142,6 +142,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'hotel_hall_bookings', title: "Hall Booking" },
     { id: 'hotel_calendar', title: "Calendar" },
     { id: 'hotel_housekeeping', title: "Housekeeping" },
+    { id: 'hotel_amenity_issue', title: "Amenity Issue" },
     { id: 'hotel_reports', title: "Reports" },
     { id: 'hotel_setup', title: "Rooms & Seats Setup" },
   ],
@@ -2162,6 +2163,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           <li style={subSlot('hotel', 'hotel_housekeeping')}>
                             <NavLink to={routes.hotel_housekeeping} className={subMenuLinkClass}>
                               Housekeeping
+                            </NavLink>
+                          </li>
+
+                          {/* What the housekeeper actually hands out. Beside the
+                              board because it is the same person's morning, and
+                              its quantities come from the amenity kits set up on
+                              the setup screen below. */}
+                          <li style={subSlot('hotel', 'hotel_amenity_issue')}>
+                            <NavLink to={routes.hotel_amenity_issue} className={subMenuLinkClass}>
+                              Amenity Issue
                             </NavLink>
                           </li>
 

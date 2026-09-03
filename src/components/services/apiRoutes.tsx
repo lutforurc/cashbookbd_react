@@ -1019,6 +1019,24 @@ export const API_HOTEL_TAX_RATE_URL = `${API_BASE_URL}/hotel-setup/tax-rates`;
 // booking screens may do — it takes the room off the market entirely.
 export const API_HOTEL_HOUSEKEEPING_URL = `${API_BASE_URL}/hotel-setup/housekeeping`;
 
+// The standard a room of each kind is made up with — soap, towels, tissue —
+// with each line counted per ROOM or per GUEST (§4.3, §6.1).
+//
+// ⚠️ It issues nothing and moves no stock. Amenities leave the store through
+// Material Issue exactly as they always have; this is the yardstick those
+// issues are measured against, and a property that never opens it goes on
+// exactly as before with no expectation to compare.
+export const API_HOTEL_AMENITY_KIT_URL = `${API_BASE_URL}/hotel-setup/amenity-kits`;
+
+// Expected against issued, over a range of nights — plus the line §6.7 made a
+// condition of the whole thing: how much of the month's issues say which event
+// they fed.
+//
+// ⚠️ Unlike the performance figures, this does NOT refuse a property that lets
+// no rooms. A community centre issues kitchen material for its events and needs
+// the tagging half; the room half simply comes back empty.
+export const API_HOTEL_AMENITY_VARIANCE_URL = `${API_BASE_URL}/hotel-setup/reports/amenity-variance`;
+
 // Fixed assets — the categories that decide how fast a kind of thing wears out,
 // and the register of the things themselves.
 //

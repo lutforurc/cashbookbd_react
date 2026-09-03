@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import httpService from '../../../services/httpService';
 import {
+  API_HOTEL_AMENITY_VARIANCE_URL,
   API_HOTEL_COLLECTION_URL,
   API_HOTEL_PERFORMANCE_URL,
   API_HOTEL_REGISTER_URL,
@@ -82,10 +83,33 @@ export const performanceRead = createAsyncThunk<any, Record<string, any>, { reje
   },
 );
 
+/**
+ * What the rooms should have used against what the store gave out, and how much
+ * of the month's issues say which event they fed.
+ *
+ * ⚠️ Unlike the figures above it, this one does NOT refuse a property that lets
+ * no rooms. A community centre issues kitchen material for its events and needs
+ * the tagging half of the answer; the room half comes back empty, which on a
+ * property with no rooms is the truth rather than a bad month.
+ */
+export const amenityRead = createAsyncThunk<any, Record<string, any>, { rejectValue: string }>(
+  'hotelReport/amenityRead',
+  async (params, { rejectWithValue }) => {
+    try {
+      const res = await httpService.get(API_HOTEL_AMENITY_VARIANCE_URL, { params });
+      if (res.data?.success === true) return unwrap(res);
+      return rejectWithValue(res.data?.message || 'Could not read the variance');
+    } catch (error: any) {
+      return rejectWithValue(said(error, 'Could not read the variance'));
+    }
+  },
+);
+
 interface ReportState {
   register: any | null;
   collection: any | null;
   performance: any | null;
+  amenity: any | null;
   loading: boolean;
   error: string | null;
 }
@@ -94,6 +118,7 @@ const initialState: ReportState = {
   register: null,
   collection: null,
   performance: null,
+  amenity: null,
   loading: false,
   error: null,
 };
@@ -115,13 +140,14 @@ const reportSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    const slotOf: Record<string, 'register' | 'collection' | 'performance'> = {
+    const slotOf: Record<string, 'register' | 'collection' | 'performance' | 'amenity'> = {
       [registerRead.typePrefix]: 'register',
       [collectionRead.typePrefix]: 'collection',
       [performanceRead.typePrefix]: 'performance',
+      [amenityRead.typePrefix]: 'amenity',
     };
 
-    [registerRead, collectionRead, performanceRead].forEach((thunk: any) => {
+    [registerRead, collectionRead, performanceRead, amenityRead].forEach((thunk: any) => {
       builder
         .addCase(thunk.pending, (state: any) => {
           state.loading = true;
@@ -150,6 +176,10 @@ const reportSlice = createSlice({
       .addCase(performanceRead.fulfilled, (state, action) => {
         state.loading = false;
         state.performance = action.payload;
+      })
+      .addCase(amenityRead.fulfilled, (state, action) => {
+        state.loading = false;
+        state.amenity = action.payload;
       });
   },
 });
