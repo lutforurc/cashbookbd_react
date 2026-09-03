@@ -11,6 +11,7 @@ import {
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import Link from '../../../utils/others/Link';
 import { hasPermission } from '../../../utils/permissionChecker';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { useDispatch, useSelector } from 'react-redux';
 import InputOnly from '../../../utils/fields/InputOnly';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
@@ -112,6 +113,20 @@ const BankReceived = () => {
     dispatch(getCoal3ByCoal4(2));
   }, []);
 
+  /**
+   * Opened from the Bank Book's edit link: the voucher number arrives in the
+   * navigation state, so the search runs itself.
+   *
+   * The cash screens and the invoices have had this for a while; these two were
+   * never on the list, because until now nothing sent a voucher here.
+   */
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: (value: string) => {
+      void searchTransaction(value);
+    },
+  });
+
   useEffect(() => {
     if (Array.isArray(coal3?.coal4)) {
       setDdlBankList(coal3?.coal4 || []);
@@ -209,8 +224,13 @@ const BankReceived = () => {
   };
 
 
-  const searchTransaction = async () => {
-    if (search === '') {
+  const searchTransaction = async (searchValue?: string) => {
+    // Typed into the box, or handed over by whoever sent us here -- the Bank
+    // Book's edit link arrives with the voucher number in the navigation state
+    // and the box has not been filled in yet when this runs.
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (invoiceNo === '') {
       toast.error('Please enter a search value.');
       return;
     }
@@ -218,7 +238,7 @@ const BankReceived = () => {
     try {
       searchingRef.current = true;
       setIsLoading(true);
-      const response = await dispatch(editBankReceived({ id: search })).unwrap();
+      const response = await dispatch(editBankReceived({ id: invoiceNo })).unwrap();
 
       const mapped = mapReceivedData(response);
       setReceivedData(mapped);
@@ -418,13 +438,18 @@ const BankReceived = () => {
     [tableData],
   );
 
-  const selectedReceiver = useMemo(() => {
-    if (!receivedData) return null;
-    return {
-      id: receivedData.bankReceivedAccount.toString(),
-      name: receivedData.bankReceivedAccountName.toString(),
-    };
-  }, [receivedData]);
+  /**
+   * The bank account a searched voucher was drawn on, for the dropdown.
+   *
+   * ⚠️ THE ID, NOT AN OBJECT. CategoryDropdown takes a string or a number and
+   * matches it with `value.toString()`; handed {id, name} it compared
+   * "[object Object]" against every option, matched none, and the box sat on
+   * "Select ..." while the voucher it had just loaded named an account.
+   */
+  const selectedReceiver = useMemo(
+    () => (receivedData ? String(receivedData.bankReceivedAccount ?? '') : null),
+    [receivedData],
+  );
 
   const optionsWithAll = useMemo(
     () => [{ id: '', name: 'Select Receiver Bank Account' }, ...((ddlBankList ?? []) as any[])],

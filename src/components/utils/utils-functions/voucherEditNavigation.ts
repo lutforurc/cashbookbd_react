@@ -25,6 +25,24 @@ const VOUCHER_EDIT_TARGETS: Record<string, VoucherEditTarget> = {
   '5': { route: routes.journal, label: 'Journal Voucher', prefix: '5' },
 };
 
+/**
+ * The same two vouchers, opened on the bank screens instead.
+ *
+ * ⚠️ THE NUMBER CANNOT SAY WHICH PAIR TO USE. Its prefix is the acc_vr_type row
+ * -- 1 "Cash Receipt", 2 "Cash Payment" -- so it says received or paid and
+ * nothing about cash or bank: money banked on the Bank Received screen is
+ * numbered 1-... exactly as a cash receipt is. The caller has to know, and on
+ * the Bank Book the server says so per row (`is_bank_voucher`).
+ *
+ * Sending a bank voucher to the cash screen was not merely inconvenient: the
+ * cash screen would save it back with its money leg moved from the bank to
+ * Cash.
+ */
+const BANK_VOUCHER_EDIT_TARGETS: Record<string, VoucherEditTarget> = {
+  '1': { route: routes.bank_receive, label: 'Bank Received Voucher', prefix: '1' },
+  '2': { route: routes.bank_payment, label: 'Bank Payment Voucher', prefix: '2' },
+};
+
 export const getVoucherTypePrefix = (
   vrNo: string | number | null | undefined,
 ): string => {
@@ -38,16 +56,26 @@ export const getVoucherTypePrefix = (
 
 export const getVoucherEditTarget = (
   vrNo: string | number | null | undefined,
+  options?: { bank?: boolean },
 ): VoucherEditTarget | null => {
   const prefix = getVoucherTypePrefix(vrNo);
+
+  // Invoices and journals have one screen each, so the bank list only holds the
+  // two that come in a pair -- and a prefix missing from it falls through to
+  // the ordinary target rather than to nothing.
+  if (options?.bank) {
+    return BANK_VOUCHER_EDIT_TARGETS[prefix] || VOUCHER_EDIT_TARGETS[prefix] || null;
+  }
+
   return VOUCHER_EDIT_TARGETS[prefix] || null;
 };
 
 export const buildVoucherAutoEditState = (
   vrNo: string | number | null | undefined,
+  options?: { bank?: boolean },
 ): VoucherAutoEditState | null => {
   const normalizedVoucherNo = String(vrNo ?? '').trim();
-  const target = getVoucherEditTarget(normalizedVoucherNo);
+  const target = getVoucherEditTarget(normalizedVoucherNo, options);
 
   if (!normalizedVoucherNo || !target) {
     return null;

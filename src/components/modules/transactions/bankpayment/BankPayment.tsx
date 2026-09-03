@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import { hasPermission } from '../../../utils/permissionChecker';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import Loader from '../../../../common/Loader';
 import InputOnly from '../../../utils/fields/InputOnly';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
@@ -105,6 +106,20 @@ const BankPayment = () => {
     dispatch(getCoal3ByCoal4(2));
   }, []);
 
+  /**
+   * Opened from the Bank Book's edit link: the voucher number arrives in the
+   * navigation state, so the search runs itself.
+   *
+   * The cash screens and the invoices have had this for a while; these two were
+   * never on the list, because until now nothing sent a voucher here.
+   */
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: (value: string) => {
+      void searchTransaction(value);
+    },
+  });
+
   useEffect(() => {
     if (Array.isArray(coal3?.coal4)) {
       setDdlBankList(coal3?.coal4 || []);
@@ -196,8 +211,13 @@ const BankPayment = () => {
   };
 
 
-  const searchTransaction = async () => {
-    if (search === '') {
+  const searchTransaction = async (searchValue?: string) => {
+    // Typed into the box, or handed over by whoever sent us here -- the Bank
+    // Book's edit link arrives with the voucher number in the navigation state
+    // and the box has not been filled in yet when this runs.
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (invoiceNo === '') {
       toast.error('Please enter a search value.');
       return;
     }
@@ -205,7 +225,7 @@ const BankPayment = () => {
     try {
       searchingRef.current = true;
       setIsLoading(true);
-      const response = await dispatch(editBankPayment({ id: search })).unwrap();
+      const response = await dispatch(editBankPayment({ id: invoiceNo })).unwrap();
 
       const mapped = mapPaymentData(response);
       setPaymentData(mapped);
@@ -258,7 +278,12 @@ const BankPayment = () => {
         account: item.coa4_id,
         accountName: item.coa_l4?.name,
         remarks: item.remarks,
-        amount: item.credit,
+        // ⚠️ DEBIT, not credit. This screen was written from the received one,
+        // where the party rows are the credits -- on a payment they are the
+        // debits and the bank carries the credit. Reading the wrong side made
+        // every line open at nought, and saving from there would have posted a
+        // voucher of noughts over a real one.
+        amount: item.debit,
         trackedProductId: item.trackedProductId ?? null,
       })),
     };
@@ -404,13 +429,18 @@ const BankPayment = () => {
     [tableData],
   );
 
-  const selectedPayment = useMemo(() => {
-    if (!paymentData) return null;
-    return {
-      id: paymentData.bankPaymentAccount.toString(),
-      name: paymentData.bankPaymentAccountName.toString(),
-    };
-  }, [paymentData]);
+  /**
+   * The bank account a searched voucher was drawn on, for the dropdown.
+   *
+   * ⚠️ THE ID, NOT AN OBJECT. CategoryDropdown takes a string or a number and
+   * matches it with `value.toString()`; handed {id, name} it compared
+   * "[object Object]" against every option, matched none, and the box sat on
+   * "Select ..." while the voucher it had just loaded named an account.
+   */
+  const selectedPayment = useMemo(
+    () => (paymentData ? String(paymentData.bankPaymentAccount ?? '') : null),
+    [paymentData],
+  );
 
   const optionsWithAll = useMemo(
     () => [{ id: '', name: 'Select Payment Bank Account' }, ...((ddlBankList ?? []) as any[])],

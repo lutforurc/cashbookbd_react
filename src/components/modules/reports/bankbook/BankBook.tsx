@@ -284,8 +284,25 @@ const BankBook = (user: any) => {
     }
 
     const voucherNo = String(row?.vr_no || '').trim();
-    const editTarget = getVoucherEditTarget(voucherNo);
-    const editState = buildVoucherAutoEditState(voucherNo);
+
+    /**
+     * ⚠️ The bank screens, unless this row is the till talking to the bank.
+     *
+     * The voucher number cannot say which: its prefix is the acc_vr_type row --
+     * 1 "Cash Receipt", 2 "Cash Payment" -- so it says received or paid and
+     * nothing about cash or bank, and money banked on the Bank Received screen
+     * is numbered 1-... exactly as a cash receipt is. Every row here was being
+     * sent to the cash screens, where saving one moved its money leg off the
+     * bank and into Cash.
+     *
+     * The server marks each row: `is_bank_voucher` is false only for cash
+     * deposited to or withdrawn from the bank, which really is typed on a cash
+     * screen. Absent -- an older server -- it falls back to the old behaviour
+     * rather than guessing.
+     */
+    const openOnBankScreen = row?.is_bank_voucher === true;
+    const editTarget = getVoucherEditTarget(voucherNo, { bank: openOnBankScreen });
+    const editState = buildVoucherAutoEditState(voucherNo, { bank: openOnBankScreen });
 
     if (!voucherNo || !editTarget || !editState) {
       toast.error('Edit route not found for this voucher.');
