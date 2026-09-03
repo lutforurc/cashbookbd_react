@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
+import InputDatePicker from '../../../utils/fields/DatePicker';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import RequisitionItemsDropdown from '../../../utils/utils-functions/RequisitionItemsDropdown';
 import WarehouseDropdown from '../../../utils/utils-functions/WarehouseDropdown';
@@ -50,6 +51,15 @@ import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
  * into the caller's own branch, and a dropdown suggesting otherwise would be a
  * lie the first time somebody used it.
  */
+
+/**
+ * The three date boxes are the app's own picker, which speaks Date objects,
+ * while the form and the API speak 'YYYY-MM-DD' strings. These two do the
+ * translation in one place -- and through dayjs rather than new Date(), which
+ * reads a bare date as UTC and can hand back yesterday.
+ */
+const asDate = (value: string) => (value ? dayjs(value).toDate() : null);
+const asText = (date: Date | null) => (date ? dayjs(date).format('YYYY-MM-DD') : '');
 
 type IssueLine = {
   id: number;
@@ -305,13 +315,18 @@ const AmenityIssueForm = () => {
       </p>
 
       <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-3">
-        <InputElement
+        <InputDatePicker
           id="issueDate"
           name="issueDate"
-          type="date"
           label="Issue date"
-          value={form.issueDate}
-          onChange={set('issueDate')}
+          selectedDate={asDate(form.issueDate)}
+          setSelectedDate={(date: Date | null) =>
+            setForm((prev) => ({ ...prev, issueDate: asText(date) }))
+          }
+          setCurrentDate={(date: Date | null) =>
+            setForm((prev) => ({ ...prev, issueDate: asText(date) }))
+          }
+          className="w-full"
         />
 
         <div>
@@ -370,22 +385,23 @@ const AmenityIssueForm = () => {
           over the same dates brings back nothing the second time. */}
       <div className="mb-3 rounded border border-stroke p-3 dark:border-strokedark">
         <div className="grid grid-cols-1 items-end gap-2 md:grid-cols-4">
-          <InputElement
+          <InputDatePicker
             id="dueFrom"
             name="dueFrom"
-            type="date"
             label="Nights from"
-            value={from}
-            onChange={(e: any) => setFrom(e.target.value)}
+            selectedDate={asDate(from)}
+            setSelectedDate={(date: Date | null) => setFrom(asText(date))}
+            setCurrentDate={(date: Date | null) => setFrom(asText(date))}
+            className="w-full"
           />
-          <InputElement
+          <InputDatePicker
             id="dueTo"
             name="dueTo"
-            type="date"
             label="To"
-            title="A night counts once it is over, so this ends yesterday by default."
-            value={to}
-            onChange={(e: any) => setTo(e.target.value)}
+            selectedDate={asDate(to)}
+            setSelectedDate={(date: Date | null) => setTo(asText(date))}
+            setCurrentDate={(date: Date | null) => setTo(asText(date))}
+            className="w-full"
           />
           <ButtonLoading
             onClick={loadFromKits}
