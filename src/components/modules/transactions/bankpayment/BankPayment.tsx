@@ -10,6 +10,8 @@ import InputOnly from '../../../utils/fields/InputOnly';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
+import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
+import resolveOrderParty from '../../../utils/utils-functions/resolveOrderParty';
 import InputElement from '../../../utils/fields/InputElement';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import Link from '../../../utils/others/Link';
@@ -42,6 +44,14 @@ interface PaymentItem {
   paymentAccount: string;
   paymentAccountName: string;
   transactionList?: TransactionList[]; // âœ… object â†’ array
+
+  // The order this voucher answers to, if any. It belongs to the VOUCHER and
+  // not to a row -- acc_transaction_master.order_no is one column, and the API
+  // reads purchaseOrderNumber off the top level of the payload rather than off
+  // the transactions array. The text is carried beside the id only so the box
+  // can show the number a person recognises.
+  purchaseOrderNumber?: string;
+  purchaseOrderText?: string;
 }
 
 const initialPaymentItem: PaymentItem = {
@@ -52,6 +62,8 @@ const initialPaymentItem: PaymentItem = {
   paymentAccount: '',
   paymentAccountName: '',
   transactionList: [],
+  purchaseOrderNumber: '',
+  purchaseOrderText: '',
 };
 
 const BankPayment = () => {
@@ -101,6 +113,68 @@ const BankPayment = () => {
   }, [coal3]);
 
 
+
+  /**
+   * While an order is chosen, the transaction account is the order's own party
+   * and cannot be changed here.
+   *
+   * Without this the two could be saved disagreeing -- money moved against one
+   * order but posted to another party's ledger -- and neither the order's due
+   * nor the ledger would say which of them was right. The cash screens hold the
+   * same rule.
+   *
+   * The account itself has to be filled for the lock to apply, not just the
+   * order: resolveOrderParty() deliberately returns a name with no id when the
+   * order's party cannot be matched exactly, and locking an empty box would be
+   * a dead end with nothing the operator could do but start over.
+   */
+  const isAccountLockedByOrder = Boolean(
+    formData.purchaseOrderNumber && formData.transactionList?.[0]?.account,
+  );
+
+  /**
+   * Picking an order also says who the money is for.
+   *
+   * The same as the cash screens: the order number already names the party, so
+   * the account box fills itself rather than asking for the name a second time.
+   * Clearing the order leaves the account alone -- it may have been chosen on
+   * purpose by then.
+   */
+  const selectedOrderOptionHandler = async (option: any) => {
+    if (!option) {
+      setFormData((prevState) => ({
+        ...prevState,
+        purchaseOrderNumber: '',
+        purchaseOrderText: '',
+      }));
+      return;
+    }
+
+    const party = await resolveOrderParty(option);
+    const current = formData.transactionList?.[0];
+
+    setFormData((prevState) => ({
+      ...prevState,
+      purchaseOrderNumber: option?.value || '',
+      purchaseOrderText: option?.label || '',
+      // The row is rebuilt whole, as transactionAccountHandler does, so every
+      // field already typed has to be carried over by hand or it is lost.
+      ...(party.name
+        ? {
+            transactionList: [
+              {
+                id: current?.id || Date.now(),
+                account: party.id ? String(party.id) : '',
+                accountName: party.name,
+                remarks: current?.remarks || '',
+                amount: current?.amount || 0,
+                trackedProductId: current?.trackedProductId ?? null,
+              },
+            ],
+          }
+        : {}),
+    }));
+  };
 
   const transactionAccountHandler = (option: any) => {
     const currentTransaction = formData.transactionList?.[0];
@@ -170,6 +244,11 @@ const BankPayment = () => {
     return {
       id: data.id,
       mtmId: data.mtmId,
+      // ⚠️ The id is what the ledger stores; the number is what a person reads.
+      // Both are needed, or the box comes back empty on an edit -- and an empty
+      // box saved again takes the order off the voucher without saying so.
+      purchaseOrderNumber: data.acc_transaction_master?.[0]?.order_no?.toString() || '',
+      purchaseOrderText: data.acc_transaction_master?.[0]?.order_number || '',
       bankPaymentAccount: lastDetail?.coa4_id?.toString() || '',
       bankPaymentAccountName: lastDetail?.coa_l4?.name || '',
       paymentAccount: '',
@@ -300,6 +379,11 @@ const BankPayment = () => {
       mtmId: prev?.mtmId as any,
       bankPaymentAccount: prev?.bankPaymentAccount,
       bankPaymentAccountName: prev?.bankPaymentAccountName,
+      // ⚠️ Carried over, not reset. Editing one ROW must not take the order off
+      // the VOUCHER -- the update sends whatever is in the form, so a wiped box
+      // here would clear order_no in the ledger without anybody asking for it.
+      purchaseOrderNumber: prev?.purchaseOrderNumber,
+      purchaseOrderText: prev?.purchaseOrderText,
     }));
 
     setUpdateTransactionId(null);
@@ -352,6 +436,10 @@ const BankPayment = () => {
         bankPaymentAccount: formData.bankPaymentAccount,
         bankPaymentAccountName: formData.bankPaymentAccountName,
         transactions,
+        // One column on the voucher, not a field on a row --
+        // acc_transaction_master.order_no, which BankServices reads off the
+        // top level of this payload.
+        purchaseOrderNumber: formData.purchaseOrderNumber || null,
       };
       const response = await dispatch(saveBankPayment(payload)).unwrap();
 
@@ -421,6 +509,10 @@ const BankPayment = () => {
         mtmId: formData.mtmId,
         bankPaymentAccount: formData.bankPaymentAccount,
         bankPaymentAccountName: formData.bankPaymentAccountName,
+        // Sent on every update, empty included: the server clears order_no
+        // when it is absent, which is how an order taken off a voucher here
+        // actually leaves the ledger.
+        purchaseOrderNumber: formData.purchaseOrderNumber || null,
         // This projection whitelists keys, so anything left out is stripped.
         // An update rewrites the voucher's product maps from scratch rather
         // than patching them, so omitting trackedProductId here would not
@@ -486,14 +578,17 @@ const BankPayment = () => {
         {isLoading && <Loader />}
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">
-            <div className="w-full">
+            {/* space-y-2 so the search row sits the same distance from the
+                fields below it as they sit from each other -- the grid spaces
+                those, and this block was spacing itself with its own mb-4. */}
+            <div className="w-full space-y-2">
               <div className="flex w-full items-end">
                 {hasPermission(
                   settings.data.permissions,
                   'cash.received.edit',
                 ) && (
                     <>
-                      <div className="min-w-0 flex-1 mb-4">
+                      <div className="min-w-0 flex-1">
                         <label htmlFor="search">
                           Search Bank Payment Voucher
                         </label>
@@ -513,11 +608,41 @@ const BankPayment = () => {
                         onClick={searchTransaction}
                         buttonLoading={buttonLoading}
                         label=" "
-                        className="-ml-px mb-4 w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
+                        className="-ml-px w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
                         icon={<FiSearch className="text-lg ml-2" />}
                       />
                     </>
                   )}
+              </div>
+              {/* ⚠️ The order names the party, so choosing one fills the
+                  account below in and locks it. Saved on the VOUCHER
+                  (acc_transaction_master.order_no), not on a row -- one bank
+                  voucher answers to one order, the same as the cash screens. */}
+              <div className="relative">
+                <label htmlFor="">Select Order (Optional) </label>
+                <OrderDropdown
+                  /* Purchase and stock only. Money going out never answers to
+                     a sales order, and offering all three is offering the two
+                     that cannot be right. */
+                  orderType={['1', '3']}
+                  onSelect={selectedOrderOptionHandler}
+                  defaultValue={
+                    formData.purchaseOrderNumber
+                      ? {
+                          value: formData.purchaseOrderNumber,
+                          label: formData.purchaseOrderText,
+                        }
+                      : null
+                  }
+                  value={
+                    formData.purchaseOrderNumber
+                      ? {
+                          value: formData.purchaseOrderNumber,
+                          label: formData.purchaseOrderText,
+                        }
+                      : null
+                  }
+                />
               </div>
               <div className="">
                 <label htmlFor="">Bank Payment Account</label>
@@ -528,12 +653,18 @@ const BankPayment = () => {
                   value={selectedPayment}
                 />
               </div>
-              <div className="mt-6">
+
+              {/* No mt-6 here: the grid's own gap-y-2 spaces every other field
+                  on this form, and the extra top margin left one gap on the
+                  Payment screen wider than the same gap on Received -- two
+                  screens that are otherwise the same form. */}
+              <div>
                 <label htmlFor="">Select Transaction Account</label>
                 <DdlMultiline
                   id="account"
                   name="account"
                   placeholder="Select Transaction Account"
+                  isDisabled={isAccountLockedByOrder}
                   onSelect={transactionAccountHandler} // âœ… à¦ªà§à¦°à§‹à¦¨à§‹ handler à¦¬à¦¾à¦¦
                   value={
                     formData.transactionList &&
@@ -553,6 +684,12 @@ const BankPayment = () => {
                     }
                   }}
                 />
+                {isAccountLockedByOrder && (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    The order names the party, so this cannot be changed here.
+                    Clear the order above to choose another account.
+                  </p>
+                )}
               </div>
 
               <InputElement
