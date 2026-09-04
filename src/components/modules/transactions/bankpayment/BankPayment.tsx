@@ -6,6 +6,7 @@ import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import { hasPermission } from '../../../utils/permissionChecker';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import useOrderFieldEnabled from '../../../utils/hooks/useOrderFieldEnabled';
 import Loader from '../../../../common/Loader';
 import InputOnly from '../../../utils/fields/InputOnly';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
@@ -143,8 +144,17 @@ const BankPayment = () => {
    * order's party cannot be matched exactly, and locking an empty box would be
    * a dead end with nothing the operator could do but start over.
    */
+  /**
+   * The order box only where the cash screens have one -- a Trading branch. On
+   * a General or head-office branch Cash Payment offers no order, so neither
+   * does this.
+   */
+  const orderFieldEnabled = useOrderFieldEnabled();
+
   const isAccountLockedByOrder = Boolean(
-    formData.purchaseOrderNumber && formData.transactionList?.[0]?.account,
+    orderFieldEnabled &&
+      formData.purchaseOrderNumber &&
+      formData.transactionList?.[0]?.account,
   );
 
   /**
@@ -647,33 +657,39 @@ const BankPayment = () => {
               {/* ⚠️ The order names the party, so choosing one fills the
                   account below in and locks it. Saved on the VOUCHER
                   (acc_transaction_master.order_no), not on a row -- one bank
-                  voucher answers to one order, the same as the cash screens. */}
-              <div className="relative">
-                <label htmlFor="">Select Order (Optional) </label>
-                <OrderDropdown
-                  /* Purchase and stock only. Money going out never answers to
-                     a sales order, and offering all three is offering the two
-                     that cannot be right. */
-                  orderType={['1', '3']}
-                  onSelect={selectedOrderOptionHandler}
-                  defaultValue={
-                    formData.purchaseOrderNumber
-                      ? {
-                          value: formData.purchaseOrderNumber,
-                          label: formData.purchaseOrderText,
-                        }
-                      : null
-                  }
-                  value={
-                    formData.purchaseOrderNumber
-                      ? {
-                          value: formData.purchaseOrderNumber,
-                          label: formData.purchaseOrderText,
-                        }
-                      : null
-                  }
-                />
-              </div>
+                  voucher answers to one order, the same as the cash screens.
+
+                  Offered only where the cash screens offer it -- a Trading
+                  branch -- so the two sides of the same voucher do not
+                  disagree about whether an order may be named. */}
+              {orderFieldEnabled ? (
+                <div className="relative">
+                  <label htmlFor="">Select Order (Optional) </label>
+                  <OrderDropdown
+                    /* Purchase and stock only. Money going out never answers to
+                       a sales order, and offering all three is offering the two
+                       that cannot be right. */
+                    orderType={['1', '3']}
+                    onSelect={selectedOrderOptionHandler}
+                    defaultValue={
+                      formData.purchaseOrderNumber
+                        ? {
+                            value: formData.purchaseOrderNumber,
+                            label: formData.purchaseOrderText,
+                          }
+                        : null
+                    }
+                    value={
+                      formData.purchaseOrderNumber
+                        ? {
+                            value: formData.purchaseOrderNumber,
+                            label: formData.purchaseOrderText,
+                          }
+                        : null
+                    }
+                  />
+                </div>
+              ) : null}
               <div className="">
                 <label htmlFor="">Bank Payment Account</label>
                 <CategoryDropdown

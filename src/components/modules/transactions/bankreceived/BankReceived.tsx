@@ -12,6 +12,7 @@ import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButton
 import Link from '../../../utils/others/Link';
 import { hasPermission } from '../../../utils/permissionChecker';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import useOrderFieldEnabled from '../../../utils/hooks/useOrderFieldEnabled';
 import { useDispatch, useSelector } from 'react-redux';
 import InputOnly from '../../../utils/fields/InputOnly';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
@@ -148,8 +149,17 @@ const BankReceived = () => {
    * order's party cannot be matched exactly, and locking an empty box would be
    * a dead end with nothing the operator could do but start over.
    */
+  /**
+   * The order box only where the cash screens have one -- a Trading branch. On
+   * a General or head-office branch Cash Received offers no order, so neither
+   * does this.
+   */
+  const orderFieldEnabled = useOrderFieldEnabled();
+
   const isAccountLockedByOrder = Boolean(
-    formData.purchaseOrderNumber && formData.transactionList?.[0]?.account,
+    orderFieldEnabled &&
+      formData.purchaseOrderNumber &&
+      formData.transactionList?.[0]?.account,
   );
 
   /**
@@ -650,35 +660,40 @@ const BankReceived = () => {
                     </>
                   )}
               </div>
-
               {/* ⚠️ The order names the party, so choosing one fills the
                   account below in and locks it. Saved on the VOUCHER
                   (acc_transaction_master.order_no), not on a row -- one bank
-                  voucher answers to one order, the same as the cash screens. */}
-              <div className="relative">
-                <label htmlFor="">Select Order (Optional) </label>
-                <OrderDropdown
-                  /* Sales only: money coming in answers to a sale. */
-                  orderType="2"
-                  onSelect={selectedOrderOptionHandler}
-                  defaultValue={
-                    formData.purchaseOrderNumber
-                      ? {
-                          value: formData.purchaseOrderNumber,
-                          label: formData.purchaseOrderText,
-                        }
-                      : null
-                  }
-                  value={
-                    formData.purchaseOrderNumber
-                      ? {
-                          value: formData.purchaseOrderNumber,
-                          label: formData.purchaseOrderText,
-                        }
-                      : null
-                  }
-                />
-              </div>
+                  voucher answers to one order, the same as the cash screens.
+
+                  Offered only where the cash screens offer it -- a Trading
+                  branch -- so the two sides of the same voucher do not
+                  disagree about whether an order may be named. */}
+              {orderFieldEnabled ? (
+                <div className="relative">
+                  <label htmlFor="">Select Order (Optional) </label>
+                  <OrderDropdown
+                    /* Sales only: money coming in answers to a sale. */
+                    orderType="2"
+                    onSelect={selectedOrderOptionHandler}
+                    defaultValue={
+                      formData.purchaseOrderNumber
+                        ? {
+                            value: formData.purchaseOrderNumber,
+                            label: formData.purchaseOrderText,
+                          }
+                        : null
+                    }
+                    value={
+                      formData.purchaseOrderNumber
+                        ? {
+                            value: formData.purchaseOrderNumber,
+                            label: formData.purchaseOrderText,
+                          }
+                        : null
+                    }
+                  />
+                </div>
+              ) : null}
               <div className="">
                 <label htmlFor="">Bank Received Account</label>
                 <CategoryDropdown
