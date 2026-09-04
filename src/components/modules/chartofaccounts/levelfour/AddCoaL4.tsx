@@ -77,6 +77,15 @@ const AddCoaL4 = () => {
           return;
         }
 
+        // The list greys the edit button out on a shared head, but the route is
+        // still typeable; the save would be refused server-side anyway, so say
+        // why here rather than after a filled-in form.
+        if (data?.is_global || !data?.company_id) {
+          toast.info('This is a shared account and cannot be edited.');
+          navigate(routes.coal4_list);
+          return;
+        }
+
         setFormData({
           coal3_id: data?.acc_coa_level3_id ? String(data.acc_coa_level3_id) : '',
           coal3_label: data?.coa3s?.name || data?.l3_name || '',

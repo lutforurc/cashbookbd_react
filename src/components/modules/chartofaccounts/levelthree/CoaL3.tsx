@@ -4,7 +4,7 @@ import { FiBook, FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, IconButton } from '../../../../pages/UiElements/CustomButtons';
 import Table from '../../../utils/others/Table';
 import Loader from '../../../../common/Loader';
 import { getCoal3 } from './coal3Sliders';
@@ -96,23 +96,37 @@ const CoaL3: React.FC = () => {
             header: 'Action', 
             headerClass: 'text-center',
             cellClass: 'text-center',
-            render: (data: any) => (
-                <div className="flex justify-center items-center">
-                    <Button onClick={() => { }} className="text-blue-500">
-                        <FiBook className="cursor-pointer" />
-                    </Button>
-                    <Button
-                        onClick={() => navigate(`/coal3/edit-coal3/${data.id}`)}
-                        className="text-blue-500 ml-2"
-                        title="Edit"
-                    >
-                        <FiEdit2 className="cursor-pointer" />
-                    </Button>
-                    <Button onClick={() => { }} className="text-red-500 ml-2">
-                        <FiTrash2 className="cursor-pointer" />
-                    </Button>
-                </div>
-            ),
+            render: (data: any) => {
+                // A head with no company on it belongs to the shared chart every
+                // company reads from -- it is nobody's here to rename or remove,
+                // so those two actions are shown but held shut.
+                const isShared = Boolean(data?.is_global ?? !data?.company_id);
+
+                return (
+                    <div className="flex justify-center items-center gap-2">
+                        <IconButton
+                            title="Ledger"
+                            tone="primary"
+                            icon={<FiBook />}
+                            onClick={() => { }}
+                        />
+                        <IconButton
+                            title={isShared ? 'Shared account, cannot be edited' : 'Edit'}
+                            tone="primary"
+                            icon={<FiEdit2 />}
+                            disabled={isShared}
+                            onClick={() => navigate(`/coal3/edit-coal3/${data.id}`)}
+                        />
+                        <IconButton
+                            title={isShared ? 'Shared account, cannot be deleted' : 'Delete'}
+                            tone="danger"
+                            icon={<FiTrash2 />}
+                            disabled={isShared}
+                            onClick={() => { }}
+                        />
+                    </div>
+                );
+            },
         },
     ];
     const options = [
