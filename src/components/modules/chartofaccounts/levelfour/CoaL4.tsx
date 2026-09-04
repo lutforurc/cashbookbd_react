@@ -97,7 +97,7 @@ const CoaL4 = () => {
             render: (data: any) => {
                 // A head with no company on it belongs to the shared chart every
                 // company reads from -- it is nobody's here to rename or remove,
-                // so those two actions are shown but held shut.
+                // so neither action is offered on those rows at all.
                 const isShared = Boolean(data?.is_global ?? !data?.company_id);
 
                 return (
@@ -108,20 +108,22 @@ const CoaL4 = () => {
                             icon={<FiBook />}
                             onClick={() => { }}
                         />
-                        <IconButton
-                            title={isShared ? 'Shared account, cannot be edited' : 'Edit'}
-                            tone="primary"
-                            icon={<FiEdit2 />}
-                            disabled={isShared}
-                            onClick={() => navigate(`/coal4/edit-coal4/${data.id}`)}
-                        />
-                        <IconButton
-                            title={isShared ? 'Shared account, cannot be deleted' : 'Delete'}
-                            tone="danger"
-                            icon={<FiTrash2 />}
-                            disabled={isShared}
-                            onClick={() => { }}
-                        />
+                        {!isShared ? (
+                            <IconButton
+                                title="Edit"
+                                tone="primary"
+                                icon={<FiEdit2 />}
+                                onClick={() => navigate(`/coal4/edit-coal4/${data.id}`)}
+                            />
+                        ) : null}
+                        {!isShared ? (
+                            <IconButton
+                                title="Delete"
+                                tone="danger"
+                                icon={<FiTrash2 />}
+                                onClick={() => { }}
+                            />
+                        ) : null}
                     </div>
                 );
             },
