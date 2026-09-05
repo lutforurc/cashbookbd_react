@@ -55,6 +55,11 @@ const ACTION_NAMES: Record<string, string> = {
   delete: 'Deleted',
   create: 'Written',
   restore: 'Restored',
+  // The two the voucher trail started writing when approving stopped being
+  // invisible. Taking an approval back off is the one worth spotting: it
+  // reopens a voucher for editing.
+  approve: 'Approved',
+  unapprove: 'Approval removed',
 };
 
 const shown = (value: any): string => {
@@ -77,6 +82,10 @@ const AuditTrail = () => {
   const [userId, setUserId] = useState('');
   const [action, setAction] = useState('');
   const [voucherNo, setVoucherNo] = useState('');
+  // Empty is both halves of the trail, which is how the screen opens: "who
+  // changed what" is one question whether the answer is a voucher or the
+  // customer it was raised against.
+  const [source, setSource] = useState('');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -91,6 +100,7 @@ const AuditTrail = () => {
           user_id: userId || undefined,
           action: action || undefined,
           voucher_no: voucherNo || undefined,
+          source: source || undefined,
         },
       });
 
@@ -100,7 +110,7 @@ const AuditTrail = () => {
     } finally {
       setLoading(false);
     }
-  }, [from, to, userId, action, voucherNo]);
+  }, [from, to, userId, action, voucherNo, source]);
 
   useEffect(() => {
     load();
@@ -164,11 +174,29 @@ const AuditTrail = () => {
             label="What"
             data={[
               { id: '', name: 'Anything' },
+              { id: 'create', name: 'Created' },
               { id: 'update', name: 'Edited' },
               { id: 'delete', name: 'Deleted' },
+              { id: 'approve', name: 'Approved' },
+              { id: 'unapprove', name: 'Approval removed' },
             ]}
             value={action}
             onChange={(e: any) => setAction(e.target.value)}
+          />
+        </div>
+
+        <div className="w-40">
+          <DropdownCommon
+            id="trail_source"
+            name="source"
+            label="Where"
+            data={[
+              { id: '', name: 'Everything' },
+              { id: 'voucher', name: 'Vouchers' },
+              { id: 'customer', name: 'Customers' },
+            ]}
+            value={source}
+            onChange={(e: any) => setSource(e.target.value)}
           />
         </div>
 
@@ -176,7 +204,7 @@ const AuditTrail = () => {
           <InputElement
             id="trail_voucher"
             name="voucher_no"
-            label="Voucher no"
+            label="Voucher / Customer"
             value={voucherNo}
             onChange={(e: any) => setVoucherNo(e.target.value)}
           />
@@ -190,7 +218,9 @@ const AuditTrail = () => {
               <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">When</th>
               <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">Who</th>
               <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">What</th>
-              <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">Voucher</th>
+              <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">
+                Voucher / Customer
+              </th>
               <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">
                 What changed
               </th>
@@ -215,8 +245,19 @@ const AuditTrail = () => {
                       {ACTION_NAMES[row.action] ?? row.action}
                     </span>
                   </td>
-                  <td className="px-3 py-2 font-mono text-xs text-gray-500 dark:text-gray-400">
-                    {row.vr_no}
+                  {/* A voucher number reads as one -- monospaced, like a
+                      reference. A customer's name is words and is set in the
+                      ordinary face, with a word saying which kind of record
+                      this row is about. */}
+                  <td className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                    {row.source === 'customer' ? (
+                      <>
+                        <div className="text-black dark:text-white">{row.record}</div>
+                        <div className="text-gray-400">customer</div>
+                      </>
+                    ) : (
+                      <span className="font-mono">{row.record ?? row.vr_no}</span>
+                    )}
                   </td>
                   <td className="px-3 py-2 text-xs">
                     {row.changes?.length ? (
