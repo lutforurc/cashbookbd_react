@@ -198,6 +198,44 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
     const lineAmount = (row: any) =>
       num(row?.amount) || num(row?.qty) * num(row?.price);
 
+    /**
+     * The rate the order was agreed at, on a paper that was raised on one --
+     * and only where the paper was raised on ONE rate. See offRate below.
+     */
+    const orderItems = Array.isArray(basic?.items) ? basic.items : [];
+    const agreedRate = orderItems.length > 1 ? 0 : num(basic?.order_rate);
+
+    /**
+     * A delivery billed at a rate that is not the rate that was agreed.
+     *
+     * ⚠️ THE POINT OF THE ORDER SHEET IS THAT THE TWO MATCH. An order agreed at
+     * 19.40 and a lorry invoiced at 21.00 is either a price change nobody
+     * recorded or a typing mistake, and on a sheet of eighteen deliveries it is
+     * one figure in a column of identical ones -- the reader's eye slides over
+     * it. Marked, the sheet points at it.
+     *
+     * Half a paisa of tolerance, because the rate reaches this row as a stored
+     * decimal and the order's as another: 19.4 and 19.400 are the same price,
+     * and a sheet that marked every row for that would mark every row.
+     *
+
+     * ⚠️ NOTHING IS MARKED ON A MULTI-PRODUCT ORDER. One order can carry several
+     * products at several agreed rates, and a delivery row does not say which
+     * product it delivered -- so a lorry of the second product, correctly
+     * billed, would be marked against the first product's rate. Silence is the
+     * only honest answer until the rows name their product.
+     *
+     * ⚠️ A row with no rate is never marked. The money rows -- a receipt
+     * against the order, "Cash" across the delivery columns -- carry no rate at
+     * all, and zero is not a disagreement with 19.40, it is silence. Nor is
+     * anything marked on a paper that names no agreed rate: a challan has none,
+     * and every line on it would otherwise be wrong.
+     */
+    const offRate = (row: any): boolean =>
+      agreedRate > 0 &&
+      num(row?.price) > 0 &&
+      Math.abs(num(row.price) - agreedRate) >= 0.005;
+
     const totalReceived = rows.reduce((sum, row) => sum + num(row?.received), 0);
     const totalAmount = rows.reduce((sum, row) => sum + lineAmount(row), 0);
 
@@ -370,6 +408,36 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       }
     };
 
+    /**
+     * A heading as it should read on THIS document.
+     *
+     * A title, a label or a column heading may name a field in braces --
+     * "{order_type_label} Details" -- and gets this voucher's answer to that
+     * field in its place. It exists because ONE saved layout serves papers that
+     * are not all called the same thing: the order sheet is a purchase order as
+     * often as a sales one, and a heading fixed at "Sales Details" over a
+     * supplier's name prints a lie on half of them.
+     *
+     * Any field the paper can print is a token, so this is not three special
+     * words -- "Order {order_number}" heads a sheet with its own number.
+     *
+     * ⚠️ A token this voucher has no answer for takes itself out of the line
+     * rather than reaching a customer as its own braces, and the space it
+     * leaves goes with it. That is what makes the tokens safe to put in a
+     * DEFAULT: a challan's own layout naming none of them is unaffected, and a
+     * server too old to send the labels prints "Details" rather than
+     * "{order_type_label} Details".
+     */
+    const caption = (text: string | undefined, fallback = ''): string => {
+      const raw = text ?? fallback;
+      if (!raw.includes('{')) return raw;
+
+      return raw
+        .replace(/\{\s*([a-z0-9_]+)\s*\}/gi, (_match, key: string) => value(key))
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    };
+
     /** One cell of the product table. */
     const cell = (row: any, index: number, key: string): string => {
       switch (key) {
@@ -424,7 +492,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       );
       if (!visible.length) return null;
 
-      const label = (item: InfoItem) => item.label ?? fieldName(item.field);
+      const label = (item: InfoItem) => caption(item.label, fieldName(item.field));
 
       if (band.layout === 'inline') {
         return (
@@ -502,7 +570,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           }
           style={{ fontSize: `${template.fontSize * band.scale}px` }}
         >
-          {band.text}
+          {caption(band.text)}
         </span>
       </div>
     );
@@ -589,7 +657,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         // in pixels would not.
         const widest = Math.max(
           8,
-          ...visible.map((item) => (item.label ?? fieldName(item.field)).length),
+          ...visible.map((item) => caption(item.label, fieldName(item.field)).length),
         );
 
         return {
@@ -620,7 +688,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           <div className={`mb-2 flex flex-wrap gap-x-6 gap-y-1 ${side}`}>
             {visible.map((item, index) => (
               <span key={`${item.field}-${index}`}>
-                <b>{item.label ?? fieldName(item.field)}:</b>{' '}
+                <b>{caption(item.label, fieldName(item.field))}:</b>{' '}
                 <b>{value(item.field)}</b>
               </span>
             ))}
@@ -662,7 +730,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                   <tr key={`${item.field}-${index}`}>
                     {footedTo ? <td /> : null}
                     <td className={`${rule}pr-3 text-right font-semibold`}>
-                      {item.label ?? fieldName(item.field)}
+                      {caption(item.label, fieldName(item.field))}
                     </td>
                     <td className={`${rule}pr-1 text-right`}>:</td>
                     <td
@@ -683,7 +751,11 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
     };
 
     const NotesBlock: React.FC<{ band: NotesBand }> = ({ band }) => {
-      if (blank(band.text)) return null;
+      // Resolved before the blank check, not after: a note made of nothing but
+      // a token this voucher cannot answer has nothing left to say, and should
+      // take its box away with it rather than rule an empty one.
+      const text = caption(band.text);
+      if (blank(text)) return null;
       return (
         <div
           className={
@@ -692,7 +764,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           }
           style={{ fontSize: `${Math.max(8, template.fontSize - 2)}px` }}
         >
-          {band.text}
+          {text}
         </div>
       );
     };
@@ -744,7 +816,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                     puts them. */}
                 <div className="mx-auto w-4/5 border-t border-gray-800 pt-0.5">
                   {name ? <div>{name}</div> : null}
-                  <div>{item.label}</div>
+                  <div>{caption(item.label)}</div>
                 </div>
               </div>
             );
@@ -799,7 +871,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
               colSpan={Math.max(1, firstFigure)}
               className={`${border} px-1 py-0.5 text-right`}
             >
-              {band.totalRowLabel || 'Grand Total'}
+              {caption(band.totalRowLabel) || 'Grand Total'}
             </td>
 
             {columns.slice(Math.max(1, firstFigure)).map((column, index) => (
@@ -813,7 +885,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           </tr>
         );
 
-      return (
+      const table = (
         <table className="mb-2 w-full table-fixed border-collapse">
           <colgroup>
             {widths.map((width, index) => (
@@ -828,7 +900,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                     key={`${column.field}-${index}`}
                     className={`${border} px-1 py-1 font-semibold ${alignClass[column.align ?? 'left']}`}
                   >
-                    {column.label ?? fieldName(column.field)}
+                    {caption(column.label, fieldName(column.field))}
                   </th>
                 ))}
               </tr>
@@ -909,6 +981,14 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                     ? String(cell(row, startIndex + rowIndex, column.subField) ?? '').trim()
                     : '';
 
+                  // ⚠️ The rate column only, and only where it disagrees with
+                  // the order. Marked in the paper's own black -- bold, with an
+                  // asterisk -- and not in colour: these sheets go out on a
+                  // laser printer, which renders red as a grey no darker than
+                  // the figures around it, and go on to be photocopied. Both
+                  // markings survive both.
+                  const marked = column.field === 'price' && offRate(row);
+
                   return (
                     <td
                       key={`${column.field}-${index}`}
@@ -917,9 +997,13 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                       // what it was let as -- so the figures beside it hung
                       // from the top of a box twice their height, reading as
                       // though they belonged to the line above.
-                      className={`${border} px-1 py-0.5 align-middle ${alignClass[column.align ?? 'left']}`}
+                      className={
+                        `${border} px-1 py-0.5 align-middle ${alignClass[column.align ?? 'left']} ` +
+                        (marked ? 'font-bold' : '')
+                      }
                     >
                       {cell(row, startIndex + rowIndex, column.field)}
+                      {marked ? ' *' : ''}
 
                       {sub ? (
                         <div className="text-[0.80em] leading-snug ">
@@ -952,6 +1036,32 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
             {withTotal ? footRow : null}
           </tbody>
         </table>
+      );
+
+      /**
+       * What the asterisks in the rate column mean.
+       *
+       * Under the table and on the LAST page only, beside the grand total --
+       * where a footnote belongs, and where it is read once rather than on
+       * every sheet of a long order.
+       *
+       * Printed only when something is actually marked. A note explaining a
+       * mark nobody can find is a reader hunting an error that is not there.
+       */
+      const rateNote =
+        withTotal && rows.some(offRate) ? (
+          <div className="mb-2 text-[0.85em] font-semibold">
+            * Rate differs from the order rate ({thousandSeparator(agreedRate)}).
+          </div>
+        ) : null;
+
+      if (!rateNote) return table;
+
+      return (
+        <>
+          {table}
+          {rateNote}
+        </>
       );
     };
 

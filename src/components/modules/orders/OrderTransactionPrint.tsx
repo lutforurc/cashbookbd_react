@@ -185,6 +185,30 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
     const cumulativeDueAmounts = calculateCumulativeDueAmounts(transactionRows);
 
     const totals = calculateTransactionTotals(transactionRows);
+    /**
+     * The rate the order was agreed at, and a delivery that disagrees with it.
+     *
+     * ⚠️ The whole point of this sheet is that the two match: an order at 19.40
+     * with one lorry invoiced at 21.00 is either a price change nobody recorded
+     * or a typing mistake, and in a column of eighteen identical figures the
+     * odd one is exactly what the eye slides past. Marked, the paper points at
+     * it -- see the same rule in DocumentPrint, which draws the designed
+     * version of this sheet.
+     *
+     * ⚠️ NOTHING IS MARKED ON A MULTI-PRODUCT ORDER: several products at several
+     * agreed rates, and a delivery row that does not say which product it
+     * carried, means a correctly billed lorry would be marked against the wrong
+     * product's rate.
+     *
+     * Half a paisa of tolerance, because 19.4 and 19.400 are one price; and a
+     * row with no rate of its own -- a receipt against the order, "Cash" across
+     * the delivery columns -- is silence, not disagreement.
+     */
+    const agreedRate =
+      Array.isArray(order?.items) && order.items.length > 1 ? 0 : toNumber(order?.order_rate);
+    const isOffRate = (value: number) =>
+      agreedRate > 0 && value > 0 && Math.abs(value - agreedRate) >= 0.005;
+    const hasOffRate = transactionRows.some((row: any) => isOffRate(toNumber(row?.rate)));
     const computedOrderAmount = toNumber(order?.order_amount) || (toNumber(order?.total_order) * toNumber(order?.order_rate));
     // The ordered products. Older payloads carry none, in which case the single
     // product on the order itself still describes it.
@@ -420,8 +444,20 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                             <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
                               {thousandSeparator(weight)} 
                             </td>
-                            <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
+                            {/* Marked in the paper's own black -- bold, with
+                                an asterisk -- rather than in colour: this sheet
+                                goes out on a laser printer, which renders red
+                                as a grey no darker than the figures around it,
+                                and is photocopied after that. */}
+                            <td
+                              style={{ fontSize: fs }}
+                              className={
+                                'border border-black px-2 py-2 text-right ' +
+                                (isOffRate(rate) ? 'font-bold' : '')
+                              }
+                            >
                               {thousandSeparator(rate)}
+                              {isOffRate(rate) ? ' *' : ''}
                             </td>
                             <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
                               {thousandSeparator(amount)}
@@ -493,6 +529,16 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
 	                ) : null}
               </tfoot>
             </table>
+
+            {/* What the asterisks mean, under the table on the last page only
+                -- read once, beside the grand total, rather than on every sheet
+                of a long order. Absent when nothing is marked: a note pointing
+                at a mark that is not there sends the reader hunting. */}
+            {isLastPage && hasOffRate ? (
+              <div style={{ fontSize: fs }} className="mt-2 font-semibold">
+                * Rate differs from the order rate ({thousandSeparator(agreedRate)}).
+              </div>
+            ) : null}
 
             {order?.notes ? (
               <div style={{ fontSize: fs }} className="mt-4 text-xs md:text-sm">

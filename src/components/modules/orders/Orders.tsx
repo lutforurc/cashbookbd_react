@@ -344,6 +344,36 @@ const normalizeOrderPrintPayload = (baseOrder: any, payload: any) => {
 };
 
 /**
+ * The words this order's paper is written in.
+ *
+ * ⚠️ ONE designed layout prints both kinds of order, and three of its headings
+ * are not the same word on each: a purchase order is headed "Purchase Details",
+ * is raised on a SUPPLIER, and the money against a delivery is a Payment going
+ * out rather than a Receipt coming in. Sent as values so the template can name
+ * them in braces -- "{order_type_label} Details" -- instead of the fixed words
+ * that had a purchase order printing "Sales Details" over its supplier's name.
+ *
+ * The type is compared as a string. It arrives as a number from the list and as
+ * text from the print payload, and `=== 2` on the string '2' is false -- which
+ * is the same mistake wearing different clothes.
+ */
+const orderTypeWords = (orderType: any) => {
+  const type = String(orderType ?? '');
+
+  if (type === '1') {
+    return { order_type_label: 'Purchase', party_label: 'Supplier Name', received_label: 'Payment' };
+  }
+  if (type === '2') {
+    return { order_type_label: 'Sales', party_label: 'Customer Name', received_label: 'Received' };
+  }
+  if (type === '3') {
+    return { order_type_label: 'Stock', party_label: 'Party Name', received_label: 'Received' };
+  }
+
+  return { order_type_label: 'Order', party_label: 'Party Name', received_label: 'Received' };
+};
+
+/**
  * The order print payload, in the shape DocumentPrint reads.
  *
  * Two things are worked out here rather than left to the renderer, because both
@@ -385,7 +415,7 @@ const orderDocumentData = (order: any): DocumentData => {
   });
 
   return {
-    basic: { ...order },
+    basic: { ...orderTypeWords(order?.order_type), ...order },
     products,
   };
 };
@@ -1654,7 +1684,7 @@ const Orders = () => {
             order={selectedPrintOrder}
             title={
               selectedPrintOrder
-                ? `${selectedPrintOrder.order_type === 2 ? 'Sales' : 'Purchase'} Details`
+                ? `${orderTypeWords(selectedPrintOrder.order_type).order_type_label} Details`
                 : 'Order Details'
             }
             rowsPerPage={Number(printRowsPerPage)}

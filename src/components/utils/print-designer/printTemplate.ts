@@ -544,6 +544,21 @@ export const ORDER_FIELD_CATALOG: FieldDef[] = [
   { key: 'address', name: 'Address', group: 'party' },
   { key: 'mobile', name: 'Mobile', group: 'party' },
 
+  /* ⚠️ The three below are WORDS, not figures, and they are what lets one saved
+     layout serve both kinds of order. ONE screen prints purchase orders and
+     sales orders off the same template, so any heading fixed at "Sales" or
+     "Customer" is wrong on half of them -- which is exactly what a purchase
+     order headed "Sales Details" over a supplier's name was.
+
+     They are worth more in a heading than in a value: a title, a label or a
+     column heading naming one in braces -- "{order_type_label} Details",
+     "{party_label}" -- gets this order's own word in its place. See caption()
+     in DocumentPrint. Offered here as fields too, so the designer's own list
+     tells a tenant the words exist. */
+  { key: 'order_type_label', name: 'Purchase / Sales', group: 'party' },
+  { key: 'party_label', name: 'Word for the party (Customer / Supplier)', group: 'party' },
+  { key: 'received_label', name: 'Word for money in (Received / Payment)', group: 'party' },
+
   // Which paper this is
   { key: 'order_number', name: 'Order No', group: 'voucher' },
   { key: 'order_date', name: 'Order Date', group: 'voucher' },
@@ -1173,6 +1188,14 @@ const bengaliPadChallan = (): PrintTemplate => {
  * Two info columns, because the order's facts fall naturally in two halves: who
  * it is for on the left, what was agreed on the right. Then the deliveries made
  * against it, and what they come to.
+ *
+ * ⚠️ THREE HEADINGS ARE WRITTEN AS TOKENS, not as words, and they have to be:
+ * this one layout is what the Orders screen prints a PURCHASE order on as well.
+ * Fixed words put "Sales Details" at the top of a purchase order and "Customer
+ * Name" against its supplier. {order_type_label}, {party_label} and
+ * {received_label} are answered by the order itself -- see orderTypeWords() in
+ * Orders.tsx and caption() in DocumentPrint -- and a tenant who would rather
+ * have one word on every sheet just types it over the token.
  */
 const standardOrder = (): PrintTemplate => ({
   version: 1,
@@ -1200,7 +1223,7 @@ const standardOrder = (): PrintTemplate => ({
       // the left; what was agreed runs down the right, in the order the sheet
       // people already use puts them.
       items: [
-        { field: 'order_for', label: 'Customer Name' },
+        { field: 'order_for', label: '{party_label}' },
         { field: 'product_name', label: 'Product Name' },
 
         { field: 'address', label: 'Address', hideIfEmpty: true },
@@ -1222,7 +1245,7 @@ const standardOrder = (): PrintTemplate => ({
       id: 'title',
       type: 'title',
       show: true,
-      text: 'Sales Details',
+      text: '{order_type_label} Details',
       align: 'center',
       scale: 1.1,
       underline: false,
@@ -1248,7 +1271,7 @@ const standardOrder = (): PrintTemplate => ({
         { field: 'qty', label: 'Quantity', width: 12, align: 'right' },
         { field: 'price', label: 'Rate', width: 8, align: 'right' },
         { field: 'amount', label: 'Amount', width: 12, align: 'right' },
-        { field: 'received', label: 'Received', width: 10, align: 'right' },
+        { field: 'received', label: '{received_label}', width: 10, align: 'right' },
         { field: 'due', label: 'Due Amount', width: 12, align: 'right' },
       ],
     }),
@@ -1749,6 +1772,50 @@ const defaultTitleOf = (template: PrintTemplate): string => {
   return title?.text ?? '';
 };
 
+/**
+ * An order layout saved before the wording could vary, given the tokens.
+ *
+ * ⚠️ WHY A LAYOUT ALREADY IN THE DATABASE IS REWRITTEN AT ALL. The order sheet
+ * shipped with three words fixed in its default -- "Sales Details", "Customer
+ * Name", "Received" -- and the SAME layout prints purchase orders, where all
+ * three are wrong: a purchase order came off the printer headed "Sales Details"
+ * over its supplier's name. Teaching the renderer the tokens fixes the default
+ * for layouts designed from today on; every branch that has already designed
+ * one keeps its saved wording, and keeps printing the lie, until somebody opens
+ * the designer and retypes three headings they have no reason to suspect.
+ *
+ * So the three the software itself wrote are swapped for the tokens that say
+ * the same thing on a sales order and the right thing on a purchase one.
+ *
+ * ⚠️ EXACT MATCHES ONLY, and against the field as well as the words. A branch
+ * that has already typed its own heading -- "Delivery Statement", "পার্টির নাম"
+ * -- means it, and nothing here touches it. Rewritten text no longer matches,
+ * so running twice changes nothing the first pass did not.
+ */
+const tokenizeOrderCaptions = (bands: Band[]): void => {
+  bands.forEach((item) => {
+    if (item.type === 'title' && item.text === 'Sales Details') {
+      item.text = '{order_type_label} Details';
+    }
+
+    if (item.type === 'info') {
+      item.items.forEach((entry) => {
+        if (entry.field === 'order_for' && entry.label === 'Customer Name') {
+          entry.label = '{party_label}';
+        }
+      });
+    }
+
+    if (item.type === 'table') {
+      item.columns.forEach((column) => {
+        if (column.field === 'received' && column.label === 'Received') {
+          column.label = '{received_label}';
+        }
+      });
+    }
+  });
+};
+
 export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'): PrintTemplate => {
   const fallback = defaultTemplate(docType);
   if (!raw || typeof raw !== 'object') return fallback;
@@ -1865,6 +1932,10 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
     const spare = fallback.bands.find((item) => item.type === 'table') as TableBand;
     bands.push({ ...spare, id: 'table' });
   }
+
+  // Safe to do in place: every band above was built here out of the saved JSON,
+  // so nothing else is holding one.
+  if (docType === 'sales_order') tokenizeOrderCaptions(bands);
 
   return {
     version: 1,

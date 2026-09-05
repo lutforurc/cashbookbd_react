@@ -80,6 +80,14 @@ export const SAMPLE_DOCUMENT: DocumentData = {
  */
 export const SAMPLE_ORDER_DOCUMENT: DocumentData = {
   basic: {
+    // The wording the tokens stand in for. A sales order here because that is
+    // what the sample is; a purchase order prints Purchase, Supplier Name and
+    // Payment through the same three headings. Without them the preview would
+    // show a heading with its token silently taken out -- "Details" over a
+    // nameless party -- and a tenant would think the layout was broken.
+    order_type_label: 'Sales',
+    party_label: 'Customer Name',
+    received_label: 'Received',
     order_for: 'Sample Poultry Group',
     address: 'Sample House, Mohakhali CA, Dhaka',
     mobile: '01700000000',
