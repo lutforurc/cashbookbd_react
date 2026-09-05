@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { FiFilter, FiRotateCcw } from 'react-icons/fi';
@@ -138,11 +138,6 @@ const CashBookTwoColumn = ({ user }: any) => {
 
   const rows: any[] = report?.rows ?? [];
   const banks: any[] = report?.banks ?? [];
-
-  const branchName = useMemo(
-    () => report?.branch?.name || dropdownData.find((one: any) => Number(one.id) === Number(branchId))?.name || '',
-    [report, dropdownData, branchId],
-  );
 
   if (!dropdownData.length) return <Loader />;
 
@@ -348,12 +343,10 @@ const CashBookTwoColumn = ({ user }: any) => {
       ) : null}
 
       <div className="hidden">
-        <CashBookTwoColumnPrint
-          ref={printRef}
-          report={report}
-          branchName={branchName}
-          fontSize={fontSize}
-        />
+        {/* The branch is not passed: PadPrinting heads the page with the
+            branch BranchDropdown published, so naming it again in the title
+            block would print it twice. */}
+        <CashBookTwoColumnPrint ref={printRef} report={report} fontSize={fontSize} />
       </div>
     </div>
   );

@@ -8,7 +8,6 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 
 type Props = {
   report: any;
-  branchName?: string;
   fontSize?: number;
   rowsPerPage?: number;
 };
@@ -37,7 +36,7 @@ const chunkRows = <T,>(rows: T[], size: number): T[][] => {
  * balance brought down twice is the one thing nobody can reconcile.
  */
 const CashBookTwoColumnPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ report, branchName, fontSize = 10, rowsPerPage = 22 }, ref) => {
+  ({ report, fontSize = 10, rowsPerPage = 22 }, ref) => {
     if (!report) return <div ref={ref} />;
 
     const rows: any[] = report.rows ?? [];
@@ -59,11 +58,15 @@ const CashBookTwoColumnPrint = React.forwardRef<HTMLDivElement, Props>(
             <div key={pageIndex} className="print-page">
               <PadPrinting />
 
-              <div className="mb-1 text-center">
-                <div className="text-base font-bold">Cash &amp; Bank Book</div>
-                <div style={{ fontSize: fs }}>
-                  {branchName ? branchName + ' — ' : ''}
-                  {day(report.from)} to {day(report.to)}
+              {/* The same head every other report here prints: the title
+                  centred, and the period on its own line labelled. The branch
+                  is NOT repeated -- the pad above has already named it, and a
+                  branch printed twice on one sheet reads as two. */}
+              <div className="mb-2">
+                <h1 className="text-center text-2xl font-bold">Cash &amp; Bank Book</h1>
+                <div className="mt-1 text-xs">
+                  <span className="font-semibold">Report Date:</span>{' '}
+                  {day(report.from) || '-'} to {day(report.to) || '-'}
                 </div>
               </div>
 
