@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FIELD_SELECT, FIELD_SIZE } from '../../../../theme/fieldStyles';
+import { FIELD_HEIGHT, FIELD_SELECT, FIELD_SIZE } from '../../../../theme/fieldStyles';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiEdit2, FiHome, FiPlus, FiSave, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
