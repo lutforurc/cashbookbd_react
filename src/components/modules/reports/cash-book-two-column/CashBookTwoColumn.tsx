@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { FiCheckSquare, FiRotateCcw } from 'react-icons/fi';
 import { useReactToPrint } from 'react-to-print';
 import dayjs from 'dayjs';
 
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -69,7 +71,12 @@ const CashBookTwoColumn = ({ user }: any) => {
   const [bankAccountId, setBankAccountId] = useState('');
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [fontSize, setFontSize] = useState(11);
+  // ⚠️ Nought is ALL of them, on one unbroken page -- which is what an
+  // accountant prints far more often than a page of twelve. PrintRowsInput
+  // draws an empty box with "All" behind it rather than a nought, which would
+  // read as a number somebody had cleared by accident.
+  const [rowsPerPage, setRowsPerPage] = useState<number>(0);
+  const [fontSize, setFontSize] = useState<number>(10);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -131,6 +138,16 @@ const CashBookTwoColumn = ({ user }: any) => {
     setReport(null);
   };
 
+  const handleRowsChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value, 10);
+    setRowsPerPage(Number.isNaN(value) ? 0 : value);
+  };
+
+  const handleFontChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value, 10);
+    setFontSize(Number.isNaN(value) ? 10 : value);
+  };
+
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: 'Cash & Bank Book',
@@ -149,80 +166,120 @@ const CashBookTwoColumn = ({ user }: any) => {
         Cash &amp; Bank Book
       </h2>
 
-      <div className="mb-3 flex flex-wrap items-end gap-2">
-        <div className="w-56">
-          <label className="block text-sm">Branch</label>
-          <BranchDropdown
-            defaultValue={user?.user?.branch_id}
-            value={branchId == null ? '' : String(branchId)}
-            onChange={(e: any) => setBranchId(e.target.value)}
-            className="w-full p-2 text-sm font-medium"
-            branchDdl={dropdownData}
+      {/* Laid out like the single-column book's bar, because it is the same
+          job: the branch and the period on the left, and on the right the two
+          numbers that decide what the PAPER looks like -- how many rows to a
+          page and how big the print is -- beside the button that uses them. */}
+      <div className="mb-3 flex flex-wrap items-end gap-3">
+        <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Select Branch
+            </label>
+            <BranchDropdown
+              defaultValue={user?.user?.branch_id}
+              value={branchId == null ? '' : String(branchId)}
+              onChange={(e: any) => setBranchId(e.target.value)}
+              className="w-full p-2 text-sm font-medium"
+              branchDdl={dropdownData}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Start Date
+            </label>
+            <InputDatePicker
+              className="w-full text-sm font-medium"
+              selectedDate={startDate}
+              setSelectedDate={setStartDate}
+              setCurrentDate={setStartDate}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              End Date
+            </label>
+            <InputDatePicker
+              className="w-full text-sm font-medium"
+              selectedDate={endDate}
+              setSelectedDate={setEndDate}
+              setCurrentDate={setEndDate}
+            />
+          </div>
+
+          {/* ⚠️ Narrows the BANK column only. The cash column is the branch's
+              one till whichever bank is being looked at, so it never changes
+              here -- and that is the point of the filter: one bank's book,
+              beside the cash it was fed from. */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Bank Account
+            </label>
+            <Select
+              className={`${FIELD_SELECT} w-full px-2 text-sm font-medium`}
+              value={bankAccountId}
+              onChange={(event) => setBankAccountId(event.target.value)}
+            >
+              <option value="">Every bank account</option>
+              {banks.map((bank: any) => (
+                <option key={bank.id} value={bank.id}>
+                  {bank.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto max-md:ml-0 max-md:w-full xl:ml-auto">
+          <ButtonLoading
+            onClick={load}
+            buttonLoading={loading}
+            label="Apply"
+            icon={<FiCheckSquare />}
+            className="px-6"
+          />
+
+          <ButtonLoading
+            onClick={handleReset}
+            buttonLoading={false}
+            label="Reset"
+            icon={<FiRotateCcw />}
+            className="px-4"
+          />
+
+          <div>
+            <PrintRowsInput
+              id="cbtc_rows"
+              name="rowsPerPage"
+              label=""
+              value={rowsPerPage.toString()}
+              onChange={handleRowsChange}
+              type="text"
+              className="w-20! text-center text-sm font-medium"
+            />
+          </div>
+
+          <div>
+            <PrintFontInput
+              id="cbtc_font"
+              name="fontSize"
+              label=""
+              value={fontSize.toString()}
+              onChange={handleFontChange}
+              type="text"
+              className="w-20! text-center text-sm font-medium"
+            />
+          </div>
+
+          <PrintButton
+            onClick={handlePrint}
+            label="Print"
+            className="px-6"
+            disabled={!report}
           />
         </div>
-
-        <div className="w-40">
-          <InputDatePicker
-            id="cbtc_from"
-            name="from"
-            label="From"
-            selectedDate={startDate}
-            setSelectedDate={(date: Date | null) => setStartDate(date)}
-            setCurrentDate={() => undefined}
-            className="w-full"
-          />
-        </div>
-
-        <div className="w-40">
-          <InputDatePicker
-            id="cbtc_to"
-            name="to"
-            label="To"
-            selectedDate={endDate}
-            setSelectedDate={(date: Date | null) => setEndDate(date)}
-            setCurrentDate={() => undefined}
-            className="w-full"
-          />
-        </div>
-
-        {/* ⚠️ Narrows the BANK column only. The cash column is the branch's one
-            till whichever bank is being looked at, so it never changes here --
-            and that is the point of the filter: one bank's book, beside the
-            cash it was fed from. */}
-        <div className="w-60">
-          <label className="block text-sm">Bank account</label>
-          <Select
-            className={`${FIELD_SELECT} w-full px-2 text-sm`}
-            value={bankAccountId}
-            onChange={(event) => setBankAccountId(event.target.value)}
-          >
-            <option value="">Every bank account</option>
-            {banks.map((bank: any) => (
-              <option key={bank.id} value={bank.id}>
-                {bank.name}
-              </option>
-            ))}
-          </Select>
-        </div>
-
-        <ButtonLoading
-          onClick={load}
-          buttonLoading={loading}
-          label="Apply"
-          variant="primary"
-          className="text-sm"
-          icon={<FiFilter />}
-        />
-
-        <ButtonLoading
-          onClick={handleReset}
-          buttonLoading={false}
-          label="Reset"
-          className="text-sm"
-          icon={<FiRotateCcw />}
-        />
-
-        {report ? <PrintButton onClick={handlePrint} /> : null}
       </div>
 
       <div className="overflow-x-auto">
@@ -346,7 +403,12 @@ const CashBookTwoColumn = ({ user }: any) => {
         {/* The branch is not passed: PadPrinting heads the page with the
             branch BranchDropdown published, so naming it again in the title
             block would print it twice. */}
-        <CashBookTwoColumnPrint ref={printRef} report={report} fontSize={fontSize} />
+        <CashBookTwoColumnPrint
+          ref={printRef}
+          report={report}
+          fontSize={fontSize}
+          rowsPerPage={rowsPerPage}
+        />
       </div>
     </div>
   );
