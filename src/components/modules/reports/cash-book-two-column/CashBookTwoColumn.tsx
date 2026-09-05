@@ -162,9 +162,7 @@ const CashBookTwoColumn = ({ user }: any) => {
     <div>
       <HelmetTitle title="Cash & Bank Book" />
 
-      <h2 className="mb-3 text-center text-xl font-semibold text-black dark:text-white">
-        Cash &amp; Bank Book
-      </h2>
+
 
       {/* Laid out like the single-column book's bar, because it is the same
           job: the branch and the period on the left, and on the right the two
