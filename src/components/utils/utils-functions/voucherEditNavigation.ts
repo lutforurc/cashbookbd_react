@@ -23,7 +23,38 @@ const VOUCHER_EDIT_TARGETS: Record<string, VoucherEditTarget> = {
   '3': { route: routes.inv_sales, label: 'Sales Invoice', prefix: '3' },
   '4': { route: routes.inv_purchase, label: 'Purchase Invoice', prefix: '4' },
   '5': { route: routes.journal, label: 'Journal Voucher', prefix: '5' },
+  // A purchase with nothing paid on it. It is booked as a journal and numbered
+  // 9- rather than 4-, but it is entered and edited on the purchase screen like
+  // any other purchase.
+  '9': { route: routes.inv_purchase, label: 'Credit Purchase', prefix: '9' },
+  // And its opposite number: a sale nobody has paid for, numbered 10- rather
+  // than 3-, edited on the sales screen like any other sale.
+  '10': { route: routes.inv_sales, label: 'Credit Sales', prefix: '10' },
 };
+
+/**
+ * Which purchase type the invoice was saved under, for the edit lookup.
+ *
+ * PurchaseEditRepository searches on transaction_type, and a credit purchase is
+ * a journal (5) where a paid or part-paid purchase is a payment (2). The screen
+ * remembers whichever type the operator last picked, so a 9- voucher opened
+ * from a report would be searched as a cash purchase and found nowhere.
+ */
+export const getPurchaseTypeForVoucher = (
+  vrNo: string | number | null | undefined,
+  fallback: string,
+): string => (getVoucherTypePrefix(vrNo) === '9' ? '5' : fallback);
+
+/**
+ * The same question on the selling side, for SalesEditRepository.
+ *
+ * A credit sale is a journal (5) where a sale received in whole or in part is a
+ * receipt (1), and the screen remembers whichever type was last picked.
+ */
+export const getSalesTypeForVoucher = (
+  vrNo: string | number | null | undefined,
+  fallback: string,
+): string => (getVoucherTypePrefix(vrNo) === '10' ? '5' : fallback);
 
 /**
  * The same two vouchers, opened on the bank screens instead.

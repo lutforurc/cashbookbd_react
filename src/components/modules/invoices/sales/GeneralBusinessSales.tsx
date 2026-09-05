@@ -39,6 +39,7 @@ import QuickCustomerModal from './QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import { getSalesTypeForVoucher } from '../../../utils/utils-functions/voucherEditNavigation';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import StockShortageModal, {
@@ -226,8 +227,18 @@ const GeneralBusinessSales = () => {
       toast.info('Please enter an invoice number');
       return;
     }
+
+    // A credit sale is numbered 10- and was booked as a journal, so it has to
+    // be looked up as one however the box above is set -- opened from the Sales
+    // Ledger nobody has touched that box at all.
+    const resolvedSalesType = getSalesTypeForVoucher(invoiceNo, salesType);
+
+    if (resolvedSalesType !== salesType) {
+      setSalesType(resolvedSalesType);
+    }
+
     dispatch(
-      generalSalesEdit({ invoiceNo, salesType: salesType }, (message: string) => {
+      generalSalesEdit({ invoiceNo, salesType: resolvedSalesType }, (message: string) => {
         if (message) {
           toast.error(message);
         }

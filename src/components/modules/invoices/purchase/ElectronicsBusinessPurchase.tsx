@@ -38,6 +38,7 @@ import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import { getPurchaseTypeForVoucher } from '../../../utils/utils-functions/voucherEditNavigation';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { Textarea } from '../../../utils/fields/FormControls';
 
@@ -256,9 +257,19 @@ const ElectronicsBusinessPurchase = () => {
       toast.info('Please enter an invoice number');
       return;
     }
+
+    // A credit purchase is numbered 9- and was booked as a journal, so it has
+    // to be looked up as a due purchase however the box above is set -- opened
+    // from the Purchase Ledger nobody has touched that box at all.
+    const resolvedPurchaseType = getPurchaseTypeForVoucher(invoiceNo, purchaseType);
+
+    if (resolvedPurchaseType !== purchaseType) {
+      setPurchaseType(resolvedPurchaseType);
+    }
+
     dispatch(
       electronicsPurchaseEdit(
-        { invoiceNo, purchaseType: purchaseType },
+        { invoiceNo, purchaseType: resolvedPurchaseType },
         (message: string) => {
           if (message) {
             toast.info(message);
@@ -550,9 +561,17 @@ const ElectronicsBusinessPurchase = () => {
 
     // Save Invoice
     dispatch(
-      electronicsPurchaseUpdate(formData, function (message) {
+      electronicsPurchaseUpdate(formData, function (message, saved) {
         if (message) {
           toast.info(message);
+        }
+
+        // Paid off at last, so the voucher left the credit-purchase run for the
+        // purchase one and came back under a new number. The box has to follow
+        // it, or the next search would look for a number nothing holds.
+        if (saved?.vr_no) {
+          setSearch(saved.vr_no);
+          setFormData((prev) => ({ ...prev, searchInvoice: saved.vr_no }));
         }
       }),
     );

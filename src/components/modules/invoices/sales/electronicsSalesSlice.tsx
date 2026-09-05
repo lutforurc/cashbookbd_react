@@ -80,7 +80,10 @@ export const electronicsSalesStore = (data: formData, callback?: (message: strin
 
 
 // Not ready for electronics sales update action
-export const electronicsSalesUpdate = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
+// The second argument carries whatever the save answered with. A sale that was
+// settled after being sold on credit comes back renumbered, and the screen has
+// to be told its new number -- the box is still holding the old one.
+export const electronicsSalesUpdate = (data: formData, callback?: (message: string, saved?: any) => void) => (dispatch: any) => {
   dispatch({ type: SALES_ELECTRONICS_UPDATE_PENDING });
   httpService.post(API_ELECTRONICS_SALES_UPDATE_URL, data)
     .then((res) => {
@@ -91,7 +94,7 @@ export const electronicsSalesUpdate = (data: formData, callback?: (message: stri
           payload: _data.data.data,
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(_data.message, _data.data?.data);
         }
       } else {
         dispatch({
