@@ -40,6 +40,7 @@ import Category from './components/modules/category/Category';
 import AddCategory from './components/modules/category/AddCategory';
 import EditCategory from './components/modules/category/EditCategory';
 import CashBook from './components/modules/reports/cashbook/CashBook';
+import CashBookTwoColumn from './components/modules/reports/cash-book-two-column/CashBookTwoColumn';
 import BankBook from './components/modules/reports/bankbook/BankBook';
 import CashBankReceivedPayment from './components/modules/reports/cash-bank-received-payment/CashBankReceivedPayment';
 import Ledger from './components/modules/reports/ledger/Ledger';
@@ -881,6 +882,12 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_cashbook} element={<CashBook user={me} />} />
+              {/* The same money, laid out as the paper double-column book.
+                  Behind the same permission: it is the cash book. */}
+              <Route
+                path={routes.report_cashbook_two_column}
+                element={<CashBookTwoColumn user={me} />}
+              />
             </Route>
             {/* Each of these is offered by its own sidebar permission. Guarded
                 separately so 'bank.book' opens the bank book and nothing else. */}

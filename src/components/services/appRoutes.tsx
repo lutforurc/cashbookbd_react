@@ -137,6 +137,7 @@ const ROUTES = {
 
   report_ledger: '/reports/ledger',
   report_cashbook: '/reports/cashbook',
+  report_cashbook_two_column: '/reports/cash-book-two-column',
   report_bankbook: '/reports/bankbook',
   cash_bank_received_payment: '/reports/cash-bank-received-payment',
   profit_loss: '/reports/profit-loss',

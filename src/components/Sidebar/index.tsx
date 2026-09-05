@@ -70,6 +70,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'reports': [
     { id: 'reports/cashbook', title: "Cash Book" },
+    { id: 'reports/cash-book-two-column', title: "Cash & Bank Book" },
     { id: 'report_bankbook', title: "Bank Book" },
     { id: 'ageing_report', title: "Ageing" },
     { id: 'audit_trail', title: "Audit Trail" },
@@ -1209,6 +1210,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Cash Book
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {/* Directly under the cash book it is a second view
+                              of: same money, same permission, a bank column
+                              beside the cash one. */}
+                          {hasPermission(permissions, 'cashbook.view') && (
+                            <li style={subSlot('reports', 'reports/cash-book-two-column')}>
+                              <NavLink
+                                to={routes.report_cashbook_two_column}
+                                className={subMenuLinkClass}
+                              >
+                                Cash &amp; Bank Book
                               </NavLink>
                             </li>
                           )}
