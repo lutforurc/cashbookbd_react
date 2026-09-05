@@ -13,6 +13,8 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table, { Column } from '../../utils/others/Table';
 import Pagination from '../../utils/utils-functions/Pagination';
 import SelectOption from '../../utils/utils-functions/SelectOption';
+import { Select } from '../../utils/fields/FormControls';
+import { FIELD_SELECT } from '../../../theme/fieldStyles';
 
 const dateTime = (value?: string | null) =>
   value ? dayjs(value).format('DD/MM/YYYY hh:mm A') : '';
@@ -46,6 +48,9 @@ const LoginLogReport: React.FC = () => {
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
+  // Empty is both: the report opens on everything that happened, and a reader
+  // looking for trouble narrows it to the refusals.
+  const [result, setResult] = useState('');
   // A request that failed is not the same as a period with no logins, and the
   // table must not read as the second when it was the first.
   const [loadError, setLoadError] = useState('');
@@ -57,6 +62,7 @@ const LoginLogReport: React.FC = () => {
       search: search.trim() || undefined,
       date_from: dateFrom ? dayjs(dateFrom).format('YYYY-MM-DD') : undefined,
       date_to: dateTo ? dayjs(dateTo).format('YYYY-MM-DD') : undefined,
+      result: result || undefined,
       ...(override ?? {}),
     };
 
@@ -102,8 +108,9 @@ const LoginLogReport: React.FC = () => {
     setSearch('');
     setDateFrom(null);
     setDateTo(null);
+    setResult('');
     setPage(1);
-    loadData({ page: 1, search: undefined, date_from: undefined, date_to: undefined });
+    loadData({ page: 1, search: undefined, date_from: undefined, date_to: undefined, result: undefined });
   };
 
   const columns: Column[] = useMemo(
@@ -119,14 +126,37 @@ const LoginLogReport: React.FC = () => {
         key: 'user_name',
         header: 'User',
         cellClass: 'text-left',
+        // An attempt on a login nobody has names no user. What it CAN show is
+        // what was typed, which is the whole value of the row: it says which
+        // username somebody was trying.
         render: (row: any) => (
           <div>
-            <div className="font-medium">{row.user_name || '-'}</div>
+            <div className="font-medium">{row.user_name || row.login_input || '-'}</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              {row.email || formatMobile(row.phone, mobileFormat) || ''}
+              {row.user_name
+                ? row.email || formatMobile(row.phone, mobileFormat) || ''
+                : row.login_input
+                  ? 'no such user'
+                  : ''}
             </div>
           </div>
         ),
+      },
+      {
+        key: 'result',
+        header: 'Result',
+        cellClass: 'text-left',
+        render: (row: any) =>
+          (row.result ?? 'success') === 'success' ? (
+            <span className="text-xs text-emerald-600 dark:text-emerald-400">Signed in</span>
+          ) : (
+            <div>
+              <div className="text-xs font-semibold text-red-600 dark:text-red-400">Refused</div>
+              {row.reason ? (
+                <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">{row.reason}</div>
+              ) : null}
+            </div>
+          ),
       },
       {
         key: 'company',
@@ -152,7 +182,12 @@ const LoginLogReport: React.FC = () => {
         // Still signed in, or simply never signed out -- the log cannot tell
         // the two apart, so it claims neither.
         render: (row: any) =>
-          row.out_time ? (
+          (row.result ?? 'success') !== 'success' ? (
+            // Nothing was ever opened, so there is nothing to have closed --
+            // and "Not signed out" against a refused attempt reads as a session
+            // still running.
+            '-'
+          ) : row.out_time ? (
             dateTime(row.out_time)
           ) : (
             <span className="text-xs text-amber-600 dark:text-amber-400">Not signed out</span>
@@ -189,11 +224,12 @@ const LoginLogReport: React.FC = () => {
         <div className="mb-3">
           <h2 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Login History</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            When each user signed in, from which address and on what device.
+            When each user signed in, from which address and on what device — and every
+            attempt that was refused.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-5">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-6">
           <div>
             <label className="block text-sm">From</label>
             <InputDatePicker
@@ -212,6 +248,19 @@ const LoginLogReport: React.FC = () => {
  setSelectedDate={setDateTo}
  setCurrentDate={setDateTo}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm">Result</label>
+            <Select
+              className={`${FIELD_SELECT} w-full px-2 text-sm`}
+              value={result}
+              onChange={(event) => setResult(event.target.value)}
+            >
+              <option value="">All</option>
+              <option value="success">Signed in</option>
+              <option value="failed">Refused</option>
+            </Select>
           </div>
 
           <div className="md:col-span-2">
@@ -251,7 +300,7 @@ const LoginLogReport: React.FC = () => {
             className="w-20"
           />
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            {total} login{total === 1 ? '' : 's'}
+            {total} record{total === 1 ? '' : 's'}
           </span>
         </div>
 
@@ -272,7 +321,7 @@ const LoginLogReport: React.FC = () => {
               data={rows}
               className=""
               noDataMessage={
-                loadError ? 'Nothing could be loaded' : 'No login recorded for this period'
+                loadError ? 'Nothing could be loaded' : 'Nothing recorded for this period'
               }
             />
           </div>
