@@ -5,6 +5,7 @@ import InvoiceChangesTable from "./InvoiceChangesTable";
 import PurchaseSummary from "./PurchaseSummary";
 import PurchaseDetailsTable from "./PurchaseDetailsTable";
 import JournalSection from "./JournalSection";
+import ChangedFields from "./ChangedFields";
 
 const HistoryCard = ({ item, coaNameMap }) => {
   // Safely normalizing old and new data
@@ -84,6 +85,11 @@ const HistoryCard = ({ item, coaNameMap }) => {
         <JournalSection label="Before" data={oldData} coaNameMap={coaNameMap} />
         <JournalSection label="After" data={newData} coaNameMap={coaNameMap} />
       </div>
+
+      {/* Under the tables, because it is read after them -- and because a
+          change the tables cannot show (a corrected narration, a moved date) is
+          otherwise invisible on this card. */}
+      <ChangedFields changes={item?.changed_only} />
     </div>
   );
 };

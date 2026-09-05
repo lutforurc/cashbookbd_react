@@ -108,18 +108,9 @@ const ChangeHistory = (user: any) => {
         ))}
       </div>
 
-        <div className="mx-auto mt-6">
-          {historyList.length > 0 && <div className="border rounded-lg pl-4 pt-2 pb-2 mb-4 bg-white dark:bg-gray-900 border-[rgb(var(--c-border))]">
-            {historyList.map((item, index) => (
-              <div key={index} className="text-sm text-gray-700 dark:text-gray-300">
-                <pre className="whitespace-pre-wrap wrap-break-word">
-                  {JSON.stringify(item.changed_only, null, 2)}
-                </pre>
-              </div>
-            ))}
-          </div>}
-        </div>
-
+      {/* The raw change JSON used to be dumped here, under every card at once.
+          It now reads as a named list inside the card it belongs to -- see
+          ChangedFields. */}
 
       <ConfirmModal
         show={showConfirm}
