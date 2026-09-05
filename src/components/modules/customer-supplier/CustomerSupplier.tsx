@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
+import { FiBook, FiCheckSquare, FiClock, FiEdit2, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import SearchInput from "../../utils/fields/SearchInput";
@@ -16,7 +16,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import ConfirmModal from "../../utils/components/ConfirmModalProps";
 import { hasPermission } from "../../utils/permissionChecker";
 import httpService from "../../services/httpService";
-import { API_CUSTOMER_PROFILE_PDF_URL } from "../../services/apiRoutes";
+import { API_CUSTOMER_HISTORY_URL, API_CUSTOMER_PROFILE_PDF_URL } from "../../services/apiRoutes";
 import routes from "../../services/appRoutes";
 import { formatMobile, useMobileFormat } from "../../utils/utils-functions/mobileFormat";
 import { Button } from '../../../pages/UiElements/CustomButtons';
@@ -86,6 +86,12 @@ const CustomerSupplier = () => {
   const [openingDeleteRow, setOpeningDeleteRow] = useState<any | null>(null);
   const [deletingOpeningId, setDeletingOpeningId] = useState<number | null>(null);
   const [printingCustomerId, setPrintingCustomerId] = useState<number | null>(null);
+  // The change log for one customer, loaded when the clock is clicked rather
+  // than with the list: a page of ten customers would otherwise fetch ten
+  // trails nobody asked to see.
+  const [historyCustomer, setHistoryCustomer] = useState<any | null>(null);
+  const [historyEvents, setHistoryEvents] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const customerPageData = customers?.customer || {};
@@ -299,6 +305,53 @@ const CustomerSupplier = () => {
    * request returns gets caught by the popup blocker — and falls back to a plain
    * download when the blocker takes it anyway.
    */
+  /**
+   * What has been done to this customer, and by whom.
+   *
+   * The trail is kept by PartyObserver on the API side, which records a row
+   * every time a party is created, changed or deleted. Opened here because this
+   * is where the question is asked -- somebody looks at a mobile number that is
+   * not the one they typed and wants to know who changed it.
+   */
+  const handleShowHistory = async (row: any) => {
+    setHistoryCustomer(row);
+    setHistoryEvents([]);
+    setHistoryLoading(true);
+
+    try {
+      const response = await httpService.get(`${API_CUSTOMER_HISTORY_URL}${row.id}`);
+      const payload = response?.data?.data?.data ?? response?.data?.data ?? {};
+
+      setHistoryEvents(Array.isArray(payload?.events) ? payload.events : []);
+    } catch (error) {
+      console.error(error);
+      toast.error('Could not load the change log for this customer.');
+      setHistoryCustomer(null);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  /** A stamp as a person reads it: 05/09/2026 02:14 PM. */
+  const historyStamp = (value: any) => {
+    if (!value) return '';
+
+    const at = new Date(String(value).replace(' ', 'T'));
+
+    if (Number.isNaN(at.getTime())) return String(value);
+
+    const two = (n: number) => String(n).padStart(2, '0');
+    const hour = at.getHours() % 12 || 12;
+
+    return `${two(at.getDate())}/${two(at.getMonth() + 1)}/${at.getFullYear()} `
+      + `${two(hour)}:${two(at.getMinutes())} ${at.getHours() < 12 ? 'AM' : 'PM'}`;
+  };
+
+  // An empty field reads as a dash rather than as nothing at all, so a value
+  // that was cleared is visibly a change and not a rendering fault.
+  const historyValue = (value: any) =>
+    value === null || value === undefined || String(value).trim() === '' ? '—' : String(value);
+
   const handlePrintRow = async (row: any) => {
     if (printingCustomerId) return;
 
@@ -583,6 +636,17 @@ const CustomerSupplier = () => {
             </Button>
           </div>
 
+          {/* ===== Log Slot ===== */}
+          <div className="w-4 flex justify-center">
+            <Button
+              title="Change log"
+              className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+              onClick={() => handleShowHistory(row)}
+            >
+              <FiClock size={15} />
+            </Button>
+          </div>
+
           {/* ===== Edit Slot ===== */}
           {canEditCustomer && (
             <div className="w-4 flex justify-center">
@@ -726,6 +790,110 @@ const CustomerSupplier = () => {
         onCancel={() => setOpeningDeleteRow(null)}
         onConfirm={handleOpeningDeleteConfirmed}
       />
+
+      {historyCustomer && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-20">
+          <div
+            className="bg-white dark:bg-gray-800
+ rounded-sm
+ w-[900px] max-h-[85vh]
+ overflow-hidden
+ shadow-xl
+ border border-[rgb(var(--c-border))]"
+          >
+            <div
+              className="flex justify-between items-center
+ px-4 py-3
+ bg-gray-300 dark:bg-gray-700
+ border-b border-[rgb(var(--c-border))]"
+            >
+              <h2 className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-200">
+                Change Log — {historyCustomer?.name}
+              </h2>
+
+              <Button
+                onClick={() => setHistoryCustomer(null)}
+                className="text-gray-600 dark:text-gray-300 hover:text-red-500"
+              >
+                <FiX className="text-lg cursor-pointer" />
+              </Button>
+            </div>
+
+            <div className="overflow-auto max-h-[75vh]">
+              <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
+                <thead
+                  className="text-xs uppercase
+ bg-gray-200 dark:bg-gray-700
+ text-gray-800 dark:text-gray-300
+ border-b border-[rgb(var(--c-border))]"
+                >
+                  <tr>
+                    <th className="px-3 py-2 w-44">When</th>
+                    <th className="px-3 py-2 w-40">Who</th>
+                    <th className="px-3 py-2 w-24">Action</th>
+                    <th className="px-3 py-2">What changed</th>
+                  </tr>
+                </thead>
+
+                <tbody
+                  className="bg-[rgb(var(--c-table-body))]
+ divide-y divide-gray-200 dark:divide-gray-700"
+                >
+                  {historyLoading ? (
+                    <tr>
+                      <td colSpan={4} className="text-center py-4 text-gray-500 dark:text-gray-400">
+                        Loading…
+                      </td>
+                    </tr>
+                  ) : historyEvents.length > 0 ? (
+                    historyEvents.map((event: any) => (
+                      <tr key={event.id} className="align-top">
+                        <td className="px-3 py-2 whitespace-nowrap">{historyStamp(event.at)}</td>
+                        <td className="px-3 py-2">{event.user || '—'}</td>
+                        <td className="px-3 py-2 capitalize">{event.action}</td>
+                        <td className="px-3 py-2">
+                          {Array.isArray(event.changes) && event.changes.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {event.changes.map((change: any, index: number) => (
+                                <div key={index} className="flex flex-wrap items-baseline gap-2">
+                                  <span className="font-semibold">{change.field}:</span>
+                                  {/* A create has nothing before it, so it prints
+                                      the value alone rather than an arrow out of
+                                      an empty dash. */}
+                                  {event.action === 'update' ? (
+                                    <>
+                                      <span className="line-through opacity-70">
+                                        {historyValue(change.old)}
+                                      </span>
+                                      <span>→</span>
+                                      <span className="font-semibold">{historyValue(change.new)}</span>
+                                    </>
+                                  ) : (
+                                    <span>{historyValue(change.new ?? change.old)}</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-gray-500 dark:text-gray-400">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="text-center py-4 text-gray-500 dark:text-gray-400">
+                        Nothing recorded for this customer yet. Changes made before the log was
+                        switched on are not in it.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showGuarantorModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-50">
