@@ -52,6 +52,7 @@ import {
   API_TRADING_SALES_SUGGESTIONS_URL,
 } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import { getSalesTypeForVoucher } from '../../../utils/utils-functions/voucherEditNavigation';
 import { getDdlProduct } from '../../product/productSlice';
 import { getToken } from '../../../../features/authReducer';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
@@ -337,9 +338,19 @@ const TradingBusinessSales = () => {
       toast.info('Please enter an invoice number');
       return;
     }
+
+    // A credit sale is numbered 10- and was booked as a journal, so it has to
+    // be looked up as one however the box above is set -- opened from the Sales
+    // Ledger nobody has touched that box at all.
+    const resolvedSalesType = getSalesTypeForVoucher(invoiceNo, salesType);
+
+    if (resolvedSalesType !== salesType) {
+      setSalesType(resolvedSalesType);
+    }
+
     dispatch(
       tradingSalesEdit(
-        { invoiceNo, salesType: salesType },
+        { invoiceNo, salesType: resolvedSalesType },
         (message: string) => {
           if (message) {
             toast.error(message);
@@ -723,7 +734,7 @@ const TradingBusinessSales = () => {
 
     // Save Invoice Update
     dispatch(
-      tradingSalesUpdate(payload, function (message) {
+      tradingSalesUpdate(payload, function (message, saved) {
         if (message) {
           toast.info(message);
           setFormData((prevState) => ({
@@ -731,6 +742,14 @@ const TradingBusinessSales = () => {
             discountAmt: '',
             products: [],
           }));
+        }
+
+        // Settled at last, so the voucher left the credit-sales run for the
+        // receipt one and came back under a new number. The box has to follow
+        // it, or the next search would look for a number nothing holds.
+        if (saved?.vr_no) {
+          setSearch(saved.vr_no);
+          setFormData((prevState) => ({ ...prevState, searchInvoice: saved.vr_no }));
         }
       }),
     );

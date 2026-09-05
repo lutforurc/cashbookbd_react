@@ -109,8 +109,8 @@ export const voucherTypes = [
   { id: 6, name: 'Labour Invoice' },
   { id: 7, name: 'Issue Challan' },
   { id: 8, name: 'Receive Challan' },
-  { id: 9, name: 'Requisition' },
-  { id: 10, name: 'Credit Note' },
+  { id: 9, name: 'Credit Purchase' },
+  { id: 10, name: 'Credit Sales' },
   { id: 11, name: 'Memo Voucher' },
   { id: 12, name: 'Purchase Return' },
   { id: 13, name: 'Sales Return' },
@@ -123,6 +123,7 @@ export const voucherTypes = [
   { id: 20, name: 'Realization' },
   { id: 21, name: 'Challan' },
   { id: 22, name: 'Realization Payment' },
+  { id: 23, name: 'Requisition' },
 ];
 
 export const ImageVoucherType = [

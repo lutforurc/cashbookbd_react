@@ -79,7 +79,10 @@ export const purchaseStore = (data: formData, callback?: (message: string, succe
       });
   };
 
-export const purchaseUpdate = (data: formData, callback?: (message: string, success?: boolean) => void) => (dispatch: any) => {
+// The third argument carries whatever the save answered with. A purchase that
+// was paid off after being bought on credit comes back renumbered, and the
+// screen has to be told its new number -- the box is still holding the old one.
+export const purchaseUpdate = (data: formData, callback?: (message: string, success?: boolean, saved?: any) => void) => (dispatch: any) => {
     dispatch({ type: PURCHASE_TRADING_UPDATE_PENDING });
     httpService.post(API_TRADING_PURCHASE_UPDATE_URL, data)
       .then((res) => {
@@ -90,7 +93,7 @@ export const purchaseUpdate = (data: formData, callback?: (message: string, succ
             payload: _data.data.data,
           });
           if ('function' == typeof callback) {
-            callback(_data.message, true);
+            callback(_data.message, true, _data.data?.data);
           }
         } else {
           dispatch({
