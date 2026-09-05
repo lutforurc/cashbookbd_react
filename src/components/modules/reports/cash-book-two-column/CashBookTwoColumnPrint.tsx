@@ -92,7 +92,7 @@ const CashBookTwoColumnPrint = React.forwardRef<HTMLDivElement, Props>(
                     <tr className="font-bold">
                       <td className={cell}>{day(report.from)}</td>
                       <td className={cell} />
-                      <td className={cell}>Balance BD</td>
+                      <td className={cell}>Balance b/d</td>
                       <td className={figure}>{money(report.opening?.cash_debit)}</td>
                       <td className={figure}>{money(report.opening?.bank_debit)}</td>
                       <td className={figure}>{money(report.opening?.cash_credit)}</td>
@@ -122,19 +122,22 @@ const CashBookTwoColumnPrint = React.forwardRef<HTMLDivElement, Props>(
 
                   {isLast ? (
                     <>
+                      {/* Carried down first and on the opposite side to the one
+                          it opened on -- that entry is what squares the account
+                          -- and the footing after it, balances included. */}
+                      <tr className="font-bold">
+                        <td colSpan={3} className={`${cell} text-right`}>Balance c/d</td>
+                        <td className={figure}>{money(report.closing?.cash_debit)}</td>
+                        <td className={figure}>{money(report.closing?.bank_debit)}</td>
+                        <td className={figure}>{money(report.closing?.cash_credit)}</td>
+                        <td className={figure}>{money(report.closing?.bank_credit)}</td>
+                      </tr>
                       <tr className="font-bold">
                         <td colSpan={3} className={`${cell} text-right`}>Total</td>
                         <td className={figure}>{money(report.totals?.debit_cash)}</td>
                         <td className={figure}>{money(report.totals?.debit_bank)}</td>
                         <td className={figure}>{money(report.totals?.credit_cash)}</td>
                         <td className={figure}>{money(report.totals?.credit_bank)}</td>
-                      </tr>
-                      <tr className="font-bold">
-                        <td colSpan={3} className={`${cell} text-right`}>Balance C/D</td>
-                        <td className={figure}>{money(report.closing?.cash > 0 ? report.closing.cash : 0)}</td>
-                        <td className={figure}>{money(report.closing?.bank > 0 ? report.closing.bank : 0)}</td>
-                        <td className={figure}>{money(report.closing?.cash < 0 ? Math.abs(report.closing.cash) : 0)}</td>
-                        <td className={figure}>{money(report.closing?.bank < 0 ? Math.abs(report.closing.bank) : 0)}</td>
                       </tr>
                     </>
                   ) : null}

@@ -309,7 +309,7 @@ const CashBookTwoColumn = ({ user }: any) => {
                   {dayjs(report.from).format('DD/MM/YYYY')}
                 </td>
                 <td className="border border-stroke px-2 py-1 dark:border-strokedark" />
-                <td className="border border-stroke px-2 py-1 dark:border-strokedark">Balance BD</td>
+                <td className="border border-stroke px-2 py-1 dark:border-strokedark">Balance b/d</td>
                 <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.opening?.cash_debit)}</td>
                 <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.opening?.bank_debit)}</td>
                 <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.opening?.cash_credit)}</td>
@@ -356,6 +356,24 @@ const CashBookTwoColumn = ({ user }: any) => {
 
             {report ? (
               <>
+                {/* ⚠️ THE BALANCE IS CARRIED DOWN ON THE OPPOSITE SIDE TO THE
+                    ONE IT OPENS ON, and it comes BEFORE the footing. Money in
+                    hand is a debit balance and is carried down as a credit --
+                    that entry is what makes the two sides of the account equal.
+                    An overdrawn bank is a credit balance and carries down on the
+                    debit side. The API decides which cell; the screen prints it. */}
+                <tr className="font-semibold">
+                  <td colSpan={3} className="border border-stroke px-2 py-1 text-right dark:border-strokedark">
+                    Balance c/d
+                  </td>
+                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.closing?.cash_debit)}</td>
+                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.closing?.bank_debit)}</td>
+                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.closing?.cash_credit)}</td>
+                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.closing?.bank_credit)}</td>
+                </tr>
+
+                {/* The whole account, balances included, which is why the two
+                    sides of each come to the same figure. */}
                 <tr className="bg-gray-2 font-semibold dark:bg-meta-4">
                   <td colSpan={3} className="border border-stroke px-2 py-1 text-right dark:border-strokedark">
                     Total
@@ -365,31 +383,21 @@ const CashBookTwoColumn = ({ user }: any) => {
                   <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.totals?.credit_cash)}</td>
                   <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.totals?.credit_bank)}</td>
                 </tr>
-
-                {/* Carried down on the side it belongs to: a balance in hand is
-                    a debit, and an overdrawn bank is a credit. */}
-                <tr className="font-semibold">
-                  <td colSpan={3} className="border border-stroke px-2 py-1 text-right dark:border-strokedark">
-                    Balance C/D
-                  </td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">
-                    {money(report.closing?.cash > 0 ? report.closing.cash : 0)}
-                  </td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">
-                    {money(report.closing?.bank > 0 ? report.closing.bank : 0)}
-                  </td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">
-                    {money(report.closing?.cash < 0 ? Math.abs(report.closing.cash) : 0)}
-                  </td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">
-                    {money(report.closing?.bank < 0 ? Math.abs(report.closing.bank) : 0)}
-                  </td>
-                </tr>
               </>
             ) : null}
           </tbody>
         </table>
       </div>
+
+      {report && (report.balanced?.cash === false || report.balanced?.bank === false) ? (
+        <div className="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+          This book does not foot: the debit and credit totals of the{' '}
+          {report.balanced?.cash === false ? 'cash' : ''}
+          {report.balanced?.cash === false && report.balanced?.bank === false ? ' and ' : ''}
+          {report.balanced?.bank === false ? 'bank' : ''} column disagree. Report it rather than
+          working from these figures.
+        </div>
+      ) : null}
 
       {!report && !loading ? (
         <p className="mt-3 text-center text-sm text-gray-500 dark:text-gray-400">
