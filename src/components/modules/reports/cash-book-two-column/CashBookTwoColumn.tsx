@@ -256,7 +256,7 @@ const CashBookTwoColumn = ({ user }: any) => {
             {report ? (
               <tr className="font-semibold">
                 <td className="border border-stroke px-2 py-1 dark:border-strokedark">
-                  {dayjs(report.from).format('DD-MMM-YY')}
+                  {dayjs(report.from).format('DD/MM/YYYY')}
                 </td>
                 <td className="border border-stroke px-2 py-1 dark:border-strokedark" />
                 <td className="border border-stroke px-2 py-1 dark:border-strokedark">Balance BD</td>
@@ -270,7 +270,7 @@ const CashBookTwoColumn = ({ user }: any) => {
             {rows.map((row: any) => (
               <tr key={row.mtm_id} className="align-top">
                 <td className="border border-stroke px-2 py-1 whitespace-nowrap dark:border-strokedark">
-                  {dayjs(row.vr_date).format('DD-MMM-YY')}
+                  {dayjs(row.vr_date).format('DD/MM/YYYY')}
                 </td>
                 <td className="border border-stroke px-2 py-1 whitespace-nowrap font-mono text-xs dark:border-strokedark">
                   {row.vr_no}

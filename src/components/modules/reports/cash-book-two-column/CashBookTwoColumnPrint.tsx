@@ -18,7 +18,7 @@ const money = (value: any) => {
   return amount ? thousandSeparator(amount) : '';
 };
 
-const day = (value: any) => (value ? dayjs(value).format('DD-MMM-YY') : '');
+const day = (value: any) => (value ? dayjs(value).format('DD/MM/YYYY') : '');
 
 const chunkRows = <T,>(rows: T[], size: number): T[][] => {
   if (size <= 0) return [rows];
