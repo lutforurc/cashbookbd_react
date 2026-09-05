@@ -38,14 +38,34 @@ const money = (value: any) => {
 
 const asText = (date: any) => (date ? dayjs(date).format('YYYY-MM-DD') : '');
 
+/**
+ * The branch's transaction date, which the dropdown answers with as DD/MM/YYYY.
+ *
+ * ⚠️ PARSED BY HAND, not handed to Date or dayjs. "05/09/2026" is read by both
+ * as the 9th of May, so a screen that trusted them would open on a range three
+ * months wide of the day the branch is actually working in -- and say nothing
+ * about it.
+ */
+const parseBranchDate = (said: any): Date | null => {
+  const parts = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(said ?? ''));
+
+  return parts ? new Date(Number(parts[3]), Number(parts[2]) - 1, Number(parts[1])) : null;
+};
+
 const CashBookTwoColumn = ({ user }: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
+  // ⚠️ The settings are the fallback for whose branch this is. The `user` prop
+  // arrives from the auth store and is not always filled by the time this
+  // screen first draws -- and a branch that never got set is why Apply used to
+  // answer "choose a branch and a date range first" over a screen that was
+  // showing both.
+  const settings = useSelector((state: any) => state.settings);
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
-  const [startDate, setStartDate] = useState<any>(null);
-  const [endDate, setEndDate] = useState<any>(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [bankAccountId, setBankAccountId] = useState('');
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -66,16 +86,22 @@ const CashBookTwoColumn = ({ user }: any) => {
 
     // The branch's own transaction date, which is what a fresh visit means --
     // the same rule the single-column book follows.
-    const onDate = payload.transactionDate;
+    const onDate = parseBranchDate(payload.transactionDate);
+    const branch = user?.user?.branch_id ?? settings?.data?.branch?.id ?? null;
 
-    setBranchId((current) => current ?? user?.user?.branch_id);
-    setStartDate((current: any) => current ?? onDate);
-    setEndDate((current: any) => current ?? onDate);
-  }, [branchDdlData, user]);
+    setBranchId((current) => current ?? branch);
+    setStartDate((current) => current ?? onDate);
+    setEndDate((current) => current ?? onDate);
+  }, [branchDdlData, user, settings]);
 
   const load = async () => {
-    if (!branchId || !startDate || !endDate) {
-      toast.info('Choose a branch and a date range first.');
+    if (!branchId) {
+      toast.info('Choose a branch first.');
+      return;
+    }
+
+    if (!startDate || !endDate) {
+      toast.info('Choose a date range first.');
       return;
     }
 
@@ -145,8 +171,8 @@ const CashBookTwoColumn = ({ user }: any) => {
             id="cbtc_from"
             name="from"
             label="From"
-            selectedDate={startDate ? new Date(startDate) : null}
-            setSelectedDate={(date: Date | null) => setStartDate(asText(date))}
+            selectedDate={startDate}
+            setSelectedDate={(date: Date | null) => setStartDate(date)}
             setCurrentDate={() => undefined}
             className="w-full"
           />
@@ -157,8 +183,8 @@ const CashBookTwoColumn = ({ user }: any) => {
             id="cbtc_to"
             name="to"
             label="To"
-            selectedDate={endDate ? new Date(endDate) : null}
-            setSelectedDate={(date: Date | null) => setEndDate(asText(date))}
+            selectedDate={endDate}
+            setSelectedDate={(date: Date | null) => setEndDate(date)}
             setCurrentDate={() => undefined}
             className="w-full"
           />
