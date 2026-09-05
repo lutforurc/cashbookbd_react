@@ -8,6 +8,12 @@ export type LedgerWithProductRow = {
   remarks?: string;
   order_number?: string;
   truck_no?: string;
+  /**
+   * What the server calls this row -- 'Sales', 'Purchase', 'Opening' or
+   * 'Transaction'. Read in preference to the voucher number's prefix; see
+   * isPurchaseRow in ledgerWithProductUtils.
+   */
+  trx_type?: string;
   quantity?: number | string;
   rate?: number | string;
   total?: number | string;
