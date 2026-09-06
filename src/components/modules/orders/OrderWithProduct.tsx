@@ -393,10 +393,16 @@ const OrderWithProduct = ({
             : 0;
         const transactionQty = toNumber(activeDetail?.quantity);
         const remarks = trx?.acc_transaction_details?.[0]?.remarks ?? '';
+        // The note typed on the purchase or sales voucher itself. Invoice rows
+        // carry no ledger remark, so without this the product name stands alone.
+        const voucherNote = String(salesMaster?.notes ?? purchaseMaster?.notes ?? '').trim();
         const detailLines = [
           hasSales || hasPurchase ? payload?.product?.name || '-' : primaryLedgerName,
+          voucherNote,
           remarks,
-        ].filter(Boolean);
+        ]
+          .filter(Boolean)
+          .filter((line, lineIndex, lines) => lines.indexOf(line) === lineIndex);
 
         return {
           id: trx?.id ?? index,
