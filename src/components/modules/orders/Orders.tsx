@@ -1143,7 +1143,7 @@ const Orders = () => {
         <>
         <span className='block'>{data.order_for}</span>
         { data.delivery_location && <span className='block'>{data.delivery_location}</span> }
-        { data.notes && <span className='block text-green-500 dark:text-yellow-300 font-semibold'>{data.notes}</span> }
+        { data.notes && <span className='block text-green-500 font-semibold'>{data.notes}</span> }
         </>
       ),
     },
@@ -1171,7 +1171,7 @@ const Orders = () => {
             ) : (
               <span className="block">{data.product_name}</span>
             )}
-            <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+            <span className="block text-green-500 font-semibold">
               {formatNumberOrDash(data.trx_quantity)}
             </span>
           </p>
@@ -1195,7 +1195,7 @@ const Orders = () => {
           {(data.linked_order_count ?? data.linked_orders_count ?? 0) > 0 ? (
             <Button
               type="button"
-              className="block text-left hover:underline font-semibold text-green-500 dark:text-yellow-300"
+              className="block text-left hover:underline font-semibold text-green-500 "
               onClick={() => openLinkedOrdersModal(data)}
             >
               <span className=''> {data.order_number}</span>
@@ -1236,7 +1236,7 @@ const Orders = () => {
                   {formatNumberOrDash(item.total_order)}
                 </span>
               ))}
-              <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+              <span className="block text-green-500 font-semibold">
                 {formatNumberOrDash(Number(data.total_order) - Number(data.trx_quantity))}
               </span>
             </p>
@@ -1254,7 +1254,7 @@ const Orders = () => {
             <span className="block">
               {formatNumberOrDash(data.total_order)}
             </span>
-            <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+            <span className="block text-green-500 font-semibold">
               {formatNumberOrDash((Number(data.total_order) - Number(data.trx_quantity)))}
             </span>
           </p>
@@ -1284,7 +1284,7 @@ const Orders = () => {
           <p className="text-right">
             <span className="block">{formatNumberOrDash(Math.abs(getOrderAmount(data)))}</span>
             <span className="block">{formatNumberOrDash(Math.abs(getOrderAmount(data)) - Math.abs ( poBalance - doBalance))}</span>
-            <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+            <span className="block text-green-500 font-semibold">
               {formatNumberOrDash( Math.abs ( poBalance - doBalance))}
             </span>
           </p>

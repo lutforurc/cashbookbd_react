@@ -256,9 +256,6 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
       { quantity: 0, total: 0, discount: 0, payment: 0 },
     );
 
-  console.log('Printable Rows:', payload?.customer?.address);
-
-
     return (
       <div ref={ref} className="p-6 text-sm text-gray-900 print-root">
         <PrintStyles orientation="landscape" />
