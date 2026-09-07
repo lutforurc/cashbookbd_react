@@ -107,6 +107,14 @@ const CashBookTwoColumnPrint = React.forwardRef<HTMLDivElement, Props>(
                       <td className={cell}>
                         <div>
                           {row.description}
+                          {/* The account the money actually passed through. A
+                              contra names both heads already, so it is left
+                              alone. */}
+                          {row.bank_name && !row.is_contra ? (
+                            <span style={{ fontSize: `${Math.max(7, fontSize - 2)}px` }}>
+                              {' '}· ({row.bank_name})
+                            </span>
+                          ) : null}
                           {row.is_contra ? <span className="font-bold"> (C)</span> : null}
                         </div>
                         {row.note && !row.is_contra ? (

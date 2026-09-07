@@ -291,8 +291,8 @@ const CashBookTwoColumn = ({ user }: any) => {
               <th rowSpan={2} className="border border-stroke px-2 py-1 text-left text-sm dark:border-strokedark">Date</th>
               <th rowSpan={2} className="border border-stroke px-2 py-1 text-left text-sm dark:border-strokedark">Voucher#</th>
               <th rowSpan={2} className="border border-stroke px-2 py-1 text-left text-sm dark:border-strokedark">Description</th>
-              <th colSpan={2} className="border border-stroke px-2 py-1 text-center text-sm dark:border-strokedark">Debit</th>
-              <th colSpan={2} className="border border-stroke px-2 py-1 text-center text-sm dark:border-strokedark">Credit</th>
+              <th colSpan={2} className="border border-stroke px-2 py-1 text-center text-sm dark:border-strokedark">Receive</th>
+              <th colSpan={2} className="border border-stroke px-2 py-1 text-center text-sm dark:border-strokedark">Payment</th>
             </tr>
             <tr className="bg-gray-2 dark:bg-meta-4">
               <th className="border border-stroke px-2 py-1 text-right text-sm dark:border-strokedark">Cash</th>
@@ -328,6 +328,17 @@ const CashBookTwoColumn = ({ user }: any) => {
                 <td className="border border-stroke px-2 py-1 dark:border-strokedark">
                   <div>
                     {row.description}
+                    {/* ⚠️ WHICH bank the money went through. The Bank column
+                        gives the amount and stops there, so a receipt from
+                        Mohona Traders and a payment to Sultana Agro read alike
+                        whichever of the branch's accounts each passed through.
+                        A contra already names both heads in its description, so
+                        it is not named twice. */}
+                    {row.bank_name && !row.is_contra ? (
+                      <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
+                        · ({row.bank_name})
+                      </span>
+                    ) : null}
                     {/* The mark every cash book carries against money that only
                         moved between the till and the bank, so nobody posts it
                         to the ledger a second time. */}
