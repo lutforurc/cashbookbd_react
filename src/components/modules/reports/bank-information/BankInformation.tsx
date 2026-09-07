@@ -20,6 +20,7 @@ import httpService from '../../../services/httpService';
 import { API_REPORT_BANK_INFORMATION_DATA_URL } from '../../../services/apiRoutes';
 import BankInformationPrint from './BankInformationPrint';
 import { Select } from '../../../utils/fields/FormControls';
+import { FIELD_HEIGHT } from '../../../../theme/fieldStyles';
 
 type BankInformationRow = {
   coa4_id?: number | string;
@@ -137,8 +138,13 @@ const BankInformation = () => {
     documentTitle: 'Bank Information',
   });
 
+  // The height comes from FIELD_HEIGHT, not from an `h-` written here. These
+  // two selects stood at h-10 while the End Date beside them -- an
+  // InputDatePicker, which draws itself from FIELD_BASE -- stood at the app's
+  // one control height, so the filter row had a 40px box sharing an edge with a
+  // 34px one.
   const controlClass =
-    'h-10 w-full rounded-none border border-slate-600 bg-transparent px-3 text-sm font-bold text-slate-950 outline-none focus:border-slate-400 dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-text))] dark:focus:border-slate-300';
+    `${FIELD_HEIGHT} w-full rounded-none border border-slate-600 bg-transparent px-3 text-sm font-bold text-slate-950 outline-none focus:border-slate-400 dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-text))] dark:focus:border-slate-300`;
   const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-[rgb(var(--c-text))]';
 
   return (

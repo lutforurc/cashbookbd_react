@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
+import type { KeyboardEvent } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import { FiEdit2, FiHome, FiPlus, FiSave, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
@@ -7,6 +8,7 @@ import useCtrlS from '../../../utils/hooks/useCtrlS';
 import { hasPermission } from '../../../utils/permissionChecker';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import useOrderFieldEnabled from '../../../utils/hooks/useOrderFieldEnabled';
+import useRemarkSuggestions from '../../../utils/hooks/useRemarkSuggestions';
 import Loader from '../../../../common/Loader';
 import InputOnly from '../../../utils/fields/InputOnly';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
@@ -89,6 +91,41 @@ const BankPayment = () => {
     false,
     formData.transactionList?.[0]?.account,
   );
+  // What has been written in this box before, on any voucher of this branch.
+  // The cash screens have offered this for a while; the bank ones did not.
+  const remarkSuggestions = useRemarkSuggestions(
+    formData.transactionList?.[0]?.remarks || '',
+  );
+
+  // Enter takes the first match and moves on to Amount, which is what the cash
+  // screens do. Typing four letters of a remark used a hundred times before and
+  // pressing Enter is the whole point of the list -- without it the box offers
+  // suggestions that still have to be clicked.
+  const handleRemarksKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && remarkSuggestions.length > 0) {
+      event.preventDefault();
+      const [matchedRemark] = remarkSuggestions;
+
+      setFormData((prevState) => {
+        const current = prevState.transactionList?.[0] || {
+          id: Date.now(),
+          account: '',
+          accountName: '',
+          remarks: '',
+          amount: 0,
+          trackedProductId: null,
+        };
+
+        return {
+          ...prevState,
+          transactionList: [{ ...current, remarks: matchedRemark }],
+        };
+      });
+    }
+
+    handleInputKeyDown(event, 'amount');
+  };
+
   const [tableData, setTableData] = useState<PaymentItem[]>([]);
   const [bankId, setBankId] = useState<number | string | null>(null);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
@@ -745,6 +782,8 @@ const BankPayment = () => {
                 placeholder={'Enter Remarks'}
                 label={'Enter Remarks'}
                 className={''}
+                list="bank-payment-remark-suggestions"
+                autoComplete="off"
                 onChange={(e) => {
                   const current = formData.transactionList?.[0] || {
                     id: Date.now(),
@@ -760,8 +799,13 @@ const BankPayment = () => {
                     transactionList: [updated],
                   });
                 }}
-                onKeyDown={(e) => handleInputKeyDown(e, 'amount')}
+                onKeyDown={handleRemarksKeyDown}
               />
+              <datalist id="bank-payment-remark-suggestions">
+                {remarkSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
               <InputElement
                 id="amount"
                 value={String(formData.transactionList?.[0]?.amount || '')}
