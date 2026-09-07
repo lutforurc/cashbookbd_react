@@ -104,6 +104,10 @@ const getCashVoucherData = (data: any, mode: CashVoucherMode) => {
     orderNumber: data?.order_number ?? trxMaster?.order_number ?? trxMaster?.order_no ?? '',
     preparedBy: data?.user?.name ?? '',
     approvedBy: data?.approved_user?.name ?? data?.approved_by ?? '',
+    // When it was approved, which the paper never said: the name stood alone
+    // under "Approved By" while "Prepared by" carried its time to the second.
+    // The server sends this only while the voucher is still approved.
+    approvedAt: data?.approved_date ?? '',
   };
 };
 
@@ -265,6 +269,7 @@ const CashVoucherPrintBase = React.forwardRef<HTMLDivElement, Props>(
             <div className="text-center">
               <div className={`border-t border-black pt-1 ${variant.startsWith('half') ? '' : 'w-40 mx-auto'}`}>Approved By</div>
               {printData.approvedBy && <div className={variant.startsWith('half') ? '' : 'mt-1'}>{printData.approvedBy}</div>}
+              {printData.approvedAt && <div>{chartDateTime(printData.approvedAt)}</div>}
             </div>
           </div>
 
