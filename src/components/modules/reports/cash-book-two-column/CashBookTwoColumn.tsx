@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiCheckSquare, FiRotateCcw } from 'react-icons/fi';
 import { useReactToPrint } from 'react-to-print';
@@ -12,12 +13,30 @@ import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
+import Table from '../../../utils/others/Table';
 import httpService from '../../../services/httpService';
-import { API_REPORT_CASH_BOOK_TWO_COLUMN_URL } from '../../../services/apiRoutes';
+import {
+  API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL,
+  API_REPORT_CASH_BOOK_TWO_COLUMN_URL,
+} from '../../../services/apiRoutes';
+import routes from '../../../services/appRoutes';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { Select } from '../../../utils/fields/FormControls';
 import { FIELD_SELECT } from '../../../../theme/fieldStyles';
+import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
+import { hasPermission } from '../../../utils/permissionChecker';
+import {
+  buildVoucherAutoEditState,
+  getCombinedVoucherOpenState,
+  getVoucherEditTarget,
+} from '../../../utils/utils-functions/voucherEditNavigation';
+import {
+  useRemoveVoucherApproval,
+  useVoucherPrint,
+  VoucherActionButtons,
+} from '../../vouchers';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import CashBookTwoColumnPrint from './CashBookTwoColumnPrint';
 
 /**
@@ -54,6 +73,35 @@ const parseBranchDate = (said: any): Date | null => {
   return parts ? new Date(Number(parts[3]), Number(parts[2]) - 1, Number(parts[1])) : null;
 };
 
+/**
+ * A date out of the address bar, or null where there is none.
+ *
+ * Read by hand rather than handed to `new Date` for the same reason: an
+ * 'YYYY-MM-DD' with no zone is read as UTC midnight, and east of Greenwich that
+ * is still the day before -- the range would come back one day short of the one
+ * that was left.
+ */
+const parseUrlDate = (said: string | null): Date | null => {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(said ?? ''));
+
+  return parts ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3])) : null;
+};
+
+/**
+ * The applied range rides in the ADDRESS BAR, and only there.
+ *
+ * ⚠️ A ROUND TRIP IS NOT A NEW VISIT. Opening a voucher from a row and coming
+ * back used to land on the branch's transaction date with an empty table, so a
+ * clerk correcting the 6th of September was returned to today and had to type
+ * the question in again -- and the correction he had just made was the one
+ * thing he wanted to see.
+ *
+ * Coming back lands on the URL that was left, so the range, the branch and the
+ * bank come with it and the report is asked again. Opening the book from the
+ * menu carries no query and gets the transaction date with an empty table.
+ * Nothing is kept between sessions and nothing is inherited from whoever used
+ * the browser last, which is the rule the single-column book follows.
+ */
 const CashBookTwoColumn = ({ user }: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -77,8 +125,37 @@ const CashBookTwoColumn = ({ user }: any) => {
   // read as a number somebody had cleared by accident.
   const [rowsPerPage, setRowsPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(10);
+  const [approvingId, setApprovingId] = useState<number | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
+  const [params, setParams] = useSearchParams();
+
+  /**
+   * Whether the range in the address bar has already been run on this visit.
+   *
+   * A ref, not state: the effect that restores it fires again when the branch
+   * list resolves, and re-running would ask for a report already on screen.
+   */
+  const answered = useRef(false);
+
+  // The row's own buttons, the same ones the single-column book carries: the
+  // voucher opened from its number, approved, unapproved, edited. A report that
+  // shows a wrong figure is only useful if the voucher behind it can be reached
+  // from the line it is on.
+  const navigate = useNavigate();
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
+
+  const userPermissions = settings?.data?.permissions || [];
+  const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
+  const canRemoveApproval = hasPermission(userPermissions, 'remove.approval');
+  const canEditVoucher = hasAnyPermission(userPermissions, [
+    'purchase.edit',
+    'sales.edit',
+    'cash.received.edit',
+    'cash.payment.edit',
+  ]);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -94,33 +171,95 @@ const CashBookTwoColumn = ({ user }: any) => {
     // The branch's own transaction date, which is what a fresh visit means --
     // the same rule the single-column book follows.
     const onDate = parseBranchDate(payload.transactionDate);
-    const branch = user?.user?.branch_id ?? settings?.data?.branch?.id ?? null;
+    const asked = Number(params.get('branch')) || null;
+    const branch = asked ?? user?.user?.branch_id ?? settings?.data?.branch?.id ?? null;
 
     setBranchId((current) => current ?? branch);
     setStartDate((current) => current ?? onDate);
     setEndDate((current) => current ?? onDate);
+
+    // ⚠️ The address bar wins where it has something to say, and it is ASKED
+    // rather than merely typed back into the boxes. Restoring the question
+    // without running it left the screen stating a range above an empty table,
+    // which reads as an answer -- and a false one: a book with no entries for a
+    // fortnight that has vouchers in it.
+    const from = parseUrlDate(params.get('from'));
+
+    if (!from || answered.current) return;
+
+    answered.current = true;
+
+    const to = parseUrlDate(params.get('to')) ?? from;
+    const bank = params.get('bank') ?? '';
+
+    setStartDate(from);
+    setEndDate(to);
+    setBankAccountId(bank);
+
+    // Asked with these values rather than through the state this effect has
+    // only just asked React to set, which would still be the previous render's.
+    void load({ branchId: branch, startDate: from, endDate: to, bankAccountId: bank });
   }, [branchDdlData, user, settings]);
 
-  const load = async () => {
-    if (!branchId) {
+  const load = async (asked?: {
+    branchId?: number | string | null;
+    startDate?: Date | null;
+    endDate?: Date | null;
+    bankAccountId?: string;
+  }) => {
+    const branch = asked?.branchId ?? branchId;
+    const from = asked?.startDate ?? startDate;
+    const to = asked?.endDate ?? endDate;
+    const bank = asked?.bankAccountId ?? bankAccountId;
+
+    if (!branch) {
       toast.info('Choose a branch first.');
       return;
     }
 
-    if (!startDate || !endDate) {
+    if (!from || !to) {
       toast.info('Choose a date range first.');
       return;
     }
+
+    // Asked once on this visit, however it was asked. Apply writes the range to
+    // the address bar, and without this the effect that reads it back would see
+    // its own writing on the next render and ask the server all over again.
+    answered.current = true;
+
+    const fromText = asText(from);
+    const toText = asText(to);
+
+    /**
+     * ⚠️ Written on APPLY, not on every change of a box. What goes in the
+     * address bar is the question actually asked -- a half-typed range nobody
+     * ran is not somewhere to come back to.
+     *
+     * The branch and the bank go in with the dates because they are half the
+     * question: the right fortnight of the wrong branch would put someone
+     * else's figures under the heading being read. `replace`, so pressing Apply
+     * four times does not leave four entries for Back to walk out of one at a
+     * time.
+     */
+    setParams(
+      {
+        from: fromText,
+        to: toText,
+        ...(branch == null ? {} : { branch: String(branch) }),
+        ...(bank ? { bank: String(bank) } : {}),
+      },
+      { replace: true },
+    );
 
     setLoading(true);
 
     try {
       const response = await httpService.get(API_REPORT_CASH_BOOK_TWO_COLUMN_URL, {
         params: {
-          branch_id: branchId,
-          start_date: asText(startDate),
-          end_date: asText(endDate),
-          bank_account_id: bankAccountId || undefined,
+          branch_id: branch,
+          start_date: fromText,
+          end_date: toText,
+          bank_account_id: bank || undefined,
         },
       });
 
@@ -134,8 +273,19 @@ const CashBookTwoColumn = ({ user }: any) => {
   };
 
   const handleReset = () => {
+    // ⚠️ The address bar goes with it. With the applied question written there,
+    // a Reset that only emptied the screen would leave the URL still asking for
+    // it -- and coming back, or a reload, would put the report straight back.
+    const onDate = parseBranchDate(branchDdlData?.protectedData?.transactionDate);
+
+    if (onDate) {
+      setStartDate(onDate);
+      setEndDate(onDate);
+    }
+
     setBankAccountId('');
     setReport(null);
+    setParams({}, { replace: true });
   };
 
   const handleRowsChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -153,8 +303,286 @@ const CashBookTwoColumn = ({ user }: any) => {
     documentTitle: 'Cash & Bank Book',
   });
 
+  const handleApproveVoucher = async (row: any) => {
+    const voucherId = getVoucherId(row);
+
+    if (!voucherId) {
+      toast.error('Approval id not found.');
+      return;
+    }
+
+    try {
+      setApprovingId(voucherId);
+      const response = await httpService.post(`${API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL}/${voucherId}`, {});
+      const result = response?.data;
+
+      if (result === '1' || result?.success) {
+        toast.success('Voucher approved successfully.');
+        // The book is read again rather than patched in place: an approval
+        // changes what the row's own buttons may do next.
+        void load();
+        return;
+      }
+
+      if (result === '2') {
+        toast.error('Voucher not found.');
+        return;
+      }
+
+      toast.error(typeof result === 'string' ? result : 'Voucher approval failed.');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Voucher approval failed.');
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleRemoveApproval = async (row: any) => {
+    await removeVoucherApproval(row, { onSuccess: () => void load() });
+  };
+
+  const handleEditVoucher = (row: any) => {
+    // A combined voucher is opened by its combined number, not by the leg that
+    // happens to have touched the till -- editing that leg alone would leave
+    // the other half of the entry behind.
+    const combinedNumber = String(row?.combined_number || '').trim();
+
+    if (combinedNumber) {
+      const combinedOpenState = getCombinedVoucherOpenState(row);
+
+      if (combinedOpenState.hasApprovedVoucher) {
+        if (!combinedOpenState.editableVoucherNo) {
+          toast.error('Approved voucher cannot be opened.');
+          return;
+        }
+
+        const approvedEditTarget = getVoucherEditTarget(combinedOpenState.editableVoucherNo);
+        const approvedEditState = buildVoucherAutoEditState(combinedOpenState.editableVoucherNo);
+
+        if (!approvedEditTarget || !approvedEditState) {
+          toast.error('Edit route not found for this voucher.');
+          return;
+        }
+
+        navigate(approvedEditTarget.route, { state: approvedEditState });
+        return;
+      }
+
+      navigate(routes.inv_trading_combined, {
+        state: { combinedAutoEdit: true, combinedNumber },
+      });
+      return;
+    }
+
+    /**
+     * ⚠️ THE NUMBER CANNOT SAY WHICH SCREEN. Its prefix is the voucher type --
+     * 1 received, 2 paid -- so money banked is numbered 1-... exactly as a cash
+     * receipt is, and a bank voucher opened on the cash screen is saved back
+     * with its money leg moved off the bank and into Cash. The server marks
+     * each row instead; absent, it falls back to the cash screens rather than
+     * guessing.
+     */
+    const voucherNo = String(row?.vr_no || '').trim();
+    const openOnBankScreen = row?.is_bank_voucher === true;
+    const editTarget = getVoucherEditTarget(voucherNo, { bank: openOnBankScreen });
+    const editState = buildVoucherAutoEditState(voucherNo, { bank: openOnBankScreen });
+
+    if (!voucherNo || !editTarget || !editState) {
+      toast.error('Edit route not found for this voucher.');
+      return;
+    }
+
+    navigate(editTarget.route, { state: editState });
+  };
+
   const rows: any[] = report?.rows ?? [];
   const banks: any[] = report?.banks ?? [];
+
+  /**
+   * Balance b/d goes in WITH the rows rather than above them.
+   *
+   * It is the book's first entry, not a caption, and putting it through the
+   * same columns as everything else is what lets the shared table draw the
+   * whole book in one piece -- the same table, and so the same type and the
+   * same colours, as the single-column cash book beside it.
+   */
+  const bodyRows: any[] = report
+    ? [
+        {
+          mtm_id: '__opening',
+          is_opening: true,
+          vr_date: report.from,
+          description: 'Balance b/d',
+          debit_cash: report.opening?.cash_debit,
+          debit_bank: report.opening?.bank_debit,
+          credit_cash: report.opening?.cash_credit,
+          credit_bank: report.opening?.bank_credit,
+        },
+        ...rows,
+      ]
+    : [];
+
+  const columns = [
+    {
+      key: 'vr_date',
+      header: 'Date',
+      cellClass: 'w-28 whitespace-nowrap',
+      render: (row: any) => (row.vr_date ? dayjs(row.vr_date).format('DD/MM/YYYY') : ''),
+    },
+    {
+      key: 'vr_no',
+      header: 'Voucher#',
+      cellClass: 'w-32 whitespace-nowrap',
+      render: (row: any) =>
+        row.vr_no ? (
+          <div
+            className="cursor-pointer hover:underline"
+            onClick={() => handleVoucherPrint({ ...row, mtm_id: row?.mtm_id })}
+          >
+            {row.vr_no}
+          </div>
+        ) : null,
+    },
+    {
+      key: 'description',
+      header: 'Description',
+      render: (row: any) => (
+        <div className="w-full whitespace-normal">
+          <div>
+            {row.description}
+            {/* ⚠️ WHICH bank the money went through. The Bank column gives the
+                amount and stops there, so a receipt from Mohona Traders and a
+                payment to Sultana Agro read alike whichever of the branch's
+                accounts each passed through. A contra already names both heads
+                in its description, so it is not named twice. */}
+            {row.bank_name && !row.is_contra ? (
+              <span className="ml-1 text-sm text-gray-500 dark:text-gray-400">
+                → ({row.bank_name})
+              </span>
+            ) : null}
+            {/* The mark every cash book carries against money that only moved
+                between the till and the bank, so nobody posts it to the ledger
+                a second time. */}
+            {row.is_contra ? (
+              <span className="ml-1 font-semibold text-amber-600 dark:text-amber-400">(C)</span>
+            ) : null}
+          </div>
+          {row.note && !row.is_contra ? (
+            <div className="wrap-break-word whitespace-normal text-sm text-gray-500 dark:text-gray-400">
+              ({row.note})
+            </div>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      key: 'debit_cash',
+      header: 'Cash',
+      cellClass: 'w-32 text-right',
+      render: (row: any) => money(row.debit_cash),
+    },
+    {
+      key: 'debit_bank',
+      header: 'Bank',
+      cellClass: 'w-32 text-right',
+      render: (row: any) => money(row.debit_bank),
+    },
+    {
+      key: 'credit_cash',
+      header: 'Cash',
+      cellClass: 'w-32 text-right',
+      render: (row: any) => money(row.credit_cash),
+    },
+    {
+      key: 'credit_bank',
+      header: 'Bank',
+      cellClass: 'w-32 text-right',
+      render: (row: any) => money(row.credit_bank),
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      cellClass: 'w-28 text-center',
+      render: (row: any) => {
+        // Balance b/d is not a voucher: there is nothing to open, approve or
+        // edit on the line the book opens with.
+        if (row.is_opening) return null;
+
+        const voucherId = getVoucherId(row);
+        const isApproved = Number(row?.is_approved ?? 0) === 1;
+
+        return (
+          <VoucherActionButtons
+            row={row}
+            voucherId={voucherId}
+            isApproved={isApproved}
+            approvingId={approvingId}
+            removingApprovalId={removingApprovalId}
+            canShowApproveAction={canApproveCashbook && !!row?.vr_no && voucherId > 0}
+            canShowRemoveApprovalAction={
+              canRemoveApproval && !!row?.vr_no && voucherId > 0 && isApproved
+            }
+            canShowEditAction={canEditVoucher && !isApproved}
+            canEditVoucher={canEditVoucher}
+            confirmInline
+            onApprove={handleApproveVoucher}
+            onRemoveApproval={handleRemoveApproval}
+            onEdit={handleEditVoucher}
+          />
+        );
+      },
+    },
+  ];
+
+  // Two rows of heading, because Cash and Bank sit UNDER Receive and Payment --
+  // that is the shape of the book, and flattening it into four unrelated
+  // columns is what makes a reader stop and work out which is which.
+  const headerRows = [
+    [
+      { label: 'Date', rowSpan: 2 },
+      { label: 'Voucher#', rowSpan: 2 },
+      { label: 'Description', rowSpan: 2 },
+      { label: 'Receive', colSpan: 2, className: 'text-center' },
+      { label: 'Payment', colSpan: 2, className: 'text-center' },
+      { label: 'Action', rowSpan: 2, className: 'text-center' },
+    ],
+    [
+      { label: 'Cash', className: 'text-right' },
+      { label: 'Bank', className: 'text-right' },
+      { label: 'Cash', className: 'text-right' },
+      { label: 'Bank', className: 'text-right' },
+    ],
+  ];
+
+  /**
+   * ⚠️ THE BALANCE IS CARRIED DOWN ON THE OPPOSITE SIDE TO THE ONE IT OPENS ON,
+   * and it comes BEFORE the footing. Money in hand is a debit balance and is
+   * carried down as a credit -- that entry is what makes the two sides of the
+   * account equal. An overdrawn bank is a credit balance and carries down on
+   * the debit side. The API decides which cell; the screen prints it.
+   */
+  const footerRows = report
+    ? [
+        [
+          { label: 'Balance c/d', colSpan: 3, className: 'text-right' },
+          { label: money(report.closing?.cash_debit), className: 'text-right' },
+          { label: money(report.closing?.bank_debit), className: 'text-right' },
+          { label: money(report.closing?.cash_credit), className: 'text-right' },
+          { label: money(report.closing?.bank_credit), className: 'text-right' },
+          { label: '' },
+        ],
+        // The whole account, balances included, which is why the two sides of
+        // each come to the same figure.
+        [
+          { label: 'Total', colSpan: 3, className: 'text-right' },
+          { label: money(report.totals?.debit_cash), className: 'text-right' },
+          { label: money(report.totals?.debit_bank), className: 'text-right' },
+          { label: money(report.totals?.credit_cash), className: 'text-right' },
+          { label: money(report.totals?.credit_bank), className: 'text-right' },
+          { label: '' },
+        ],
+      ]
+    : [];
 
   if (!dropdownData.length) return <Loader />;
 
@@ -232,7 +660,7 @@ const CashBookTwoColumn = ({ user }: any) => {
 
         <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto max-md:ml-0 max-md:w-full xl:ml-auto">
           <ButtonLoading
-            onClick={load}
+            onClick={() => load()}
             buttonLoading={loading}
             label="Apply"
             icon={<FiCheckSquare />}
@@ -280,124 +708,27 @@ const CashBookTwoColumn = ({ user }: any) => {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full table-auto border-collapse">
-          <thead>
-            {/* Two rows of heading, because Cash and Bank sit UNDER Debit and
-                Credit -- that is the shape of the book, and flattening it into
-                four unrelated columns is what makes a reader stop and work out
-                which is which. */}
-            <tr className="bg-gray-2 dark:bg-meta-4">
-              <th rowSpan={2} className="border border-stroke px-2 py-1 text-left text-sm dark:border-strokedark">Date</th>
-              <th rowSpan={2} className="border border-stroke px-2 py-1 text-left text-sm dark:border-strokedark">Voucher#</th>
-              <th rowSpan={2} className="border border-stroke px-2 py-1 text-left text-sm dark:border-strokedark">Description</th>
-              <th colSpan={2} className="border border-stroke px-2 py-1 text-center text-sm dark:border-strokedark">Receive</th>
-              <th colSpan={2} className="border border-stroke px-2 py-1 text-center text-sm dark:border-strokedark">Payment</th>
-            </tr>
-            <tr className="bg-gray-2 dark:bg-meta-4">
-              <th className="border border-stroke px-2 py-1 text-right text-sm dark:border-strokedark">Cash</th>
-              <th className="border border-stroke px-2 py-1 text-right text-sm dark:border-strokedark">Bank</th>
-              <th className="border border-stroke px-2 py-1 text-right text-sm dark:border-strokedark">Cash</th>
-              <th className="border border-stroke px-2 py-1 text-right text-sm dark:border-strokedark">Bank</th>
-            </tr>
-          </thead>
+      <div className="overflow-y-auto">
+        {loading ? <Loader /> : null}
 
-          <tbody style={{ fontSize: `${fontSize}px` }}>
-            {report ? (
-              <tr className="font-semibold">
-                <td className="border border-stroke px-2 py-1 dark:border-strokedark">
-                  {dayjs(report.from).format('DD/MM/YYYY')}
-                </td>
-                <td className="border border-stroke px-2 py-1 dark:border-strokedark" />
-                <td className="border border-stroke px-2 py-1 dark:border-strokedark">Balance b/d</td>
-                <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.opening?.cash_debit)}</td>
-                <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.opening?.bank_debit)}</td>
-                <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.opening?.cash_credit)}</td>
-                <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.opening?.bank_credit)}</td>
-              </tr>
-            ) : null}
+        {/* The single-column book's table, so the two read as one pair of
+            reports: the same type, the same heading and row colours, the same
+            row of buttons at the end of the line. */}
+        <Table
+          columns={columns}
+          data={bodyRows}
+          headerRows={headerRows}
+          footerRows={footerRows}
+          getRowKey={(row: any) => row.mtm_id}
+          rowClassName={(row: any) => (row.is_opening ? 'font-semibold' : 'align-top')}
+          noDataMessage="Choose a period and press Apply."
+        />
 
-            {rows.map((row: any) => (
-              <tr key={row.mtm_id} className="align-top">
-                <td className="border border-stroke px-2 py-1 whitespace-nowrap dark:border-strokedark">
-                  {dayjs(row.vr_date).format('DD/MM/YYYY')}
-                </td>
-                <td className="border border-stroke px-2 py-1 whitespace-nowrap font-mono text-xs dark:border-strokedark">
-                  {row.vr_no}
-                </td>
-                <td className="border border-stroke px-2 py-1 dark:border-strokedark">
-                  <div>
-                    {row.description}
-                    {/* ⚠️ WHICH bank the money went through. The Bank column
-                        gives the amount and stops there, so a receipt from
-                        Mohona Traders and a payment to Sultana Agro read alike
-                        whichever of the branch's accounts each passed through.
-                        A contra already names both heads in its description, so
-                        it is not named twice. */}
-                    {row.bank_name && !row.is_contra ? (
-                      <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
-                        · ({row.bank_name})
-                      </span>
-                    ) : null}
-                    {/* The mark every cash book carries against money that only
-                        moved between the till and the bank, so nobody posts it
-                        to the ledger a second time. */}
-                    {row.is_contra ? (
-                      <span className="ml-1 font-semibold text-amber-600 dark:text-amber-400">(C)</span>
-                    ) : null}
-                  </div>
-                  {row.note && !row.is_contra ? (
-                    <div className="text-xs text-gray-500 dark:text-gray-400">({row.note})</div>
-                  ) : null}
-                </td>
-                <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(row.debit_cash)}</td>
-                <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(row.debit_bank)}</td>
-                <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(row.credit_cash)}</td>
-                <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(row.credit_bank)}</td>
-              </tr>
-            ))}
-
-            {report && !rows.length ? (
-              <tr>
-                <td colSpan={7} className="border border-stroke px-2 py-4 text-center text-sm text-gray-500 dark:border-strokedark">
-                  No cash or bank movement in that period.
-                </td>
-              </tr>
-            ) : null}
-
-            {report ? (
-              <>
-                {/* ⚠️ THE BALANCE IS CARRIED DOWN ON THE OPPOSITE SIDE TO THE
-                    ONE IT OPENS ON, and it comes BEFORE the footing. Money in
-                    hand is a debit balance and is carried down as a credit --
-                    that entry is what makes the two sides of the account equal.
-                    An overdrawn bank is a credit balance and carries down on the
-                    debit side. The API decides which cell; the screen prints it. */}
-                <tr className="font-semibold">
-                  <td colSpan={3} className="border border-stroke px-2 py-1 text-right dark:border-strokedark">
-                    Balance c/d
-                  </td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.closing?.cash_debit)}</td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.closing?.bank_debit)}</td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.closing?.cash_credit)}</td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.closing?.bank_credit)}</td>
-                </tr>
-
-                {/* The whole account, balances included, which is why the two
-                    sides of each come to the same figure. */}
-                <tr className="bg-gray-2 font-semibold dark:bg-meta-4">
-                  <td colSpan={3} className="border border-stroke px-2 py-1 text-right dark:border-strokedark">
-                    Total
-                  </td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.totals?.debit_cash)}</td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.totals?.debit_bank)}</td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.totals?.credit_cash)}</td>
-                  <td className="border border-stroke px-2 py-1 text-right dark:border-strokedark">{money(report.totals?.credit_bank)}</td>
-                </tr>
-              </>
-            ) : null}
-          </tbody>
-        </table>
+        {report && !rows.length ? (
+          <p className="mt-3 text-center text-sm text-gray-500 dark:text-gray-400">
+            No cash or bank movement in that period.
+          </p>
+        ) : null}
       </div>
 
       {report && (report.balanced?.cash === false || report.balanced?.bank === false) ? (
@@ -410,12 +741,6 @@ const CashBookTwoColumn = ({ user }: any) => {
         </div>
       ) : null}
 
-      {!report && !loading ? (
-        <p className="mt-3 text-center text-sm text-gray-500 dark:text-gray-400">
-          Choose a period and press Apply.
-        </p>
-      ) : null}
-
       <div className="hidden">
         {/* The branch is not passed: PadPrinting heads the page with the
             branch BranchDropdown published, so naming it again in the title
@@ -425,6 +750,14 @@ const CashBookTwoColumn = ({ user }: any) => {
           report={report}
           fontSize={fontSize}
           rowsPerPage={rowsPerPage}
+        />
+
+        {/* What a voucher number is clicked into: the paper for that one
+            voucher, printed off the row it was read on. */}
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
+          rowsPerPage={Number(rowsPerPage)}
+          fontSize={Number(fontSize)}
         />
       </div>
     </div>

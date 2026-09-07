@@ -112,7 +112,7 @@ const CashBookTwoColumnPrint = React.forwardRef<HTMLDivElement, Props>(
                               alone. */}
                           {row.bank_name && !row.is_contra ? (
                             <span style={{ fontSize: `${Math.max(7, fontSize - 2)}px` }}>
-                              {' '}· ({row.bank_name})
+                              {' '}→ ({row.bank_name})
                             </span>
                           ) : null}
                           {row.is_contra ? <span className="font-bold"> (C)</span> : null}
