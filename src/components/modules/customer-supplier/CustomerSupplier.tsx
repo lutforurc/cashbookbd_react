@@ -1043,7 +1043,7 @@ const CustomerSupplier = () => {
                         className="hover:bg-emerald-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         <td className="px-3 py-2 truncate">{n.name}</td>
-                        <td className="px-3 py-2 truncate">{n.relation || ''}</td>
+                        <td className="px-3 py-2 truncate">{ n.relation.toUpperCase() || ''}</td>
                         <td className="px-3 py-2">{n.mobile || ''}</td>
                         <td className="px-3 py-2 text-center">{n.share_percentage || ''}</td>
                         <td className="px-3 py-2 text-center">{n.priority_order || ''}</td>

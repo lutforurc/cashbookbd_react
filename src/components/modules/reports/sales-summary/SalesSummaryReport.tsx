@@ -17,27 +17,12 @@ import { fetchBuildingDdl } from "../../real-estate/buildings/buildingsSlice";
 // on the allotment letter must be written the same way.
 import { money } from "../../real-estate/sales/soldUnitReport";
 import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
-import {
-  fetchSalesSummary,
-  SalesSummaryCustomer,
-  SalesSummaryUnit,
-} from "./salesSummarySlice";
+import { fetchSalesSummary, SalesSummaryCustomer } from "./salesSummarySlice";
+import { placeOf, unitOf } from "./salesSummaryLines";
+import SalesSummaryPrint from "./SalesSummaryPrint";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const cell = "border border-stroke px-3 py-2 dark:border-strokedark";
-
-/** "Sherpur, Bogura â€º Baganbari â€º Shantipark Tower" */
-const placeOf = (unit: SalesSummaryUnit) =>
-  [unit.area_name, unit.project_name, unit.building_name].filter(Boolean).join(" â€º ");
-
-/**
- * "4th Floor Â· Unit# 4/A"
- *
- * The unit and parking numbers are printed as they are stored -- they already
- * read "Unit# 4/A", and labelling them again gave "Unit# Unit# 4/A".
- */
-const unitOf = (unit: SalesSummaryUnit) =>
-  [unit.floor_name, unit.unit_no, unit.parking_no].filter(Boolean).join(" Â· ");
 
 /**
  * The buyer, and under them what they bought â€” all in the one cell.
@@ -164,6 +149,14 @@ const SalesSummaryReport: React.FC = () => {
   const nameOf = (id: string, options: { id: any; name: string }[]) =>
     options.find((option) => String(option.id) === String(id))?.name || "";
 
+  // What the sheet says it is showing, in the same words the filter row above
+  // it uses -- a printed copy filed away has to carry its own filters.
+  const filterLine = [
+    `Location: ${nameOf(areaId, areaOptions) || "All Locations"}`,
+    `Project: ${nameOf(projectId, projectOptions) || "All Projects"}`,
+    `Building: ${nameOf(buildingId, buildingOptions) || "All Buildings"}`,
+  ].join("  |  ");
+
   return (
     <>
       <HelmetTitle title="Sales Summary Report" />
@@ -288,57 +281,18 @@ const SalesSummaryReport: React.FC = () => {
         </table>
       </div>
 
-      {/* PRINT */}
-      <div ref={printRef} className="hidden bg-white p-6 text-[rgb(var(--c-text))]">
-        <h2 className="mb-1 text-center text-lg font-bold">Sales Summary Report</h2>
-        <p className="mb-4 text-center text-xs">
-          Location: {nameOf(areaId, areaOptions) || "All Locations"} Â· Project:{" "}
-          {nameOf(projectId, projectOptions) || "All Projects"} Â· Building:{" "}
-          {nameOf(buildingId, buildingOptions) || "All Buildings"}
-        </p>
-
-        <table className="min-w-full border-collapse border border-gray-400 text-left text-sm">
-          <thead className="bg-gray-300">
-            <tr>
-              <th className="w-16 border border-gray-400 px-2 py-1 text-center">Sl. No</th>
-              <th className="border border-gray-400 px-2 py-1">Customer Name</th>
-              <th className="border border-gray-400 px-2 py-1 text-right">Sales Amount</th>
-              <th className="border border-gray-400 px-2 py-1 text-right">Received Amt</th>
-              <th className="border border-gray-400 px-2 py-1 text-right">Due Amt</th>
-            </tr>
-          </thead>
-          <tbody>
-            {customers.map((customer, index) => (
-              <tr key={customer.customer_id}>
-                <td className="border border-gray-400 px-2 py-1 text-center">{index + 1}</td>
-                <td className="border border-gray-400 px-2 py-1 align-middle">
-                  <CustomerCell customer={customer} />
-                </td>
-                <td className="border border-gray-400 px-2 py-1 text-right">
-                  {money(customer.total_amount)}
-                </td>
-                <td className="border border-gray-400 px-2 py-1 text-right">
-                  {money(customer.received_amount)}
-                </td>
-                <td className="border border-gray-400 px-2 py-1 text-right">
-                  {money(customer.due_amount)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          {customers.length ? (
-            <tfoot>
-              <tr className="font-semibold">
-                <td className="border border-gray-400 px-2 py-1 text-right" colSpan={2}>
-                  Grand Total
-                </td>
-                <td className="border border-gray-400 px-2 py-1 text-right">{money(totals.total)}</td>
-                <td className="border border-gray-400 px-2 py-1 text-right">{money(totals.received)}</td>
-                <td className="border border-gray-400 px-2 py-1 text-right">{money(totals.due)}</td>
-              </tr>
-            </tfoot>
-          ) : null}
-        </table>
+      {/* PRINT
+          The `hidden` belongs on this wrapper and NOT on the node the ref
+          points at: react-to-print clones the ref'd node, so a `hidden` on it
+          is cloned too and the sheet comes out blank. That is what this report
+          did, which is why it printed nothing. */}
+      <div className="hidden">
+        <SalesSummaryPrint
+          ref={printRef}
+          customers={customers}
+          totals={totals}
+          filterLine={filterLine}
+        />
       </div>
     </>
   );

@@ -6,7 +6,7 @@ import {
   FiCheck,
   FiX,
   FiPlus,
-  FiTrash2, 
+  FiTrash2,
   FiArrowLeft,
   FiSave,
   FiLoader,
@@ -128,8 +128,8 @@ const titleCase = (value?: string | null) =>
 const isoDate = (date: Date | null) =>
   date
     ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-        date.getDate(),
-      ).padStart(2, "0")}`
+      date.getDate(),
+    ).padStart(2, "0")}`
     : null;
 
 /** "2026-01-20" from the server, as a Date the picker can hold. */
@@ -772,9 +772,8 @@ export default function UnitSalePage() {
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {isEdit
-              ? `Charges, parking and date${
-                  guards?.vr_no ? ` · Vr. No. ${guards.vr_no}` : ""
-                }`
+              ? `Charges, parking and date${guards?.vr_no ? ` · Vr. No. ${guards.vr_no}` : ""
+              }`
               : "Unit & Parking with others calculation"}
           </p>
         </div>
@@ -862,13 +861,13 @@ export default function UnitSalePage() {
               <div className="">
                 <label className="text-sm font-semibold">Amount (Tk.)</label>
                 <InputElement
- id="amount"
- name="amount"
- type="number"
- label=""
- className="text-sm "
- value={chargeAmount}
- onChange={(e: any) => setChargeAmount(e.target.value)}
+                  id="amount"
+                  name="amount"
+                  type="number"
+                  label=""
+                  className="text-sm "
+                  value={chargeAmount}
+                  onChange={(e: any) => setChargeAmount(e.target.value)}
                 />
               </div>
             </div>
@@ -891,9 +890,8 @@ export default function UnitSalePage() {
                   <label className="text-sm font-semibold">Nominee for this property</label>
                   {pickedNominees.length > 0 && (
                     <span
-                      className={`text-xs ${
-                        shareTotal > 100 ? "text-red-500" : "text-gray-500 dark:text-gray-400"
-                      }`}
+                      className={`text-xs ${shareTotal > 100 ? "text-red-500" : "text-gray-500 dark:text-gray-400"
+                        }`}
                     >
                       {pickedNominees.length} selected
                       {shareTotal > 0 ? ` · ${shareTotal}%` : ""}
@@ -946,14 +944,14 @@ export default function UnitSalePage() {
                           {pick?.checked && (
                             <div className="flex items-center gap-1">
                               <InputElement
- id={`nominee-share-${nominee.id}`}
- name={`nominee-share-${nominee.id}`}
- type="number"
- label=""
- placeholder="%"
- className="w-16 text-right text-xs"
- value={pick.share}
- onChange={(e: any) =>
+                                id={`nominee-share-${nominee.id}`}
+                                name={`nominee-share-${nominee.id}`}
+                                type="number"
+                                label=""
+                                placeholder="%"
+                                className="w-16 text-right text-xs"
+                                value={pick.share}
+                                onChange={(e: any) =>
                                   setNomineeShare(nominee.id, e.target.value)
                                 }
                               />
@@ -1027,18 +1025,16 @@ export default function UnitSalePage() {
                 ) : null}
 
                 {(guards?.letter_count ?? 0) > 0 ||
-                (guards?.booking_form_count ?? 0) > 0 ? (
+                  (guards?.booking_form_count ?? 0) > 0 ? (
                   <p className="text-amber-600 dark:text-amber-500">
                     {guards?.letter_count
-                      ? `${guards.letter_count} allotment letter${
-                          guards.letter_count > 1 ? "s" : ""
-                        }`
+                      ? `${guards.letter_count} allotment letter${guards.letter_count > 1 ? "s" : ""
+                      }`
                       : ""}
                     {guards?.letter_count && guards?.booking_form_count ? " and " : ""}
                     {guards?.booking_form_count
-                      ? `${guards.booking_form_count} booking form${
-                          guards.booking_form_count > 1 ? "s" : ""
-                        }`
+                      ? `${guards.booking_form_count} booking form${guards.booking_form_count > 1 ? "s" : ""
+                      }`
                       : ""}{" "}
                     already issued. Changing the amount leaves them out of date —
                     withdraw and reissue afterwards.
@@ -1054,109 +1050,109 @@ export default function UnitSalePage() {
               </div>
             </div>
           ) : (
-          <div className="rounded  bg-white dark:bg-gray-800 pt-1 py-2 px-4">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
-              <div>
-                <label className="block mt-1 text-sm ">Payment Mode</label>
-                <DropdownCommon
-                  id="payment_mode"
-                  name="payment_mode"
-                  label=""
-                  value={paymentMode}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                    onPaymentModeChange(e.target.value)
-                  }
-                  className="w-60 font-medium text-sm p-1.5"
-                  data={UNIT_SALE_PAYMENT_MODES}
-                />
+            <div className="rounded  bg-white dark:bg-gray-800 pt-1 py-2 px-4">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
+                <div>
+                  <label className="block mt-1 text-sm ">Payment Mode</label>
+                  <DropdownCommon
+                    id="payment_mode"
+                    name="payment_mode"
+                    label=""
+                    value={paymentMode}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                      onPaymentModeChange(e.target.value)
+                    }
+                    className="w-60 font-medium text-sm p-1.5"
+                    data={UNIT_SALE_PAYMENT_MODES}
+                  />
+                </div>
+                <div>
+                  <label className="block mt-1 text-sm font-semibold">Money Receipt No.</label>
+                  <InputElement
+                    id="receipt_no"
+                    name="receipt_no"
+                    type="text"
+                    label=""
+                    placeholder="Enter money receipt number"
+                    className="text-sm "
+                    value={moneyReceipt}
+                    onChange={(e: any) => setMoneyReceipt(e.target.value)}
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block mt-1 text-sm font-semibold">Money Receipt No.</label>
-                <InputElement
- id="receipt_no"
- name="receipt_no"
- type="text"
- label=""
- placeholder="Enter money receipt number"
- className="text-sm "
- value={moneyReceipt}
- onChange={(e: any) => setMoneyReceipt(e.target.value)}
-                />
-              </div>
-            </div>
 
-            {/* ✅ Booking Money (always visible) */}
-            <div className="mt-1 grid grid-cols-1 xl:grid-cols-2 gap-2">
-              <div>
-                <label className="block mt-1 text-sm font-semibold">Booking Tk.</label>
-                <InputElement
-                  id="bookingMoney"
-                  name="bookingMoney"
-                  type="number"
-                  placeholder="Enter booking money"
-                  label=""
-                  className="text-sm"
-                  value={bookingMoney}
-                  onChange={(e: any) => setBookingMoney(e.target.value)}
-                />
+              {/* ✅ Booking Money (always visible) */}
+              <div className="mt-1 grid grid-cols-1 xl:grid-cols-2 gap-2">
+                <div>
+                  <label className="block mt-1 text-sm font-semibold">Booking Tk.</label>
+                  <InputElement
+                    id="bookingMoney"
+                    name="bookingMoney"
+                    type="number"
+                    placeholder="Enter booking money"
+                    label=""
+                    className="text-sm"
+                    value={bookingMoney}
+                    onChange={(e: any) => setBookingMoney(e.target.value)}
+                  />
+                </div>
+                {showBankFields && (
+                  <div className="">
+                    <div>
+                      <label className="block mt-1 text-sm font-semibold">
+                        Check/Ref. Number
+                      </label>
+                      <InputElement
+                        id="checkNumber"
+                        name="checkNumber"
+                        type="text"
+                        placeholder="Enter check number"
+                        label=""
+                        className="text-sm"
+                        value={checkNumber}
+                        onChange={(e: any) => setCheckNumber(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               {showBankFields && (
-                <div className="">
-                  <div>
-                    <label className="block mt-1 text-sm font-semibold">
-                      Check/Ref. Number
-                    </label>
-                    <InputElement
-                      id="checkNumber"
-                      name="checkNumber"
-                      type="text"
-                      placeholder="Enter check number"
-                      label=""
-                      className="text-sm"
-                      value={checkNumber}
-                      onChange={(e: any) => setCheckNumber(e.target.value)}
-                    />
+                <>
+                  <div className="mt-1 grid grid-cols-1 xl:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block mt-1 text-sm font-semibold">
+                        Bank Name
+                      </label>
+                      <InputElement
+                        id="bankName"
+                        name="bankName"
+                        type="text"
+                        placeholder="Enter bank name"
+                        label=""
+                        className="text-sm"
+                        value={bankName}
+                        onChange={(e: any) => setBankName(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block mt-1 text-sm font-semibold">
+                        Branch Name
+                      </label>
+                      <InputElement
+                        id="branchName"
+                        name="branchName"
+                        type="text"
+                        placeholder="Enter branch name"
+                        label=""
+                        className="text-sm"
+                        value={branchName}
+                        onChange={(e: any) => setBranchName(e.target.value)}
+                      />
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
-            {showBankFields && (
-              <>
-                <div className="mt-1 grid grid-cols-1 xl:grid-cols-2 gap-2">
-                  <div>
-                    <label className="block mt-1 text-sm font-semibold">
-                      Bank Name
-                    </label>
-                    <InputElement
-                      id="bankName"
-                      name="bankName"
-                      type="text"
-                      placeholder="Enter bank name"
-                      label=""
-                      className="text-sm"
-                      value={bankName}
-                      onChange={(e: any) => setBankName(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block mt-1 text-sm font-semibold">
-                      Branch Name
-                    </label>
-                    <InputElement
-                      id="branchName"
-                      name="branchName"
-                      type="text"
-                      placeholder="Enter branch name"
-                      label=""
-                      className="text-sm"
-                      value={branchName}
-                      onChange={(e: any) => setBranchName(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
           )}
 
           <div className="flex gap-2">
