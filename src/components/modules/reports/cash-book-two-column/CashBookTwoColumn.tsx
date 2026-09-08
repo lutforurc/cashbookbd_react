@@ -422,6 +422,46 @@ const CashBookTwoColumn = ({ user }: any) => {
       ]
     : [];
 
+  /**
+   * How a cash book is ruled.
+   *
+   * The four money columns are boxed off from the narrative beside them: a
+   * reader running a finger down Payment Bank should not have to hold his place
+   * against a column of descriptions, and on a book this wide the eye slides a
+   * row without a rule to stop it. The footing is closed with a line above and
+   * below, which is how the total of an account has always been written by
+   * hand -- the line above says "everything over this is what I added up", and
+   * the one below says the account is closed.
+   *
+   * Stated here rather than at each of the sixteen cells that need it, so the
+   * rule cannot end up one colour in the heading and another in the footing.
+   *
+   * The colour is the table's own --c-border, the one the rest of the grid
+   * uses. ⚠️ IT IS FAINT WHERE IT CROSSES THE HEADING, and that is accepted
+   * rather than missed: --c-border resolves to --c-strokedark in dark mode,
+   * which is the same #2F3844 as --c-table-head, so there is almost nothing
+   * for it to show against up there. It reads clearly across the body and
+   * quietly across the heading, which is the weight this book is meant to
+   * have. A louder token was tried and read as a wireframe laid over the page.
+   * If the heading rules ever do need to carry, reach for --c-gray-400: it
+   * holds a value per theme and clears 3:1 on all four of this table's grounds
+   * (heading and body, light and dark).
+   */
+  const RULE = 'border-[rgb(var(--c-border))]';
+  const moneyCol = `w-32 text-right border-l ${RULE}`;
+  const moneyColLast = `w-32 text-right border-x ${RULE}`;
+  const moneyHead = `text-right border-l ${RULE}`;
+  const moneyHeadLast = `text-right border-x ${RULE}`;
+  // Two pixels, not one: the footing has to read as heavier than the rules
+  // between the rows it closes off.
+  //
+  // ⚠️ EVERY CELL OF THE TOTAL ROW TAKES IT, the label and the empty action
+  // cell included. Given only to the four money cells the closing line stopped
+  // under the figures and started again under them, leaving the rule broken
+  // either side -- and a rule that stops halfway does not read as "the account
+  // is closed", it reads as a border somebody forgot to finish.
+  const footRuleClose = `border-y-2 ${RULE}`;
+
   const columns = [
     {
       key: 'vr_date',
@@ -478,25 +518,25 @@ const CashBookTwoColumn = ({ user }: any) => {
     {
       key: 'debit_cash',
       header: 'Cash',
-      cellClass: 'w-32 text-right',
+      cellClass: moneyCol,
       render: (row: any) => money(row.debit_cash),
     },
     {
       key: 'debit_bank',
       header: 'Bank',
-      cellClass: 'w-32 text-right',
+      cellClass: moneyCol,
       render: (row: any) => money(row.debit_bank),
     },
     {
       key: 'credit_cash',
       header: 'Cash',
-      cellClass: 'w-32 text-right',
+      cellClass: moneyCol,
       render: (row: any) => money(row.credit_cash),
     },
     {
       key: 'credit_bank',
       header: 'Bank',
-      cellClass: 'w-32 text-right',
+      cellClass: moneyColLast,
       render: (row: any) => money(row.credit_bank),
     },
     {
@@ -542,15 +582,20 @@ const CashBookTwoColumn = ({ user }: any) => {
       { label: 'Date', rowSpan: 2 },
       { label: 'Voucher#', rowSpan: 2 },
       { label: 'Description', rowSpan: 2 },
-      { label: 'Receive', colSpan: 2, className: 'text-center' },
-      { label: 'Payment', colSpan: 2, className: 'text-center' },
+      // ⚠️ NO RULE THROUGH THE MIDDLE OF THESE. Receive covers Cash and Bank
+      // together, and a line splitting the band would claim the heading belongs
+      // to one of them. The Cash|Bank rule begins on the row below, where the
+      // two columns are first named -- which is how the band is read: one
+      // heading over two columns, not two headings.
+      { label: 'Receive', colSpan: 2, className: `text-center border-b border-l ${RULE}` },
+      { label: 'Payment', colSpan: 2, className: `text-center border-b border-x ${RULE}` },
       { label: 'Action', rowSpan: 2, className: 'text-center' },
     ],
     [
-      { label: 'Cash', className: 'text-right' },
-      { label: 'Bank', className: 'text-right' },
-      { label: 'Cash', className: 'text-right' },
-      { label: 'Bank', className: 'text-right' },
+      { label: 'Cash', className: moneyHead },
+      { label: 'Bank', className: moneyHead },
+      { label: 'Cash', className: moneyHead },
+      { label: 'Bank', className: moneyHeadLast },
     ],
   ];
 
@@ -565,21 +610,21 @@ const CashBookTwoColumn = ({ user }: any) => {
     ? [
         [
           { label: 'Balance c/d', colSpan: 3, className: 'text-right' },
-          { label: money(report.closing?.cash_debit), className: 'text-right' },
-          { label: money(report.closing?.bank_debit), className: 'text-right' },
-          { label: money(report.closing?.cash_credit), className: 'text-right' },
-          { label: money(report.closing?.bank_credit), className: 'text-right' },
+          { label: money(report.closing?.cash_debit), className: moneyHead },
+          { label: money(report.closing?.bank_debit), className: moneyHead },
+          { label: money(report.closing?.cash_credit), className: moneyHead },
+          { label: money(report.closing?.bank_credit), className: moneyHeadLast },
           { label: '' },
         ],
         // The whole account, balances included, which is why the two sides of
         // each come to the same figure.
         [
-          { label: 'Total', colSpan: 3, className: 'text-right' },
-          { label: money(report.totals?.debit_cash), className: 'text-right' },
-          { label: money(report.totals?.debit_bank), className: 'text-right' },
-          { label: money(report.totals?.credit_cash), className: 'text-right' },
-          { label: money(report.totals?.credit_bank), className: 'text-right' },
-          { label: '' },
+          { label: 'Total', colSpan: 3, className: `text-right ${footRuleClose}` },
+          { label: money(report.totals?.debit_cash), className: `${moneyHead} ${footRuleClose}` },
+          { label: money(report.totals?.debit_bank), className: `${moneyHead} ${footRuleClose}` },
+          { label: money(report.totals?.credit_cash), className: `${moneyHead} ${footRuleClose}` },
+          { label: money(report.totals?.credit_bank), className: `${moneyHeadLast} ${footRuleClose}` },
+          { label: '', className: footRuleClose },
         ],
       ]
     : [];
