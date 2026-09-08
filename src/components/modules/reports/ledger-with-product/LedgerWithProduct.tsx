@@ -532,7 +532,7 @@ const LedgerWithProduct = (user: any) => {
           <div className="whitespace-normal">
             {row.transaction_name}
             { row.sales_item_name && (
-            <span className="mt-1 text-xs text-slate-500 dark:text-yellow-300"> &nbsp;({row.sales_item_name})</span>
+            <span className="mt-1 text-xs text-green-400"> &nbsp;({row.sales_item_name})</span>
           )}
           </div>
           {row.remarks ? (

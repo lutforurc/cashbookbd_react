@@ -475,7 +475,7 @@ const PurchaseLedger = (user: any) => {
               })}
             
             {row?.purchase_master?.notes && (
-              <div className="text-green-500 dark:text-yellow-300">
+              <div className="text-green-500">
                 <span
                   className={highlightLineClass(
                     matchHighlightRule(row?.purchase_master?.notes, highlightRules),

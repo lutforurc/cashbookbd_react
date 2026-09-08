@@ -636,7 +636,7 @@ const SalesLedger = (user: any) => {
                 );
               })}
             {detailText ? (
-              <div className="text-green-500 dark:text-yellow-300">
+              <div className="text-green-500">
                 <span
                   className={highlightLineClass(
                     matchHighlightRule(detailText, highlightRules),
