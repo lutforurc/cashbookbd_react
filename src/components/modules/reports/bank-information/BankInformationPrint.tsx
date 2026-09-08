@@ -8,6 +8,10 @@ import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 export type BankInformationPrintRow = {
   coa4_id?: number | string;
   bank_name?: string;
+  /** Signed, as the screen shows them: negative is an overdraft. */
+  opening?: number | string;
+  movement?: number | string;
+  closing?: number | string;
   dr_bal?: number | string;
   cr_bal?: number | string;
 };
@@ -15,6 +19,7 @@ export type BankInformationPrintRow = {
 type BankInformationPrintProps = {
   rows: BankInformationPrintRow[];
   reportType: string;
+  startDate: string;
   endDate: string;
   rowsPerPage: number;
   fontSize: number;
@@ -37,24 +42,20 @@ const chunkRows = <T,>(rows: T[], size: number) => {
 };
 
 const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProps>(
-  ({ rows, reportType, endDate, rowsPerPage, fontSize }, ref) => {
+  ({ rows, reportType, startDate, endDate, rowsPerPage, fontSize }, ref) => {
     const totals = useMemo(
       () =>
         rows.reduce(
           (acc, row) => {
-            acc.debit += toNumber(row.dr_bal);
-            acc.credit += toNumber(row.cr_bal);
+            acc.opening += toNumber(row.opening);
+            acc.movement += toNumber(row.movement);
+            acc.closing += toNumber(row.closing);
             return acc;
           },
-          { debit: 0, credit: 0 },
+          { opening: 0, movement: 0, closing: 0 },
         ),
       [rows],
     );
-
-    const balance = {
-      debit: totals.debit > totals.credit ? totals.debit - totals.credit : 0,
-      credit: totals.credit > totals.debit ? totals.credit - totals.debit : 0,
-    };
 
     const pages = chunkRows(rows, rowsPerPage);
 
@@ -80,7 +81,7 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
                     <span className="font-semibold">Report Type:</span> {reportType || '-'}
                   </div>
                   <div>
-                    <span className="font-semibold">Report Date:</span> {endDate || '-'}
+                    <span className="font-semibold">Period:</span> {startDate || '-'} to {endDate || '-'}
                   </div>
                 </div>
               </div>
@@ -90,8 +91,9 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
                   <tr>
                     <th style={styles.centerHeader}>Sl. No.</th>
                     <th style={styles.leftHeader}>Bank Name</th>
-                    <th style={styles.rightHeader}>Debit Balance</th>
-                    <th style={styles.rightHeader}>Credit Balance</th>
+                    <th style={styles.centerHeader}>Opening</th>
+                    <th style={styles.centerHeader}>Movement</th>
+                    <th style={styles.centerHeader}>Closing</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -100,13 +102,14 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
                       <tr key={`${row.coa4_id ?? row.bank_name ?? rowIndex}-print`}>
                         <td style={styles.centerCell}>{pageOffset + rowIndex + 1}</td>
                         <td style={styles.leftCell}>{row.bank_name || '-'}</td>
-                        <td style={styles.rightCell}>{thousandSeparator(toNumber(row.dr_bal))}</td>
-                        <td style={styles.rightCell}>{thousandSeparator(toNumber(row.cr_bal))}</td>
+                        <td style={styles.rightCell}>{thousandSeparator(toNumber(row.opening))}</td>
+                        <td style={styles.rightCell}>{thousandSeparator(toNumber(row.movement))}</td>
+                        <td style={styles.rightCell}>{thousandSeparator(toNumber(row.closing))}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} style={styles.emptyCell}>
+                      <td colSpan={5} style={styles.emptyCell}>
                         No data found
                       </td>
                     </tr>
@@ -117,13 +120,9 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
                   <tfoot>
                     <tr>
                       <td colSpan={2} style={styles.footerLabel}>Total</td>
-                      <td style={styles.footerAmount}>{thousandSeparator(totals.debit)}</td>
-                      <td style={styles.footerAmount}>{thousandSeparator(totals.credit)}</td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2} style={styles.footerLabel}>Balance</td>
-                      <td style={styles.footerAmount}>{balance.debit > 0 ? thousandSeparator(balance.debit) : '-'}</td>
-                      <td style={styles.footerAmount}>{balance.credit > 0 ? thousandSeparator(balance.credit) : '-'}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.opening)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.movement)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.closing)}</td>
                     </tr>
                   </tfoot>
                 ) : null}

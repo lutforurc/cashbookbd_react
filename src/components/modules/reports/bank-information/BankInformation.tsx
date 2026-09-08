@@ -25,6 +25,14 @@ import { FIELD_HEIGHT } from '../../../../theme/fieldStyles';
 type BankInformationRow = {
   coa4_id?: number | string;
   bank_name?: string;
+  /** Signed: what the head held the day before the period opened. */
+  opening?: number | string;
+  /** Signed: what the period itself did to it. */
+  movement?: number | string;
+  movement_debit?: number | string;
+  movement_credit?: number | string;
+  /** Signed: opening + movement. A negative one is an overdraft. */
+  closing?: number | string;
   dr_bal?: number | string;
   cr_bal?: number | string;
 };
@@ -46,6 +54,28 @@ const getRowsFromResponse = (response: any): BankInformationRow[] => {
   return [];
 };
 
+/**
+ * A signed figure, coloured by which way it points.
+ *
+ * Money the bank holds reads green, an overdraft red, and zero is left as
+ * thousandSeparator's dash rather than a 0 -- a column of untouched accounts
+ * should not read as a column of figures. The three money columns share this
+ * because a rule applied three times by hand is a rule that drifts.
+ */
+const money = (value: number) => (
+  <span
+    className={
+      value > 0
+        ? 'font-bold text-green-700'
+        : value < 0
+          ? 'font-bold text-red-600'
+          : 'text-slate-400'
+    }
+  >
+    {thousandSeparator(value)}
+  </span>
+);
+
 const parseTransactionDate = (value?: string | null) => {
   if (!value) return new Date();
   const [day, month, year] = value.split('/').map((item) => Number(item.trim()));
@@ -60,6 +90,10 @@ const BankInformation = () => {
 
   const [branchId, setBranchId] = useState('');
   const [reportTypeId, setReportTypeId] = useState('1');
+  // A balance cannot be an OPENING one without a day to stand before, so the
+  // report takes a period now rather than a single date. Month to date is what
+  // a bank statement is usually read against, so that is where it starts.
+  const [startDate, setStartDate] = useState<Date | null>(dayjs().startOf('month').toDate());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [rows, setRows] = useState<BankInformationRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -73,37 +107,39 @@ const BankInformation = () => {
   useEffect(() => {
     const transactionDate = branchDdlData?.protectedData?.transactionDate;
     if (transactionDate) {
-      setEndDate(parseTransactionDate(transactionDate));
+      const asOf = parseTransactionDate(transactionDate);
+      setEndDate(asOf);
+      setStartDate(dayjs(asOf).startOf('month').toDate());
     }
   }, [branchDdlData?.protectedData?.transactionDate]);
 
   const branchOptions = branchDdlData?.protectedData?.data || [];
   const selectedReportType = reportTypes.find((item) => item.id === reportTypeId)?.name || 'Bank Balance';
 
+  // Footed from the rows on screen rather than read off the payload, so the
+  // foot of the report can never disagree with the column above it.
   const totals = useMemo(
     () =>
       rows.reduce(
         (acc, row) => {
-          acc.debit += toNumber(row.dr_bal);
-          acc.credit += toNumber(row.cr_bal);
+          acc.opening += toNumber(row.opening);
+          acc.movement += toNumber(row.movement);
+          acc.closing += toNumber(row.closing);
           return acc;
         },
-        { debit: 0, credit: 0 },
+        { opening: 0, movement: 0, closing: 0 },
       ),
     [rows],
   );
 
-  const balance = useMemo(
-    () => ({
-      debit: totals.debit > totals.credit ? totals.debit - totals.credit : 0,
-      credit: totals.credit > totals.debit ? totals.credit - totals.debit : 0,
-    }),
-    [totals],
-  );
-
   const handleLoad = async () => {
-    if (!endDate) {
-      toast.info('Please select end date.');
+    if (!startDate || !endDate) {
+      toast.info('Please select the start and end date.');
+      return;
+    }
+
+    if (dayjs(startDate).isAfter(dayjs(endDate), 'day')) {
+      toast.info('The start date cannot be after the end date.');
       return;
     }
 
@@ -113,6 +149,7 @@ const BankInformation = () => {
         params: {
           branch_id: branchId,
           report_type_id: reportTypeId,
+          startdate: dayjs(startDate).format('DD/MM/YYYY'),
           enddate: dayjs(endDate).format('DD/MM/YYYY'),
         },
       });
@@ -129,7 +166,9 @@ const BankInformation = () => {
   const handleReset = () => {
     setBranchId('');
     setReportTypeId('1');
-    setEndDate(parseTransactionDate(branchDdlData?.protectedData?.transactionDate));
+    const asOf = parseTransactionDate(branchDdlData?.protectedData?.transactionDate);
+    setEndDate(asOf);
+    setStartDate(dayjs(asOf).startOf('month').toDate());
     setRows([]);
   };
 
@@ -151,7 +190,7 @@ const BankInformation = () => {
     <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-[rgb(var(--c-text))]">
       <HelmetTitle title="Bank Information" />
       <div className="mb-3 flex flex-wrap items-end gap-3">
-        <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
+        <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-2 lg:grid-cols-4 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
           <div>
             <label className={labelClass}>Select Branch</label>
             <Select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>
@@ -176,12 +215,22 @@ const BankInformation = () => {
           </div>
 
           <div>
+            <label className={labelClass}>Start Date</label>
+            <InputDatePicker
+              selectedDate={startDate}
+              setSelectedDate={setStartDate}
+              setCurrentDate={setStartDate}
+              className="border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
+            />
+          </div>
+
+          <div>
             <label className={labelClass}>End Date</label>
             <InputDatePicker
- selectedDate={endDate}
- setSelectedDate={setEndDate}
- setCurrentDate={setEndDate}
- className="border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
+              selectedDate={endDate}
+              setSelectedDate={setEndDate}
+              setCurrentDate={setEndDate}
+              className="border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
             />
           </div>
         </div>
@@ -245,34 +294,29 @@ const BankInformation = () => {
               <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-[rgb(var(--c-text))]">
                 <th className="w-24 px-3 py-4 text-center">Sl. No.</th>
                 <th className="px-3 py-4 text-left">Bank Name</th>
-                <th className="w-40 px-3 py-4 text-right">Debit Balance</th>
-                <th className="w-40 px-3 py-4 text-right">Credit Balance</th>
+                <th className="w-40 px-3 py-4 text-center">Opening</th>
+                <th className="w-40 px-3 py-4 text-center">Movement</th>
+                <th className="w-40 px-3 py-4 text-center">Closing</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-900 dark:divide-[rgb(var(--c-strokedark))] dark:text-[rgb(var(--c-bodydark1))]">
               {rows.length > 0 ? (
                 rows.map((row, index) => {
-                  const debit = toNumber(row.dr_bal);
-                  const credit = toNumber(row.cr_bal);
-
                   return (
                     <tr key={`${row.coa4_id ?? row.bank_name ?? index}-${index}`} className="bg-white dark:bg-[rgb(var(--c-boxdark))]">
                       <td className="px-3 py-3 text-center">{index + 1}</td>
                       <td className="px-3 py-3 text-sky-950 dark:text-slate-100">
                         {row.bank_name || '-'}
                       </td>
-                      <td className="px-3 py-3 text-right">
-                        {debit > 0 ? <span className="font-bold text-green-700">{thousandSeparator(debit)}</span> : 0}
-                      </td>
-                      <td className="px-3 py-3 text-right">
-                        {credit > 0 ? <span className="font-bold text-red-600">{thousandSeparator(credit)}</span> : 0}
-                      </td>
+                      <td className="px-3 py-3 text-right">{money(toNumber(row.opening))}</td>
+                      <td className="px-3 py-3 text-right">{money(toNumber(row.movement))}</td>
+                      <td className="px-3 py-3 text-right">{money(toNumber(row.closing))}</td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={4} className="px-3 py-6 text-center text-slate-500 dark:text-slate-300">
+                  <td colSpan={5} className="px-3 py-6 text-center text-slate-500 dark:text-slate-300">
                     No {selectedReportType.toLowerCase()} data found
                   </td>
                 </tr>
@@ -281,21 +325,9 @@ const BankInformation = () => {
             <tfoot className="bg-slate-100 font-bold text-slate-950 dark:bg-[rgb(var(--c-meta-4))] dark:text-[rgb(var(--c-text))]">
               <tr className="font-bold">
                 <td colSpan={2} className="px-3 py-3 text-right">Total</td>
-                <td className="px-3 py-3 text-right">
-                  {totals.debit > 0 ? <span className="text-green-700">{thousandSeparator(totals.debit)}</span> : 0}
-                </td>
-                <td className="px-3 py-3 text-right">
-                  {totals.credit > 0 ? <span className="text-red-600">{thousandSeparator(totals.credit)}</span> : 0}
-                </td>
-              </tr>
-              <tr className="font-bold">
-                <td colSpan={2} className="px-3 py-3 text-right">Balance</td>
-                <td className="px-3 py-3 text-right">
-                  {balance.debit > 0 ? <span className="text-green-700">{thousandSeparator(balance.debit)}</span> : 0}
-                </td>
-                <td className="px-3 py-3 text-right">
-                  {balance.credit > 0 ? <span className="text-red-600">{thousandSeparator(balance.credit)}</span> : 0}
-                </td>
+                <td className="px-3 py-3 text-right">{money(totals.opening)}</td>
+                <td className="px-3 py-3 text-right">{money(totals.movement)}</td>
+                <td className="px-3 py-3 text-right">{money(totals.closing)}</td>
               </tr>
             </tfoot>
           </table>
@@ -307,6 +339,7 @@ const BankInformation = () => {
           ref={printRef}
           rows={rows}
           reportType={selectedReportType}
+          startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : '-'}
           endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : '-'}
           rowsPerPage={rowsPerPage}
           fontSize={fontSize}
