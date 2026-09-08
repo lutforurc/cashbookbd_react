@@ -168,7 +168,23 @@ export const VoucherPrintRegistry = forwardRef(
             break;
 
           /* ================= SALES ================= */
+          /**
+           * Both sale numbers, because they are one paper.
+           *
+           * The prefix says how a sale was PAID FOR, not what it is: 3 is a
+           * cash sale and 10 a credit one, and the invoice that goes to the
+           * customer is the same document either way. This knew only 3, so a
+           * credit sale fell to the default below and answered "Unknown voucher
+           * type: 10" -- the ledger listed the invoice, and clicking it printed
+           * nothing.
+           *
+           * The same mistake the quantity columns on Ledger Details made, and
+           * for the same reason: 9 and 10 were added as prefixes of their own
+           * after this switch was written, and nothing went back to teach the
+           * places that were reading the number to decide what a voucher was.
+           */
           case '3':
+          case '10':
             activePrintRef.current = salesRef.current;
 
             dispatch(
@@ -186,7 +202,9 @@ export const VoucherPrintRegistry = forwardRef(
             break;
 
           /* ================= PURCHASE ================= */
+          /** 4 is a cash purchase, 9 a credit one -- one paper, as above. */
           case '4':
+          case '9':
             activePrintRef.current = purchaseRef.current;
             dispatch(
               electronicsSalesPrint(
