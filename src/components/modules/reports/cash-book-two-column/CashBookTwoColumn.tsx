@@ -412,7 +412,7 @@ const CashBookTwoColumn = ({ user }: any) => {
           mtm_id: '__opening',
           is_opening: true,
           vr_date: report.from,
-          description: 'Balance b/d',
+          description: 'Balance B/D',
           debit_cash: report.opening?.cash_debit,
           debit_bank: report.opening?.bank_debit,
           credit_cash: report.opening?.cash_credit,
@@ -609,7 +609,7 @@ const CashBookTwoColumn = ({ user }: any) => {
   const footerRows = report
     ? [
         [
-          { label: 'Balance c/d', colSpan: 3, className: 'text-right' },
+          { label: 'Balance C/D', colSpan: 3, className: 'text-right' },
           { label: money(report.closing?.cash_debit), className: moneyHead },
           { label: money(report.closing?.bank_debit), className: moneyHead },
           { label: money(report.closing?.cash_credit), className: moneyHead },
