@@ -151,7 +151,7 @@ const SalesLedger = (user: any) => {
   // dialog opens with what that row already knows -- the driver, the vehicle
   // and the challan number -- and none of it is worth a second trip to the
   // server for a paper somebody is waiting at the gate for.
-  const canPrintChallan = hasPermission(userPermissions, 'ledger.details');
+  const canPrintChallan = hasPermission(userPermissions, 'print.delivery.challan');
   const [challanRow, setChallanRow] = useState<any>(null);
   const [savingChallan, setSavingChallan] = useState(false);
 
