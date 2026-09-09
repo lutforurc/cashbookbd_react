@@ -74,7 +74,7 @@ const SendSms = (user: any) => {
       // Narrow and wrapping, like the message. A customer name can run to forty
       // characters -- "Newhope Animal Feed Mill Ltd-(Unit-3)" -- and on one line
       // it pushed everything after it off the screen.
-      cellClass: 'w-[13%] min-w-[8rem] whitespace-normal! break-words align-top',
+      cellClass: 'w-[13%] min-w-[8rem] whitespace-normal! break-words align-middle',
       // Ahead of the number, because that is the question being asked of this
       // screen: not "what number was texted" but "did the mill get their
       // receipt". The server fills it from the party the message was about, or
