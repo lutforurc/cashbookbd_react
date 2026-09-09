@@ -18,19 +18,47 @@ export type BankInformationPrintRow = {
   cr_bal?: number | string;
 };
 
-/** The six money columns: each of Opening, Movement and Closing as a pair. */
+/**
+ * The six money columns: each of Opening, Movement and Closing as a pair.
+ *
+ * Named for the side of the ledger rather than for the words in the header,
+ * because the header words change with the report type and the sides do not.
+ */
 export type BankInformationColumns = {
-  openingReceived: number;
-  openingPayment: number;
-  movementReceived: number;
-  movementPayment: number;
-  closingReceived: number;
-  closingPayment: number;
+  openingDebit: number;
+  openingCredit: number;
+  movementDebit: number;
+  movementCredit: number;
+  closingDebit: number;
+  closingCredit: number;
 };
+
+/** What the two balance columns are called under Opening and Closing. */
+export type BalanceLabels = {
+  debit: string;
+  credit: string;
+};
+
+/**
+ * ⚠️ A CREDIT BALANCE DOES NOT MEAN THE SAME THING IN BOTH REPORTS, so the
+ * header cannot be one fixed word. On a bank account the branch is overdrawn;
+ * on a bank loan it is what is still owed, and calling that an overdraft would
+ * be wrong. Movement keeps Received / Payment either way -- money coming in and
+ * money going out mean the same thing wherever the account sits.
+ *
+ * Matched on the report type id the screen already holds ('2' is Bank Loan),
+ * not on the display name, so renaming the dropdown entry cannot silently
+ * relabel the report.
+ */
+export const balanceLabels = (reportTypeId: string): BalanceLabels =>
+  String(reportTypeId) === '2'
+    ? { debit: 'Advance', credit: 'Outstanding' }
+    : { debit: 'Balance', credit: 'Overdraft' };
 
 type BankInformationPrintProps = {
   rows: BankInformationPrintRow[];
   reportType: string;
+  balanceLabels: BalanceLabels;
   startDate: string;
   endDate: string;
   rowsPerPage: number;
@@ -45,9 +73,10 @@ const toNumber = (value: unknown) => {
 /**
  * The six columns, worked out from the signed figures the API answers with.
  *
- * ⚠️ OPENING AND CLOSING ARE BALANCES, so they fall into Received or Payment by
- * their sign: a positive balance is money the bank is holding and stands on the
- * Received side, a negative one is an overdraft and stands on the Payment side.
+ * ⚠️ OPENING AND CLOSING ARE BALANCES, so they fall to one side or the other by
+ * their sign: a positive balance is money the branch is holding and sits on the
+ * debit side, a negative one is what it owes -- an overdraft on a bank account,
+ * the amount still outstanding on a loan -- and sits on the credit side.
  * MOVEMENT IS GROSS -- what actually came in and what actually went out over
  * the period -- so it is read off movement_debit and movement_credit rather
  * than split out of the net figure. An account that took 5,00,000 in and paid
@@ -62,12 +91,12 @@ export const splitBankRow = (row: BankInformationPrintRow): BankInformationColum
   const closing = toNumber(row.closing);
 
   return {
-    openingReceived: opening > 0 ? opening : 0,
-    openingPayment: opening < 0 ? -opening : 0,
-    movementReceived: toNumber(row.movement_debit),
-    movementPayment: toNumber(row.movement_credit),
-    closingReceived: closing > 0 ? closing : 0,
-    closingPayment: closing < 0 ? -closing : 0,
+    openingDebit: opening > 0 ? opening : 0,
+    openingCredit: opening < 0 ? -opening : 0,
+    movementDebit: toNumber(row.movement_debit),
+    movementCredit: toNumber(row.movement_credit),
+    closingDebit: closing > 0 ? closing : 0,
+    closingCredit: closing < 0 ? -closing : 0,
   };
 };
 
@@ -76,21 +105,21 @@ export const sumBankColumns = (rows: BankInformationPrintRow[]): BankInformation
   rows.reduce<BankInformationColumns>(
     (acc, row) => {
       const columns = splitBankRow(row);
-      acc.openingReceived += columns.openingReceived;
-      acc.openingPayment += columns.openingPayment;
-      acc.movementReceived += columns.movementReceived;
-      acc.movementPayment += columns.movementPayment;
-      acc.closingReceived += columns.closingReceived;
-      acc.closingPayment += columns.closingPayment;
+      acc.openingDebit += columns.openingDebit;
+      acc.openingCredit += columns.openingCredit;
+      acc.movementDebit += columns.movementDebit;
+      acc.movementCredit += columns.movementCredit;
+      acc.closingDebit += columns.closingDebit;
+      acc.closingCredit += columns.closingCredit;
       return acc;
     },
     {
-      openingReceived: 0,
-      openingPayment: 0,
-      movementReceived: 0,
-      movementPayment: 0,
-      closingReceived: 0,
-      closingPayment: 0,
+      openingDebit: 0,
+      openingCredit: 0,
+      movementDebit: 0,
+      movementCredit: 0,
+      closingDebit: 0,
+      closingCredit: 0,
     },
   );
 
@@ -106,7 +135,7 @@ const chunkRows = <T,>(rows: T[], size: number) => {
 };
 
 const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProps>(
-  ({ rows, reportType, startDate, endDate, rowsPerPage, fontSize }, ref) => {
+  ({ rows, reportType, balanceLabels: balanceHeads, startDate, endDate, rowsPerPage, fontSize }, ref) => {
     const totals = useMemo(() => sumBankColumns(rows), [rows]);
 
     const pages = chunkRows(rows, rowsPerPage);
@@ -151,12 +180,12 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
                     <th colSpan={2} style={styles.groupHeader}>Closing</th>
                   </tr>
                   <tr>
+                    <th style={styles.subHeader}>{balanceHeads.debit}</th>
+                    <th style={styles.subHeader}>{balanceHeads.credit}</th>
                     <th style={styles.subHeader}>Received</th>
                     <th style={styles.subHeader}>Payment</th>
-                    <th style={styles.subHeader}>Received</th>
-                    <th style={styles.subHeader}>Payment</th>
-                    <th style={styles.subHeader}>Received</th>
-                    <th style={styles.subHeader}>Payment</th>
+                    <th style={styles.subHeader}>{balanceHeads.debit}</th>
+                    <th style={styles.subHeader}>{balanceHeads.credit}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -168,12 +197,12 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
                         <tr key={`${row.coa4_id ?? row.bank_name ?? rowIndex}-print`}>
                           <td style={styles.centerCell}>{pageOffset + rowIndex + 1}</td>
                           <td style={styles.leftCell}>{row.bank_name || '-'}</td>
-                          <td style={styles.rightCell}>{thousandSeparator(columns.openingReceived)}</td>
-                          <td style={styles.rightCell}>{thousandSeparator(columns.openingPayment)}</td>
-                          <td style={styles.rightCell}>{thousandSeparator(columns.movementReceived)}</td>
-                          <td style={styles.rightCell}>{thousandSeparator(columns.movementPayment)}</td>
-                          <td style={styles.rightCell}>{thousandSeparator(columns.closingReceived)}</td>
-                          <td style={styles.rightCell}>{thousandSeparator(columns.closingPayment)}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.openingDebit)}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.openingCredit)}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.movementDebit)}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.movementCredit)}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.closingDebit)}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.closingCredit)}</td>
                         </tr>
                       );
                     })
@@ -190,12 +219,12 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
                   <tfoot>
                     <tr>
                       <td colSpan={2} style={styles.footerLabel}>Total</td>
-                      <td style={styles.footerAmount}>{thousandSeparator(totals.openingReceived)}</td>
-                      <td style={styles.footerAmount}>{thousandSeparator(totals.openingPayment)}</td>
-                      <td style={styles.footerAmount}>{thousandSeparator(totals.movementReceived)}</td>
-                      <td style={styles.footerAmount}>{thousandSeparator(totals.movementPayment)}</td>
-                      <td style={styles.footerAmount}>{thousandSeparator(totals.closingReceived)}</td>
-                      <td style={styles.footerAmount}>{thousandSeparator(totals.closingPayment)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.openingDebit)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.openingCredit)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.movementDebit)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.movementCredit)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.closingDebit)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.closingCredit)}</td>
                     </tr>
                   </tfoot>
                 ) : null}
@@ -246,9 +275,10 @@ const styles: Record<string, React.CSSProperties> = {
     ...baseHeader,
     textAlign: 'center',
   },
+  // Wide enough for "Outstanding", the longest word any of these six can carry.
   subHeader: {
     ...baseHeader,
-    width: 74,
+    width: 82,
     textAlign: 'center',
   },
   centerCell: {

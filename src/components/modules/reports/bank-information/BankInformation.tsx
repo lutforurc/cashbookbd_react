@@ -19,6 +19,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
 import { API_REPORT_BANK_INFORMATION_DATA_URL } from '../../../services/apiRoutes';
 import BankInformationPrint, {
+  balanceLabels,
   splitBankRow,
   sumBankColumns,
 } from './BankInformationPrint';
@@ -56,18 +57,18 @@ const getRowsFromResponse = (response: any): BankInformationRow[] => {
  * A figure in one of the six money columns.
  *
  * Nothing here is signed any more -- which way the money went is said by the
- * column it stands under -- so the colour follows the column instead: what came
- * in reads green, what went out red. Zero is left as thousandSeparator's dash
- * rather than a 0, so a column of untouched accounts does not read as a column
- * of figures. All six columns share this because a rule applied six times by
- * hand is a rule that drifts.
+ * column it stands under -- so the colour follows the side instead: what the
+ * branch holds or took in reads green, what it owes or paid out red. Zero is
+ * left as thousandSeparator's dash rather than a 0, so a column of untouched
+ * accounts does not read as a column of figures. All six columns share this
+ * because a rule applied six times by hand is a rule that drifts.
  */
-const money = (value: number, side: 'received' | 'payment') => (
+const money = (value: number, side: 'debit' | 'credit') => (
   <span
     className={
       value === 0
         ? 'text-slate-400'
-        : side === 'received'
+        : side === 'debit'
           ? 'font-bold text-green-700'
           : 'font-bold text-red-600'
     }
@@ -98,7 +99,7 @@ const BankInformation = () => {
   const [rows, setRows] = useState<BankInformationRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(0);
-  const [fontSize, setFontSize] = useState(12);
+  const [fontSize, setFontSize] = useState(10);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
@@ -119,6 +120,11 @@ const BankInformation = () => {
   // Footed from the rows on screen rather than read off the payload, so the
   // foot of the report can never disagree with the column above it.
   const totals = useMemo(() => sumBankColumns(rows), [rows]);
+
+  // What a balance on either side is called here -- an overdraft on a bank
+  // account is an outstanding amount on a loan. Taken from the report type the
+  // dropdown currently holds, so the header changes with it.
+  const balanceHeads = balanceLabels(reportTypeId);
 
   const handleLoad = async () => {
     if (!startDate || !endDate) {
@@ -283,15 +289,16 @@ const BankInformation = () => {
         </div>
       ) : (
         <div className="overflow-x-auto bg-white dark:bg-[rgb(var(--c-boxdark))]">
-          <table className="w-full min-w-250 table-fixed border-collapse text-sm" style={{ fontSize }}>
+          <table className="w-full min-w-270 table-fixed border-collapse text-sm" style={{ fontSize }}>
             {/* The widths live here rather than on the header cells. Under
                 table-fixed the browser sizes the columns off the FIRST row
-                alone, and that row is now all merged cells -- a w-28 written on
-                the Received / Payment row underneath would never be read. */}
+                alone, and that row is now all merged cells -- a width written on
+                the row of sub-headings underneath would never be read. w-32
+                holds "Outstanding", the longest of the six, on one line. */}
             <colgroup>
               <col className="w-16" />
               <col />
-              <col span={6} className="w-28" />
+              <col span={6} className="w-32" />
             </colgroup>
             {/* Two header rows: the period a pair belongs to on top, the side of
                 the money underneath. Sl. No. and Bank Name are one question
@@ -308,12 +315,12 @@ const BankInformation = () => {
                 <th colSpan={2} className={headCell}>Closing</th>
               </tr>
               <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-[rgb(var(--c-text))]">
+                <th className={headCell}>{balanceHeads.debit}</th>
+                <th className={headCell}>{balanceHeads.credit}</th>
                 <th className={headCell}>Received</th>
                 <th className={headCell}>Payment</th>
-                <th className={headCell}>Received</th>
-                <th className={headCell}>Payment</th>
-                <th className={headCell}>Received</th>
-                <th className={headCell}>Payment</th>
+                <th className={headCell}>{balanceHeads.debit}</th>
+                <th className={headCell}>{balanceHeads.credit}</th>
               </tr>
             </thead>
             <tbody className="text-slate-900 dark:text-[rgb(var(--c-bodydark1))]">
@@ -327,12 +334,12 @@ const BankInformation = () => {
                       <td className={`${bodyCell} text-sky-950 dark:text-slate-100`}>
                         {row.bank_name || '-'}
                       </td>
-                      <td className={`${bodyCell} text-right`}>{money(columns.openingReceived, 'received')}</td>
-                      <td className={`${bodyCell} text-right`}>{money(columns.openingPayment, 'payment')}</td>
-                      <td className={`${bodyCell} text-right`}>{money(columns.movementReceived, 'received')}</td>
-                      <td className={`${bodyCell} text-right`}>{money(columns.movementPayment, 'payment')}</td>
-                      <td className={`${bodyCell} text-right`}>{money(columns.closingReceived, 'received')}</td>
-                      <td className={`${bodyCell} text-right`}>{money(columns.closingPayment, 'payment')}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.openingDebit, 'debit')}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.openingCredit, 'credit')}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.movementDebit, 'debit')}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.movementCredit, 'credit')}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.closingDebit, 'debit')}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.closingCredit, 'credit')}</td>
                     </tr>
                   );
                 })
@@ -347,12 +354,12 @@ const BankInformation = () => {
             <tfoot className="bg-slate-100 font-bold text-slate-950 dark:bg-[rgb(var(--c-meta-4))] dark:text-[rgb(var(--c-text))]">
               <tr className="font-bold">
                 <td colSpan={2} className={`${bodyCell} text-right`}>Total</td>
-                <td className={`${bodyCell} text-right`}>{money(totals.openingReceived, 'received')}</td>
-                <td className={`${bodyCell} text-right`}>{money(totals.openingPayment, 'payment')}</td>
-                <td className={`${bodyCell} text-right`}>{money(totals.movementReceived, 'received')}</td>
-                <td className={`${bodyCell} text-right`}>{money(totals.movementPayment, 'payment')}</td>
-                <td className={`${bodyCell} text-right`}>{money(totals.closingReceived, 'received')}</td>
-                <td className={`${bodyCell} text-right`}>{money(totals.closingPayment, 'payment')}</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.openingDebit, 'debit')}</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.openingCredit, 'credit')}</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.movementDebit, 'debit')}</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.movementCredit, 'credit')}</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.closingDebit, 'debit')}</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.closingCredit, 'credit')}</td>
               </tr>
             </tfoot>
           </table>
@@ -364,6 +371,7 @@ const BankInformation = () => {
           ref={printRef}
           rows={rows}
           reportType={selectedReportType}
+          balanceLabels={balanceHeads}
           startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : '-'}
           endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : '-'}
           rowsPerPage={rowsPerPage}
