@@ -1984,7 +1984,7 @@ const AddBranch = () => {
                           />
                         )}
                         {!formData.sms_service && (
-                          <p className="col-span-full text-sm text-gray-500">SMS Service is not active for this branch.</p>
+                          <p className="col-span-full font-bold text-sm text-blue-800 dark:text-gray-100">SMS Service is not active for this branch.</p>
                         )}
                         {Boolean(formData.sms_service) && (
                             <>
@@ -1995,28 +1995,24 @@ const AddBranch = () => {
                             <FormToggleField
                               label="Received SMS"
                               description="Texts the party when money received from them is posted."
-                              disabled={!hasPermission(settings?.data?.permissions || [], 'branch.sms.received.update')}
                               checked={Boolean(formData.received_sms)}
                               onChange={(checked) => handleToggleFieldChange('received_sms', checked)}
                             />
                             <FormToggleField
                               label="Payment SMS"
                               description="Texts the party when money paid to them is posted."
-                              disabled={!hasPermission(settings?.data?.permissions || [], 'branch.sms.payment.update')}
                               checked={Boolean(formData.payment_sms)}
                               onChange={(checked) => handleToggleFieldChange('payment_sms', checked)}
                             />
                             <FormToggleField
                               label="Sales SMS"
                               description="Texts the customer when a sale is invoiced to them."
-                              disabled={!hasPermission(settings?.data?.permissions || [], 'branch.sms.sales.update')}
                               checked={Boolean(formData.sales_sms)}
                               onChange={(checked) => handleToggleFieldChange('sales_sms', checked)}
                             />
                             <FormToggleField
                               label="Purchase SMS"
                               description="Texts the supplier when a purchase is posted against them."
-                              disabled={!hasPermission(settings?.data?.permissions || [], 'branch.sms.purchase.update')}
                               checked={Boolean(formData.purchase_sms)}
                               onChange={(checked) => handleToggleFieldChange('purchase_sms', checked)}
                             />
