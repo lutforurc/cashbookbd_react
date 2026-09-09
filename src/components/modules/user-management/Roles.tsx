@@ -36,6 +36,13 @@ interface Role {
   team_id?: number | null;
 }
 
+const smsPermissionLabels: Record<string, string> = {
+  'branch.sms.received.update': 'Received SMS',
+  'branch.sms.payment.update': 'Payment SMS',
+  'branch.sms.sales.update': 'Sales SMS',
+  'branch.sms.purchase.update': 'Purchase SMS',
+};
+
 const Roles = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -285,7 +292,7 @@ const Roles = () => {
                 {perms.map((perm) => (
                   <ToggleSwitch
                     key={perm.id}
-                    label={formatRoleNameForCashBook(perm.name)}
+                    label={smsPermissionLabels[perm.name] || formatRoleNameForCashBook(perm.name)}
                     checked={selectedPermissions.includes(perm.name)}
                     disabled={isReadonlyRole}
                     preserveCheckedColorWhenDisabled

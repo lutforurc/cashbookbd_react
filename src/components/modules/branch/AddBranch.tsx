@@ -1964,13 +1964,7 @@ const AddBranch = () => {
                       alone on a half-empty row. It reads better ruled off: these
                       decide what leaves the branch as a text message, which is a
                       different question from the operational switches above. */}
-                  {settings?.data?.user?.id === 1 && (
-                    <>
-                      {/* Headed like the step above it: a name on its own says
-                          what the group is called, not what it decides. Where
-                          the wording of these messages is set is worth saying
-                          here, because nothing on this screen shows it and a
-                          branch looking for it would search this panel first. */}
+                  <>
                       <div className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4">
                         <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                           SMS Services
@@ -1981,43 +1975,55 @@ const AddBranch = () => {
                         </p>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                        <FormToggleField
-                          label="SMS Service"
-                          description="The master switch for this branch. Off, none of the messages below go out however they are set."
-                          checked={Boolean(formData.sms_service)}
-                          onChange={(checked) => handleToggleFieldChange('sms_service', checked)}
-                        />
-                        {/* Money first, both directions, then the two invoice
-                            ones. Received and Payment are the same question
-                            asked of cash in and cash out, so they read as a
-                            pair; Sales and Purchase likewise. */}
-                        <FormToggleField
-                          label="Received SMS"
-                          description="Texts the party when money received from them is posted."
-                          checked={Boolean(formData.received_sms)}
-                          onChange={(checked) => handleToggleFieldChange('received_sms', checked)}
-                        />
-                        <FormToggleField
-                          label="Payment SMS"
-                          description="Texts the party when money paid to them is posted."
-                          checked={Boolean(formData.payment_sms)}
-                          onChange={(checked) => handleToggleFieldChange('payment_sms', checked)}
-                        />
-                        <FormToggleField
-                          label="Sales SMS"
-                          description="Texts the customer when a sale is invoiced to them."
-                          checked={Boolean(formData.sales_sms)}
-                          onChange={(checked) => handleToggleFieldChange('sales_sms', checked)}
-                        />
-                        <FormToggleField
-                          label="Purchase SMS"
-                          description="Texts the supplier when a purchase is posted against them."
-                          checked={Boolean(formData.purchase_sms)}
-                          onChange={(checked) => handleToggleFieldChange('purchase_sms', checked)}
-                        />
+                        {settings?.data?.user?.id === 1 && (
+                          <FormToggleField
+                            label="SMS Service"
+                            description="The master switch for this branch. Off, none of the messages below go out however they are set."
+                            checked={Boolean(formData.sms_service)}
+                            onChange={(checked) => handleToggleFieldChange('sms_service', checked)}
+                          />
+                        )}
+                        {!formData.sms_service && (
+                          <p className="col-span-full text-sm text-gray-500">SMS Service is not active for this branch.</p>
+                        )}
+                        {Boolean(formData.sms_service) && (
+                            <>
+                            {/* Money first, both directions, then the two invoice
+                                ones. Received and Payment are the same question
+                                asked of cash in and cash out, so they read as a
+                                pair; Sales and Purchase likewise. */}
+                            <FormToggleField
+                              label="Received SMS"
+                              description="Texts the party when money received from them is posted."
+                              disabled={!hasPermission(settings?.data?.permissions || [], 'branch.sms.received.update')}
+                              checked={Boolean(formData.received_sms)}
+                              onChange={(checked) => handleToggleFieldChange('received_sms', checked)}
+                            />
+                            <FormToggleField
+                              label="Payment SMS"
+                              description="Texts the party when money paid to them is posted."
+                              disabled={!hasPermission(settings?.data?.permissions || [], 'branch.sms.payment.update')}
+                              checked={Boolean(formData.payment_sms)}
+                              onChange={(checked) => handleToggleFieldChange('payment_sms', checked)}
+                            />
+                            <FormToggleField
+                              label="Sales SMS"
+                              description="Texts the customer when a sale is invoiced to them."
+                              disabled={!hasPermission(settings?.data?.permissions || [], 'branch.sms.sales.update')}
+                              checked={Boolean(formData.sales_sms)}
+                              onChange={(checked) => handleToggleFieldChange('sales_sms', checked)}
+                            />
+                            <FormToggleField
+                              label="Purchase SMS"
+                              description="Texts the supplier when a purchase is posted against them."
+                              disabled={!hasPermission(settings?.data?.permissions || [], 'branch.sms.purchase.update')}
+                              checked={Boolean(formData.purchase_sms)}
+                              onChange={(checked) => handleToggleFieldChange('purchase_sms', checked)}
+                            />
+                            </>
+                        )}
                       </div>
-                    </>
-                  )}
+                  </>
                 </>
               )}
 
