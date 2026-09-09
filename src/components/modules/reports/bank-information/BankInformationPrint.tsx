@@ -8,12 +8,24 @@ import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 export type BankInformationPrintRow = {
   coa4_id?: number | string;
   bank_name?: string;
-  /** Signed, as the screen shows them: negative is an overdraft. */
+  /** Signed, as the API sends them: negative is an overdraft. */
   opening?: number | string;
   movement?: number | string;
+  movement_debit?: number | string;
+  movement_credit?: number | string;
   closing?: number | string;
   dr_bal?: number | string;
   cr_bal?: number | string;
+};
+
+/** The six money columns: each of Opening, Movement and Closing as a pair. */
+export type BankInformationColumns = {
+  openingReceived: number;
+  openingPayment: number;
+  movementReceived: number;
+  movementPayment: number;
+  closingReceived: number;
+  closingPayment: number;
 };
 
 type BankInformationPrintProps = {
@@ -30,6 +42,58 @@ const toNumber = (value: unknown) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+/**
+ * The six columns, worked out from the signed figures the API answers with.
+ *
+ * ⚠️ OPENING AND CLOSING ARE BALANCES, so they fall into Received or Payment by
+ * their sign: a positive balance is money the bank is holding and stands on the
+ * Received side, a negative one is an overdraft and stands on the Payment side.
+ * MOVEMENT IS GROSS -- what actually came in and what actually went out over
+ * the period -- so it is read off movement_debit and movement_credit rather
+ * than split out of the net figure. An account that took 5,00,000 in and paid
+ * 5,00,000 out has moved nothing on net, and a report that showed a dash there
+ * would be hiding the month's whole activity.
+ *
+ * The screen and the print both call this, so the two can never disagree about
+ * which side a figure belongs on.
+ */
+export const splitBankRow = (row: BankInformationPrintRow): BankInformationColumns => {
+  const opening = toNumber(row.opening);
+  const closing = toNumber(row.closing);
+
+  return {
+    openingReceived: opening > 0 ? opening : 0,
+    openingPayment: opening < 0 ? -opening : 0,
+    movementReceived: toNumber(row.movement_debit),
+    movementPayment: toNumber(row.movement_credit),
+    closingReceived: closing > 0 ? closing : 0,
+    closingPayment: closing < 0 ? -closing : 0,
+  };
+};
+
+/** The foot: every column added down the page it is printed under. */
+export const sumBankColumns = (rows: BankInformationPrintRow[]): BankInformationColumns =>
+  rows.reduce<BankInformationColumns>(
+    (acc, row) => {
+      const columns = splitBankRow(row);
+      acc.openingReceived += columns.openingReceived;
+      acc.openingPayment += columns.openingPayment;
+      acc.movementReceived += columns.movementReceived;
+      acc.movementPayment += columns.movementPayment;
+      acc.closingReceived += columns.closingReceived;
+      acc.closingPayment += columns.closingPayment;
+      return acc;
+    },
+    {
+      openingReceived: 0,
+      openingPayment: 0,
+      movementReceived: 0,
+      movementPayment: 0,
+      closingReceived: 0,
+      closingPayment: 0,
+    },
+  );
+
 const chunkRows = <T,>(rows: T[], size: number) => {
   const pageSize = Math.max(1, Number(size) || rows.length || 1);
   const pages: T[][] = [];
@@ -43,19 +107,7 @@ const chunkRows = <T,>(rows: T[], size: number) => {
 
 const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProps>(
   ({ rows, reportType, startDate, endDate, rowsPerPage, fontSize }, ref) => {
-    const totals = useMemo(
-      () =>
-        rows.reduce(
-          (acc, row) => {
-            acc.opening += toNumber(row.opening);
-            acc.movement += toNumber(row.movement);
-            acc.closing += toNumber(row.closing);
-            return acc;
-          },
-          { opening: 0, movement: 0, closing: 0 },
-        ),
-      [rows],
-    );
+    const totals = useMemo(() => sumBankColumns(rows), [rows]);
 
     const pages = chunkRows(rows, rowsPerPage);
 
@@ -87,29 +139,47 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
               </div>
 
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize }}>
+                {/* Two header rows: the period each pair belongs to on top,
+                    the side of the money underneath. Sl. No. and Bank Name are
+                    one question rather than two, so they span both. */}
                 <thead>
                   <tr>
-                    <th style={styles.centerHeader}>Sl. No.</th>
-                    <th style={styles.leftHeader}>Bank Name</th>
-                    <th style={styles.centerHeader}>Opening</th>
-                    <th style={styles.centerHeader}>Movement</th>
-                    <th style={styles.centerHeader}>Closing</th>
+                    <th rowSpan={2} style={styles.slHeader}>Sl. No.</th>
+                    <th rowSpan={2} style={styles.nameHeader}>Bank Name</th>
+                    <th colSpan={2} style={styles.groupHeader}>Opening</th>
+                    <th colSpan={2} style={styles.groupHeader}>Movement</th>
+                    <th colSpan={2} style={styles.groupHeader}>Closing</th>
+                  </tr>
+                  <tr>
+                    <th style={styles.subHeader}>Received</th>
+                    <th style={styles.subHeader}>Payment</th>
+                    <th style={styles.subHeader}>Received</th>
+                    <th style={styles.subHeader}>Payment</th>
+                    <th style={styles.subHeader}>Received</th>
+                    <th style={styles.subHeader}>Payment</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pageRows.length > 0 ? (
-                    pageRows.map((row, rowIndex) => (
-                      <tr key={`${row.coa4_id ?? row.bank_name ?? rowIndex}-print`}>
-                        <td style={styles.centerCell}>{pageOffset + rowIndex + 1}</td>
-                        <td style={styles.leftCell}>{row.bank_name || '-'}</td>
-                        <td style={styles.rightCell}>{thousandSeparator(toNumber(row.opening))}</td>
-                        <td style={styles.rightCell}>{thousandSeparator(toNumber(row.movement))}</td>
-                        <td style={styles.rightCell}>{thousandSeparator(toNumber(row.closing))}</td>
-                      </tr>
-                    ))
+                    pageRows.map((row, rowIndex) => {
+                      const columns = splitBankRow(row);
+
+                      return (
+                        <tr key={`${row.coa4_id ?? row.bank_name ?? rowIndex}-print`}>
+                          <td style={styles.centerCell}>{pageOffset + rowIndex + 1}</td>
+                          <td style={styles.leftCell}>{row.bank_name || '-'}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.openingReceived)}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.openingPayment)}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.movementReceived)}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.movementPayment)}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.closingReceived)}</td>
+                          <td style={styles.rightCell}>{thousandSeparator(columns.closingPayment)}</td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
-                      <td colSpan={5} style={styles.emptyCell}>
+                      <td colSpan={8} style={styles.emptyCell}>
                         No data found
                       </td>
                     </tr>
@@ -120,9 +190,12 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
                   <tfoot>
                     <tr>
                       <td colSpan={2} style={styles.footerLabel}>Total</td>
-                      <td style={styles.footerAmount}>{thousandSeparator(totals.opening)}</td>
-                      <td style={styles.footerAmount}>{thousandSeparator(totals.movement)}</td>
-                      <td style={styles.footerAmount}>{thousandSeparator(totals.closing)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.openingReceived)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.openingPayment)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.movementReceived)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.movementPayment)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.closingReceived)}</td>
+                      <td style={styles.footerAmount}>{thousandSeparator(totals.closingPayment)}</td>
                     </tr>
                   </tfoot>
                 ) : null}
@@ -155,19 +228,28 @@ const baseHeader: React.CSSProperties = {
 };
 
 const styles: Record<string, React.CSSProperties> = {
-  centerHeader: {
+  // The two spanning cells sit against a header two rows tall, so they are
+  // centred down as well as across -- left at the default `top` they would
+  // ride up level with Opening / Movement / Closing and read as a third row.
+  slHeader: {
     ...baseHeader,
-    width: 54,
+    width: 44,
     textAlign: 'center',
+    verticalAlign: 'middle',
   },
-  leftHeader: {
+  nameHeader: {
     ...baseHeader,
     textAlign: 'left',
+    verticalAlign: 'middle',
   },
-  rightHeader: {
+  groupHeader: {
     ...baseHeader,
-    width: 118,
-    textAlign: 'right',
+    textAlign: 'center',
+  },
+  subHeader: {
+    ...baseHeader,
+    width: 74,
+    textAlign: 'center',
   },
   centerCell: {
     ...baseCell,

@@ -18,7 +18,10 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
 import { API_REPORT_BANK_INFORMATION_DATA_URL } from '../../../services/apiRoutes';
-import BankInformationPrint from './BankInformationPrint';
+import BankInformationPrint, {
+  splitBankRow,
+  sumBankColumns,
+} from './BankInformationPrint';
 import { Select } from '../../../utils/fields/FormControls';
 import { FIELD_HEIGHT } from '../../../../theme/fieldStyles';
 
@@ -42,11 +45,6 @@ const reportTypes = [
   { id: '2', name: 'Bank Loan' },
 ];
 
-const toNumber = (value: unknown) => {
-  const parsed = Number(String(value ?? 0).replace(/,/g, ''));
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
 const getRowsFromResponse = (response: any): BankInformationRow[] => {
   if (Array.isArray(response?.data)) return response.data;
   if (Array.isArray(response?.data?.data)) return response.data.data;
@@ -55,21 +53,23 @@ const getRowsFromResponse = (response: any): BankInformationRow[] => {
 };
 
 /**
- * A signed figure, coloured by which way it points.
+ * A figure in one of the six money columns.
  *
- * Money the bank holds reads green, an overdraft red, and zero is left as
- * thousandSeparator's dash rather than a 0 -- a column of untouched accounts
- * should not read as a column of figures. The three money columns share this
- * because a rule applied three times by hand is a rule that drifts.
+ * Nothing here is signed any more -- which way the money went is said by the
+ * column it stands under -- so the colour follows the column instead: what came
+ * in reads green, what went out red. Zero is left as thousandSeparator's dash
+ * rather than a 0, so a column of untouched accounts does not read as a column
+ * of figures. All six columns share this because a rule applied six times by
+ * hand is a rule that drifts.
  */
-const money = (value: number) => (
+const money = (value: number, side: 'received' | 'payment') => (
   <span
     className={
-      value > 0
-        ? 'font-bold text-green-700'
-        : value < 0
-          ? 'font-bold text-red-600'
-          : 'text-slate-400'
+      value === 0
+        ? 'text-slate-400'
+        : side === 'received'
+          ? 'font-bold text-green-700'
+          : 'font-bold text-red-600'
     }
   >
     {thousandSeparator(value)}
@@ -118,19 +118,7 @@ const BankInformation = () => {
 
   // Footed from the rows on screen rather than read off the payload, so the
   // foot of the report can never disagree with the column above it.
-  const totals = useMemo(
-    () =>
-      rows.reduce(
-        (acc, row) => {
-          acc.opening += toNumber(row.opening);
-          acc.movement += toNumber(row.movement);
-          acc.closing += toNumber(row.closing);
-          return acc;
-        },
-        { opening: 0, movement: 0, closing: 0 },
-      ),
-    [rows],
-  );
+  const totals = useMemo(() => sumBankColumns(rows), [rows]);
 
   const handleLoad = async () => {
     if (!startDate || !endDate) {
@@ -185,6 +173,12 @@ const BankInformation = () => {
   const controlClass =
     `${FIELD_HEIGHT} w-full rounded-none border border-slate-600 bg-transparent px-3 text-sm font-bold text-slate-950 outline-none focus:border-slate-400 dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-text))] dark:focus:border-slate-300`;
   const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-[rgb(var(--c-text))]';
+
+  // One rule for the grid, written once. Both header rows and every body cell
+  // draw the same border token, which is what keeps the line under a merged
+  // heading meeting the lines between the columns below it.
+  const headCell = 'border border-[rgb(var(--c-border))] px-3 py-2 text-center';
+  const bodyCell = 'border border-[rgb(var(--c-border))] px-3 py-2';
 
   return (
     <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-[rgb(var(--c-text))]">
@@ -289,34 +283,62 @@ const BankInformation = () => {
         </div>
       ) : (
         <div className="overflow-x-auto bg-white dark:bg-[rgb(var(--c-boxdark))]">
-          <table className="w-full min-w-[760px] table-fixed border-collapse text-sm" style={{ fontSize }}>
+          <table className="w-full min-w-250 table-fixed border-collapse text-sm" style={{ fontSize }}>
+            {/* The widths live here rather than on the header cells. Under
+                table-fixed the browser sizes the columns off the FIRST row
+                alone, and that row is now all merged cells -- a w-28 written on
+                the Received / Payment row underneath would never be read. */}
+            <colgroup>
+              <col className="w-16" />
+              <col />
+              <col span={6} className="w-28" />
+            </colgroup>
+            {/* Two header rows: the period a pair belongs to on top, the side of
+                the money underneath. Sl. No. and Bank Name are one question
+                rather than two, so they span both rows and sit centred against
+                them. The cells are ruled on all four sides -- with six money
+                columns, a row of figures with nothing between them is a row
+                that gets read off against the wrong heading. */}
             <thead>
               <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-[rgb(var(--c-text))]">
-                <th className="w-24 px-3 py-4 text-center">Sl. No.</th>
-                <th className="px-3 py-4 text-left">Bank Name</th>
-                <th className="w-40 px-3 py-4 text-center">Opening</th>
-                <th className="w-40 px-3 py-4 text-center">Movement</th>
-                <th className="w-40 px-3 py-4 text-center">Closing</th>
+                <th rowSpan={2} className={`${headCell} align-middle`}>Sl. No.</th>
+                <th rowSpan={2} className={`${headCell} text-left align-middle`}>Bank Name</th>
+                <th colSpan={2} className={headCell}>Opening</th>
+                <th colSpan={2} className={headCell}>Movement</th>
+                <th colSpan={2} className={headCell}>Closing</th>
+              </tr>
+              <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-[rgb(var(--c-text))]">
+                <th className={headCell}>Received</th>
+                <th className={headCell}>Payment</th>
+                <th className={headCell}>Received</th>
+                <th className={headCell}>Payment</th>
+                <th className={headCell}>Received</th>
+                <th className={headCell}>Payment</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-900 dark:divide-[rgb(var(--c-strokedark))] dark:text-[rgb(var(--c-bodydark1))]">
+            <tbody className="text-slate-900 dark:text-[rgb(var(--c-bodydark1))]">
               {rows.length > 0 ? (
                 rows.map((row, index) => {
+                  const columns = splitBankRow(row);
+
                   return (
                     <tr key={`${row.coa4_id ?? row.bank_name ?? index}-${index}`} className="bg-white dark:bg-[rgb(var(--c-boxdark))]">
-                      <td className="px-3 py-3 text-center">{index + 1}</td>
-                      <td className="px-3 py-3 text-sky-950 dark:text-slate-100">
+                      <td className={`${bodyCell} text-center`}>{index + 1}</td>
+                      <td className={`${bodyCell} text-sky-950 dark:text-slate-100`}>
                         {row.bank_name || '-'}
                       </td>
-                      <td className="px-3 py-3 text-right">{money(toNumber(row.opening))}</td>
-                      <td className="px-3 py-3 text-right">{money(toNumber(row.movement))}</td>
-                      <td className="px-3 py-3 text-right">{money(toNumber(row.closing))}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.openingReceived, 'received')}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.openingPayment, 'payment')}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.movementReceived, 'received')}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.movementPayment, 'payment')}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.closingReceived, 'received')}</td>
+                      <td className={`${bodyCell} text-right`}>{money(columns.closingPayment, 'payment')}</td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-3 py-6 text-center text-slate-500 dark:text-slate-300">
+                  <td colSpan={8} className={`${bodyCell} py-6 text-center text-slate-500 dark:text-slate-300`}>
                     No {selectedReportType.toLowerCase()} data found
                   </td>
                 </tr>
@@ -324,10 +346,13 @@ const BankInformation = () => {
             </tbody>
             <tfoot className="bg-slate-100 font-bold text-slate-950 dark:bg-[rgb(var(--c-meta-4))] dark:text-[rgb(var(--c-text))]">
               <tr className="font-bold">
-                <td colSpan={2} className="px-3 py-3 text-right">Total</td>
-                <td className="px-3 py-3 text-right">{money(totals.opening)}</td>
-                <td className="px-3 py-3 text-right">{money(totals.movement)}</td>
-                <td className="px-3 py-3 text-right">{money(totals.closing)}</td>
+                <td colSpan={2} className={`${bodyCell} text-right`}>Total</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.openingReceived, 'received')}</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.openingPayment, 'payment')}</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.movementReceived, 'received')}</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.movementPayment, 'payment')}</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.closingReceived, 'received')}</td>
+                <td className={`${bodyCell} text-right`}>{money(totals.closingPayment, 'payment')}</td>
               </tr>
             </tfoot>
           </table>
