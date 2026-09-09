@@ -9,6 +9,39 @@ import {
   FiXCircle,
 } from 'react-icons/fi';
 import { Button } from '../../../pages/UiElements/CustomButtons';
+import useTooltip from '../../utils/others/useTooltip';
+
+/**
+ * The app's own tooltip, put round one button.
+ *
+ * ⚠️ A COMPONENT RATHER THAN A HOOK CALL PER BUTTON, and it has to be: the
+ * buttons below are rendered conditionally, and a hook called inside a
+ * conditional runs in a different order from one render to the next -- the one
+ * thing hooks may not do. Each button gets its own small component instead, so
+ * the hook inside it is unconditional.
+ *
+ * The browser's own title= is not left in place beside it: two bubbles would
+ * open over each other about half a second apart, one styled like the app and
+ * one not.
+ */
+const Hint = ({
+  label,
+  children,
+}: {
+  label: React.ReactNode;
+  children: React.ReactNode;
+}) => {
+  const { anchorProps, tooltip } = useTooltip<HTMLSpanElement>(label);
+
+  return (
+    <>
+      <span {...anchorProps} className="inline-flex">
+        {children}
+      </span>
+      {tooltip}
+    </>
+  );
+};
 
 interface VoucherActionButtonsProps {
   row: any;
@@ -130,12 +163,31 @@ const VoucherActionButtons = ({
     closeConfirm();
   };
 
-  const approvedByName = String(
+  const approvedByRaw = String(
     row?.approved_user?.name ??
     row?.approved_by_name ??
     row?.approved_by ??
     '',
   ).trim();
+
+  /**
+   * ⚠️ A BARE NUMBER IS NOT A NAME. Some endpoints resolve the approver before
+   * sending -- the sales and purchase ledgers put the name in approved_by --
+   * and others send the column as it stands, which is the user's id. "Approved
+   * by 5" tells a reader less than "Approved" does, so an all-digit value is
+   * dropped rather than printed.
+   */
+  const approvedByName = /^\d+$/.test(approvedByRaw) ? '' : approvedByRaw;
+
+  /**
+   * Who approved it, in one phrase.
+   *
+   * The tick, the cross and the lock all report the same fact and each used to
+   * word it for itself -- the cross did not name the approver at all, which is
+   * the icon an approved row actually shows. One phrase, so a row cannot answer
+   * the same question three ways.
+   */
+  const approvedBy = approvedByName ? `Approved by ${approvedByName}` : 'Approved';
 
   // The lock already says "approved", so the approve button's green tick would
   // be a second badge for the same fact. Drop it and keep the row to two icons.
@@ -144,56 +196,55 @@ const VoucherActionButtons = ({
   return (
     <div className="flex items-center justify-center gap-2">
       {canShowApproveAction && !showApprovedLock ? (
-        <Button
-          type="button"
-          onClick={
-            confirmInline
-              ? openConfirm('approve')
-              : withEventGuard(onApprove, () => !isApproved && approvingId !== voucherId)
-          }
-          className={`cursor-pointer ${isApproved ? 'cursor-default' : ''}`}
-          title={
-            isApproved
-              ? `Approved${approvedByName ? ` by ${approvedByName}` : ''}`
-              : 'Approve voucher'
-          }
-          disabled={isApproved || approvingId === voucherId}
-        >
-          {isApproved ? (
-            <FiCheckCircle className="font-bold text-green-500" />
-          ) : (
-            <FiLogIn
-              className={`${approvingId === voucherId ? 'text-amber-500' : 'text-red-500'}`}
-            />
-          )}
-        </Button>
+        <Hint label={isApproved ? approvedBy : 'Approve voucher'}>
+          <Button
+            type="button"
+            onClick={
+              confirmInline
+                ? openConfirm('approve')
+                : withEventGuard(onApprove, () => !isApproved && approvingId !== voucherId)
+            }
+            className={`cursor-pointer ${isApproved ? 'cursor-default' : ''}`}
+            disabled={isApproved || approvingId === voucherId}
+          >
+            {isApproved ? (
+              <FiCheckCircle className="font-bold text-green-500" />
+            ) : (
+              <FiLogIn
+                className={`${approvingId === voucherId ? 'text-amber-500' : 'text-red-500'}`}
+              />
+            )}
+          </Button>
+        </Hint>
       ) : null}
 
       {canShowRemoveApprovalAction ? (
-        <Button
-          type="button"
-          onClick={
-            confirmInline
-              ? openConfirm('remove')
-              : withEventGuard(onRemoveApproval, () => removingApprovalId !== voucherId)
-          }
-          className="text-amber-600"
-          title="Remove approval"
-          disabled={removingApprovalId === voucherId}
-        >
-          <FiXCircle className="cursor-pointer" />
-        </Button>
+        <Hint label={approvedBy}>
+          <Button
+            type="button"
+            onClick={
+              confirmInline
+                ? openConfirm('remove')
+                : withEventGuard(onRemoveApproval, () => removingApprovalId !== voucherId)
+            }
+            className="text-amber-600"
+            disabled={removingApprovalId === voucherId}
+          >
+            <FiXCircle className="cursor-pointer" />
+          </Button>
+        </Hint>
       ) : null}
 
       {canShowPrintAction ? (
-        <Button
-          type="button"
-          onClick={withEventGuard(onPrint)}
-          className="text-blue-500"
-          title={printTitle}
-        >
-          <FiPrinter className="cursor-pointer" width="30" height="30" />
-        </Button>
+        <Hint label={printTitle}>
+          <Button
+            type="button"
+            onClick={withEventGuard(onPrint)}
+            className="text-blue-500"
+          >
+            <FiPrinter className="cursor-pointer" width="30" height="30" />
+          </Button>
+        </Hint>
       ) : null}
 
       {/* The challan sits beside the invoice rather than replacing it: they are
@@ -201,39 +252,40 @@ const VoucherActionButtons = ({
           the printer icon does not give him. A lorry, not a second printer --
           two printers side by side say nothing about which prints what. */}
       {canShowChallanAction ? (
-        <Button
-          type="button"
-          onClick={withEventGuard(onChallan)}
-          className="text-emerald-600 dark:text-emerald-400"
-          title={challanTitle}
-        >
-          <FiTruck className="cursor-pointer" />
-        </Button>
+        <Hint label={challanTitle}>
+          <Button
+            type="button"
+            onClick={withEventGuard(onChallan)}
+            className="text-emerald-600 dark:text-emerald-400"
+          >
+            <FiTruck className="cursor-pointer" />
+          </Button>
+        </Hint>
       ) : null}
 
       {canShowEditAction ? (
-        <Button
-          type="button"
-          onClick={withEventGuard(onEdit)}
-          className="text-blue-500"
-          title={editTitle}
-        >
-          <FiEdit className="cursor-pointer" />
-        </Button>
+        <Hint label={editTitle}>
+          <Button
+            type="button"
+            onClick={withEventGuard(onEdit)}
+            className="text-blue-500"
+          >
+            <FiEdit className="cursor-pointer" />
+          </Button>
+        </Hint>
       ) : null}
 
       {showApprovedLock ? (
-        <span
-          className="inline-flex cursor-help text-amber-600 dark:text-amber-400"
-          title={
-            canShowRemoveApprovalAction
-              ? 'Approved, so editing is locked. Remove the approval to edit it.'
-              : `Approved${approvedByName ? ` by ${approvedByName}` : ''}, so editing is locked.`
-          }
+        <Hint
+          label={`${approvedBy}, so editing is locked.${
+            canShowRemoveApprovalAction ? ' Remove the approval to edit it.' : ''
+          }`}
         >
-          <FiLock />
-          <span className="sr-only">Approved — locked for editing</span>
-        </span>
+          <span className="inline-flex cursor-help text-amber-600 dark:text-amber-400">
+            <FiLock />
+            <span className="sr-only">{approvedBy} — locked for editing</span>
+          </span>
+        </Hint>
       ) : null}
 
       {/* Confirm — box popover right below the clicked button */}

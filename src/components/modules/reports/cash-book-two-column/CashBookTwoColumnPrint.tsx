@@ -76,8 +76,8 @@ const CashBookTwoColumnPrint = React.forwardRef<HTMLDivElement, Props>(
                     <th rowSpan={2} className={`${cell} text-center`}>Date</th>
                     <th rowSpan={2} className={`${cell} text-center`}>Voucher#</th>
                     <th rowSpan={2} className={`${cell} text-center`}>Description</th>
-                    <th colSpan={2} className={`${cell} text-center`}>Debit</th>
-                    <th colSpan={2} className={`${cell} text-center`}>Credit</th>
+                    <th colSpan={2} className={`${cell} text-center`}>Received</th>
+                    <th colSpan={2} className={`${cell} text-center`}>Payment</th>
                   </tr>
                   <tr>
                     <th className={`${cell} text-center`}>Cash</th>
@@ -92,7 +92,7 @@ const CashBookTwoColumnPrint = React.forwardRef<HTMLDivElement, Props>(
                     <tr className="font-bold">
                       <td className={cell}>{day(report.from)}</td>
                       <td className={cell} />
-                      <td className={cell}>Balance b/d</td>
+                      <td className={cell}>Balance B/D</td>
                       <td className={figure}>{money(report.opening?.cash_debit)}</td>
                       <td className={figure}>{money(report.opening?.bank_debit)}</td>
                       <td className={figure}>{money(report.opening?.cash_credit)}</td>
@@ -134,7 +134,7 @@ const CashBookTwoColumnPrint = React.forwardRef<HTMLDivElement, Props>(
                           it opened on -- that entry is what squares the account
                           -- and the footing after it, balances included. */}
                       <tr className="font-bold">
-                        <td colSpan={3} className={`${cell} text-right`}>Balance c/d</td>
+                        <td colSpan={3} className={`${cell} text-right`}>Balance C/D</td>
                         <td className={figure}>{money(report.closing?.cash_debit)}</td>
                         <td className={figure}>{money(report.closing?.bank_debit)}</td>
                         <td className={figure}>{money(report.closing?.cash_credit)}</td>

@@ -20,10 +20,26 @@ import ItemDetailsPrint from "../profit-loss/ItemDetailsPrint";
 type StockRow = Record<string, any>;
 
 type StockGroup = {
-  brand: string;
+  /**
+   * The band printed over the rows -- "Air Conditioner", or "GREE" on a branch
+   * that asked for brands. Named `band` rather than `category` because it holds
+   * whichever of the two the branch chose, and a field called category holding
+   * a brand name is how the next reader is misled.
+   */
+  band: string;
   rows: StockRow[];
   total: number;
 };
+
+/**
+ * Every cell is boxed, as the printed stocktake is.
+ *
+ * A row of six figures with nothing between the columns is read by holding a
+ * finger against the screen; the ruling is what lets the eye come back down a
+ * column of rates and land in the right place. Named once so the band, the
+ * lines and the group total cannot end up ruled differently.
+ */
+const CELL = "border border-[rgb(var(--c-border))]";
 
 const toNum = (value: any) => {
   const parsed = Number(value);
@@ -32,8 +48,36 @@ const toNum = (value: any) => {
 
 const fmt = (value: any) => thousandSeparator(Math.round(toNum(value)));
 
+/**
+ * Which band a line belongs under -- and the branch, not this file, decides
+ * which of the two is used.
+ *
+ * Grouping by CATEGORY is what a stocktake is usually read as: the person
+ * counting walks up to a shelf, and "Air Conditioner" carries every make on it
+ * under one heading and one total. Grouping by BRAND splits that same shelf
+ * into an AUX list, a GREE list and a GENERAL one -- which is what a branch
+ * buying against supplier targets wants, and it is what this report did before.
+ *
+ * Both are right for somebody, so neither is hard-coded: the branch's
+ * `stock_report_type` toggle -- "Stock: Brand->Category->Item" on the branch
+ * form -- picks between them. The API sends brand and category on every row, so
+ * switching costs no request and no reload.
+ *
+ * Each falls back to the other before it falls back to "Others", so a company
+ * that files only one of the two never gets its whole stock under one blank
+ * heading.
+ */
+const rowCategory = (row: StockRow, fallback = "") => {
+  const category = String(
+    row?.category ?? row?.category_name ?? row?.brand ?? row?.brand_name ?? row?.__brandKey ?? fallback ?? "",
+  ).trim();
+  return category || "Others";
+};
+
 const rowBrand = (row: StockRow, fallback = "") => {
-  const brand = String(row?.brand ?? row?.brand_name ?? row?.__brandKey ?? fallback ?? "").trim();
+  const brand = String(
+    row?.brand ?? row?.brand_name ?? row?.__brandKey ?? row?.category ?? row?.category_name ?? fallback ?? "",
+  ).trim();
   return brand || "Others";
 };
 
@@ -84,6 +128,16 @@ const normalizeRows = (payload: any): StockRow[] => {
 const ClosingStockReport = ({ user }: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const settings = useSelector((state: any) => state.settings);
+  /**
+   * "Stock: Brand->Category->Item" on the branch form.
+   *
+   * Compared as a string against "1" because that is how the flag arrives and
+   * how ProductStockIndex and the two ledgers already test it -- a branch that
+   * never set it sends "0", an empty string or nothing at all, and all three
+   * have to mean off.
+   */
+  const groupByBrand = String(settings?.data?.branch?.stock_report_type) === "1";
   const authUser = user?.user ?? user;
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -118,19 +172,21 @@ const ClosingStockReport = ({ user }: any) => {
   }, [branchDdlData?.protectedData, authUser?.branch_id]);
 
   const groups = useMemo<StockGroup[]>(() => {
+    const bandOf = groupByBrand ? rowBrand : rowCategory;
     const map = new Map<string, StockRow[]>();
+
     rows.forEach((row) => {
-      const brand = rowBrand(row);
-      if (!map.has(brand)) map.set(brand, []);
-      map.get(brand)!.push(row);
+      const band = bandOf(row);
+      if (!map.has(band)) map.set(band, []);
+      map.get(band)!.push(row);
     });
 
-    return Array.from(map.entries()).map(([brand, list]) => ({
-      brand,
+    return Array.from(map.entries()).map(([band, list]) => ({
+      band,
       rows: list,
       total: list.reduce((sum, row) => sum + rowTotal(row), 0),
     }));
-  }, [rows]);
+  }, [rows, groupByBrand]);
 
   const grandTotal = useMemo(() => groups.reduce((sum, group) => sum + group.total, 0), [groups]);
 
@@ -273,41 +329,44 @@ const ClosingStockReport = ({ user }: any) => {
         <table className="min-w-full table-fixed border-collapse text-left text-sm text-gray-700 dark:text-gray-300">
           <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300">
             <tr>
-              <th className="w-[80px] px-3 py-3 text-center font-semibold">Sl. No</th>
-              <th className="px-3 py-3 text-center font-semibold">Product Details</th>
-              <th className="w-[90px] px-3 py-3 text-center font-semibold">Unit</th>
-              <th className="w-[120px] px-3 py-3 text-right font-semibold">Stock Qty</th>
-              <th className="w-[130px] px-3 py-3 text-right font-semibold">Rate (Tk.)</th>
-              <th className="w-[150px] px-3 py-3 text-right font-semibold">Total (Tk.)</th>
+              <th className={`w-[80px] px-3 py-3 text-center font-semibold ${CELL}`}>Sl. No</th>
+              <th className={`px-3 py-3 text-center font-semibold ${CELL}`}>Product Details</th>
+              <th className={`w-[90px] px-3 py-3 text-center font-semibold ${CELL}`}>Unit</th>
+              <th className={`w-[120px] px-3 py-3 text-right font-semibold ${CELL}`}>Stock Qty</th>
+              <th className={`w-[130px] px-3 py-3 text-right font-semibold ${CELL}`}>Rate (Tk.)</th>
+              <th className={`w-[150px] px-3 py-3 text-right font-semibold ${CELL}`}>Total (Tk.)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-[rgb(var(--c-table-body))] dark:divide-gray-700">
             {groups.length ? (
               groups.map((group) => (
-                <Fragment key={group.brand}>
-                  <tr key={`${group.brand}-header`} className="bg-slate-100 font-semibold uppercase text-slate-900 dark:bg-slate-900/60 dark:text-slate-100">
-                    <td colSpan={6} className="px-3 py-2">{group.brand}</td>
+                <Fragment key={group.band}>
+                  {/* The band is not uppercased: "Air Conditioner" is the name
+                      as it was filed, and shouting it back adds nothing a
+                      heavier weight and a grey ground do not already say. */}
+                  <tr key={`${group.band}-header`} className={`bg-slate-100 font-semibold text-slate-900 dark:bg-slate-900/60 dark:text-slate-100 ${CELL}`}>
+                    <td colSpan={6} className="px-3 py-2">{group.band}</td>
                   </tr>
                   {group.rows.map((row, index) => (
                     <tr
-                      key={`${group.brand}-${row?.id ?? row?.prodct_detls_id ?? index}`}
+                      key={`${group.band}-${row?.id ?? row?.prodct_detls_id ?? index}`}
                       className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${
                         index > 0 && row?.prodct_detls_id === group.rows[index - 1]?.prodct_detls_id
                           ? "bg-cyan-50 dark:bg-cyan-950/20"
                           : ""
                       }`}
                     >
-                      <td className="px-3 py-2 text-center">{index + 1}</td>
-                      <td className="truncate px-3 py-2">{rowProduct(row)}</td>
-                      <td className="px-3 py-2 text-center">{rowUnit(row)}</td>
-                      <td className="px-3 py-2 text-right">{fmt(rowQty(row))}</td>
-                      <td className="px-3 py-2 text-right">{fmt(rowRate(row))}</td>
-                      <td className="px-3 py-2 text-right">{fmt(rowTotal(row))}</td>
+                      <td className={`px-3 py-2 text-center ${CELL}`}>{index + 1}</td>
+                      <td className={`truncate px-3 py-2 ${CELL}`}>{rowProduct(row)}</td>
+                      <td className={`px-3 py-2 text-center ${CELL}`}>{rowUnit(row)}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowQty(row))}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowRate(row))}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowTotal(row))}</td>
                     </tr>
                   ))}
-                  <tr key={`${group.brand}-total`} className="bg-slate-50 font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
-                    <td colSpan={5} className="px-3 py-3 text-right">{group.brand} Total Tk.</td>
-                    <td className="px-3 py-3 text-right">{fmt(group.total)}</td>
+                  <tr key={`${group.band}-total`} className="bg-slate-50 font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
+                    <td colSpan={5} className={`px-3 py-3 text-right ${CELL}`}>{group.band} Total Tk.</td>
+                    <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(group.total)}</td>
                   </tr>
                 </Fragment>
               ))
@@ -320,8 +379,8 @@ const ClosingStockReport = ({ user }: any) => {
           {groups.length ? (
             <tfoot className="bg-slate-50 text-sm font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
               <tr>
-                <td colSpan={5} className="px-3 py-3 text-right">Grand Total</td>
-                <td className="px-3 py-3 text-right">{fmt(grandTotal)}</td>
+                <td colSpan={5} className={`px-3 py-3 text-right ${CELL}`}>Grand Total</td>
+                <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(grandTotal)}</td>
               </tr>
             </tfoot>
           ) : null}

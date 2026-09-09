@@ -151,7 +151,7 @@ const SalesLedger = (user: any) => {
   // dialog opens with what that row already knows -- the driver, the vehicle
   // and the challan number -- and none of it is worth a second trip to the
   // server for a paper somebody is waiting at the gate for.
-  const canPrintChallan = hasPermission(userPermissions, 'ledger.details');
+  const canPrintChallan = hasPermission(userPermissions, 'print.delivery.challan');
   const [challanRow, setChallanRow] = useState<any>(null);
   const [savingChallan, setSavingChallan] = useState(false);
 
@@ -733,7 +733,7 @@ const SalesLedger = (user: any) => {
       key: 'discount',
       header: 'Discount',
       headerClass: 'text-right',
-      cellClass: 'text-right v-middle',
+      cellClass: 'text-right align-middle',
       width: '120px',
       render: (row: any) => {
         const masters = Array.isArray(row?.acc_transaction_master)
@@ -769,7 +769,7 @@ const SalesLedger = (user: any) => {
       key: 'received',
       header: 'Received',
       headerClass: 'text-right',
-      cellClass: 'text-right v-middle',
+      cellClass: 'text-right align-middle',
       width: '120px',
       render: (row: any) => {
         const masters = Array.isArray(row?.acc_transaction_master)
@@ -805,7 +805,7 @@ const SalesLedger = (user: any) => {
       key: 'balance',
       header: 'Balance',
       headerClass: 'text-right',
-      cellClass: 'text-right v-middle',
+      cellClass: 'text-right align-middle',
       width: '120px',
       render: (row: any) => {
         const masters = Array.isArray(row?.acc_transaction_master)

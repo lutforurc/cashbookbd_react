@@ -47,6 +47,21 @@ interface TableProps {
    * detail at the foot of the table would lose which row it belonged to.
    */
   renderRowExpansion?: (row: any, index: number) => React.ReactNode;
+  /**
+   * Rule every cell, heading and footing included.
+   *
+   * ⚠️ ON BY DEFAULT, which is a decision about 108 screens rather than about
+   * this file. A table of figures is read across as well as down -- a reader
+   * coming down a column of rates and back along a row needs the grid to land
+   * on, and the app's tables carry money on nearly every screen. It was one
+   * horizontal hairline between rows, and nothing at all between columns.
+   *
+   * Where it is too heavy -- a two-column list, a panel that is a table only
+   * by accident -- a screen turns it off with `bordered={false}` rather than
+   * unpicking classes. Nothing passed cell borders through this component
+   * before it existed, so nothing doubles up.
+   */
+  bordered?: boolean;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -66,7 +81,19 @@ const Table: React.FC<TableProps> = ({
   footerRows,
   tableStyle,
   renderRowExpansion,
+  bordered = true,
 }) => {
+  /**
+   * ⚠️ --c-border, THE TABLE'S OWN EDGE COLOUR, and it is deliberately quiet.
+   * It is the token the rest of the grid and every card in the app already
+   * uses, so a ruled table reads as part of the page rather than as a wireframe
+   * over it. It follows the theme, and a user who changes the border colour
+   * changes this with it. A heading with too little behind it to show against
+   * is accepted: the rules are there to guide the eye down the figures, and the
+   * figures are in the body.
+   */
+  const cell = bordered ? "border border-[rgb(var(--c-border))]" : "";
+
   const [page, setPage] = React.useState(1);
   const rows = Array.isArray(data) ? data : [];
   const totalRows = rows.length;
@@ -106,14 +133,14 @@ const Table: React.FC<TableProps> = ({
           {headerRows && headerRows.length > 0 ? (
             headerRows.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                {row.map((cell, cellIndex) => (
+                {row.map((headerCell, cellIndex) => (
                   <th
                     key={`${rowIndex}-${cellIndex}`}
-                    colSpan={cell.colSpan}
-                    rowSpan={cell.rowSpan}
-                    className={`px-3 py-3 font-semibold ${cell.className || ""}`}
+                    colSpan={headerCell.colSpan}
+                    rowSpan={headerCell.rowSpan}
+                    className={`px-3 py-3 font-semibold align-middle ${cell} ${headerCell.className || ""}`}
                   >
-                    {cell.label}
+                    {headerCell.label}
                   </th>
                 ))}
               </tr>
@@ -123,7 +150,7 @@ const Table: React.FC<TableProps> = ({
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-3 py-3 font-semibold ${column.headerClass || ""}`}
+                  className={`px-3 py-3 font-semibold align-middle ${cell} ${column.headerClass || ""}`}
                 >
                   {column.header}
                 </th>
@@ -155,7 +182,7 @@ const Table: React.FC<TableProps> = ({
                     {columns.map((col) => (
                       <td
                         key={col.key}
-                        className={`truncate px-3 py-2 ${col.cellClass || ""}`}
+                        className={`truncate px-3 py-2 align-middle ${cell} ${col.cellClass || ""}`}
                       >
                         {col.render ? col.render(row, absoluteIndex) : row[col.key]}
                       </td>
@@ -190,14 +217,14 @@ const Table: React.FC<TableProps> = ({
           <tfoot className="bg-slate-50 text-sm font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
             {footerRows.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                {row.map((cell, cellIndex) => (
+                {row.map((footerCell, cellIndex) => (
                   <td
                     key={`${rowIndex}-${cellIndex}`}
-                    colSpan={cell.colSpan}
-                    rowSpan={cell.rowSpan}
-                    className={`px-3 py-3 ${cell.className || ""}`}
+                    colSpan={footerCell.colSpan}
+                    rowSpan={footerCell.rowSpan}
+                    className={`px-3 py-3 ${cell} ${footerCell.className || ""}`}
                   >
-                    {cell.label}
+                    {footerCell.label}
                   </td>
                 ))}
               </tr>
