@@ -288,10 +288,12 @@ const styles: Record<string, React.CSSProperties> = {
   leftCell: {
     ...baseCell,
     textAlign: 'left',
+    verticalAlign: 'middle',
   },
   rightCell: {
     ...baseCell,
     textAlign: 'right',
+    verticalAlign: 'middle',
   },
   emptyCell: {
     ...baseCell,
