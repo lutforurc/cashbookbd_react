@@ -97,7 +97,7 @@ const SendSms = (user: any) => {
       // sentence, and the shared table truncates every cell to one line -- so
       // this column alone was 90 characters wide, pushing status and dates off
       // the right edge and leaving the row unreadable anyway.
-      cellClass: 'w-[34%] min-w-[16rem] whitespace-normal! break-words align-top',
+      cellClass: 'w-[34%] min-w-[16rem] whitespace-normal! break-words align-middle',
       headerClass: 'text-left',
     },
     { key: 'provider', header: 'Provider', headerClass: 'text-center', cellClass: 'text-center' },
