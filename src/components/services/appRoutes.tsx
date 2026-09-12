@@ -51,6 +51,7 @@ const ROUTES = {
   print_template_designer: '/settings/challan-layout',
   order_template_designer: '/settings/order-layout',
   my_devices: '/my-devices',
+  change_password: '/change-password',
   my_tasks: '/my-tasks',
   formElements: '/forms/form-elements',
   formLayout: '/forms/form-layout',

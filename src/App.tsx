@@ -9,6 +9,7 @@ import FormElements from './pages/Form/FormElements';
 import FormLayout from './pages/Form/FormLayout';
 import Profile from './pages/Profile';
 import MyDevices from './components/modules/devices/MyDevices';
+import ChangePassword from './components/modules/user/ChangePassword';
 import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 import DefaultLayout from './layout/DefaultLayout';
@@ -329,6 +330,9 @@ function App() {
               <Route path={routes.dashboard} element={<DashboardIndex />} />
               <Route path={routes.profile} element={<Profile />} />
               <Route path={routes.my_devices} element={<MyDevices />} />
+              {/* One's own password, like the devices above it: personal, so
+                  it carries no permission. Another user's is on User Edit. */}
+              <Route path={routes.change_password} element={<ChangePassword />} />
               <Route path={routes.my_tasks} element={<MyTasks />} />
               {/* Arranging one's own sidebar is a personal setting, like the
                   profile above it -- there is nothing here another user could

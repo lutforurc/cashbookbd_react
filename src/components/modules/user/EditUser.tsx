@@ -24,6 +24,9 @@ type MultiOption = {
     label: string;
 };
 
+// The API's own rule (min:8); the check here only saves the round trip.
+const PASSWORD_MIN_LENGTH = 8;
+
 const EditUser = (user: any) => {
     const dispatch = useDispatch();
     const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -258,21 +261,45 @@ const EditUser = (user: any) => {
 
         const roleIds = selectedRoles.map((item) => Number(item.value));
 
-        const payload = {
-            ...formData,
-            role_id: Number(selectedRoles[0].value),
-            role_ids: roleIds,
-        };
-
         // Cleared rather than merely hidden. A password manager fills a hidden
         // field as readily as a shown one, and submitting that would quietly set
         // this user's password to whatever the browser had saved.
-        if (!canChangePassword) {
-            payload.password = '';
-            payload.confirmPassword = '';
+        const password = canChangePassword ? formData.password : '';
+        const confirmPassword = canChangePassword ? formData.confirmPassword : '';
+
+        // Said here, before the round trip, in the words the API would use.
+        if (password) {
+            if (password.length < PASSWORD_MIN_LENGTH) {
+                toast.error(`Password must be at least ${PASSWORD_MIN_LENGTH} characters.`);
+                return;
+            }
+            if (password !== confirmPassword) {
+                toast.error('Password and Confirm Password do not match.');
+                return;
+            }
         }
 
-        dispatch(updateUser(payload) as any);
+        const payload: Record<string, unknown> = {
+            ...formData,
+            role_id: Number(selectedRoles[0].value),
+            role_ids: roleIds,
+            // Under the name Laravel's `confirmed` rule looks for. It was going
+            // up as confirmPassword, which the API never read -- so a password
+            // typed here was silently dropped.
+            password,
+            password_confirmation: confirmPassword,
+        };
+        delete payload.confirmPassword;
+
+        // The slice files a failure under state.users.errors, which this screen
+        // never showed -- a refused password looked exactly like a saved one.
+        dispatch(
+            updateUser(payload, (res: any) => {
+                if (!res?.success) {
+                    toast.error(res?.error?.message || 'User update failed.');
+                }
+            }) as any,
+        );
     };
 
     useEffect(() => {
