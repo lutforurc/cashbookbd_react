@@ -14,75 +14,40 @@ import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
-import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import FilterMenuShell from "../../../utils/components/FilterMenuShell";
+import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchBalanceSheet } from "./balanceSheetSlice";
 import BalanceSheetPrint from "./BalanceSheetPrint";
+import BalanceSheetStatement from "./BalanceSheetStatement";
+import {
+  buildSheetLines,
+  ColumnTotals,
+  formatAmount,
+  ReportGroup,
+  ReportSection,
+  SheetLine,
+  SheetSide,
+  toNum,
+} from "./sheetLines";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import { formatDate } from "../../../utils/utils-functions/formatDate";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 
-
-type ReportItem = {
-  coa4_id?: number | null;
-  name?: string;
-  opening?: number | string;
-  movement?: number | string;
-  closing?: number | string;
-  balance?: number | string;
-};
-
-type ReportGroup = {
-  group_name?: string;
-  /** Set by the server on a group that is deducted from the others beside it. */
-  is_contra?: boolean;
-  opening?: number | string;
-  movement?: number | string;
-  closing?: number | string;
-  total?: number | string;
-  items?: ReportItem[];
-};
-
-type ColumnTotals = {
-  opening: number;
-  movement: number;
-  closing: number;
-};
-
 /**
- * A level-2 group of the chart — Current Assets, Fixed Asset, Current
- * Liability, Capital Account — holding the level-3 groups under it.
- *
- * ⚠️ The structure is the CHART's, not this screen's. Every one of these names
- * is a row somebody set up in the chart of accounts, so what the balance sheet
- * shows and what the accountant filed agree by construction rather than by a
- * mapping kept in step by hand.
+ * Two ways to lay the one sheet out. The statement is the one that leaves the
+ * building -- sections, indents and ruled totals, two columns. The worksheet
+ * is the accountant's: Opening, Movement and Closing, each split Dr and Cr,
+ * which is what a difference gets hunted down on. Both draw the same lines,
+ * so switching is instant and the two can never show different totals.
  */
-type ReportSection = {
-  name?: string;
-  groups?: ReportGroup[];
-  columns?: ColumnTotals;
-  total?: number | string;
-  /** Set where the section carries a deduction — fixed assets and their depreciation. */
-  has_contra?: boolean;
-  cost?: number | string;
-  cost_columns?: ColumnTotals;
-  depreciation?: number | string;
-  depreciation_columns?: ColumnTotals;
-  net?: number | string;
-};
+type SheetView = "statement" | "worksheet";
 
-const toNum = (value: any) => {
-  const parsed = Number(typeof value === "string" ? value.replace(/,/g, "") : value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const formatAmount = (amount: number) => {
-  const formatted = thousandSeparator(Math.abs(amount));
-  return amount < 0 ? `(${formatted})` : formatted;
-};
+const SHEET_VIEWS = [
+  { id: "statement", name: "Statement" },
+  { id: "worksheet", name: "Worksheet" },
+];
 
 const sumReportColumns = (groups: ReportGroup[]): ColumnTotals => ({
   opening: groups.reduce((sum, group) => sum + toNum(group.opening), 0),
@@ -105,6 +70,7 @@ const BalanceSheet = (user: any) => {
   const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [sheetView, setSheetView] = useState<SheetView>("statement");
   const [selectedGroup, setSelectedGroup] = useState<{
     title: string;
     group: ReportGroup;
@@ -278,6 +244,12 @@ const BalanceSheet = (user: any) => {
     assets.length > 0 || liabilities.length > 0 || equity.length > 0;
   const hasBalanceSheetResponse = Boolean(apiData);
 
+  // Built once, here, and handed to whichever view is showing.
+  const sheetLines = useMemo(
+    () => buildSheetLines({ assets, liabilities, equity, sections, hasSections, totals }),
+    [assets, equity, hasSections, liabilities, sections, totals],
+  );
+
   const netProfitDebug = useMemo(() => {
     const filters = apiData?.debug?.filters || {};
     const profitLoss = apiData?.debug?.profit_loss || {};
@@ -449,6 +421,22 @@ const BalanceSheet = (user: any) => {
  setSelectedDate={setEndDate}
  setCurrentDate={setEndDate}
  className="w-full "
+                />
+              </div>
+
+              {/* Switches the layout of what Apply already fetched -- no
+                  reload, and the print follows whichever is showing. */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Report Type
+                </label>
+                <DropdownCommon
+                  id="bs-sheet-view"
+                  name="bs-sheet-view"
+                  className=""
+                  value={sheetView}
+                  data={SHEET_VIEWS}
+                  onChange={(e: any) => setSheetView(e.target.value as SheetView)}
                 />
               </div>
 
@@ -635,16 +623,22 @@ const BalanceSheet = (user: any) => {
               </div>
 
               <div className="p-5">
-                <BalanceSheetTable
-                  assets={assets}
-                  liabilities={liabilities}
-                  equity={equity}
-                  sections={sections}
-                  hasSections={hasSections}
-                  totals={totals}
-                  fontSize={fontSize}
-                  onGroupClick={(title, group) => setSelectedGroup({ title, group })}
-                />
+                {sheetView === "statement" ? (
+                  <BalanceSheetStatement
+                    lines={sheetLines}
+                    openingDate={reportDates.start ? dayjs(reportDates.start).format("DD/MM/YYYY") : "-"}
+                    closingDate={reportDates.asOn ? dayjs(reportDates.asOn).format("DD/MM/YYYY") : "-"}
+                    fontSize={fontSize}
+                    onGroupClick={(title, group) => setSelectedGroup({ title, group })}
+                  />
+                ) : (
+                  <BalanceSheetTable
+                    lines={sheetLines}
+                    totals={totals}
+                    fontSize={fontSize}
+                    onGroupClick={(title, group) => setSelectedGroup({ title, group })}
+                  />
+                )}
               </div>
 
               {Math.abs(totals.difference) > 0.009 && (
@@ -660,6 +654,7 @@ const BalanceSheet = (user: any) => {
       <div className="hidden">
         <div ref={printRef}>
           <BalanceSheetPrint
+            view={sheetView}
             branchName={branchName}
             startDate={reportDates.start ? dayjs(reportDates.start).format("DD/MM/YYYY") : "-"}
             endDate={reportDates.end ? dayjs(reportDates.end).format("DD/MM/YYYY") : "-"}
@@ -881,50 +876,19 @@ const SummaryCard = ({
 };
 
 /**
- * The sheet as one running table, the way it prints: the sections announce
- * themselves in a band, their accounts follow numbered straight through, and
- * each section closes on its own total. A row still opens its accounts.
+ * The sheet as one running worksheet: the sections announce themselves in a
+ * band, their accounts follow numbered straight through, and each section
+ * closes on its own total. Six money columns -- Opening, Movement and Closing,
+ * each Dr and Cr -- so a difference can be run to ground column by column.
+ * A row still opens its accounts.
  */
-type SheetSide = "debit" | "credit";
-
-type SheetLine =
-  | { kind: "section"; label: string }
-  | { kind: "subsection"; label: string }
-  | { kind: "subtotal"; label: string; side: SheetSide; columns: ColumnTotals; indent?: boolean }
-  | {
-      kind: "item";
-      key: string;
-      serial: number;
-      section: string;
-      side: SheetSide;
-      group: ReportGroup;
-      label: string;
-      itemCount: number;
-      columns: ColumnTotals;
-    }
-  | {
-      kind: "total";
-      label: string;
-      side: SheetSide;
-      columns: ColumnTotals;
-      strong?: boolean;
-    };
-
 const BalanceSheetTable = ({
-  assets,
-  liabilities,
-  equity,
-  sections,
-  hasSections,
+  lines,
   totals,
   fontSize,
   onGroupClick,
 }: {
-  assets: ReportGroup[];
-  liabilities: ReportGroup[];
-  equity: ReportGroup[];
-  sections: { assets: ReportSection[]; liabilities: ReportSection[]; equity: ReportSection[] };
-  hasSections: boolean;
+  lines: SheetLine[];
   totals: {
     assetsColumns: ColumnTotals;
     liabilitiesColumns: ColumnTotals;
@@ -933,153 +897,6 @@ const BalanceSheetTable = ({
   fontSize: number;
   onGroupClick: (title: string, group: ReportGroup) => void;
 }) => {
-  const lines = useMemo(() => {
-    const out: SheetLine[] = [];
-    let serial = 0;
-
-    const pushSection = (
-      title: string,
-      groups: ReportGroup[],
-      side: SheetSide,
-      totalLabel: string,
-      columns: ColumnTotals,
-    ) => {
-      if (groups.length === 0) return;
-
-      out.push({ kind: "section", label: title });
-
-      groups.forEach((group, index) => {
-        serial += 1;
-        out.push({
-          kind: "item",
-          key: `${title}-${group.group_name || "group"}-${index}`,
-          serial,
-          section: title,
-          side,
-          group,
-          label: group.group_name || "-",
-          itemCount: (group.items || []).length,
-          columns: {
-            opening: toNum(group.opening),
-            movement: toNum(group.movement),
-            closing: toNum(group.closing || group.total),
-          },
-        });
-      });
-
-      out.push({ kind: "total", label: totalLabel, side, columns });
-    };
-
-    /**
-     * One level-2 group: its heading, the groups under it, and a subtotal.
-     *
-     * ⚠️ A SECTION THAT DEDUCTS PRINTS THE SUM, NOT TWO LINES. Fixed assets are
-     * shown as cost, less accumulated depreciation, net — the contra group is
-     * NOT also listed among the others, because two lines at the same level
-     * invite a reader to add them, and adding depreciation to cost is the one
-     * mistake this layout exists to prevent.
-     */
-    const pushSubSection = (parent: string, section: ReportSection, side: SheetSide) => {
-      const groups = section.groups ?? [];
-      const shown = section.has_contra ? groups.filter((g) => !g.is_contra) : groups;
-
-      if (groups.length === 0) return;
-
-      out.push({ kind: "subsection", label: section.name || "-" });
-
-      shown.forEach((group, index) => {
-        serial += 1;
-        out.push({
-          kind: "item",
-          key: `${parent}-${section.name}-${group.group_name || "group"}-${index}`,
-          serial,
-          section: parent,
-          side,
-          group,
-          label: group.group_name || "-",
-          itemCount: (group.items || []).length,
-          columns: {
-            opening: toNum(group.opening),
-            movement: toNum(group.movement),
-            closing: toNum(group.closing ?? group.total),
-          },
-        });
-      });
-
-      if (section.has_contra) {
-        // Printed positive under a heading that already says Less, because
-        // a bracketed negative under "Less" reads as a double negative.
-        const dep = section.depreciation_columns ?? { opening: 0, movement: 0, closing: 0 };
-
-        out.push({
-          kind: "subtotal",
-          label: "Less: Accumulated Depreciation",
-          side,
-          indent: true,
-          columns: {
-            opening: -1 * toNum(dep.opening),
-            movement: -1 * toNum(dep.movement),
-            closing: -1 * toNum(dep.closing),
-          },
-        });
-
-        out.push({
-          kind: "subtotal",
-          label: `Net ${section.name}`,
-          side,
-          columns: section.columns ?? { opening: 0, movement: 0, closing: 0 },
-        });
-
-        return;
-      }
-
-      out.push({
-        kind: "subtotal",
-        label: `Total ${section.name}`,
-        side,
-        columns: section.columns ?? { opening: 0, movement: 0, closing: 0 },
-      });
-    };
-
-    const pushSectioned = (
-      title: string,
-      list: ReportSection[],
-      side: SheetSide,
-      totalLabel: string,
-      columns: ColumnTotals,
-    ) => {
-      if (list.length === 0) return;
-
-      out.push({ kind: "section", label: title });
-      list.forEach((section) => pushSubSection(title, section, side));
-      out.push({ kind: "total", label: totalLabel, side, columns });
-    };
-
-    if (hasSections) {
-      pushSectioned("Assets", sections.assets, "debit", "Total Assets", totals.assetsColumns);
-      pushSectioned("Liabilities", sections.liabilities, "credit", "Total Liabilities", totals.liabilitiesColumns);
-      pushSectioned("Equity", sections.equity, "credit", "Total Equity", totals.equityColumns);
-    } else {
-      pushSection("Assets", assets, "debit", "Total Assets", totals.assetsColumns);
-      pushSection("Liabilities", liabilities, "credit", "Liabilities Total", totals.liabilitiesColumns);
-      pushSection("Equity", equity, "credit", "Equity Total", totals.equityColumns);
-    }
-
-    out.push({
-      kind: "total",
-      label: "Total Liabilities & Equity",
-      side: "credit",
-      strong: true,
-      columns: {
-        opening: totals.liabilitiesColumns.opening + totals.equityColumns.opening,
-        movement: totals.liabilitiesColumns.movement + totals.equityColumns.movement,
-        closing: totals.liabilitiesColumns.closing + totals.equityColumns.closing,
-      },
-    });
-
-    return out;
-  }, [assets, equity, hasSections, liabilities, sections, totals]);
-
   const cell = "border border-[rgb(var(--c-border))] px-3 py-2";
   // The Dr and Cr columns hold one figure each and nothing else, so they are
   // kept narrow -- the description takes the width they give back.

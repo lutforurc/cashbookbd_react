@@ -30,7 +30,8 @@ import {
 
 import httpService from '../../services/httpService';
 
-const extractApiErrorMessage = (payload: any, fallback = 'Something went wrong.'): string => {
+/** The first thing the API said went wrong: a validation message if there is one, else its own. */
+export const extractApiErrorMessage = (payload: any, fallback = 'Something went wrong.'): string => {
   const validationErrors = payload?.errors;
   if (validationErrors && typeof validationErrors === 'object') {
     const firstFieldErrors = Object.values(validationErrors).find(

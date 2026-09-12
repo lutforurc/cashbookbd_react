@@ -25,6 +25,12 @@ type BalanceSheetGroup = {
 };
 
 type BalanceSheetPrintProps = {
+  /**
+   * Which layout goes to paper: the statement (sections, indents, ruled
+   * totals, Opening and Closing) or the worksheet (six money columns, Dr and
+   * Cr, a serial). Follows whatever the screen is showing.
+   */
+  view?: "statement" | "worksheet";
   branchName: string;
   startDate: string;
   endDate: string;
@@ -249,7 +255,173 @@ const buildLines = (
   return lines;
 };
 
+/**
+ * One page of the statement layout: description, Opening, Closing. No serial,
+ * no Dr / Cr, no grid -- a rule over each subtotal and a double rule under
+ * each total carry the structure, the way a filed statement is set. Same
+ * lines as the worksheet, so the two print the same figures.
+ *
+ * A figure is printed as it stands, not by its side: assets are debits and
+ * liabilities credits, so every line is normally positive, and a bracketed one
+ * is the exception the reader is meant to notice.
+ */
+const StatementTable = ({
+  lines,
+  isLastPage,
+  fs,
+  totalFs,
+  openingDate,
+  closingDate,
+  difference,
+}: {
+  lines: PrintLine[];
+  isLastPage: boolean;
+  fs: number;
+  totalFs: number;
+  openingDate: string;
+  closingDate: string;
+  /** Null when the sheet balances; the row is then not printed at all. */
+  difference: number | null;
+}) => {
+  const amount = "whitespace-nowrap text-right tabular-nums";
+  const subtotalRule = "border-t border-gray-600";
+  const totalRule = "border-t border-b-4 border-double border-gray-900";
+
+  return (
+    <table className="w-full border-collapse leading-tight">
+      <colgroup>
+        <col />
+        <col style={{ width: "110px" }} />
+        <col style={{ width: "110px" }} />
+      </colgroup>
+      <thead>
+        <tr>
+          <th className="pb-1" />
+          <th style={{ fontSize: fs }} className="pb-1 pl-3 text-right align-bottom font-semibold">
+            Opening
+            <span className="block font-normal text-gray-600" style={{ fontSize: Math.max(fs - 2, 7) }}>
+              {openingDate}
+            </span>
+          </th>
+          <th style={{ fontSize: fs }} className="pb-1 pl-3 text-right align-bottom font-semibold">
+            Closing
+            <span className="block font-normal text-gray-600" style={{ fontSize: Math.max(fs - 2, 7) }}>
+              {closingDate}
+            </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {lines.length > 0 ? (
+          lines.map((line, index) => {
+            if (line.kind === "section") {
+              return (
+                <tr key={`${line.label}-${index}`}>
+                  <td colSpan={3} style={{ fontSize: fs + 2 }} className="pt-4 pb-0.5 font-bold">
+                    {line.label}
+                  </td>
+                </tr>
+              );
+            }
+
+            if (line.kind === "subsection") {
+              return (
+                <tr key={`${line.label}-${index}`}>
+                  <td colSpan={3} style={{ fontSize: fs }} className="pt-2 font-semibold">
+                    {line.label}
+                  </td>
+                </tr>
+              );
+            }
+
+            /* The level-2 subtotal, and the "Less:" line above it. The Less
+               line is a deduction rather than a sum, so it sits with the
+               accounts -- indented, plain, unruled -- and only the Net line
+               that follows it is ruled. */
+            if (line.kind === "subtotal") {
+              const cellClass = line.indent
+                ? `py-0.5 pl-3 ${amount}`
+                : `${subtotalRule} pt-1 pb-1.5 pl-3 font-semibold ${amount}`;
+
+              return (
+                <tr key={`${line.label}-${index}`}>
+                  <td
+                    style={{ fontSize: fs }}
+                    className={line.indent ? "py-0.5 pl-4" : "pt-1 pb-1.5 pl-2 font-semibold"}
+                  >
+                    {line.label}
+                  </td>
+                  <td style={{ fontSize: totalFs }} className={cellClass}>
+                    {formatAmount(line.amounts.opening)}
+                  </td>
+                  <td style={{ fontSize: totalFs }} className={cellClass}>
+                    {formatAmount(line.amounts.closing)}
+                  </td>
+                </tr>
+              );
+            }
+
+            if (line.kind === "total") {
+              const cellClass = `${totalRule} pt-1 pb-0.5 pl-3 font-bold ${amount}`;
+
+              return (
+                <tr key={`${line.label}-${index}`}>
+                  <td style={{ fontSize: fs }} className="pt-1 pb-0.5 font-bold">
+                    {line.label}
+                  </td>
+                  <td style={{ fontSize: totalFs }} className={cellClass}>
+                    {formatAmount(line.amounts.opening)}
+                  </td>
+                  <td style={{ fontSize: totalFs }} className={cellClass}>
+                    {formatAmount(line.amounts.closing)}
+                  </td>
+                </tr>
+              );
+            }
+
+            return (
+              <tr key={`${line.name}-${line.serial}`}>
+                <td style={{ fontSize: fs }} className="py-0.5 pl-4">
+                  {line.name}
+                </td>
+                <td style={{ fontSize: fs }} className={`py-0.5 pl-3 ${amount}`}>
+                  {formatAmount(line.amounts.opening)}
+                </td>
+                <td style={{ fontSize: fs }} className={`py-0.5 pl-3 ${amount}`}>
+                  {formatAmount(line.amounts.closing)}
+                </td>
+              </tr>
+            );
+          })
+        ) : (
+          <tr>
+            <td colSpan={3} className="px-3 py-6 text-center text-gray-500">
+              No data found
+            </td>
+          </tr>
+        )}
+      </tbody>
+      {/* The statement ends on Total Liabilities & Equity, which is its grand
+          total; a second one would only repeat it. The difference line is the
+          one thing that still needs saying when the two sides disagree. */}
+      {isLastPage && difference !== null && (
+        <tfoot>
+          <tr className="font-semibold">
+            <td style={{ fontSize: fs }} className="pt-2 text-right">
+              Difference
+            </td>
+            <td colSpan={2} style={{ fontSize: totalFs }} className={`pt-2 pl-3 ${amount}`}>
+              {formatAmount(difference)}
+            </td>
+          </tr>
+        </tfoot>
+      )}
+    </table>
+  );
+};
+
 const BalanceSheetPrint = ({
+  view = "worksheet",
   branchName,
   startDate,
   endDate,
@@ -264,6 +436,7 @@ const BalanceSheetPrint = ({
   const fs = Number.isFinite(fontSize) ? Number(fontSize) : 12;
   const totalFs = Math.max(fs - 1, 8);
   const askedRows = Number(rowsPerPage);
+  const isStatement = view === "statement";
 
   // Older callers passed closing figures only; the opening and movement
   // columns then print empty rather than wrong.
@@ -330,6 +503,17 @@ const BalanceSheetPrint = ({
             </div>
 
             <div className="w-full overflow-hidden">
+              {isStatement ? (
+                <StatementTable
+                  lines={pageLines}
+                  isLastPage={isLastPage}
+                  fs={fs}
+                  totalFs={totalFs}
+                  openingDate={startDate}
+                  closingDate={endDate}
+                  difference={isUnbalanced ? totals.difference : null}
+                />
+              ) : (
               <table className="w-full border-collapse leading-tight">
                 <colgroup>
                   <col style={{ width: "40px" }} />
@@ -551,6 +735,7 @@ const BalanceSheetPrint = ({
                   </tfoot>
                 )}
               </table>
+              )}
             </div>
 
             <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} />

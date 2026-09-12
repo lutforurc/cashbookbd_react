@@ -213,9 +213,12 @@ const DropdownUser = () => {
                 My Contacts
               </Link>
             </li>
+            {/* Was "Account Settings" pointing at /settings, which no route
+                served -- the page it opened was blank. The one account setting
+                a user has to reach on their own is their password. */}
             <li>
               <Link
-                to="/settings"
+                to={routes.change_password}
                 className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
               >
                 <svg
@@ -235,7 +238,7 @@ const DropdownUser = () => {
                     fill=""
                   />
                 </svg>
-                Account Settings
+                Change Password
               </Link>
             </li>
             <li>
