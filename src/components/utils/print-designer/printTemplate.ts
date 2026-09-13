@@ -665,8 +665,14 @@ const HOTEL_STAY_FIELDS: FieldDef[] = [
   { key: 'guest_count', name: 'Guests Checked In', group: 'guest', numeric: true },
   { key: 'booker_name', name: 'Booked By', group: 'guest' },
   { key: 'booker_mobile', name: 'Booked By (Mobile)', group: 'guest' },
-  // Whose name the bill is in, where a balance was carried at check-out.
-  { key: 'billed_to', name: 'Billed To (Party)', group: 'guest' },
+  // Whose name the bill is in: a name typed on the folio (§40 -- the guest's
+  // employer, for a bill they will be reimbursed on) first, else the party the
+  // bill was carried to or booked against. Empty when it is the guest's own.
+  { key: 'billed_to', name: 'Billed To', group: 'guest' },
+  // Who PAYS -- the party the bill is carried on or booked against -- on a
+  // line of its own, because a bill made out to one company and owed by
+  // another says two names. Empty where no party holds it.
+  { key: 'bill_owed_by', name: 'On Account Of', group: 'guest' },
 
   { key: 'booking_no', name: 'Booking No', group: 'stay' },
   { key: 'booking_date', name: 'Booking Date', group: 'stay', format: 'date' },
@@ -1404,6 +1410,10 @@ const hotelBill = (): PrintTemplate => ({
         // beside it -- most stays are settled at the counter and belong to
         // nobody but the guest.
         { field: 'billed_to', label: 'Billed To', hideIfEmpty: true },
+        // And who pays, where that is somebody else again: a bill made out
+        // to the guest's employer and carried on a company's account. Hidden
+        // where it would only repeat the line above.
+        { field: 'bill_owed_by', label: 'On account of', hideIfEmpty: true, hideIfEqualTo: 'billed_to' },
         { field: 'nights', label: 'Nights' },
       ],
     }),
@@ -1859,6 +1869,49 @@ const retargetBillSubLine = (bands: Band[]): void => {
   });
 };
 
+/**
+ * A bill layout saved before "who pays" had a line of its own.
+ *
+ * ⚠️ WHY A LINE IS ADDED TO A LAYOUT SOMEBODY ARRANGED. Billed To used to be
+ * the only name on the paper, and with §40 it can be the guest's employer
+ * while a different company holds the account -- so a saved layout printed the
+ * employer and said nothing about who would be chased for the money. That is
+ * wrong paper, not a styling preference, and it is wrong on exactly the bills
+ * where it matters.
+ *
+ * Added directly under Billed To, hidden where it is empty or would only
+ * repeat that line -- so on every bill the layout printed correctly before,
+ * it prints exactly as it did. Only where a layout names Billed To at all,
+ * and never twice. Billed To is made to hide when empty in the same pass --
+ * see inside.
+ */
+const addBillAccountLine = (bands: Band[]): void => {
+  bands.forEach((item) => {
+    if (item.type !== 'info') return;
+
+    const at = item.items.findIndex((entry) => entry.field === 'billed_to');
+    if (at < 0) return;
+
+    // ⚠️ AND BILLED TO ITSELF HIDES WHEN THERE IS NOBODY. Most stays are
+    // settled at the counter and belong to nobody but the guest, and "Billed
+    // To :" with a blank beside it asks a question on every one of them. The
+    // shipped layout has always hidden it; a saved one carries the designer's
+    // default of false from the day the field was dropped in, which nobody
+    // chose. Set, not merely defaulted, so the next save keeps it.
+    item.items[at].hideIfEmpty = true;
+
+    if (item.items.some((entry) => entry.field === 'bill_owed_by')) return;
+
+    item.items.splice(at + 1, 0, {
+      field: 'bill_owed_by',
+      label: 'On account of',
+      hideIfEmpty: true,
+      hideIfEqualTo: 'billed_to',
+      ruleAbove: false,
+    });
+  });
+};
+
 export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'): PrintTemplate => {
   const fallback = defaultTemplate(docType);
   if (!raw || typeof raw !== 'object') return fallback;
@@ -1979,7 +2032,10 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
   // Safe to do in place: every band above was built here out of the saved JSON,
   // so nothing else is holding one.
   if (docType === 'sales_order') tokenizeOrderCaptions(bands);
-  if (docType === 'hotel_bill') retargetBillSubLine(bands);
+  if (docType === 'hotel_bill') {
+    retargetBillSubLine(bands);
+    addBillAccountLine(bands);
+  }
 
   return {
     version: 1,

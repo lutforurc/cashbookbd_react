@@ -4996,3 +4996,118 @@ construction form is untouched and still sends a project, exactly as before.
 Still not automated, deliberately: somebody must press it. If that turns out to
 be the weak point, the answer is a **badge** on the menu — "9 days of make-up
 not issued" — not an automatic issue.
+
+---
+
+## 40. Whose name is on the bill, 2026-09-14
+
+An employee stays on company business, pays from their own pocket, and needs
+the bill in the employer's name to be reimbursed. The paper said the guest's
+name and nothing on any screen could change that — the only way to get a
+company onto the bill was "Bill it to…", which is a different thing.
+
+### ⚠️ Three questions, and they are not the same question
+
+| | Who | Where it lives | Touches the ledger |
+|---|---|---|---|
+| Who **stayed** | the guest | `hotel_booking_guests`, `booker_name` | no |
+| Who **pays** | the party the bill is on | `billed_to_party_id` — a corporate booking, or a §6.4 transfer | **yes** — a voucher moves the receivable |
+| Whose **name** is on the paper | whoever the guest asks for | `bill_name` — this section | **no** |
+
+The third was missing. It is one nullable column of text on
+`hotel_booking_master` and nothing else: no party, no ledger head, no voucher,
+no re-posting. The money did not move, so nothing in the books moves.
+
+⚠️ **Not a party reference, deliberately.** Typing "ABC Ltd" into the party
+master to get it onto a bill would give the chart a ledger head nothing will
+ever post to — and the next person would move the bill to it, because that is
+what parties are for.
+
+### What the paper prints
+
+`billed_to` on the bill now answers in this order, and the layouts already
+saved read the same field and get the same answer:
+
+1. the typed name, where there is one — it is what the desk was asked for, in
+   so many words, and wins even on a corporate booking whose party master says
+   "ABC Ltd (Head Office)" when the paper should read "ABC Limited, Gulshan";
+2. else the paying party — a corporate booking's company, or whoever the bill
+   was carried to at check-out;
+3. else nothing, and the line hides itself, which is the ordinary bill.
+
+⚠️ **And who pays gets a line of its own — `bill_owed_by`, "On account of".**
+The first version had the typed name *replace* the paying party on the one
+line there was, and the first real bill showed why that was wrong: made out
+to Khaza Unus Ali Medical College, carried on Akij Ceramics' account, and the
+paper said nothing about Akij — the company that was going to be chased for
+9,153. Two names, two lines. The second is hidden where it is empty or where
+it would only repeat Billed To, so every bill that printed correctly before
+prints exactly as it did.
+
+A layout saved before the line existed gets it on load, directly under Billed
+To, with the same hiding — `addBillAccountLine()` beside the §39 retarget. A
+carried bill that does not say who is carrying it is wrong paper, not a
+styling preference, so the software adds the line it should have had. The same
+pass makes **Billed To hide when empty**: the shipped layout always did, but a
+saved one carried the designer's default of *false* from the day the field was
+dropped in, and printed "Billed To :" with nothing beside it on every guest's
+own bill (the owner's instruction, 2026-09-14).
+
+The money receipt does not read either. A receipt says who handed money over,
+and that is not this name.
+
+### The panel says where the bill stands
+
+The "Bill it to…" panel used to open on an empty *To whom* box however the
+bill stood, and a desk that had moved the bill an hour earlier reopened it to
+a blank and read that as "not saved". It now opens on whoever holds the bill,
+the button reads *Billed to…* on a carried bill, and the move button is
+disabled while the box still names the current holder — "Already Akij's, pick
+another to move it" — rather than offering a press the server would refuse.
+
+### When it may change
+
+**After check-out too.** The guest who telephones the next morning wanting the
+bill in the company's name is an ordinary guest, and nothing about the money
+changes when the name does — so, unlike a discount, a closed stay is not
+refused. Only a stay that never happened is: cancelled or expired, there is no
+bill to put a name on.
+
+⚠️ **This stops being true the day Mushak 6.3 is issued from here** (OPEN-6).
+An issued VAT invoice's buyer is not renamed without a credit note. The lock
+arrives with that feature, and so do the buyer's address and BIN — two more
+columns beside this one, not a redesign.
+
+### Where it lives
+
+| | |
+|---|---|
+| Schema | `AddUnitTypeToBuildingUnits::runHotelBillNameSchema()` — `hotel_booking_master.bill_name` VARCHAR(191) NULL, after `billed_to_party_id` |
+| API | `FolioController::billName()`, `POST hotel-setup/bookings/folio/{id}/bill-name`, permission `hotel.folio.bill`. Empty puts it back in the guest's own name; answers with the whole folio |
+| Paper | `HotelPaper::stayFacts()` — `billed_to` resolves as above; `bill_owed_by` is the paying party. Both in `HOTEL_BILL_FIELDS`; the shipped info band carries the second under the first, hidden when empty or equal |
+| Screen | `FolioScreen.tsx` — **Name on the bill** beside *Bill it to…*, one box, Enter saves; a line in the header says whose name the paper will carry before it is printed. *Bill it to…* opens on the current holder |
+| Store | `bookingSlice.tsx` → `folioBillName`, in the folio-writes loop |
+
+The panel says the distinction out loud where the box is: *"Only the name on
+the paper changes. Nobody else starts owing anything: to put the bill on a
+company's account, use Bill it to… instead."*
+
+### Checked
+
+`hotel_bill_name_check.php` — **21 assertions**, rolled back. The four worth
+naming:
+
+- saving a name moves **nobody's money** — `billed_to_party_id` is what it was
+  and `main_trx_master` has the same number of rows;
+- the typed name **wins over the paying party** on Billed To while the party
+  **keeps its own line**; cleared, Billed To **falls back** to the party and
+  the two lines say the same string (which is what lets the layout fold them);
+  with neither, both are empty;
+- allowed on a checked-out stay, **refused on a cancelled one** with the old
+  name left standing;
+- blank is stored as NULL, not as spaces; 192 characters are refused.
+
+`hotel_paper_check.php` still passes its 25.
+
+**Deploy:** `patch:add-unit-type` (adds the column, guarded), then
+`route:clear`, then the front end.
