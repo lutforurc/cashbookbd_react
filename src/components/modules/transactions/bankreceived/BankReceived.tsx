@@ -980,7 +980,7 @@ const BankReceived = () => {
                       </td>
                     ) : null}
                     <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
-                      {t.amount}
+                      { thousandSeparator(Number(t.amount)) }
                     </td>
                     <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20">
                       <Button
