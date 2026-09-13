@@ -746,6 +746,14 @@ export const HOTEL_BILL_LINE_FIELDS: FieldDef[] = [
   // yesterday.
   { key: 'description_with_type', name: 'Description & Type', group: 'folio' },
   { key: 'charge_type', name: 'Charge Type', group: 'folio' },
+  // The word the desk picked the charge by -- "Ticket", "Set Menu" -- rather
+  // than the code behind it.
+  { key: 'charge_type_name', name: 'Charge Name', group: 'folio' },
+  // ⚠️ The second line of the description cell, whatever the row is: the
+  // type's sentence, in brackets, under a room; the what-for, plain, under a
+  // charge. The server writes the brackets, because only the row knows which
+  // of the two it is -- so a column showing this must not add its own.
+  { key: 'line_detail', name: 'Beneath the Name', group: 'folio' },
   // ⚠️ A row is one room over a RUN of nights, so its date is a FROM and a TO.
   // They are equal on a single night, and the description already reads as a
   // range -- these are for a property whose own paper wants them in columns.
@@ -1416,15 +1424,19 @@ const hotelBill = (): PrintTemplate => ({
         // what was paid for -- and the sentence is the type's, so it is written
         // once on the Room Types screen rather than onto every room.
         //
-        // The second line is simply not drawn where a type has nothing to say,
+        // A charge reads the other way up: what it IS on the line -- "Ticket"
+        // -- and what for beneath, plain, as the desk typed it. One sub-field
+        // carries both, brackets included where they belong (see the
+        // catalogue), which is why the column adds none of its own.
+        //
+        // The second line is simply not drawn where a row has nothing to say,
         // so a property that never fills those in prints what it always did.
         {
           field: 'description_with_type',
           label: 'Description',
           width: 45,
           align: 'left',
-          subField: 'room_type_description',
-          subInBrackets: true,
+          subField: 'line_detail',
         },
         { field: 'quantity', label: 'Qty', width: 7, align: 'right' },
         { field: 'unit_rate', label: 'Rate', width: 13, align: 'right' },
@@ -1816,6 +1828,37 @@ const tokenizeOrderCaptions = (bands: Band[]): void => {
   });
 };
 
+/**
+ * A bill layout saved while the second line was the room type's alone.
+ *
+ * ⚠️ WHY A SAVED LAYOUT IS REWRITTEN. The description column's second line
+ * used to read `room_type_description`, bracketed by the column -- so a charge,
+ * which has no room type, printed one line and said only what it was for. It
+ * now reads `line_detail`, which the server fills for rooms and charges alike
+ * and brackets itself where brackets belong. A layout saved with the old
+ * sub-field would keep printing charges the old way until somebody opened the
+ * designer, and there is nothing in the designer to open: the sub-field was
+ * never a control, it was written by the software and carried through every
+ * save. So it is the software's to move.
+ *
+ * ⚠️ EXACT MATCH ONLY, and the column's bracketing is switched off in the same
+ * breath -- the brackets now arrive in the data, and a column still adding its
+ * own would print a room's sentence as "((AC, veranda))". Running twice changes
+ * nothing the first pass did not.
+ */
+const retargetBillSubLine = (bands: Band[]): void => {
+  bands.forEach((item) => {
+    if (item.type !== 'table') return;
+
+    item.columns.forEach((column) => {
+      if (column.subField === 'room_type_description') {
+        column.subField = 'line_detail';
+        column.subInBrackets = false;
+      }
+    });
+  });
+};
+
 export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'): PrintTemplate => {
   const fallback = defaultTemplate(docType);
   if (!raw || typeof raw !== 'object') return fallback;
@@ -1936,6 +1979,7 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
   // Safe to do in place: every band above was built here out of the saved JSON,
   // so nothing else is holding one.
   if (docType === 'sales_order') tokenizeOrderCaptions(bands);
+  if (docType === 'hotel_bill') retargetBillSubLine(bands);
 
   return {
     version: 1,
