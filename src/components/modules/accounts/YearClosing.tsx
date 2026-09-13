@@ -5,10 +5,11 @@ import { FiCheck, FiRotateCcw } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
-import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
+import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { FIELD_LABEL } from '../../../theme/fieldStyles';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
@@ -56,6 +57,29 @@ const onTheDay = (value?: string | null): string => {
   const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '');
 
   return parts ? `${parts[3]}/${parts[2]}/${parts[1]}` : '';
+};
+
+/**
+ * The capital heads as dropdown lines, and a search over them.
+ *
+ * The list is already in hand -- the plan call brings every balance sheet
+ * head with it -- so "searching" is a filter, not a round trip; the promise is
+ * only because the dropdown's fetcher is written for one. A chart of a few
+ * hundred heads is no longer a list to scroll for the one called Capital.
+ */
+const capitalOptions = (heads: any[]) =>
+  heads.map((one: any) => ({ value: String(one.id), label: `${one.name} (${one.group_name})` }));
+
+const searchCapital = (heads: any[]) => {
+  const options = capitalOptions(heads);
+
+  return (typed: string) => {
+    const q = typed.trim().toLowerCase();
+
+    return Promise.resolve(
+      q ? options.filter((option) => option.label.toLowerCase().includes(q)) : options,
+    );
+  };
 };
 
 /** The 30 June this financial year ends on — the same rule the server uses. */
@@ -203,21 +227,24 @@ const YearClosing = ({ user }: any) => {
           />
         </div>
 
-        <div className="w-72">
-          <DropdownCommon
+        <div className="w-full sm:w-80">
+          <label htmlFor="closing_capital" className={`${FIELD_LABEL} text-sm`}>
+            The profit goes to
+          </label>
+          {/* ⚠️ Keyed on the list's size. The dropdown fills its opening menu
+              ONCE, when it mounts -- and this screen mounts it before the plan
+              has answered, so it would open empty for good. A new key when the
+              heads land mounts it again, over the full list. The plan reloads
+              on every pick too, but the list keeps its size and nothing moves. */}
+          <DdlMultiline
+            key={(data?.capital_heads ?? []).length}
             id="closing_capital"
             name="capital_coa4_id"
-            label="The profit goes to"
-            data={[
-              { id: '', name: 'Choose the capital head' },
-              ...(data?.capital_heads ?? []).map((one: any) => ({
-                id: one.id,
-                name: `${one.name} (${one.group_name})`,
-              })),
-            ]}
-            value={capital}
-            onChange={(e: any) => setCapital(e.target.value)}
-            // description="Capital, or retained earnings — a balance sheet head."
+            fetchOptions={searchCapital(data?.capital_heads ?? [])}
+            defaultOptions
+            value={capitalOptions(data?.capital_heads ?? []).find((one) => one.value === capital) ?? null}
+            onSelect={(chosen: any) => setCapital(chosen?.value ?? '')}
+            placeholder="Choose the capital head"
           />
         </div>
 
