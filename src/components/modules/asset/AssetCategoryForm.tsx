@@ -1,8 +1,9 @@
 import { FiSave } from 'react-icons/fi';
 
 import InputElement from '../../utils/fields/InputElement';
-import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
+import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { FIELD_HELP, FIELD_LABEL } from '../../../theme/fieldStyles';
 
 /**
  * A category being typed: its rate, and the four heads its money moves through.
@@ -36,6 +37,11 @@ export interface AssetCategoryFormProps {
   expenseHeads: any[];
 }
 
+interface HeadOption {
+  value: string;
+  label: string;
+}
+
 /**
  * A chart head as a dropdown line.
  *
@@ -44,10 +50,69 @@ export interface AssetCategoryFormProps {
  * depreciated — so the box says which state it is in rather than looking
  * unfilled. It came across with the form because it is a label, not data.
  */
-const headOptions = (heads: any[]) => [
-  { id: '', name: 'Not chosen yet' },
-  ...heads.map((head: any) => ({ id: head.id, name: `${head.name} — ${head.group_name}` })),
+const headOptions = (heads: any[]): HeadOption[] => [
+  { value: '', label: 'Not chosen yet' },
+  ...heads.map((head: any) => ({
+    value: String(head.id),
+    label: `${head.name} — ${head.group_name}`,
+  })),
 ];
+
+/**
+ * The list is already in hand — the tab loaded both halves of the chart when
+ * it opened — so "searching" is a filter over it, not a round trip. Wrapped in
+ * a promise only because the dropdown's fetcher is written for one.
+ */
+const searchHeads = (heads: any[]) => {
+  const options = headOptions(heads);
+  return (typed: string) => {
+    const q = typed.trim().toLowerCase();
+    return Promise.resolve(
+      q ? options.filter((option) => option.label.toLowerCase().includes(q)) : options,
+    );
+  };
+};
+
+interface HeadPickerProps {
+  id: string;
+  label: string;
+  heads: any[];
+  value: any;
+  onPick: (value: string) => void;
+  description: string;
+}
+
+/**
+ * One head box: label, a searchable dropdown, and the line saying what the
+ * choice decides — the same frame DropdownCommon draws, with typing added.
+ * A chart of a few hundred heads is no longer a list to scroll.
+ */
+const HeadPicker = ({ id, label, heads, value, onPick, description }: HeadPickerProps) => {
+  const chosen = headOptions(heads).find((option) => option.value === String(value ?? '')) ?? null;
+
+  return (
+    <div className="w-full">
+      <label htmlFor={id} className={`${FIELD_LABEL} text-left text-sm`}>
+        {label}
+      </label>
+      {/* ⚠️ Keyed on the list's size. The dropdown fills its opening menu
+          ONCE, when it mounts — and a reload on ?form=new mounts it before
+          the chart has arrived, so it would open empty for good. A new key
+          when the heads land mounts it again, over the full list. */}
+      <DdlMultiline
+        key={heads.length}
+        id={id}
+        name={id}
+        fetchOptions={searchHeads(heads)}
+        defaultOptions
+        value={chosen}
+        onSelect={(option: any) => onPick(option?.value ?? '')}
+        placeholder="Not chosen yet"
+      />
+      <p className={FIELD_HELP}>{description}</p>
+    </div>
+  );
+};
 
 const AssetCategoryForm = ({
   form,
@@ -60,6 +125,9 @@ const AssetCategoryForm = ({
   /** One field of the draft, leaving the rest alone. */
   const set = (field: string) => (event: any) =>
     onChange({ ...form, [field]: event.target.value });
+
+  /** The same, for a head picked from a dropdown rather than typed. */
+  const pick = (field: string) => (value: string) => onChange({ ...form, [field]: value });
 
   return (
     <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
@@ -105,50 +173,46 @@ const AssetCategoryForm = ({
         />
       </div>
 
-      <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
-        <DropdownCommon
+      {/* The four heads on one line: one per column where there is room,
+          two by two on a tablet, stacked on a phone. Balance sheet on the
+          left, profit and loss on the right — the order the money moves. */}
+      <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <HeadPicker
           id="asset_coa4_id"
-          name="asset_coa4_id"
           label="Asset head"
-          data={headOptions(balanceSheetHeads)}
+          heads={balanceSheetHeads}
           value={form.asset_coa4_id}
-          onChange={set('asset_coa4_id')}
+          onPick={pick('asset_coa4_id')}
           description="Where what it cost sits. Balance sheet."
         />
-        <DropdownCommon
+        <HeadPicker
           id="accum_dep_coa4_id"
-          name="accum_dep_coa4_id"
           label="Accumulated depreciation"
-          data={headOptions(balanceSheetHeads)}
+          heads={balanceSheetHeads}
           value={form.accum_dep_coa4_id}
-          onChange={set('accum_dep_coa4_id')}
+          onPick={pick('accum_dep_coa4_id')}
           description="Grows underneath the asset. Balance sheet."
         />
-        <DropdownCommon
+        <HeadPicker
           id="dep_expense_coa4_id"
-          name="dep_expense_coa4_id"
           label="Depreciation charge"
-          data={headOptions(expenseHeads)}
+          heads={expenseHeads}
           value={form.dep_expense_coa4_id}
-          onChange={set('dep_expense_coa4_id')}
+          onPick={pick('dep_expense_coa4_id')}
           description="This year’s expense. Profit and loss."
         />
-      </div>
-
-      {/* ⚠️ THE FOURTH HEAD, AND IT ARRIVED LATE. The first three are what
-          depreciation needs; this one is what SELLING needs, and a category
-          can be perfectly able to depreciate and unable to dispose. Without
-          it on this form there was no way to give a category its gain-or-loss
-          head at all, so the disposal panel refused every sale with a
-          message pointing at a box that did not exist. */}
-      <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
-        <DropdownCommon
+        {/* ⚠️ THE FOURTH HEAD, AND IT ARRIVED LATE. The first three are what
+            depreciation needs; this one is what SELLING needs, and a category
+            can be perfectly able to depreciate and unable to dispose. Without
+            it on this form there was no way to give a category its gain-or-loss
+            head at all, so the disposal panel refused every sale with a
+            message pointing at a box that did not exist. */}
+        <HeadPicker
           id="disposal_coa4_id"
-          name="disposal_coa4_id"
           label="Gain or loss on sale"
-          data={headOptions(expenseHeads)}
+          heads={expenseHeads}
           value={form.disposal_coa4_id}
-          onChange={set('disposal_coa4_id')}
+          onPick={pick('disposal_coa4_id')}
           description="Only needed to sell or write one off. Profit and loss."
         />
       </div>
