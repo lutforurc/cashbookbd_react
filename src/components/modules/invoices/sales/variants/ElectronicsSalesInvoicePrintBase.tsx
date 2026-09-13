@@ -240,6 +240,7 @@ const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>
                   {!isHalf && data?.sales_master?.sales_order?.delivery_location && (
                     <div>Delivery Location: {data.sales_master.sales_order.delivery_location}</div>
                   )}
+                  {meta.salesMaster?.notes && <div><span className="font-semibold">Notes:</span> {meta.salesMaster.notes}</div>}
                 </div>
 
                 <div className="text-right space-y-1">
