@@ -402,6 +402,30 @@ export const folioDiscount = createAsyncThunk<
 });
 
 /**
+ * Whose name the bill is made out to (§40) -- the guest's employer, usually.
+ *
+ * ⚠️ NOT WHO PAYS. That is billTransfer below, and it moves money with a
+ * voucher behind it. This is a line of text on the booking: nothing in the
+ * ledger reads it, so nothing is re-posted. Sent empty, it puts the bill back
+ * in the guest's own name.
+ */
+export const folioBillName = createAsyncThunk<
+  { message: string; data: any },
+  { id: number; bill_name: string },
+  { rejectValue: string }
+>('hotelBooking/folioBillName', async ({ id, ...payload }, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_HOTEL_FOLIO_URL}/${id}/bill-name`, payload);
+    if (res.data?.success === true) {
+      return { message: res.data?.message || 'Saved', data: unwrap(res) };
+    }
+    return rejectWithValue(res.data?.message || 'Could not save the name on the bill');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not save the name on the bill'));
+  }
+});
+
+/**
  * Take money, or give some back.
  *
  * ⚠️ This does not touch the bill. An advance is a liability until the nights
@@ -796,14 +820,14 @@ const bookingSlice = createSlice({
         state.tills = action.payload || [];
       });
 
-    // The three folio writes, kept in their own loop rather than added to the
-    // one below.
+    // The folio writes, kept in their own loop rather than added to the one
+    // below.
     //
     // ⚠️ Not because it reads better: builder.addCase THROWS if the same action
     // type is registered twice, so a thunk may appear in exactly one of these
-    // lists. These three answer with the WHOLE folio and replace it; the three
-    // below throw the availability list away instead.
-    [folioBill, folioCharge, folioReceive, folioDiscount].forEach((thunk: any) => {
+    // lists. These answer with the WHOLE folio and replace it; the ones below
+    // throw the availability list away instead.
+    [folioBill, folioCharge, folioReceive, folioDiscount, folioBillName].forEach((thunk: any) => {
       builder
         .addCase(thunk.pending, (state: any) => {
           state.saving = true;

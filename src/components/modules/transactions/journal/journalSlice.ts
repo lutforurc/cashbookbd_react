@@ -31,6 +31,14 @@ export const saveJournalPayment = createAsyncThunk<
   try {
     const res = await httpService.post(API_JOURNAL_STORE_URL, payload);
 
+    // ⚠️ success:false FIRST. A refusal -- a closed year (§42), a missing head
+    // -- travels as success:false on a 200, and "200 means saved" turned that
+    // sentence into a green success toast over a form that had just been
+    // cleared.
+    if (res.data?.success === false) {
+      return rejectWithValue(res.data?.message || 'Journal save failed');
+    }
+
     if (res.data?.success === true || res.status === 200 || res.status === 201) {
       return res.data;
     }

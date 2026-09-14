@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
+import { toastRefusal } from '../../../utils/refusalToast';
 import {
   FiArrowLeft,
   FiBriefcase,
@@ -13,6 +14,7 @@ import {
   FiPlus,
   FiPrinter,
   FiRepeat,
+  FiTag,
   FiUpload,
   FiUser,
   FiX,
@@ -47,6 +49,7 @@ import {
   clearBill,
   clearFolio,
   folioBill,
+  folioBillName,
   folioCharge,
   folioDiscount,
   folioReceive,
@@ -383,6 +386,18 @@ const FolioScreen = () => {
    * `moving === null`; do not conflate the two.
    */
   const [moving, setMoving] = useState<any>(null);
+
+  /**
+   * The open "name on the bill" panel: the name being typed, or null when the
+   * panel is closed (§40).
+   *
+   * ⚠️ NOT THE SAME THING AS `moving`. That one changes who PAYS and raises a
+   * voucher; this one changes whose NAME is on the paper and touches nothing
+   * else. An employee reimbursed by their office needs the second and not the
+   * first, and the two panels sit apart so that nobody reaches for the wrong
+   * one.
+   */
+  const [naming, setNaming] = useState<string | null>(null);
 
   /**
    * The paper waiting to go to the printer, and what it is called.
@@ -768,7 +783,7 @@ const FolioScreen = () => {
     } catch (error: any) {
       // Usually the clash: somebody billed one of these nights while this was
       // open, and nothing was added. The server's sentence says exactly that.
-      toast.error(String(error));
+      toastRefusal(String(error));
       load();
     }
   };
@@ -784,7 +799,7 @@ const FolioScreen = () => {
       toast.success(result.message);
       setCharge(null);
     } catch (error: any) {
-      toast.error(String(error));
+      toastRefusal(String(error));
     }
   };
 
@@ -849,6 +864,25 @@ const FolioScreen = () => {
     }
   };
 
+  /**
+   * Whose name the bill is made out to. Empty puts it back in the guest's own.
+   *
+   * No confirmation and no reason asked: it is a label on a paper, not money,
+   * and the server's sentence back says what the bill will now read.
+   */
+  const saveBillName = async (name: string) => {
+    try {
+      const result = await dispatch(
+        folioBillName({ id: Number(id), bill_name: name.trim() }),
+      ).unwrap();
+
+      toast.success(result.message);
+      setNaming(null);
+    } catch (error: any) {
+      toast.error(String(error));
+    }
+  };
+
   const savePayment = async () => {
     if (!Number(payment?.amount)) {
       toast.error('How much?');
@@ -868,7 +902,7 @@ const FolioScreen = () => {
       toast.success(result.message);
       setPayment(null);
     } catch (error: any) {
-      toast.error(String(error));
+      toastRefusal(String(error));
     }
   };
 
@@ -1052,6 +1086,16 @@ const FolioScreen = () => {
             Discount: {booking.discount_reason}
           </p>
         ) : null}
+
+        {/* Whose name the paper will carry, said before it is printed -- a
+            desk that has to print to find out prints twice. Only where it is
+            not the guest's own, which is the ordinary case and needs no line. */}
+        {booking?.bill_name ? (
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Bill in the name of:{' '}
+            <strong className="text-black dark:text-white">{booking.bill_name}</strong>
+          </p>
+        ) : null}
       </div>
 
       <div className="mb-2 flex flex-wrap gap-2">
@@ -1191,10 +1235,37 @@ const FolioScreen = () => {
         {Number(bill?.outstanding ?? 0) > 0 ? (
           <ButtonLoading
             onClick={() =>
-              setMoving(moving ? null : { party: null, reason: '' })
+              setMoving(
+                moving
+                  ? null
+                  : {
+                      // ⚠️ OPENS ON WHOEVER HOLDS IT NOW. It used to open empty
+                      // however the bill stood, and a desk that had moved the
+                      // bill to a company an hour ago reopened the panel to a
+                      // blank box and read it as "not saved". The box says who
+                      // has it; picking somebody else is the move.
+                      party: bill?.carried && bill?.owed_by
+                        ? { value: String(bill.owed_by.id), label: bill.owed_by.name }
+                        : null,
+                      reason: '',
+                    },
+              )
             }
-            label={moving ? 'Close' : 'Bill it to…'}
+            label={moving ? 'Close' : bill?.carried ? 'Billed to…' : 'Bill it to…'}
             icon={moving ? <FiX size={16} /> : <FiRepeat size={16} />}
+          />
+        ) : null}
+
+        {/* Whose NAME goes on the paper (§40) -- not who pays, which is the
+            button before it. Offered after check-out too: the guest who rings
+            the next day wanting the bill in the company's name is ordinary,
+            and nothing about the money changes with the name. Only a stay that
+            never happened has no bill to name. */}
+        {booking?.status !== 'cancelled' && booking?.status !== 'expired' ? (
+          <ButtonLoading
+            onClick={() => setNaming(naming === null ? booking?.bill_name ?? '' : null)}
+            label={naming !== null ? 'Close' : booking?.bill_name ? 'Name on the bill…' : 'Name on the bill'}
+            icon={naming !== null ? <FiX size={16} /> : <FiTag size={16} />}
           />
         ) : null}
       </div>
@@ -1265,22 +1336,39 @@ const FolioScreen = () => {
           </p>
 
           <div className="mt-3">
-            {/* The icon says who ends up paying, which is what the label says too. */}
-            <ButtonLoading
-              onClick={moveBill}
-              buttonLoading={saving}
-              icon={
-                moving.party ? (
-                  <FiBriefcase className="h-5 w-5" />
-                ) : (
-                  <FiUser className="h-5 w-5" />
-                )
-              }
-              label={
-                moving.party ? `Move it to ${moving.party.label}` : 'Move it back to the guest'
-              }
-              variant="primary"
-            />
+            {/* The icon says who ends up paying, which is what the label says too.
+
+                ⚠️ Disabled while the box still names whoever holds the bill
+                now: the panel opens on them, and "Move it to Akij" on a bill
+                that is already Akij's is a press the server would refuse. The
+                label says where the bill stands instead. */}
+            {(() => {
+              const holder = bill?.carried && bill?.owed_by ? String(bill.owed_by.id) : null;
+              const unchanged = (moving.party?.value ?? null) === holder;
+
+              return (
+                <ButtonLoading
+                  onClick={moveBill}
+                  buttonLoading={saving}
+                  disabled={unchanged}
+                  icon={
+                    moving.party ? (
+                      <FiBriefcase className="h-5 w-5" />
+                    ) : (
+                      <FiUser className="h-5 w-5" />
+                    )
+                  }
+                  label={
+                    unchanged && moving.party
+                      ? `Already ${moving.party.label}’s — pick another to move it`
+                      : moving.party
+                        ? `Move it to ${moving.party.label}`
+                        : 'Move it back to the guest'
+                  }
+                  variant="primary"
+                />
+              );
+            })()}
           </div>
 
           {bill?.history?.length ? (
@@ -1297,6 +1385,58 @@ const FolioScreen = () => {
               ))}
             </div>
           ) : null}
+        </div>
+      ) : null}
+
+      {naming !== null ? (
+        <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
+          <div className="mb-2 text-sm font-medium text-black dark:text-white">
+            Name on the bill
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            <InputElement
+              id="bill_name"
+              name="bill_name"
+              label="Bill in the name of"
+              placeholder="The company the guest works for"
+              value={naming}
+              onChange={(e: any) => setNaming(e.target.value)}
+              onKeyDown={(e: any) => {
+                if (e.key === 'Enter') saveBillName(naming);
+              }}
+            />
+          </div>
+
+          {/* ⚠️ The distinction people get wrong, said where the box is. A
+              bill in a company's name and a bill on a company's account look
+              the same on paper and are not the same in the books. */}
+          <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+            Only the name on the paper changes — for a guest who will be reimbursed by their
+            office. <strong>Nobody else starts owing anything:</strong> to put the bill on a
+            company&rsquo;s account, use <em>Bill it to…</em> instead.
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <ButtonLoading
+              onClick={() => saveBillName(naming)}
+              buttonLoading={saving}
+              icon={<FiTag className="h-5 w-5" />}
+              label={naming.trim() ? `Make it out to ${naming.trim()}` : 'Back to the guest’s own name'}
+              variant="primary"
+            />
+            {/* The way back, where a name is already on it: one press rather
+                than clearing a box and guessing that an empty save means "none". */}
+            {booking?.bill_name && naming.trim() ? (
+              <button
+                type="button"
+                onClick={() => saveBillName('')}
+                className="text-xs font-medium text-primary hover:underline dark:text-secondary"
+              >
+                or back to the guest&rsquo;s own name
+              </button>
+            ) : null}
+          </div>
         </div>
       ) : null}
 

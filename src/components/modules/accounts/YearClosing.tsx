@@ -5,10 +5,11 @@ import { FiCheck, FiRotateCcw } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
-import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
+import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { FIELD_LABEL } from '../../../theme/fieldStyles';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
@@ -58,12 +59,27 @@ const onTheDay = (value?: string | null): string => {
   return parts ? `${parts[3]}/${parts[2]}/${parts[1]}` : '';
 };
 
-/** The 30 June this financial year ends on — the same rule the server uses. */
-const thisYearEnd = () => {
-  const now = new Date();
-  const june = new Date(now.getFullYear(), 5, 30);
+/**
+ * The capital heads as dropdown lines, and a search over them.
+ *
+ * The list is already in hand -- the plan call brings every balance sheet
+ * head with it -- so "searching" is a filter, not a round trip; the promise is
+ * only because the dropdown's fetcher is written for one. A chart of a few
+ * hundred heads is no longer a list to scroll for the one called Capital.
+ */
+const capitalOptions = (heads: any[]) =>
+  heads.map((one: any) => ({ value: String(one.id), label: `${one.name} (${one.group_name})` }));
 
-  return asText(now <= june ? june : new Date(now.getFullYear() + 1, 5, 30));
+const searchCapital = (heads: any[]) => {
+  const options = capitalOptions(heads);
+
+  return (typed: string) => {
+    const q = typed.trim().toLowerCase();
+
+    return Promise.resolve(
+      q ? options.filter((option) => option.label.toLowerCase().includes(q)) : options,
+    );
+  };
 };
 
 const YearClosing = ({ user }: any) => {
@@ -71,7 +87,15 @@ const YearClosing = ({ user }: any) => {
   const branchDdlData = useSelector((state: any) => state.branchDdl);
 
   const [branchId, setBranchId] = useState<number | null>(user?.branch_id ?? null);
-  const [yearEnd, setYearEnd] = useState(thisYearEnd());
+  /**
+   * The year end being asked about. EMPTY until the server has answered once:
+   * which day a year ends on is the company's own (July for most, January for
+   * some), and the screen used to assume the 30th of June -- so a company on
+   * a December year opened on a date that was not its year end at all. Sent
+   * empty, the server answers with the end of the company's current year, and
+   * the box takes that.
+   */
+  const [yearEnd, setYearEnd] = useState('');
   const [capital, setCapital] = useState('');
   const [note, setNote] = useState('');
 
@@ -87,13 +111,21 @@ const YearClosing = ({ user }: any) => {
     try {
       const res = await httpService.get(`${API_YEAR_CLOSING_URL}/plan`, {
         params: {
-          year_end: yearEnd,
+          year_end: yearEnd || undefined,
           branch_id: branchId || undefined,
           capital_coa4_id: capital || undefined,
         },
       });
 
-      setData(res?.data?.data?.data ?? res?.data?.data ?? null);
+      const answer = res?.data?.data?.data ?? res?.data?.data ?? null;
+
+      setData(answer);
+
+      // The first answer names the year end; the box follows it. Only when
+      // the box is empty -- a date somebody typed is theirs.
+      if (!yearEnd && answer?.plan?.year_end) {
+        setYearEnd(String(answer.plan.year_end).slice(0, 10));
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Could not work the closing out');
     } finally {
@@ -175,7 +207,28 @@ const YearClosing = ({ user }: any) => {
           The closing voucher is dated the last day of the year and marked as one.
         </strong>{' '}
         The profit and loss for that year leaves it out; the balance sheet takes it in.
+        {data?.financial_year?.label ? (
+          <>
+            {' '}
+            This company&rsquo;s year runs{' '}
+            <strong className="text-black dark:text-white">{data.financial_year.label}</strong> —
+            set on the company screen.
+          </>
+        ) : null}
       </p>
+
+      {/* ⚠️ THE LOCK, SAID WHERE IT IS SET. Everything dated on or before this
+          day is frozen -- no edit, no delete, no un-approval, no new voucher
+          -- and the way back is Undo, here. A clerk refused on a voucher
+          screen is sent to this sentence by the refusal itself. */}
+      {data?.locked_until ? (
+        <p className="mb-3 rounded border border-amber-400 bg-amber-50 p-2 text-xs leading-snug text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+          <strong>Books locked up to {onTheDay(String(data.locked_until))}</strong> for this
+          branch. Vouchers dated on or before that day cannot be added, changed, deleted or
+          un-approved. To correct one, undo that year&rsquo;s closing below, change the voucher,
+          and close the year again.
+        </p>
+      ) : null}
 
       <div className="mb-3 flex flex-wrap items-end gap-2">
         {branches.length > 1 ? (
@@ -203,21 +256,24 @@ const YearClosing = ({ user }: any) => {
           />
         </div>
 
-        <div className="w-72">
-          <DropdownCommon
+        <div className="w-full sm:w-80">
+          <label htmlFor="closing_capital" className={`${FIELD_LABEL} text-sm`}>
+            The profit goes to
+          </label>
+          {/* ⚠️ Keyed on the list's size. The dropdown fills its opening menu
+              ONCE, when it mounts -- and this screen mounts it before the plan
+              has answered, so it would open empty for good. A new key when the
+              heads land mounts it again, over the full list. The plan reloads
+              on every pick too, but the list keeps its size and nothing moves. */}
+          <DdlMultiline
+            key={(data?.capital_heads ?? []).length}
             id="closing_capital"
             name="capital_coa4_id"
-            label="The profit goes to"
-            data={[
-              { id: '', name: 'Choose the capital head' },
-              ...(data?.capital_heads ?? []).map((one: any) => ({
-                id: one.id,
-                name: `${one.name} (${one.group_name})`,
-              })),
-            ]}
-            value={capital}
-            onChange={(e: any) => setCapital(e.target.value)}
-            // description="Capital, or retained earnings — a balance sheet head."
+            fetchOptions={searchCapital(data?.capital_heads ?? [])}
+            defaultOptions
+            value={capitalOptions(data?.capital_heads ?? []).find((one) => one.value === capital) ?? null}
+            onSelect={(chosen: any) => setCapital(chosen?.value ?? '')}
+            placeholder="Choose the capital head"
           />
         </div>
 
@@ -238,6 +294,15 @@ const YearClosing = ({ user }: any) => {
           <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
             <div className="font-medium text-black dark:text-white">
               The year {onTheDay(plan.year_start)} to {onTheDay(plan.year_end)}
+              {/* ⚠️ A period that is not twelve months is said so. It happens
+                  once when a company changes its year -- six months from a
+                  December year to a July one -- and a closing that quietly
+                  covered half a year would be read as a bad year. */}
+              {data?.financial_year?.months && Number(data.financial_year.months) !== 12 ? (
+                <span className="ml-2 text-xs font-normal text-amber-700 dark:text-amber-300">
+                  {data.financial_year.months} months — the year changed
+                </span>
+              ) : null}
             </div>
             {already ? (
               <span className="text-xs text-success dark:text-emerald-400">

@@ -16,6 +16,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../../common/Loader';
 import { toast } from 'react-toastify';
+import { toastRefusal } from '../../../utils/refusalToast';
 import {
   editHeadOfficeCashPayment,
   storeHeadOfficeCashPayment,
@@ -228,7 +229,13 @@ const HeadOfficeCashPayment = () => {
     setTableData(updatedTableData);
 
     try {
-      await dispatch(storeHeadOfficeCashPayment(buildPaymentPayload(updatedTableData)));
+      const result: any = await dispatch(storeHeadOfficeCashPayment(buildPaymentPayload(updatedTableData)) as any);
+      // ⚠️ A refusal is SAID. The server answers success:false with a sentence
+      // -- a closed year (§42), a missing head -- and the clerk has to read it
+      // here, not find an empty table and try again.
+      if (result && result.success === false) {
+        toastRefusal(result.message);
+      }
     } catch (error) {
       setSaveButtonLoading(false);
       console.error('Error saving transactions:', error);

@@ -2,6 +2,7 @@ import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { FiHome, FiSave } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import { toastRefusal } from '../../../utils/refusalToast';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import InputElement from '../../../utils/fields/InputElement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -103,7 +104,7 @@ const Journal = () => {
 
     useEffect(() => {
         if (journal?.error) {
-            toast.error(journal.error);
+            toastRefusal(journal.error);
         }
     }, [journal?.error]);
 

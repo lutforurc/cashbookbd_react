@@ -50,10 +50,26 @@ const onTheDay = (value?: string | null): string => {
   return parts ? `${parts[3]}/${parts[2]}/${parts[1]}` : '—';
 };
 
+/**
+ * "1 July" / "30 June" from a date, for a column head. The year's own days,
+ * read from the answer, because a company on a January year opens on the 1st
+ * of January and a heading that said July would be a heading about somebody
+ * else's books.
+ */
+const dayMonth = (value?: string | null, fallback = ''): string => {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '');
+  if (!parts) return fallback;
+
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  return `${Number(parts[3])} ${months[Number(parts[2]) - 1]}`;
+};
+
 const AssetDepreciationTab = ({ branchId }: { branchId?: number | null }) => {
-  // The date the year is asked about. The server turns it into the 30th of June
-  // it falls on or before, and answers with that — so this box is "as at", not
-  // "the year ending", and nobody has to work out which June a date belongs to.
+  // The date the year is asked about. The server turns it into the company's
+  // year end it falls on or before -- the 30th of June for most, the 31st of
+  // December for some -- and answers with that; so this box is "as at", not
+  // "the year ending", and nobody has to work out which year a date belongs to.
   const [asAt, setAsAt] = useState<string>(asText(new Date()));
 
   const [plan, setPlan] = useState<any>(null);
@@ -141,7 +157,7 @@ const AssetDepreciationTab = ({ branchId }: { branchId?: number | null }) => {
     },
     {
       key: 'opening_wdv',
-      header: 'Worth at 1 July',
+      header: `Worth at ${dayMonth(plan?.year_start, '1 July')}`,
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => money(row.opening_wdv),

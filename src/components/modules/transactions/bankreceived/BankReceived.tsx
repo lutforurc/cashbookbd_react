@@ -27,6 +27,7 @@ import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 import { editBankReceived, saveBankReceived, updateBankReceived } from './bankReceivedSlice';
 import { toast } from 'react-toastify';
+import { toastRefusal } from '../../../utils/refusalToast';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import Loader from '../../../../common/Loader';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -549,7 +550,7 @@ const BankReceived = () => {
       });
 
     } catch (error: any) {
-      toast.error(error?.message || 'Something went wrong while saving.');
+      toastRefusal(typeof error === 'string' ? error : error?.message || 'Something went wrong while saving.');
     } finally {
       setSaveButtonLoading(false);
       setIsLoading(false);

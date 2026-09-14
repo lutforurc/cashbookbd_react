@@ -31,3 +31,50 @@ export const isUserFeatureEnabled = (
 /** A switch on the branch, set from Branch Setup. */
 export const isBranchSettingOn = (settings: any, key: string): boolean =>
   settingOn(settings?.data?.branch?.[key]);
+
+/**
+ * The books are locked up to the last closed year end -- spec §42.
+ *
+ * The server answers `books_locked_until` beside the current branch (the last
+ * day of the branch's last closed year, or null), and refuses any voucher
+ * dated on or before it with a sentence. These two let a screen say so BEFORE
+ * somebody presses edit: a lock icon on the row instead of a refusal after.
+ * The server is still the truth; this is courtesy.
+ */
+
+/** The last day of the current branch's last closed year, or null. */
+export const booksLockedUntil = (currentBranch: any): string | null => {
+  const value = currentBranch?.books_locked_until;
+  return typeof value === 'string' && value ? value.slice(0, 10) : null;
+};
+
+/**
+ * A voucher date as YYYY-MM-DD, whatever shape the row carries it in: ISO,
+ * DD/MM/YYYY, or the DD/MM/YY some ledgers print. Null when unreadable, and
+ * an unreadable date is never treated as locked.
+ */
+const isoDate = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null;
+
+  const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+
+  const dmy = /^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/.exec(value.trim());
+  if (!dmy) return null;
+
+  const year = dmy[3].length === 2 ? `20${dmy[3]}` : dmy[3];
+  return `${year}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`;
+};
+
+/** Whether a voucher dated `value` sits inside a closed year. */
+export const inClosedYear = (value: unknown, lockedUntil: string | null): boolean => {
+  if (!lockedUntil) return false;
+  const on = isoDate(value);
+  return !!on && on <= lockedUntil;
+};
+
+/** "30/06/2026", for the sentence beside the lock. */
+export const lockedUntilLabel = (lockedUntil: string | null): string => {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(lockedUntil ?? '');
+  return parts ? `${parts[3]}/${parts[2]}/${parts[1]}` : '';
+};

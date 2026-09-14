@@ -59,6 +59,14 @@ export const fetchBankPayment = createAsyncThunk<PaymentItem[],void,{ rejectValu
 export const saveBankPayment = createAsyncThunk<PaymentItem, SaveBankPaymentResponse,{ rejectValue: string }>('bankPayment/saveBankPayment', async (payload, thunkAPI) => {
   try {
     const response = await httpService.post(API_BANK_PAYMENT_URL, payload);
+
+    // ⚠️ A refusal travels as success:false on a 200 -- a closed year (§42),
+    // a missing head. Handed on as a rejection, so the screen's catch shows
+    // the sentence rather than clearing the form as if it had saved.
+    if (response.data?.success === false) {
+      return thunkAPI.rejectWithValue(response.data?.message || 'Could not save the voucher.');
+    }
+
     return response.data as SaveBankPaymentResponse;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.message || 'Failed to save data');

@@ -1124,7 +1124,7 @@ and reconcile kitchen stock against what is physically there.
 | 5 | ~~Recipes/BOM in phase 1 or later?~~ | **Settled 2026-08-24: not at all.** Catering is sold as a service; the four recipe tables and phase 7 are dropped (§4.5, §6.7). Reversible later at the same cost |
 | 6 | FY stored on the transaction, or derived from `vr_date`? | Derived (see §2.4) |
 | 7 | Cancellation refund policy | Configurable in settings |
-| 8 | FY start date — 1 July / 1 January / other? | Client's existing practice |
+| ~~8~~ | ~~FY start date — 1 July / 1 January / other?~~ | **Settled 2026-09-14: a company setting.** `com_companies.fy_start_month`, July unless the company says otherwise — see §41 |
 | **OPEN-3** | **Does the resort have a restaurant, or is food inside the stay package?** | **Unanswered.** If a restaurant, reuse the existing sales module — no new tables |
 | **OPEN-9** | Do walk-in gate ticket sales go through `booking_master`, or their own tables? | Hybrid: shared master data and capacity check; walk-in cash sale in `ticket_sales_*` (it behaves like POS); advance group booking (e.g. a school booking 300 for Friday) through `booking_master` — note that such a booking is a **Group** booking under §6.4, so booking type spans tickets, not only rooms |
 | 13 | Up to what age is a guest a child? | A setting, not a constant (§6.5) — the client's own practice. Until it is answered no two occupancy reports compare |
@@ -4996,3 +4996,373 @@ construction form is untouched and still sends a project, exactly as before.
 Still not automated, deliberately: somebody must press it. If that turns out to
 be the weak point, the answer is a **badge** on the menu — "9 days of make-up
 not issued" — not an automatic issue.
+
+---
+
+## 40. Whose name is on the bill, 2026-09-14
+
+An employee stays on company business, pays from their own pocket, and needs
+the bill in the employer's name to be reimbursed. The paper said the guest's
+name and nothing on any screen could change that — the only way to get a
+company onto the bill was "Bill it to…", which is a different thing.
+
+### ⚠️ Three questions, and they are not the same question
+
+| | Who | Where it lives | Touches the ledger |
+|---|---|---|---|
+| Who **stayed** | the guest | `hotel_booking_guests`, `booker_name` | no |
+| Who **pays** | the party the bill is on | `billed_to_party_id` — a corporate booking, or a §6.4 transfer | **yes** — a voucher moves the receivable |
+| Whose **name** is on the paper | whoever the guest asks for | `bill_name` — this section | **no** |
+
+The third was missing. It is one nullable column of text on
+`hotel_booking_master` and nothing else: no party, no ledger head, no voucher,
+no re-posting. The money did not move, so nothing in the books moves.
+
+⚠️ **Not a party reference, deliberately.** Typing "ABC Ltd" into the party
+master to get it onto a bill would give the chart a ledger head nothing will
+ever post to — and the next person would move the bill to it, because that is
+what parties are for.
+
+### What the paper prints
+
+`billed_to` on the bill now answers in this order, and the layouts already
+saved read the same field and get the same answer:
+
+1. the typed name, where there is one — it is what the desk was asked for, in
+   so many words, and wins even on a corporate booking whose party master says
+   "ABC Ltd (Head Office)" when the paper should read "ABC Limited, Gulshan";
+2. else the paying party — a corporate booking's company, or whoever the bill
+   was carried to at check-out;
+3. else nothing, and the line hides itself, which is the ordinary bill.
+
+⚠️ **And who pays gets a line of its own — `bill_owed_by`, "On account of".**
+The first version had the typed name *replace* the paying party on the one
+line there was, and the first real bill showed why that was wrong: made out
+to Khaza Unus Ali Medical College, carried on Akij Ceramics' account, and the
+paper said nothing about Akij — the company that was going to be chased for
+9,153. Two names, two lines. The second is hidden where it is empty or where
+it would only repeat Billed To, so every bill that printed correctly before
+prints exactly as it did.
+
+A layout saved before the line existed gets it on load, directly under Billed
+To, with the same hiding — `addBillAccountLine()` beside the §39 retarget. A
+carried bill that does not say who is carrying it is wrong paper, not a
+styling preference, so the software adds the line it should have had. The same
+pass makes **Billed To hide when empty**: the shipped layout always did, but a
+saved one carried the designer's default of *false* from the day the field was
+dropped in, and printed "Billed To :" with nothing beside it on every guest's
+own bill (the owner's instruction, 2026-09-14).
+
+The money receipt does not read either. A receipt says who handed money over,
+and that is not this name.
+
+### The panel says where the bill stands
+
+The "Bill it to…" panel used to open on an empty *To whom* box however the
+bill stood, and a desk that had moved the bill an hour earlier reopened it to
+a blank and read that as "not saved". It now opens on whoever holds the bill,
+the button reads *Billed to…* on a carried bill, and the move button is
+disabled while the box still names the current holder — "Already Akij's, pick
+another to move it" — rather than offering a press the server would refuse.
+
+### When it may change
+
+**After check-out too.** The guest who telephones the next morning wanting the
+bill in the company's name is an ordinary guest, and nothing about the money
+changes when the name does — so, unlike a discount, a closed stay is not
+refused. Only a stay that never happened is: cancelled or expired, there is no
+bill to put a name on.
+
+⚠️ **This stops being true the day Mushak 6.3 is issued from here** (OPEN-6).
+An issued VAT invoice's buyer is not renamed without a credit note. The lock
+arrives with that feature, and so do the buyer's address and BIN — two more
+columns beside this one, not a redesign.
+
+### Where it lives
+
+| | |
+|---|---|
+| Schema | `AddUnitTypeToBuildingUnits::runHotelBillNameSchema()` — `hotel_booking_master.bill_name` VARCHAR(191) NULL, after `billed_to_party_id` |
+| API | `FolioController::billName()`, `POST hotel-setup/bookings/folio/{id}/bill-name`, permission `hotel.folio.bill`. Empty puts it back in the guest's own name; answers with the whole folio |
+| Paper | `HotelPaper::stayFacts()` — `billed_to` resolves as above; `bill_owed_by` is the paying party. Both in `HOTEL_BILL_FIELDS`; the shipped info band carries the second under the first, hidden when empty or equal |
+| Screen | `FolioScreen.tsx` — **Name on the bill** beside *Bill it to…*, one box, Enter saves; a line in the header says whose name the paper will carry before it is printed. *Bill it to…* opens on the current holder |
+| Store | `bookingSlice.tsx` → `folioBillName`, in the folio-writes loop |
+
+The panel says the distinction out loud where the box is: *"Only the name on
+the paper changes. Nobody else starts owing anything: to put the bill on a
+company's account, use Bill it to… instead."*
+
+### Checked
+
+`hotel_bill_name_check.php` — **21 assertions**, rolled back. The four worth
+naming:
+
+- saving a name moves **nobody's money** — `billed_to_party_id` is what it was
+  and `main_trx_master` has the same number of rows;
+- the typed name **wins over the paying party** on Billed To while the party
+  **keeps its own line**; cleared, Billed To **falls back** to the party and
+  the two lines say the same string (which is what lets the layout fold them);
+  with neither, both are empty;
+- allowed on a checked-out stay, **refused on a cancelled one** with the old
+  name left standing;
+- blank is stored as NULL, not as spaces; 192 characters are refused.
+
+`hotel_paper_check.php` still passes its 25.
+
+**Deploy:** `patch:add-unit-type` (adds the column, guarded), then
+`route:clear`, then the front end.
+
+---
+
+## 41. The financial year is the company's own, 2026-09-14
+
+Every company on these servers keeps a July-to-June year, and the code said
+so twice: `YearClosing::yearEndFor()` and `Depreciation::yearEndFor()` each
+worked out "the 30th of June this date falls before". A SaaS tenant keeping a
+January year — an NGO, a bank's subsidiary, a foreign-owned company — would
+have had its depreciation charged in the middle of its year and its closing
+cut the year in half, with nothing on any screen saying why.
+
+### ⚠️ A month on the company, not a table of years
+
+`com_companies.fy_start_month`, 1 to 12, **default 7**. The year is DERIVED
+from a date and this number — the end is the last day of the month before the
+start month — and never looked up. This is what §2.4 chose and why: a table
+of financial years is a master somebody has to open, name and close each
+July, and a voucher dated into a year nobody has created yet is a support
+call. `acc_financial_year_types` and the 83 hardcoded `financial_year_id`
+writes are untouched.
+
+**Company-level, deliberately.** One company's branches share one year or
+there is no consolidated profit and loss. Set on the company screen —
+*"Financial year starts in"* — with the year it means said beside the box:
+*Runs 1 January – 31 December.*
+
+### One place the answer lives
+
+`App\Services\Accounts\FinancialYear`:
+
+| | |
+|---|---|
+| `startMonth($companyId)` | the column, cached per request; July on a server not yet patched |
+| `endFor($companyId, $date)` | the company's year end that `$date` falls in |
+| `endOf($date, $startMonth)` | ⚠️ **pure** — the same, given the month; what Depreciation is checked on paper with |
+| `startOf($yearEnd)` | the day after the end, a year earlier — **in that order**, or a leap 29th of February comes back as the 2nd of March |
+| `label($startMonth)` | "1 July – 30 June" |
+
+Both old `yearEndFor()` functions now delegate to it and take the month as an
+argument; their eleven callers (year closing, budget, depreciation run, asset
+register, schedule, disposal, the demo seeder) pass the company's. The
+`endOfMonth()` rule is what knows about leap years, which is why the end is
+built from the first of its month rather than by adding a year to a date that
+may not exist next year.
+
+### ⚠️ A closing starts where the last one ended
+
+`YearClosing::periodStartFor()`: the day after the branch's last closing, and
+the calendar's answer only where there is none. **This is what lets a company
+change its year.** Closed to the 31st of December and moved to July, the next
+closing runs 1 January – 30 June — a six-month period, which is what the tax
+office calls a transition and expects. Counted from the calendar instead it
+would reach back to July and sweep six closed months into the new profit; the
+heads are cumulative and nothing on them says which year an entry was.
+
+Two guards replace the old "close in order" check:
+
+- the **first** closing on a branch must start where the entries start — with
+  no earlier closing, entries before the period are refused, oldest year
+  first;
+- **no period is longer than eighteen months.** Six or eighteen is the most a
+  transition needs; anything longer is a year that was *skipped*, and closing
+  it would fold two years into one profit figure nobody can take apart. Refused
+  naming the year to close first.
+
+The plan says the period's length (`financial_year.months`), and the screen
+shows it in amber when it is not twelve: *"6 months — the year changed."*
+
+### The depreciation run keeps the same rule
+
+`DepreciationRun::plan()` starts the year the day after the branch's last run
+where that is later than a year back — so a December run followed by a June
+one charges January to June, not July to June over again. `Depreciation::
+daysHeld()` and `forYear()` take the start as an optional argument and stay
+pure. A run more than a year back does not stretch the period: the year
+starts a year back, as it always did.
+
+### Screens
+
+The Year Closing screen no longer assumes the 30th of June: it opens with the
+date box empty, the server answers with the company's current year end, and
+the box takes it. The asset schedule, its print, and the depreciation tab read
+their column heads — *Cost at 1 July*, *At 30 June* — from the year the answer
+names, so a January company's schedule says January and December.
+
+### Checked
+
+`financial_year_check.php` — **28 assertions**, rolled back. The four worth
+naming:
+
+- a March year ends on the **leap** 29th of February and the year before it
+  starts on the 1st of March, not the 2nd;
+- the column is **read, not assumed**: switched to January, the same August day
+  ends in December; a nought in the column reads as July;
+- after a December closing a June year **starts on the 1st of January**, and a
+  period past eighteen months is refused **naming the year to close first**;
+- after a December depreciation run the June run starts in January; a run two
+  years back does not stretch the year.
+
+**Deploy:** `patch:add-unit-type` (adds the column, guarded, default 7 — no
+company's year changes), then the front end. Nothing to configure: a company
+that keeps July does nothing.
+
+
+---
+
+## 42. A closed year is frozen, and only a company that wants it closes one, 2026-09-14
+
+§41 gave every company its own year. This gives a closed year its lock, and
+puts the whole feature behind a switch.
+
+### ⚠️ Why a closed year has to be frozen
+
+Closing empties the year's income and expense heads into Retained Earnings by
+what they stood at on the day (the Year Closing screen). Change a
+voucher inside that year afterwards and the profit the closing carried across
+no longer matches the year's own figures — the two reports the auditor was
+handed now disagree, and nothing on any screen says which one moved. So once a
+year is closed, nothing dated on or before its last day is written, changed or
+removed. To correct one: undo the closing, change the voucher, close again. All
+three acts are in the books.
+
+**The rule, per branch** (the closing is per branch, so the lock is): with
+`year_closings.year_end` at its latest for the branch, a voucher dated on or
+before it may not be created, have its date moved, be binned or restored
+(`delete_at`, `status`), be moved between branches, have its approval taken
+off, or be deleted; and none of its money lines may be added, changed or
+removed. **Exempt:** a voucher with `is_closing = 1` — the closing and the
+contra that undoes it. **Allowed:** attaching an image, an audit stamp, a note,
+*approving* — none of it is money.
+
+### Two layers, neither optional
+
+| | Where | What it says |
+|---|---|---|
+| **1. The helper** | `assertPeriodOpen(company, branch, date, doing)` and `assertVoucherOpen(id, doing)` in `helpers.php`, throwing `App\Exceptions\PeriodClosedException` | *"The year ending 30/06/2026 is closed, so this voucher cannot be changed. Undo the closing first if it has to be."* |
+| **2. The triggers** | Seven, created by `runYearClosingLockSchema()`: `main_trx_master` BEFORE INSERT / UPDATE / DELETE, `acc_transaction_master` BEFORE DELETE, `acc_transaction_details` BEFORE INSERT / UPDATE / DELETE | `SIGNAL SQLSTATE '45000'` with `PERIOD_CLOSED:2026-06-30` |
+
+`bootstrap/app.php` turns both into the same answer in the shape every screen
+reads — **HTTP 200 with `success:false` and the sentence**, which is this
+codebase's convention for a refusal the screen must show (`notFound()` itself
+answers 201): on a 4xx the older screens' axios `.catch` shows *"Request
+failed with status code 422"* instead of the sentence.
+
+⚠️ **And the catch blocks that swallow everything had to let this through.**
+The older voucher controllers wrap their whole store in `try { … } catch
+(\Exception $e) { DB::rollback(); return '0'; }` — or `return notFound()` with
+no message — so on the first try a refused entry reached the screen as
+*nothing at all*: the voucher silently did not save and the clerk tried again.
+`rethrowIfPeriodClosed($e)` now stands first in every such catch across the
+forty files that write or edit vouchers (139 blocks): everything else is
+swallowed as before, and only the closed-year refusal — the helper's exception
+or the trigger's `PERIOD_CLOSED:` — is rolled back one level and sent on to
+the handler. One level, exactly as the catch's own rollback would have done;
+the first version unwound every level and, inside a check script's outer
+transaction, committed the rest of the run for real (§42, *Checked*).
+
+The helper is wired into the three places vouchers are born —
+`VoucherSerial::open()` (every ordinary voucher), `HotelVoucher::raise()`,
+`DepreciationRun::raiseFor()` — and into the edit, delete, un-approve, restore,
+date-change and type-change paths of `VoucherModificationController`, the
+warehouse transfer's delete, the opening-balance service, the salary reversal,
+the voucher-settings deletes and the item opening-stock trash. **The triggers
+are why that list does not have to be complete.** Vouchers are written from
+dozens of places in this codebase and from raw SQL; a path the helper was
+never wired into is refused all the same, and says so less kindly. These are
+the first triggers this database has had; the patch creates each only if
+absent, and a database user without the TRIGGER privilege gets a warning
+naming what to ask the host for rather than a failed deploy.
+
+### ⚠️ Undo had to change
+
+`YearClosing::reverse()` writes its contra dated the last day of the closed
+year — inside the lock. It now **removes the `year_closings` row first**, which
+is what unlocks the year, and writes the contra after, in one transaction.
+Written the other way round, Undo would be refused by the very lock it exists
+to lift. The closing itself is untroubled: its voucher is written before the
+row that locks the year.
+
+### The switch
+
+`com_companies.year_closing_enabled`, default **0**. This is SaaS: a trader
+with no accountant never closes a year and should never see the screen; a
+limited company with an audit does. The switch says whether the *company*
+closes years; the permission `year.closing.run` says which of its *users* may.
+Two questions, two gates: every closing endpoint asks both, so a super-admin
+holding every permission still cannot close a year for a company that never
+opted in. The menu item shows only with both. Set beside the year's month on
+the company screen: *"Year closing — on, the year can be closed to Retained
+Earnings and a closed year's vouchers are locked; off, the books simply run
+on."*
+
+Off — which is every company on the day of the deploy — nothing changes: no
+`year_closings` row, no lock, no screen. The triggers stand everywhere and
+bite nowhere.
+
+### Screens
+
+`user/current-branch` now answers `books_locked_until` beside the company
+(whose `year_closing_enabled` rides along). The shared voucher action buttons
+read it and show a lock instead of a pencil on a row dated inside a closed
+year — *"The year ending 30/06/2026 is closed, so this voucher is locked. Undo
+the closing on the Year Closing screen to change it."* — hiding edit and
+un-approve, for anyone who could otherwise have acted. The Year Closing screen
+says *Books locked up to 30/06/2026* in amber, with the way back in the same
+sentence. The server is still the truth; the screens are courtesy.
+
+### Not in this section, deliberately
+
+Inventory rows (`inventory_details`) are not locked yet — the books first,
+the stock second. A manual "books locked up to" date for a company that does
+not close years but wants a month frozen after its VAT return: the same guard
+would read `max(last closing, manual date)`; designed, not built.
+
+### Checked
+
+`year_lock_check.php` — **43 assertions**, rolled back — and it now checks its
+own transaction is still standing before it rolls back, because the first
+version of `rethrowIfPeriodClosed()` unwound the script's transaction from
+inside a test, and everything after that point was written to the staging
+database for real (two closing/undo pairs, the switch, and the owner's own
+2026-27 closing row deleted). The six worth naming:
+
+- through **raw SQL**, on a voucher inside a faked closing: binning, changing
+  status, moving the date, deleting, un-approving, adding / changing / deleting
+  a money line and deleting the accounting master are all refused; attaching
+  an image and approving are allowed; a new voucher dated into the year is
+  refused, one the day after is not, and a closing voucher dated into it is
+  let through;
+- the helper's exception and the trigger's SIGNAL both render as **the same
+  422 sentence**;
+- switched off, the closing endpoints refuse **by name**; on, the plan says up
+  to which day the books are locked;
+- **a real closing is made and undone**: the lock takes hold, a voucher inside
+  is refused by the trigger, Undo writes its contra despite the lock, and the
+  voucher can be changed once more;
+- another branch is not locked by this one's closing;
+- a catch that swallows everything **lets the refusal through** and nothing
+  else, rolling back only its own level; Delete on the voucher screen refuses
+  by sentence.
+
+Through the real HTTP pipeline, with a closing faked inside a rolled-back
+transaction: *Add a charge* and *Take money* on the folio both answer 200,
+`success:false`, *"The year ending 14/09/2026 is closed, so this voucher
+cannot be dated into it…"* — and write nothing.
+
+**Deploy:** `patch:add-unit-type` (switch column + seven triggers, guarded),
+then the front end. Every company starts switched off.
+
+⚠️ **On the staging database the lock is already live**: a test closing of
+2026-27 made from the screen on 2026-09-14 01:47 locks that branch up to
+30/06/2027, so every voucher dated before then is refused — which is the lock
+working. Turn the switch on for that company, undo that closing, and the
+branch is open again.

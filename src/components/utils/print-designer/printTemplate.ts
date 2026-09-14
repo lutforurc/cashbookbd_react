@@ -665,8 +665,14 @@ const HOTEL_STAY_FIELDS: FieldDef[] = [
   { key: 'guest_count', name: 'Guests Checked In', group: 'guest', numeric: true },
   { key: 'booker_name', name: 'Booked By', group: 'guest' },
   { key: 'booker_mobile', name: 'Booked By (Mobile)', group: 'guest' },
-  // Whose name the bill is in, where a balance was carried at check-out.
-  { key: 'billed_to', name: 'Billed To (Party)', group: 'guest' },
+  // Whose name the bill is in: a name typed on the folio (§40 -- the guest's
+  // employer, for a bill they will be reimbursed on) first, else the party the
+  // bill was carried to or booked against. Empty when it is the guest's own.
+  { key: 'billed_to', name: 'Billed To', group: 'guest' },
+  // Who PAYS -- the party the bill is carried on or booked against -- on a
+  // line of its own, because a bill made out to one company and owed by
+  // another says two names. Empty where no party holds it.
+  { key: 'bill_owed_by', name: 'On Account Of', group: 'guest' },
 
   { key: 'booking_no', name: 'Booking No', group: 'stay' },
   { key: 'booking_date', name: 'Booking Date', group: 'stay', format: 'date' },
@@ -746,6 +752,14 @@ export const HOTEL_BILL_LINE_FIELDS: FieldDef[] = [
   // yesterday.
   { key: 'description_with_type', name: 'Description & Type', group: 'folio' },
   { key: 'charge_type', name: 'Charge Type', group: 'folio' },
+  // The word the desk picked the charge by -- "Ticket", "Set Menu" -- rather
+  // than the code behind it.
+  { key: 'charge_type_name', name: 'Charge Name', group: 'folio' },
+  // ⚠️ The second line of the description cell, whatever the row is: the
+  // type's sentence, in brackets, under a room; the what-for, plain, under a
+  // charge. The server writes the brackets, because only the row knows which
+  // of the two it is -- so a column showing this must not add its own.
+  { key: 'line_detail', name: 'Beneath the Name', group: 'folio' },
   // ⚠️ A row is one room over a RUN of nights, so its date is a FROM and a TO.
   // They are equal on a single night, and the description already reads as a
   // range -- these are for a property whose own paper wants them in columns.
@@ -1396,6 +1410,10 @@ const hotelBill = (): PrintTemplate => ({
         // beside it -- most stays are settled at the counter and belong to
         // nobody but the guest.
         { field: 'billed_to', label: 'Billed To', hideIfEmpty: true },
+        // And who pays, where that is somebody else again: a bill made out
+        // to the guest's employer and carried on a company's account. Hidden
+        // where it would only repeat the line above.
+        { field: 'bill_owed_by', label: 'On account of', hideIfEmpty: true, hideIfEqualTo: 'billed_to' },
         { field: 'nights', label: 'Nights' },
       ],
     }),
@@ -1416,15 +1434,19 @@ const hotelBill = (): PrintTemplate => ({
         // what was paid for -- and the sentence is the type's, so it is written
         // once on the Room Types screen rather than onto every room.
         //
-        // The second line is simply not drawn where a type has nothing to say,
+        // A charge reads the other way up: what it IS on the line -- "Ticket"
+        // -- and what for beneath, plain, as the desk typed it. One sub-field
+        // carries both, brackets included where they belong (see the
+        // catalogue), which is why the column adds none of its own.
+        //
+        // The second line is simply not drawn where a row has nothing to say,
         // so a property that never fills those in prints what it always did.
         {
           field: 'description_with_type',
           label: 'Description',
           width: 45,
           align: 'left',
-          subField: 'room_type_description',
-          subInBrackets: true,
+          subField: 'line_detail',
         },
         { field: 'quantity', label: 'Qty', width: 7, align: 'right' },
         { field: 'unit_rate', label: 'Rate', width: 13, align: 'right' },
@@ -1816,6 +1838,80 @@ const tokenizeOrderCaptions = (bands: Band[]): void => {
   });
 };
 
+/**
+ * A bill layout saved while the second line was the room type's alone.
+ *
+ * ⚠️ WHY A SAVED LAYOUT IS REWRITTEN. The description column's second line
+ * used to read `room_type_description`, bracketed by the column -- so a charge,
+ * which has no room type, printed one line and said only what it was for. It
+ * now reads `line_detail`, which the server fills for rooms and charges alike
+ * and brackets itself where brackets belong. A layout saved with the old
+ * sub-field would keep printing charges the old way until somebody opened the
+ * designer, and there is nothing in the designer to open: the sub-field was
+ * never a control, it was written by the software and carried through every
+ * save. So it is the software's to move.
+ *
+ * ⚠️ EXACT MATCH ONLY, and the column's bracketing is switched off in the same
+ * breath -- the brackets now arrive in the data, and a column still adding its
+ * own would print a room's sentence as "((AC, veranda))". Running twice changes
+ * nothing the first pass did not.
+ */
+const retargetBillSubLine = (bands: Band[]): void => {
+  bands.forEach((item) => {
+    if (item.type !== 'table') return;
+
+    item.columns.forEach((column) => {
+      if (column.subField === 'room_type_description') {
+        column.subField = 'line_detail';
+        column.subInBrackets = false;
+      }
+    });
+  });
+};
+
+/**
+ * A bill layout saved before "who pays" had a line of its own.
+ *
+ * ⚠️ WHY A LINE IS ADDED TO A LAYOUT SOMEBODY ARRANGED. Billed To used to be
+ * the only name on the paper, and with §40 it can be the guest's employer
+ * while a different company holds the account -- so a saved layout printed the
+ * employer and said nothing about who would be chased for the money. That is
+ * wrong paper, not a styling preference, and it is wrong on exactly the bills
+ * where it matters.
+ *
+ * Added directly under Billed To, hidden where it is empty or would only
+ * repeat that line -- so on every bill the layout printed correctly before,
+ * it prints exactly as it did. Only where a layout names Billed To at all,
+ * and never twice. Billed To is made to hide when empty in the same pass --
+ * see inside.
+ */
+const addBillAccountLine = (bands: Band[]): void => {
+  bands.forEach((item) => {
+    if (item.type !== 'info') return;
+
+    const at = item.items.findIndex((entry) => entry.field === 'billed_to');
+    if (at < 0) return;
+
+    // ⚠️ AND BILLED TO ITSELF HIDES WHEN THERE IS NOBODY. Most stays are
+    // settled at the counter and belong to nobody but the guest, and "Billed
+    // To :" with a blank beside it asks a question on every one of them. The
+    // shipped layout has always hidden it; a saved one carries the designer's
+    // default of false from the day the field was dropped in, which nobody
+    // chose. Set, not merely defaulted, so the next save keeps it.
+    item.items[at].hideIfEmpty = true;
+
+    if (item.items.some((entry) => entry.field === 'bill_owed_by')) return;
+
+    item.items.splice(at + 1, 0, {
+      field: 'bill_owed_by',
+      label: 'On account of',
+      hideIfEmpty: true,
+      hideIfEqualTo: 'billed_to',
+      ruleAbove: false,
+    });
+  });
+};
+
 export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'): PrintTemplate => {
   const fallback = defaultTemplate(docType);
   if (!raw || typeof raw !== 'object') return fallback;
@@ -1936,6 +2032,10 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
   // Safe to do in place: every band above was built here out of the saved JSON,
   // so nothing else is holding one.
   if (docType === 'sales_order') tokenizeOrderCaptions(bands);
+  if (docType === 'hotel_bill') {
+    retargetBillSubLine(bands);
+    addBillAccountLine(bands);
+  }
 
   return {
     version: 1,

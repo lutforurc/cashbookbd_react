@@ -64,6 +64,21 @@ const onTheDay = (value?: string | null): string => {
  */
 const figure = (value: any) => (Number(value ?? 0) === 0 ? '-' : money(value));
 
+/**
+ * "1 July" / "30 June" from a date, for a column head. The year's own days,
+ * read from the answer, because a company on a January year opens on the 1st
+ * of January and a heading that said July would be a heading about somebody
+ * else's books.
+ */
+const dayMonth = (value?: string | null, fallback = ''): string => {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '');
+  if (!parts) return fallback;
+
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  return `${Number(parts[3])} ${months[Number(parts[2]) - 1]}`;
+};
+
 const AssetScheduleTab = ({
   branchId,
   branchName,
@@ -102,6 +117,9 @@ const AssetScheduleTab = ({
     documentTitle: `Schedule of Fixed Assets ${schedule?.year_ending ?? ''}`,
   });
 
+  const from = dayMonth(schedule?.year_start, '1 July');
+  const to   = dayMonth(schedule?.year_ending, '30 June');
+
   const columns = [
     { key: 'category', header: 'Class of asset' },
     {
@@ -113,7 +131,7 @@ const AssetScheduleTab = ({
     },
     {
       key: 'opening_cost',
-      header: 'Cost at 1 July',
+      header: `Cost at ${from}`,
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => figure(row.opening_cost),
@@ -134,14 +152,14 @@ const AssetScheduleTab = ({
     },
     {
       key: 'closing_cost',
-      header: 'Cost at 30 June',
+      header: `Cost at ${to}`,
       headerClass: 'text-right',
       cellClass: 'text-right font-medium',
       render: (row: any) => figure(row.closing_cost),
     },
     {
       key: 'opening_dep',
-      header: 'Dep. at 1 July',
+      header: `Dep. at ${from}`,
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => figure(row.opening_dep),
@@ -155,7 +173,7 @@ const AssetScheduleTab = ({
     },
     {
       key: 'closing_dep',
-      header: 'Dep. at 30 June',
+      header: `Dep. at ${to}`,
       headerClass: 'text-right',
       cellClass: 'text-right font-medium',
       render: (row: any) => figure(row.closing_dep),
@@ -225,7 +243,7 @@ const AssetScheduleTab = ({
         <div className="mt-3 rounded border border-stroke p-3 text-sm dark:border-strokedark">
           <div className="grid grid-cols-2 gap-x-6 gap-y-1 md:grid-cols-4">
             <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">Cost at 30 June</span>
+              <span className="text-gray-500 dark:text-gray-400">Cost at {to}</span>
               <span className="font-medium text-black dark:text-white">
                 {figure(total.closing_cost)}
               </span>
