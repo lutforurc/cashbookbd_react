@@ -1124,7 +1124,7 @@ and reconcile kitchen stock against what is physically there.
 | 5 | ~~Recipes/BOM in phase 1 or later?~~ | **Settled 2026-08-24: not at all.** Catering is sold as a service; the four recipe tables and phase 7 are dropped (§4.5, §6.7). Reversible later at the same cost |
 | 6 | FY stored on the transaction, or derived from `vr_date`? | Derived (see §2.4) |
 | 7 | Cancellation refund policy | Configurable in settings |
-| 8 | FY start date — 1 July / 1 January / other? | Client's existing practice |
+| ~~8~~ | ~~FY start date — 1 July / 1 January / other?~~ | **Settled 2026-09-14: a company setting.** `com_companies.fy_start_month`, July unless the company says otherwise — see §41 |
 | **OPEN-3** | **Does the resort have a restaurant, or is food inside the stay package?** | **Unanswered.** If a restaurant, reuse the existing sales module — no new tables |
 | **OPEN-9** | Do walk-in gate ticket sales go through `booking_master`, or their own tables? | Hybrid: shared master data and capacity check; walk-in cash sale in `ticket_sales_*` (it behaves like POS); advance group booking (e.g. a school booking 300 for Friday) through `booking_master` — note that such a booking is a **Group** booking under §6.4, so booking type spans tickets, not only rooms |
 | 13 | Up to what age is a guest a child? | A setting, not a constant (§6.5) — the client's own practice. Until it is answered no two occupancy reports compare |
@@ -5111,3 +5111,107 @@ naming:
 
 **Deploy:** `patch:add-unit-type` (adds the column, guarded), then
 `route:clear`, then the front end.
+
+---
+
+## 41. The financial year is the company's own, 2026-09-14
+
+Every company on these servers keeps a July-to-June year, and the code said
+so twice: `YearClosing::yearEndFor()` and `Depreciation::yearEndFor()` each
+worked out "the 30th of June this date falls before". A SaaS tenant keeping a
+January year — an NGO, a bank's subsidiary, a foreign-owned company — would
+have had its depreciation charged in the middle of its year and its closing
+cut the year in half, with nothing on any screen saying why.
+
+### ⚠️ A month on the company, not a table of years
+
+`com_companies.fy_start_month`, 1 to 12, **default 7**. The year is DERIVED
+from a date and this number — the end is the last day of the month before the
+start month — and never looked up. This is what §2.4 chose and why: a table
+of financial years is a master somebody has to open, name and close each
+July, and a voucher dated into a year nobody has created yet is a support
+call. `acc_financial_year_types` and the 83 hardcoded `financial_year_id`
+writes are untouched.
+
+**Company-level, deliberately.** One company's branches share one year or
+there is no consolidated profit and loss. Set on the company screen —
+*"Financial year starts in"* — with the year it means said beside the box:
+*Runs 1 January – 31 December.*
+
+### One place the answer lives
+
+`App\Services\Accounts\FinancialYear`:
+
+| | |
+|---|---|
+| `startMonth($companyId)` | the column, cached per request; July on a server not yet patched |
+| `endFor($companyId, $date)` | the company's year end that `$date` falls in |
+| `endOf($date, $startMonth)` | ⚠️ **pure** — the same, given the month; what Depreciation is checked on paper with |
+| `startOf($yearEnd)` | the day after the end, a year earlier — **in that order**, or a leap 29th of February comes back as the 2nd of March |
+| `label($startMonth)` | "1 July – 30 June" |
+
+Both old `yearEndFor()` functions now delegate to it and take the month as an
+argument; their eleven callers (year closing, budget, depreciation run, asset
+register, schedule, disposal, the demo seeder) pass the company's. The
+`endOfMonth()` rule is what knows about leap years, which is why the end is
+built from the first of its month rather than by adding a year to a date that
+may not exist next year.
+
+### ⚠️ A closing starts where the last one ended
+
+`YearClosing::periodStartFor()`: the day after the branch's last closing, and
+the calendar's answer only where there is none. **This is what lets a company
+change its year.** Closed to the 31st of December and moved to July, the next
+closing runs 1 January – 30 June — a six-month period, which is what the tax
+office calls a transition and expects. Counted from the calendar instead it
+would reach back to July and sweep six closed months into the new profit; the
+heads are cumulative and nothing on them says which year an entry was.
+
+Two guards replace the old "close in order" check:
+
+- the **first** closing on a branch must start where the entries start — with
+  no earlier closing, entries before the period are refused, oldest year
+  first;
+- **no period is longer than eighteen months.** Six or eighteen is the most a
+  transition needs; anything longer is a year that was *skipped*, and closing
+  it would fold two years into one profit figure nobody can take apart. Refused
+  naming the year to close first.
+
+The plan says the period's length (`financial_year.months`), and the screen
+shows it in amber when it is not twelve: *"6 months — the year changed."*
+
+### The depreciation run keeps the same rule
+
+`DepreciationRun::plan()` starts the year the day after the branch's last run
+where that is later than a year back — so a December run followed by a June
+one charges January to June, not July to June over again. `Depreciation::
+daysHeld()` and `forYear()` take the start as an optional argument and stay
+pure. A run more than a year back does not stretch the period: the year
+starts a year back, as it always did.
+
+### Screens
+
+The Year Closing screen no longer assumes the 30th of June: it opens with the
+date box empty, the server answers with the company's current year end, and
+the box takes it. The asset schedule, its print, and the depreciation tab read
+their column heads — *Cost at 1 July*, *At 30 June* — from the year the answer
+names, so a January company's schedule says January and December.
+
+### Checked
+
+`financial_year_check.php` — **28 assertions**, rolled back. The four worth
+naming:
+
+- a March year ends on the **leap** 29th of February and the year before it
+  starts on the 1st of March, not the 2nd;
+- the column is **read, not assumed**: switched to January, the same August day
+  ends in December; a nought in the column reads as July;
+- after a December closing a June year **starts on the 1st of January**, and a
+  period past eighteen months is refused **naming the year to close first**;
+- after a December depreciation run the June run starts in January; a run two
+  years back does not stretch the year.
+
+**Deploy:** `patch:add-unit-type` (adds the column, guarded, default 7 — no
+company's year changes), then the front end. Nothing to configure: a company
+that keeps July does nothing.
+

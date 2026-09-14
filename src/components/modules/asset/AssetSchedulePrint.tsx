@@ -43,6 +43,21 @@ type Props = {
   charged: boolean;
 };
 
+/**
+ * "1 July" / "30 June" from a date, for a column head. The year's own days,
+ * read from the answer, because a company on a January year opens on the 1st
+ * of January and a heading that said July would be a heading about somebody
+ * else's books.
+ */
+const dayMonth = (value?: string | null, fallback = ''): string => {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '');
+  if (!parts) return fallback;
+
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  return `${Number(parts[3])} ${months[Number(parts[2]) - 1]}`;
+};
+
 const onTheDay = (value?: string | null): string => {
   const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '');
 
@@ -96,14 +111,14 @@ const AssetSchedulePrint = React.forwardRef<HTMLDivElement, Props>(
               </th>
             </tr>
             <tr>
-              <th className="border border-gray-800 px-1 py-1 text-right">At 1 July</th>
+              <th className="border border-gray-800 px-1 py-1 text-right">At {dayMonth(yearStart, '1 July')}</th>
               <th className="border border-gray-800 px-1 py-1 text-right">Additions</th>
               <th className="border border-gray-800 px-1 py-1 text-right">Disposals</th>
-              <th className="border border-gray-800 px-1 py-1 text-right">At 30 June</th>
-              <th className="border border-gray-800 px-1 py-1 text-right">At 1 July</th>
+              <th className="border border-gray-800 px-1 py-1 text-right">At {dayMonth(yearEnd, '30 June')}</th>
+              <th className="border border-gray-800 px-1 py-1 text-right">At {dayMonth(yearStart, '1 July')}</th>
               <th className="border border-gray-800 px-1 py-1 text-right">For the year</th>
               <th className="border border-gray-800 px-1 py-1 text-right">On disposals</th>
-              <th className="border border-gray-800 px-1 py-1 text-right">At 30 June</th>
+              <th className="border border-gray-800 px-1 py-1 text-right">At {dayMonth(yearEnd, '30 June')}</th>
             </tr>
           </thead>
 

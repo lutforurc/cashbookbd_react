@@ -82,20 +82,20 @@ const searchCapital = (heads: any[]) => {
   };
 };
 
-/** The 30 June this financial year ends on — the same rule the server uses. */
-const thisYearEnd = () => {
-  const now = new Date();
-  const june = new Date(now.getFullYear(), 5, 30);
-
-  return asText(now <= june ? june : new Date(now.getFullYear() + 1, 5, 30));
-};
-
 const YearClosing = ({ user }: any) => {
   const dispatch = useDispatch<any>();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
 
   const [branchId, setBranchId] = useState<number | null>(user?.branch_id ?? null);
-  const [yearEnd, setYearEnd] = useState(thisYearEnd());
+  /**
+   * The year end being asked about. EMPTY until the server has answered once:
+   * which day a year ends on is the company's own (July for most, January for
+   * some), and the screen used to assume the 30th of June -- so a company on
+   * a December year opened on a date that was not its year end at all. Sent
+   * empty, the server answers with the end of the company's current year, and
+   * the box takes that.
+   */
+  const [yearEnd, setYearEnd] = useState('');
   const [capital, setCapital] = useState('');
   const [note, setNote] = useState('');
 
@@ -111,13 +111,21 @@ const YearClosing = ({ user }: any) => {
     try {
       const res = await httpService.get(`${API_YEAR_CLOSING_URL}/plan`, {
         params: {
-          year_end: yearEnd,
+          year_end: yearEnd || undefined,
           branch_id: branchId || undefined,
           capital_coa4_id: capital || undefined,
         },
       });
 
-      setData(res?.data?.data?.data ?? res?.data?.data ?? null);
+      const answer = res?.data?.data?.data ?? res?.data?.data ?? null;
+
+      setData(answer);
+
+      // The first answer names the year end; the box follows it. Only when
+      // the box is empty -- a date somebody typed is theirs.
+      if (!yearEnd && answer?.plan?.year_end) {
+        setYearEnd(String(answer.plan.year_end).slice(0, 10));
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Could not work the closing out');
     } finally {
@@ -199,6 +207,14 @@ const YearClosing = ({ user }: any) => {
           The closing voucher is dated the last day of the year and marked as one.
         </strong>{' '}
         The profit and loss for that year leaves it out; the balance sheet takes it in.
+        {data?.financial_year?.label ? (
+          <>
+            {' '}
+            This company&rsquo;s year runs{' '}
+            <strong className="text-black dark:text-white">{data.financial_year.label}</strong> —
+            set on the company screen.
+          </>
+        ) : null}
       </p>
 
       <div className="mb-3 flex flex-wrap items-end gap-2">
@@ -265,6 +281,15 @@ const YearClosing = ({ user }: any) => {
           <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
             <div className="font-medium text-black dark:text-white">
               The year {onTheDay(plan.year_start)} to {onTheDay(plan.year_end)}
+              {/* ⚠️ A period that is not twelve months is said so. It happens
+                  once when a company changes its year -- six months from a
+                  December year to a July one -- and a closing that quietly
+                  covered half a year would be read as a bad year. */}
+              {data?.financial_year?.months && Number(data.financial_year.months) !== 12 ? (
+                <span className="ml-2 text-xs font-normal text-amber-700 dark:text-amber-300">
+                  {data.financial_year.months} months — the year changed
+                </span>
+              ) : null}
             </div>
             {already ? (
               <span className="text-xs text-success dark:text-emerald-400">

@@ -9,6 +9,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { getSettings } from '../settings/settingsSlice';
 import { resolveAssetUrl } from '../../services/resolveAssetUrl';
 import InputElement from '../../utils/fields/InputElement';
+import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Link from '../../utils/others/Link';
 import { editCompany, updateCompany } from './companySlice';
@@ -44,6 +45,28 @@ const buildCompanyFormData = (data: any, logoFile: File | null, logoDarkFile: Fi
   return payload;
 };
 
+/**
+ * The month a financial year starts in, as the dropdown offers it.
+ *
+ * ⚠️ A month, not a pair of dates. The year END is worked out from it -- the
+ * last day of the month before -- so there is nothing for the two to disagree
+ * about. July is what every company here keeps and what the tax year runs to.
+ */
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+/** "1 July – 30 June": what the chosen month means, said beside the box. */
+const yearRuns = (startMonth: number) => {
+  const endMonth = startMonth <= 1 ? 12 : startMonth - 1;
+  // Day 0 of the next month is the last day of this one; 2001 is not a leap
+  // year, so February reads "28 February" rather than promising a 29th.
+  const lastDay = new Date(2001, endMonth, 0).getDate();
+
+  return `1 ${MONTHS[startMonth - 1]} – ${lastDay} ${MONTHS[endMonth - 1]}`;
+};
+
 const EditCompany = () => {
   const { id } = useParams();
   const company = useSelector((state: any) => state.company);
@@ -61,6 +84,7 @@ const EditCompany = () => {
     notes: '',
     company_logo: '',
     company_logo_dark: '',
+    fy_start_month: '7',
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState('');
@@ -87,6 +111,8 @@ const EditCompany = () => {
       notes: editData.notes || '',
       company_logo: editData.company_logo || '',
       company_logo_dark: editData.company_logo_dark || '',
+      // Absent on a server not yet patched, which means July.
+      fy_start_month: String(editData.fy_start_month || 7),
     });
     setLogoFile(null);
     setLogoPreview(resolveAssetUrl(editData.company_logo || '', environment));
@@ -215,6 +241,21 @@ const EditCompany = () => {
               className={TEXTAREA_CLASS}
             />
           </div>
+
+          {/* ⚠️ Which month the books' year starts in. The year end, the
+              closing and the depreciation run all follow from this one number
+              -- set it once, before the first year is closed. Changing it
+              later is allowed: the next closing covers a short or long period
+              once, and the server's answer says so. */}
+          <DropdownCommon
+            id="fy_start_month"
+            name="fy_start_month"
+            label="Financial year starts in"
+            data={MONTHS.map((month, index) => ({ id: String(index + 1), name: month }))}
+            value={formData.fy_start_month}
+            onChange={(event) => handleChange('fy_start_month', event.target.value)}
+            description={`Runs ${yearRuns(Number(formData.fy_start_month) || 7)}. Year closing and depreciation follow it.`}
+          />
         </div>
 
         {/* Boxed off the way the product form boxes its opening stock: the two
