@@ -6,6 +6,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import routes from '../../services/appRoutes';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { clearSubscriptionFeedback, fetchAdminPlans } from './subscriptionSlice';
+import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 
 const SubscriptionPlanList: React.FC = () => {
   const dispatch = useDispatch<any>();
@@ -22,7 +23,6 @@ const SubscriptionPlanList: React.FC = () => {
   return (
     <div className="space-y-6">
       <HelmetTitle title="Subscription Plan List" />
-
       <div className="flex flex-col gap-3 rounded-2xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-sm md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Subscription Plans</h1>
@@ -75,7 +75,7 @@ const SubscriptionPlanList: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     {(plan.currency || 'BDT') + ' '}
-                    {Number(plan.price || 0).toFixed(2)}
+                    { thousandSeparator(Number(plan.price || 0))}
                   </td>
                   <td className="px-4 py-3 text-xs leading-5 text-gray-600 dark:text-gray-300">
                     <div>Employees: {plan.max_employees ?? 'Unlimited'}</div>
