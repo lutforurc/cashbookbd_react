@@ -887,7 +887,7 @@ const Orders = () => {
       {
         key: 'trx-bal-amt-balance',
         label: 'Balance Amount',
-        value: formatNumberOrDash(poBalanceAmt - doBalanceAmt),
+        value: formatNumberOrDash(doBalanceAmt - poBalanceAmt),
         highlight: true,
       },
     ];
