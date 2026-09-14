@@ -23,7 +23,11 @@ import {
 
 export const storeCashPayment = (data: any) => (dispatch: any) => {
   dispatch({ type: CASH_PAYMENT_STORE_PENDING });
-  httpService.post(API_CASH_PAYMENT_STORE_URL, data)
+  // ⚠️ RETURNED, so the screen learns how it ended. It used to dispatch and
+  // say nothing back, and a refusal -- a closed year (§42), a missing head --
+  // went into `errors` in the store where no screen ever read it: the
+  // voucher silently did not save and the clerk tried again.
+  return httpService.post(API_CASH_PAYMENT_STORE_URL, data)
     .then((res) => {
 
       const _data = res.data;
@@ -32,18 +36,26 @@ export const storeCashPayment = (data: any) => (dispatch: any) => {
           type: CASH_PAYMENT_STORE_SUCCESS,
           payload: _data.data.data,
         });
-      } else {
-        dispatch({
-          type: CASH_PAYMENT_STORE_ERROR,
-          payload: _data.error.message,
-        });
+
+        return { success: true, message: _data.message };
       }
-    })
-    .catch(() => {
+
+      const message = _data.error?.message || _data.message || 'Could not save the voucher.';
       dispatch({
         type: CASH_PAYMENT_STORE_ERROR,
-        payload: 'Something went wrong.',
+        payload: message,
       });
+
+      return { success: false, message };
+    })
+    .catch((err) => {
+      const message = err?.response?.data?.message || err?.message || 'Something went wrong.';
+      dispatch({
+        type: CASH_PAYMENT_STORE_ERROR,
+        payload: message,
+      });
+
+      return { success: false, message };
     });
 };
 
@@ -123,7 +135,11 @@ export const updateCashPayment = (data: any, callback?: (message: string) => voi
 
 export const storeHeadOfficeCashPayment = (data: any) => (dispatch: any) => {
   dispatch({ type: CASH_PAYMENT_STORE_PENDING });
-  httpService.post(API_HEAD_OFFICE_CASH_PAYMENT_STORE_URL, data)
+  // ⚠️ RETURNED, so the screen learns how it ended. It used to dispatch and
+  // say nothing back, and a refusal -- a closed year (§42), a missing head --
+  // went into `errors` in the store where no screen ever read it: the
+  // voucher silently did not save and the clerk tried again.
+  return httpService.post(API_HEAD_OFFICE_CASH_PAYMENT_STORE_URL, data)
     .then((res) => {
       const _data = res.data;
       if (_data.success) {
@@ -131,18 +147,26 @@ export const storeHeadOfficeCashPayment = (data: any) => (dispatch: any) => {
           type: CASH_PAYMENT_STORE_SUCCESS,
           payload: _data.data.data,
         });
-      } else {
-        dispatch({
-          type: CASH_PAYMENT_STORE_ERROR,
-          payload: _data.error?.message || _data.message,
-        });
+
+        return { success: true, message: _data.message };
       }
-    })
-    .catch(() => {
+
+      const message = _data.error?.message || _data.message || 'Could not save the voucher.';
       dispatch({
         type: CASH_PAYMENT_STORE_ERROR,
-        payload: 'Something went wrong.',
+        payload: message,
       });
+
+      return { success: false, message };
+    })
+    .catch((err) => {
+      const message = err?.response?.data?.message || err?.message || 'Something went wrong.';
+      dispatch({
+        type: CASH_PAYMENT_STORE_ERROR,
+        payload: message,
+      });
+
+      return { success: false, message };
     });
 };
 

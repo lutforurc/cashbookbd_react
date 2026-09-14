@@ -5215,3 +5215,154 @@ naming:
 company's year changes), then the front end. Nothing to configure: a company
 that keeps July does nothing.
 
+
+---
+
+## 42. A closed year is frozen, and only a company that wants it closes one, 2026-09-14
+
+§41 gave every company its own year. This gives a closed year its lock, and
+puts the whole feature behind a switch.
+
+### ⚠️ Why a closed year has to be frozen
+
+Closing empties the year's income and expense heads into Retained Earnings by
+what they stood at on the day (the Year Closing screen). Change a
+voucher inside that year afterwards and the profit the closing carried across
+no longer matches the year's own figures — the two reports the auditor was
+handed now disagree, and nothing on any screen says which one moved. So once a
+year is closed, nothing dated on or before its last day is written, changed or
+removed. To correct one: undo the closing, change the voucher, close again. All
+three acts are in the books.
+
+**The rule, per branch** (the closing is per branch, so the lock is): with
+`year_closings.year_end` at its latest for the branch, a voucher dated on or
+before it may not be created, have its date moved, be binned or restored
+(`delete_at`, `status`), be moved between branches, have its approval taken
+off, or be deleted; and none of its money lines may be added, changed or
+removed. **Exempt:** a voucher with `is_closing = 1` — the closing and the
+contra that undoes it. **Allowed:** attaching an image, an audit stamp, a note,
+*approving* — none of it is money.
+
+### Two layers, neither optional
+
+| | Where | What it says |
+|---|---|---|
+| **1. The helper** | `assertPeriodOpen(company, branch, date, doing)` and `assertVoucherOpen(id, doing)` in `helpers.php`, throwing `App\Exceptions\PeriodClosedException` | *"The year ending 30/06/2026 is closed, so this voucher cannot be changed. Undo the closing first if it has to be."* |
+| **2. The triggers** | Seven, created by `runYearClosingLockSchema()`: `main_trx_master` BEFORE INSERT / UPDATE / DELETE, `acc_transaction_master` BEFORE DELETE, `acc_transaction_details` BEFORE INSERT / UPDATE / DELETE | `SIGNAL SQLSTATE '45000'` with `PERIOD_CLOSED:2026-06-30` |
+
+`bootstrap/app.php` turns both into the same answer in the shape every screen
+reads — **HTTP 200 with `success:false` and the sentence**, which is this
+codebase's convention for a refusal the screen must show (`notFound()` itself
+answers 201): on a 4xx the older screens' axios `.catch` shows *"Request
+failed with status code 422"* instead of the sentence.
+
+⚠️ **And the catch blocks that swallow everything had to let this through.**
+The older voucher controllers wrap their whole store in `try { … } catch
+(\Exception $e) { DB::rollback(); return '0'; }` — or `return notFound()` with
+no message — so on the first try a refused entry reached the screen as
+*nothing at all*: the voucher silently did not save and the clerk tried again.
+`rethrowIfPeriodClosed($e)` now stands first in every such catch across the
+forty files that write or edit vouchers (139 blocks): everything else is
+swallowed as before, and only the closed-year refusal — the helper's exception
+or the trigger's `PERIOD_CLOSED:` — is rolled back one level and sent on to
+the handler. One level, exactly as the catch's own rollback would have done;
+the first version unwound every level and, inside a check script's outer
+transaction, committed the rest of the run for real (§42, *Checked*).
+
+The helper is wired into the three places vouchers are born —
+`VoucherSerial::open()` (every ordinary voucher), `HotelVoucher::raise()`,
+`DepreciationRun::raiseFor()` — and into the edit, delete, un-approve, restore,
+date-change and type-change paths of `VoucherModificationController`, the
+warehouse transfer's delete, the opening-balance service, the salary reversal,
+the voucher-settings deletes and the item opening-stock trash. **The triggers
+are why that list does not have to be complete.** Vouchers are written from
+dozens of places in this codebase and from raw SQL; a path the helper was
+never wired into is refused all the same, and says so less kindly. These are
+the first triggers this database has had; the patch creates each only if
+absent, and a database user without the TRIGGER privilege gets a warning
+naming what to ask the host for rather than a failed deploy.
+
+### ⚠️ Undo had to change
+
+`YearClosing::reverse()` writes its contra dated the last day of the closed
+year — inside the lock. It now **removes the `year_closings` row first**, which
+is what unlocks the year, and writes the contra after, in one transaction.
+Written the other way round, Undo would be refused by the very lock it exists
+to lift. The closing itself is untroubled: its voucher is written before the
+row that locks the year.
+
+### The switch
+
+`com_companies.year_closing_enabled`, default **0**. This is SaaS: a trader
+with no accountant never closes a year and should never see the screen; a
+limited company with an audit does. The switch says whether the *company*
+closes years; the permission `year.closing.run` says which of its *users* may.
+Two questions, two gates: every closing endpoint asks both, so a super-admin
+holding every permission still cannot close a year for a company that never
+opted in. The menu item shows only with both. Set beside the year's month on
+the company screen: *"Year closing — on, the year can be closed to Retained
+Earnings and a closed year's vouchers are locked; off, the books simply run
+on."*
+
+Off — which is every company on the day of the deploy — nothing changes: no
+`year_closings` row, no lock, no screen. The triggers stand everywhere and
+bite nowhere.
+
+### Screens
+
+`user/current-branch` now answers `books_locked_until` beside the company
+(whose `year_closing_enabled` rides along). The shared voucher action buttons
+read it and show a lock instead of a pencil on a row dated inside a closed
+year — *"The year ending 30/06/2026 is closed, so this voucher is locked. Undo
+the closing on the Year Closing screen to change it."* — hiding edit and
+un-approve, for anyone who could otherwise have acted. The Year Closing screen
+says *Books locked up to 30/06/2026* in amber, with the way back in the same
+sentence. The server is still the truth; the screens are courtesy.
+
+### Not in this section, deliberately
+
+Inventory rows (`inventory_details`) are not locked yet — the books first,
+the stock second. A manual "books locked up to" date for a company that does
+not close years but wants a month frozen after its VAT return: the same guard
+would read `max(last closing, manual date)`; designed, not built.
+
+### Checked
+
+`year_lock_check.php` — **43 assertions**, rolled back — and it now checks its
+own transaction is still standing before it rolls back, because the first
+version of `rethrowIfPeriodClosed()` unwound the script's transaction from
+inside a test, and everything after that point was written to the staging
+database for real (two closing/undo pairs, the switch, and the owner's own
+2026-27 closing row deleted). The six worth naming:
+
+- through **raw SQL**, on a voucher inside a faked closing: binning, changing
+  status, moving the date, deleting, un-approving, adding / changing / deleting
+  a money line and deleting the accounting master are all refused; attaching
+  an image and approving are allowed; a new voucher dated into the year is
+  refused, one the day after is not, and a closing voucher dated into it is
+  let through;
+- the helper's exception and the trigger's SIGNAL both render as **the same
+  422 sentence**;
+- switched off, the closing endpoints refuse **by name**; on, the plan says up
+  to which day the books are locked;
+- **a real closing is made and undone**: the lock takes hold, a voucher inside
+  is refused by the trigger, Undo writes its contra despite the lock, and the
+  voucher can be changed once more;
+- another branch is not locked by this one's closing;
+- a catch that swallows everything **lets the refusal through** and nothing
+  else, rolling back only its own level; Delete on the voucher screen refuses
+  by sentence.
+
+Through the real HTTP pipeline, with a closing faked inside a rolled-back
+transaction: *Add a charge* and *Take money* on the folio both answer 200,
+`success:false`, *"The year ending 14/09/2026 is closed, so this voucher
+cannot be dated into it…"* — and write nothing.
+
+**Deploy:** `patch:add-unit-type` (switch column + seven triggers, guarded),
+then the front end. Every company starts switched off.
+
+⚠️ **On the staging database the lock is already live**: a test closing of
+2026-27 made from the screen on 2026-09-14 01:47 locks that branch up to
+30/06/2027, so every voucher dated before then is refused — which is the lock
+working. Turn the switch on for that company, undo that closing, and the
+branch is open again.

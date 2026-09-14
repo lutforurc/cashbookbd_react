@@ -17,6 +17,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../../common/Loader';
 import { toast } from 'react-toastify';
+import { toastRefusal } from '../../../utils/refusalToast';
 
 import InputOnly from '../../../utils/fields/InputOnly';
 import { hasPermission } from '../../../utils/permissionChecker';
@@ -143,7 +144,7 @@ const GeneralCashReceived = () => {
         setIsUpdateButton(false);
         setUpdateId(null);
       } else {
-        toast.error(response?.message || 'Error saving transactions.');
+        toastRefusal(response?.message || 'Error saving transactions.');
       }
     } catch (error) {
       toast.error('Error saving transactions.');

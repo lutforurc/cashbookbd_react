@@ -10,6 +10,7 @@ import { getSettings } from '../settings/settingsSlice';
 import { resolveAssetUrl } from '../../services/resolveAssetUrl';
 import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
+import FormToggleField from '../../utils/utils-functions/FormToggleField';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Link from '../../utils/others/Link';
 import { editCompany, updateCompany } from './companySlice';
@@ -31,7 +32,9 @@ const buildCompanyFormData = (data: any, logoFile: File | null, logoDarkFile: Fi
   Object.entries(data).forEach(([key, value]) => {
     if (value === undefined || value === null) return;
     if (key === 'company_logo' || key === 'company_logo_dark') return;
-    payload.append(key, String(value));
+    // A switch goes as 1 or 0: "false" is a non-empty string, and the
+    // server's boolean rule would refuse it.
+    payload.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : String(value));
   });
 
   if (logoFile) {
@@ -85,6 +88,7 @@ const EditCompany = () => {
     company_logo: '',
     company_logo_dark: '',
     fy_start_month: '7',
+    year_closing_enabled: false,
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState('');
@@ -113,6 +117,8 @@ const EditCompany = () => {
       company_logo_dark: editData.company_logo_dark || '',
       // Absent on a server not yet patched, which means July.
       fy_start_month: String(editData.fy_start_month || 7),
+      // Off until the company chooses; absent on a server not yet patched.
+      year_closing_enabled: Number(editData.year_closing_enabled) === 1,
     });
     setLogoFile(null);
     setLogoPreview(resolveAssetUrl(editData.company_logo || '', environment));
@@ -120,7 +126,7 @@ const EditCompany = () => {
     setLogoDarkPreview(resolveAssetUrl(editData.company_logo_dark || '', environment));
   }, [company?.editData, environment]);
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -255,6 +261,18 @@ const EditCompany = () => {
             value={formData.fy_start_month}
             onChange={(event) => handleChange('fy_start_month', event.target.value)}
             description={`Runs ${yearRuns(Number(formData.fy_start_month) || 7)}. Year closing and depreciation follow it.`}
+          />
+
+          {/* ⚠️ WHETHER THIS COMPANY CLOSES ITS YEARS AT ALL. Off, nobody sees
+              the screen and nothing is ever locked -- the books run on as they
+              always have, which is right for a trader with no accountant. On,
+              whoever holds year.closing.run may close a year, and a closed
+              year's vouchers are frozen until the closing is undone. */}
+          <FormToggleField
+            label="Year closing"
+            description="On, the year can be closed to Retained Earnings and a closed year's vouchers are locked. Off, the books simply run on."
+            checked={Boolean(formData.year_closing_enabled)}
+            onChange={(checked) => handleChange('year_closing_enabled', checked)}
           />
         </div>
 

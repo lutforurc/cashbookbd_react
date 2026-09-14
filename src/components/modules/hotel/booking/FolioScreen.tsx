@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
+import { toastRefusal } from '../../../utils/refusalToast';
 import {
   FiArrowLeft,
   FiBriefcase,
@@ -782,7 +783,7 @@ const FolioScreen = () => {
     } catch (error: any) {
       // Usually the clash: somebody billed one of these nights while this was
       // open, and nothing was added. The server's sentence says exactly that.
-      toast.error(String(error));
+      toastRefusal(String(error));
       load();
     }
   };
@@ -798,7 +799,7 @@ const FolioScreen = () => {
       toast.success(result.message);
       setCharge(null);
     } catch (error: any) {
-      toast.error(String(error));
+      toastRefusal(String(error));
     }
   };
 
@@ -901,7 +902,7 @@ const FolioScreen = () => {
       toast.success(result.message);
       setPayment(null);
     } catch (error: any) {
-      toast.error(String(error));
+      toastRefusal(String(error));
     }
   };
 

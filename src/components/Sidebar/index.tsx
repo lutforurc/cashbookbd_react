@@ -799,7 +799,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'year.closing.run') && (
+                          {/* Permission says who may; the company switch says
+                              whether this company closes years at all (§42).
+                              Both, or the item is not there. */}
+                          {hasPermission(permissions, 'year.closing.run')
+                          && Number(currentBranch?.company?.year_closing_enabled) === 1 && (
                             <li style={subSlot('transaction', 'accounts/year-closing')}>
                               <NavLink
                                 to={routes.year_closing}

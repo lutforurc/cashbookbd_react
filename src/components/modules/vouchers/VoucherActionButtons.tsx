@@ -8,6 +8,8 @@ import {
   FiTruck,
   FiXCircle,
 } from 'react-icons/fi';
+import { useSelector } from 'react-redux';
+import { booksLockedUntil, inClosedYear, lockedUntilLabel } from '../../utils/userFeatureSettings';
 import { Button } from '../../../pages/UiElements/CustomButtons';
 import useTooltip from '../../utils/others/useTooltip';
 
@@ -102,6 +104,17 @@ const VoucherActionButtons = ({
   challanTitle = 'Print Delivery Challan',
   confirmInline = false,
 }: VoucherActionButtonsProps) => {
+  /**
+   * ⚠️ A CLOSED YEAR'S ROW SHOWS A LOCK, NOT A PENCIL (§42). The server refuses
+   * an edit, a delete or an un-approval on a voucher dated inside a closed
+   * year, with a sentence; this says the same thing before the click, so the
+   * row reads as "locked by the closing" rather than "nothing to do here".
+   * The date comes from the row in whatever shape the ledger carries it.
+   */
+  const currentBranch = useSelector((state: any) => state.branchList?.currentBranch);
+  const lockedUntil = booksLockedUntil(currentBranch);
+  const closedYear = inClosedYear(row?.vr_date, lockedUntil);
+
   const [pending, setPending] = useState<null | 'approve' | 'remove'>(null);
   // `fixed` position so the confirm escapes the table cell's overflow:hidden.
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
@@ -191,7 +204,12 @@ const VoucherActionButtons = ({
 
   // The lock already says "approved", so the approve button's green tick would
   // be a second badge for the same fact. Drop it and keep the row to two icons.
-  const showApprovedLock = canEditVoucher && isApproved && !canShowEditAction;
+  const showApprovedLock = canEditVoucher && isApproved && !canShowEditAction && !closedYear;
+
+  // Only where somebody could otherwise have acted: a viewer with no rights
+  // sees the row exactly as before.
+  const showClosedYearLock = closedYear
+    && (canEditVoucher || canShowEditAction || canShowRemoveApprovalAction);
 
   return (
     <div className="flex items-center justify-center gap-2">
@@ -218,7 +236,7 @@ const VoucherActionButtons = ({
         </Hint>
       ) : null}
 
-      {canShowRemoveApprovalAction ? (
+      {canShowRemoveApprovalAction && !closedYear ? (
         <Hint label={approvedBy}>
           <Button
             type="button"
@@ -263,7 +281,7 @@ const VoucherActionButtons = ({
         </Hint>
       ) : null}
 
-      {canShowEditAction ? (
+      {canShowEditAction && !closedYear ? (
         <Hint label={editTitle}>
           <Button
             type="button"
@@ -272,6 +290,17 @@ const VoucherActionButtons = ({
           >
             <FiEdit className="cursor-pointer" />
           </Button>
+        </Hint>
+      ) : null}
+
+      {showClosedYearLock ? (
+        <Hint
+          label={`The year ending ${lockedUntilLabel(lockedUntil)} is closed, so this voucher is locked. Undo the closing on the Year Closing screen to change it.`}
+        >
+          <span className="inline-flex cursor-help text-amber-600 dark:text-amber-400">
+            <FiLock />
+            <span className="sr-only">Year closed — locked</span>
+          </span>
         </Hint>
       ) : null}
 

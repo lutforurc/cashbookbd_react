@@ -217,6 +217,19 @@ const YearClosing = ({ user }: any) => {
         ) : null}
       </p>
 
+      {/* ⚠️ THE LOCK, SAID WHERE IT IS SET. Everything dated on or before this
+          day is frozen -- no edit, no delete, no un-approval, no new voucher
+          -- and the way back is Undo, here. A clerk refused on a voucher
+          screen is sent to this sentence by the refusal itself. */}
+      {data?.locked_until ? (
+        <p className="mb-3 rounded border border-amber-400 bg-amber-50 p-2 text-xs leading-snug text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+          <strong>Books locked up to {onTheDay(String(data.locked_until))}</strong> for this
+          branch. Vouchers dated on or before that day cannot be added, changed, deleted or
+          un-approved. To correct one, undo that year&rsquo;s closing below, change the voucher,
+          and close the year again.
+        </p>
+      ) : null}
+
       <div className="mb-3 flex flex-wrap items-end gap-2">
         {branches.length > 1 ? (
           <div className="w-56">

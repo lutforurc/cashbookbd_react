@@ -21,6 +21,7 @@ import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown
 import Link from '../../../utils/others/Link';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { toast } from 'react-toastify';
+import { toastRefusal } from '../../../utils/refusalToast';
 import { editBankPayment, saveBankPayment, updateBankPayment } from './bankPaymentSlice';
 import { useNavigate } from 'react-router-dom';
 import TrackedProductField from '../../product-tracking/TrackedProductField';
@@ -539,7 +540,7 @@ const BankPayment = () => {
       });
 
     } catch (error: any) {
-      toast.error(error?.message || 'Something went wrong while saving.');
+      toastRefusal(typeof error === 'string' ? error : error?.message || 'Something went wrong while saving.');
     } finally {
       setSaveButtonLoading(false);
       setIsLoading(false);

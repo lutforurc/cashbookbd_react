@@ -16,6 +16,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../../common/Loader';
 import { toast } from 'react-toastify';
+import { toastRefusal } from '../../../utils/refusalToast';
 import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
 import { validateForm } from '../../../utils/utils-functions/validationUtils';
 import { validationMessage } from '../../../utils/utils-functions/validationMessage';
@@ -137,7 +138,13 @@ const TradingCashReceived = () => {
 
     // Dispatch the updated data to your store or API
     try {
-      await dispatch(storeCashReceived(updatedTableData));
+      const result: any = await dispatch(storeCashReceived(updatedTableData) as any);
+      // ⚠️ A refusal is SAID. The server answers success:false with a sentence
+      // -- a closed year (§42), a missing head -- and the clerk has to read it
+      // here, not find an empty table and try again.
+      if (result && result.success === false) {
+        toastRefusal(result.message);
+      }
     } catch (error) {
       console.error('Error saving transactions:', error);
     }
