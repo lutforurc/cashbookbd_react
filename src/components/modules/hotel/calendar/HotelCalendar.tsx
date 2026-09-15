@@ -514,14 +514,23 @@ const HotelCalendar = () => {
                                   cell.booking_no
                                 }${cell.guest ? `, ${cell.guest}` : ''}${
                                   cell.shared ? ' and others' : ''
-                                }`
+                                }${cell.free_stay ? ' · complimentary / house use, not charged' : ''}`
                               : `${cell.date}: free`
                           }
                         >
                           {/* ⚠️ The count, not just the colour. A dormitory with
                               three of eight beds gone is not the same thing as a
-                              full one, and a colour cannot say which. */}
-                          <span className="text-[0.65rem] font-semibold text-black dark:text-white">
+                              full one, and a colour cannot say which.
+
+                              A room given for nothing carries a ring: occupied
+                              like any other, painted the same, and marked so the
+                              owner reading the month can tell the paying nights
+                              from the ones they gave away. */}
+                          <span
+                            className={`text-[0.65rem] font-semibold text-black dark:text-white ${
+                              cell.free_stay ? 'rounded-full px-1 ring-1 ring-amber-500' : ''
+                            }`}
+                          >
                             {cell.taken || ''}
                           </span>
                         </td>
@@ -533,7 +542,8 @@ const HotelCalendar = () => {
 
               <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
                 Each cell says how many of that room&rsquo;s beds are taken that night — amber is
-                part of a room, red is all of it. <strong>Nothing here books anything:</strong> a
+                part of a room, red is all of it, and a ringed number is a complimentary or
+                house-use stay. <strong>Nothing here books anything:</strong> a
                 room is taken on the Bookings screen, and this is what was held when the page was
                 read.
               </p>

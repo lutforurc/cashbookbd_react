@@ -203,6 +203,31 @@ export const bookingCancel = createAsyncThunk<
 });
 
 /**
+ * The guest never came.
+ *
+ * ⚠️ NOT A CANCELLATION, and the default runs the other way: the advance is
+ * KEPT unless a refund_amount is sent. A guest who rang to call off a booking
+ * has some claim to their money; one who left the room empty overnight has the
+ * ordinary claim against them. The dialog reads cancellationRead first for the
+ * money, exactly as Cancel does -- same figures, different default.
+ */
+export const bookingNoShow = createAsyncThunk<
+  { message: string; data: Booking },
+  { id: number; reason?: string; refund_amount?: number; coa4_id?: number | null },
+  { rejectValue: string }
+>('hotelBooking/bookingNoShow', async ({ id, ...payload }, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_HOTEL_BOOKING_URL}/no-show/${id}`, payload);
+    if (res.data?.success === true) {
+      return { message: res.data?.message || 'Marked as a no-show', data: unwrap(res) };
+    }
+    return rejectWithValue(res.data?.message || 'Could not mark the no-show');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not mark the no-show'));
+  }
+});
+
+/**
  * Who owes this bill now, how much, and every move it has made — §6.4.
  *
  * ⚠️ Read before the dialog opens, and read AGAIN after a move. The figure the
@@ -847,7 +872,7 @@ const bookingSlice = createSlice({
         });
     });
 
-    [bookingSave, bookingUpdate, bookingCancel, allotSave].forEach((thunk: any) => {
+    [bookingSave, bookingUpdate, bookingCancel, bookingNoShow, allotSave].forEach((thunk: any) => {
       builder
         .addCase(thunk.pending, (state: any) => {
           state.saving = true;

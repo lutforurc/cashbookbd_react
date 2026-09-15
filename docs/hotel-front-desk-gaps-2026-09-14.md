@@ -1,6 +1,6 @@
 # হোটেল — দৈনন্দিন ফ্রন্ট-ডেস্কে যা লাগে, কিন্তু নেই
 
-**তারিখ:** ২০২৬-০৯-১৪ · **সর্বশেষ হালনাগাদ:** ২০২৬-০৯-১৪
+**তারিখ:** ২০২৬-০৯-১৪ · **সর্বশেষ হালনাগাদ:** ২০২৬-০৯-১৫ — **পাঁচটিই বানানো** — API `0ed8e12e` (Reseller), React: এই কমিটের পরেরটিতে হ্যাশ
 **পরিসর:** `cashbook_api` (`app/Http/Controllers/Hotel`, `app/Models/Hotel`),
 `cashbookbd_react` (`src/components/modules/hotel`)
 **উদ্দেশ্য:** [hotel-resort-booking-spec.md](hotel-resort-booking-spec.md)-এর "যা বাকি"
@@ -11,6 +11,16 @@
 
 > এই ফাইলটি *পরিকল্পনা*, *সিদ্ধান্ত নয়*। কাজ শেষ হলে সংশ্লিষ্ট অংশে কমিটের হ্যাশসহ ✅
 > বসিয়ে দিন, যেভাবে [next-work-2026-08-30.md](next-work-2026-08-30.md) করে।
+
+> **২০২৬-০৯-১৫:** পাঁচটিই বানানো হয়েছে, সুপারিশকৃত ক্রমে। প্রতিটি অংশের নিচে
+> "✅ যা বানানো হলো" আছে — কোথায় দলিল থেকে সরে আসা হয়েছে সেটিসহ। স্পেকে **§43**।
+> চেক-স্ক্রিপ্ট (সব রোলব্যাক): `hotel_no_show_check.php` (৫৩), `hotel_room_move_check.php`
+> (৭০), `hotel_registration_card_check.php` (১৪), `hotel_stay_kind_check.php` (৪১),
+> `hotel_guest_profile_check.php` (৩৪)। ডেটাবেস: `patch:add-unit-type` চারটি নতুন ধাপ
+> (no_show ENUM, room_checkouts.kind, stay_kind, hotel_guest_notes) — অথবা
+> `database/sql/2026_09_15_hotel_*.sql` চারটি ফাইল। নতুন পারমিশন
+> `hotel.booking.complimentary` (Hotel গ্রুপ, `--hotel-grant`-এ যায়)। রাউট বদলেছে —
+> `route:clear` লাগবে।
 
 ---
 
@@ -60,6 +70,26 @@ rate", ডিফল্ট *keep old* — হোটেলের সমস্য�
 
 **আকার:** মাঝারি — API ২ দিন, স্ক্রিন ১ দিন, চেক-স্ক্রিপ্ট আধা দিন।
 
+### ✅ যা বানানো হলো (২০২৬-০৯-১৫)
+
+`GET/POST bookings/move/{id}` (`BookingController::moveOptions` / `move`, পারমিশন
+`hotel.booking.view`)। GET বলে কোন রুমে কী আছে আর কোন রুমে যাওয়া যায় (বাকি প্রতিটি রাতে
+কোনো বেড বিক্রি হয়নি, whole-let, out-of-order নয়, হাউসকিপিং স্ট্যাটাসসহ)। POST এক
+লেনদেনে: তারিখ থেকে নাইট নতুন রুমে (বেডপ্রতি এক সারি, ভাড়া প্রথম বেডে); গেস্ট রুমের সাথে
+যায়; checked_in হলে পুরনো রুম dirty আর `hotel_booking_room_checkouts`-এ **`kind = 'move'`**,
+`moved_to_resource_id` সহ (নতুন দুটি কলাম) — departures রিপোর্ট move বাদ দেয়; ইতিহাসে এক
+সারি (status অপরিবর্তিত)। `dry_run` লেখে না।
+
+**দলিল থেকে যেখানে সরা হয়েছে:** "বিলকৃত নাইট পুরনো রুমেই থাকে" — না, বিলকৃত নাইটের
+*inventory সারি* নতুন রুমে যায় (নইলে ২০৫ availability-তে ফাঁকা দেখাত), আর ফোলিও লাইনের
+টাকা, ভাউচার, VAT যা ছিল তা-ই থাকে; শুধু লাইনের `resource_id` নতুন রুমে re-point হয় আর
+description-এ "→ MB / 205" যোগ হয়। না হলে `unbilledNights()` একই রাত নতুন রুমের নামে
+আবার বিল করত — চেক-স্ক্রিপ্ট ঠিক এটিই ধরে। **ভাড়া:** `keep_rate` (ডিফল্ট true) পুরনো ভাড়া
+রাখে; false দিলে নতুন রুমের ভাড়া — কিন্তু বিলকৃত নাইটে false **প্রত্যাখ্যাত** (পোস্টেড লাইন
+re-price হয় না; ছাড় বা চার্জ ফোলিওতে হাতে)। কে ঠিক করল ইতিহাসে লেখা। ডরমিটরির বেড আর
+হল সরানো যায় না (booking form)। স্ক্রিন: `MoveRoomDialog.tsx` — Bookings তালিকায় "Move"
+আর Folio-তে "Move room", একই ডায়ালগ, তিন প্রশ্ন + সার্ভারের dry-run preview।
+
 ---
 
 ## ২. No-show
@@ -93,6 +123,26 @@ rate", ডিফল্ট *keep old* — হোটেলের সমস্য�
 
 **আকার:** ছোট — এক দিন।
 
+### ✅ যা বানানো হলো (২০২৬-০৯-১৫)
+
+`Booking::STATUS_NO_SHOW`, `hotel_booking_master.status` ENUM-এ `no_show`;
+`Booking::DEAD_STATUSES` (cancelled · expired · no_show) — সাতটি জায়গায় হাতে লেখা
+`[cancelled, expired]` তালিকার বদলে, আর `howItEnded()` যাতে প্রত্যাখ্যান "cancelled" না
+বলে। `POST bookings/no-show/{id}` (পারমিশন `hotel.booking.cancel`; ডায়ালগ টাকার তথ্য
+`bookings/cancellation/{id}` থেকেই পড়ে)। শর্ত: confirmed, চেক-ইনের **রাত** পেরিয়েছে (আজ >
+check-in), কোনো গেস্ট রেকর্ড নেই, বিল হয়নি; walk-in নয়।
+
+**দলিল থেকে যেখানে সরা হয়েছে:** "ফোলিওতে No-show charge লাইন" — না। ফোলিও লাইনে VAT
+আসে (চার্জ টাইপের হার), আর no-show চার্জে VAT বসবে কি না ক্লায়েন্ট বলেনি; তাছাড়া
+cancellation-এর retention পথ (`Dr Advance / Cr Cancellation Charge`) আগে থেকেই আছে ও
+পরীক্ষিত। তাই টাকা `hotel_booking_cancellations`-এই যায় — reason-এ "No-show." prefix,
+ভাউচার narration "No-show charge retained"; বুকিংয়ের status-ই বলে কোনটা। **ডিফল্ট উল্টো:**
+Cancel-এ refund বাক্স পুরো টাকায় শুরু, No-show-এ অ্যাডভান্স **রাখা** হয়, ফেরত দিলে অঙ্ক
+টাইপ করতে হয় (রেডিও)। Performance রিপোর্টে `no_shows` আর `no_show_room_nights`
+(nights × stated_rooms, arrival-তারিখে কাটা) — নাইট মুছে যায় বলে বুকিং থেকেই গোনা।
+`guestByMobile`-এর stays-এ no-show গোনে না। তালিকায় কমলা চিপ, ফিল্টার, "No-show" লিংক
+শর্ত মিললে।
+
 ---
 
 ## ৩. Registration card — চেক-ইনে গেস্টের সই করা কাগজ
@@ -115,6 +165,18 @@ rate", ডিফল্ট *keep old* — হোটেলের সমস্য�
 **সিদ্ধান্ত দরকার:** কিছু না।
 
 **আকার:** ছোট — আধা দিন।
+
+### ✅ যা বানানো হলো (২০২৬-০৯-১৫)
+
+`GET bookings/allotment/{id}/card` (`BookingController::registrationCard`, পারমিশন
+`hotel.booking.allot`) — গেস্টপ্রতি এক কার্ড: নাম, NID, মোবাইল, ঠিকানা, রুম, **যে ভাড়ায়
+রুম দেওয়া হয়েছিল** (নাইট সারি থেকে, আজকের ট্যারিফ নয়), তারিখ ও চেক-ইন/আউটের সময়,
+ব্রাঞ্চ হেডার, শর্তাবলি। কেউ চেক-ইন না হলে প্রত্যাখ্যান। শর্তাবলি: `metas.hotel_registration_terms`
+— Branch ফর্মের Hotel Setup ধাপে "Registration card terms" textarea (BranchController
+read/write)। প্রিন্ট: `RegistrationCardPrint.tsx` — print designer-এ নয় (register-এর মতো:
+NID লাইন টেনে ফেলে দেওয়া কার্ড কার্ড নয়), **A4-এ দুটি কার্ড** (আধা পাতা করে), দুটি সইয়ের
+লাইন। Allotment স্ক্রিনে "Print registration cards" (arrived > 0 হলে), Folio-র
+react-to-print প্যাটার্নে। Complimentary হলে ভাড়ার জায়গায় "not charged"।
 
 ---
 
@@ -147,6 +209,20 @@ rate", ডিফল্ট *keep old* — হোটেলের সমস্য�
 
 **আকার:** ছোট — এক দিন।
 
+### ✅ যা বানানো হলো (২০২৬-০৯-১৫)
+
+`hotel_booking_master.stay_kind` ENUM(paid · complimentary · house_use) + `stay_kind_reason`
++ `stay_kind_by`; `Booking::isCharged()`। পারমিশন **`hotel.booking.complimentary`**
+(সুপারিশ মেনে) — store/update-এ paid ছাড়া অন্য কিছু দিলে লাগে, আর **কারণ বাধ্যতামূলক**
+(ছাড়ের নিয়মই)। বিল হওয়ার পর kind বদলানো প্রত্যাখ্যাত (দুই দিকেই)। ভাড়ার লাইন কখনো বিল
+হয় না — এক জায়গায়: `FolioBilling::unbilledNights()` unpaid stay-তে খালি ফেরায়, তাই "Bill
+the nights", check-out আর night audit তিনটিই একসাথে বাদ; folio bill বোতাম বলে কেন। নাইট
+সারিতে ট্যারিফ থাকে (রুমটা কত হতে পারত)। Performance: SQL-এ `stay_kind = 'paid'` শর্তে
+revenue ও ADR-এর ভাজক, occupancy সবটাই — মাস, দিন, রুম-টাইপ তিন টেবিলেই এক নিয়ম;
+`free_room_nights` আলাদা লাইনে। Booking form-এ "Stay" ড্রপডাউন (পারমিশন থাকলে; না থাকলে
+শুধু দেখায়), কারণের ঘর, মোট ভাড়া কাটা + "not charged"। তালিকায় ও Folio-তে চিহ্ন,
+ক্যালেন্ডারে রিং, বিল কাগজে `stay_kind` ফিল্ড।
+
 ---
 
 ## ৫. Guest profile — এক গেস্টের সব থাকা
@@ -173,6 +249,23 @@ form-এ returning গেস্ট মিললে "3 stays · last 12/08/2026 �
 দুটো একই গেস্টের দুই রেকর্ড হয়ে গেলে একত্র করার (merge) বোতাম *পরে*, দরকার হলে।
 
 **আকার:** মাঝারি — API এক দিন, স্ক্রিন এক দিন।
+
+### ✅ যা বানানো হলো (২০২৬-০৯-১৫)
+
+নতুন `GuestProfileController`: `GET bookings/guest/history?national_id=&mobile=`
+(পারমিশন `hotel.booking.view`)। **গেস্ট-কি:** সুপারিশ মেনে NID থাকলে NID, না থাকলে মোবাইল
+— দুটোই খোঁজা হয়: NID-এর সারিগুলোর সব মোবাইল, সেই মোবাইলের সব সারি, **আর সেই মোবাইল যে
+বুকিং টেলিফোনে করেছে** (no-show কোনো রুমে নাম হয়নি — booker_mobile-ই একমাত্র সূত্র)।
+প্রতি বুকিং: তারিখ, রাত, রুম, status, stay_kind, billed/paid/due (`totalsFor` +
+`paidOn` — দ্বিতীয় হিসাব নয়), `carried` (পার্টিতে গেলে সেটি কোম্পানির দেনা, গেস্টের নয়),
+retained। মোট: stays (আসলে থেকেছে), no_shows, cancelled, upcoming, billed, paid, due
+(in-house বা checked_out non-carried), last/first stay। গেস্টের বিবরণ **ঘরপ্রতি সর্বশেষ
+অ-শূন্য মান** (এবার ঠিকানা না লিখলে আগেরটা থাকে)। নোট: `hotel_guest_notes` (company_id,
+key_kind nid|mobile, guest_key ডিজিটে, note, created_by) — append-only, মুছে নতুন লেখা;
+`POST bookings/guest/notes/store|delete/{id}`। `guestByMobile`-এ `no_shows` ও `owed`।
+স্ক্রিন: `GuestProfileDrawer.tsx` — ডান দিকের ড্রয়ার; Bookings তালিকায় booker-এর নাম,
+Allotment-এ রেকর্ড করা গেস্টের নাম, Booking form-এর returning লাইনে "N no-shows · Owes X ·
+History"। Merge বোতাম পরে, দরকার হলে।
 
 ---
 

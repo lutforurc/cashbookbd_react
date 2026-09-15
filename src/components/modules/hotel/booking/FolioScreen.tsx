@@ -10,6 +10,7 @@ import {
   FiCalendar,
   FiDownload,
   FiLogOut,
+  FiMove,
   FiPercent,
   FiPlus,
   FiPrinter,
@@ -43,6 +44,7 @@ import { API_HOTEL_FOLIO_URL, API_HOTEL_PARTY_URL } from '../../../services/apiR
 import routes from '../../../services/appRoutes';
 import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import { money } from '../setupHelpers';
+import MoveRoomDialog from './MoveRoomDialog';
 import {
   billRead,
   billTransfer,
@@ -386,6 +388,13 @@ const FolioScreen = () => {
    * `moving === null`; do not conflate the two.
    */
   const [moving, setMoving] = useState<any>(null);
+
+  /**
+   * The guest going to another room -- 101's AC failed. Opened from the bill
+   * because that is the screen the desk has open when a guest comes down to
+   * complain, and the same dialog the bookings list uses.
+   */
+  const [movingRoom, setMovingRoom] = useState<any>(null);
 
   /**
    * The open "name on the bill" panel: the name being typed, or null when the
@@ -960,6 +969,18 @@ const FolioScreen = () => {
         </p>
       ) : null}
 
+      {/* A room given for nothing. Said above the bill, because the bill is
+          where somebody will otherwise press "Bill the nights" and read the
+          refusal as a fault. Meals and laundry still go on it. */}
+      {booking?.stay_kind && booking.stay_kind !== 'paid' ? (
+        <p className="mb-3 rounded border border-amber-400 bg-amber-50 p-2.5 text-xs text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+          <strong>{booking.stay_kind === 'house_use' ? 'House use' : 'Complimentary'} stay</strong> — the
+          rooms are not charged, so there is no rent to bill. Meals, laundry and the rest still go
+          on as charges.
+          {booking.stay_kind_reason ? ` ${booking.stay_kind_reason}.` : ''}
+        </p>
+      ) : null}
+
       <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <div>
@@ -1226,6 +1247,17 @@ const FolioScreen = () => {
             onClick={() => navigate(`${routes.hotel_booking_check_out}/${id}`)}
             label="Check out"
             icon={<FiLogOut size={16} />}
+          />
+        ) : null}
+
+        {/* A guest moved to another room mid-stay. The billed nights keep
+            their lines and vouchers; only the room they name changes -- which
+            is why this lives beside the bill and not only on the list. */}
+        {['confirmed', 'checked_in'].includes(booking?.status) && booking?.booking_type !== 'walk_in' ? (
+          <ButtonLoading
+            onClick={() => setMovingRoom(booking)}
+            label="Move room"
+            icon={<FiMove size={16} />}
           />
         ) : null}
 
@@ -1726,6 +1758,16 @@ const FolioScreen = () => {
         columns={paymentColumns}
         data={folio.payments ?? []}
         noDataMessage="Nothing taken yet."
+      />
+
+      <MoveRoomDialog
+        booking={movingRoom}
+        onClose={() => setMovingRoom(null)}
+        // The bill's lines now name another room. Read again rather than
+        // patched -- see folioRead.
+        onMoved={() => {
+          if (id) dispatch(folioRead(Number(id)));
+        }}
       />
 
       {/* Mounted only while a paper is on its way to the printer. It has to be

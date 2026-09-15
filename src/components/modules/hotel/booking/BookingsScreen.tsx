@@ -19,6 +19,7 @@ import { clockTime, money, useDebounced } from '../setupHelpers';
 import {
   billRead,
   bookingCancel,
+  bookingNoShow,
   bookingList,
   folioRead,
   cancellationRead,
@@ -27,6 +28,8 @@ import {
   tillList,
 } from './bookingSlice';
 import formatDate, { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
+import MoveRoomDialog from './MoveRoomDialog';
+import GuestProfileDrawer, { GuestKey } from './GuestProfileDrawer';
 
 /**
  * Bookings -- the list, and the doors out of it.
@@ -95,7 +98,40 @@ const FILTER_OPTIONS = [
   { id: 'checked_in', name: 'Checked in' },
   { id: 'checked_out', name: 'Checked out' },
   { id: 'cancelled', name: 'Cancelled' },
+  { id: 'no_show', name: 'No-show' },
 ];
+
+/**
+ * The statuses a booking does not come back from.
+ *
+ * ⚠️ no_show is one of them and is NOT a cancellation: the guest never rang.
+ * It is listed here so every "is this booking over" test on the screen widens
+ * together -- the day it arrived, three of them would otherwise have gone on
+ * offering Check in to a guest who never came.
+ */
+const DEAD_STATUSES = ['cancelled', 'expired', 'no_show'];
+
+/** 'YYYY-MM-DD' for today, on this calendar -- the shape the rows carry. */
+const todayText = (): string => {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+
+  return `${now.getFullYear()}-${month}-${String(now.getDate()).padStart(2, '0')}`;
+};
+
+/**
+ * Can this row be marked a no-show?
+ *
+ * The same three conditions the server checks, so the link is offered only
+ * where it will not be refused: confirmed (a hold lapses on its own; a
+ * checked-in stay has somebody in it), the arrival night OVER -- the morning
+ * after, not the afternoon of -- and nobody recorded in any room.
+ */
+const canBeNoShow = (row: any): boolean =>
+  row.status === 'confirmed' &&
+  row.booking_type !== 'walk_in' &&
+  Number(row.guests_count ?? 0) === 0 &&
+  String(row.check_in_date ?? '').slice(0, 10) < todayText();
 
 /**
  * A booking's state, in the SAME colours the grid paints a room.
@@ -141,6 +177,15 @@ const STATUS_LOOK: Record<string, { className: string; label: string }> = {
     className:
       'bg-gray-100 border-gray-300 text-gray-500 dark:bg-gray-700/40 dark:border-gray-600 dark:text-gray-400',
     label: 'Hold expired',
+  },
+  // Orange, and not the grey the other two endings wear. A cancellation and an
+  // expired hold are bookings that went quietly; a no-show is a room that stood
+  // empty on a night it could have been sold, and the desk scanning the list
+  // for last week's damage should find it without reading every chip.
+  no_show: {
+    className:
+      'bg-orange-100 border-orange-400 text-orange-900 dark:bg-orange-500/25 dark:border-orange-400/60 dark:text-orange-50',
+    label: 'No-show',
   },
 };
 
@@ -447,6 +492,27 @@ const BookingsScreen = ({ user }: any) => {
   const [refund, setRefund] = useState('');
   const [refundTill, setRefundTill] = useState<any>('');
 
+  /**
+   * The no-show dialog's own state, kept apart from the cancel dialog's.
+   *
+   * ⚠️ The DEFAULT RUNS THE OTHER WAY. Cancel starts with the whole advance in
+   * the refund box, because a guest who rang has some claim to their money.
+   * Here the advance is KEPT unless the desk says otherwise -- a guest who left
+   * a room empty overnight has the ordinary claim against them, and refunding
+   * is the deliberate act. `keeping` is that switch.
+   */
+  const [noShowing, setNoShowing] = useState<any>(null);
+
+  /** The booking whose guest is going to another room -- see MoveRoomDialog. */
+  const [moving, setMoving] = useState<any>(null);
+
+  /** The guest whose history is open -- see GuestProfileDrawer. */
+  const [profileOf, setProfileOf] = useState<GuestKey | null>(null);
+  const [noShowReason, setNoShowReason] = useState('');
+  const [keeping, setKeeping] = useState(true);
+  const [noShowRefund, setNoShowRefund] = useState('');
+  const [noShowTill, setNoShowTill] = useState<any>('');
+
   const debouncedSearch = useDebounced(search);
 
   const branches: any[] = branchDdlData?.protectedData?.data ?? [];
@@ -545,6 +611,67 @@ const BookingsScreen = ({ user }: any) => {
     dispatch(clearCancellation());
   };
 
+  /**
+   * Open the no-show dialog. The money facts are the same ones Cancel reads --
+   * how much is held, whether the booking is billed, which tills a refund
+   * could come from -- so the same read serves both.
+   */
+  const askNoShow = (row: any) => {
+    setNoShowing(row);
+    setNoShowReason('');
+    setKeeping(true);
+    setNoShowRefund('');
+    setNoShowTill('');
+
+    dispatch(cancellationRead(row.id));
+
+    if (!tills?.length) dispatch(tillList());
+  };
+
+  const closeNoShow = () => {
+    setNoShowing(null);
+    dispatch(clearCancellation());
+  };
+
+  // Once the plan arrives, the refund box is filled with the WHOLE amount so a
+  // desk that flips the switch to "give it back" starts from all of it -- the
+  // same rule cancel() uses. It is only read when `keeping` is off.
+  useEffect(() => {
+    if (!noShowing || !cancellation) return;
+
+    setNoShowRefund(String(cancellation.amount_held ?? 0));
+    setNoShowTill((current: any) => current || cancellation.tills?.[0]?.id || '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cancellation, noShowing?.id]);
+
+  const markNoShow = async () => {
+    if (!noShowing) return;
+
+    const giving = keeping ? 0 : Number(noShowRefund || 0);
+
+    if (giving > 0 && !noShowTill) {
+      toast.error('Which account is the refund paid out of?');
+      return;
+    }
+
+    try {
+      const result = await dispatch(
+        bookingNoShow({
+          id: noShowing.id,
+          reason: noShowReason.trim(),
+          refund_amount: giving,
+          coa4_id: giving > 0 ? Number(noShowTill) : null,
+        }),
+      ).unwrap();
+
+      toast.success(result.message);
+      closeNoShow();
+      load();
+    } catch (error: any) {
+      toast.error(String(error));
+    }
+  };
+
   const cancel = async () => {
     if (!cancelling) return;
 
@@ -623,7 +750,23 @@ const BookingsScreen = ({ user }: any) => {
         render: (row: any) => (
           <div>
             <div className="font-medium text-black dark:text-white">{row.booking_no}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">{row.booker_name}</div>
+            {/* The name opens the guest's history where there is a number to
+                find them by -- every stay, what they paid, whether they ever
+                did not come. A booking with no mobile has nothing to look up. */}
+            {row.booker_mobile ? (
+              <button
+                type="button"
+                onClick={() =>
+                  setProfileOf({ mobile: row.booker_mobile, name: row.booker_name })
+                }
+                className="text-xs text-gray-500 hover:text-primary hover:underline dark:text-gray-400 dark:hover:text-secondary"
+                title="Every stay this guest has had here"
+              >
+                {row.booker_name}
+              </button>
+            ) : (
+              <div className="text-xs text-gray-500 dark:text-gray-400">{row.booker_name}</div>
+            )}
           </div>
         ),
       },
@@ -760,6 +903,21 @@ const BookingsScreen = ({ user }: any) => {
                   needs somebody to press Check in -- neither is visible from
                   the state alone. */}
               {row.status === 'hold' ? <HoldDeadline until={row.hold_until} /> : null}
+
+              {/* A room given for nothing, said under the state. Amber, the
+                  colour of "worth a glance": occupied like any stay, earning
+                  nothing, and the desk scanning tonight's arrivals should know
+                  which guest is the owner's. */}
+              {row.stay_kind && row.stay_kind !== 'paid' ? (
+                <span
+                  className="text-[0.6rem] font-semibold text-amber-700 dark:text-amber-300"
+                  title={`${row.stay_kind === 'house_use' ? 'House use' : 'Complimentary'} — the rooms are not charged.${
+                    row.stay_kind_reason ? ` ${row.stay_kind_reason}` : ''
+                  }`}
+                >
+                  {row.stay_kind === 'house_use' ? 'house use' : 'complimentary'}
+                </span>
+              ) : null}
               {/* {row.status === 'confirmed' ? (
                 <span className="text-[0.6rem] text-gray-400">nobody checked in</span>
               ) : null} */}
@@ -770,11 +928,11 @@ const BookingsScreen = ({ user }: any) => {
       {
         key: 'action',
         header: 'Action',
-        // Five slots wide -- see the grid below. Left narrower they wrap.
-        headerClass: 'text-center w-80',
+        // Seven slots wide -- see the grid below. Left narrower they wrap.
+        headerClass: 'text-center w-[27rem]',
         cellClass: 'text-center',
         render: (row: any) => {
-          if (['cancelled', 'expired'].includes(row.status)) {
+          if (DEAD_STATUSES.includes(row.status)) {
             return <span className="text-xs text-gray-400">—</span>;
           }
 
@@ -804,13 +962,13 @@ const BookingsScreen = ({ user }: any) => {
           const link = 'text-xs font-medium hover:underline whitespace-nowrap';
 
           return (
-            <div className="grid grid-cols-[3rem_4.25rem_2.75rem_4.75rem_3.5rem] items-center justify-items-center gap-x-1">
+            <div className="grid grid-cols-[3rem_4.25rem_2.75rem_4.75rem_3rem_4rem_3.5rem] items-center justify-items-center gap-x-1">
               {/* ⚠️ Only while the stay can still change. A checked-out or
                   cancelled booking is history -- its nights are the register of
                   who was here and its bill is made -- and the server refuses it
                   anyway. Offering the link would be offering a refusal. */}
               <span>
-                {!['checked_out', 'cancelled', 'expired'].includes(row.status) ? (
+                {!['checked_out', ...DEAD_STATUSES].includes(row.status) ? (
                   <button
                     type="button"
                     onClick={() => openEdit(row)}
@@ -879,6 +1037,43 @@ const BookingsScreen = ({ user }: any) => {
                     className={`${link} text-primary dark:text-secondary`}
                   >
                     Check out
+                  </button>
+                ) : null}
+              </span>
+
+              {/* The guest goes to another room -- 101's AC failed. Offered on
+                  a stay that holds a room and has not ended; the dialog reads
+                  which rooms can actually go. Not on a hold: a hold is moved
+                  by editing it, nothing is billed and nobody is in it. */}
+              <span>
+                {['confirmed', 'checked_in'].includes(row.status) &&
+                row.booking_type !== 'walk_in' &&
+                Number(row.rooms_held ?? row.stated_rooms ?? 0) > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => setMoving(row)}
+                    className={`${link} text-primary dark:text-secondary`}
+                    title="Move the guest to another room from tonight. Billed nights keep their lines."
+                  >
+                    Move
+                  </button>
+                ) : null}
+              </span>
+
+              {/* The guest never came. Offered only where the server would
+                  not refuse it: confirmed, the arrival night over, nobody
+                  recorded -- see canBeNoShow. Amber rather than red: it ends
+                  the booking, but it records a fact about the guest rather
+                  than undoing anything the desk did. */}
+              <span>
+                {canBeNoShow(row) ? (
+                  <button
+                    type="button"
+                    onClick={() => askNoShow(row)}
+                    className={`${link} text-amber-700 dark:text-amber-300`}
+                    title="Confirmed, the arrival night has passed, and nobody was checked in."
+                  >
+                    No-show
                   </button>
                 ) : null}
               </span>
@@ -1176,6 +1371,162 @@ const BookingsScreen = ({ user }: any) => {
                 rows={2}
                 maxLength={255}
                 placeholder="Guest changed plans, double entry, …"
+                className="block w-full rounded-xs border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-2 text-sm text-gray-900 outline-none dark:text-[rgb(var(--c-text))]"
+              />
+            </span>
+          </>
+        }
+      />
+
+      {/* A guest going to another room. Its own component, because the bill
+          screen opens the same dialog. */}
+      <MoveRoomDialog booking={moving} onClose={() => setMoving(null)} onMoved={load} />
+
+      <GuestProfileDrawer guest={profileOf} branchId={branchId} onClose={() => setProfileOf(null)} />
+
+      {/* The no-show dialog. The same shape as Cancel and deliberately not the
+          same dialog: the sentence at the top says a different thing, and the
+          money defaults the other way. */}
+      <ConfirmModal
+        show={Boolean(noShowing)}
+        title="Mark as a no-show"
+        confirmLabel="Mark no-show"
+        cancelLabel="Keep it"
+        className="bg-warning hover:bg-warning/90"
+        loading={saving}
+        disabled={Boolean(cancellation?.billed_lines) || Boolean(cancellation?.chart_missing?.length)}
+        onCancel={closeNoShow}
+        onConfirm={markNoShow}
+        message={
+          <>
+            <span className="block">
+              <strong className="text-black dark:text-white">{noShowing?.booking_no}</strong>
+              {noShowing?.booker_name ? ` · ${noShowing.booker_name}` : ''}
+            </span>
+            <span className="mt-1 block text-sm text-[rgb(var(--c-text-muted))]">
+              {formatDayMonthYear(noShowing?.check_in_date)} →{' '}
+              {formatDayMonthYear(noShowing?.check_out_date)} ·{' '}
+              {noShowing?.stated_rooms} {noShowing?.stated_rooms === 1 ? 'room' : 'rooms'}
+            </span>
+
+            {/* Said plainly, because it is the half people get wrong: this is
+                not a cancellation. The guest did not ring; the record will say
+                they did not come, and their history will carry it. */}
+            <span className="mt-3 block text-sm">
+              The rooms go back on sale straight away. The booking stays on the books,
+              marked <strong>no-show</strong> — not cancelled. The guest's history will say
+              they did not arrive.
+            </span>
+
+            {cancellation?.billed_lines ? (
+              <span className="mt-3 block rounded border border-danger bg-rose-50 p-2 text-left text-sm text-rose-900 dark:bg-rose-500/15 dark:text-rose-50">
+                This booking has already been billed, so it cannot be marked as a no-show — the
+                guest has been charged and the VAT has fallen due.{' '}
+                <strong>Check it out instead</strong>, and settle or carry what is owed.
+              </span>
+            ) : null}
+
+            {cancellation?.chart_missing?.length ? (
+              <span className="mt-3 block rounded border border-danger bg-rose-50 p-2 text-left text-sm text-rose-900 dark:bg-rose-500/15 dark:text-rose-50">
+                Money has been taken against this booking, but the chart of accounts is not ready
+                to record what happens to it. Missing: {cancellation.chart_missing.join(', ')}.
+              </span>
+            ) : null}
+
+            {!cancellation?.billed_lines && Number(cancellation?.amount_held) > 0 ? (
+              <div className="mt-3 rounded border border-[rgb(var(--c-border))] p-2.5 text-left">
+                <div className="text-sm text-slate-600 dark:text-slate-300">
+                  This booking is holding{' '}
+                  <strong className="text-black dark:text-white">
+                    {money(cancellation.amount_held)}
+                  </strong>
+                  .
+                </div>
+
+                {/* ⚠️ Two choices, the first one chosen. Keeping the advance is
+                    the ordinary outcome of a no-show and needs no figure typed;
+                    giving it back is the exception and asks for one. */}
+                <div className="mt-2 flex flex-col gap-1.5 text-sm">
+                  <label className="flex cursor-pointer items-start gap-2">
+                    <input
+                      type="radio"
+                      name="no_show_money"
+                      checked={keeping}
+                      onChange={() => setKeeping(true)}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      <strong className="text-black dark:text-white">Keep it</strong> as a no-show
+                      charge — posted as income, the same head a cancellation charge goes to.
+                    </span>
+                  </label>
+                  <label className="flex cursor-pointer items-start gap-2">
+                    <input
+                      type="radio"
+                      name="no_show_money"
+                      checked={!keeping}
+                      onChange={() => setKeeping(false)}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      <strong className="text-black dark:text-white">Give some or all back</strong>{' '}
+                      — the rest is kept as the charge.
+                    </span>
+                  </label>
+                </div>
+
+                {!keeping ? (
+                  <>
+                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      <InputElement
+                        id="no_show_refund"
+                        name="refund_amount"
+                        label="Give back"
+                        type="number"
+                        min={0}
+                        value={noShowRefund}
+                        onChange={(e: any) => setNoShowRefund(e.target.value)}
+                      />
+                      <DropdownCommon
+                        id="no_show_refund_till"
+                        name="coa4_id"
+                        label="Out of which account"
+                        data={(cancellation.tills ?? tills ?? []).map((till: any) => ({
+                          id: till.id,
+                          name: `${till.name} (${till.group_name})`,
+                        }))}
+                        value={noShowTill}
+                        onChange={(e: any) => setNoShowTill(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                      {money(
+                        Math.max(0, Number(cancellation.amount_held) - Number(noShowRefund || 0)),
+                      )}{' '}
+                      stays with the hotel as the no-show charge.
+                    </div>
+
+                    {Number(noShowRefund || 0) > Number(cancellation.amount_held) ? (
+                      <div className="mt-2 text-sm text-danger dark:text-red-400">
+                        That is more than the booking is holding.
+                      </div>
+                    ) : null}
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+
+            <span className="mt-3 block text-left">
+              <span className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">
+                Anything worth noting (optional)
+              </span>
+              <Textarea
+                value={noShowReason}
+                onChange={(event: any) => setNoShowReason(event.target.value)}
+                rows={2}
+                maxLength={255}
+                placeholder="Rang the mobile twice, no answer…"
                 className="block w-full rounded-xs border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-2 text-sm text-gray-900 outline-none dark:text-[rgb(var(--c-text))]"
               />
             </span>

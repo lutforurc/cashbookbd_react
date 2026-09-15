@@ -120,6 +120,8 @@ interface branchItem {
    */
   hotel_hold_hours: string;
   hotel_hold_max_hours: string;
+  /** The small print under the registration card a guest signs at check-in. */
+  hotel_registration_terms: string;
   salutation_male: string;
   salutation_female: string;
   salutation_other: string;
@@ -424,6 +426,7 @@ const AddBranch = () => {
     // branch.
     hotel_hold_hours: '2',
     hotel_hold_max_hours: '24',
+    hotel_registration_terms: '',
     salutation_male: '',
     salutation_female: '',
     salutation_other: '',
@@ -676,6 +679,7 @@ const AddBranch = () => {
         hotel_check_out_time: b.hotel_check_out_time || '12:00',
         hotel_hold_hours: String(b.hotel_hold_hours ?? 2),
         hotel_hold_max_hours: String(b.hotel_hold_max_hours ?? 24),
+        hotel_registration_terms: b.hotel_registration_terms ? String(b.hotel_registration_terms) : '',
         salutation_male: b.salutation_male ? String(b.salutation_male) : '',
         salutation_female: b.salutation_female ? String(b.salutation_female) : '',
         salutation_other: b.salutation_other ? String(b.salutation_other) : '',
@@ -1833,6 +1837,39 @@ const AddBranch = () => {
                         ) : null}
                       </p>
                     </div>
+                  </div>
+
+                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    What the guest signs
+                  </h4>
+
+                  {/* The small print under the registration card -- the paper
+                      a guest signs at check-in (name, ID, room, rate, dates).
+                      The property's own words, in whichever language it
+                      writes them; a rule list is kept as typed, line breaks
+                      and all. Empty prints a card with no terms, which is
+                      still a card. */}
+                  <div className="mb-2">
+                    <label
+                      htmlFor="hotel_registration_terms"
+                      className="mb-1 block text-sm text-black dark:text-white"
+                    >
+                      Registration card terms
+                    </label>
+                    <textarea
+                      id="hotel_registration_terms"
+                      name="hotel_registration_terms"
+                      rows={5}
+                      value={formData.hotel_registration_terms || ''}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, hotel_registration_terms: e.target.value }))
+                      }
+                      placeholder={'Check-out by 12 noon. Visitors are not allowed in rooms after 10 pm. ...'}
+                      className="block w-full rounded-xs border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-2 text-sm text-gray-900 outline-none dark:text-[rgb(var(--c-text))]"
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Printed under every guest's registration card, above the two signature lines.
+                    </p>
                   </div>
 
                   <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">

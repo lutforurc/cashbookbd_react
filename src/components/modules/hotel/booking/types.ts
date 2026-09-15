@@ -10,13 +10,21 @@ import { LayoutBuilding } from '../types';
 
 export type BookingType = 'individual' | 'group' | 'corporate' | 'walk_in';
 
+/**
+ * Whether the room is charged. paid bills the rent; the other two never do,
+ * hold the room exactly the same, and stay out of ADR and RevPAR.
+ */
+export type StayKind = 'paid' | 'complimentary' | 'house_use';
+
 export type BookingStatus =
   | 'hold'
   | 'confirmed'
   | 'checked_in'
   | 'checked_out'
   | 'cancelled'
-  | 'expired';
+  | 'expired'
+  /** Confirmed, paid an advance, and never came. Not a cancellation. */
+  | 'no_show';
 
 /**
  * What is free between two dates.
@@ -78,9 +86,13 @@ export interface Allotment {
 
 export interface Booking {
   id?: number;
+  /** The property. Read back only; the form sends branch_id on its own. */
+  branch_id?: number;
   booking_no?: string;
   booking_date?: string;
   booking_type: BookingType;
+  stay_kind?: StayKind;
+  stay_kind_reason?: string | null;
   status: BookingStatus;
 
   check_in_date: string;

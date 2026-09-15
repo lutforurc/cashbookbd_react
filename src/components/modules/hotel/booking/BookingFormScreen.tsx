@@ -37,8 +37,10 @@ import {
   clearAvailability,
   hallsRead,
 } from './bookingSlice';
-import { BookingType } from './types';
+import { BookingType, StayKind } from './types';
 import formatDate from '../../../utils/utils-functions/formatDate';
+import { hasPermission } from '../../../utils/permissionChecker';
+import GuestProfileDrawer, { GuestKey } from './GuestProfileDrawer';
 
 /**
  * Taking a booking, and changing one -- its own page.
@@ -86,6 +88,24 @@ const TYPE_OPTIONS: { id: BookingType; name: string }[] = [
 const STATUS_OPTIONS = [
   { id: 'confirmed', name: 'Confirmed' },
   { id: 'hold', name: 'Tentative hold' },
+];
+
+/**
+ * Whether the room is charged for.
+ *
+ * ⚠️ The two unpaid kinds never bill the rent -- no folio line, no voucher,
+ * no VAT -- while holding the room exactly as a paid stay does, so it is
+ * occupied on the grid, known to housekeeping and on the police register. The
+ * performance report keeps them in occupancy and out of ADR and RevPAR.
+ *
+ * Drawn only for somebody holding hotel.booking.complimentary: a free room is
+ * a discount by another name, and the receptionist who takes bookings does
+ * not hand rooms out for nothing. The server checks the same permission.
+ */
+const STAY_KIND_OPTIONS: { id: StayKind; name: string }[] = [
+  { id: 'paid', name: 'Paid' },
+  { id: 'complimentary', name: 'Complimentary' },
+  { id: 'house_use', name: 'House use' },
 ];
 
 const asDate = (value?: string | null) => (value ? new Date(value) : null);
@@ -157,6 +177,8 @@ const blankBooking = () => ({
   check_in_date: today(),
   check_out_date: tomorrow(),
   booking_type: 'individual' as BookingType,
+  stay_kind: 'paid' as StayKind,
+  stay_kind_reason: '',
   status: 'confirmed',
   booker_name: '',
   booker_mobile: '',
@@ -182,6 +204,11 @@ const BookingFormScreen = ({ user }: any) => {
   const saving = useSelector((state: any) => state.hotelBooking.saving);
   const buildingOptions = useSelector((state: any) => state.hotelSetup.buildingOptions);
   const times = useSelector((state: any) => state.hotelBooking.times);
+  const settings = useSelector((state: any) => state.settings);
+
+  // May this person give a room for nothing? Decides whether the Stay box is
+  // drawn at all -- see STAY_KIND_OPTIONS.
+  const mayGiveRooms = hasPermission(settings?.data?.permissions ?? [], 'hotel.booking.complimentary');
 
   const branches: any[] = branchDdlData?.protectedData?.data ?? [];
 
@@ -198,6 +225,9 @@ const BookingFormScreen = ({ user }: any) => {
   );
 
   const [form, setForm] = useState<any>(id ? null : blankBooking());
+
+  /** The guest whose history is open -- see GuestProfileDrawer. */
+  const [profileOf, setProfileOf] = useState<GuestKey | null>(null);
   const [building, setBuilding] = useState('');
   const [picked, setPicked] = useState<number[]>([]);
 
@@ -480,6 +510,8 @@ const BookingFormScreen = ({ user }: any) => {
         booking_no: booking.booking_no,
         status: booking.status,
         booking_type: booking.booking_type ?? 'individual',
+        stay_kind: booking.stay_kind ?? 'paid',
+        stay_kind_reason: booking.stay_kind_reason ?? '',
         check_in_date: String(booking.check_in_date ?? '').slice(0, 10),
         check_out_date: String(booking.check_out_date ?? '').slice(0, 10),
         booker_name: booking.booker_name ?? '',
@@ -811,6 +843,15 @@ const BookingFormScreen = ({ user }: any) => {
     stated_children: Number(form.stated_children) || 0,
     notes: form.notes || undefined,
 
+    // Whether the room is charged. Sent only by somebody who may change it;
+    // for everybody else the server keeps what the booking already is.
+    ...(mayGiveRooms
+      ? {
+          stay_kind: form.stay_kind || 'paid',
+          stay_kind_reason: form.stay_kind !== 'paid' ? form.stay_kind_reason || undefined : undefined,
+        }
+      : {}),
+
     // ⚠️ THE FORM ASKED AND NOTHING SENT IT. "Confirmed or held" sat on the
     // edit screen, the clerk moved it to Confirmed, the save succeeded and the
     // booking stayed held -- the answer never left the browser, and the server
@@ -840,6 +881,13 @@ const BookingFormScreen = ({ user }: any) => {
     // -- the reason for it is in the controller, beside the rule.
     if (!form.id && form.booking_type === 'corporate' && !billedTo?.value) {
       toast.error('Which company is billed? Pick one from the list.');
+      return;
+    }
+
+    // A free room needs a reason -- the server refuses one without, and a
+    // sentence here saves the round trip.
+    if (mayGiveRooms && form.stay_kind !== 'paid' && !String(form.stay_kind_reason ?? '').trim()) {
+      toast.error('Say why the room is not charged — who it is for, or on whose word.');
       return;
     }
 
@@ -901,6 +949,9 @@ const BookingFormScreen = ({ user }: any) => {
           stated_adults: Number(form.stated_adults) || 0,
           stated_children: Number(form.stated_children) || 0,
           notes: form.notes || undefined,
+          ...(mayGiveRooms && form.stay_kind !== 'paid'
+            ? { stay_kind: form.stay_kind, stay_kind_reason: form.stay_kind_reason }
+            : {}),
         }),
       ).unwrap();
 
@@ -1031,6 +1082,25 @@ const BookingFormScreen = ({ user }: any) => {
           onChange={chooseType}
         />
 
+        {/* Whether the room is charged. Only for somebody who may give
+            rooms away, and never on a walk-in, which holds no room to give.
+            A booking already made free by a manager still shows the word to
+            a receptionist -- greyed, as a fact rather than a choice. */}
+        {!isWalkIn && (mayGiveRooms || (form.stay_kind && form.stay_kind !== 'paid')) ? (
+          <DropdownCommon
+            id="stay_kind"
+            name="stay_kind"
+            label="Stay"
+            data={
+              mayGiveRooms
+                ? STAY_KIND_OPTIONS
+                : STAY_KIND_OPTIONS.filter((one) => one.id === form.stay_kind)
+            }
+            value={form.stay_kind || 'paid'}
+            onChange={set('stay_kind')}
+          />
+        ) : null}
+
         {/* The day it was served. A walk-in has no arriving and no
             leaving, so it is asked for once and both dates are set
             from it -- the nights between them come out at nought,
@@ -1153,6 +1223,29 @@ const BookingFormScreen = ({ user }: any) => {
                 one name.
               </>
             )}
+          </p>
+        </div>
+      ) : null}
+
+      {/* Why the room is given. Required on an unpaid kind, for the reason a
+          discount needs one: a room given away that nobody has to explain is
+          the hole a hotel's rooms go down. Written into the booking with who
+          allowed it. */}
+      {!isWalkIn && form.stay_kind && form.stay_kind !== 'paid' ? (
+        <div className="mt-2 max-w-lg">
+          <InputElement
+            id="stay_kind_reason"
+            name="stay_kind_reason"
+            label={`Why ${form.stay_kind === 'house_use' ? 'house use' : 'complimentary'}`}
+            placeholder="Owner's guest, inspecting officer, night shift…"
+            value={form.stay_kind_reason ?? ''}
+            onChange={set('stay_kind_reason')}
+            disabled={!mayGiveRooms}
+          />
+          <p className="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
+            The rooms are held and occupied like any other stay, but their rent is never billed —
+            no line, no voucher, no VAT. Meals and laundry still go on the bill. In occupancy, out of
+            ADR and RevPAR.
           </p>
         </div>
       ) : null}
@@ -1482,9 +1575,21 @@ const BookingFormScreen = ({ user }: any) => {
                     <span className="text-gray-500 dark:text-gray-400">
                       {anyPicked} × {nights} {nights === 1 ? 'night' : 'nights'} ·{' '}
                     </span>
-                    <span className="font-semibold text-black dark:text-white">
-                      {money(total)}
-                    </span>
+                    {form.stay_kind && form.stay_kind !== 'paid' ? (
+                      // The tariff, struck through, and the word beside it:
+                      // what the rooms would have earned, and that they will
+                      // not.
+                      <>
+                        <span className="text-gray-400 line-through">{money(total)}</span>{' '}
+                        <span className="font-semibold text-amber-700 dark:text-amber-300">
+                          not charged
+                        </span>
+                      </>
+                    ) : (
+                      <span className="font-semibold text-black dark:text-white">
+                        {money(total)}
+                      </span>
+                    )}
                   </>
                 )}
               </span>
@@ -1529,6 +1634,27 @@ const BookingFormScreen = ({ user }: any) => {
                     Stayed here before — <strong>{returning.name}</strong>
                     {returning.stays > 1 ? `, ${returning.stays} stays` : ''}
                     {returning.last_stay ? `, last ${formatDate(returning.last_stay)}` : ''}.
+                    {/* The two facts worth knowing before saying yes, said
+                        in the same breath and not hidden in the history. */}
+                    {Number(returning.no_shows) > 0 ? (
+                      <strong className="ml-1 text-orange-700 dark:text-orange-300">
+                        {returning.no_shows} no-show{Number(returning.no_shows) === 1 ? '' : 's'}.
+                      </strong>
+                    ) : null}
+                    {Number(returning.owed) > 0 ? (
+                      <strong className="ml-1 text-danger dark:text-red-400">
+                        Owes {money(returning.owed)}.
+                      </strong>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setProfileOf({ mobile: form.booker_mobile, name: returning.name })
+                      }
+                      className="ml-1 underline"
+                    >
+                      History
+                    </button>
                   </p>
                 ) : null}
               </div>
@@ -1616,6 +1742,8 @@ const BookingFormScreen = ({ user }: any) => {
           </>
         )}
       </div>
+
+      <GuestProfileDrawer guest={profileOf} branchId={branchId} onClose={() => setProfileOf(null)} />
 
       {/* ⚠️ NOT A WARNING -- A REFUSAL, EXPLAINED.
           It once offered "Change it anyway", and the charge then stayed on the

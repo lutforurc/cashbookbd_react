@@ -5366,3 +5366,114 @@ then the front end. Every company starts switched off.
 30/06/2027, so every voucher dated before then is refused — which is the lock
 working. Turn the switch on for that company, undo that closing, and the
 branch is open again.
+
+## 43. What the front desk does every day that the hotel could not, 2026-09-15
+
+[hotel-front-desk-gaps-2026-09-14.md](hotel-front-desk-gaps-2026-09-14.md)
+asked a different question from the "what is left" list above: what does a
+receptionist do between morning and night that this software cannot record?
+Five things, none of them waiting on a client answer. All five are built; the
+gaps document carries the per-section detail and where the build departed
+from the plan. This section is the record of what the module now does.
+
+### 43.1 No-show — a guest who never came is not a guest who cancelled
+
+`Booking::STATUS_NO_SHOW` (`no_show`), the seventh status. Written only by
+hand from the desk (`POST bookings/no-show/{id}`, `hotel.booking.cancel`):
+confirmed, the arrival **night** over, nobody recorded in any room, nothing
+billed. The nights are deleted as a cancellation's are; the money goes through
+`hotel_booking_cancellations` and the same two vouchers, with the reason
+prefixed *"No-show."* and the retention narrated *"No-show charge retained"*
+— there is no separate no-show income head, and the booking's own status says
+which it was.
+
+⚠️ **The advance is kept unless the desk types a refund** — the opposite
+default from Cancel, on purpose. Nothing is automatic until the client gives
+the cancellation-percentage rule (§6.2); the status does not wait on it.
+
+`Booking::DEAD_STATUSES` (cancelled · expired · no_show) replaces seven
+hand-written `[cancelled, expired]` lists, and `howItEnded()` keeps the
+refusals from calling a no-show "cancelled". The performance report counts
+`no_shows` and `no_show_room_nights` (nights × stated rooms, cut by arrival
+date — the nights themselves are gone). `guestByMobile` no longer counts one
+as a stay.
+
+### 43.2 Room move — a guest moved to another room has not left
+
+`GET/POST bookings/move/{id}` (`hotel.booking.view`). The nights from the move
+date go to the new room in one transaction, one row per bed, the money on the
+first bed (§2.8). The guests go with their room. On a checked-in stay the old
+room is dirty and written to `hotel_booking_room_checkouts` with the two new
+columns **`kind = 'move'`** and `moved_to_resource_id`; the departures report
+skips a move, while everything that treats the old room as *out of the stay*
+(check-out's `already_left`, allotment's refusal) still does.
+
+⚠️ **A billed night keeps its line, its figure and its voucher.** Only the
+line's `resource_id` is re-pointed at the room actually slept in, and its
+description says so (*"… → MB / 205"*). Without that, `unbilledNights()`
+would bill the same night again under the new room — the very bug the
+booking-edit path had. `keep_rate` (default) keeps the old rent; charging the
+new room's rate is refused on a billed night, because a posted line is not
+re-priced. Whole rooms only; a bed and a hall are not moved.
+
+### 43.3 Registration card — the paper the guest signs
+
+`GET bookings/allotment/{id}/card` (`hotel.booking.allot`): one card per guest
+recorded, at the rate the room was **let** at (from the night rows, not
+today's tariff), with the branch's own terms under it —
+`metas.hotel_registration_terms`, typed on the branch form's Hotel Setup step.
+Nothing is stored; it is the allotment printed with room for two signatures.
+Not on the print designer, for the register's reason. Two cards to an A4
+sheet.
+
+### 43.4 Complimentary and house use — a room given for nothing
+
+`hotel_booking_master.stay_kind` (paid · complimentary · house_use) with
+`stay_kind_reason` and `stay_kind_by`. Behind **`hotel.booking.complimentary`**
+— a free room is a discount by another name — and a reason is required. The
+nights are held exactly as a paid stay's, so the room is occupied on the grid,
+known to housekeeping and on the register; the rent is **never billed**, and
+that is one line: `FolioBilling::unbilledNights()` answers nothing on an
+unpaid stay, so screen 5, check-out and the night audit all skip it together.
+Other charges go on the bill as usual. Cannot be switched once the rent is
+billed.
+
+The performance report keeps a free room **in occupancy and out of ADR and
+RevPAR** — `stay_kind = 'paid'` inside the revenue and the ADR divisor, in
+one SQL fragment shared by the month, the day and the room type — and says
+`free_room_nights` out loud. The night rows carry the tariff, so what the free
+rooms were worth can still be asked.
+
+### 43.5 Guest profile — one guest, every stay
+
+`GuestProfileController`: `GET bookings/guest/history?national_id=&mobile=`
+(`hotel.booking.view`). **No new table for the history** —
+`hotel_booking_guests` joined to its bookings is the history. The key is the
+NID where there is one and the mobile where there is not, and both are
+followed: the NID's rows, every mobile on them, every row on those mobiles,
+and every booking those mobiles **telephoned** for — which is where the
+no-shows are, since a guest who never came was never named in a room.
+
+Per booking: dates, rooms, status, stay kind, billed / paid / due from the
+folio's own arithmetic, `carried` (a balance moved to a party is the company's
+debt, not the guest's), retained. Totals: stays actually slept, no-shows,
+cancelled, upcoming, money, last and first stay. The person's particulars are
+the newest **non-empty** value of each field.
+
+The one addition is `hotel_guest_notes` — a sentence about the person, keyed
+by NID or mobile digits, company-wide, append-only. `guestByMobile` now also
+answers `no_shows` and `owed`, so the booking form's returning line says both.
+
+### Checks, deploy
+
+`hotel_no_show_check.php` (53), `hotel_room_move_check.php` (70),
+`hotel_registration_card_check.php` (14), `hotel_stay_kind_check.php` (41),
+`hotel_guest_profile_check.php` (34) — every scenario rolled back. Money
+scenarios date their vouchers two years out because staging's books are
+locked to 30/06/2027 (§42).
+
+`patch:add-unit-type` gained four guarded steps — `runHotelNoShowStatusSchema`,
+`runHotelRoomMoveSchema`, `runHotelStayKindSchema`, `runHotelGuestNotesSchema`
+— and `syncPermissions()` the one new permission; the same four changes are in
+`database/sql/2026_09_15_hotel_*.sql` for a database the command cannot
+reach. New routes: `route:clear`.

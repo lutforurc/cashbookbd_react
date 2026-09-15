@@ -426,7 +426,9 @@ const HotelReports = () => {
         header: 'Rooms sold',
         headerClass: 'text-right',
         cellClass: 'text-right tabular-nums',
-        render: (row: any) => `${row.sold} / ${row.room_nights_available}`,
+        // "3 / 44 (1 free)" -- the free room is in the 3 and not in the money.
+        render: (row: any) =>
+          `${row.sold} / ${row.room_nights_available}${row.comp ? ` (${row.comp} free)` : ''}`,
       },
       {
         key: 'occupancy',
@@ -477,7 +479,8 @@ const HotelReports = () => {
         header: 'Room-nights sold',
         headerClass: 'text-right',
         cellClass: 'text-right tabular-nums',
-        render: (row: any) => `${row.sold} / ${row.room_nights_available}`,
+        render: (row: any) =>
+          `${row.sold} / ${row.room_nights_available}${row.comp ? ` (${row.comp} free)` : ''}`,
       },
       {
         key: 'occupancy',
@@ -919,6 +922,31 @@ const HotelReports = () => {
                     any figure above — a hold is a telephone call that expires on its own.
                   </span>
                 ) : null}
+
+                {/* Rooms given for nothing: in the occupancy, out of the money.
+                    Said in words because it is the figure a meeting argues
+                    about -- "why is ADR down" is answered by this line. */}
+                {run.free_room_nights ? (
+                  <span>
+                    <strong className="text-black dark:text-white">
+                      {run.free_room_nights} room-nights complimentary or house use
+                    </strong>{' '}
+                    — counted in occupancy, left out of ADR and RevPAR.
+                  </span>
+                ) : null}
+
+                {/* The guests who never came. Their nights were released, so
+                    nothing above can see them; this is the only line that
+                    says what the empty rooms cost. */}
+                {run.no_shows ? (
+                  <span className="text-orange-700 dark:text-orange-300">
+                    <strong>
+                      {run.no_shows} no-show{run.no_shows === 1 ? '' : 's'}
+                    </strong>{' '}
+                    — {run.no_show_room_nights} room-night
+                    {run.no_show_room_nights === 1 ? '' : 's'} that stood empty on a booking.
+                  </span>
+                ) : null}
               </div>
 
               <p className="mb-4 rounded border border-stroke bg-gray-50 p-2.5 text-xs leading-snug text-gray-600 dark:border-strokedark dark:bg-meta-4/40 dark:text-gray-300">
@@ -927,11 +955,12 @@ const HotelReports = () => {
                     on the report rather than left in the code. */}
                 Rooms only — halls and community centres are let by the sitting, not the night, and
                 counting them would push occupancy past 100%. Confirmed, checked-in and checked-out
-                stays count; holds do not. Rent is the <strong>full tariff</strong>: a room let at
-                6,000 with 600 off is a 6,000 room and a 600 discount, so a discount lowers the
-                takings and never the ADR. Measured against the {performance.rooms} rooms this
-                property has <strong>today</strong> — a floor opened last week makes last month read
-                low.
+                stays count; holds and no-shows do not. Rent is the <strong>full tariff</strong>: a
+                room let at 6,000 with 600 off is a 6,000 room and a 600 discount, so a discount
+                lowers the takings and never the ADR. A complimentary or house-use room is occupied
+                and earns nothing, so it is in occupancy and out of ADR and RevPAR. Measured against
+                the {performance.rooms} rooms this property has <strong>today</strong> — a floor
+                opened last week makes last month read low.
               </p>
 
               <div className="mb-2 text-sm font-semibold text-black dark:text-white">

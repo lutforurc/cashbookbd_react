@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiArrowLeft, FiPlus, FiSave, FiTrash2, FiX } from 'react-icons/fi';
+import { useReactToPrint } from 'react-to-print';
+import { FiArrowLeft, FiPlus, FiPrinter, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
@@ -13,10 +14,12 @@ import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import routes from '../../../services/appRoutes';
 import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import httpService from '../../../services/httpService';
-import { API_HOTEL_GUEST_URL } from '../../../services/apiRoutes';
+import { API_HOTEL_BOOKING_URL, API_HOTEL_GUEST_URL } from '../../../services/apiRoutes';
 
 import { allotmentRead, allotSave, clearAllotment } from './bookingSlice';
 import { AllotmentRoom, Guest } from './types';
+import RegistrationCardPrint from './RegistrationCardPrint';
+import GuestProfileDrawer, { GuestKey } from './GuestProfileDrawer';
 
 /**
  * Allotment -- the same booking, opened on the day the guests arrive.
@@ -94,6 +97,60 @@ const AllotmentScreen = () => {
   // Which room is open, readable from a callback that was made before the
   // answer came back. See fillOpenRoom.
   const openRoomRef = useRef<number | null>(null);
+
+  /**
+   * The registration cards waiting to go to the printer.
+   *
+   * ⚠️ Held in state and printed from the effect below, not from the response:
+   * react-to-print copies what is in the DOM at the moment it is called, so
+   * the cards have to be MOUNTED first -- the same rule the folio's papers
+   * follow.
+   */
+  const [cards, setCards] = useState<any>(null);
+
+  /** The guest whose history is open -- see GuestProfileDrawer. */
+  const [profileOf, setProfileOf] = useState<GuestKey | null>(null);
+  const [fetchingCards, setFetchingCards] = useState(false);
+  const cardsRef = useRef<HTMLDivElement>(null);
+
+  const sendCardsToPrinter = useReactToPrint({
+    contentRef: cardsRef,
+    documentTitle: `Registration ${allotment?.booking?.booking_no ?? ''}`,
+    onAfterPrint: () => setCards(null),
+  });
+
+  useEffect(() => {
+    if (!cards) return undefined;
+    // The wait is for the letterhead image, which PadPrinting loads rather
+    // than renders inline -- printed sooner, the card goes out headless.
+    const timer = setTimeout(() => sendCardsToPrinter(), 250);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cards]);
+
+  /**
+   * One card per guest recorded, with the branch's own terms under it. The
+   * paper the guest signs -- the register is the hotel's, this is theirs.
+   */
+  const printCards = async () => {
+    setFetchingCards(true);
+
+    try {
+      const res = await httpService.get(`${API_HOTEL_BOOKING_URL}/allotment/${bookingId}/card`);
+      const payload = res?.data?.data?.data ?? res?.data?.data ?? null;
+
+      if (res?.data?.success !== true || !payload) {
+        toast.error(res?.data?.message || 'The cards could not be prepared.');
+        return;
+      }
+
+      setCards(payload);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'The cards could not be prepared.');
+    } finally {
+      setFetchingCards(false);
+    }
+  };
 
   useEffect(() => {
     openRoomRef.current = openRoom;
@@ -410,6 +467,17 @@ const AllotmentScreen = () => {
               worth reading: the food and the towels are computed from the one
               on the right. */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+            {/* The paper the guest signs. Only once somebody is recorded: a
+                card with no name on it is a blank form, and the desk has
+                those in a drawer already. */}
+            {allotment.arrived > 0 ? (
+              <ButtonLoading
+                onClick={printCards}
+                buttonLoading={fetchingCards}
+                label="Print registration cards"
+                icon={<FiPrinter size={16} />}
+              />
+            ) : null}
             <span className="text-gray-500 dark:text-gray-400">
               Booked for <strong className="text-black dark:text-white">{allotment.stated}</strong>
             </span>
@@ -611,7 +679,27 @@ const AllotmentScreen = () => {
               <div className="border-t border-stroke px-4 py-2 text-xs text-gray-600 dark:border-strokedark dark:text-gray-300">
                 {room.guests.map((guest) => (
                   <span key={guest.id} className="mr-4 inline-block">
-                    {guest.name}
+                    {/* The name opens the history where there is a key to
+                        find the person by: the NID first, the mobile where
+                        there is none. */}
+                    {guest.national_id || guest.mobile ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setProfileOf({
+                            national_id: guest.national_id,
+                            mobile: guest.mobile,
+                            name: guest.name,
+                          })
+                        }
+                        className="hover:text-primary hover:underline dark:hover:text-secondary"
+                        title="Every stay this guest has had here"
+                      >
+                        {guest.name}
+                      </button>
+                    ) : (
+                      guest.name
+                    )}
                     {guest.is_primary ? (
                       <span
                         className="ml-1 text-[0.6rem] text-gray-400"
@@ -635,6 +723,18 @@ const AllotmentScreen = () => {
         A room can be checked in at any time — three now, two this evening. Guests recorded here are{' '}
         <strong>not</strong> customer accounts: the party master is for whoever the bill goes to.
       </p>
+
+      <GuestProfileDrawer
+        guest={profileOf}
+        branchId={booking?.branch_id}
+        onClose={() => setProfileOf(null)}
+      />
+
+      {/* Mounted only while the cards are on their way to the printer -- in
+          the DOM for react-to-print to copy, and never seen on screen. */}
+      <div className="hidden">
+        {cards ? <RegistrationCardPrint ref={cardsRef} data={cards} /> : null}
+      </div>
     </div>
   );
 };
