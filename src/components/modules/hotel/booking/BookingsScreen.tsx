@@ -1,7 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import {
+  FiEdit,
+  FiFileText,
+  FiLogIn,
+  FiLogOut,
+  FiMove,
+  FiUserX,
+  FiUsers,
+  FiXCircle,
+} from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
@@ -11,6 +21,8 @@ import InputDatePicker from '../../../utils/fields/DatePicker';
 import SearchInput from '../../../utils/fields/SearchInput';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { Textarea } from '../../../utils/fields/FormControls';
+import useTooltip from '../../../utils/others/useTooltip';
+import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 import routes from '../../../services/appRoutes';
 import SetupShell from '../SetupShell';
@@ -382,6 +394,57 @@ const HoldDeadline = ({ until }: { until?: string | null }) => {
     >
       {said}
     </span>
+  );
+};
+
+/**
+ * One icon in the Action column, with the app's own tooltip on it.
+ *
+ * The links were words -- Edit, Check in, Bill -- and seven words across a
+ * row took twenty-seven rem the table did not have. An icon takes two, and
+ * says its word in the bubble on hover and, through sr-only, to a screen
+ * reader; the browser's own title= is not used beside it, so only one bubble
+ * opens.
+ *
+ * ⚠️ A COMPONENT RATHER THAN A HOOK CALL PER BUTTON, and it has to be: the
+ * buttons are rendered conditionally, and a hook called inside a conditional
+ * runs in a different order from one render to the next -- the one thing
+ * hooks may not do. Each button is its own component, so the hook inside it
+ * is unconditional. Same shape as Hint in VoucherActionButtons.
+ */
+const ActionIcon = ({
+  label,
+  hint,
+  onClick,
+  disabled = false,
+  className = '',
+  children,
+}: {
+  /** The word the link used to be. Read by screen readers, and the tooltip when `hint` is not given. */
+  label: string;
+  /** What the tooltip says, where a sentence is worth more than the word. */
+  hint?: ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  className?: string;
+  children: ReactNode;
+}) => {
+  const { anchorProps, tooltip } = useTooltip<HTMLButtonElement>(hint ?? label);
+
+  return (
+    <>
+      <Button
+        type="button"
+        {...anchorProps}
+        onClick={onClick}
+        disabled={disabled}
+        className={`inline-flex items-center justify-center px-1.5 disabled:opacity-70 ${className}`}
+      >
+        {children}
+        <span className="sr-only">{label}</span>
+      </Button>
+      {tooltip}
+    </>
   );
 };
 
@@ -929,7 +992,7 @@ const BookingsScreen = ({ user }: any) => {
         key: 'action',
         header: 'Action',
         // Seven slots wide -- see the grid below. Left narrower they wrap.
-        headerClass: 'text-center w-[27rem]',
+        headerClass: 'text-center w-[14rem]',
         cellClass: 'text-center',
         render: (row: any) => {
           if (DEAD_STATUSES.includes(row.status)) {
@@ -952,30 +1015,28 @@ const BookingsScreen = ({ user }: any) => {
            * is what keeps the column straight, and says at a glance which stays
            * have started and which have not.
            *
-           * ⚠️ The tracks are SIZED TO THEIR WORDS, not five equal fifths.
-           * Equal fifths gave "Bill" the same room as "Check out", and the
-           * longer word ran straight over Cancel beside it -- two links sharing
-           * the same pixels, one of them the destructive one. Fixed widths keep
-           * every row on the same tracks while letting each hold what it has
-           * to say.
+           * ⚠️ SEVEN EQUAL TRACKS, now that every slot holds an icon of one
+           * size. They were sized to their words -- "Check out" needed more
+           * room than "Bill", and equal tracks ran the longer word over Cancel
+           * beside it -- and the words are gone. Each icon says its word in
+           * the app's own tooltip and to a screen reader; see ActionIcon.
            */
-          const link = 'text-xs font-medium hover:underline whitespace-nowrap';
-
           return (
-            <div className="grid grid-cols-[3rem_4.25rem_2.75rem_4.75rem_3rem_4rem_3.5rem] items-center justify-items-center gap-x-1">
+            <div className="grid grid-cols-[repeat(7,2rem)] items-center justify-items-center gap-x-1">
               {/* ⚠️ Only while the stay can still change. A checked-out or
                   cancelled booking is history -- its nights are the register of
                   who was here and its bill is made -- and the server refuses it
                   anyway. Offering the link would be offering a refusal. */}
               <span>
                 {!['checked_out', ...DEAD_STATUSES].includes(row.status) ? (
-                  <button
-                    type="button"
+                  <ActionIcon
+                    label="Edit"
+                    hint="Edit the booking — dates, rooms, the party."
                     onClick={() => openEdit(row)}
-                    className={`${link} text-primary dark:text-secondary`}
+                    className="text-primary dark:text-secondary cursor-pointer"
                   >
-                    Edit
-                  </button>
+                    <FiEdit size={20}/>
+                  </ActionIcon>
                 ) : null}
               </span>
 
@@ -984,20 +1045,34 @@ const BookingsScreen = ({ user }: any) => {
                   the spec calls it, and nobody at a desk says that.
 
                   One slot for both because they are the same door: before the
-                  guests arrive it takes them in, afterwards it shows who came. */}
+                  guests arrive it takes them in, afterwards it shows who came.
+                  Two icons, though -- a door going in, and the people who
+                  went through it -- so the row says which of the two it is. */}
               <span>
                 {/* ⚠️ Never on a walk-in sale. There is no room to allot and
                     nobody to put in it -- the screen behind this link asks
                     which room the guests are in, and the server refuses a room
                     this booking does not hold. */}
                 {row.booking_type !== 'walk_in' ? (
-                  <button
-                    type="button"
-                    onClick={() => navigate(`${routes.hotel_booking_check_in}/${row.id}`)}
-                    className={`${link} text-primary dark:text-secondary`}
-                  >
-                    {row.status === 'checked_in' ? 'Guests' : 'Check in'}
-                  </button>
+                  row.status === 'checked_in' ? (
+                    <ActionIcon
+                      label="Guests"
+                      hint="Who is in the rooms, and add a late arrival."
+                      onClick={() => navigate(`${routes.hotel_booking_check_in}/${row.id}`)}
+                      className="text-primary dark:text-secondary cursor-pointer"
+                    >
+                      <FiUsers size={20} />
+                    </ActionIcon>
+                  ) : (
+                    <ActionIcon
+                      label="Check in"
+                      hint="Check in — put the guests in their rooms."
+                      onClick={() => navigate(`${routes.hotel_booking_check_in}/${row.id}`)}
+                      className="text-primary dark:text-secondary cursor-pointer"
+                    >
+                      <FiLogIn size={20} />
+                    </ActionIcon>
+                  )
                 ) : null}
               </span>
 
@@ -1006,14 +1081,15 @@ const BookingsScreen = ({ user }: any) => {
                   before anybody arrives.
 
                   ⚠️ The wait happens HERE, on the link, not on the next screen
-                  -- see openBill. The spinner takes the word's place inside the
+                  -- see openBill. The spinner takes the icon's place inside the
                   same slot so the row does not shuffle while it turns. */}
               <span>
-                <button
-                  type="button"
+                <ActionIcon
+                  label="Bill"
+                  hint={openingBill === row.id ? 'Opening the bill…' : 'The bill — charges, payments, what is owed.'}
                   onClick={() => openBill(row.id)}
                   disabled={openingBill === row.id}
-                  className={`${link} text-primary disabled:opacity-70 dark:text-secondary`}
+                  className="text-primary dark:text-secondary cursor-pointer"
                 >
                   {openingBill === row.id ? (
                     <span
@@ -1021,9 +1097,9 @@ const BookingsScreen = ({ user }: any) => {
                       className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent align-middle"
                     />
                   ) : (
-                    'Bill'
+                    <FiFileText size={20} />
                   )}
-                </button>
+                </ActionIcon>
               </span>
 
               {/* Only on a stay that has actually started. Offered on a hold
@@ -1031,13 +1107,14 @@ const BookingsScreen = ({ user }: any) => {
                   ever answer "these guests have not been checked in". */}
               <span>
                 {row.status === 'checked_in' ? (
-                  <button
-                    type="button"
+                  <ActionIcon
+                    label="Check out"
+                    hint="Check out — settle the bill and free the rooms."
                     onClick={() => navigate(`${routes.hotel_booking_check_out}/${row.id}`)}
-                    className={`${link} text-primary dark:text-secondary`}
+                    className="text-primary dark:text-secondary cursor-pointer"
                   >
-                    Check out
-                  </button>
+                    <FiLogOut size={20} />
+                  </ActionIcon>
                 ) : null}
               </span>
 
@@ -1049,14 +1126,14 @@ const BookingsScreen = ({ user }: any) => {
                 {['confirmed', 'checked_in'].includes(row.status) &&
                 row.booking_type !== 'walk_in' &&
                 Number(row.rooms_held ?? row.stated_rooms ?? 0) > 0 ? (
-                  <button
-                    type="button"
+                  <ActionIcon
+                    label="Move"
+                    hint="Move the guest to another room from tonight. Billed nights keep their lines."
                     onClick={() => setMoving(row)}
-                    className={`${link} text-primary dark:text-secondary`}
-                    title="Move the guest to another room from tonight. Billed nights keep their lines."
+                    className="text-primary dark:text-secondary cursor-pointer"
                   >
-                    Move
-                  </button>
+                    <FiMove size={20} />
+                  </ActionIcon>
                 ) : null}
               </span>
 
@@ -1067,14 +1144,14 @@ const BookingsScreen = ({ user }: any) => {
                   than undoing anything the desk did. */}
               <span>
                 {canBeNoShow(row) ? (
-                  <button
-                    type="button"
+                  <ActionIcon
+                    label="No-show"
+                    hint="Mark as a no-show — confirmed, the arrival night has passed, and nobody was checked in."
                     onClick={() => askNoShow(row)}
-                    className={`${link} text-amber-700 dark:text-amber-300`}
-                    title="Confirmed, the arrival night has passed, and nobody was checked in."
+                    className="text-amber-700 dark:text-amber-300 cursor-pointer"
                   >
-                    No-show
-                  </button>
+                    <FiUserX size={20} />
+                  </ActionIcon>
                 ) : null}
               </span>
 
@@ -1083,13 +1160,14 @@ const BookingsScreen = ({ user }: any) => {
                   aiming at where it was on the row above. */}
               <span>
                 {row.status === 'checked_out' ? null : (
-                  <button
-                    type="button"
+                  <ActionIcon
+                    label="Cancel"
+                    hint="Cancel the booking — the rooms go back on sale."
                     onClick={() => askToCancel(row)}
-                    className={`${link} text-danger dark:text-red-400`}
+                    className="text-danger dark:text-red-400 cursor-pointer"
                   >
-                    Cancel
-                  </button>
+                    <FiXCircle size={20} />
+                  </ActionIcon>
                 )}
               </span>
             </div>

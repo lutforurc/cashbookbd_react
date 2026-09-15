@@ -28,6 +28,7 @@ import {
   registerRead,
 } from './reportSlice';
 import RegisterPrint from './RegisterPrint';
+import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 
 /**
  * Reading the property back -- who was here, and what came in.
@@ -442,7 +443,7 @@ const HotelReports = () => {
         header: 'Room revenue',
         headerClass: 'text-right',
         cellClass: 'text-right tabular-nums',
-        render: (row: any) => money(row.revenue),
+        render: (row: any) => row.revenue ? thousandSeparator(row.revenue) : <span className="text-gray-400">—</span>,
       },
       {
         key: 'adr',
@@ -452,14 +453,14 @@ const HotelReports = () => {
         // Nought rooms sold has no average rate, and printing 0.00 would put a
         // night with no guests in the same column as a night given away free.
         render: (row: any) =>
-          row.sold ? money(row.adr) : <span className="text-gray-400">—</span>,
+          row.sold ? thousandSeparator(row.adr) : <span className="text-gray-400">—</span>,
       },
       {
         key: 'revpar',
         header: 'RevPAR',
         headerClass: 'text-right',
         cellClass: 'text-right tabular-nums',
-        render: (row: any) => money(row.revpar),
+        render: (row: any) => row.revpar ? money(row.revpar) : <span className="text-gray-400">—</span>,
       },
     ],
     [],
@@ -494,7 +495,7 @@ const HotelReports = () => {
         header: 'Room revenue',
         headerClass: 'text-right',
         cellClass: 'text-right tabular-nums',
-        render: (row: any) => money(row.revenue),
+        render: (row: any) => row.revenue ? thousandSeparator(row.revenue) : <span className="text-gray-400">—</span>,
       },
       {
         key: 'adr',
@@ -502,14 +503,14 @@ const HotelReports = () => {
         headerClass: 'text-right',
         cellClass: 'text-right tabular-nums',
         render: (row: any) =>
-          row.sold ? money(row.adr) : <span className="text-gray-400">—</span>,
+          row.sold ? thousandSeparator(row.adr) : <span className="text-gray-400">—</span>,
       },
       {
         key: 'revpar',
         header: 'RevPAR',
         headerClass: 'text-right',
         cellClass: 'text-right tabular-nums',
-        render: (row: any) => money(row.revpar),
+        render: (row: any) => row.revpar?  money(row.revpar) : <span className="text-gray-400">—</span>,
       },
     ],
     [],
