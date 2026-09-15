@@ -1,6 +1,6 @@
 # হোটেল — দৈনন্দিন ফ্রন্ট-ডেস্কে যা লাগে, কিন্তু নেই
 
-**তারিখ:** ২০২৬-০৯-১৪ · **সর্বশেষ হালনাগাদ:** ২০২৬-০৯-১৫ — **পাঁচটিই বানানো** — API `0ed8e12e` (Reseller), React: এই কমিটের পরেরটিতে হ্যাশ
+**তারিখ:** ২০২৬-০৯-১৪ · **সর্বশেষ হালনাগাদ:** ২০২৬-০৯-১৫ — **পাঁচটিই বানানো** — API `0ed8e12e` (Reseller) · React `63c26793` (Reseller-ui)
 **পরিসর:** `cashbook_api` (`app/Http/Controllers/Hotel`, `app/Models/Hotel`),
 `cashbookbd_react` (`src/components/modules/hotel`)
 **উদ্দেশ্য:** [hotel-resort-booking-spec.md](hotel-resort-booking-spec.md)-এর "যা বাকি"
