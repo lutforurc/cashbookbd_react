@@ -56,6 +56,8 @@ type PrintPayload = {
     } | null;
   } | null;
   product_name?: string | null;
+  /** The note typed on the order itself -- printed under the table. */
+  notes?: string | null;
 };
 
 type Props = {
@@ -176,6 +178,23 @@ const getOrderTypeLabel = (value: Primitive) => {
   return 'Order';
 };
 
+/**
+ * One line of the heading block: label, colon, value.
+ *
+ * The colon is a column of its own rather than the last character of the
+ * label. Written into the label ("Address:") it sat wherever that word ended,
+ * so five rows carried five colons at five distances from the margin and the
+ * block read as ragged. A fixed label column with the colon beside it puts
+ * every colon on one vertical line, which is what a form looks like.
+ */
+const InfoRow = ({ label, value, labelWidth }: { label: string; value: React.ReactNode; labelWidth: string }) => (
+  <div className="grid gap-x-1" style={{ gridTemplateColumns: `${labelWidth} 6px 1fr` }}>
+    <span className="whitespace-nowrap">{label}</span>
+    <span>:</span>
+    <span>{value}</span>
+  </div>
+);
+
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
   if (size <= 0) return [data];
   const out: T[][] = [];
@@ -259,12 +278,18 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     return (
       <div ref={ref} className="p-6 text-sm text-gray-900 print-root">
         <PrintStyles orientation="landscape" />
+        {/* Only the padding is this paper's own. It used to reset display
+            and min-height as well, which took away the flex column and the
+            sheet height PrintStyles gives every page -- and with them the
+            thing that keeps the foot at the foot: the footer's mt-auto has
+            nothing to push against on a page with no height, so it sat
+            directly under the table while every other report's sat on the
+            bottom edge. No bottom padding, as PrintStyles: the page margin
+            is the gap under the footer. */}
         <style>{`
           @media print {
             .order-with-transaction-print-page {
-              display: block !important;
-              min-height: auto !important;
-              padding: 4mm 6mm !important;
+              padding: 4mm 6mm 0 6mm !important;
             }
           }
         `}</style>
@@ -284,50 +309,31 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
             <div className="mb-2 text-center text-2xl font-bold">{title}</div>
 
-            <div className="mb-2 grid grid-cols-[1fr_220px] items-start justify-between gap-6 text-xs leading-4">
+            {/* Two blocks, each a column of label / colon / value. The label
+                width is the longest label in that block ("Delivery Location",
+                "Product Name") so no colon is pushed off its line. */}
+            <div className="mb-2 grid grid-cols-[1fr_230px] items-start justify-between gap-6 text-xs leading-4">
               <div className="space-y-1">
-                <div className="grid grid-cols-[110px_1fr] gap-2">
-                  <span>{partyLabel}:</span>
-                  <span>{partyName}</span>
-                </div>
-                <div className="grid grid-cols-[110px_1fr] gap-2">
-                  <span>Address:</span>
-                  <span>{payload?.customer?.manual_address || payload?.customer?.address || '-'}</span>
-                </div>
-                <div className="grid grid-cols-[110px_1fr] gap-2">
-                  <span>Duration:</span>
-                  <span>{durationText || '-'}</span>
-                </div>
-                <div className="grid grid-cols-[110px_1fr] gap-2">
-                  <span className="whitespace-nowrap">Delivery Location:</span>
-                  <span>{payload?.delivery_location || '-'}</span>
-                </div>
-                <div className="grid grid-cols-[110px_1fr] gap-2">
-                  <span>Order No.</span>
-                  <span>{payload?.order_number || '-'}</span>
-                </div>
+                <InfoRow label={partyLabel} value={partyName} labelWidth="104px" />
+                <InfoRow
+                  label="Address"
+                  value={payload?.customer?.manual_address || payload?.customer?.address || '-'}
+                  labelWidth="104px"
+                />
+                <InfoRow label="Duration" value={durationText || '-'} labelWidth="104px" />
+                <InfoRow label="Delivery Location" value={payload?.delivery_location || '-'} labelWidth="104px" />
+                <InfoRow label="Order No." value={payload?.order_number || '-'} labelWidth="104px" />
               </div>
               <div className="space-y-1 text-left">
-                <div className="grid grid-cols-[86px_1fr] gap-2">
-                  <span>Product Name:</span>
-                  <span>{productName}</span>
-                </div>
-                <div className="grid grid-cols-[86px_1fr] gap-2">
-                  <span>Contact Qty:</span>
-                  <span>{formatNumberOrDash(payload?.contract_order_qty)}</span>
-                </div>
-                <div className="grid grid-cols-[86px_1fr] gap-2">
-                  <span>Order Rate:</span>
-                  <span>{formatNumberOrDash(payload?.order_rate)}</span>
-                </div>
-                <div className="grid grid-cols-[86px_1fr] gap-2">
-                  <span>Order Qty:</span>
-                  <span>{formatNumberOrDash(payload?.total_order)} {unitName}</span>
-                </div>
-                <div className="grid grid-cols-[86px_1fr] gap-2">
-                  <span>Amount:</span>
-                  <span>Tk. {thousandSeparator(computedOrderAmount)}</span>
-                </div>
+                <InfoRow label="Product Name" value={productName} labelWidth="84px" />
+                <InfoRow label="Contact Qty" value={formatNumberOrDash(payload?.contract_order_qty)} labelWidth="84px" />
+                <InfoRow label="Order Rate" value={formatNumberOrDash(payload?.order_rate)} labelWidth="84px" />
+                <InfoRow
+                  label="Order Qty"
+                  value={`${formatNumberOrDash(payload?.total_order)} ${unitName}`.trim()}
+                  labelWidth="84px"
+                />
+                <InfoRow label="Amount" value={`Tk. ${thousandSeparator(computedOrderAmount)}`} labelWidth="84px" />
               </div>
             </div>
 
@@ -440,6 +446,17 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                 ) : null}
               </tfoot>
             </table>
+
+            {/* The note typed on the order, under the table it explains --
+                on the last page, with the totals, and only where there is
+                one. Before the footer, so it is part of the paper rather than
+                something that fell off the end of it. */}
+            {pageIndex === pages.length - 1 && String(payload?.notes ?? '').trim() ? (
+              <div style={{ fontSize: fs }} className="mt-2 whitespace-pre-line">
+                <span className="font-semibold">Note:</span> {String(payload?.notes).trim()}
+              </div>
+            ) : null}
+
             <PrintFooter page={pageIndex + 1} total={pages.length > 0 ? pages.length : 1} fontSize={fs} />
           </div>
         ))}
