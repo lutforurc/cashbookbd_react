@@ -76,7 +76,11 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             onClick={onConfirm}
             loading={loading}
             disabled={loading || disabled}
-            className={className}
+            // whitespace-nowrap here, the same as the Keep-it button beside
+            // it: a three-word label ("Move the guest") was folding onto two
+            // lines inside a button sized for one, and a wrapped button
+            // reads as a broken one. The dialog grows instead.
+            className={`whitespace-nowrap ${className}`}
           />
         </div>
       </div>
