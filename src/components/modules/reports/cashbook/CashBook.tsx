@@ -96,7 +96,7 @@ const CashBook = (user: any) => {
    * would be the reason for the render it is guarding against.
    */
   const answered = useRef(false);
-  const printRef = useRef<HTMLDivElement>(null); 
+  const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
@@ -118,7 +118,7 @@ const CashBook = (user: any) => {
     label: string;
     additionalDetails: string;
   }
- 
+
 
   const runCashBook = () => {
     // ⚠️ Both boxes, before anything is asked of the server. Clearing one is
@@ -427,20 +427,20 @@ const CashBook = (user: any) => {
       render: (row: any) => (
         <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
           <div className="truncate">
-	            <a href="http://localhost:5173/reports/ledger" target="_blank">
-	              {description(row).party ? (
-	                <span className="block">{description(row).party}</span>
-	              ) : null}
-	              <span>{description(row).account}</span>
-	              {row?.pay_branch_name ? (
-	                <p className="text-sm text-fuchsia-600 dark:text-green-500">{row.pay_branch_name}</p>
-	              ) : (
-	                ''
-	              )}
-                {/* text-sky-500 */}
-	              {row.somity ? (
-	                <span className="text-sm"> ({row?.somity?.idfr_code})</span>
-	              ) : (
+            <a href="http://localhost:5173/reports/ledger" target="_blank">
+              {description(row).party ? (
+                <span className="block">{description(row).party}</span>
+              ) : null}
+              <span>{description(row).account}</span>
+              {row?.pay_branch_name ? (
+                <p className="text-sm text-fuchsia-600 dark:text-green-500">{row.pay_branch_name}</p>
+              ) : (
+                ''
+              )}
+              {/* text-sky-500 */}
+              {row.somity ? (
+                <span className="text-sm"> ({row?.somity?.idfr_code})</span>
+              ) : (
                 ''
               )}
               {row.somity && (
@@ -454,7 +454,7 @@ const CashBook = (user: any) => {
                 </>
               )}
 
-              
+
 
             </a>
           </div>
@@ -462,13 +462,13 @@ const CashBook = (user: any) => {
             <span className={highlightLineClass(matchHighlightRule(row?.remarks, highlightRules))}>
               {row?.remarks}
             </span>
-         
-              {row?.order_number ? (
-	                <p className="text-sm text-fuchsia-600 dark:text-green-500">{row.order_number}</p>
-	              ) : (
-	                ''
-	              )}
-           
+
+            {row?.order_number ? (
+              <p className="text-sm text-fuchsia-600 dark:text-green-500">{row.order_number}</p>
+            ) : (
+              ''
+            )}
+
 
           </div>
         </div>
@@ -571,31 +571,31 @@ const CashBook = (user: any) => {
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
- defaultValue={user?.user?.branch_id}
- value={branchId == null ? '' : String(branchId)}
- onChange={handleBranchChange}
- className="w-full font-medium text-sm p-2 "
- branchDdl={dropdownData}
+                defaultValue={user?.user?.branch_id}
+                value={branchId == null ? '' : String(branchId)}
+                onChange={handleBranchChange}
+                className="w-full font-medium text-sm p-2 "
+                branchDdl={dropdownData}
               />
             </div>
 
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
               <InputDatePicker
- setCurrentDate={handleStartDate}
- className="font-medium text-sm w-full "
- selectedDate={startDate}
- setSelectedDate={setStartDate}
+                setCurrentDate={handleStartDate}
+                className="font-medium text-sm w-full "
+                selectedDate={startDate}
+                setSelectedDate={setStartDate}
               />
             </div>
 
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
               <InputDatePicker
- setCurrentDate={handleEndDate}
- className="font-medium text-sm w-full "
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+                setCurrentDate={handleEndDate}
+                className="font-medium text-sm w-full "
+                selectedDate={endDate}
+                setSelectedDate={setEndDate}
               />
             </div>
 
@@ -634,33 +634,33 @@ const CashBook = (user: any) => {
                 className="px-4"
               />
               <div>
-                  <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
-                    Rows
-                  </label>
-                  <PrintRowsInput
- id="perPage"
- name="perPage"
- label=""
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type='text'
- className="font-medium text-sm w-full! text-center"
-                  />
+                <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                  Rows
+                </label>
+                <PrintRowsInput
+                  id="perPage"
+                  name="perPage"
+                  label=""
+                  value={perPage.toString()}
+                  onChange={handlePerPageChange}
+                  type='text'
+                  className="font-medium text-sm w-full! text-center"
+                />
               </div>
 
               <div>
-                  <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
-                    Font
-                  </label>
-                  <PrintFontInput
- id="fontSize"
- name="fontSize"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type='text'
- className="font-medium text-sm w-full! text-center"
-                  />
+                <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                  Font
+                </label>
+                <PrintFontInput
+                  id="fontSize"
+                  name="fontSize"
+                  label=""
+                  value={fontSize.toString()}
+                  onChange={handleFontSizeChange}
+                  type='text'
+                  className="font-medium text-sm w-full! text-center"
+                />
               </div>
               <PrintButton
                 onClick={handlePrint}
@@ -686,29 +686,29 @@ const CashBook = (user: any) => {
                 className="px-4"
               />
               <div>
-                    
-                    <PrintRowsInput
- id="perPage"
- name="perPage"
- label=""
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type='text'
- className="font-medium text-sm w-20! text-center"
-                    />
+
+                <PrintRowsInput
+                  id="perPage"
+                  name="perPage"
+                  label=""
+                  value={perPage.toString()}
+                  onChange={handlePerPageChange}
+                  type='text'
+                  className="font-medium text-sm w-20! text-center"
+                />
               </div>
 
               <div>
-                    
-                    <PrintFontInput
- id="fontSize"
- name="fontSize"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type='text'
- className="font-medium text-sm w-20! text-center"
-                    />
+
+                <PrintFontInput
+                  id="fontSize"
+                  name="fontSize"
+                  label=""
+                  value={fontSize.toString()}
+                  onChange={handleFontSizeChange}
+                  type='text'
+                  className="font-medium text-sm w-20! text-center"
+                />
               </div>
               <PrintButton
                 onClick={handlePrint}

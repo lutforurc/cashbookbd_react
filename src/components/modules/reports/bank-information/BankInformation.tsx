@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import { FiCheckSquare, FiRefreshCcw } from 'react-icons/fi';
@@ -11,6 +11,8 @@ import {
   PrintButton,
 } from '../../../../pages/UiElements/CustomButtons';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
+import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
+import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
@@ -23,8 +25,6 @@ import BankInformationPrint, {
   splitBankRow,
   sumBankColumns,
 } from './BankInformationPrint';
-import { Select } from '../../../utils/fields/FormControls';
-import { FIELD_HEIGHT } from '../../../../theme/fieldStyles';
 
 type BankInformationRow = {
   coa4_id?: number | string;
@@ -84,12 +84,19 @@ const parseTransactionDate = (value?: string | null) => {
   return new Date(year, month - 1, day);
 };
 
-const BankInformation = () => {
+const BankInformation = ({ user }: any) => {
   const dispatch = useDispatch();
   const printRef = useRef<HTMLDivElement>(null);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const settings = useSelector((state: any) => state.settings);
 
-  const [branchId, setBranchId] = useState('');
+  // The signed-in user's own branch to begin with -- the same branch the
+  // dropdown opens on -- so what is loaded is what the box says. null is
+  // "every branch I may see", which the server's branchScope() reads the same
+  // way whether it arrives as null or as nothing at all.
+  const [branchId, setBranchId] = useState<number | null>(
+    user?.user?.branch_id ? Number(user.user.branch_id) : null,
+  );
   const [reportTypeId, setReportTypeId] = useState('1');
   // A balance cannot be an OPENING one without a day to stand before, so the
   // report takes a period now rather than a single date. Month to date is what
@@ -114,7 +121,19 @@ const BankInformation = () => {
     }
   }, [branchDdlData?.protectedData?.transactionDate]);
 
-  const branchOptions = branchDdlData?.protectedData?.data || [];
+  // The shared branch dropdown, like every other report: the user's own list,
+  // with "All Branch" in front of it only for a head office -- a branch user
+  // has no other branch to add up.
+  const dropdownData =
+    settings?.data?.branch?.branch_types_id === 1
+      ? [{ id: '', name: 'All Branch' }, ...(branchDdlData?.protectedData?.data ?? [])]
+      : [...(branchDdlData?.protectedData?.data ?? [])];
+
+  const handleBranchChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const val = event.target.value;
+    setBranchId(val === '' ? null : Number(val));
+  };
+
   const selectedReportType = reportTypes.find((item) => item.id === reportTypeId)?.name || 'Bank Balance';
 
   // Footed from the rows on screen rather than read off the payload, so the
@@ -158,7 +177,7 @@ const BankInformation = () => {
   };
 
   const handleReset = () => {
-    setBranchId('');
+    setBranchId(user?.user?.branch_id ? Number(user.user.branch_id) : null);
     setReportTypeId('1');
     const asOf = parseTransactionDate(branchDdlData?.protectedData?.transactionDate);
     setEndDate(asOf);
@@ -171,13 +190,6 @@ const BankInformation = () => {
     documentTitle: 'Bank Information',
   });
 
-  // The height comes from FIELD_HEIGHT, not from an `h-` written here. These
-  // two selects stood at h-10 while the End Date beside them -- an
-  // InputDatePicker, which draws itself from FIELD_BASE -- stood at the app's
-  // one control height, so the filter row had a 40px box sharing an edge with a
-  // 34px one.
-  const controlClass =
-    `${FIELD_HEIGHT} w-full rounded-none border border-slate-600 bg-transparent px-3 text-sm font-bold text-slate-950 outline-none focus:border-slate-400 dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-text))] dark:focus:border-slate-300`;
   const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-[rgb(var(--c-text))]';
 
   // One rule for the grid, written once. Both header rows and every body cell
@@ -193,44 +205,50 @@ const BankInformation = () => {
         <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-2 lg:grid-cols-4 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
           <div>
             <label className={labelClass}>Select Branch</label>
-            <Select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>
-              <option value="">All Branch</option>
-              {branchOptions.map((branch: any) => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
-                </option>
-              ))}
-            </Select>
+            {branchDdlData.isLoading == true ? <Loader /> : ''}
+            <BranchDropdown
+              defaultValue={user?.user?.branch_id}
+              value={branchId == null ? '' : String(branchId)}
+              onChange={handleBranchChange}
+              className="w-full font-medium text-sm p-2 "
+              branchDdl={dropdownData}
+            />
           </div>
 
           <div>
-            <label className={labelClass}>Report Type</label>
-            <Select value={reportTypeId} onChange={(event) => setReportTypeId(event.target.value)} className={controlClass}>
-              {reportTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.name}
-                </option>
-              ))}
-            </Select>
+            {/* The shared dropdown draws its own label, so none is written
+                here -- two labels over one box was the alternative. */}
+            <DropdownCommon
+              id="report_type_id"
+              name="report_type_id"
+              label="Report Type"
+              onChange={(event) => setReportTypeId(event.target.value)}
+              value={reportTypeId}
+              className="bg-transparent"
+              data={reportTypes}
+            />
           </div>
 
+          {/* The app's own date box as every other report draws it -- no
+              border or weight of this screen's own, so it stands level with
+              the two dropdowns beside it. */}
           <div>
             <label className={labelClass}>Start Date</label>
             <InputDatePicker
+              setCurrentDate={setStartDate}
+              className="font-medium text-sm w-full "
               selectedDate={startDate}
               setSelectedDate={setStartDate}
-              setCurrentDate={setStartDate}
-              className="border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
             />
           </div>
 
           <div>
             <label className={labelClass}>End Date</label>
             <InputDatePicker
+              setCurrentDate={setEndDate}
+              className="font-medium text-sm w-full "
               selectedDate={endDate}
               setSelectedDate={setEndDate}
-              setCurrentDate={setEndDate}
-              className="border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
             />
           </div>
         </div>

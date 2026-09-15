@@ -920,7 +920,7 @@ function App() {
               <Route path={routes.expense_report} element={<ExpenseReport user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.information']} loading={permissionsLoading} />}>
-              <Route path={routes.bank_information} element={<BankInformation />} />
+              <Route path={routes.bank_information} element={<BankInformation user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['connected.member.view']} loading={permissionsLoading} />}>
               <Route path={routes.connected_member} element={<ConnectedMember user={me} />} />

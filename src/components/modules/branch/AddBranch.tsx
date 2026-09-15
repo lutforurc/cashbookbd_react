@@ -284,8 +284,8 @@ const parseIsoDate = (value: string): Date | null => {
 const toIsoDate = (date: Date | null) =>
   date && !Number.isNaN(date.getTime())
     ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
-        date.getDate(),
-      ).padStart(2, '0')}`
+      date.getDate(),
+    ).padStart(2, '0')}`
     : '';
 
 /**
@@ -559,8 +559,8 @@ const AddBranch = () => {
       if (!error?.toastReported) {
         toast.error(
           error?.response?.data?.message ||
-            error?.message ||
-            options.errorFallback,
+          error?.message ||
+          options.errorFallback,
         );
       }
     } finally {
@@ -642,9 +642,9 @@ const AddBranch = () => {
         paper_size: b.paper_size != null ? String(b.paper_size) : '',
         device_identifier_text:
           b.device_identifier_text == null ||
-          b.device_identifier_text === '' ||
-          b.device_identifier_text === 0 ||
-          b.device_identifier_text === '0'
+            b.device_identifier_text === '' ||
+            b.device_identifier_text === 0 ||
+            b.device_identifier_text === '0'
             ? ''
             : String(b.device_identifier_text),
         dashboard_top_sales_days: b.dashboard_top_sales_days != null ? b.dashboard_top_sales_days : 0,
@@ -915,830 +915,830 @@ const AddBranch = () => {
                 every step, however short that step's content is. */}
             <div className="flex min-h-[calc(100vh-7rem)] min-w-0 flex-col">
               <div className="mb-4 rounded border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-transparent">
-              {/* Ruled off, so the step's own heading reads apart from the
+                {/* Ruled off, so the step's own heading reads apart from the
                   fields under it rather than as the first line of them. */}
-              <div className="mb-3 border-b border-[rgb(var(--c-border))] pb-1.5">
-                <h2 className="text-base font-semibold leading-tight text-gray-800 dark:text-[rgb(var(--c-text))]">
-                  {steps[currentStep]}
-                </h2>
-                <p className="mt-0.5 text-xs leading-snug text-gray-500">
-                  {currentStep === stepIndex('Basic Info') && 'Branch identity, contact details, and status.'}
-                  {currentStep === stepIndex('Print Setup') && 'Print preferences, page size, and letterhead setup.'}
-                  {currentStep === stepIndex('Invoice Setup') && 'Invoice labels, notes, formatting, and invoice display options.'}
-                  {currentStep === stepIndex('Customer Setup') && 'Customer and supplier related options for this branch.'}
-                  {currentStep === stepIndex('Product Setup') && 'How products are ordered and priced in this branch.'}
-                  {currentStep === stepIndex('Real Estate Setup') && 'Real estate options for this branch.'}
-                  {currentStep === stepIndex('Hotel Setup') &&
-                    'When the day turns over at this property, for a branch that is a hotel.'}
-                  {currentStep === stepIndex('Feature Controls') && 'Operational controls, sharing options, and SMS preferences.'}
-                  {currentStep === SAAS_STEP &&
-                    'Platform settings. Only this account sees them.'}
-                </p>
-              </div>
+                <div className="mb-3 border-b border-[rgb(var(--c-border))] pb-1.5">
+                  <h2 className="text-base font-semibold leading-tight text-gray-800 dark:text-[rgb(var(--c-text))]">
+                    {steps[currentStep]}
+                  </h2>
+                  <p className="mt-0.5 text-xs leading-snug text-gray-500">
+                    {currentStep === stepIndex('Basic Info') && 'Branch identity, contact details, and status.'}
+                    {currentStep === stepIndex('Print Setup') && 'Print preferences, page size, and letterhead setup.'}
+                    {currentStep === stepIndex('Invoice Setup') && 'Invoice labels, notes, formatting, and invoice display options.'}
+                    {currentStep === stepIndex('Customer Setup') && 'Customer and supplier related options for this branch.'}
+                    {currentStep === stepIndex('Product Setup') && 'How products are ordered and priced in this branch.'}
+                    {currentStep === stepIndex('Real Estate Setup') && 'Real estate options for this branch.'}
+                    {currentStep === stepIndex('Hotel Setup') &&
+                      'When the day turns over at this property, for a branch that is a hotel.'}
+                    {currentStep === stepIndex('Feature Controls') && 'Operational controls, sharing options, and SMS preferences.'}
+                    {currentStep === SAAS_STEP &&
+                      'Platform settings. Only this account sees them.'}
+                  </p>
+                </div>
 
-              {currentStep === stepIndex('Basic Info') && (
-                <>
-                  {/* One grid for the whole step, not one per group of fields.
+                {currentStep === stepIndex('Basic Info') && (
+                  <>
+                    {/* One grid for the whole step, not one per group of fields.
                       A grid each starts its own rows, so a group that did not
                       divide by three left its last field stranded beside two
                       empty cells and pushed the next group down -- the four
                       identity fields did exactly that to Inventory System.
                       Flowing them together fills every row until the last. */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <InputElement
-                      id="name"
-                      value={formData.name || ''}
-                      name="name"
-                      placeholder={'Enter Branch Name'}
-                      label={'Enter Branch Name'}
-                      description="How the branch is named everywhere it is listed, and on its printed papers."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <DropdownCommon
- id="branch_types_id"
- name={'branch_types_id'}
- label="Select Branch Type"
- description="Head office or an ordinary branch. The head office sees company-wide figures and lists the others do not."
- onChange={handleOnSelectChange}
- value={formData?.branch_types_id || ''}
- className="bg-transparent"
- data={settings?.branchSettings?.branchType}
-                    />
-                    <DropdownCommon
- id="business_type_id"
- name={'business_type_id'}
- label="Select Business Type"
- description="The trade the branch is in. It decides which dashboard the branch opens on."
- onChange={handleOnSelectChange}
- value={formData?.business_type_id || ''}
- className="bg-transparent"
- data={settings?.branchSettings?.businessType}
-                    />
-                    <DropdownCommon
- id="inventory_system_id"
- name={'inventory_system_id'}
- label="Select Inventory System"
- description="Which purchase and sales screens the branch works with -- electronics, construction or trading."
- onChange={handleOnSelectChange}
- value={formData?.inventory_system_id || ''}
- className="bg-transparent"
- data={settings?.branchSettings?.inventorySystem}
-                    />
-                    <InputElement
-                      id="email"
-                      value={formData.email || ''}
-                      name="email"
-                      placeholder={'Enter Branch Email'}
-                      label={'Enter Branch Email'}
-                      description="The branch's own address, printed on its papers so customers can write back."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <InputElement
-                      id="phone"
-                      value={formData.phone || ''}
-                      name="phone"
-                      placeholder={'Enter Branch Phone'}
-                      label={'Enter Branch Phone'}
-                      description="The number printed on invoices and letters from this branch."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <InputElement
-                      id="contact_person"
-                      value={formData.contact_person || ''}
-                      name="contact_person"
-                      placeholder={'Enter Contact Person'}
-                      label={'Enter Contact Person'}
-                      description="Who to ask for at this branch -- the manager or whoever answers for it."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <InputElement
-                      id="address"
-                      value={formData.address || ''}
-                      name="address"
-                      placeholder={'Enter Branch Address'}
-                      label={'Enter Branch Address'}
-                      description="Where the branch sits. It goes under the heading on its printed papers."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <InputElement
-                      id="notes"
-                      value={formData.notes || ''}
-                      name="notes"
-                      placeholder={'Enter notes'}
-                      label={'Enter notes'}
-                      description="For the office's own remarks about this branch. Nothing here is printed."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <DropdownCommon
- id="status"
- name={'status'}
- label="Select Status"
- description="An inactive branch stays on record with all its figures, but nobody can work in it."
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData?.status?.toString() ?? ''}
- data={status}
-                    />
-                  </div>
-                </>
-              )}
-
-              {currentStep === stepIndex('Print Setup') && (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <DropdownCommon
- id="pad_heading_print"
- name={'pad_heading_print'}
- label="Select Print Heading"
- description="Whose letterhead the software draws at the top -- this branch's, the company's, or an uploaded image."
- onChange={handleOnSelectChange}
- value={formData?.pad_heading_print || ''}
- className="bg-transparent"
- data={printPadHeading}
-                    />
-                    <DropdownCommon
- id="print_size"
- name={'print_size'}
- label="Select Printer Settings"
- description="A normal printer prints a full page; a POS printer prints the narrow roll used at a counter."
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData?.print_size || ''}
- data={printerSettings}
-                    />
-                    <DropdownCommon
- id="paper_size"
- name={'paper_size'}
- label="Invoice Page Size"
- description="The paper an invoice is laid out for, so it fills the sheet the branch actually prints on."
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData?.paper_size || ''}
- data={paperSizeOptions}
-                    />
-                  </div>
-
-                  {/* ---------- Pad Head ---------- */}
-                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Pad Head
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <div>
-                      <DropdownCommon
- id="pad_print_mode"
- name={'pad_print_mode'}
- label="Pad Head Printing"
- onChange={handleOnSelectChange}
- value={formData?.pad_print_mode || ''}
- className="bg-transparent"
- data={padPrintModes}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <InputElement
+                        id="name"
+                        value={formData.name || ''}
+                        name="name"
+                        placeholder={'Enter Branch Name'}
+                        label={'Enter Branch Name'}
+                        description="How the branch is named everywhere it is listed, and on its printed papers."
+                        className={''}
+                        onChange={handleOnChange}
                       />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Software generated draws the heading chosen above.
-                        Pre-printed draws none, for paper that comes from the
-                        press with the letterhead already on it.
-                      </p>
+                      <DropdownCommon
+                        id="branch_types_id"
+                        name={'branch_types_id'}
+                        label="Select Branch Type"
+                        description="Head office or an ordinary branch. The head office sees company-wide figures and lists the others do not."
+                        onChange={handleOnSelectChange}
+                        value={formData?.branch_types_id || ''}
+                        className="bg-transparent"
+                        data={settings?.branchSettings?.branchType}
+                      />
+                      <DropdownCommon
+                        id="business_type_id"
+                        name={'business_type_id'}
+                        label="Select Business Type"
+                        description="The trade the branch is in. It decides which dashboard the branch opens on."
+                        onChange={handleOnSelectChange}
+                        value={formData?.business_type_id || ''}
+                        className="bg-transparent"
+                        data={settings?.branchSettings?.businessType}
+                      />
+                      <DropdownCommon
+                        id="inventory_system_id"
+                        name={'inventory_system_id'}
+                        label="Select Inventory System"
+                        description="Which purchase and sales screens the branch works with -- electronics, construction or trading."
+                        onChange={handleOnSelectChange}
+                        value={formData?.inventory_system_id || ''}
+                        className="bg-transparent"
+                        data={settings?.branchSettings?.inventorySystem}
+                      />
+                      <InputElement
+                        id="email"
+                        value={formData.email || ''}
+                        name="email"
+                        placeholder={'Enter Branch Email'}
+                        label={'Enter Branch Email'}
+                        description="The branch's own address, printed on its papers so customers can write back."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="phone"
+                        value={formData.phone || ''}
+                        name="phone"
+                        placeholder={'Enter Branch Phone'}
+                        label={'Enter Branch Phone'}
+                        description="The number printed on invoices and letters from this branch."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="contact_person"
+                        value={formData.contact_person || ''}
+                        name="contact_person"
+                        placeholder={'Enter Contact Person'}
+                        label={'Enter Contact Person'}
+                        description="Who to ask for at this branch -- the manager or whoever answers for it."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="address"
+                        value={formData.address || ''}
+                        name="address"
+                        placeholder={'Enter Branch Address'}
+                        label={'Enter Branch Address'}
+                        description="Where the branch sits. It goes under the heading on its printed papers."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="notes"
+                        value={formData.notes || ''}
+                        name="notes"
+                        placeholder={'Enter notes'}
+                        label={'Enter notes'}
+                        description="For the office's own remarks about this branch. Nothing here is printed."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <DropdownCommon
+                        id="status"
+                        name={'status'}
+                        label="Select Status"
+                        description="An inactive branch stays on record with all its figures, but nobody can work in it."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.status?.toString() ?? ''}
+                        data={status}
+                      />
                     </div>
-                    {/* Always on show, so the paper can be measured before the
+                  </>
+                )}
+
+                {currentStep === stepIndex('Print Setup') && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="pad_heading_print"
+                        name={'pad_heading_print'}
+                        label="Select Print Heading"
+                        description="Whose letterhead the software draws at the top -- this branch's, the company's, or an uploaded image."
+                        onChange={handleOnSelectChange}
+                        value={formData?.pad_heading_print || ''}
+                        className="bg-transparent"
+                        data={printPadHeading}
+                      />
+                      <DropdownCommon
+                        id="print_size"
+                        name={'print_size'}
+                        label="Select Printer Settings"
+                        description="A normal printer prints a full page; a POS printer prints the narrow roll used at a counter."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.print_size || ''}
+                        data={printerSettings}
+                      />
+                      <DropdownCommon
+                        id="paper_size"
+                        name={'paper_size'}
+                        label="Invoice Page Size"
+                        description="The paper an invoice is laid out for, so it fills the sheet the branch actually prints on."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.paper_size || ''}
+                        data={paperSizeOptions}
+                      />
+                    </div>
+
+                    {/* ---------- Pad Head ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Pad Head
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <div>
+                        <DropdownCommon
+                          id="pad_print_mode"
+                          name={'pad_print_mode'}
+                          label="Pad Head Printing"
+                          onChange={handleOnSelectChange}
+                          value={formData?.pad_print_mode || ''}
+                          className="bg-transparent"
+                          data={padPrintModes}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Software generated draws the heading chosen above.
+                          Pre-printed draws none, for paper that comes from the
+                          press with the letterhead already on it.
+                        </p>
+                      </div>
+                      {/* Always on show, so the paper can be measured before the
                         branch switches over -- it just has nothing to do while
                         the software draws the heading itself. */}
-                    <div>
-                      <InputElement
-                        id="preprinted_pad_height"
-                        value={formData.preprinted_pad_height ?? ''}
-                        name="preprinted_pad_height"
-                        type="number"
-                        min={0}
-                        max={600}
-                        step="1"
-                        placeholder={'Enter Blank Space (px)'}
-                        label={'Blank Space at Top (px)'}
-                        className={''}
-                        onChange={handleOnNumberChange}
-                        disabled={!usesPreprintedPad}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        {usesPreprintedPad
-                          ? 'How deep the printed pad head is, so nothing prints on top of it. 96 px is about an inch of paper.'
-                          : 'Used only when Pre-printed Pad is chosen.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {Number(formData?.pad_heading_print) === 3 && !usesPreprintedPad && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                      <div className="flex flex-col">
-                        <label
-                          htmlFor="pad_header_image"
-                          className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
-                        >
-                          Pad Header Image
-                        </label>
-                        <Input
-                          id="pad_header_image"
-                          name="pad_header_image"
-                          type="file"
-                          accept="image/*"
-                          onChange={handlePadImageChange}
-                          className={FIELD_FILE}
+                      <div>
+                        <InputElement
+                          id="preprinted_pad_height"
+                          value={formData.preprinted_pad_height ?? ''}
+                          name="preprinted_pad_height"
+                          type="number"
+                          min={0}
+                          max={600}
+                          step="1"
+                          placeholder={'Enter Blank Space (px)'}
+                          label={'Blank Space at Top (px)'}
+                          className={''}
+                          onChange={handleOnNumberChange}
+                          disabled={!usesPreprintedPad}
                         />
-                        <span className="mt-1 text-xs text-gray-500">
-                          This image will print when `Custom Image Pad` is selected.
-                        </span>
-                      </div>
-                      <div className="md:col-span-2">
-                        {padHeaderPreview ? (
-                          <div className="rounded border border-gray-300 p-2">
-                            <img
-                              src={padHeaderPreview}
-                              alt="Pad header preview"
-                              className="max-h-28 w-full object-contain"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex h-full min-h-28 items-center justify-center rounded border border-dashed border-gray-300 text-sm text-gray-500">
-                            No image selected
-                          </div>
-                        )}
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {usesPreprintedPad
+                            ? 'How deep the printed pad head is, so nothing prints on top of it. 96 px is about an inch of paper.'
+                            : 'Used only when Pre-printed Pad is chosen.'}
+                        </p>
                       </div>
                     </div>
-                  )}
 
-                  {/* Letter greetings, picked by the customer's sex when a
+                    {Number(formData?.pad_heading_print) === 3 && !usesPreprintedPad && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <div className="flex flex-col">
+                          <label
+                            htmlFor="pad_header_image"
+                            className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
+                          >
+                            Pad Header Image
+                          </label>
+                          <Input
+                            id="pad_header_image"
+                            name="pad_header_image"
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePadImageChange}
+                            className={FIELD_FILE}
+                          />
+                          <span className="mt-1 text-xs text-gray-500">
+                            This image will print when `Custom Image Pad` is selected.
+                          </span>
+                        </div>
+                        <div className="md:col-span-2">
+                          {padHeaderPreview ? (
+                            <div className="rounded border border-gray-300 p-2">
+                              <img
+                                src={padHeaderPreview}
+                                alt="Pad header preview"
+                                className="max-h-28 w-full object-contain"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex h-full min-h-28 items-center justify-center rounded border border-dashed border-gray-300 text-sm text-gray-500">
+                              No image selected
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Letter greetings, picked by the customer's sex when a
                       document is printed. Blank falls back to the wording
                       built into the software. */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <InputElement
-                      id="salutation_male"
-                      name="salutation_male"
-                      value={formData.salutation_male || ''}
-                      placeholder={'Dear Sir,'}
-                      label={'Salutation (Male)'}
-                      description="How a letter greets a male customer. Left blank, the software's own wording is used."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <InputElement
-                      id="salutation_female"
-                      name="salutation_female"
-                      value={formData.salutation_female || ''}
-                      placeholder={'Dear Madam,'}
-                      label={'Salutation (Female)'}
-                      description="How a letter greets a female customer. Left blank, the software's own wording is used."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <InputElement
-                      id="salutation_other"
-                      name="salutation_other"
-                      value={formData.salutation_other || ''}
-                      placeholder={'Dear Sir/Madam,'}
-                      label={'Salutation (Other / Not Set)'}
-                      description="Used when the customer's sex is not recorded, so a letter never goes out addressed wrongly."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <InputElement
+                        id="salutation_male"
+                        name="salutation_male"
+                        value={formData.salutation_male || ''}
+                        placeholder={'Dear Sir,'}
+                        label={'Salutation (Male)'}
+                        description="How a letter greets a male customer. Left blank, the software's own wording is used."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="salutation_female"
+                        name="salutation_female"
+                        value={formData.salutation_female || ''}
+                        placeholder={'Dear Madam,'}
+                        label={'Salutation (Female)'}
+                        description="How a letter greets a female customer. Left blank, the software's own wording is used."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="salutation_other"
+                        name="salutation_other"
+                        value={formData.salutation_other || ''}
+                        placeholder={'Dear Sir/Madam,'}
+                        label={'Salutation (Other / Not Set)'}
+                        description="Used when the customer's sex is not recorded, so a letter never goes out addressed wrongly."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                    </div>
 
-                  <div className="mb-2">
-                    <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
-                      Letter Signature Block
-                    </label>
-                    <RichTextEditor
-                      value={formData.letter_signature || ''}
-                      placeholder="Authorized Signatory and Company Seal"
-                      onChange={(html) =>
-                        setFormData((prev) => ({ ...prev, letter_signature: html }))
-                      }
-                    />
-                    <span className="mt-1 block text-xs text-gray-500">
-                      Prints at the foot of the allotment letter. Leave it empty and
-                      the letter signs off with the company name. The table button
-                      lays three signatories across the page; each row is a line,
-                      so add a row for the name under a signature, and add or drop
-                      a column to sign with more or fewer than three.
-                    </span>
-                  </div>
+                    <div className="mb-2">
+                      <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
+                        Letter Signature Block
+                      </label>
+                      <RichTextEditor
+                        value={formData.letter_signature || ''}
+                        placeholder="Authorized Signatory and Company Seal"
+                        onChange={(html) =>
+                          setFormData((prev) => ({ ...prev, letter_signature: html }))
+                        }
+                      />
+                      <span className="mt-1 block text-xs text-gray-500">
+                        Prints at the foot of the allotment letter. Leave it empty and
+                        the letter signs off with the company name. The table button
+                        lays three signatories across the page; each row is a line,
+                        so add a row for the name under a signature, and add or drop
+                        a column to sign with more or fewer than three.
+                      </span>
+                    </div>
 
-                </>
-              )}
+                  </>
+                )}
 
-              {currentStep === stepIndex('Invoice Setup') && (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <InputElement
-                      id="purchase_note"
-                      value={formData.purchase_note || ''}
-                      name="purchase_note"
-                      placeholder={'Purchase Invoice Note'}
-                      label={'Purchase Invoice Note'}
-                      description="Standing wording printed at the foot of every purchase invoice -- terms, conditions, whatever the branch always says."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <InputElement
-                      id="sales_note"
-                      value={formData.sales_note || ''}
-                      name="sales_note"
-                      placeholder={'Sales Invoice Note'}
-                      label={'Sales Invoice Note'}
-                      description="The same, printed at the foot of every sales invoice."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <DropdownCommon
- id="money_format"
- name={'money_format'}
- label="Select Money Format"
- description="Where the word Taka sits when the amount is written out -- before the words, after them, or wrapped in Only."
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData?.money_format || ''}
- data={moneySpellFormat}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <InputElement
-                      id="invoice_label"
-                      value={formData.invoice_label || ''}
-                      name="invoice_label"
-                      placeholder={'Enter Invoice Label'}
-                      label={'Enter Invoice Label'}
-                      description="What the paper calls itself at the top -- Invoice, Cash Memo, Bill, whatever the branch issues."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <InputElement
-                      id="device_identifier_text"
-                      value={formData.device_identifier_text || ''}
-                      name="device_identifier_text"
-                      placeholder={'Device Identifier Text'}
-                      label={'Device Identifier Text'}
-                      description="The word printed before a serial number on the invoice, such as IMEI or Engine No. Left blank, the number stands alone."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    <InputElement
-                      id="decimal_places"
-                      value={formData.decimal_places || 0}
-                      name="decimal_places"
-                      placeholder={'Enter Decimal Places'}
-                      label={'Decimal Places'}
-                      description="How many digits after the point every amount is shown with. 0 rounds to whole Taka."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <InputElement
-                      id="dashboard_top_sales_days"
-                      value={formData.dashboard_top_sales_days || ''}
-                      name="dashboard_top_sales_days"
-                      placeholder={'Dashboard Top Sales Days'}
-                      label={'Dashboard Top Sales Days'}
-                      description="How many days back the dashboard's top-selling list counts. 1 means today alone; left empty it looks back 7 days."
-                      className={''}
-                      onChange={handleOnChange}
-                    />
-                    
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <FormToggleField
-                      label="Show spelling of money in invoice?"
-                      description="Prints the invoice total in words beneath the figure."
-                      checked={Boolean(formData.show_spelling_of_money)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('show_spelling_of_money', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Show Instalment List in Invoice"
-                      description="Prints the instalment schedule, with its dates and amounts, on an instalment sale."
-                      checked={Boolean(formData.show_instalment_list)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('show_instalment_list', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Show description in invoice?"
-                      description="Prints each item's description line under its name."
-                      checked={Boolean(formData.show_description_in_invoice)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('show_description_in_invoice', checked)
-                      }
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <FormToggleField
-                      label="Show Brand in Invoice?"
-                      description="Prints the brand of each item beside its name."
-                      checked={Boolean(formData.show_brand_in_invoice)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('show_brand_in_invoice', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Show Category in Invoice?"
-                      description="Prints the category of each item beside its name."
-                      checked={Boolean(formData.show_category_in_invoice)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('show_category_in_invoice', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Show combined invoice note?"
-                      description="Offers a note box on the combined trading entry, so one remark covers the whole invoice."
-                      checked={Boolean(formData.combined_invoice_note)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('combined_invoice_note', checked)
-                      }
-                    />
-                  </div>
+                {currentStep === stepIndex('Invoice Setup') && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <InputElement
+                        id="purchase_note"
+                        value={formData.purchase_note || ''}
+                        name="purchase_note"
+                        placeholder={'Purchase Invoice Note'}
+                        label={'Purchase Invoice Note'}
+                        description="Standing wording printed at the foot of every purchase invoice -- terms, conditions, whatever the branch always says."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="sales_note"
+                        value={formData.sales_note || ''}
+                        name="sales_note"
+                        placeholder={'Sales Invoice Note'}
+                        label={'Sales Invoice Note'}
+                        description="The same, printed at the foot of every sales invoice."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <DropdownCommon
+                        id="money_format"
+                        name={'money_format'}
+                        label="Select Money Format"
+                        description="Where the word Taka sits when the amount is written out -- before the words, after them, or wrapped in Only."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.money_format || ''}
+                        data={moneySpellFormat}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <InputElement
+                        id="invoice_label"
+                        value={formData.invoice_label || ''}
+                        name="invoice_label"
+                        placeholder={'Enter Invoice Label'}
+                        label={'Enter Invoice Label'}
+                        description="What the paper calls itself at the top -- Invoice, Cash Memo, Bill, whatever the branch issues."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="device_identifier_text"
+                        value={formData.device_identifier_text || ''}
+                        name="device_identifier_text"
+                        placeholder={'Device Identifier Text'}
+                        label={'Device Identifier Text'}
+                        description="The word printed before a serial number on the invoice, such as IMEI or Engine No. Left blank, the number stands alone."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="decimal_places"
+                        value={formData.decimal_places || 0}
+                        name="decimal_places"
+                        placeholder={'Enter Decimal Places'}
+                        label={'Decimal Places'}
+                        description="How many digits after the point every amount is shown with. 0 rounds to whole Taka."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <InputElement
+                        id="dashboard_top_sales_days"
+                        value={formData.dashboard_top_sales_days || ''}
+                        name="dashboard_top_sales_days"
+                        placeholder={'Dashboard Top Sales Days'}
+                        label={'Dashboard Top Sales Days'}
+                        description="How many days back the dashboard's top-selling list counts. 1 means today alone; left empty it looks back 7 days."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
 
-                  {/* ---------- Stock ---------- */}
-                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Stock
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <FormToggleField
-                      label="Warn On Negative Stock Sale?"
-                      description="Asks before an invoice sells more than the branch holds. Goods often arrive before the supplier's bill does, so the sale still goes through once confirmed -- this only makes sure a wrong line is noticed at the time, rather than in a stock report weeks later."
-                      checked={Boolean(formData.warn_negative_stock_sale)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('warn_negative_stock_sale', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Block Negative Stock Sale?"
-                      description="Refuses the invoice outright instead of asking, and nobody can override it. For a branch that only ever sells what it has already entered -- turn it off where goods are sold before the supplier's bill arrives, or the sale cannot be made at all."
-                      checked={Boolean(formData.block_negative_stock_sale)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('block_negative_stock_sale', checked)
-                      }
-                    />
-                  </div>
-                </>
-              )}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Show spelling of money in invoice?"
+                        description="Prints the invoice total in words beneath the figure."
+                        checked={Boolean(formData.show_spelling_of_money)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_spelling_of_money', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Instalment List in Invoice"
+                        description="Prints the instalment schedule, with its dates and amounts, on an instalment sale."
+                        checked={Boolean(formData.show_instalment_list)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_instalment_list', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show description in invoice?"
+                        description="Prints each item's description line under its name."
+                        checked={Boolean(formData.show_description_in_invoice)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_description_in_invoice', checked)
+                        }
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Show Brand in Invoice?"
+                        description="Prints the brand of each item beside its name."
+                        checked={Boolean(formData.show_brand_in_invoice)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_brand_in_invoice', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Category in Invoice?"
+                        description="Prints the category of each item beside its name."
+                        checked={Boolean(formData.show_category_in_invoice)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_category_in_invoice', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show combined invoice note?"
+                        description="Offers a note box on the combined trading entry, so one remark covers the whole invoice."
+                        checked={Boolean(formData.combined_invoice_note)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('combined_invoice_note', checked)
+                        }
+                      />
+                    </div>
 
-              {currentStep === stepIndex('Customer Setup') && (
-                <>
-                  {/* ---------- Customer ---------- */}
-                  <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Customer
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    {/* The "Need ..." switches all do the same thing: each one
+                    {/* ---------- Stock ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Stock
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Warn On Negative Stock Sale?"
+                        description="Asks before an invoice sells more than the branch holds. Goods often arrive before the supplier's bill does, so the sale still goes through once confirmed -- this only makes sure a wrong line is noticed at the time, rather than in a stock report weeks later."
+                        checked={Boolean(formData.warn_negative_stock_sale)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('warn_negative_stock_sale', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Block Negative Stock Sale?"
+                        description="Refuses the invoice outright instead of asking, and nobody can override it. For a branch that only ever sells what it has already entered -- turn it off where goods are sold before the supplier's bill arrives, or the sale cannot be made at all."
+                        checked={Boolean(formData.block_negative_stock_sale)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('block_negative_stock_sale', checked)
+                        }
+                      />
+                    </div>
+                  </>
+                )}
+
+                {currentStep === stepIndex('Customer Setup') && (
+                  <>
+                    {/* ---------- Customer ---------- */}
+                    <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Customer
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      {/* The "Need ..." switches all do the same thing: each one
                         puts its field on the Add and Edit Customer forms. Said
                         once here would be missed, so each says it for itself. */}
-                    <FormToggleField
-                      label="Use Customer Serial?"
-                      description="Gives every customer a serial number of its own on the customer form."
-                      checked={Boolean(formData.have_customer_sl)}
-                      onChange={(checked) => handleToggleFieldChange('have_customer_sl', checked)}
-                    />
-                    <FormToggleField
-                      label="Need Customer Area?"
-                      description="Adds the area field to the customer form, so customers can be grouped by locality."
-                      checked={Boolean(formData.need_customer_area)}
-                      onChange={(checked) => handleToggleFieldChange('need_customer_area', checked)}
-                    />
-                    <FormToggleField
-                      label="Customer Share with Other branch?"
-                      description="Customers entered anywhere in the company can be picked here. Off, this branch sees only its own."
-                      checked={Boolean(formData.share_customer_with_other_branch)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('share_customer_with_other_branch', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Need Relation's Information?"
-                      description="Adds the father's/husband's name and relation fields to the customer form."
-                      checked={Boolean(formData.need_relation_info)}
-                      onChange={(checked) => handleToggleFieldChange('need_relation_info', checked)}
-                    />
-                    <FormToggleField
-                      label="Need Customer Mother's Name?"
-                      description="Adds the mother's name field to the customer form."
-                      checked={Boolean(formData.need_customer_mother_name)}
-                      onChange={(checked) => handleToggleFieldChange('need_customer_mother_name', checked)}
-                    />
-                    <FormToggleField
-                      label="Need Customer Sex?"
-                      description="Adds the sex field, which also decides which salutation a letter uses for the customer."
-                      checked={Boolean(formData.need_customer_sex)}
-                      onChange={(checked) => handleToggleFieldChange('need_customer_sex', checked)}
-                    />
-                    <FormToggleField
-                      label="Need Customer Contact Person?"
-                      description="Adds a contact person and their number, for customers reached through someone else."
-                      checked={Boolean(formData.need_customer_contact_person)}
-                      onChange={(checked) => handleToggleFieldChange('need_customer_contact_person', checked)}
-                    />
-                    <FormToggleField
-                      label="Need Customer Date of Birth?"
-                      description="Adds the date of birth field to the customer form."
-                      checked={Boolean(formData.need_customer_date_of_birth)}
-                      onChange={(checked) => handleToggleFieldChange('need_customer_date_of_birth', checked)}
-                    />
-                    <FormToggleField
-                      label="Need Customer Occupation?"
-                      description="Adds the occupation field to the customer form."
-                      checked={Boolean(formData.need_customer_occupation)}
-                      onChange={(checked) => handleToggleFieldChange('need_customer_occupation', checked)}
-                    />
-                    <FormToggleField
-                      label="Need Customer Permanent Address?"
-                      description="Adds a permanent address alongside the present one, as deeds and letters usually want both."
-                      checked={Boolean(formData.need_customer_permanent_address)}
-                      onChange={(checked) => handleToggleFieldChange('need_customer_permanent_address', checked)}
-                    />
-                    <FormToggleField
-                      label="Need Customer Photo?"
-                      description="Adds the photo upload to the customer form."
-                      checked={Boolean(formData.need_customer_photo)}
-                      onChange={(checked) => handleToggleFieldChange('need_customer_photo', checked)}
-                    />
-                    <FormToggleField
-                      label="Need Customer National ID?"
-                      description="Adds the national ID field to the customer form."
-                      checked={Boolean(formData.need_customer_national_id)}
-                      onChange={(checked) => handleToggleFieldChange('need_customer_national_id', checked)}
-                    />
-                    <FormToggleField
-                      label="Use Bangla?"
-                      description="Adds Bangla name fields beside the English ones, for papers that have to carry both."
-                      checked={Boolean(formData.use_bangla)}
-                      onChange={(checked) => handleToggleFieldChange('use_bangla', checked)}
-                    />
-                    {/* Unlike the switches above, this one does not add a field to
+                      <FormToggleField
+                        label="Use Customer Serial?"
+                        description="Gives every customer a serial number of its own on the customer form."
+                        checked={Boolean(formData.have_customer_sl)}
+                        onChange={(checked) => handleToggleFieldChange('have_customer_sl', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Area?"
+                        description="Adds the area field to the customer form, so customers can be grouped by locality."
+                        checked={Boolean(formData.need_customer_area)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_area', checked)}
+                      />
+                      <FormToggleField
+                        label="Customer Share with Other branch?"
+                        description="Customers entered anywhere in the company can be picked here. Off, this branch sees only its own."
+                        checked={Boolean(formData.share_customer_with_other_branch)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('share_customer_with_other_branch', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Need Relation's Information?"
+                        description="Adds the father's/husband's name and relation fields to the customer form."
+                        checked={Boolean(formData.need_relation_info)}
+                        onChange={(checked) => handleToggleFieldChange('need_relation_info', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Mother's Name?"
+                        description="Adds the mother's name field to the customer form."
+                        checked={Boolean(formData.need_customer_mother_name)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_mother_name', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Sex?"
+                        description="Adds the sex field, which also decides which salutation a letter uses for the customer."
+                        checked={Boolean(formData.need_customer_sex)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_sex', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Contact Person?"
+                        description="Adds a contact person and their number, for customers reached through someone else."
+                        checked={Boolean(formData.need_customer_contact_person)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_contact_person', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Date of Birth?"
+                        description="Adds the date of birth field to the customer form."
+                        checked={Boolean(formData.need_customer_date_of_birth)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_date_of_birth', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Occupation?"
+                        description="Adds the occupation field to the customer form."
+                        checked={Boolean(formData.need_customer_occupation)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_occupation', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Permanent Address?"
+                        description="Adds a permanent address alongside the present one, as deeds and letters usually want both."
+                        checked={Boolean(formData.need_customer_permanent_address)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_permanent_address', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Photo?"
+                        description="Adds the photo upload to the customer form."
+                        checked={Boolean(formData.need_customer_photo)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_photo', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer National ID?"
+                        description="Adds the national ID field to the customer form."
+                        checked={Boolean(formData.need_customer_national_id)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_national_id', checked)}
+                      />
+                      <FormToggleField
+                        label="Use Bangla?"
+                        description="Adds Bangla name fields beside the English ones, for papers that have to carry both."
+                        checked={Boolean(formData.use_bangla)}
+                        onChange={(checked) => handleToggleFieldChange('use_bangla', checked)}
+                      />
+                      {/* Unlike the switches above, this one does not add a field to
                         the customer form -- it decides what the Due List prints.
                         It sits here all the same: what it prints is the customer's
                         own address and mobile, so it is looked for with the rest
                         of the customer's particulars rather than among the
                         operational switches. */}
-                    <FormToggleField
-                      label="Report Due List with Address?"
-                      description="Prints each party's address and mobile beside the name on the Due List, so the sheet can be worked from in the field."
-                      checked={Boolean(formData.due_list_with_address)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('due_list_with_address', checked)
-                      }
-                    />
+                      <FormToggleField
+                        label="Report Due List with Address?"
+                        description="Prints each party's address and mobile beside the name on the Due List, so the sheet can be worked from in the field."
+                        checked={Boolean(formData.due_list_with_address)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('due_list_with_address', checked)
+                        }
+                      />
 
-                    {/* Not a switch, so it says what it does by showing it: the
+                      {/* Not a switch, so it says what it does by showing it: the
                         line underneath is the pattern applied to a real number,
                         which is quicker to judge than any wording of the rule.
 
                         Only how the number is *shown* -- what is stored stays
                         the digits as typed, because that is what a phone dials
                         and what the duplicate check compares. */}
-                    <div>
-                      <InputElement
-                        id="mobile_number_format"
-                        name="mobile_number_format"
-                        label="Mobile Number Format"
-                        placeholder="#####-######"
-                        value={formData.mobile_number_format || ''}
-                        onChange={handleOnChange}
-                        description={
-                          <>
-                            Groups every mobile number on screen. Write{' '}
-                            <span className="font-semibold">#</span> for a digit; anything else is
-                            printed as it stands. Leave empty to show numbers exactly as entered.
-                            {formData.mobile_number_format ? (
-                              <span className="mt-0.5 block">
-                                01973190490 â†’{' '}
-                                <span className="font-semibold text-primary">
-                                  {formatMobile('01973190490', formData.mobile_number_format)}
+                      <div>
+                        <InputElement
+                          id="mobile_number_format"
+                          name="mobile_number_format"
+                          label="Mobile Number Format"
+                          placeholder="#####-######"
+                          value={formData.mobile_number_format || ''}
+                          onChange={handleOnChange}
+                          description={
+                            <>
+                              Groups every mobile number on screen. Write{' '}
+                              <span className="font-semibold">#</span> for a digit; anything else is
+                              printed as it stands. Leave empty to show numbers exactly as entered.
+                              {formData.mobile_number_format ? (
+                                <span className="mt-0.5 block">
+                                  01973190490 â†’{' '}
+                                  <span className="font-semibold text-primary">
+                                    {formatMobile('01973190490', formData.mobile_number_format)}
+                                  </span>
                                 </span>
-                              </span>
-                            ) : null}
-                          </>
-                        }
-                      />
+                              ) : null}
+                            </>
+                          }
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* ---------- Nominee & Guarantor ---------- */}
-                  <div className="mt-4 border-t border-[rgb(var(--c-border))] pt-3">
+                    {/* ---------- Nominee & Guarantor ---------- */}
+                    <div className="mt-4 border-t border-[rgb(var(--c-border))] pt-3">
+                      <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        Nominee &amp; Guarantor
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <FormToggleField
+                          label="Use Customer Nominee?"
+                          description="Opens the nominee section on the customer form -- who inherits the customer's claim."
+                          checked={Boolean(formData.have_customer_nominee)}
+                          onChange={(checked) => handleToggleFieldChange('have_customer_nominee', checked)}
+                        />
+                        <FormToggleField
+                          label="Need Nominee Photo?"
+                          description="Asks for the nominee's photograph as well as their particulars."
+                          checked={Boolean(formData.need_nominee_photo)}
+                          onChange={(checked) => handleToggleFieldChange('need_nominee_photo', checked)}
+                        />
+                        <FormToggleField
+                          label="Use Guarantor?"
+                          description="Opens the guarantor section on the customer form -- who stands behind the customer's dues."
+                          checked={Boolean(formData.have_is_guaranter)}
+                          onChange={(checked) => handleToggleFieldChange('have_is_guaranter', checked)}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {currentStep === stepIndex('Product Setup') && (
+                  <>
+                    {/* ---------- Order ---------- */}
                     <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                      Nominee &amp; Guarantor
+                      Order
+                    </h4>
+                    {/* Each note sits in its own column, directly under the control
+                      it explains -- never spilling under a neighbouring field. */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <div>
+                        <FormToggleField
+                          label="Multi Product Order?"
+                          checked={Boolean(formData.multi_product_order)}
+                          onChange={(checked) =>
+                            handleToggleFieldChange('multi_product_order', checked)
+                          }
+                          className=""
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          <strong>On:</strong> one order can carry several products.
+                          <br />
+                          <strong>Off:</strong> the original single-product order form.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ---------- Stock ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Stock
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       <FormToggleField
-                        label="Use Customer Nominee?"
-                        description="Opens the nominee section on the customer form -- who inherits the customer's claim."
-                        checked={Boolean(formData.have_customer_nominee)}
-                        onChange={(checked) => handleToggleFieldChange('have_customer_nominee', checked)}
+                        label="Stock With Zero?"
+                        description="Keeps items with no balance on the stock report, so what has run out is still visible."
+                        checked={Boolean(formData.report_zero_bal)}
+                        onChange={(checked) => handleToggleFieldChange('report_zero_bal', checked)}
                       />
                       <FormToggleField
-                        label="Need Nominee Photo?"
-                        description="Asks for the nominee's photograph as well as their particulars."
-                        checked={Boolean(formData.need_nominee_photo)}
-                        onChange={(checked) => handleToggleFieldChange('need_nominee_photo', checked)}
+                        label="Stock: Brand->Category->Item"
+                        description="Groups the stock report by brand, then category, then item, instead of listing items straight."
+                        checked={Boolean(formData.stock_report_type)}
+                        onChange={(checked) => handleToggleFieldChange('stock_report_type', checked)}
                       />
                       <FormToggleField
-                        label="Use Guarantor?"
-                        description="Opens the guarantor section on the customer form -- who stands behind the customer's dues."
-                        checked={Boolean(formData.have_is_guaranter)}
-                        onChange={(checked) => handleToggleFieldChange('have_is_guaranter', checked)}
+                        label="Warranty Control?"
+                        description="Products carry a warranty period, asked for when the product is set up and tracked from the sale."
+                        checked={Boolean(formData.warranty_controll)}
+                        onChange={(checked) => handleToggleFieldChange('warranty_controll', checked)}
                       />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {currentStep === stepIndex('Product Setup') && (
-                <>
-                  {/* ---------- Order ---------- */}
-                  <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Order
-                  </h4>
-                  {/* Each note sits in its own column, directly under the control
-                      it explains -- never spilling under a neighbouring field. */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <div>
                       <FormToggleField
-                        label="Multi Product Order?"
-                        checked={Boolean(formData.multi_product_order)}
+                        label="Product Share?"
+                        description="Products entered anywhere in the company can be picked here. Off, this branch sees only its own."
+                        checked={Boolean(formData.share_product_with_other_branch)}
                         onChange={(checked) =>
-                          handleToggleFieldChange('multi_product_order', checked)
+                          handleToggleFieldChange('share_product_with_other_branch', checked)
                         }
-                        className=""
                       />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        <strong>On:</strong> one order can carry several products.
-                        <br/>
-                        <strong>Off:</strong> the original single-product order form.
-                      </p>
+                      <FormToggleField
+                        label="Product Tracking?"
+                        description="Cash Received and Payment ask which product the money was for, and the Product Statement reports on it. Off, those forms stay exactly as they were."
+                        checked={Boolean(formData.product_tracking)}
+                        onChange={(checked) => handleToggleFieldChange('product_tracking', checked)}
+                      />
                     </div>
-                  </div>
+                  </>
+                )}
 
-                  {/* ---------- Stock ---------- */}
-                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Stock
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <FormToggleField
-                      label="Stock With Zero?"
-                      description="Keeps items with no balance on the stock report, so what has run out is still visible."
-                      checked={Boolean(formData.report_zero_bal)}
-                      onChange={(checked) => handleToggleFieldChange('report_zero_bal', checked)}
-                    />
-                    <FormToggleField
-                      label="Stock: Brand->Category->Item"
-                      description="Groups the stock report by brand, then category, then item, instead of listing items straight."
-                      checked={Boolean(formData.stock_report_type)}
-                      onChange={(checked) => handleToggleFieldChange('stock_report_type', checked)}
-                    />
-                    <FormToggleField
-                      label="Warranty Control?"
-                      description="Products carry a warranty period, asked for when the product is set up and tracked from the sale."
-                      checked={Boolean(formData.warranty_controll)}
-                      onChange={(checked) => handleToggleFieldChange('warranty_controll', checked)}
-                    />
-                    <FormToggleField
-                      label="Product Share?"
-                      description="Products entered anywhere in the company can be picked here. Off, this branch sees only its own."
-                      checked={Boolean(formData.share_product_with_other_branch)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('share_product_with_other_branch', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Product Tracking?"
-                      description="Cash Received and Payment ask which product the money was for, and the Product Statement reports on it. Off, those forms stay exactly as they were."
-                      checked={Boolean(formData.product_tracking)}
-                      onChange={(checked) => handleToggleFieldChange('product_tracking', checked)}
-                    />
-                  </div>
-                </>
-              )}
+                {currentStep === stepIndex('Real Estate Setup') && (
+                  <>
+                    {/* ---------- Allotment Letter ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Allotment Letter
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <div>
+                        <DropdownCommon
+                          id="down_payment_base"
+                          name={'down_payment_base'}
+                          label="Down Payment Calculated On"
+                          onChange={handleOnSelectChange}
+                          value={formData?.down_payment_base || ''}
+                          className="bg-transparent"
+                          data={downPaymentBases}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          On the net payable balance the booking money is already
+                          out, so it is not adjusted against the down payment again.
+                        </p>
+                      </div>
+                      <div>
+                        <InputElement
+                          id="down_payment_percent"
+                          value={formData.down_payment_percent ?? ''}
+                          name="down_payment_percent"
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="0.01"
+                          placeholder={'Enter Down Payment (%)'}
+                          label={'Down Payment (%)'}
+                          className={''}
+                          onChange={handleOnNumberChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          What the payment terms ask for when the sale itself
+                          records no down payment.
+                        </p>
+                      </div>
 
-              {currentStep === stepIndex('Real Estate Setup') && (
-                <>
-                  {/* ---------- Allotment Letter ---------- */}
-                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Allotment Letter
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <div>
-                      <DropdownCommon
- id="down_payment_base"
- name={'down_payment_base'}
- label="Down Payment Calculated On"
- onChange={handleOnSelectChange}
- value={formData?.down_payment_base || ''}
- className="bg-transparent"
- data={downPaymentBases}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        On the net payable balance the booking money is already
-                        out, so it is not adjusted against the down payment again.
-                      </p>
-                    </div>
-                    <div>
-                      <InputElement
-                        id="down_payment_percent"
-                        value={formData.down_payment_percent ?? ''}
-                        name="down_payment_percent"
-                        type="number"
-                        min={0}
-                        max={100}
-                        step="0.01"
-                        placeholder={'Enter Down Payment (%)'}
-                        label={'Down Payment (%)'}
-                        className={''}
-                        onChange={handleOnNumberChange}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        What the payment terms ask for when the sale itself
-                        records no down payment.
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <InputElement
-                        id="delay_charge_percent"
-                        value={formData.delay_charge_percent ?? ''}
-                        name="delay_charge_percent"
-                        type="number"
-                        min={0}
-                        max={100}
-                        step="0.01"
-                        placeholder={'Enter Delay Charge (%)'}
-                        label={'Delay Charge (% per annum)'}
-                        className={''}
-                        onChange={handleOnNumberChange}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        The yearly rate the letter states on an overdue amount,
-                        charged for the actual number of days of delay.
-                      </p>
-                    </div>
+                      <div>
+                        <InputElement
+                          id="delay_charge_percent"
+                          value={formData.delay_charge_percent ?? ''}
+                          name="delay_charge_percent"
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="0.01"
+                          placeholder={'Enter Delay Charge (%)'}
+                          label={'Delay Charge (% per annum)'}
+                          className={''}
+                          onChange={handleOnNumberChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          The yearly rate the letter states on an overdue amount,
+                          charged for the actual number of days of delay.
+                        </p>
+                      </div>
 
-                    {/* Stands beside the two reference fields, because it is
+                      {/* Stands beside the two reference fields, because it is
                         what decides whether either of them reaches the paper. */}
-                    <FormToggleField
-                      label="Print Reference Number?"
-                      description="The letter carries a Ref No line. Off, it prints without one, for an office that numbers its letters on the sheet by hand."
-                      checked={Boolean(formData.print_letter_ref)}
-                      onChange={(checked) => handleToggleFieldChange('print_letter_ref', checked)}
-                    />
-
-                    <div>
-                      <InputElement
-                        id="letter_ref_prefix"
-                        value={formData.letter_ref_prefix ?? ''}
-                        name="letter_ref_prefix"
-                        type="text"
-                        placeholder={'e.g. BST/ALLOT'}
-                        label={'Reference No Prefix'}
-                        className={''}
-                        onChange={handleOnChange}
+                      <FormToggleField
+                        label="Print Reference Number?"
+                        description="The letter carries a Ref No line. Off, it prints without one, for an office that numbers its letters on the sheet by hand."
+                        checked={Boolean(formData.print_letter_ref)}
+                        onChange={(checked) => handleToggleFieldChange('print_letter_ref', checked)}
                       />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Offered as written when a letter is issued â€” nothing is
-                        added to it. Left blank, the letter falls back to the
-                        project's initials. The clerk issuing a letter finishes
-                        or replaces it against the register.
-                      </p>
+
+                      <div>
+                        <InputElement
+                          id="letter_ref_prefix"
+                          value={formData.letter_ref_prefix ?? ''}
+                          name="letter_ref_prefix"
+                          type="text"
+                          placeholder={'e.g. BST/ALLOT'}
+                          label={'Reference No Prefix'}
+                          className={''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Offered as written when a letter is issued â€” nothing is
+                          added to it. Left blank, the letter falls back to the
+                          project's initials. The clerk issuing a letter finishes
+                          or replaces it against the register.
+                        </p>
+                      </div>
+
+                      <div>
+                        <InputDatePicker
+                          id="letter_ref_date"
+                          name="letter_ref_date"
+                          label="Reference Date"
+                          className="w-full text-sm"
+                          selectedDate={parseIsoDate(formData.letter_ref_date)}
+                          setSelectedDate={handleRefDateChange}
+                          setCurrentDate={handleRefDateChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          The date letters are dated with. Left blank, each letter
+                          is offered the day it is issued â€” which is the safer of
+                          the two, since a date set here stays until it is changed.
+                        </p>
+                      </div>
                     </div>
 
-                    <div>
-                      <InputDatePicker
- id="letter_ref_date"
- name="letter_ref_date"
- label="Reference Date"
- className="w-full text-sm"
- selectedDate={parseIsoDate(formData.letter_ref_date)}
- setSelectedDate={handleRefDateChange}
- setCurrentDate={handleRefDateChange}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        The date letters are dated with. Left blank, each letter
-                        is offered the day it is issued â€” which is the safer of
-                        the two, since a date set here stays until it is changed.
-                      </p>
-                    </div>
-                  </div>
+                  </>
+                )}
 
-                </>
-              )}
+                {currentStep === stepIndex('Hotel Setup') && (
+                  <>
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Check-in and check-out
+                    </h4>
 
-              {currentStep === stepIndex('Hotel Setup') && (
-                <>
-                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Check-in and check-out
-                  </h4>
-
-                  {/* ⚠️ These two are not decoration, and the note says so.
+                    {/* ⚠️ These two are not decoration, and the note says so.
 
                       The booking engine counts NIGHTS and never hours: a stay of
                       the 15th to the 18th holds three nights and leaves the 18th
@@ -1747,44 +1747,44 @@ const AddBranch = () => {
                       room is let to two parties for the hours between, every
                       turnover day, and nothing in the engine would notice. The
                       server refuses to save them that way round. */}
-                  <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
-                    <div>
-                      <InputElement
-                        id="hotel_check_out_time"
-                        name="hotel_check_out_time"
-                        type="time"
-                        label="Check-out time"
-                        value={formData.hotel_check_out_time || ''}
-                        onChange={handleOnChange}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        When the room has to be given up. Noon almost everywhere.
-                      </p>
+                    <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
+                      <div>
+                        <InputElement
+                          id="hotel_check_out_time"
+                          name="hotel_check_out_time"
+                          type="time"
+                          label="Check-out time"
+                          value={formData.hotel_check_out_time || ''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          When the room has to be given up. Noon almost everywhere.
+                        </p>
+                      </div>
+
+                      <div>
+                        <InputElement
+                          id="hotel_check_in_time"
+                          name="hotel_check_in_time"
+                          type="time"
+                          label="Check-in time"
+                          value={formData.hotel_check_in_time || ''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          When the next guest may take it. Two hours later leaves
+                          housekeeping a window.
+                        </p>
+                      </div>
+
+
                     </div>
 
-                    <div>
-                      <InputElement
-                        id="hotel_check_in_time"
-                        name="hotel_check_in_time"
-                        type="time"
-                        label="Check-in time"
-                        value={formData.hotel_check_in_time || ''}
-                        onChange={handleOnChange}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        When the next guest may take it. Two hours later leaves
-                        housekeeping a window.
-                      </p>
-                    </div>
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      How long a room is held
+                    </h4>
 
-                    
-                  </div>
-
-                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    How long a room is held
-                  </h4>
-
-                  {/* ⚠️ A HOLD TAKES REAL INVENTORY -- one row per bed per
+                    {/* ⚠️ A HOLD TAKES REAL INVENTORY -- one row per bed per
                       night -- so this is how long an unconfirmed enquiry may
                       keep a room off the market. Too long and the desk turns
                       people away for rooms nobody is coming to; too short and a
@@ -1797,211 +1797,211 @@ const AddBranch = () => {
                       taken at eleven at night lapsed at the same moment and the
                       second lasted fourteen hours longer for no reason anybody
                       chose. */}
-                  <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
-                    <div>
-                      <InputElement
-                        id="hotel_hold_hours"
-                        name="hotel_hold_hours"
-                        type="number"
-                        min={1}
-                        label="Hold lasts (hours)"
-                        value={formData.hotel_hold_hours || ''}
-                        onChange={handleOnChange}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        When the desk names no date of its own.{' '}
-                        {spellHours(formData.hotel_hold_hours) ? (
-                          <strong className="text-black dark:text-white">
-                            {spellHours(formData.hotel_hold_hours)}
-                          </strong>
-                        ) : null}
-                      </p>
+                    <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
+                      <div>
+                        <InputElement
+                          id="hotel_hold_hours"
+                          name="hotel_hold_hours"
+                          type="number"
+                          min={1}
+                          label="Hold lasts (hours)"
+                          value={formData.hotel_hold_hours || ''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          When the desk names no date of its own.{' '}
+                          {spellHours(formData.hotel_hold_hours) ? (
+                            <strong className="text-black dark:text-white">
+                              {spellHours(formData.hotel_hold_hours)}
+                            </strong>
+                          ) : null}
+                        </p>
+                      </div>
+
+                      <div>
+                        <InputElement
+                          id="hotel_hold_max_hours"
+                          name="hotel_hold_max_hours"
+                          type="number"
+                          min={1}
+                          label="Longest hold (hours)"
+                          value={formData.hotel_hold_max_hours || ''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          The most the desk may ask for.{' '}
+                          {spellHours(formData.hotel_hold_max_hours) ? (
+                            <strong className="text-black dark:text-white">
+                              {spellHours(formData.hotel_hold_max_hours)}
+                            </strong>
+                          ) : null}
+                        </p>
+                      </div>
                     </div>
 
-                    <div>
-                      <InputElement
-                        id="hotel_hold_max_hours"
-                        name="hotel_hold_max_hours"
-                        type="number"
-                        min={1}
-                        label="Longest hold (hours)"
-                        value={formData.hotel_hold_max_hours || ''}
-                        onChange={handleOnChange}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        The most the desk may ask for.{' '}
-                        {spellHours(formData.hotel_hold_max_hours) ? (
-                          <strong className="text-black dark:text-white">
-                            {spellHours(formData.hotel_hold_max_hours)}
-                          </strong>
-                        ) : null}
-                      </p>
-                    </div>
-                  </div>
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      What the guest signs
+                    </h4>
 
-                  <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    What the guest signs
-                  </h4>
-
-                  {/* The small print under the registration card -- the paper
+                    {/* The small print under the registration card -- the paper
                       a guest signs at check-in (name, ID, room, rate, dates).
                       The property's own words, in whichever language it
                       writes them; a rule list is kept as typed, line breaks
                       and all. Empty prints a card with no terms, which is
                       still a card. */}
-                  <div className="mb-2">
-                    <label
-                      htmlFor="hotel_registration_terms"
-                      className="mb-1 block text-sm text-black dark:text-white"
-                    >
-                      Registration card terms
-                    </label>
-                    <textarea
-                      id="hotel_registration_terms"
-                      name="hotel_registration_terms"
-                      rows={5}
-                      value={formData.hotel_registration_terms || ''}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, hotel_registration_terms: e.target.value }))
-                      }
-                      placeholder={'Check-out by 12 noon. Visitors are not allowed in rooms after 10 pm. ...'}
-                      className="block w-full rounded-xs border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-2 text-sm text-gray-900 outline-none dark:text-[rgb(var(--c-text))]"
-                    />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Printed under every guest's registration card, above the two signature lines.
+                    <div className="mb-2">
+                      <label
+                        htmlFor="hotel_registration_terms"
+                        className="mb-1 block text-sm text-black dark:text-white"
+                      >
+                        Registration card terms
+                      </label>
+                      <textarea
+                        id="hotel_registration_terms"
+                        name="hotel_registration_terms"
+                        rows={5}
+                        value={formData.hotel_registration_terms || ''}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, hotel_registration_terms: e.target.value }))
+                        }
+                        placeholder={'Check-out by 12 noon. Visitors are not allowed in rooms after 10 pm. ...'}
+                        className="block w-full rounded-xs border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-2 text-sm text-gray-900 outline-none dark:text-[rgb(var(--c-text))]"
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Printed under every guest's registration card, above the two signature lines.
+                      </p>
+                    </div>
+
+                    <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                      Only a branch that is a hotel uses these. Every other branch
+                      can leave them alone.
                     </p>
-                  </div>
+                  </>
+                )}
 
-                  <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
-                    Only a branch that is a hotel uses these. Every other branch
-                    can leave them alone.
-                  </p>
-                </>
-              )}
-
-              {currentStep === stepIndex('Feature Controls') && (
-                <>
-                  {/* One grid for the operational switches, not one per theme.
+                {currentStep === stepIndex('Feature Controls') && (
+                  <>
+                    {/* One grid for the operational switches, not one per theme.
                       A grid each broke into rows of its own and left a toggle
                       stranded beside two empty cells whenever a group did not
                       divide by three. SMS is the one exception below: it is
                       ruled off because it answers a different question. */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <FormToggleField
-                      label="Control Manufacture?"
-                      description="Opens the production side, so an item can be built from other items instead of only bought and sold."
-                      checked={Boolean(formData.manufactur_control)}
-                      onChange={(checked) => handleToggleFieldChange('manufactur_control', checked)}
-                    />
-                    <FormToggleField
-                      label="Multiple Warehouse?"
-                      description="Vouchers say which warehouse stock moved in or out of. Off, everything sits in one."
-                      checked={Boolean(formData.have_warehouse)}
-                      onChange={(checked) => handleToggleFieldChange('have_warehouse', checked)}
-                    />
-                    <FormToggleField
-                      label="Opening ongoing?"
-                      description="The branch is still entering its opening figures, so products and parties can take an opening balance. Switch off once the books are settled."
-                      checked={Boolean(formData.is_opening)}
-                      onChange={(checked) => handleToggleFieldChange('is_opening', checked)}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Control Manufacture?"
+                        description="Opens the production side, so an item can be built from other items instead of only bought and sold."
+                        checked={Boolean(formData.manufactur_control)}
+                        onChange={(checked) => handleToggleFieldChange('manufactur_control', checked)}
+                      />
+                      <FormToggleField
+                        label="Multiple Warehouse?"
+                        description="Vouchers say which warehouse stock moved in or out of. Off, everything sits in one."
+                        checked={Boolean(formData.have_warehouse)}
+                        onChange={(checked) => handleToggleFieldChange('have_warehouse', checked)}
+                      />
+                      <FormToggleField
+                        label="Opening ongoing?"
+                        description="The branch is still entering its opening figures, so products and parties can take an opening balance. Switch off once the books are settled."
+                        checked={Boolean(formData.is_opening)}
+                        onChange={(checked) => handleToggleFieldChange('is_opening', checked)}
+                      />
 
-                    {/* Sits in a grid cell of its own, so it lines up with the
+                      {/* Sits in a grid cell of its own, so it lines up with the
                         toggles rather than interrupting their rhythm. Red,
                         because it destroys figures that are kept nowhere else. */}
-                    {showClearOpening && (
-                      <div className="flex items-center">
-                        <ButtonLoading
-                          type="button"
-                          label="Clear Opening"
-                          title="Set every opening balance in this branch back to zero"
-                          icon={<FiRefreshCcw size={15} />}
-                          buttonLoading={clearingOpening}
-                          disabled={clearInFlight}
-                          onClick={() => setConfirmClearOpening(true)}
-                          variant="danger"
-                          className="whitespace-nowrap rounded"
-                        />
-                      </div>
-                    )}
+                      {showClearOpening && (
+                        <div className="flex items-center">
+                          <ButtonLoading
+                            type="button"
+                            label="Clear Opening"
+                            title="Set every opening balance in this branch back to zero"
+                            icon={<FiRefreshCcw size={15} />}
+                            buttonLoading={clearingOpening}
+                            disabled={clearInFlight}
+                            onClick={() => setConfirmClearOpening(true)}
+                            variant="danger"
+                            className="whitespace-nowrap rounded"
+                          />
+                        </div>
+                      )}
 
-                    {/* Its own cell beside Clear Opening, and red for the same
+                      {/* Its own cell beside Clear Opening, and red for the same
                         reason: it takes every voucher the branch holds out of
                         the books in one stroke. */}
-                    {showClearTransactions && (
-                      <div className="flex items-center">
-                        <ButtonLoading
-                          type="button"
-                          label="Clear Transactions"
-                          title="Withdraw every voucher in this branch from the books"
-                          icon={<FiRefreshCcw size={15} />}
-                          buttonLoading={clearingTransactions}
-                          disabled={clearInFlight}
-                          onClick={() => setConfirmClearTransactions(true)}
-                          variant="danger"
-                          className="whitespace-nowrap rounded"
-                        />
-                      </div>
-                    )}
+                      {showClearTransactions && (
+                        <div className="flex items-center">
+                          <ButtonLoading
+                            type="button"
+                            label="Clear Transactions"
+                            title="Withdraw every voucher in this branch from the books"
+                            icon={<FiRefreshCcw size={15} />}
+                            buttonLoading={clearingTransactions}
+                            disabled={clearInFlight}
+                            onClick={() => setConfirmClearTransactions(true)}
+                            variant="danger"
+                            className="whitespace-nowrap rounded"
+                          />
+                        </div>
+                      )}
 
-                    {/* The bar pinned to the top of the window is easy to miss
+                      {/* The bar pinned to the top of the window is easy to miss
                         from down here, where the eye already is. This one spans
                         the row directly under the button that started the work,
                         and says what is being cleared while it runs. */}
-                    {clearProgress !== null && (
-                      <div className="col-span-1 md:col-span-3">
-                        <div className="rounded border border-danger/30 bg-danger/5 px-3 py-2.5">
-                          <div className="mb-1.5 flex items-center justify-between gap-2 text-xs font-medium text-danger">
-                            <span className="flex items-center gap-1.5">
-                              <FiRefreshCcw
-                                size={13}
-                                className={clearInFlight ? 'animate-spin' : ''}
-                              />
-                              {clearInFlight ? clearLabel.running : clearLabel.done}
-                            </span>
-                            <span>{Math.round(clearProgress)}%</span>
-                          </div>
-                          <div
-                            className="h-1.5 w-full overflow-hidden rounded-full bg-danger/20"
-                            role="progressbar"
-                            aria-label={clearLabel.running}
-                            aria-valuenow={Math.round(clearProgress)}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                          >
+                      {clearProgress !== null && (
+                        <div className="col-span-1 md:col-span-3">
+                          <div className="rounded border border-danger/30 bg-danger/5 px-3 py-2.5">
+                            <div className="mb-1.5 flex items-center justify-between gap-2 text-xs font-medium text-danger">
+                              <span className="flex items-center gap-1.5">
+                                <FiRefreshCcw
+                                  size={13}
+                                  className={clearInFlight ? 'animate-spin' : ''}
+                                />
+                                {clearInFlight ? clearLabel.running : clearLabel.done}
+                              </span>
+                              <span>{Math.round(clearProgress)}%</span>
+                            </div>
                             <div
-                              className="h-full rounded-full bg-danger transition-all duration-500 ease-out"
-                              style={{ width: `${clearProgress}%` }}
-                            />
+                              className="h-1.5 w-full overflow-hidden rounded-full bg-danger/20"
+                              role="progressbar"
+                              aria-label={clearLabel.running}
+                              aria-valuenow={Math.round(clearProgress)}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                            >
+                              <div
+                                className="h-full rounded-full bg-danger transition-all duration-500 ease-out"
+                                style={{ width: `${clearProgress}%` }}
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    <FormToggleField
-                      label="Need Demo Tutorial?"
-                      description="Offers the guided walkthrough to users of this branch. Turn off once the staff know their way around."
-                      checked={Boolean(formData.need_demo_tutorial)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('need_demo_tutorial', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Show Voucher Image?"
-                      description="Shows the image attached to a voucher in the Cash Book, Sales Ledger and Purchase Ledger."
-                      checked={Boolean(formData.show_voucher_image)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('show_voucher_image', checked)
-                      }
-                    />
+                      <FormToggleField
+                        label="Need Demo Tutorial?"
+                        description="Offers the guided walkthrough to users of this branch. Turn off once the staff know their way around."
+                        checked={Boolean(formData.need_demo_tutorial)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('need_demo_tutorial', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Voucher Image?"
+                        description="Shows the image attached to a voucher in the Cash Book, Sales Ledger and Purchase Ledger."
+                        checked={Boolean(formData.show_voucher_image)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_voucher_image', checked)
+                        }
+                      />
 
-                  </div>
+                    </div>
 
-                  {/* SMS used to flow on inside the grid above so no toggle sat
+                    {/* SMS used to flow on inside the grid above so no toggle sat
                       alone on a half-empty row. It reads better ruled off: these
                       decide what leaves the branch as a text message, which is a
                       different question from the operational switches above. */}
-                  <>
+                    <>
                       <div className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4">
                         <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                           SMS Services
@@ -2024,7 +2024,7 @@ const AddBranch = () => {
                           <p className="col-span-full font-bold text-sm text-blue-800 dark:text-gray-100">SMS Service is not active for this branch.</p>
                         )}
                         {Boolean(formData.sms_service) && (
-                            <>
+                          <>
                             {/* Money first, both directions, then the two invoice
                                 ones. Received and Payment are the same question
                                 asked of cash in and cash out, so they read as a
@@ -2053,78 +2053,78 @@ const AddBranch = () => {
                               checked={Boolean(formData.purchase_sms)}
                               onChange={(checked) => handleToggleFieldChange('purchase_sms', checked)}
                             />
-                            </>
+                          </>
                         )}
                       </div>
+                    </>
                   </>
-                </>
-              )}
+                )}
 
-              {/* SaaS Setup â€” the platform operator's own step. Guarded on the
+                {/* SaaS Setup â€” the platform operator's own step. Guarded on the
                   index rather than a number, so it stays right if a step is
                   ever added above it. */}
-              {SAAS_STEP >= 0 && currentStep === SAAS_STEP && (
-                <>
-                  <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    New Company Registration
-                  </h4>
-                  <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
-                    What happens when someone signs up for a new company. These
-                    belong to the branch that runs the platform â€” setting them on
-                    a customer's branch does nothing.
-                  </p>
+                {SAAS_STEP >= 0 && currentStep === SAAS_STEP && (
+                  <>
+                    <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      New Company Registration
+                    </h4>
+                    <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+                      What happens when someone signs up for a new company. These
+                      belong to the branch that runs the platform â€” setting them on
+                      a customer's branch does nothing.
+                    </p>
 
-                  <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
-                    <div>
-                      <FormToggleField
-                        label="Notify on registration?"
-                        checked={Boolean(formData.registration_alert)}
-                        onChange={(checked) =>
-                          handleToggleFieldChange('registration_alert', checked)
-                        }
-                        className=""
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Puts a notice in this branch's bell, on the web and in the
-                        app. Costs nothing and cannot fail.
-                      </p>
+                    <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
+                      <div>
+                        <FormToggleField
+                          label="Notify on registration?"
+                          checked={Boolean(formData.registration_alert)}
+                          onChange={(checked) =>
+                            handleToggleFieldChange('registration_alert', checked)
+                          }
+                          className=""
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Puts a notice in this branch's bell, on the web and in the
+                          app. Costs nothing and cannot fail.
+                        </p>
+                      </div>
+
+                      <div>
+                        <FormToggleField
+                          label="Also send SMS?"
+                          checked={Boolean(formData.registration_alert_sms)}
+                          onChange={(checked) =>
+                            handleToggleFieldChange('registration_alert_sms', checked)
+                          }
+                          className=""
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Reaches you without opening anything, and is charged per
+                          message.
+                        </p>
+                      </div>
+
+                      <div>
+                        <InputElement
+                          id="registration_alert_mobile"
+                          value={formData.registration_alert_mobile ?? ''}
+                          name="registration_alert_mobile"
+                          type="text"
+                          placeholder={'01712345678, 01911111111'}
+                          label={'Alert Mobile Number(s)'}
+                          className={''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Separate several with commas. Left empty, no SMS is sent
+                          however the switch is set.
+                        </p>
+                      </div>
                     </div>
 
-                    <div>
-                      <FormToggleField
-                        label="Also send SMS?"
-                        checked={Boolean(formData.registration_alert_sms)}
-                        onChange={(checked) =>
-                          handleToggleFieldChange('registration_alert_sms', checked)
-                        }
-                        className=""
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Reaches you without opening anything, and is charged per
-                        message.
-                      </p>
-                    </div>
-
-                    <div>
-                      <InputElement
-                        id="registration_alert_mobile"
-                        value={formData.registration_alert_mobile ?? ''}
-                        name="registration_alert_mobile"
-                        type="text"
-                        placeholder={'01712345678, 01911111111'}
-                        label={'Alert Mobile Number(s)'}
-                        className={''}
-                        onChange={handleOnChange}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Separate several with commas. Left empty, no SMS is sent
-                        however the switch is set.
-                      </p>
-                    </div>
-                  </div>
-
-                </>
-              )}
+                  </>
+                )}
               </div>
 
               {/* Kept within reach on the long steps, so Save needs no scrolling back. */}
