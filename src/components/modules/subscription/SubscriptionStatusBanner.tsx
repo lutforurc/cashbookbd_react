@@ -1,66 +1,68 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import routes from '../../services/appRoutes';
-import type { CurrentSubscription } from './subscriptionSlice';
+import type { CurrentSubscription, SubscriptionAccessState } from './subscriptionSlice';
 
 interface SubscriptionStatusBannerProps {
   subscription: CurrentSubscription | null;
 }
 
-const statusToneMap: Record<string, string> = {
-  active: 'border-gray-300 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100',
-  trialing:
-    'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-700/40 dark:bg-blue-900/20 dark:text-blue-200',
-  pending_payment:
-    'border-gray-300 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100',
-  expired:
-    'border-gray-300 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100',
-  suspended:
-    'border-gray-300 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100',
-  cancelled:
-    'border-gray-300 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100',
-};
+const GRACE_TONE =
+  'border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-500/40 dark:bg-amber-900/20 dark:text-amber-100';
 
-const isDateExpired = (value?: string | null): boolean => {
-  if (!value) return false;
+const BLOCKED_TONE =
+  'border-red-300 bg-red-50 text-red-900 dark:border-red-500/40 dark:bg-red-900/20 dark:text-red-100';
 
-  const expiry = new Date(value);
-  if (Number.isNaN(expiry.getTime())) return false;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  return expiry < today;
-};
-
+/**
+ * The line across the top of every screen once a subscription has lapsed.
+ *
+ * It says one of two things, and the difference between them is the whole
+ * feature: inside the grace window it counts the days down, and after it it
+ * reports that access has closed. Both come from the server's own verdict --
+ * see RequireSubscription for why the browser no longer works this out from
+ * the dates itself.
+ *
+ * ⚠️ It renders on `limited` too, which looks like a warning about nothing
+ * until you remember that 'limited' IS grace in the stored column.
+ */
 const SubscriptionStatusBanner: React.FC<SubscriptionStatusBannerProps> = ({
   subscription,
 }) => {
-  if (!subscription) return null;
-  if (!subscription.status) return null;
+  if (!subscription || !subscription.status) return null;
 
-  const isExpired =
-    subscription.status === 'expired' ||
-    isDateExpired(subscription.end_date) ||
-    (subscription.status === 'trialing' && isDateExpired((subscription as any).trial_end_at));
+  // Falls back to the stored column for an API that has not been redeployed.
+  const state: SubscriptionAccessState =
+    subscription.access_state ??
+    (subscription.access_status === 'blocked'
+      ? 'blocked'
+      : subscription.access_status === 'limited'
+        ? 'grace'
+        : 'full');
 
-  if (!isExpired) return null;
+  if (state === 'full') return null;
 
-  const tone = statusToneMap.expired || statusToneMap.active;
   const planName = subscription.plan_name || 'Current plan';
+  const daysLeft = subscription.grace_days_left;
+  const isGrace = state === 'grace';
+
+  const headline = isGrace
+    ? `${planName} - Subscription expired`
+    : `${planName} - Access closed`;
+
+  const detail = isGrace
+    ? daysLeft === 0
+      ? `Your subscription ended${subscription.end_date ? ` on ${subscription.end_date}` : ''}. Access closes at the end of today — renew now to keep working.`
+      : daysLeft != null
+        ? `Your subscription ended${subscription.end_date ? ` on ${subscription.end_date}` : ''}. Access closes in ${daysLeft} day${daysLeft === 1 ? '' : 's'} unless it is renewed.`
+        : `Your subscription has expired. Renew to keep your access.`
+    : `Entries and reports are closed${subscription.end_date ? ` — the plan ended on ${subscription.end_date}` : ''}. Renew to restore access.`;
 
   return (
-    <div className={`mb-4 rounded border px-4 py-3 ${tone}`}>
+    <div className={`mb-4 rounded border px-4 py-3 ${isGrace ? GRACE_TONE : BLOCKED_TONE}`}>
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm font-semibold capitalize">
-            {planName} - Subscription expired
-          </p>
-          <p className="text-xs opacity-90">
-            {subscription.end_date
-              ? `Your access expired on ${subscription.end_date}. Renew to restore menu access.`
-              : 'Your subscription has expired. Renew to restore menu access.'}
-          </p>
+          <p className="text-sm font-semibold capitalize">{headline}</p>
+          <p className="text-xs opacity-90">{detail}</p>
         </div>
         <div className="flex gap-4 text-sm font-medium">
           <Link to={routes.my_subscription} className="hover:underline">

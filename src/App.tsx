@@ -248,7 +248,19 @@ import RequireUserQuota from './components/auth/RequireUserQuota';
 import ResellerAdmin from './components/modules/reseller/ResellerAdmin';
 import ResellerDashboard from './components/modules/reseller/ResellerDashboard';
 
-const SUBSCRIPTION_EXEMPT_COMPANY_IDS = new Set([1]);
+/*
+ * There is no exempt-company list here any more, and its absence is the point.
+ *
+ * It used to be `new Set([1])`, mirroring PLATFORM_COMPANY_IDS on the API. But
+ * every tenant has its own database -- aftradingdb, krfdb, sonycybernetdb, a
+ * dozen more -- and inside each one the customer IS company 1. So the list that
+ * was meant to exempt the platform exempted every customer there is, and no
+ * company was ever stopped for not paying.
+ *
+ * Whether a company is metered is now decided in one place, SubscriptionGate on
+ * the API, and set per deployment with SUBSCRIPTION_EXEMPT_COMPANY_IDS in .env.
+ * The browser reads the verdict; it does not hold an opinion of its own.
+ */
 
 
 
@@ -263,8 +275,6 @@ function App() {
   const companyLogo = settings?.data?.company?.company_logo;
   const companyLogoDark = settings?.data?.company?.company_logo_dark;
   const subscription = useSelector((s: any) => s.subscription);
-  const currentCompanyId = Number(me?.company_id || 0);
-  const bypassSubscriptionEnforcement = SUBSCRIPTION_EXEMPT_COMPANY_IDS.has(currentCompanyId);
 
   const userPermissions = settings?.data?.permissions ?? [];
   const permissionsLoading = settings?.loading ?? false;
@@ -320,7 +330,6 @@ function App() {
                   loading={subscription.loadingCurrent}
                   initialized={subscription.initialized}
                   error={subscription.error}
-                  bypass={bypassSubscriptionEnforcement}
                   current={subscription.current}
                   allowedPaths={subscriptionSafeRoutes}
                 />

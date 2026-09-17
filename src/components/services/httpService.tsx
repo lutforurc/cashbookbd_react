@@ -42,6 +42,11 @@ const clearSession = () => {
 // Guard so a burst of concurrent 401s triggers only one redirect.
 let sessionExpiredHandled = false;
 
+// The same guard for the subscription block. A dashboard fires a dozen calls at
+// once, and every one of them comes back 403 — without this the user gets
+// twelve toasts and twelve navigations.
+let subscriptionBlockHandled = false;
+
 // Marks an error the interceptor has already put on screen, so a caller with a
 // catch of its own can stay quiet instead of repeating the same words.
 const markReported = (error: any) => {
@@ -90,6 +95,29 @@ httpService.interceptors.response.use(
         // permission failure — the login screen renders its own device
         // chooser for it, so don't show the generic toast over the top.
         const isDeviceLimit = error.response?.data?.error?.code === 10010;
+
+        // 10031: SubscriptionActive refusing a company whose grace period is
+        // over. RequireSubscription normally turns these away before a call is
+        // made, but not always — a screen already open when the window closed
+        // at midnight, a tab left overnight, or a subscription blocked by an
+        // administrator mid-session. Sending them to /no-access is what stops
+        // that page firing a dozen more calls that will all be refused too.
+        const isSubscriptionBlocked = error.response?.data?.error?.code === 10031;
+
+        if (isSubscriptionBlocked) {
+            const onNoAccess = typeof window !== 'undefined' && window.location.pathname === '/no-access';
+            if (!subscriptionBlockHandled && !onNoAccess) {
+                subscriptionBlockHandled = true;
+                toast.error(
+                    error.response?.data?.message || 'Your subscription has expired. Renew to restore access.',
+                    { toastId: 'subscription-blocked' },
+                );
+                setTimeout(() => {
+                    window.location.href = '/no-access?reason=subscription';
+                }, 600);
+            }
+            return Promise.reject(markReported(error));
+        }
 
         // Authenticated but not allowed — components rarely handle 403 distinctly.
         if (status === 403 && !isDeviceLimit) {
