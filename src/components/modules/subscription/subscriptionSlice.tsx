@@ -99,6 +99,9 @@ export interface CurrentSubscription {
   // how the browser used to disagree with the server about who was locked out.
   access_state?: SubscriptionAccessState;
   grace_days_left?: number | null;
+  // null/absent = unlimited. Read by RequireUserQuota to block Add User before
+  // the form opens.
+  max_users?: number | null;
   notes?: string | null;
   features?: SubscriptionFeature[];
 }
