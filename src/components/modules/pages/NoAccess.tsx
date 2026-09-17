@@ -3,6 +3,7 @@ import React from "react";
 import { useLocation, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import routes from "../../services/appRoutes";
+import { formatDayMonthYear } from "../../utils/utils-functions/formatDate";
 
 export default function NoAccess() {
   const location = useLocation();
@@ -22,6 +23,13 @@ export default function NoAccess() {
   const isSubscriptionQuota = reason === "subscription_quota";
   const isSubscription = reason === "subscription";
 
+  // ISO on the wire, day-first on screen -- the same dates the banner shows,
+  // and grace_period_end_at arrives as a full timestamp that must not print one.
+  const endedOn = subscription?.end_date ? formatDayMonthYear(subscription.end_date) : null;
+  const graceEndedOn = subscription?.grace_period_end_at
+    ? formatDayMonthYear(subscription.grace_period_end_at)
+    : null;
+
   const title = isSubscriptionQuota
     ? "Plan Limit Reached"
     : isSubscription
@@ -34,11 +42,9 @@ export default function NoAccess() {
       : "Your subscription limit has been reached for this action."
     : isSubscription
       ? `Entries and reports are closed because the subscription${
-          subscription?.end_date ? ` ended on ${subscription.end_date}` : " has expired"
+          endedOn ? ` ended on ${endedOn}` : " has expired"
         }${
-          subscription?.grace_period_end_at
-            ? `, and the grace period ended on ${String(subscription.grace_period_end_at).slice(0, 10)}`
-            : ""
+          graceEndedOn ? `, and the grace period ended on ${graceEndedOn}` : ""
         }. Submit a payment to restore access — your data is untouched and comes back the moment the plan is renewed.`
       : "You do not have permission to access this page.";
 

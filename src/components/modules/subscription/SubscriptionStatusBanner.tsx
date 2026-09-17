@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import routes from '../../services/appRoutes';
+import { formatDayMonthYear } from '../../utils/utils-functions/formatDate';
 import type { CurrentSubscription, SubscriptionAccessState } from './subscriptionSlice';
 
 interface SubscriptionStatusBannerProps {
@@ -45,17 +46,21 @@ const SubscriptionStatusBanner: React.FC<SubscriptionStatusBannerProps> = ({
   const daysLeft = subscription.grace_days_left;
   const isGrace = state === 'grace';
 
+  // The API speaks ISO; every date the rest of the app puts on screen is
+  // day-first, and a banner is no place to make somebody parse 2026-09-10.
+  const endedOn = subscription.end_date ? formatDayMonthYear(subscription.end_date) : null;
+
   const headline = isGrace
     ? `${planName} - Subscription expired`
     : `${planName} - Access closed`;
 
   const detail = isGrace
     ? daysLeft === 0
-      ? `Your subscription ended${subscription.end_date ? ` on ${subscription.end_date}` : ''}. Access closes at the end of today — renew now to keep working.`
+      ? `Your subscription ended${endedOn ? ` on ${endedOn}` : ''}. Access closes at the end of today — renew now to keep working.`
       : daysLeft != null
-        ? `Your subscription ended${subscription.end_date ? ` on ${subscription.end_date}` : ''}. Access closes in ${daysLeft} day${daysLeft === 1 ? '' : 's'} unless it is renewed.`
+        ? `Your subscription ended${endedOn ? ` on ${endedOn}` : ''}. Access closes in ${daysLeft} day${daysLeft === 1 ? '' : 's'} unless it is renewed.`
         : `Your subscription has expired. Renew to keep your access.`
-    : `Entries and reports are closed${subscription.end_date ? ` — the plan ended on ${subscription.end_date}` : ''}. Renew to restore access.`;
+    : `Entries and reports are closed${endedOn ? ` — the plan ended on ${endedOn}` : ''}. Renew to restore access.`;
 
   return (
     <div className={`mb-4 rounded border px-4 py-3 ${isGrace ? GRACE_TONE : BLOCKED_TONE}`}>
