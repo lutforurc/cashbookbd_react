@@ -8,18 +8,27 @@ import { toast } from 'react-toastify';
  * the red error toast it read as the system failing -- the owner asked for it
  * to be told as information (2026-09-14). The sentence is the server's own,
  * from PeriodClosedException::sentence(), which is why it can be recognised
- * here by its shape. Everything else stays the error it is.
+ * here by its shape.
+ *
+ * The Txn/Month plan limit joined it 2026-09-18, same reasoning: a company
+ * that has posted its quota for the month is not a system fault either, and
+ * TransactionQuotaExceededException::sentence() is exactly as recognisable by
+ * shape as the closed-year one is. Everything else stays the error it is.
  */
 const CLOSED_YEAR = /The year ending \d{2}\/\d{2}\/\d{4} is closed/;
+const TRANSACTION_QUOTA = /has posted \d+ of \d+ transactions allowed this month/;
 
 export const isClosedYearRefusal = (message: unknown): boolean =>
   typeof message === 'string' && CLOSED_YEAR.test(message);
+
+export const isTransactionQuotaRefusal = (message: unknown): boolean =>
+  typeof message === 'string' && TRANSACTION_QUOTA.test(message);
 
 /** Show a server refusal in the voice it deserves. */
 export const toastRefusal = (message: unknown, fallback = 'Something went wrong.'): void => {
   const text = typeof message === 'string' && message.trim() ? message : fallback;
 
-  if (isClosedYearRefusal(text)) {
+  if (isClosedYearRefusal(text) || isTransactionQuotaRefusal(text)) {
     // Longer than an error: it is a sentence to act on, not a flash.
     toast.info(text, { autoClose: 10000 });
     return;

@@ -245,6 +245,7 @@ import HighlightRules from './components/modules/highlight-rules/HighlightRules'
 import SubscriptionPlanList from './components/modules/subscription/SubscriptionPlanList';
 import SubscriptionPlanForm from './components/modules/subscription/SubscriptionPlanForm';
 import RequireUserQuota from './components/auth/RequireUserQuota';
+import RequireBranchQuota from './components/auth/RequireBranchQuota';
 import ResellerAdmin from './components/modules/reseller/ResellerAdmin';
 import ResellerDashboard from './components/modules/reseller/ResellerDashboard';
 
@@ -420,7 +421,11 @@ function App() {
               {/* Settings */}
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.view']} loading={permissionsLoading} />}>
                 <Route path={routes.branch_list} element={<BranchList />} />
-                <Route path={routes.branch_add} element={<AddBranch />} />
+                {/* Only the ADD route is quota-checked -- editing an existing
+                    branch creates nothing, so it has no seat to be short of. */}
+                <Route element={<RequireBranchQuota />}>
+                  <Route path={routes.branch_add} element={<AddBranch />} />
+                </Route>
                 <Route path={routes.branch_edit} element={<AddBranch />} />
                 <Route path={routes.company_edit} element={<EditCompany />} />
                 {/* The challan layout belongs to a branch, the same as its pad

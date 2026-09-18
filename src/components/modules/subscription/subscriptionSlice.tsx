@@ -102,6 +102,17 @@ export interface CurrentSubscription {
   // null/absent = unlimited. Read by RequireUserQuota to block Add User before
   // the form opens.
   max_users?: number | null;
+  // The rest of the Limits card. max_branches feeds RequireBranchQuota the
+  // same way max_users feeds RequireUserQuota; the other four have no
+  // client-side pre-check screen (max_transactions_per_month is enforced
+  // purely server-side) but are here so the card can show all seven limits
+  // honestly.
+  max_employees?: number | null;
+  max_customers?: number | null;
+  max_products?: number | null;
+  max_devices_per_user?: number | null;
+  max_branches?: number | null;
+  max_transactions_per_month?: number | null;
   notes?: string | null;
   features?: SubscriptionFeature[];
 }

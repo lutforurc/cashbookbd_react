@@ -39,7 +39,9 @@ export default function NoAccess() {
   const description = isSubscriptionQuota
     ? quotaType === "users"
       ? "Your subscription user limit has been reached. Upgrade the plan or reduce users to add a new one."
-      : "Your subscription limit has been reached for this action."
+      : quotaType === "branches"
+        ? "Your subscription branch limit has been reached. Upgrade the plan or disable a branch to add a new one."
+        : "Your subscription limit has been reached for this action."
     : isSubscription
       ? `Entries and reports are closed because the subscription${
           endedOn ? ` ended on ${endedOn}` : " has expired"
