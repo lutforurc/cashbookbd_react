@@ -592,8 +592,13 @@ const HotelDashboard = () => {
       </div>
 
       {/* ⚠️ The caveat every occupancy report in the world has and most of them
-          hide, said where it is read rather than only in the code. */}
-      {!run ? (
+          hide, said where it is read rather than only in the code.
+          ⚠️ Shown WHEN THE REPORT IS THERE, which is what `run ?` says. It was
+          `!run ?`, and that reads `run.rooms` in the one case where `run` is
+          null -- so it threw on the first render, before the request had even
+          come back, for everybody, every time. The caveat also has nothing to
+          explain when there are no figures on the page to qualify. */}
+      {run ? (
         <p className="mt-4 text-[11px] leading-snug text-slate-400">
           Rooms only — halls and community centres are let by the sitting, not the night. Confirmed,
           checked-in and checked-out stays count; holds do not. Rent is the full tariff, so a
