@@ -5,6 +5,7 @@ import Loader from '../../../common/Loader';
 import ConstructionDashboard from './ConstructionDashboard';
 import ComputerAccessories from './ComputerAccessories';
 import HotelDashboard from './HotelDashboard';
+import RealEstateDashboard from './RealEstateDashboard';
 
 function DashboardIndex() {
       const dispatch = useDispatch();
@@ -38,6 +39,22 @@ function DashboardIndex() {
    */
   if (currentBranch?.is_lodging === true) {
     return <HotelDashboard />;
+  }
+
+  /**
+   * ⚠️ AND THE SAME ARGUMENT FOR A DEVELOPER, asked the same way and placed in
+   * the same spot — before the map below, never in it.
+   *
+   * "Real Estate" is 9 here and the map has no 9 entry, so a branch selling
+   * flats has been falling through to the shop's dashboard: Today Sales, Today
+   * Purchase, New Customers, Low Stock. Every one of those reads nought on a
+   * business that sells a flat once and then collects for eight years. Adding
+   * `9:` to the map would work on this install and open the wrong trade's page
+   * on the next one, where 9 is something else. The server answers from the
+   * business type's NAME instead, and the answer travels.
+   */
+  if (currentBranch?.is_real_estate === true) {
+    return <RealEstateDashboard />;
   }
 
   const components: { [key: number]: JSX.Element } = {

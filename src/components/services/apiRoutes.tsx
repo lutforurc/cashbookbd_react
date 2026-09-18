@@ -777,6 +777,12 @@ export const API_REPORT_PROJECT_INCOME_SUMMARY_URL = `${API_BASE_URL}/real-estat
 export const API_REPORT_PROJECT_INCOME_DETAIL_URL = `${API_BASE_URL}/real-estate/reports/income-detail`;
 export const API_REPORT_PROJECT_INCOME_UNTAGGED_URL = `${API_BASE_URL}/real-estate/reports/untagged-income`;
 
+// The developer's front page. One call, because the pieces agree with each
+// other: inventory and the sales book are standing positions, the takings band
+// is ranged, and both are summed on the server from the same payment rule the
+// sold-units screen uses.
+export const API_REAL_ESTATE_DASHBOARD_URL = `${API_BASE_URL}/real-estate/reports/dashboard`;
+
 // Real Estate Flat url
 export const API_FLAT_STORE_URL = `${API_BASE_URL}/real-estate/flats`;
 export const API_FLAT_EDIT_URL = `${API_BASE_URL}/real-estate/flats/edit`;
