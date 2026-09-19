@@ -1133,7 +1133,7 @@ const FolioScreen = () => {
                 ? `Bill ${folio.unbilled_nights} ${
                     folio.unbilled_nights === 1 ? 'night' : 'nights'
                   }`
-                : 'Nights all billed'
+                : 'Bill Generated'
             }
             variant={folio.unbilled_nights ? 'primary' : 'default'}
             icon={<FiCalendar size={16} />}
@@ -1150,7 +1150,7 @@ const FolioScreen = () => {
                 : { charge_type: 'restaurant', description: '', quantity: 1, unit_rate: 0, charge_date: today() },
             )
           }
-          label={charge ? 'Close' : 'Add a charge'}
+          label={charge ? 'Close' : 'Add Charge'}
           icon={charge ? <FiX size={16} /> : <FiPlus size={16} />}
           disabled={!!folio.chart_missing?.length}
         />
@@ -1182,7 +1182,7 @@ const FolioScreen = () => {
                   },
             )
           }
-          label={payment ? 'Close' : 'Take money'}
+          label={payment ? 'Close' : 'Receive Money'}
           icon={payment ? <FiX size={16} /> : <FiPlus size={16} />}
           disabled={!!folio.chart_missing?.length}
         />
@@ -1232,7 +1232,7 @@ const FolioScreen = () => {
             )
           }
           buttonLoading={fetchingPaper}
-          label="Print the bill"
+          label="Print Bill"
           icon={<FiPrinter size={16} />}
           disabled={!folio.lines?.length}
         />
@@ -1283,7 +1283,7 @@ const FolioScreen = () => {
                     },
               )
             }
-            label={moving ? 'Close' : bill?.carried ? 'Billed to…' : 'Bill it to…'}
+            label={moving ? 'Close' : bill?.carried ? 'Bill To' : 'Bill To'}
             icon={moving ? <FiX size={16} /> : <FiRepeat size={16} />}
           />
         ) : null}

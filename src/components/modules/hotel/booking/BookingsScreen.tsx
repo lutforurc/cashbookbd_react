@@ -39,7 +39,7 @@ import {
   clearCancellation,
   tillList,
 } from './bookingSlice';
-import formatDate, { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
+import formatDate, { formatBdShortDate, formatDateUsdToBd, formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import MoveRoomDialog from './MoveRoomDialog';
 import GuestProfileDrawer, { GuestKey } from './GuestProfileDrawer';
 
@@ -110,7 +110,7 @@ const FILTER_OPTIONS = [
   { id: 'checked_in', name: 'Checked in' },
   { id: 'checked_out', name: 'Checked out' },
   { id: 'cancelled', name: 'Cancelled' },
-  { id: 'no_show', name: 'No-show' },
+  { id: 'no_show', name: 'Expired' },
 ];
 
 /**
@@ -197,7 +197,7 @@ const STATUS_LOOK: Record<string, { className: string; label: string }> = {
   no_show: {
     className:
       'bg-orange-100 border-orange-400 text-orange-900 dark:bg-orange-500/25 dark:border-orange-400/60 dark:text-orange-50',
-    label: 'No-show',
+    label: 'Expired',
   },
 };
 
@@ -835,12 +835,16 @@ const BookingsScreen = ({ user }: any) => {
       },
       {
         key: 'stay',
-        header: 'Stay',
+        header: 'Stay / Booking Date',
         render: (row: any) =>
           // ⚠️ A walk-in sale has no stay to show. Left to the arrow below it
           // would read "27/08 → 27/08, 0 nights", which looks like a booking
           // somebody got wrong rather than a meal somebody sold.
+
+          
+
           row.booking_type === 'walk_in' ? (
+            
             <div className="text-xs">
               <div className="font-xs text-black dark:text-white">{formatDate(row.check_in_date)}</div>
               <div className="text-gray-500 dark:text-gray-400">Walk-in, no room</div>
@@ -852,8 +856,8 @@ const BookingsScreen = ({ user }: any) => {
               </div>
               {/* Nights, not days. The number the database worked out from the
                   two dates, so the screen cannot disagree with the booking. */}
-              <div className="text-gray-500 dark:text-gray-400">
-                {row.nights} {Number(row.nights) === 1 ? 'night' : 'nights'}
+              <div className="font-xs text-black dark:text-white">
+                {row.nights} {Number(row.nights) === 1 ? 'night' : 'nights'} <span className="text-xs">({ 'Booked on: ' } {formatDate(row.booking_date) })</span>
               </div>
             </div>
           ),
@@ -1023,23 +1027,7 @@ const BookingsScreen = ({ user }: any) => {
            */
           return (
             <div className="grid grid-cols-[repeat(7,2rem)] items-center justify-items-center gap-x-1">
-              {/* ⚠️ Only while the stay can still change. A checked-out or
-                  cancelled booking is history -- its nights are the register of
-                  who was here and its bill is made -- and the server refuses it
-                  anyway. Offering the link would be offering a refusal. */}
-              <span>
-                {!['checked_out', ...DEAD_STATUSES].includes(row.status) ? (
-                  <ActionIcon
-                    label="Edit"
-                    hint="Edit the booking — dates, rooms, the party."
-                    onClick={() => openEdit(row)}
-                    className="text-primary dark:text-secondary cursor-pointer"
-                  >
-                    <FiEdit size={20}/>
-                  </ActionIcon>
-                ) : null}
-              </span>
-
+              
               {/* Named for what it does rather than for the stage it is.
                   "Check in" is what the desk calls it; "allotment" is what
                   the spec calls it, and nobody at a desk says that.
@@ -1076,6 +1064,9 @@ const BookingsScreen = ({ user }: any) => {
                 ) : null}
               </span>
 
+
+
+
               {/* The bill. Offered on every live booking rather than only on a
                   checked-in one: an advance is taken on the telephone, long
                   before anybody arrives.
@@ -1102,6 +1093,7 @@ const BookingsScreen = ({ user }: any) => {
                 </ActionIcon>
               </span>
 
+              
               {/* Only on a stay that has actually started. Offered on a hold
                   or a confirmed booking it would be a button that can only
                   ever answer "these guests have not been checked in". */}
@@ -1118,6 +1110,42 @@ const BookingsScreen = ({ user }: any) => {
                 ) : null}
               </span>
 
+              {/* ⚠️ Only while the stay can still change. A checked-out or
+                  cancelled booking is history -- its nights are the register of
+                  who was here and its bill is made -- and the server refuses it
+                  anyway. Offering the link would be offering a refusal. */}
+              <span>
+                {!['checked_out', ...DEAD_STATUSES].includes(row.status) ? (
+                  <ActionIcon
+                    label="Edit"
+                    hint="Edit the booking — dates, rooms, the party."
+                    onClick={() => openEdit(row)}
+                    className="text-primary dark:text-secondary cursor-pointer"
+                  >
+                    <FiEdit size={20}/>
+                  </ActionIcon>
+                ) : null}
+              </span>
+
+{/* The guest never came. Offered only where the server would
+                  not refuse it: confirmed, the arrival night over, nobody
+                  recorded -- see canBeNoShow. Amber rather than red: it ends
+                  the booking, but it records a fact about the guest rather
+                  than undoing anything the desk did. */}
+              <span>
+                {canBeNoShow(row) ? (
+                  <ActionIcon
+                    label="Expired"
+                    hint="Mark as expired — confirmed, the arrival night has passed, and nobody was checked in."
+                    onClick={() => askNoShow(row)}
+                    className="text-amber-700 dark:text-amber-300 cursor-pointer"
+                  >
+                    <FiUserX size={20} />
+                  </ActionIcon>
+                ) : null}
+              </span>
+
+              
               {/* The guest goes to another room -- 101's AC failed. Offered on
                   a stay that holds a room and has not ended; the dialog reads
                   which rooms can actually go. Not on a hold: a hold is moved
@@ -1127,8 +1155,8 @@ const BookingsScreen = ({ user }: any) => {
                 row.booking_type !== 'walk_in' &&
                 Number(row.rooms_held ?? row.stated_rooms ?? 0) > 0 ? (
                   <ActionIcon
-                    label="Move"
-                    hint="Move the guest to another room from tonight. Billed nights keep their lines."
+                    label="Transfer"
+                    hint="Transfer the guest to another room from tonight. Billed nights keep their lines."
                     onClick={() => setMoving(row)}
                     className="text-primary dark:text-secondary cursor-pointer"
                   >
@@ -1137,24 +1165,7 @@ const BookingsScreen = ({ user }: any) => {
                 ) : null}
               </span>
 
-              {/* The guest never came. Offered only where the server would
-                  not refuse it: confirmed, the arrival night over, nobody
-                  recorded -- see canBeNoShow. Amber rather than red: it ends
-                  the booking, but it records a fact about the guest rather
-                  than undoing anything the desk did. */}
-              <span>
-                {canBeNoShow(row) ? (
-                  <ActionIcon
-                    label="No-show"
-                    hint="Mark as a no-show — confirmed, the arrival night has passed, and nobody was checked in."
-                    onClick={() => askNoShow(row)}
-                    className="text-amber-700 dark:text-amber-300 cursor-pointer"
-                  >
-                    <FiUserX size={20} />
-                  </ActionIcon>
-                ) : null}
-              </span>
-
+              
               {/* ⚠️ Last, always, and the only red one. A destructive action
                   that moves about the row is one somebody eventually presses by
                   aiming at where it was on the row above. */}
@@ -1467,8 +1478,8 @@ const BookingsScreen = ({ user }: any) => {
           money defaults the other way. */}
       <ConfirmModal
         show={Boolean(noShowing)}
-        title="Mark as a no-show"
-        confirmLabel="Mark no-show"
+        title="Mark as Expired"
+        confirmLabel="Mark expired"
         cancelLabel="Keep it"
         className="bg-warning hover:bg-warning/90"
         loading={saving}
