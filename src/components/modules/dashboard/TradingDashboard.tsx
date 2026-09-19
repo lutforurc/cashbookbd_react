@@ -11,12 +11,14 @@ import {
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import httpService from '../../services/httpService';
+import { hasPermission } from '../../utils/permissionChecker';
 import { formatDayMonthYear } from '../../utils/utils-functions/formatDate';
 import { API_TRADING_DASHBOARD_URL } from '../../services/apiRoutes';
-import { getDashboardSummary } from './dashboardSlice';
+import { getDashboard, getDashboardSummary } from './dashboardSlice';
 import { getMonthlyPurchaseSales } from './chartSlice';
 import KpiRow, { TRADING_TILES } from './KpiRow';
 import DueAgingCard from './DueAgingCard';
+import BalanceSummaryCard from './BalanceSummaryCard';
 import MonthlyPurchaseSalesChart from './MonthlyPurchaseSalesChart';
 import DashboardCustomizeButton, {
   DashboardWidget,
@@ -71,7 +73,7 @@ const TRADING_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'kpi-row', title: 'Today at a Glance' },
   { id: 'stock', title: 'Stock and Godown' },
   { id: 'profit', title: 'Gross Profit' },
-  { id: 'dues', title: 'Both Sides of the Money' },
+  { id: 'dues', title: 'Cash Book and Both Sides of the Money' },
   { id: 'top-profit', title: 'What Made the Money' },
   { id: 'monthly-purchase-sales', title: 'Monthly Purchase Sales Chart' },
 ];
@@ -116,9 +118,25 @@ const TradingDashboard = () => {
   const currentBranch = useSelector((state: any) => state.branchList?.currentBranch);
   const summary = useSelector((state: any) => state.dashboard?.summary);
   const me = useSelector((state: any) => state.auth?.me);
+  const permissions = useSelector((state: any) => state.settings?.data?.permissions) ?? [];
 
   const summaryData = summary?.data;
   const branchId = currentBranch?.id;
+
+  /*
+   * ⚠️ THE GODOWN, THE MARGIN AND THE TOP TABLE ARE THE OWNER'S FIGURES. The
+   * server already leaves `stock`, `profit` and `top` out of the payload
+   * without the matching permission; this is the same door on the customize
+   * list, so the widgets are not offered as switches that would toggle nothing.
+   */
+  const PERMISSION_BY_WIDGET: Record<string, string> = {
+    stock: 'dashboard.stock.view',
+    profit: 'dashboard.profit.view',
+    'top-profit': 'dashboard.top.profit.view',
+  };
+  const widgets = TRADING_DASHBOARD_WIDGETS.filter(
+    (w) => !PERMISSION_BY_WIDGET[w.id] || hasPermission(permissions, PERMISSION_BY_WIDGET[w.id]),
+  );
 
   const [payload, setPayload] = useState<any>(null);
   /**
@@ -139,7 +157,7 @@ const TradingDashboard = () => {
     reset,
   } = useDashboardCustomization(
     `cashbook-trading-dashboard:${me?.id || 'user'}:${branchId || 'branch'}`,
-    TRADING_DASHBOARD_WIDGETS,
+    widgets,
     {
       dashboardKey: 'trading',
       branchId,
@@ -152,6 +170,7 @@ const TradingDashboard = () => {
   const rowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
 
   useEffect(() => {
+    dispatch(getDashboard()); // the cash-book card's figures
     dispatch(getDashboardSummary());
     dispatch(getMonthlyPurchaseSales());
   }, [dispatch]);
@@ -271,7 +290,7 @@ const TradingDashboard = () => {
       {/* The godown. A POSITION on the day, not the month — see the header. */}
       {isWidgetVisible('stock') && stock ? (
         <>
-          <div className={`mb-1 grid grid-cols-2 sm:grid-cols-4 ${gap}`}>
+          <div className={`mb-4 grid grid-cols-2 sm:grid-cols-4 ${gap}`}>
             {/* ⚠️ The lead figure. Quantity flatters — a lakh of units of a
                 cheap line and a thousand of an expensive one are the same
                 number of items and nothing like the same money — and the count
@@ -437,11 +456,12 @@ const TradingDashboard = () => {
       ) : null}
 
       {/* ------------------------------------------------------------ */}
-      {/* Both books at once. A trader is chased by their own suppliers, so the
-          supplier column is not decoration. */}
+      {/* The cash book beside both books at once. A trader is chased by their
+          own suppliers, so the supplier column is not decoration. */}
       {isWidgetVisible('dues') && dues ? (
         <>
-          <div className={`mb-1 grid grid-cols-1 ${gap} md:grid-cols-2`}>
+          <div className={`mb-1 grid grid-cols-1 items-stretch ${gap} md:grid-cols-3`}>
+            <BalanceSummaryCard rowClass={rowClass} />
             <DueAgingCard aging={dues.receivable} />
             {/* ⚠️ The words are passed, not defaulted. The same four buckets
                 mean the opposite thing on this side: money the branch owes and
@@ -566,14 +586,6 @@ const TradingDashboard = () => {
           <MonthlyPurchaseSalesChart />
         </div>
       ) : null}
-
-      {/* ⚠️ There is deliberately no cash-book card here. The shop's dashboard
-          has one carrying today's received, today's payment and the balance,
-          and this page's KPI row already spends two of its four tiles on the
-          first two — a card repeating them would be the same figure twice on
-          one screen, which is the thing KpiRow itself warns against. The
-          running balance is the one figure that is genuinely absent, and it is
-          left out rather than bought with the duplication. */}
 
       {/* ⚠️ Said once, at the foot, rather than as an error on every band that
           came back empty. */}
