@@ -42,6 +42,7 @@ import AddCategory from './components/modules/category/AddCategory';
 import EditCategory from './components/modules/category/EditCategory';
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import CashBookTwoColumn from './components/modules/reports/cash-book-two-column/CashBookTwoColumn';
+import VoucherRegister from './components/modules/reports/voucher-register/VoucherRegister';
 import BankBook from './components/modules/reports/bankbook/BankBook';
 import CashBankReceivedPayment from './components/modules/reports/cash-bank-received-payment/CashBankReceivedPayment';
 import Ledger from './components/modules/reports/ledger/Ledger';
@@ -906,6 +907,9 @@ function App() {
                 path={routes.report_cashbook_two_column}
                 element={<CashBookTwoColumn user={me} />}
               />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.register']} loading={permissionsLoading} />}>
+              <Route path={routes.report_voucher_register} element={<VoucherRegister user={me} />} />
             </Route>
             {/* Each of these is offered by its own sidebar permission. Guarded
                 separately so 'bank.book' opens the bank book and nothing else. */}
