@@ -465,8 +465,17 @@ const ConstructionDashboard = () => {
                   <span className="truncate text-base font-bold tracking-wide text-slate-700 dark:text-slate-100">
                     Top Purchase
                   </span>
+                  {/* ⚠️ THE PAYLOAD'S WINDOW, NOT THE BRANCH SETTING. The
+                      setting falls back to 7 in the client while the server
+                      falls back to 1, so a branch that never set one was
+                      labelled "Last 7 Days" over one day's list -- and this
+                      card read the *sales* setting, so a branch that had set
+                      only that got the sales window printed on the purchase
+                      list. The server now sends what it actually windowed. */}
                   <span className="shrink-0 whitespace-nowrap rounded-full bg-amber-100 px-3 py-1 text-[10px] font-bold text-amber-700 dark:bg-amber-950/70 dark:text-amber-300">
-                    {settings?.data?.branch?.dashboard_top_sales_days == 1 ? 'Today' : `Last ${settings?.data?.branch?.dashboard_top_sales_days || 7} Days`}
+                    {Number(dashboard?.data?.topPurchaseDays) === 1
+                      ? 'Today'
+                      : `Last ${dashboard?.data?.topPurchaseDays || 1} Days`}
                   </span>
                 </div>
                 {/* Body */}

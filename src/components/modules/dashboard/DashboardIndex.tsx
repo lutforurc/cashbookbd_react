@@ -6,6 +6,7 @@ import ConstructionDashboard from './ConstructionDashboard';
 import ComputerAccessories from './ComputerAccessories';
 import HotelDashboard from './HotelDashboard';
 import RealEstateDashboard from './RealEstateDashboard';
+import TradingDashboard from './TradingDashboard';
 
 function DashboardIndex() {
       const dispatch = useDispatch();
@@ -57,10 +58,31 @@ function DashboardIndex() {
     return <RealEstateDashboard />;
   }
 
+  /**
+   * ⚠️ AND THE THIRD, FOR THE TRADE THAT BUYS AND SELLS. Same argument, same
+   * place — before the map, not in it.
+   *
+   * A trading branch was landing on the shop's dashboard, and `8:` below still
+   * points there. That entry is left alone rather than repointed, because it is
+   * a number and this install's 8 is not the next install's 8: on a database
+   * where the trade's row happens to be 8 this flag is what opens the page, and
+   * on one where it is 3 only the flag can. The map entry is now unreachable on
+   * a trading branch and harmless on any other.
+   *
+   * ⚠️ It is asked LAST of the three, which matters only if a tenant's business
+   * type row could answer two of them at once. It cannot — the three words are
+   * `lodging`, `realestate` and `trade`, and a name holding two of those is not
+   * one this product seeds — so the order is a reading order rather than a
+   * precedence, and any of them may be moved.
+   */
+  if (currentBranch?.is_trading === true) {
+    return <TradingDashboard />;
+  }
+
   const components: { [key: number]: JSX.Element } = {
     4: <ComputerAccessories />, // 4 for Computer and Accessories
     7: <ConstructionDashboard />, // 7 for Construction Business
-    8: <ComputerAccessories />, // 8 for Trading Business
+    8: <ComputerAccessories />, // 8 for Trading Business — see is_trading above
   };
 
   return components[currentBranch.business_type_id] || <ComputerAccessories />;

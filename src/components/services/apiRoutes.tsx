@@ -783,6 +783,17 @@ export const API_REPORT_PROJECT_INCOME_UNTAGGED_URL = `${API_BASE_URL}/real-esta
 // sold-units screen uses.
 export const API_REAL_ESTATE_DASHBOARD_URL = `${API_BASE_URL}/real-estate/reports/dashboard`;
 
+// The trader's front page, and it carries only what the shop's page cannot
+// answer: what the godown is worth, both sides of the money, the month's gross
+// profit and the lines that made it. Today's sales, purchase and cash, and the
+// month-by-month chart, come from the endpoints the shop dashboard already
+// calls — so those tiles read identically on both pages.
+//
+// ⚠️ ONE PAYLOAD, TWO KINDS OF FIGURE. Stock value and the two ageing columns
+// are positions on the `to` date and ignore `from`; the profit bands honour the
+// range. The screen says which is which where they are read.
+export const API_TRADING_DASHBOARD_URL = `${API_BASE_URL}/trading/reports/dashboard`;
+
 // Real Estate Flat url
 export const API_FLAT_STORE_URL = `${API_BASE_URL}/real-estate/flats`;
 export const API_FLAT_EDIT_URL = `${API_BASE_URL}/real-estate/flats/edit`;

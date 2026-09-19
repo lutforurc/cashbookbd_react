@@ -23,6 +23,10 @@ import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
+// money(), count(), share(), CARD, CARD_HEAD and Tile moved to the shared kit so
+// the trading dashboard cannot drift away from this one on how a taka is
+// written. Nothing here changed but where they are read from.
+import { CARD, CARD_HEAD, Tile, count, money, share } from './dashboardKit';
 
 /**
  * The dashboard a developer opens the morning on: flats, plots and parking.
@@ -72,88 +76,6 @@ const asText = (date: Date) => {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   return `${date.getFullYear()}-${month}-${String(date.getDate()).padStart(2, '0')}`;
 };
-
-/**
- * ⚠️ NOT thousandSeparator. That one returns "-" for nought, and a KPI tile
- * that prints "-" makes "the answer is zero" and "this figure could not be
- * read" look identical — which is exactly the question a tile is asked. It is
- * still right on the cash-book card below, where it is the shop's existing
- * reading of an empty drawer.
- *
- * en-IN, so lakh and crore group the way every other Real Estate screen groups
- * them. The `(-)` is soldUnitReport's habit and is kept for the same reason.
- */
-const money = (value: number | null | undefined) => {
-  const amount = Math.trunc(Number(value ?? 0));
-  return amount < 0
-    ? `(-) ${Math.abs(amount).toLocaleString('en-IN')}`
-    : amount.toLocaleString('en-IN');
-};
-
-const count = (value: number | null | undefined) => String(Math.trunc(Number(value ?? 0)));
-
-const share = (part: number, whole: number) =>
-  !whole ? 0 : Math.min(100, Math.max(0, Math.round((part / whole) * 100)));
-
-const CARD =
-  'flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 transition hover:shadow-md dark:bg-gray-800 dark:text-[rgb(var(--c-text))] dark:ring-gray-700';
-
-const CARD_HEAD =
-  'flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100';
-
-/** One tile: the figure, and underneath it the sum that produced it. */
-const Tile = ({
-  label,
-  value,
-  working,
-  icon,
-  tone,
-  lead,
-  hint,
-}: {
-  label: string;
-  value: string;
-  working?: string;
-  icon?: JSX.Element;
-  tone?: string;
-  lead?: boolean;
-  /** What the label is short for, on hover. */
-  hint?: string;
-}) => (
-  <div
-    className={`flex flex-col justify-between px-4 py-3 shadow-sm ring-1 transition hover:shadow-md ${
-      lead
-        ? 'bg-primary/5 ring-primary/40 dark:bg-secondary/10 dark:ring-secondary/40'
-        : 'bg-white ring-slate-200 dark:bg-gray-800 dark:ring-gray-700'
-    }`}
-  >
-    <div
-      className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-400"
-      title={hint}
-    >
-      {icon}
-      <span
-        className={`truncate ${
-          hint ? 'cursor-help decoration-dotted underline-offset-2 hover:underline' : ''
-        }`}
-      >
-        {label}
-      </span>
-    </div>
-    <div className={`mt-1 text-2xl font-bold ${tone ?? 'text-slate-700 dark:text-slate-100'}`}>
-      {value}
-    </div>
-    {/* ⚠️ The working is on the tile deliberately. "2,57,45,000 outstanding" is
-        quoted at meetings by people who did not run the report, and "still to
-        collect on 6 sales" can be argued with where a bare figure can only be
-        believed. */}
-    {working ? (
-      <div className="mt-0.5 truncate text-[11px] text-slate-400" title={working}>
-        {working}
-      </div>
-    ) : null}
-  </div>
-);
 
 const RealEstateDashboard = () => {
   const dispatch = useDispatch<any>();

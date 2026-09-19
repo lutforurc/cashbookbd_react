@@ -80,6 +80,28 @@ export const CONSTRUCTION_TILES: KpiTileSpec[] = [
   { key: 'vouchers', label: 'Today Vouchers', colour: 'rgb(var(--c-body))' },
 ];
 
+/**
+ * A trader's day is four figures: what went out of the shop, what came into the
+ * godown, and the two directions money moved for both.
+ *
+ * Received and payment are here, though the default set leaves them out. They
+ * are absent there because the shop's dashboard draws them again on its balance
+ * summary card, a few inches below, each with its own sparkline — and this page
+ * has no such card. Without them the row would carry the goods and none of the
+ * cash, which on a trade where everything is bought and sold for money is the
+ * half of the day nobody can afford to be missing.
+ *
+ * Customers and vouchers are dropped for the space. A branch that keeps a
+ * ledger knows how many bills it wrote; it does not learn anything from being
+ * told so on a tile.
+ */
+export const TRADING_TILES: KpiTileSpec[] = [
+  { key: 'sales', label: 'Today Sales', colour: 'rgb(var(--c-teal-500))', money: true },
+  { key: 'purchase', label: 'Today Purchase', colour: 'rgb(var(--c-amber-500))', money: true },
+  { key: 'received', label: 'Today Received', colour: 'rgb(var(--c-emerald-500))', money: true },
+  { key: 'payment', label: 'Today Payment', colour: 'rgb(var(--c-rose-500))', money: true },
+];
+
 const formatValue = (value: number, money?: boolean) => {
   const n = Math.round(Number(value) || 0);
 
