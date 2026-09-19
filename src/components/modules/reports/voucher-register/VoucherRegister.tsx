@@ -227,6 +227,9 @@ const VoucherRegister = ({ user }: any) => {
     },
   ];
 
+  // headerRows REPLACES the column headings, so the title block is followed
+  // by a row that names the columns. The branch is not in the title: the
+  // page is already headed with it.
   const headerRows = report
     ? [
         [
@@ -234,7 +237,6 @@ const VoucherRegister = ({ user }: any) => {
             label: (
               <div className="text-center font-normal">
                 <div className="italic">{report.voucher_type?.name}</div>
-                <div className="font-semibold">{report.branch?.name}</div>
                 <div>
                   {dayjs(report.from).format('D-MMM-YYYY')} to {dayjs(report.to).format('D-MMM-YYYY')}
                 </div>
@@ -242,6 +244,11 @@ const VoucherRegister = ({ user }: any) => {
             ),
             colSpan: 3,
           },
+        ],
+        [
+          { label: 'Particulars' },
+          { label: 'Total Vouchers', className: 'text-right' },
+          { label: '(cancelled)', className: 'text-right' },
         ],
       ]
     : [];

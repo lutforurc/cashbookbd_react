@@ -19,7 +19,8 @@
     ],
     "additionalDirectories": [
       "F:\\All_Database\\www\\cashbook_api\\config",
-      "F:\\All_Database\\www\\cashbook_api\\app\\Http\\Middleware"
+      "F:\\All_Database\\www\\cashbook_api\\app\\Http\\Middleware",
+      "F:\\All_Database\\www\\cashbook_api\\app\\Console\\Commands"
     ]
   }
 }
