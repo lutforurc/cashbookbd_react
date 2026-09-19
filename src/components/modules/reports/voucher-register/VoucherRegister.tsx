@@ -167,6 +167,12 @@ const VoucherRegister = ({ user }: any) => {
 
   const columns = [
     {
+      key: 'sl',
+      header: 'Sl No.',
+      cellClass: 'w-20 whitespace-nowrap',
+      render: (row: any) => row.sl,
+    },
+    {
       key: 'label',
       header: 'Particulars',
       render: (row: any) => (
@@ -242,10 +248,11 @@ const VoucherRegister = ({ user }: any) => {
                 </div>
               </div>
             ),
-            colSpan: 3,
+            colSpan: 4,
           },
         ],
         [
+          { label: 'Sl No.' },
           { label: 'Particulars' },
           { label: 'Total Vouchers', className: 'text-right' },
           { label: '(cancelled)', className: 'text-right' },
@@ -256,7 +263,7 @@ const VoucherRegister = ({ user }: any) => {
   const footerRows = report
     ? [
         [
-          { label: 'Total', className: 'text-right font-semibold' },
+          { label: 'Total', className: 'text-right font-semibold', colSpan: 2 },
           { label: count(report.grand?.total), className: 'text-right font-semibold' },
           { label: count(report.grand?.cancelled), className: 'text-right font-semibold' },
         ],
