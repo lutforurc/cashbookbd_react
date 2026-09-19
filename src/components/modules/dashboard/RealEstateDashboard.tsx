@@ -211,7 +211,7 @@ const RealEstateDashboard = () => {
       {/* The sales book. Deliberately NOT this month's — see the header. */}
       {isWidgetVisible('sales') && sales ? (
         <>
-          <div className={`mb-1 grid grid-cols-2 sm:grid-cols-4 ${gap}`}>
+          <div className={`mb-4 grid grid-cols-2 sm:grid-cols-4 ${gap}`}>
             <Tile
               label="Booked value"
               value={money(sales.booked_value)}
@@ -254,18 +254,7 @@ const RealEstateDashboard = () => {
               in this module count receipts by different rules, and the one a
               dashboard links to has to be named as the odd one out rather than
               quietly disagreed with. */}
-          <p className="mb-4 text-[11px] leading-snug text-slate-400">
-            Every sale still on the books, not this month's — a flat is sold once and paid for over
-            years, so a month's slice of it would be meaningless. Received counts confirmed receipts
-            less confirmed refunds, the same rule the{' '}
-            <Link
-              to={routes.report_sales_summary}
-              className="text-primary hover:underline dark:text-secondary"
-            >
-              Sales Summary
-            </Link>{' '}
-            uses. The Project Summary report counts its own way and will not agree with this figure.
-          </p>
+          
         </>
       ) : null}
 

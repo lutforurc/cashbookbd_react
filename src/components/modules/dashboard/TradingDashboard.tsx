@@ -372,7 +372,7 @@ const TradingDashboard = () => {
       {/* The month's selling. A FLOW, so it honours the range above. */}
       {isWidgetVisible('profit') && profit ? (
         <div
-          className={`mb-4 grid grid-cols-2 ${
+          className={`mb-4 mt-4 grid grid-cols-2 ${
             variance !== 0 ? 'sm:grid-cols-3 lg:grid-cols-5' : 'sm:grid-cols-4'
           } ${gap}`}
         >
