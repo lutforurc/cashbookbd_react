@@ -872,7 +872,17 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                     paper. The rules stay level either way, which is the
                     alignment that shows; the labels sit where their own column
                     puts them. */}
-                <div className="mx-auto w-4/5 border-t border-gray-800 pt-0.5">
+                {/* ⚠️ SIZED TO THE TEXT, not to 4/5 of the column. `flex-1`
+                    above stretches a single-item band's one column to the
+                    band's whole width, and 4/5 OF THAT is most of the page --
+                    correct-looking beside two or three neighbours, absurd
+                    alone under "Authorized Signature". `w-fit` makes the rule
+                    exactly as long as the wider of the name printed above it
+                    and the label under it; `min-w-[110px]` is the floor a
+                    short name or label would otherwise fall under -- the same
+                    figure the bespoke invoice components this system replaced
+                    always drew their own signature line at. */}
+                <div className="mx-auto w-fit min-w-[110px] max-w-full border-t border-gray-800 px-2 pt-0.5">
                   {name ? <div>{name}</div> : null}
                   <div>{caption(item.label)}</div>
                 </div>
