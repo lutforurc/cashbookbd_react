@@ -105,6 +105,9 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'reports/group-report', title: "Group Report" },
     { id: 'reports/mitch-match', title: "Mismatch" },
   ],
+  'legacy': [
+    { id: 'legacy/records', title: "Old ERP Record" },
+  ],
   'product_tracking': [
     { id: 'product_tracking_settings', title: "Product Tracking" },
     { id: 'product_financial_statement', title: "Product Statement" },
@@ -255,10 +258,12 @@ export const SIDEBAR_MENUS = [
   { id: 'hrm', title: 'HRM' },
   { id: 'customer-supplier', title: 'Customer & Supplier' },
   { id: 'al-charts', title: 'Analytics' },
+  { id: 'legacy', title: 'Old Software' },
   { id: 'customer_dashboard', title: 'Customer Dashboard' },
 ];
 import {
   FiActivity,
+  FiArchive,
   FiBarChart2,
   FiBook,
   FiChevronDown,
@@ -1585,6 +1590,82 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
+
+              {/*
+                Old Software.
+
+                The archive of the RAAJRANI ERP the client migrated off. A group
+                of its own rather than a corner of Reports because it is not this
+                software's own bookkeeping at all -- it is somebody else's
+                records, kept so a customer asking "what did I take in 2022" can
+                still be answered. Nothing on the screen edits, deletes or posts
+                anything.
+
+                Shows for whoever holds legacy.record.view, which is its own key
+                rather than an accounts one: looking an old bill up at the
+                counter should not require the rights to write vouchers.
+              */}
+              {hasMenuPermission(permissions, 'legacy') && (
+                <SidebarLinkGroup
+                  activeCondition={isMenuActive('legacy', pathname)}
+                  menuId="legacy"
+                  style={menuSlot('legacy')}
+                  open={openMenu === 'legacy'}
+                  handleClick={() => handleMenuClick('legacy')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('legacy', pathname) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiArchive />
+                        Old Software
+                        <FiChevronRight
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
+                            }`}
+                        />
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('legacy').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
+
+                          <li style={subSlot('legacy', 'legacy/records')}>
+                            <NavLink to={routes.legacy_record} className={subMenuLinkClass}>
+                              Old ERP Record
+                            </NavLink>
+                          </li>
                         </ul>
                       </div>
                     </React.Fragment>

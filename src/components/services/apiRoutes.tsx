@@ -1165,3 +1165,15 @@ export const API_BUDGET_URL = `${API_BASE_URL}/budget`;
 // ⚠️ /voucher/{id} is everything ever recorded about one voucher; the bare
 // stem is the browsable window, which is the part that did not exist before.
 export const API_AUDIT_TRAIL_URL = `${API_BASE_URL}/audit-trail`;
+
+// The archived bills of an old RAAJRANI ERP, read-only.
+//
+// ⚠️ NOTHING HERE WRITES. No store, no delete, and nothing posts to the ledger
+// -- the books started from an opening balance that already summarises these.
+//
+// ⚠️ `parties` SEARCHES BY NAME, EVERYTHING ELSE IS BY ID. Two bills for one
+// person read "Robiul Islam" and "Robiul Islam/Tolar Gate", so the name finds
+// the party and the old system's own cid does the joining from there.
+export const API_LEGACY_PARTIES_URL = `${API_BASE_URL}/legacy/parties`;
+export const API_LEGACY_PARTY_URL = `${API_BASE_URL}/legacy/party`;
+export const API_LEGACY_INVOICE_URL = `${API_BASE_URL}/legacy/invoice`;

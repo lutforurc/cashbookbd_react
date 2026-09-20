@@ -89,6 +89,11 @@ export const MENU_ROUTES: Record<string, string[]> = {
     // itself; the old hand-written condition knew about it and this keeps that.
     '/reports/closing-stock',
   ],
+  // Old Software. The archive of the ERP the client migrated off -- kept apart
+  // from Reports because it is a different system's records, not this one's.
+  'legacy': [
+    routes.legacy_record,
+  ],
   'product_tracking': [
     routes.product_tracking_settings,
     routes.product_financial_statement,

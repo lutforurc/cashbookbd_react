@@ -1,0 +1,46 @@
+{
+  "source": {
+    "page": "pages/preview2.php?invoiceNo=14611&sectionID=3",
+    "fetched_at": "2026-09-20T20:40:00+06:00"
+  },
+  "pad": {
+    "name": "Krishi Bitan Tiles and Sanitary Corner",
+    "address": "Hatkhola Road, Khejurtola, Sherpur, Bogura",
+    "phone": "01728-100049, 01718-410018, 01726-469659"
+  },
+  "legacy_no": "14611",
+  "invoice_date": "2026-09-01",
+  "invoice_date_raw": "01/09/2026",
+  "invoice_time": "01:47 PM",
+  "challan": "C-8074",
+  "cash_memo": "K-4246",
+  "sold_by": "Admin",
+  "party": {
+    "name": "Robiul Islam/Tolar Gate",
+    "address": "Green Town",
+    "phone": "01712-437131",
+    "phone_norm": "01712437131"
+  },
+  "items": [
+    { "sl": 1, "product_code": "310BL",   "product_name": "Marco Polo 8*12 (310BL)",    "qty_raw": "310/PCS", "quantity": 310, "unit": "PCS", "rate": 25,  "amount": 7750  },
+    { "sl": 2, "product_code": "4H-101",  "product_name": "Akij 16*16 (4H-101)",        "qty_raw": "55/PCS",  "quantity": 55,  "unit": "PCS", "rate": 120, "amount": 6600  },
+    { "sl": 3, "product_code": "5025LGY", "product_name": "Akij 12*20 (5025LGY)",       "qty_raw": "16/PCS",  "quantity": 16,  "unit": "PCS", "rate": 124, "amount": 1984  },
+    { "sl": 4, "product_code": "5025HL",  "product_name": "Akij 12*20 (5025HL)",        "qty_raw": "4/PCS",   "quantity": 4,   "unit": "PCS", "rate": 124, "amount": 496   },
+    { "sl": 5, "product_code": "5025DGY", "product_name": "Akij 12*20 (5025DGY)",       "qty_raw": "20/PCS",  "quantity": 20,  "unit": "PCS", "rate": 124, "amount": 2480  },
+    { "sl": 6, "product_code": "6600GLX", "product_name": "Sheltech 24*24 Galaxy (6600)", "qty_raw": "15/PCS", "quantity": 15,  "unit": "PCS", "rate": 470, "amount": 7050  }
+  ],
+  "totals": {
+    "quantity": 420,
+    "price_amount": 26360,
+    "discount": 0,
+    "previous_advanced": -29000,
+    "final_amount": -2640,
+    "paid": 0,
+    "advanced_amount": -2640
+  },
+  "in_word": "Twenty Six Thousand Three Hundred Sixty Taka Only.",
+  "notice": [
+    "কাউন্টার ত্যাগের পূর্বে পণ্য ও হিসাব বুঝে নিন।",
+    "পরবর্তীতে কোন অভিযোগ গ্রহণযোগ্য হবে না।"
+  ]
+}

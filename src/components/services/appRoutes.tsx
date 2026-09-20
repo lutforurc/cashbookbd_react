@@ -208,6 +208,10 @@ const ROUTES = {
   category_edit: '/category/edit',
   category_store: '/category/store',
 
+  // The archive of an old RAAJRANI ERP. One screen: search a customer, open
+  // their card, open the bill. Read-only, and nothing of it reaches the ledger.
+  legacy_record: '/legacy/records',
+
   // Day Close
   day_close: '/admin/dayclose',
   day_jump: '/admin/jumpdate',

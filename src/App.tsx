@@ -40,6 +40,7 @@ import AddProduct from './components/modules/product/AddProduct';
 import Category from './components/modules/category/Category';
 import AddCategory from './components/modules/category/AddCategory';
 import EditCategory from './components/modules/category/EditCategory';
+import LegacyRecordSearch from './components/modules/legacy/LegacyRecordSearch';
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import CashBookTwoColumn from './components/modules/reports/cash-book-two-column/CashBookTwoColumn';
 import VoucherRegister from './components/modules/reports/voucher-register/VoucherRegister';
@@ -528,6 +529,21 @@ function App() {
               <Route path={routes.category_list} element={<Category />} />
               <Route path={routes.category_create} element={<AddCategory />} />
               <Route path={routes.category_edit} element={<EditCategory />} />
+            </Route>
+
+            {/* The archive of an old RAAJRANI ERP, read-only: search a customer
+                by name or mobile, open their card, open the bill, print it.
+                Nothing on it writes and nothing of it reaches the ledger. */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['legacy.record.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.legacy_record} element={<LegacyRecordSearch />} />
             </Route>
 
             {/* Transactions */}
