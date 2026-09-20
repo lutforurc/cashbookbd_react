@@ -1,5 +1,7 @@
 import React from "react";
+import { FiEye } from "react-icons/fi";
 import Pagination from "../utils-functions/Pagination";
+import Checkbox from "../fields/Checkbox";
 
 export interface TableHeaderCell {
   label: React.ReactNode;
@@ -64,6 +66,58 @@ interface TableProps {
   bordered?: boolean;
 }
 
+/* ------------------------------------------------------------------ */
+/* Columns the reader has put away                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Which columns a reader has hidden, kept in their own browser.
+ *
+ * ⚠️ EVERY TABLE IN THE APP GETS THIS WITHOUT BEING TOLD, and that is the whole
+ * reason it lives here rather than in a prop: ninety-odd reports build their
+ * columns through this one component, so a screen does not have to know the
+ * feature exists. Nothing is stored on a screen that passes no `columns` array,
+ * and nothing changes on any screen until somebody opens the menu and unticks a
+ * column -- with nothing hidden, every branch below is the code that was there
+ * before.
+ *
+ * The key is the route plus the column KEYS, not the route alone: a page that
+ * shows two tables would otherwise hide a column in both when the reader meant
+ * one. ⚠️ The cost of that choice is that a report whose columns change -- a
+ * developer adding one, a screen building its columns from a filter -- is a
+ * different key, so the reader's choice is quietly back to the default rather
+ * than hiding a column that moved.
+ */
+const STORAGE_PREFIX = 'table-cols:';
+
+const readHidden = (key: string): string[] => {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(key) || '[]');
+    return Array.isArray(parsed) ? parsed.filter((entry) => typeof entry === 'string') : [];
+  } catch {
+    // A browser that refuses storage -- private mode, or storage full. A
+    // reader who cannot keep the choice still gets to make it.
+    return [];
+  }
+};
+
+const writeHidden = (key: string, hidden: string[]) => {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(hidden));
+  } catch {
+    /* as above: the menu still works, it just does not remember. */
+  }
+};
+
+/**
+ * A column nobody may put away.
+ *
+ * The Action column holds the buttons for the row, so hiding it leaves a report
+ * whose rows cannot be opened, edited or paid -- a mistake somebody makes once
+ * and then has to be talked through undoing. It never reaches the menu.
+ */
+const isActionColumn = (column: Column) => /^action/i.test(String(column.key || ''));
+
 const Table: React.FC<TableProps> = ({
   columns,
   data,
@@ -96,6 +150,98 @@ const Table: React.FC<TableProps> = ({
 
   const [page, setPage] = React.useState(1);
   const rows = Array.isArray(data) ? data : [];
+
+  /* ---------------------------------------------------------------- */
+  /* Hiding a column                                                   */
+  /* ---------------------------------------------------------------- */
+
+  const allColumns = Array.isArray(columns) ? columns : [];
+  const menuColumns = allColumns.filter((column) => !isActionColumn(column));
+  // One column is not a table, so the menu is not offered for it either.
+  const canHide = menuColumns.length > 1;
+
+  const storageKey = `${STORAGE_PREFIX}${window.location.pathname}#${allColumns
+    .map((column) => column.key)
+    .join('|')}`;
+
+  const [hiddenColumns, setHiddenColumns] = React.useState<string[]>(() => readHidden(storageKey));
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const menuRef = React.useRef<HTMLDivElement>(null);
+  // An id per table, because two tables on one page offer two menus and a
+  // checkbox's id has to reach its own label and no other.
+  const menuId = React.useId();
+
+  // ⚠️ Re-read rather than left to the initial state. A screen that builds its
+  // columns from a filter changes this table's key without remounting it, and a
+  // stale list would go on hiding columns by a name the table no longer has.
+  React.useEffect(() => {
+    setHiddenColumns(readHidden(storageKey));
+  }, [storageKey]);
+
+  React.useEffect(() => {
+    if (!menuOpen) return undefined;
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
+    };
+
+    document.addEventListener('mousedown', onPointerDown);
+    return () => document.removeEventListener('mousedown', onPointerDown);
+  }, [menuOpen]);
+
+  const toggleColumn = (key: string) => {
+    const next = hiddenColumns.includes(key)
+      ? hiddenColumns.filter((entry) => entry !== key)
+      : [...hiddenColumns, key];
+
+    setHiddenColumns(next);
+    writeHidden(storageKey, next);
+  };
+
+  const showAllColumns = () => {
+    setHiddenColumns([]);
+    writeHidden(storageKey, []);
+  };
+
+  // Never nothing: an empty table reads as a broken report rather than as a
+  // choice somebody made, and the last column cannot be put away.
+  const keptColumns = allColumns.filter((column) => !hiddenColumns.includes(column.key));
+  const visibleColumns = keptColumns.length ? keptColumns : allColumns;
+
+  /**
+   * A heading or footing row, with the cells of hidden columns taken out.
+   *
+   * ⚠️ THESE ROWS ARE NOT BUILT FROM `columns` THE WAY THE BODY IS. A screen
+   * hands over its own headerRows/footerRows, positioned the way HTML positions
+   * any row: each cell covers as many columns as its colSpan says, counted from
+   * the left. So a cell is dropped when the one column it covers is hidden, and
+   * a spanning cell keeps its place with its colSpan cut by however many hidden
+   * columns it covered.
+   *
+   * Without it a table keeps a heading or a totals bar one cell wider than its
+   * own body -- the browser widens the table to fit and every figure slides a
+   * column to the left of its heading.
+   */
+  const withoutHidden = <T extends { colSpan?: number }>(cells: T[]): T[] => {
+    if (!hiddenColumns.length) return cells;
+
+    const out: T[] = [];
+    let index = 0;
+
+    for (const cell of cells) {
+      const span = Math.max(1, Number(cell.colSpan) || 1);
+      const covered = allColumns.slice(index, index + span);
+      const kept = covered.filter((column) => !hiddenColumns.includes(column.key)).length;
+
+      index += span;
+
+      if (kept === span) out.push(cell);
+      else if (kept > 0) out.push({ ...cell, colSpan: kept });
+    }
+
+    return out;
+  };
+
   const totalRows = rows.length;
   const pageSize = Number(perPage || 0);
   const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(totalRows / pageSize)) : 1;
@@ -118,13 +264,64 @@ const Table: React.FC<TableProps> = ({
 
   return (
     <div className={`rounded-sm shadow-sm ${className || ""}`}>
+      {/* The menu sits ABOVE the table rather than over it, and in the flow
+          rather than floated. A report's own toolbar is at the top of the card,
+          so a panel over the headings would cover the column it was offering --
+          and half these tables live in an `overflow-hidden` card, which clips a
+          floating panel to nothing. Raising the table by a finger's width while
+          the menu is open is the cheaper trade. */}
+      {canHide ? (
+        <div ref={menuRef} className="flex flex-col items-end px-2 pt-2">
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            title="Show / hide columns"
+            aria-label="Show or hide columns"
+            className="flex items-center gap-1 rounded-sm border border-[rgb(var(--c-border))] px-2 py-1 text-xs text-gray-600 hover:bg-indigo-50 dark:text-gray-300 dark:hover:bg-gray-700"
+          >
+            <FiEye size={14} />
+            Columns
+          </button>
+
+          {menuOpen ? (
+            <div className="mt-1 max-h-72 w-56 overflow-y-auto rounded-sm border border-[rgb(var(--c-border))] bg-white p-2 shadow-lg dark:bg-[rgb(var(--c-boxdark))]">
+              <div className="mb-1 flex items-center justify-between border-b border-[rgb(var(--c-border))] pb-1">
+                <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                  Columns
+                </span>
+                <button
+                  type="button"
+                  onClick={showAllColumns}
+                  className="text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+                >
+                  Show all
+                </button>
+              </div>
+
+              {menuColumns.map((column) => (
+                <Checkbox
+                  key={column.key}
+                  id={`${menuId}-${column.key}`}
+                  name={String(column.key)}
+                  label={column.header}
+                  checked={!hiddenColumns.includes(column.key)}
+                  onChange={() => toggleColumn(String(column.key))}
+                  labelClassName="cursor-pointer text-xs text-gray-700 dark:text-gray-300"
+                  className="py-1"
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="overflow-x-auto">
         <table
           className={`min-w-full table-fixed text-left text-sm text-gray-700 dark:text-gray-300 ${tableClassName || ""}`}
           style={tableStyle}
         >
           <colgroup>
-            {columns.map((col) => (
+            {visibleColumns.map((col) => (
               <col key={col.key} className={col.cellClass} />
             ))}
           </colgroup>
@@ -133,7 +330,7 @@ const Table: React.FC<TableProps> = ({
           {headerRows && headerRows.length > 0 ? (
             headerRows.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                {row.map((headerCell, cellIndex) => (
+                {withoutHidden(row).map((headerCell, cellIndex) => (
                   <th
                     key={`${rowIndex}-${cellIndex}`}
                     colSpan={headerCell.colSpan}
@@ -147,7 +344,7 @@ const Table: React.FC<TableProps> = ({
             ))
           ) : (
             <tr>
-              {columns.map((column) => (
+              {visibleColumns.map((column) => (
                 <th
                   key={column.key}
                   className={`px-3 py-3 font-semibold align-middle ${cell} ${column.headerClass || ""}`}
@@ -179,7 +376,7 @@ const Table: React.FC<TableProps> = ({
                         : rowClassName || ''
                     }`}
                   >
-                    {columns.map((col) => (
+                    {visibleColumns.map((col) => (
                       <td
                         key={col.key}
                         className={`truncate px-3 py-2 align-middle ${cell} ${col.cellClass || ""}`}
@@ -193,7 +390,7 @@ const Table: React.FC<TableProps> = ({
                       to live in a table, not another record to act on. */}
                   {expansion ? (
                     <tr>
-                      <td colSpan={columns.length} className="p-0">
+                      <td colSpan={visibleColumns.length} className="p-0">
                         {expansion}
                       </td>
                     </tr>
@@ -204,7 +401,7 @@ const Table: React.FC<TableProps> = ({
           ) : (
             <tr>
               <td
-                colSpan={columns.length}
+                colSpan={visibleColumns.length}
                 className="py-4 text-center text-gray-500 dark:text-gray-400"
               >
                 {noDataMessage || "No data found"}
@@ -217,7 +414,7 @@ const Table: React.FC<TableProps> = ({
           <tfoot className="bg-slate-50 text-sm font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
             {footerRows.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                {row.map((footerCell, cellIndex) => (
+                {withoutHidden(row).map((footerCell, cellIndex) => (
                   <td
                     key={`${rowIndex}-${cellIndex}`}
                     colSpan={footerCell.colSpan}
