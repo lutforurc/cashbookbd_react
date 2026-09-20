@@ -482,7 +482,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                     on-screen table foots with. */}
                 {rowsArr?.length > 0 && pIdx === pages.length - 1 && (
                   <div className="mt-3 border-t border-b border-gray-900 py-2">
-                    <div className="flex items-center justify-end gap-6 font-bold text-xs">
+                    <div className="flex items-center justify-end gap-6 whitespace-nowrap font-bold text-xs">
                       <div>Grand Total</div>
                       <div className="flex gap-6">
                         <div>

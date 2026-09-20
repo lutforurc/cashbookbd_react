@@ -1096,7 +1096,7 @@ const PurchaseLedger = (user: any) => {
         {/* Summary row */}
         {tableData.length > 0 && (
           <div className="mt-2 border-t border-b font-bold">
-            <div className="flex items-center justify-end space-x-8 p-2">
+            <div className="flex items-center justify-end space-x-8 whitespace-nowrap p-2">
               <div>Grand Total</div>
               <div className="flex space-x-8">
                 <div>Quantity: {thousandSeparator(totalQuantity)}</div>
