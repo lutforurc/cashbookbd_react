@@ -5,6 +5,8 @@ import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import { firstLetterCapitalize } from "../../../utils/utils-functions/formatRoleName";
 import { FiArrowRight } from "react-icons/fi";
+import { useSelector } from "react-redux";
+import { isBranchSettingOn } from "../../../utils/userFeatureSettings";
 
 const fmtNum = (n: any, dec = 0) => thousandSeparator(Number(n || 0));
 const toNum = (v: any) => {
@@ -48,6 +50,8 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
     },
     ref
   ) => {
+    const settings = useSelector((state: any) => state.settings);
+    const groupByBrand = isBranchSettingOn(settings, "stock_report_type");
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 11;
     const cellPy = fs <= 11 ? "py-[0.5px]" : fs <= 15 ? "py-[.9px]" : "py-1";
 
@@ -62,35 +66,19 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
 
     // âœ… API map flatten: report.data = { BRAND: [..], "": [..] }
     const flatRows: RowAny[] = useMemo(() => {
-      if (!report) return [];
-      if (Array.isArray(report)) return report;
-
-      // common array locations
-      if (Array.isArray(report?.items)) return report.items;
-      if (Array.isArray(report?.rows)) return report.rows;
-
-      const map1 = report?.data;
-      if (map1 && typeof map1 === "object" && !Array.isArray(map1)) {
+      // Accept the API envelope, its data wrapper, a brand map, or flat rows.
+      for (const data of [report, report?.data, report?.data?.data, report?.data?.data?.data]) {
+        if (Array.isArray(data)) return data;
+        if (!data || typeof data !== "object") continue;
+        if (Array.isArray(data.items)) return data.items;
+        if (Array.isArray(data.rows)) return data.rows;
+        if (Array.isArray(data.data)) return data.data;
         const out: RowAny[] = [];
-        Object.entries(map1).forEach(([brandKey, list]) => {
+        Object.entries(data).forEach(([brandKey, list]) => {
           if (!Array.isArray(list)) return;
           list.forEach((it) => out.push({ ...(it || {}), __brandKey: brandKey }));
         });
-        return out;
-      }
-
-      // fallback: report itself map
-      if (typeof report === "object" && !Array.isArray(report)) {
-        const values = Object.values(report);
-        const looksLikeMap = values.some((v) => Array.isArray(v));
-        if (looksLikeMap) {
-          const out: RowAny[] = [];
-          Object.entries(report).forEach(([brandKey, list]) => {
-            if (!Array.isArray(list)) return;
-            list.forEach((it) => out.push({ ...(it || {}), __brandKey: brandKey }));
-          });
-          return out;
-        }
+        if (out.length) return out;
       }
 
       return [];
@@ -98,14 +86,14 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
 
     // field readers (based on your response keys)
     const getBrand = (r: RowAny) => {
-      const fromRow = (r?.brand ?? "").toString().trim();
+      const fromRow = (r?.brand ?? r?.brand_name ?? "").toString().trim();
       const fromKey = (r?.__brandKey ?? "").toString().trim();
       const b = fromRow || fromKey;
       return b ? b : "Others";
     };
 
     const getCategory = (r: RowAny) =>
-      (r?.category ?? r?.category_name ?? "Uncategorized").toString();
+      (r?.category ?? r?.category_name ?? r?.cat_name ?? "Uncategorized").toString();
 
     const getProductName = (r: RowAny) =>
       (r?.product_name ?? r?.name ?? "-").toString();
@@ -130,7 +118,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       const map = new Map<string, Map<string, RowAny[]>>();
 
       flatRows.forEach((r) => {
-        const brand = getBrand(r);
+        const brand = groupByBrand ? getBrand(r) : "";
         const category = getCategory(r);
 
         if (!map.has(brand)) map.set(brand, new Map());
@@ -146,7 +134,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           rows,
         })),
       }));
-    }, [flatRows]);
+    }, [flatRows, groupByBrand]);
 
     // âœ… RenderRow list (linear) â€” Category Total à¦¶à§‡à¦·à§‡ Brand Total
     const renderRows: RenderRow[] = useMemo(() => {
@@ -156,7 +144,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       const grandRows: RowAny[] = [];
 
       grouped.forEach((g) => {
-        out.push({ type: "brand", brand: g.brand });
+        if (groupByBrand) out.push({ type: "brand", brand: g.brand });
 
         let brandTotal = 0;
         let brandStock = 0;
@@ -192,7 +180,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         });
 
         // âœ… Brand Total after all Category Totals
-        out.push({
+        if (groupByBrand) out.push({
           type: "brandTotal",
           brand: g.brand,
           stock: brandStock,
@@ -211,10 +199,11 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         total: grand,
       });
       return out;
-    }, [grouped]);
+    }, [grouped, groupByBrand]);
 
     // âœ… Pagination: rp rows à¦ªà¦°à§‡ page break + header repeat
     const pages: RenderRow[][] = useMemo(() => {
+      if (rp <= 0) return [renderRows];
       const pages: RenderRow[][] = [];
       let page: RenderRow[] = [];
       let count = 0;
@@ -231,9 +220,9 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       };
 
       const addContextHeaders = (brand: string, category: string) => {
-        page.push({ type: "brand", brand });
+        if (groupByBrand) page.push({ type: "brand", brand });
         page.push({ type: "category", brand, category });
-        count += 2;
+        count += groupByBrand ? 2 : 1;
       };
 
       for (let i = 0; i < renderRows.length; i++) {
@@ -292,7 +281,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
 
       pushPage();
       return pages.length ? pages : [[]];
-    }, [renderRows, rp]);
+    }, [renderRows, rp, groupByBrand]);
 
     const renderLine = (r: RenderRow) => {
       if (r.type === "brand") {
@@ -318,8 +307,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
               className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} font-semibold`}
             >
               <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                {firstLetterCapitalize(r.brand)}
-                <FiArrowRight className="shrink-0" />
+                {groupByBrand && <>{firstLetterCapitalize(r.brand)}<FiArrowRight className="shrink-0" /></>}
                 {r.category}
               </span>
             </td>
