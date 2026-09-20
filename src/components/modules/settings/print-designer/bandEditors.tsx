@@ -9,6 +9,7 @@ import {
   FieldGroup,
   InfoBand,
   InfoItem,
+  InstallmentBand,
   NotesBand,
   SignatureBand,
   SpacerBand,
@@ -849,6 +850,34 @@ export const NotesBandEditor: React.FC<{
         />
       </div>
     </div>
+  </div>
+);
+
+export const InstallmentBandEditor: React.FC<{
+  band: InstallmentBand;
+  onChange: (band: InstallmentBand) => void;
+}> = ({ band, onChange }) => (
+  <div className="flex flex-col gap-3">
+    <div>
+      <span className={SUB_LABEL}>Title</span>
+      <Input
+        value={band.title}
+        placeholder="Installment Details"
+        onChange={(event) => onChange({ ...band, title: event.target.value })}
+        className={CONTROL}
+      />
+    </div>
+    <CheckRow
+      checked={band.bordered}
+      onChange={(bordered) => onChange({ ...band, bordered })}
+      label="Draw a border around it"
+    />
+    <p className="text-xs leading-snug text-slate-500 dark:text-slate-400">
+      Its three columns -- Sl, Due Date, Amount -- come from the sale's own
+      installment plan and are not configurable here. The table only appears
+      on a sale that actually has one, and only on the last page, beside the
+      totals.
+    </p>
   </div>
 );
 
