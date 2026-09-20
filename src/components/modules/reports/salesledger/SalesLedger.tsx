@@ -34,9 +34,12 @@ import { toast } from 'react-toastify';
 import httpService from '../../../services/httpService';
 import {
   API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL,
+  API_PRINT_TEMPLATE_URL,
   API_SALES_CHALLAN_DATA_URL,
   API_SALES_CHALLAN_DRIVER_URL,
 } from '../../../services/apiRoutes';
+import { usePrintBranch } from '../../../utils/utils-functions/printBranch';
+import { toSalesLedgerDocumentData } from './salesLedgerDocumentData';
 import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
 import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
 import {
@@ -174,9 +177,28 @@ const SalesLedger = (user: any) => {
   const restoredFilterRef = useRef(false);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
-  const handlePrint = useReactToPrint({
+
+  // The paper this screen printed before there was a designer to print it from,
+  // and still the one it prints unless the branch has saved a layout -- see
+  // handlePrint below.
+  const printBespoke = useReactToPrint({
     contentRef: printRef,
     documentTitle: 'Sales Ledger',
+  });
+
+  // The report about to be printed through a saved layout, held with its data
+  // the way challanDoc is, and cleared afterwards so a second print cannot go
+  // out carrying the first one's rows.
+  const [ledgerDoc, setLedgerDoc] = useState<{
+    template: PrintTemplate;
+    data: DocumentData;
+  } | null>(null);
+
+  const ledgerPrintRef = useRef<HTMLDivElement>(null);
+  const printLedgerDoc = useReactToPrint({
+    contentRef: ledgerPrintRef,
+    documentTitle: 'Sales Ledger',
+    onAfterPrint: () => setLedgerDoc(null),
   });
 
   const challanPrintRef = useRef<HTMLDivElement>(null);
@@ -200,6 +222,74 @@ const SalesLedger = (user: any) => {
     const timer = setTimeout(() => printChallanDoc(), 250);
     return () => clearTimeout(timer);
   }, [challanDoc]);
+
+  // The same wait, for the same reason, on the designed report -- see above.
+  useEffect(() => {
+    if (!ledgerDoc) return undefined;
+    const timer = setTimeout(() => printLedgerDoc(), 250);
+    return () => clearTimeout(timer);
+  }, [ledgerDoc]);
+
+  const printBranch = usePrintBranch();
+
+  /**
+   * Print: the branch's own layout where it has saved one, and the sheet this
+   * screen has always printed where it has not.
+   *
+   * ⚠️ THE LAYOUT IS FETCHED AT THE CLICK, not when the screen loaded. Somebody
+   * who has just changed a column in the designer and come straight back to the
+   * report to see it should not have to reload first.
+   *
+   * ⚠️ AND EVERY FAILURE FALLS THROUGH TO THE OLD PAPER. No layout saved (the
+   * endpoint answers with null), a server a patch behind, a dropped connection
+   * -- all of them print the bespoke sheet rather than an error or a blank
+   * page. The report is what somebody came here for; the arrangement is on top
+   * of it.
+   *
+   * The two knobs the screen still owns are applied over the layout: Rows per
+   * page and Font size. Everything else -- the columns, their wording, the
+   * margins -- is the saved layout's, which is the point of having saved one.
+   */
+  const handlePrint = async () => {
+    if (!Array.isArray(tableData) || tableData.length === 0) {
+      printBespoke();
+      return;
+    }
+
+    let layout: any = null;
+
+    try {
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/sales_ledger`, {
+        params: { branch_id: branchId ?? settings?.data?.branch?.id },
+      });
+      layout = response?.data?.data?.data?.layout ?? null;
+    } catch {
+      layout = null;
+    }
+
+    if (!layout) {
+      printBespoke();
+      return;
+    }
+
+    const template = normalizeTemplate(layout, 'sales_ledger');
+
+    setLedgerDoc({
+      template: { ...template, rowsPerPage, fontSize },
+      data: toSalesLedgerDocumentData({
+        rows: tableData,
+        startDate,
+        endDate,
+        accountName: selectedLedgerOption?.label,
+        productName: selectedProductOption?.label,
+        branch: printBranch,
+        branchName: dropdownData.find(
+          (entry: any) => String(entry?.id) === String(branchId),
+        )?.name,
+        showCategory: String(stockReportType) === '1',
+      }),
+    });
+  };
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -1267,22 +1357,43 @@ const SalesLedger = (user: any) => {
 
       <div className="overflow-y-auto">
         {ledgerData.isLoading && <Loader />}
-        <Table columns={columns} data={tableData || []} />
-
-        {tableData.length > 0 && (
-          <div className="mt-2 border-t border-b font-bold">
-            <div className="flex items-center justify-end space-x-8 whitespace-nowrap p-2">
-              <div>Grand Total</div>
-              <div className="flex space-x-8">
-                <div>Quantity: {thousandSeparator(totalQuantity)}</div>
-                <div>Total: {thousandSeparator(totalPayment)}</div>
-                <div>Discount: {thousandSeparator(totalDiscount)}</div>
-                <div>Received: {thousandSeparator(grandTotal)}</div>
-                <div>Balance: {thousandSeparator(totalBalance)}</div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* ⚠️ THE SUMMARY IS THE TABLE'S OWN FOOT, not a strip pinned under it.
+            As a div it drew two rules with no sides, in the browser's default
+            border colour rather than the grid's --c-border, so the foot did not
+            line up with the columns and its lines were a different colour from
+            the ones they were supposed to continue. Table's `footerRows` rule
+            it with the same `cell` class every detail cell uses. */}
+        <Table
+          columns={columns}
+          data={tableData || []}
+          footerRows={
+            tableData.length > 0
+              ? [
+                  [
+                    {
+                      colSpan: columns.length,
+                      label: (
+                        <div className="flex items-center justify-end space-x-8 whitespace-nowrap font-bold">
+                          <div>Grand Total</div>
+                          <div className="flex space-x-8">
+                            <div>
+                              Quantity: {thousandSeparator(totalQuantity)}
+                            </div>
+                            <div>Total: {thousandSeparator(totalPayment)}</div>
+                            <div>
+                              Discount: {thousandSeparator(totalDiscount)}
+                            </div>
+                            <div>Received: {thousandSeparator(grandTotal)}</div>
+                            <div>Balance: {thousandSeparator(totalBalance)}</div>
+                          </div>
+                        </div>
+                      ),
+                    },
+                  ],
+                ]
+              : undefined
+          }
+        />
       </div>
 
       <div className="hidden">
@@ -1310,6 +1421,16 @@ const SalesLedger = (user: any) => {
             ref={challanPrintRef}
             template={challanDoc.template}
             data={challanDoc.data}
+          />
+        ) : null}
+
+        {/* Mounted only while the designed report is being printed, for the
+            same reason as the challan above. */}
+        {ledgerDoc ? (
+          <DocumentPrint
+            ref={ledgerPrintRef}
+            template={ledgerDoc.template}
+            data={ledgerDoc.data}
           />
         ) : null}
       </div>

@@ -397,6 +397,85 @@ export const PURCHASE_INVOICE_SAMPLE: DocumentData = {
   ],
 };
 
+/**
+ * A month of vouchers that never happened, for the two ledger previews.
+ *
+ * ONE sample for both papers, unlike everything else here: a sales ledger and a
+ * purchase ledger hold the same keys, and the only thing they say differently
+ * is what to call the money column -- Received against Payment, which is a
+ * LABEL, and the label lives in the layout rather than in the data. A second
+ * copy of these rows would be a second thing to keep in step for no gain the
+ * tenant can see.
+ *
+ * ⚠️ The product lines are LISTS and the paper draws each entry on its own row
+ * -- that is the whole shape of a ledger row, and a sample with one product per
+ * voucher would preview a report that never appears. The figures are kept
+ * consistent with each other too: amount less discount less received is the
+ * balance, which is what the Grand Total row will be read against.
+ */
+export const LEDGER_SAMPLE: DocumentData = {
+  basic: {
+    report_range: '01/09/2026 to 20/09/2026',
+    ledger_account: 'Sample Traders',
+    ledger_product: 'Redmi Note 15',
+    branch_name: 'Head Office',
+  },
+  products: [
+    {
+      sl: 1,
+      challan_no: 'CH-10041',
+      challan_date: '05/09/2026',
+      coa_name: 'Sample Traders',
+      product_lines: [
+        'Sample Traders',
+        'Xiaomi Redmi Note 15 6/128GB Variant',
+        'Screen Guard (Pack of 10)',
+      ],
+      qty_lines: ['3', '10'],
+      rate_lines: ['24,000', '60'],
+      amount_lines: ['72,000', '600'],
+      qty: 13,
+      amount: 72600,
+      discount: 600,
+      received: 60000,
+      balance: 12000,
+      notes: 'Delivered by hand.',
+    },
+    {
+      sl: 2,
+      challan_no: 'CH-10058',
+      challan_date: '12/09/2026',
+      coa_name: 'Sample Traders',
+      product_lines: ['Sample Traders', 'Samsung Galaxy A26 8/256GB'],
+      qty_lines: ['2'],
+      rate_lines: ['32,500'],
+      amount_lines: ['65,000'],
+      qty: 2,
+      amount: 65000,
+      discount: 0,
+      received: 65000,
+      balance: 0,
+      notes: '',
+    },
+    {
+      sl: 3,
+      challan_no: 'CH-10074',
+      challan_date: '18/09/2026',
+      coa_name: 'Another Party',
+      product_lines: ['Another Party', 'Realme C75 6/128GB', 'Back Cover'],
+      qty_lines: ['1', '4'],
+      rate_lines: ['18,900', '250'],
+      amount_lines: ['18,900', '1,000'],
+      qty: 5,
+      amount: 19900,
+      discount: 400,
+      received: 0,
+      balance: 19500,
+      notes: '',
+    },
+  ],
+};
+
 /** Which sample the preview draws for the paper being designed. */
 /**
  * The document the designer previews against.
@@ -412,5 +491,6 @@ export const sampleFor = (docType: string): DocumentData => {
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_SAMPLE;
   if (docType === 'sales_invoice') return SALES_INVOICE_SAMPLE;
   if (docType === 'purchase_invoice') return PURCHASE_INVOICE_SAMPLE;
+  if (docType === 'sales_ledger' || docType === 'purchase_ledger') return LEDGER_SAMPLE;
   return SAMPLE_DOCUMENT;
 };

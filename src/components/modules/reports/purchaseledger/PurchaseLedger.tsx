@@ -32,7 +32,18 @@ import { FiBook, FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { toast } from 'react-toastify';
 import httpService from '../../../services/httpService';
-import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
+import {
+  API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL,
+  API_PRINT_TEMPLATE_URL,
+} from '../../../services/apiRoutes';
+import { usePrintBranch } from '../../../utils/utils-functions/printBranch';
+import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
+import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
+import {
+  normalizeTemplate,
+} from '../../../utils/print-designer/printTemplate';
+import type { PrintTemplate } from '../../../utils/print-designer/printTemplate';
+import { toPurchaseLedgerDocumentData } from './purchaseLedgerDocumentData';
 import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
 import { hasPermission } from '../../../utils/permissionChecker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
@@ -732,11 +743,94 @@ const PurchaseLedger = (user: any) => {
     },
   ];
 
-  const handlePrint = useReactToPrint({
+  // The paper this screen printed before there was a designer to print it from,
+  // and still the one it prints unless the branch has saved a layout -- see
+  // handlePrint below, which is the name the print buttons already call.
+  const printBespoke = useReactToPrint({
     contentRef: printRef,
     documentTitle: 'Purchase Ledger',
-    // onAfterPrint: () => alert('Printed successfully!'),
   });
+
+  // The report about to be printed through a saved layout. Held with its data
+  // and cleared after printing, so a second print cannot go out carrying the
+  // first one's rows.
+  const [ledgerDoc, setLedgerDoc] = useState<{
+    template: PrintTemplate;
+    data: DocumentData;
+  } | null>(null);
+
+  const ledgerPrintRef = useRef<HTMLDivElement>(null);
+  const printLedgerDoc = useReactToPrint({
+    contentRef: ledgerPrintRef,
+    documentTitle: 'Purchase Ledger',
+    onAfterPrint: () => setLedgerDoc(null),
+  });
+
+  // Prints once the report is on the page -- react-to-print copies the DOM as
+  // it stands, and the short wait is for the letterhead image, which BranchPad
+  // loads rather than renders inline. Same shape as the sales ledger.
+  useEffect(() => {
+    if (!ledgerDoc) return undefined;
+    const timer = setTimeout(() => printLedgerDoc(), 250);
+    return () => clearTimeout(timer);
+  }, [ledgerDoc]);
+
+  const printBranch = usePrintBranch();
+
+  /**
+   * Print: the branch's own layout where it has saved one, and the sheet this
+   * screen has always printed where it has not.
+   *
+   * ⚠️ THE LAYOUT IS FETCHED AT THE CLICK, not when the screen loaded -- a
+   * column changed in the designer a minute ago should print without a reload.
+   *
+   * ⚠️ AND EVERY FAILURE FALLS THROUGH TO THE OLD PAPER: no layout saved, a
+   * server a patch behind, a dropped connection. The report is what somebody
+   * came here for.
+   *
+   * Rows per page and Font size are the screen's own and are applied over the
+   * layout; every other setting is the saved layout's.
+   */
+  const handlePrint = async () => {
+    if (!Array.isArray(tableData) || tableData.length === 0) {
+      printBespoke();
+      return;
+    }
+
+    let layout: any = null;
+
+    try {
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/purchase_ledger`, {
+        params: { branch_id: branchId ?? settings?.data?.branch?.id },
+      });
+      layout = response?.data?.data?.data?.layout ?? null;
+    } catch {
+      layout = null;
+    }
+
+    if (!layout) {
+      printBespoke();
+      return;
+    }
+
+    const template = normalizeTemplate(layout, 'purchase_ledger');
+
+    setLedgerDoc({
+      template: { ...template, rowsPerPage: Number(perPage), fontSize: Number(fontSize) },
+      data: toPurchaseLedgerDocumentData({
+        rows: tableData,
+        startDate,
+        endDate,
+        accountName: selectedLedgerOption?.label,
+        productName: selectedProductOption?.label,
+        branch: printBranch,
+        branchName: dropdownData.find(
+          (entry: any) => String(entry?.id) === String(branchId),
+        )?.name,
+        showCategory: String(stockReportType) === '1',
+      }),
+    });
+  };
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = Number(e.target.value);
@@ -1092,22 +1186,46 @@ const PurchaseLedger = (user: any) => {
       </div>
       <div className="overflow-y-auto">
         {ledgerData.isLoading && <Loader />}
-        <Table columns={columns} data={tableData || []} />
-        {/* Summary row */}
-        {tableData.length > 0 && (
-          <div className="mt-2 border-t border-b font-bold">
-            <div className="flex items-center justify-end space-x-8 whitespace-nowrap p-2">
-              <div>Grand Total</div>
-              <div className="flex space-x-8">
-                <div>Quantity: {thousandSeparator(totalQuantity)}</div>
-                <div>Total: {thousandSeparator(totalPayment)}</div>
-                <div>Discount: {thousandSeparator(discountTotal)}</div>
-                <div>Payment: {thousandSeparator(grandTotal)}</div>
-                <div>Balance: {thousandSeparator((totalPayment - grandTotal - discountTotal))}</div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* ⚠️ THE SUMMARY IS THE TABLE'S OWN FOOT -- same note as
+            SalesLedger.tsx: outside the table it was ruled in the browser's
+            default border colour with no sides, so it matched neither the
+            columns nor the grid it sat under. */}
+        <Table
+          columns={columns}
+          data={tableData || []}
+          footerRows={
+            tableData.length > 0
+              ? [
+                  [
+                    {
+                      colSpan: columns.length,
+                      label: (
+                        <div className="flex items-center justify-end space-x-8 whitespace-nowrap font-bold">
+                          <div>Grand Total</div>
+                          <div className="flex space-x-8">
+                            <div>
+                              Quantity: {thousandSeparator(totalQuantity)}
+                            </div>
+                            <div>Total: {thousandSeparator(totalPayment)}</div>
+                            <div>
+                              Discount: {thousandSeparator(discountTotal)}
+                            </div>
+                            <div>Payment: {thousandSeparator(grandTotal)}</div>
+                            <div>
+                              Balance:{" "}
+                              {thousandSeparator(
+                                totalPayment - grandTotal - discountTotal
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ),
+                    },
+                  ],
+                ]
+              : undefined
+          }
+        />
       </div>
       <div className="hidden">
         <PurchaseLedgerPrint
@@ -1125,6 +1243,16 @@ const PurchaseLedger = (user: any) => {
           fontSize={Number(fontSize)}
         />
 
+        {/* Mounted only while the designed report is being printed: left
+            standing it would draw a whole report on every render of a screen
+            that re-renders on every keystroke in the search box. */}
+        {ledgerDoc ? (
+          <DocumentPrint
+            ref={ledgerPrintRef}
+            template={ledgerDoc.template}
+            data={ledgerDoc.data}
+          />
+        ) : null}
       </div>
     </div>
   );

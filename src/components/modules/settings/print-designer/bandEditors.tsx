@@ -17,6 +17,7 @@ import {
   TableColumn,
   TitleBand,
   TotalsBand,
+  Valign,
   fieldName,
   fieldsFor,
   isNumericField,
@@ -67,6 +68,21 @@ const ALIGN_OPTIONS: { id: Align; name: string }[] = [
   { id: 'left', name: 'Left' },
   { id: 'center', name: 'Centre' },
   { id: 'right', name: 'Right' },
+];
+
+/**
+ * Vertical alignment, plus the state of not having chosen one.
+ *
+ * ⚠️ "Auto" is not "Top". The renderer's own answer depends on what the cell
+ * holds -- top where the cell is a list, middle where it is a single figure --
+ * so a column left on Auto follows that, and one set to Top is pinned to the
+ * top of every row whether it holds a list or not.
+ */
+const VALIGN_OPTIONS: { id: Valign | ''; name: string }[] = [
+  { id: '', name: 'Auto' },
+  { id: 'top', name: 'Top' },
+  { id: 'middle', name: 'Middle' },
+  { id: 'bottom', name: 'Bottom' },
 ];
 
 export const AlignPicker: React.FC<{
@@ -643,6 +659,25 @@ export const TableBandEditor: React.FC<{
               className="w-24 shrink-0 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1 py-0.5 text-xs outline-none dark:bg-boxdark"
             >
               {ALIGN_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </Select>
+
+            {/* Where this column sits in a row taller than it is -- the
+                counterpart of the control beside it, and only visible on a
+                paper whose rows are of different heights. */}
+            <Select
+              value={column.valign ?? ''}
+              draggable={false}
+              title="Vertical align"
+              onChange={(event) =>
+                update(index, { valign: (event.target.value || undefined) as Valign })
+              }
+              className="w-20 shrink-0 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1 py-0.5 text-xs outline-none dark:bg-boxdark"
+            >
+              {VALIGN_OPTIONS.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
                 </option>

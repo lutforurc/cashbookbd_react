@@ -336,7 +336,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                     ) : (
                       <tr>
                         <td
-                          colSpan={9}
+                          colSpan={8}
                           className="border border-gray-900 px-3 py-6 text-center text-gray-500"
                         >
                           No data found
@@ -344,27 +344,55 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                       </tr>
                     )}
                   </tbody>
-                </table>
 
-                {/* Summary only on LAST page -- same row, same two rules,
-                    the on-screen table foots with. */}
-                {rowsArr?.length > 0 && pIdx === pages.length - 1 && (
-                  <div className="mt-3 border-t border-b border-gray-900 py-2">
-                    <div
-                      className="flex items-center justify-end gap-3 whitespace-nowrap font-bold"
-                      style={{ fontSize: Math.max(fs - 2, 7) }}
-                    >
-                      <div>Grand Total</div>
-                      <div className="flex gap-3">
-                        <div>Quantity: {thousandSeparator(totalQuantity)}</div>
-                        <div>Total: {thousandSeparator(totalPayment)}</div>
-                        <div>Discount: {thousandSeparator(discountTotal)}</div>
-                        <div>Payment: {thousandSeparator(grandTotal)}</div>
-                        <div>Balance: {thousandSeparator(totalPayment - grandTotal - discountTotal)}</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  {/* ⚠️ A ROW OF THE TABLE, NOT A STRIP UNDER IT -- same note
+                      as SalesLedgerPrint.tsx. Outside the table the summary
+                      drew its own two rules with no sides and no column frame,
+                      so it read as a separate box under the details table
+                      instead of that table's last row.
+
+                      ⚠️ AND 8, NOT 9. This table has EIGHT headings -- unlike
+                      Sales it has no Balance column -- and an HTML table takes
+                      its column count from the widest row, so a stray
+                      `colSpan={9}` here quietly added a ninth phantom column
+                      that stole width from the eight real ones: every detail
+                      row ended short of the table's right edge and only the
+                      summary reached it. The number must equal the headings
+                      above. */}
+                  {rowsArr?.length > 0 && pIdx === pages.length - 1 && (
+                    <tfoot>
+                      <tr className="avoid-break">
+                        <td
+                          colSpan={8}
+                          className="border border-gray-900 px-2 py-1"
+                        >
+                          <div
+                            className="flex items-center justify-end gap-3 whitespace-nowrap font-bold"
+                            style={{ fontSize: Math.max(fs - 2, 7) }}
+                          >
+                            <div>Grand Total</div>
+                            <div className="flex gap-3">
+                              <div>
+                                Quantity: {thousandSeparator(totalQuantity)}
+                              </div>
+                              <div>Total: {thousandSeparator(totalPayment)}</div>
+                              <div>
+                                Discount: {thousandSeparator(discountTotal)}
+                              </div>
+                              <div>Payment: {thousandSeparator(grandTotal)}</div>
+                              <div>
+                                Balance:{" "}
+                                {thousandSeparator(
+                                  totalPayment - grandTotal - discountTotal
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
               </div>
 
               {/* `fixed`, alongside the page count, not instead of it: with

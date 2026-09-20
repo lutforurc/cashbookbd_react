@@ -24,6 +24,7 @@ import {
   TableColumn,
   TitleBand,
   TotalsBand,
+  Valign,
   fieldFormat,
   fieldName,
   isNumericField,
@@ -105,6 +106,12 @@ const alignClass: Record<Align, string> = {
   left: 'text-left',
   center: 'text-center',
   right: 'text-right',
+};
+
+const valignClass: Record<Valign, string> = {
+  top: 'align-top',
+  middle: 'align-middle',
+  bottom: 'align-bottom',
 };
 
 /**
@@ -273,6 +280,21 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
        */
       total_due: totalAmount - totalReceived,
       line_count: rows.length,
+
+      /**
+       * The two a ledger foots, and the only entries here that exist for one
+       * family of papers.
+       *
+       * ⚠️ They are the sums of the `discount` and `balance` columns, written
+       * out rather than left to the generic rule below -- that rule feeds the
+       * totals BAND, and the table's Grand Total row reads this map directly
+       * (see footOf), so a ledger's Discount and Balance columns would otherwise
+       * foot as blank cells. Adding them costs every other paper nothing: no
+       * other catalogue offers a column of either name, so no other paper can
+       * ask for these totals, and no paper's data carries the keys.
+       */
+      total_discount: rows.reduce((sum, row) => sum + num(row?.discount), 0),
+      total_balance: rows.reduce((sum, row) => sum + num(row?.balance), 0),
     };
 
     /**
@@ -498,6 +520,29 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           return isNumericLineField(key) ? thousandSeparator(num(raw)) : String(raw);
         }
       }
+    };
+
+    /**
+     * The LINES a cell holds, where it holds lines rather than a value.
+     *
+     * A ledger row is a whole voucher: several products, each with its own
+     * quantity, rate and amount, printed one under the other inside one cell.
+     * That is what makes the report readable, and it is the one thing a table
+     * of single values cannot say -- so the adapter hands those columns over as
+     * an array of ready strings and this is where they become lines.
+     *
+     * Returns null for every other column, so strings and numbers alike go
+     * through `cell` exactly as they did before. Blank entries are dropped: an
+     * empty line box would step the row up and down the page for nothing, and
+     * the same rule already governs a column's subField.
+     */
+    const lines = (row: any, key: string): string[] | null => {
+      const raw = row?.[key];
+      if (!Array.isArray(raw)) return null;
+
+      return raw
+        .map((entry) => String(entry ?? '').trim())
+        .filter((entry) => entry !== '');
     };
 
     /* -------------------------------------------------------------- */
@@ -973,7 +1018,18 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
        * first number it is totalling.
        */
       const footOf = (field: string): string | null => {
-        const figure = totals[`total_${field}`];
+        // ⚠️ A COLUMN OF LINES FOOTS ITS SCALAR TWIN. A ledger row prints one
+        // figure per product line -- three quantities down the cell -- while
+        // what the column comes to is one figure per voucher, kept on the row
+        // beside the lines rather than drawn. So `qty_lines` foots with
+        // `total_qty`, and the row under the table agrees with the figures above
+        // it instead of standing empty beside them.
+        //
+        // Only a key the map already holds resolves, so a `rate_lines` column
+        // still gets a blank cell rather than the sum of six identical rates --
+        // which is the whole point of that map.
+        const figure =
+          totals[`total_${field}`] ?? totals[`total_${field.replace(/_lines$/, '')}`];
 
         return figure === undefined ? null : thousandSeparator(figure);
       };
@@ -1105,6 +1161,9 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                   // markings survive both.
                   const marked = column.field === 'price' && offRate(row);
 
+                  // A column of lines, on a ledger -- see `lines` above.
+                  const stacked = lines(row, column.field);
+
                   return (
                     <td
                       key={`${column.field}-${index}`}
@@ -1113,12 +1172,28 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                       // what it was let as -- so the figures beside it hung
                       // from the top of a box twice their height, reading as
                       // though they belonged to the line above.
+                      //
+                      // ⚠️ Top, though, where the cell holds a LIST. A voucher's
+                      // products are a block that starts at the row's top edge,
+                      // and the one figure beside them -- the balance, say --
+                      // centred against a block of six lines reads as belonging
+                      // to whichever line it happens to sit level with.
+                      //
+                      // A column that sets `valign` overrides both, because a
+                      // rule about a cell's shape cannot tell a figure beside
+                      // two lines from one beside six, and the tenant can.
                       className={
-                        `${border} px-1 py-0.5 align-middle ${alignClass[column.align ?? 'left']} ` +
+                        `${border} px-1 py-0.5 ${column.valign ? valignClass[column.valign] : stacked ? 'align-top' : 'align-middle'} ${alignClass[column.align ?? 'left']} ` +
                         (marked ? 'font-bold' : '')
                       }
                     >
-                      {cell(row, startIndex + rowIndex, column.field)}
+                      {stacked
+                        ? stacked.map((line, lineIndex) => (
+                            <div key={lineIndex} className="leading-snug">
+                              {line}
+                            </div>
+                          ))
+                        : cell(row, startIndex + rowIndex, column.field)}
                       {marked ? ' *' : ''}
 
                       {sub ? (

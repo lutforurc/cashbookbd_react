@@ -468,7 +468,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                     ) : (
                       <tr>
                         <td
-                          colSpan={10}
+                          colSpan={9}
                           className="border border-gray-900 px-3 py-6 text-center text-gray-500"
                         >
                           No data found
@@ -476,29 +476,48 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                       </tr>
                     )}
                   </tbody>
-                </table>
 
-                {/* Summary only last page -- same row, same two rules, the
-                    on-screen table foots with. */}
-                {rowsArr?.length > 0 && pIdx === pages.length - 1 && (
-                  <div className="mt-3 border-t border-b border-gray-900 py-2">
-                    <div
-                      className="flex items-center justify-end gap-3 whitespace-nowrap font-bold"
-                      style={{ fontSize: Math.max(fs - 2, 7) }}
-                    >
-                      <div>Grand Total</div>
-                      <div className="flex gap-3">
-                        <div>
-                          Quantity: {thousandSeparator(totalQuantity)}
-                        </div>
-                        <div>Total: {thousandSeparator(totalPayment)}</div>
-                        <div>Discount: {thousandSeparator(totalDiscount)}</div>
-                        <div>Received: {thousandSeparator(grandTotal)}</div>
-                        <div>Balance: {thousandSeparator(totalBalance)}</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  {/* ⚠️ A ROW OF THE TABLE, NOT A STRIP UNDER IT. Drawn outside,
+                      its rules were its own: two lines of the same colour but
+                      with no sides, floating below a table whose frame they did
+                      not continue -- it read as a separate box rather than the
+                      table's last row. As a cell it is bounded by the table's
+                      own border on all four sides, its top rule collapses into
+                      the last detail row's bottom rule (border-collapse), and
+                      both side edges line up with the table's. */}
+                  {rowsArr?.length > 0 && pIdx === pages.length - 1 && (
+                    <tfoot>
+                      <tr className="avoid-break">
+                        <td
+                          colSpan={9}
+                          className="border border-gray-900 px-2 py-1"
+                        >
+                          <div
+                            className="flex items-center justify-end gap-3 whitespace-nowrap font-bold"
+                            style={{ fontSize: Math.max(fs - 2, 7) }}
+                          >
+                            <div>Grand Total</div>
+                            <div className="flex gap-3">
+                              <div>
+                                Quantity: {thousandSeparator(totalQuantity)}
+                              </div>
+                              <div>Total: {thousandSeparator(totalPayment)}</div>
+                              <div>
+                                Discount: {thousandSeparator(totalDiscount)}
+                              </div>
+                              <div>
+                                Received: {thousandSeparator(grandTotal)}
+                              </div>
+                              <div>
+                                Balance: {thousandSeparator(totalBalance)}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
               </div>
 
               {/* `fixed`, alongside the page count, not instead of it -- see

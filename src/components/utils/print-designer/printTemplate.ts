@@ -36,7 +36,15 @@
  * against PrintTemplateController::DOC_TYPES. A new one needs a row in both
  * lists, and renaming one orphans every layout saved under the old name.
  */
-export type DocType = 'sales_challan' | 'sales_order' | 'hotel_money_receipt' | 'hotel_bill' | 'sales_invoice' | 'purchase_invoice';
+export type DocType =
+  | 'sales_challan'
+  | 'sales_order'
+  | 'hotel_money_receipt'
+  | 'hotel_bill'
+  | 'sales_invoice'
+  | 'purchase_invoice'
+  | 'sales_ledger'
+  | 'purchase_ledger';
 
 /**
  * The papers the designer offers, in the order it offers them.
@@ -76,9 +84,22 @@ export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
     name: 'Purchase Invoice',
     hint: 'What comes in with the goods, from the supplier.',
   },
+  {
+    id: 'sales_ledger',
+    name: 'Sales Ledger',
+    hint: 'The report: many vouchers down one sheet, each with its own lines.',
+  },
+  {
+    id: 'purchase_ledger',
+    name: 'Purchase Ledger',
+    hint: 'The report: many vouchers down one sheet, each with its own lines.',
+  },
 ];
 
 export type Align = 'left' | 'center' | 'right';
+
+/** Where a cell's contents sit in a cell taller than they are. */
+export type Valign = 'top' | 'middle' | 'bottom';
 
 /** A label:value pair on the paper -- in the info block or among the totals. */
 export type InfoItem = {
@@ -125,6 +146,19 @@ export type TableColumn = {
   /** Share of the table width, in percent. Columns are normalised at render. */
   width?: number;
   align?: Align;
+  /**
+   * Where the cell sits in a row taller than it is.
+   *
+   * ⚠️ Left out on most columns on purpose. A row is as tall as its tallest
+   * cell, and one column carrying a list -- a ledger voucher's products, three
+   * lines of them -- makes every other cell in that row taller than its own
+   * contents. The renderer's own rule (top for a list, middle for everything
+   * else) is right for a figure beside two lines and wrong for one beside six,
+   * and only the tenant knows which of the two they are looking at.
+   *
+   * Absent means that rule; set it and the column obeys.
+   */
+  valign?: Valign;
   /**
    * A second value, printed UNDER the first in the same cell.
    *
@@ -1023,8 +1057,73 @@ export const PURCHASE_INVOICE_LINE_FIELDS: FieldDef[] = [
   { key: 'amount', name: 'Amount', group: 'line', numeric: true, format: 'money' },
 ];
 
+/* ------------------------------------------------------------------ */
+/* The two ledgers                                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The two facts a ledger knows that no voucher does.
+ *
+ * Deliberately short. A ledger's info block is a report heading -- which
+ * period, which account, which product -- and everything else on it (the
+ * branch, who is printing, a blank line) is already in the challan's own
+ * catalogue, which `fieldsFor` hands over whole. Writing those out again here
+ * would be a second definition of `branch_name` to keep in step with the
+ * first, and this file's flat by-key maps resolve to whichever came last.
+ */
+export const LEDGER_INFO_FIELDS: FieldDef[] = [
+  { key: 'report_range', name: 'Report Date', group: 'voucher' },
+  { key: 'ledger_account', name: 'Account', group: 'party' },
+  { key: 'ledger_product', name: 'Product', group: 'product' },
+  { key: 'total_discount', name: 'Total Discount', group: 'total', numeric: true },
+  { key: 'total_received', name: 'Total Received', group: 'total', numeric: true },
+  { key: 'total_balance', name: 'Total Balance', group: 'total', numeric: true },
+];
+
+/**
+ * A ledger row: one voucher, with its own product lines inside its cells.
+ *
+ * ⚠️ The `*_lines` fields are ARRAYS of ready-made strings, not numbers. Today's
+ * ledger paper prints a voucher as a block -- the party, then a product per
+ * line, then that product's quantity under it, its rate under that -- and a
+ * table cell holding one value cannot say that. They are the same lines the
+ * bespoke print draws, handed over as lines rather than flattened, and
+ * DocumentPrint draws each on its own row. Kept out of the numeric columns on
+ * purpose: nobody wants a column of product names footed.
+ *
+ * ⚠️ The flat `qty`/`amount`/`discount`/`received`/`balance` beside them are the
+ * row's own figures -- what the screen's columns show -- and they are what the
+ * Grand Total row adds up. `balance`, never `due`: DocumentPrint computes a
+ * `total_due` as amount less received, which is the right footing for a running
+ * order balance and the wrong one for a ledger, where a discount comes off as
+ * well. `total_balance` is a plain sum of this column.
+ */
+export const LEDGER_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  { key: 'challan_no', name: 'Challan / Invoice No', group: 'line' },
+  { key: 'challan_date', name: 'Date', group: 'line' },
+  { key: 'coa_name', name: 'Account', group: 'line' },
+  { key: 'product_lines', name: 'Product & Details', group: 'line' },
+  { key: 'qty_lines', name: 'Quantity (one per line)', group: 'line' },
+  { key: 'rate_lines', name: 'Rate (one per line)', group: 'line' },
+  { key: 'amount_lines', name: 'Amount (one per line)', group: 'line' },
+  { key: 'notes', name: 'Notes', group: 'line' },
+  { key: 'qty', name: 'Quantity', group: 'line', numeric: true },
+  { key: 'amount', name: 'Amount', group: 'line', numeric: true, format: 'money' },
+  { key: 'discount', name: 'Discount', group: 'line', numeric: true },
+  { key: 'received', name: 'Received', group: 'line', numeric: true },
+  { key: 'balance', name: 'Balance', group: 'line', numeric: true },
+];
+
+const isLedger = (docType: DocType) =>
+  docType === 'sales_ledger' || docType === 'purchase_ledger';
+
 /** Which fields a paper may draw from. */
 export const fieldsFor = (docType: DocType): FieldDef[] => {
+  // The ledger's three own keys first, then the challan's whole catalogue under
+  // them -- branch, print time, blank lines, the totals. A heading is a heading
+  // on any paper, and one definition of each is the point of the flat maps.
+  if (isLedger(docType)) return [...LEDGER_INFO_FIELDS, ...FIELD_CATALOG];
   if (docType === 'sales_order') return ORDER_FIELD_CATALOG;
   if (docType === 'hotel_bill') return HOTEL_BILL_FIELDS;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_FIELDS;
@@ -1051,6 +1150,10 @@ export const catalogFor = fieldsFor;
  * bill -- which is precisely the document a receipt must not become.
  */
 export const lineFieldsFor = (docType: DocType): FieldDef[] => {
+  // Its own list, not the challan's: a ledger row is a voucher, not a product,
+  // and offering product name, unit and bag on it would be four fields the
+  // adapter has nothing to put in.
+  if (isLedger(docType)) return LEDGER_LINE_FIELDS;
   if (docType === 'sales_order') return ORDER_LINE_FIELDS;
   if (docType === 'hotel_bill') return HOTEL_BILL_LINE_FIELDS;
   // A money receipt has none: it is one payment, and a table on it would be the
@@ -1123,9 +1226,14 @@ const ALL_INFO_BY_KEY = byKey([
   ...HOTEL_RECEIPT_FIELDS,
   ...SALES_INVOICE_FIELD_CATALOG,
   ...PURCHASE_INVOICE_FIELD_CATALOG,
+  // Last, and it shares nothing with the rest: a ledger's own keys are three
+  // facts and three totals no voucher has. Anything it did share would take the
+  // name of the paper that came before it, which is what keeps a challan's
+  // "Number of Items" from becoming a ledger's "Number of Vouchers" everywhere.
+  ...LEDGER_INFO_FIELDS,
 ]);
 
-const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS, ...PURCHASE_INVOICE_LINE_FIELDS]);
+const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS, ...PURCHASE_INVOICE_LINE_FIELDS, ...LEDGER_LINE_FIELDS]);
 
 /** The catalogue's own name for a field, or the key itself if it is unknown. */
 export const fieldName = (key: string) =>
@@ -2095,6 +2203,129 @@ const purchaseInvoice = (): PrintTemplate => ({
   ],
 });
 
+/**
+ * The two ledgers -- built to match what SalesLedgerPrint.tsx and
+ * PurchaseLedgerPrint.tsx print today: the report heading, then one row per
+ * voucher with its product lines filling three cells beside it, and a Grand
+ * Total foot row.
+ *
+ * A report, not a voucher, and the layout says so: no signature line, and no
+ * amount in words. `rowsPerPage` is 0 and the type 9pt because that is the
+ * paper these two screens have always produced -- the screen's own Rows per
+ * page and Font size still override both, so the page count behaves exactly as
+ * it did before there was a designer to print these from.
+ *
+ * ⚠️ ONE DIGRESSION from today's purchase paper, and it is deliberate: that one
+ * has no Balance column, so its foot prints a Balance that no column of its own
+ * adds up to. Here both papers carry the column and the foot sums it, which is
+ * the same figure reached a way the designer can edit. Nobody's purchase ledger
+ * changes on this -- a layout only prints once a tenant saves one -- and a
+ * tenant who wants the eight columns back deletes the ninth.
+ *
+ * ⚠️ `printed_at` is deliberately not in the info band. DocumentPrint only
+ * stamps the time in its footer on a paper that does not already date itself,
+ * and a report reprinted in the afternoon should keep saying when it was
+ * printed -- adding the field here would silently take that line away.
+ */
+const ledgerHeading = (docType: DocType, title: string): PrintTemplate => ({
+  version: 1,
+  docType,
+  orientation: 'portrait',
+  pageSize: 'a4',
+  fontSize: 9,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: title,
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'report_range', label: 'Report Date' },
+        { field: 'ledger_account', label: 'Account', hideIfEmpty: true },
+        { field: 'ledger_product', label: 'Product', hideIfEmpty: true },
+        { field: 'branch_name', label: 'Branch', hideIfEmpty: true },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      totalRow: true,
+      totalRowLabel: 'Grand Total',
+      columns: [
+        { field: 'sl', label: 'Sl', width: 5, align: 'center' },
+        {
+          field: 'challan_no',
+          label: 'Chal. & Date',
+          width: 11,
+          align: 'left',
+          // The voucher's number over its date, which is how both ledgers have
+          // always printed the second column.
+          subField: 'challan_date',
+        },
+        { field: 'product_lines', label: 'Product & Details', width: 33, align: 'left' },
+        // ⚠️ The three a voucher's own figures come in as lists, and the only
+        // columns on this paper whose default is wrong. Every other cell here
+        // holds one value and the renderer already centres it; these three hold
+        // one figure per product line, so they would hang from the top of a box
+        // as tall as the block beside them -- a Qty level with the first product
+        // and pointing at nothing. Centred, each sits against the block it
+        // belongs to, which is how both ledgers have always printed.
+        { field: 'qty_lines', label: 'Qty', width: 8, align: 'right', valign: 'middle' },
+        { field: 'rate_lines', label: 'Rate', width: 10, align: 'right', valign: 'middle' },
+        { field: 'amount_lines', label: 'Total', width: 12, align: 'right', valign: 'middle' },
+        { field: 'discount', label: 'Disc.', width: 6, align: 'right' },
+        // ⚠️ The same field on both papers and a different wording, because it
+        // is a different direction of money: a customer pays the shop, the shop
+        // pays the supplier. "Received" over a purchase ledger's column would
+        // read as though the supplier had paid us.
+        { field: 'received', label: docType === 'sales_ledger' ? 'Received' : 'Payment', width: 8, align: 'right' },
+        { field: 'balance', label: 'Balance', width: 7, align: 'right' },
+      ],
+    }),
+  ],
+});
+
+export const SALES_LEDGER_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Sales Ledger',
+    hint: 'One row per voucher, its products beside it, and a Grand Total foot.',
+    build: () => ledgerHeading('sales_ledger', 'Sales Ledger'),
+  },
+];
+
+export const PURCHASE_LEDGER_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Purchase Ledger',
+    hint: 'One row per voucher, its products beside it, and a Grand Total foot.',
+    build: () => ledgerHeading('purchase_ledger', 'Purchase Ledger'),
+  },
+];
+
 export const CHALLAN_PRESETS: PresetDef[] = [
   {
     id: 'standard',
@@ -2159,6 +2390,8 @@ export const HOTEL_RECEIPT_PRESETS: PresetDef[] = [
 
 /** What the designer offers for the paper being edited. */
 export const presetsFor = (docType: DocType): PresetDef[] => {
+  if (docType === 'sales_ledger') return SALES_LEDGER_PRESETS;
+  if (docType === 'purchase_ledger') return PURCHASE_LEDGER_PRESETS;
   if (docType === 'sales_order') return ORDER_PRESETS;
   if (docType === 'hotel_bill') return HOTEL_BILL_PRESETS;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_PRESETS;
@@ -2166,6 +2399,8 @@ export const presetsFor = (docType: DocType): PresetDef[] => {
 };
 
 export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTemplate => {
+  if (docType === 'sales_ledger') return ledgerHeading('sales_ledger', 'Sales Ledger');
+  if (docType === 'purchase_ledger') return ledgerHeading('purchase_ledger', 'Purchase Ledger');
   if (docType === 'sales_order') return standardOrder();
   if (docType === 'hotel_bill') return hotelBill();
   if (docType === 'hotel_money_receipt') return hotelReceipt();
@@ -2182,6 +2417,8 @@ const ALIGNS: Align[] = ['left', 'center', 'right'];
 
 const align = (value: any, fallback: Align): Align =>
   ALIGNS.includes(value) ? value : fallback;
+
+const VALIGNS: Valign[] = ['top', 'middle', 'bottom'];
 
 const bounded = (value: any, min: number, max: number, fallback: number) => {
   const number = Number(value);
@@ -2218,6 +2455,9 @@ const tableColumns = (value: any): TableColumn[] =>
       label: typeof item.label === 'string' ? item.label : undefined,
       width: bounded(item.width, 3, 100, 10),
       align: align(item.align, isNumericField(String(item.field)) ? 'right' : 'left'),
+      // Undefined means "whatever the renderer does with a cell this shape",
+      // which is the only answer a column saved before this existed can give.
+      valign: VALIGNS.includes(item.valign) ? (item.valign as Valign) : undefined,
       // Absent on every column saved before this existed, which is every one:
       // no paper gains a second line it did not ask for.
       subField: typeof item.subField === 'string' && item.subField ? item.subField : undefined,
