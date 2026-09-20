@@ -267,8 +267,7 @@ const LegacyRecordSearch = () => {
       <div className="mb-4">
         <h1 className="text-lg font-semibold">পুরনো ERP-র রেকর্ড</h1>
         <p className="text-sm text-gray-600">
-          কাস্টমারের নাম বা মোবাইল নম্বর দিয়ে খুঁজুন। RAAJRANI ERP থেকে নেওয়া
-          রেকর্ড — এখানে কোনো হিসাব হয় না, খাতায় কিছু পোস্ট হয় না।
+          কাস্টমারের নাম বা মোবাইল নম্বর দিয়ে খুঁজুন।
         </p>
       </div>
 
