@@ -1073,6 +1073,7 @@ const standardChallan = (): PrintTemplate => ({
   version: 1,
   docType: 'sales_challan',
   orientation: 'portrait',
+  pageSize: 'a4',
   fontSize: 13,
   rowsPerPage: 0,
   marginLeft: MARGIN_LEFT,
@@ -1332,6 +1333,7 @@ const standardOrder = (): PrintTemplate => ({
   version: 1,
   docType: 'sales_order',
   orientation: 'portrait',
+  pageSize: 'a4',
   fontSize: 13,
   rowsPerPage: 0,
   marginLeft: MARGIN_LEFT,
@@ -1490,6 +1492,7 @@ const hotelBill = (): PrintTemplate => ({
   version: 1,
   docType: 'hotel_bill',
   orientation: 'portrait',
+  pageSize: 'a4',
   fontSize: 13,
   rowsPerPage: 0,
   marginLeft: MARGIN_LEFT,
@@ -1674,6 +1677,7 @@ const hotelReceipt = (): PrintTemplate => ({
   version: 1,
   docType: 'hotel_money_receipt',
   orientation: 'portrait',
+  pageSize: 'a4',
   fontSize: 13,
   rowsPerPage: 0,
   marginLeft: MARGIN_LEFT,
@@ -1768,6 +1772,127 @@ const hotelReceipt = (): PrintTemplate => ({
   ],
 });
 
+/**
+ * The Electronics Sales Invoice -- built to match, field for field, the
+ * arrangement ElectronicsSalesInvoicePrintBase.tsx has always printed by
+ * default: two-column party/voucher info, the product table with warranty as
+ * a sub-line, a right-aligned totals column, the Installment Details table
+ * beside it, and a signature line under the person who printed it. A branch
+ * that never opens the designer gets exactly what it got before this
+ * existed -- see the plan's Verification task for how that is checked.
+ */
+const salesInvoice = (): PrintTemplate => ({
+  version: 1,
+  docType: 'sales_invoice',
+  orientation: 'portrait',
+  pageSize: 'a4',
+  fontSize: 13,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Sales Invoice',
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'party_name', label: 'Name' },
+        { field: 'vr_no', label: 'Invoice No' },
+        { field: 'mobile', label: 'Mobile', hideIfEmpty: true },
+        { field: 'vr_date', label: 'Date' },
+        { field: 'manual_address', label: 'Address', hideIfEmpty: true },
+        { field: 'notes', label: 'Notes', hideIfEmpty: true },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      totalRow: false,
+      totalRowLabel: 'Grand Total',
+      columns: [
+        { field: 'sl', label: '#', width: 6, align: 'center' },
+        {
+          field: 'product_name',
+          label: 'Product',
+          width: 54,
+          align: 'left',
+          // The room's second line, borrowed by name -- here it is the
+          // warranty, printed under the product exactly as
+          // getWarrantyInfo() always has.
+          subField: 'warranty',
+        },
+        { field: 'qty', label: 'Qty', width: 12, align: 'center' },
+        { field: 'price', label: 'Rate', width: 14, align: 'right' },
+        { field: 'amount', label: 'Amount', width: 14, align: 'right' },
+      ],
+    }),
+    band<TotalsBand>({
+      id: 'totals',
+      type: 'totals',
+      show: true,
+      align: 'right',
+      layout: 'rows',
+      items: [
+        { field: 'grand_total', label: 'Total Tk.', ruleAbove: false },
+        { field: 'tds_amount', label: '{tds_name} Tk.', hideIfEmpty: true },
+        { field: 'service_charge_amount', label: '{service_charge_name} Tk.', hideIfEmpty: true },
+        { field: 'carrying_outward_amount', label: '{carrying_outward_name} Tk.', hideIfEmpty: true },
+        { field: 'discount_amount', label: 'Discount Tk.', hideIfEmpty: true },
+        { field: 'net_amount', label: 'Net Tk.', ruleAbove: true },
+        { field: 'received_amount', label: 'Received Tk.' },
+        { field: 'due_amount', label: 'Due Tk.', ruleAbove: true },
+      ],
+    }),
+    band<InstallmentBand>({
+      id: 'installments',
+      type: 'installments',
+      show: true,
+      title: 'Installment Details',
+      bordered: true,
+    }),
+    band<InfoBand>({
+      id: 'amount-words',
+      type: 'info',
+      show: true,
+      columns: 1,
+      layout: 'inline',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [{ field: 'amount_words', label: 'In Word', hideIfEmpty: true }],
+    }),
+    band<SignatureBand>({
+      id: 'signature',
+      type: 'signature',
+      show: true,
+      space: 50,
+      items: [{ label: 'Authorized Signature', field: 'printed_by' }],
+    }),
+  ],
+});
+
 export const CHALLAN_PRESETS: PresetDef[] = [
   {
     id: 'standard',
@@ -1842,6 +1967,7 @@ export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTempla
   if (docType === 'sales_order') return standardOrder();
   if (docType === 'hotel_bill') return hotelBill();
   if (docType === 'hotel_money_receipt') return hotelReceipt();
+  if (docType === 'sales_invoice') return salesInvoice();
   return standardChallan();
 };
 
@@ -2133,6 +2259,13 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
                 field: typeof entry.field === 'string' && entry.field ? entry.field : undefined,
               })),
           };
+        case 'installments':
+          return {
+            ...base,
+            type: 'installments',
+            title: typeof item.title === 'string' && item.title.trim() ? item.title : 'Installment Details',
+            bordered: item.bordered !== false,
+          };
         default:
           return null;
       }
@@ -2158,6 +2291,11 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
     version: 1,
     docType,
     orientation: raw.orientation === 'landscape' ? 'landscape' : 'portrait',
+    // Read back with the same "trust nothing, fall back to this paper's own
+    // default" discipline as orientation beside it -- a template saved before
+    // this field existed (every layout saved before today) has no pageSize to
+    // read, and falls to 'a4' rather than to undefined.
+    pageSize: raw.pageSize === 'half' ? 'half' : (fallback.pageSize ?? 'a4'),
     fontSize: bounded(raw.fontSize, 7, 24, fallback.fontSize),
     rowsPerPage: bounded(raw.rowsPerPage, 0, 200, 0),
     // Capped at 60mm: A4 is 210mm across, and two 60mm margins already leave
@@ -2266,6 +2404,13 @@ export const ADDABLE_BANDS: AddableBand[] = [
     hint: 'Another row of ruled signature lines.',
     build: (id) =>
       band<SignatureBand>({ id, type: 'signature', show: true, space: 40, items: [{ label: 'Signature' }] }),
+  },
+  {
+    type: 'installments',
+    name: 'Installment Details',
+    hint: 'A repayment schedule, read off the sale\'s own installment plan.',
+    build: (id) =>
+      band<InstallmentBand>({ id, type: 'installments', show: true, title: 'Installment Details', bordered: true }),
   },
 ];
 
