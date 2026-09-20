@@ -264,7 +264,56 @@ const TradingBusinessSales = () => {
     }
   }, [warehouse?.data]);
 
+  /**
+   * A chosen sales order has already named its customer, and this invoice has
+   * to be booked against that same party, so while an order is in the box the
+   * customer box belongs to it. Picking another name here would leave the order
+   * and the invoice disagreeing about who bought the goods.
+   *
+   * The lock lasts only while an order that actually brought a party in is
+   * selected: an order whose label carried no customer leaves `account` empty,
+   * and locking an empty box would leave nothing to fill it with.
+   *
+   * Clearing the order releases the box again -- salesOrderNumberHandler clears
+   * only the order's own fields, so whoever it brought in stays put, now
+   * editable.
+   */
+  const customerLockedByOrder = Boolean(formData.salesOrderNumber && formData.account);
+
+  /**
+   * Refuses a customer change made under an order. `nextAccount` is the account
+   * about to be set; left out, the caller is bringing in a brand-new party,
+   * which is by definition not the one already there.
+   */
+  const refuseCustomerChange = (nextAccount?: unknown) => {
+    if (!customerLockedByOrder) return false;
+    if (
+      nextAccount !== undefined &&
+      String(nextAccount ?? '') === String(formData.account ?? '')
+    ) {
+      return false;
+    }
+
+    toast.info(
+      'Customer comes from the selected Sales Order. Change or clear the Sales Order to use another name.',
+    );
+
+    // The dropdown shows whatever was clicked the moment it was clicked, and
+    // nothing here re-renders on a refusal -- so without this the box would
+    // name one party while the invoice saved another. Setting the state it was
+    // already on puts the true name back (a fresh object, because the same one
+    // would not re-render anyone) and the stale click goes with it.
+    setSelectedCustomerOption(
+      formData.account
+        ? { value: formData.account, label: formData.accountName }
+        : null,
+    );
+    return true;
+  };
+
   const customerAccountHandler = (option: any) => {
+    if (refuseCustomerChange(option?.value)) return;
+
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
     const isCashCustomer = Number(option?.value) === 17;
@@ -287,6 +336,11 @@ const TradingBusinessSales = () => {
   };
 
   const openCustomerModal = (typedName = '') => {
+    // Adding a new customer replaces the one the order brought in, so it is
+    // the same change and gets the same refusal -- said at the door rather
+    // than after the party has been typed in.
+    if (refuseCustomerChange()) return;
+
     setCustomerDraftName(typedName);
     setShowCustomerModal(true);
   };

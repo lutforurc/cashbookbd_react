@@ -40,6 +40,7 @@ import {
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import TrackedProductField from '../../product-tracking/TrackedProductField';
 import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
+import { getDdlProduct } from '../../product/productSlice';
 import {
   buildVoucherAutoEditState,
   getCombinedVoucherOpenState,
@@ -150,6 +151,15 @@ const TradingCombinedEntry = () => {
   const [partyTarget, setPartyTarget] = useState<PartyTarget>('supplier');
   const [partyDraftName, setPartyDraftName] = useState('');
   const [editingCombinedNumber, setEditingCombinedNumber] = useState('');
+  /**
+   * The product each order is for. Kept here because an order only says what it
+   * is for at the moment it is picked -- inside the handler's response -- and
+   * the two of them can only be compared once the second one arrives.
+   */
+  const [orderProducts, setOrderProducts] = useState<{
+    purchase: { id: string; name: string } | null;
+    sales: { id: string; name: string } | null;
+  }>({ purchase: null, sales: null });
   const settings = useSelector((state: any) => state.settings);
   const showCombinedInvoiceNote = toBooleanFlag(settings?.data?.branch?.combined_invoice_note);
 
@@ -364,7 +374,60 @@ const TradingCombinedEntry = () => {
     focusField(nextFieldId, delay);
   };
 
+  /**
+   * An order has already named the party it belongs to -- the purchase order
+   * names the supplier, the sales order the customer -- and this entry has to
+   * be booked against that same party, so while an order is in the box the box
+   * beside it belongs to the order. Picking another name here would leave the
+   * order and the entry disagreeing about who was traded with.
+   *
+   * The lock lasts only while an order that actually brought a party in is
+   * selected: an order whose label carried no name leaves the account empty,
+   * and locking an empty box would leave nothing to fill it with.
+   *
+   * Clearing the order releases the box again -- the two order handlers clear
+   * only their own fields, so whoever the order brought in stays put, now
+   * editable.
+   */
+  const refusePartyChange = (target: PartyTarget, nextAccount?: unknown) => {
+    const orderNumber =
+      target === 'supplier' ? formData.purchaseOrderNumber : formData.salesOrderNumber;
+    const account =
+      target === 'supplier' ? formData.supplierAccount : formData.customerAccount;
+    const name = target === 'supplier' ? formData.supplierName : formData.customerName;
+
+    if (!orderNumber || !account) return false;
+    // `nextAccount` left out means a brand-new party is being brought in, which
+    // is by definition not the one already there.
+    if (nextAccount !== undefined && String(nextAccount ?? '') === String(account)) {
+      return false;
+    }
+
+    toast.info(
+      target === 'supplier'
+        ? 'Supplier comes from the selected Purchase Order. Change or clear the Purchase Order to use another name.'
+        : 'Customer comes from the selected Sales Order. Change or clear the Sales Order to use another name.',
+    );
+
+    // The dropdown shows whatever was clicked the moment it was clicked, and
+    // nothing here re-renders on a refusal -- so without this the box would
+    // name one party while the entry saved another. Setting the state it was
+    // already on puts the true name back (a fresh object, because the same one
+    // would not re-render anyone) and the stale click goes with it.
+    if (target === 'supplier') {
+      setSelectedSupplierOption({ value: account, label: name });
+    } else {
+      setSelectedCustomerOption({ value: account, label: name });
+    }
+    return true;
+  };
+
   const openPartyModal = (target: PartyTarget, typedName = '') => {
+    // Adding a new party replaces the one the order brought in, so it is the
+    // same change and gets the same refusal -- said at the door rather than
+    // after the party has been typed in.
+    if (refusePartyChange(target)) return;
+
     setPartyTarget(target);
     setPartyDraftName(typedName);
     setShowPartyModal(true);
@@ -393,6 +456,8 @@ const TradingCombinedEntry = () => {
   };
 
   const supplierAccountHandler = (option: any) => {
+    if (refusePartyChange('supplier', option?.value)) return;
+
     setSelectedSupplierOption(option || null);
     setFormData((prev) => ({
       ...prev,
@@ -402,6 +467,8 @@ const TradingCombinedEntry = () => {
   };
 
   const customerAccountHandler = (option: any) => {
+    if (refusePartyChange('customer', option?.value)) return;
+
     setSelectedCustomerOption(option || null);
     setFormData((prev) => ({
       ...prev,
@@ -447,8 +514,70 @@ const TradingCombinedEntry = () => {
     focusField('product', 150);
   };
 
+  /**
+   * Puts the order's own product into the line editor, the way picking it by
+   * hand would -- an order says what is being bought and sold, so the product
+   * follows from it, and the rates below are left to the order's rate.
+   *
+   * The order gives the product by name, so it is looked up in the product
+   * dropdown's list for its id and unit -- the same lookup the Purchase Invoice
+   * does off its orders. Anything the order does not name is left as it was.
+   */
+  const applyOrderProduct = async (orderOption: any) => {
+    const productName =
+      orderOption?.product_name ??
+      orderOption?.item_name ??
+      orderOption?.product ??
+      orderOption?.label_3 ??
+      '';
+    const unitName =
+      orderOption?.unit ?? orderOption?.unit_name ?? orderOption?.qty_unit ?? '';
+    const productId =
+      orderOption?.product_id ??
+      orderOption?.item_id ??
+      orderOption?.stock_item_id ??
+      orderOption?.product?.id ??
+      '';
+
+    let resolved = { id: String(productId || ''), name: String(productName || ''), unit: String(unitName || '') };
+
+    if (productName) {
+      try {
+        const response: any = await dispatch(getDdlProduct(String(productName)));
+        const matchedProduct = Array.isArray(response?.payload)
+          ? response.payload.find(
+            (item: any) =>
+              normalizeLookupText(item?.label) === normalizeLookupText(productName),
+          ) ?? response.payload[0]
+          : null;
+
+        if (matchedProduct) {
+          resolved = {
+            id: String(matchedProduct?.value ?? resolved.id),
+            name: String(matchedProduct?.label ?? resolved.name),
+            unit: String(matchedProduct?.label_5 ?? resolved.unit),
+          };
+        }
+      } catch (error) {
+        console.error('Failed to resolve product from order:', error);
+      }
+    }
+
+    if (!resolved.id && !resolved.name) return null;
+
+    setProductData((prev: any) => ({
+      ...prev,
+      product: resolved.id,
+      product_name: resolved.name,
+      unit: resolved.unit,
+    }));
+
+    return { id: resolved.id, name: resolved.name };
+  };
+
   const purchaseOrderHandler = async (option: any) => {
     if (!option) {
+      setOrderProducts((prev) => ({ ...prev, purchase: null }));
       setFormData((prev) => ({
         ...prev,
         purchaseOrderNumber: '',
@@ -548,6 +677,9 @@ const TradingCombinedEntry = () => {
       purchaseOrderText: option?.label || '',
     }));
 
+    const orderProduct = await applyOrderProduct(selectedOrderOption);
+    setOrderProducts((prev) => ({ ...prev, purchase: orderProduct }));
+
     // Prefill Purchase Rate from the selected purchase order's Order Rate (label_5).
     const purchaseOrderRate = selectedOrderOption?.label_5;
     if (purchaseOrderRate !== undefined && purchaseOrderRate !== null && String(purchaseOrderRate) !== '') {
@@ -557,6 +689,7 @@ const TradingCombinedEntry = () => {
 
   const salesOrderHandler = async (option: any) => {
     if (!option) {
+      setOrderProducts((prev) => ({ ...prev, sales: null }));
       setFormData((prev) => ({
         ...prev,
         salesOrderNumber: '',
@@ -655,12 +788,37 @@ const TradingCombinedEntry = () => {
       salesOrderText: option?.label || '',
     }));
 
+    const orderProduct = await applyOrderProduct(selectedOrderOption);
+    setOrderProducts((prev) => ({ ...prev, sales: orderProduct }));
+
     // Prefill Sales Rate from the selected sales order's Order Rate (label_5).
     const salesOrderRate = selectedOrderOption?.label_5;
     if (salesOrderRate !== undefined && salesOrderRate !== null && String(salesOrderRate) !== '') {
       setProductData((prev: any) => ({ ...prev, sales_price: String(salesOrderRate) }));
     }
   };
+
+  /**
+   * One entry writes a purchase and a sale of the same goods, so the two orders
+   * have to be for one product. Said and not enforced: the clerk may be part
+   * way through setting the entry up, and the orders themselves are what the
+   * vouchers hang off -- refusing the save would not fix either one.
+   */
+  useEffect(() => {
+    const { purchase, sales } = orderProducts;
+    if (!purchase || !sales) return;
+
+    const sameProduct =
+      purchase.id && sales.id
+        ? purchase.id === sales.id
+        : normalizeLookupText(purchase.name) === normalizeLookupText(sales.name);
+
+    if (!sameProduct) {
+      toast.info(
+        'The Purchase Order and the Sales Order are for different products. Check the two orders.',
+      );
+    }
+  }, [orderProducts]);
 
   const productSelectHandler = (option: any) => {
     setProductData((prev: any) => ({

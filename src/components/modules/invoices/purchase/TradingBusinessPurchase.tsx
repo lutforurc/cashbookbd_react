@@ -232,7 +232,57 @@ const TradingBusinessPurchase = () => {
     }
   }, [warehouse?.data]);
 
+  /**
+   * A chosen purchase order has already named its supplier, and this invoice has
+   * to be booked against that same party, so while an order is in the box the
+   * supplier box belongs to it. Picking another name here would leave the order
+   * and the invoice disagreeing about who was paid.
+   *
+   * The lock lasts only while an order that actually brought a party in is
+   * selected: an order whose label carried no supplier leaves `account` empty,
+   * and locking an empty box would leave nothing to fill it with.
+   *
+   * Clearing the order releases the box again -- orderHandler clears only the
+   * order's own fields, so whoever it brought in stays put, now editable.
+   */
+  const supplierLockedByOrder = Boolean(
+    formData.purchaseOrderNumber && formData.account,
+  );
+
+  /**
+   * Refuses a supplier change made under an order. `nextAccount` is the account
+   * about to be set; left out, the caller is bringing in a brand-new party,
+   * which is by definition not the one already there.
+   */
+  const refuseSupplierChange = (nextAccount?: unknown) => {
+    if (!supplierLockedByOrder) return false;
+    if (
+      nextAccount !== undefined &&
+      String(nextAccount ?? '') === String(formData.account ?? '')
+    ) {
+      return false;
+    }
+
+    toast.info(
+      'Supplier comes from the selected Purchase Order. Change or clear the Purchase Order to use another name.',
+    );
+
+    // The dropdown shows whatever was clicked the moment it was clicked, and
+    // nothing here re-renders on a refusal -- so without this the box would
+    // name one party while the invoice saved another. Setting the state it was
+    // already on puts the true name back (a fresh object, because the same one
+    // would not re-render anyone) and the stale click goes with it.
+    setSelectedSupplierOption(
+      formData.account
+        ? { value: formData.account, label: formData.accountName }
+        : null,
+    );
+    return true;
+  };
+
   const supplierAccountHandler = (option: any) => {
+    if (refuseSupplierChange(option?.value)) return;
+
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
     const isCashSupplier = Number(option?.value) === 17;
@@ -255,6 +305,11 @@ const TradingBusinessPurchase = () => {
   };
 
   const openCustomerModal = () => {
+    // Adding a new supplier replaces the one the order brought in, so it is
+    // the same change and gets the same refusal -- said at the door rather
+    // than after the party has been typed in.
+    if (refuseSupplierChange()) return;
+
     setShowCustomerModal(true);
   };
 
