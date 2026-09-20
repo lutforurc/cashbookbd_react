@@ -216,7 +216,22 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
 
                 {/* ðŸ‘‡ Force break after each page except the last */}
               </div>
-              <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
+              {/* ⚠️ PINNED ONLY WHEN THE REPORT DID NOT CUT ITS OWN PAGES. The
+                  Rows box starts at 0 (see CashBook.tsx's perPage state), which
+                  makes the whole report one block and leaves the breaks to the
+                  browser -- and a line left in the flow then prints once, under
+                  the last row, on whichever sheet the table happens to end.
+                  Pinned, it is repainted at the foot of every sheet instead.
+
+                  A numbered run keeps the in-flow line: one block per sheet, so
+                  `mt-auto` already holds each copy at the foot of its own sheet,
+                  and it can say which page this is. */}
+              <PrintFooter
+                fixed={pages.length === 1}
+                page={pIdx + 1}
+                total={pages.length}
+                fontSize={fs}
+              />
 
               {/* Page break between pages */}
 

@@ -80,10 +80,29 @@ const PrintFooter: React.FC<Props> = ({ page, total, fontSize, fixed, note, hide
     {fixed ? (
       <style>{`
         @media print {
+          /*
+            ⚠️ THIS LINE IS POSITIONED AGAINST THE SHEET, NOT AGAINST THE
+            REPORT. position:fixed is measured from the edge of the PAPER --
+            the one place in a print where the @page margins do not apply --
+            so left:0 would run the line off the report's own left edge and
+            into the strip the printer cannot reach. The margins come from
+            PrintStyles, which is the only thing that still knows them.
+
+            What makes it safe is where it lands: bottom:0 is the paper's own
+            edge, and the footer sits in the band the @page margin has already
+            taken out of the content area. So the rows above it can never reach
+            it, on any sheet, however full the page is -- which is the whole
+            reason it is fixed rather than in the flow.
+
+            And it is REPAINTED ON EVERY SHEET the document runs to, which is
+            what a report that leaves its page breaks to the browser needs: an
+            in-flow footer is printed once, on the last sheet, because that is
+            where the flow ends.
+          */
           .print-footer-fixed {
             position: fixed;
-            left: 0;
-            right: 0;
+            left: var(--print-page-left, 10mm);
+            right: var(--print-page-right, 8mm);
             bottom: 0;
             margin-top: 0;
           }
@@ -98,7 +117,10 @@ const PrintFooter: React.FC<Props> = ({ page, total, fontSize, fixed, note, hide
         className
       }
     >
-      <span className="text-left">
+      {/* ⚠️ The software line never wraps. Pinned to the sheet, the footer
+          grows UPWARD when it wraps, straight into the band the @page margin
+          left for content -- and it would do it on every sheet at once. */}
+      <span className="whitespace-nowrap text-left">
         <ReportFooter inline />
       </span>
       {hidePrintedAt ? null : (
@@ -107,7 +129,14 @@ const PrintFooter: React.FC<Props> = ({ page, total, fontSize, fixed, note, hide
           Printed: {chartDateTime(new Date().toISOString())}
         </span>
       )}
-      {page ? (
+      {/* ⚠️ A PINNED LINE CARRIES NO PAGE COUNT, even when it is handed one.
+          The browser repaints it on every sheet, so it does not know which
+          sheet it is standing on -- and a report that renders a copy per page
+          block it cut itself would have those copies disagree, printing
+          "Page 1 of 3" straight through "Page 2 of 3" on every sheet. A report
+          that wants the count has to keep the line in the flow, where it
+          belongs to one page block and knows which. */}
+      {page && !fixed ? (
         <span className="whitespace-nowrap text-right">
           Page {page}
           {total ? ` of ${total}` : ''}

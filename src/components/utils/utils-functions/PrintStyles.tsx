@@ -42,6 +42,25 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4
   const printedWidth = orientation === 'landscape' ? dims.height : dims.width;
   const printedHeight = orientation === 'landscape' ? dims.width : dims.height;
 
+  /**
+   * The sheet's margins, written down once.
+   *
+   * ⚠️ THEY ARE STATED IN TWO PLACES THAT CANNOT SEE EACH OTHER -- `@page`
+   * below, and the pinned footer a report puts at the foot of every sheet,
+   * which is positioned from the edge of the PAPER rather than from the
+   * content area. Left as two literals they drift, and the drift shows up as a
+   * footer line running out past the report's own left edge and into the strip
+   * the printer cannot reach. `@page` cannot read a var(), so the numbers live
+   * here and are interpolated into both.
+   *
+   * The left edge is the wider one because that is the edge that gets punched.
+   * The bottom is the band the pinned footer sits in: the footer is placed at
+   * `bottom: 0` -- the paper's own edge -- which puts it inside the bottom
+   * margin, the one band the @page rule has already taken away from the
+   * content. That is why it cannot overlap anything.
+   */
+  const MARGIN = { top: '6mm', right: '8mm', bottom: '5mm', left: '10mm' };
+
   return (
     <style>
       {`
@@ -51,7 +70,7 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4
              moves together; nothing else in the app states it. */
           @page {
             size: ${printedWidth} ${printedHeight};
-            margin: 6mm 8mm 5mm 10mm;
+            margin: ${MARGIN.top} ${MARGIN.right} ${MARGIN.bottom} ${MARGIN.left};
           }
 
           .no-print { display: none !important; }
@@ -62,9 +81,15 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4
           /* The height a full page of content comes to, published as a
              variable so a report with a page class of its own -- a challan
              page, a landscape cash-and-bank page -- can stand exactly as tall
-             without doing the arithmetic again. */
+             without doing the arithmetic again.
+
+             The margins come with it, for the one thing that is positioned
+             against the SHEET rather than against the content: a footer pinned
+             to the foot of every page. See PrintFooter. */
           :root {
-            --print-page-height: calc(${printedHeight} - 6mm - 5mm - 1mm);
+            --print-page-height: calc(${printedHeight} - ${MARGIN.top} - ${MARGIN.bottom} - 1mm);
+            --print-page-left: ${MARGIN.left};
+            --print-page-right: ${MARGIN.right};
           }
 
           .print-page {

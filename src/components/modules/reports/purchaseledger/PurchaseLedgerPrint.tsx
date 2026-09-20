@@ -395,14 +395,24 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                 </table>
               </div>
 
-              {/* `fixed`, alongside the page count, not instead of it: with
-                  "All" the default row-per-page choice (see
-                  PurchaseLedger.tsx's perPage state), this page is one
-                  unbroken flex box, and `mt-auto` alone only reaches the foot
-                  of a box whose own height is still the sheet's -- a box
-                  that grew past it has nothing left for `mt-auto` to push
-                  into. `fixed` pins the line to the physical page instead. */}
-              <PrintFooter fixed page={pIdx + 1} total={pages.length} fontSize={fs} />
+              {/* ⚠️ PINNED ONLY WHEN THE REPORT DID NOT CUT ITS OWN PAGES. The
+                  Rows box starts at 0 (see PurchaseLedger.tsx's perPage state),
+                  which makes the whole report one unbroken flex box -- and
+                  `mt-auto` alone only reaches the foot of a box whose own
+                  height is still the sheet's. A box that grew past it has
+                  nothing left for `mt-auto` to push into, so the line came to
+                  rest under the last row instead. Pinned, it is repainted at
+                  the foot of every sheet.
+
+                  A numbered run keeps the in-flow line: one block per sheet,
+                  so `mt-auto` already holds each copy at the foot of its own
+                  sheet, and it can say which page this is. */}
+              <PrintFooter
+                fixed={pages.length === 1}
+                page={pIdx + 1}
+                total={pages.length}
+                fontSize={fs}
+              />
 
               {pIdx !== pages.length - 1 && <div className="page-break" />}
 

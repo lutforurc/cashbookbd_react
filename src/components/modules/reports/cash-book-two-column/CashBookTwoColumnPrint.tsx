@@ -152,7 +152,20 @@ const CashBookTwoColumnPrint = React.forwardRef<HTMLDivElement, Props>(
                 </tbody>
               </table>
 
-              <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fontSize} />
+              {/* ⚠️ PINNED ONLY WHEN THE REPORT DID NOT CUT ITS OWN PAGES. The
+                  Rows box starts at 0 (see CashBookTwoColumn.tsx's rowsPerPage
+                  state), which makes the whole report one block and leaves the
+                  breaks to the browser -- and a line left in the flow then
+                  prints once, under the last row, on whichever sheet the table
+                  happens to end. Pinned, it is repainted at the foot of every
+                  sheet instead. A numbered run keeps the in-flow line, where
+                  `mt-auto` holds each copy at the foot of its own sheet. */}
+              <PrintFooter
+                fixed={pages.length === 1}
+                page={pageIndex + 1}
+                total={pages.length}
+                fontSize={fontSize}
+              />
 
               {!isLast ? <div className="page-break" /> : null}
             </div>

@@ -120,7 +120,12 @@ const AgeingPrint = React.forwardRef<HTMLDivElement, Props>(
           <div className="border-t border-black px-6 pt-1">Checked by</div>
         </div>
 
-        <PrintFooter />
+        {/* ⚠️ `fixed`, and the report is why. This is one long table whose
+            page breaks are the browser's -- a footer left in the flow is
+            printed once, at the end of the flow, which is the last sheet. On a
+            five-sheet ageing report the four sheets with no line on them are
+            the ones somebody is reading a figure off. See PrintFooter. */}
+        <PrintFooter fixed />
       </div>
     </div>
   ),

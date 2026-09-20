@@ -134,7 +134,9 @@ const BankReconciliationPrint = React.forwardRef<HTMLDivElement, Props>(
           <div className="border-t border-black px-6 pt-1">Approved by</div>
         </div>
 
-        <PrintFooter />
+        {/* Pinned to every sheet: the page breaks here are the browser's, so a
+            footer in the flow prints only on the last one. See PrintFooter. */}
+        <PrintFooter fixed />
       </div>
     </div>
   ),

@@ -520,9 +520,14 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                 </table>
               </div>
 
-              {/* `fixed`, alongside the page count, not instead of it -- see
-                  the same note in PurchaseLedgerPrint.tsx. */}
-              <PrintFooter fixed page={pIdx + 1} total={pages.length} fontSize={fs} />
+              {/* Pinned only when the report did not cut its own pages -- see
+                  the full note in PurchaseLedgerPrint.tsx. */}
+              <PrintFooter
+                fixed={pages.length === 1}
+                page={pIdx + 1}
+                total={pages.length}
+                fontSize={fs}
+              />
 
               {pIdx !== pages.length - 1 && <div className="page-break" />}
             </div>

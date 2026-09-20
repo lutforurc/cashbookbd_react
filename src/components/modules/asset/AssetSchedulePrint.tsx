@@ -193,7 +193,9 @@ const AssetSchedulePrint = React.forwardRef<HTMLDivElement, Props>(
           </tbody>
         </table>
 
-        <PrintFooter />
+        {/* Pinned to every sheet: the page breaks here are the browser's, so a
+            footer in the flow prints only on the last one. See PrintFooter. */}
+        <PrintFooter fixed />
       </div>
     </div>
   ),
