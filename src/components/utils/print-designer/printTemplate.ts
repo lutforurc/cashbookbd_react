@@ -36,7 +36,7 @@
  * against PrintTemplateController::DOC_TYPES. A new one needs a row in both
  * lists, and renaming one orphans every layout saved under the old name.
  */
-export type DocType = 'sales_challan' | 'sales_order' | 'hotel_money_receipt' | 'hotel_bill';
+export type DocType = 'sales_challan' | 'sales_order' | 'hotel_money_receipt' | 'hotel_bill' | 'sales_invoice';
 
 /**
  * The papers the designer offers, in the order it offers them.
@@ -65,6 +65,11 @@ export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
     id: 'hotel_bill',
     name: 'Hotel — Bill',
     hint: '',
+  },
+  {
+    id: 'sales_invoice',
+    name: 'Sales Invoice',
+    hint: 'What the customer takes home with the goods.',
   },
 ];
 
@@ -151,6 +156,7 @@ export type BandType =
   | 'totals'
   | 'notes'
   | 'signature'
+  | 'installments'
   | 'spacer';
 
 type BandBase = {
@@ -263,6 +269,22 @@ export type TableBand = BandBase & {
   totalRowLabel: string;
 };
 
+/**
+ * The Installment Details table -- a sale's own repayment schedule, printed
+ * on its invoice. Unlike TableBand this has no columns to configure: its
+ * three (Sl, Due Date, Amount) are fixed by the data shape
+ * (`installments[].due_date`, `installments[].amount`), so there is nothing
+ * for a tenant to choose there. Only whether it shows, whether it is ruled,
+ * and what it is called are template-level decisions -- the same level of
+ * configurability as NotesBand and SignatureBand, not TableBand's.
+ */
+export type InstallmentBand = BandBase & {
+  type: 'installments';
+  /** "Installment Details" by default -- renameable like every other title. */
+  title: string;
+  bordered: boolean;
+};
+
 export type TotalsBand = BandBase & {
   type: 'totals';
   align: Align;
@@ -329,6 +351,7 @@ export type Band =
   | TotalsBand
   | NotesBand
   | SignatureBand
+  | InstallmentBand
   | SpacerBand;
 
 export type PrintTemplate = {
@@ -336,6 +359,15 @@ export type PrintTemplate = {
   version: 1;
   docType: DocType;
   orientation: 'portrait' | 'landscape';
+  /**
+   * A4 unless the paper is meant to be a small receipt -- 'half' is exactly
+   * the 210mm x 148.5mm sheet the old Electronics Sales Invoice's
+   * half-portrait/half-landscape variants printed on. Defaults to 'a4' at
+   * every construction site in this file, so the four papers that existed
+   * before this field did are unaffected: nothing about a challan or a hotel
+   * bill's page shrinks because a different paper started using this.
+   */
+  pageSize: 'a4' | 'half';
   fontSize: number;
   /**
    * Product lines per printed page. 0 keeps the whole document on one page,
