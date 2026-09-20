@@ -297,6 +297,16 @@ export type InstallmentBand = BandBase & {
   /** Always exactly {field: 'sl'|'due_date'|'amount'}, in whatever order and
    *  width/align a tenant has set. See DEFAULT_INSTALLMENT_COLUMNS. */
   columns: TableColumn[];
+  /**
+   * Share of the page's printable width the WHOLE block stands, in percent --
+   * 100 is edge to edge (within the page's own margins), a smaller share
+   * leaves the rest of the row blank to its right. Left-aligned rather than
+   * offering a side to dock it against: every existing use of this band
+   * prints it before the totals and the signature, where the paper still
+   * reads left to right, and a lone alignment control for a block nothing
+   * else stands beside would be a knob with only one sensible position.
+   */
+  width: number;
 };
 
 export type TotalsBand = BandBase & {
@@ -1959,6 +1969,7 @@ const salesInvoice = (): PrintTemplate => ({
       title: 'Installment Details',
       bordered: true,
       columns: DEFAULT_INSTALLMENT_COLUMNS,
+      width: 100,
     }),
     band<InfoBand>({
       id: 'amount-words',
@@ -2474,6 +2485,9 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
             title: typeof item.title === 'string' && item.title.trim() ? item.title : 'Installment Details',
             bordered: item.bordered !== false,
             columns: installmentColumns(item.columns),
+            // 100 for a template saved before this existed -- edge to edge,
+            // exactly what it always drew.
+            width: bounded(item.width, 10, 100, 100),
           };
         default:
           return null;
@@ -2626,6 +2640,7 @@ export const ADDABLE_BANDS: AddableBand[] = [
         title: 'Installment Details',
         bordered: true,
         columns: DEFAULT_INSTALLMENT_COLUMNS,
+        width: 100,
       }),
   },
 ];

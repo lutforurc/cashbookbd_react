@@ -817,7 +817,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       const border = band.bordered ? 'border border-gray-800' : '';
 
       return (
-        <div className={`mb-2 w-full ${border}`}>
+        <div className={`mb-2 ${border}`} style={{ width: `${band.width}%` }}>
           {band.title ? (
             <h2 className="w-full border-b border-gray-800 px-2 py-0.5 text-center text-[0.9em] font-semibold">
               {band.title}

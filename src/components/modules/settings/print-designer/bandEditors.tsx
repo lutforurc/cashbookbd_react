@@ -879,11 +879,24 @@ export const InstallmentBandEditor: React.FC<{
           className={CONTROL}
         />
       </div>
-      <CheckRow
-        checked={band.bordered}
-        onChange={(bordered) => onChange({ ...band, bordered })}
-        label="Draw a border around it"
-      />
+      <div className="grid grid-cols-2 gap-2">
+        <div className="self-end">
+          <CheckRow
+            checked={band.bordered}
+            onChange={(bordered) => onChange({ ...band, bordered })}
+            label="Draw a border around it"
+          />
+        </div>
+        <NumberBox
+          label="Box width (% of the page)"
+          value={band.width}
+          min={10}
+          max={100}
+          step={5}
+          hint="100 runs edge to edge; less leaves the rest of the row blank."
+          onChange={(width) => onChange({ ...band, width })}
+        />
+      </div>
 
       <div>
         <span className={SUB_LABEL}>Columns</span>
