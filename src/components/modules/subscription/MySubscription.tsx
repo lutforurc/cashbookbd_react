@@ -4,6 +4,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import routes from '../../services/appRoutes';
 import { fetchCurrentSubscription } from './subscriptionSlice';
 import Link from '../../utils/others/Link';
+import { formatDayMonthYear } from '../../utils/utils-functions/formatDate';
 
 const MySubscription: React.FC = () => {
   const dispatch = useDispatch<any>();
@@ -60,7 +61,7 @@ const MySubscription: React.FC = () => {
                   Start Date
                 </p>
                 <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
-                  {current.start_date || '-'}
+                  {formatDayMonthYear(current.start_date)}
                 </p>
               </div>
               <div className="rounded border border-[rgb(var(--c-border))] bg-gray-50 p-4 dark:bg-gray-900/30">
@@ -68,7 +69,7 @@ const MySubscription: React.FC = () => {
                   End Date
                 </p>
                 <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
-                  {current.end_date || '-'}
+                  {formatDayMonthYear(current.end_date)}
                 </p>
               </div>
               <div className="rounded border border-[rgb(var(--c-border))] bg-gray-50 p-4 dark:bg-gray-900/30">
@@ -76,7 +77,7 @@ const MySubscription: React.FC = () => {
                   Trial Ends
                 </p>
                 <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
-                  {current.trial_end_at || '-'}
+                  {formatDayMonthYear(current.trial_end_at)}
                 </p>
               </div>
               <div className="rounded border border-[rgb(var(--c-border))] bg-gray-50 p-4 dark:bg-gray-900/30">
@@ -84,7 +85,7 @@ const MySubscription: React.FC = () => {
                   Next Billing Date
                 </p>
                 <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
-                  {current.next_billing_date || '-'}
+                  {formatDayMonthYear(current.next_billing_date)}
                 </p>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import type { SubscriptionAccessState } from '../modules/subscription/subscriptionSlice';
 
 type Props = {
   loading?: boolean;
@@ -9,25 +10,26 @@ type Props = {
   current?: {
     status?: string;
     access_status?: string;
+    access_state?: SubscriptionAccessState;
   } | null;
   allowedPaths?: string[];
 };
 
-const restrictedStatuses = new Set(['expired', 'suspended', 'cancelled']);
-const restrictedAccessStatuses = new Set(['billing_only', 'blocked']);
-
-const isDateExpired = (value?: string | null): boolean => {
-  if (!value) return false;
-
-  const expiry = new Date(value);
-  if (Number.isNaN(expiry.getTime())) return false;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  return expiry < today;
-};
-
+/**
+ * Keeps a blocked company out of the screens it has stopped paying for.
+ *
+ * ⚠️ This is NOT the lock -- SubscriptionActive on the API is. It used to be,
+ * and that was the whole problem: the rule lived only in the browser, so the
+ * Android app and anything else holding a token carried on working after a
+ * subscription lapsed. This is now the polite half, redirecting to a screen
+ * that explains rather than letting every call on the page fail with a 403.
+ *
+ * ⚠️ And it no longer works the dates out for itself. It reads access_state,
+ * which SubscriptionGate decided, because a second implementation of one rule
+ * is a second answer: the old copy treated any past end_date as shut, which
+ * would now slam the door on a company the server is still letting in on its
+ * grace period.
+ */
 const RequireSubscription: React.FC<Props> = ({
   loading = false,
   initialized = false,
@@ -64,15 +66,13 @@ const RequireSubscription: React.FC<Props> = ({
     );
   }
 
-  const hasRestrictedStatusByState =
-    (current.status && restrictedStatuses.has(current.status)) ||
-    (current.access_status && restrictedAccessStatuses.has(current.access_status));
+  // An older API that has not been told about access_state yet: fall back to
+  // the stored column, where 'blocked' means the same thing and 'limited'
+  // (grace) is deliberately not in the list.
+  const state: SubscriptionAccessState =
+    current.access_state ?? (current.access_status === 'blocked' ? 'blocked' : 'full');
 
-  const hasRestrictedStatusByDate =
-    isDateExpired((current as any)?.end_date) ||
-    (current?.status === 'trialing' && isDateExpired((current as any)?.trial_end_at));
-
-  if (!hasRestrictedStatusByState && !hasRestrictedStatusByDate) return <Outlet />;
+  if (state !== 'blocked') return <Outlet />;
 
   return (
     <Navigate

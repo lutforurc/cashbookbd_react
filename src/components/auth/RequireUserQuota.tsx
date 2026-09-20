@@ -4,8 +4,6 @@ import { useSelector } from 'react-redux';
 import httpService from '../services/httpService';
 import { API_USER_LIST_URL } from '../services/apiRoutes';
 
-const SUBSCRIPTION_EXEMPT_COMPANY_IDS = new Set([1]);
-
 const extractUserTotal = (payload: any): number => {
   const total =
     payload?.data?.data?.total ??
@@ -16,21 +14,33 @@ const extractUserTotal = (payload: any): number => {
   return Number(total || 0);
 };
 
+/**
+ * Sends a company that has already used up its plan's user seats to
+ * /no-access before the Add User form even opens, rather than letting them
+ * fill it in and meet the server's refusal on submit.
+ *
+ * ⚠️ No company is exempt here, and that is deliberate -- there used to be a
+ * `SUBSCRIPTION_EXEMPT_COMPANY_IDS = new Set([1])`, mirroring the same
+ * mistake RequireSubscription had: every tenant has its own database and is
+ * company 1 inside it, so that exempted every customer rather than the
+ * platform. The API's own check (UserController::ensureUserQuotaAvailable)
+ * never consulted any exemption list to begin with, so this simply matches
+ * what the server already does: a plan with no max_users (null) is
+ * unlimited, and nothing here blocks it.
+ */
 const RequireUserQuota: React.FC = () => {
   const location = useLocation();
   const currentSubscription = useSelector((state: any) => state.subscription?.current);
-  const currentCompanyId = Number(useSelector((state: any) => state.auth?.me?.company_id) || 0);
   const [loading, setLoading] = useState(true);
   const [userTotal, setUserTotal] = useState(0);
 
-  const isSubscriptionExemptCompany = SUBSCRIPTION_EXEMPT_COMPANY_IDS.has(currentCompanyId);
   const maxUsers = currentSubscription?.max_users;
   const isLimited = typeof maxUsers === 'number' && maxUsers > 0;
 
   useEffect(() => {
     let ignore = false;
 
-    if (isSubscriptionExemptCompany || !isLimited) {
+    if (!isLimited) {
       setLoading(false);
       return () => {
         ignore = true;
@@ -57,11 +67,9 @@ const RequireUserQuota: React.FC = () => {
     return () => {
       ignore = true;
     };
-  }, [isLimited, isSubscriptionExemptCompany, maxUsers]);
+  }, [isLimited, maxUsers]);
 
   if (loading) return null;
-
-  if (isSubscriptionExemptCompany) return <Outlet />;
 
   if (isLimited && userTotal >= maxUsers) {
     return (

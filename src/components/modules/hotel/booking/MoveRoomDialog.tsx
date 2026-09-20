@@ -268,8 +268,8 @@ const MoveRoomDialog = ({ booking, onClose, onMoved }: Props) => {
   return (
     <ConfirmModal
       show={Boolean(booking)}
-      title="Move to another room"
-      confirmLabel="Move the guest"
+      title="Transfer to another room"
+      confirmLabel="Transfer the guest"
       cancelLabel="Keep them where they are"
       className="bg-primary hover:bg-primary/90"
       loading={saving || reading}

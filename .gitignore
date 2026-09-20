@@ -32,3 +32,13 @@ dist-ssr
 # close. It is a lock, not content -- committing one leaves a stale lock in the
 # repository for everyone who checks it out.
 ~$*
+
+# Local tooling, checked out here to be run against this repository rather than
+# to be part of it. None of it is application code, and graphify and markitdown
+# between them are about 70MB of vendored clones. graphify-out/ is their
+# generated output and matches at any depth, which covers src/graphify-out/.
+claude-mem-lite/
+graphify/
+graphify-out/
+markitdown/
+ponytail/

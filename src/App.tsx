@@ -42,6 +42,7 @@ import AddCategory from './components/modules/category/AddCategory';
 import EditCategory from './components/modules/category/EditCategory';
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import CashBookTwoColumn from './components/modules/reports/cash-book-two-column/CashBookTwoColumn';
+import VoucherRegister from './components/modules/reports/voucher-register/VoucherRegister';
 import BankBook from './components/modules/reports/bankbook/BankBook';
 import CashBankReceivedPayment from './components/modules/reports/cash-bank-received-payment/CashBankReceivedPayment';
 import Ledger from './components/modules/reports/ledger/Ledger';
@@ -245,10 +246,23 @@ import HighlightRules from './components/modules/highlight-rules/HighlightRules'
 import SubscriptionPlanList from './components/modules/subscription/SubscriptionPlanList';
 import SubscriptionPlanForm from './components/modules/subscription/SubscriptionPlanForm';
 import RequireUserQuota from './components/auth/RequireUserQuota';
+import RequireBranchQuota from './components/auth/RequireBranchQuota';
 import ResellerAdmin from './components/modules/reseller/ResellerAdmin';
 import ResellerDashboard from './components/modules/reseller/ResellerDashboard';
 
-const SUBSCRIPTION_EXEMPT_COMPANY_IDS = new Set([1]);
+/*
+ * There is no exempt-company list here any more, and its absence is the point.
+ *
+ * It used to be `new Set([1])`, mirroring PLATFORM_COMPANY_IDS on the API. But
+ * every tenant has its own database -- aftradingdb, krfdb, sonycybernetdb, a
+ * dozen more -- and inside each one the customer IS company 1. So the list that
+ * was meant to exempt the platform exempted every customer there is, and no
+ * company was ever stopped for not paying.
+ *
+ * Whether a company is metered is now decided in one place, SubscriptionGate on
+ * the API, and set per deployment with SUBSCRIPTION_EXEMPT_COMPANY_IDS in .env.
+ * The browser reads the verdict; it does not hold an opinion of its own.
+ */
 
 
 
@@ -263,8 +277,6 @@ function App() {
   const companyLogo = settings?.data?.company?.company_logo;
   const companyLogoDark = settings?.data?.company?.company_logo_dark;
   const subscription = useSelector((s: any) => s.subscription);
-  const currentCompanyId = Number(me?.company_id || 0);
-  const bypassSubscriptionEnforcement = SUBSCRIPTION_EXEMPT_COMPANY_IDS.has(currentCompanyId);
 
   const userPermissions = settings?.data?.permissions ?? [];
   const permissionsLoading = settings?.loading ?? false;
@@ -320,7 +332,6 @@ function App() {
                   loading={subscription.loadingCurrent}
                   initialized={subscription.initialized}
                   error={subscription.error}
-                  bypass={bypassSubscriptionEnforcement}
                   current={subscription.current}
                   allowedPaths={subscriptionSafeRoutes}
                 />
@@ -411,7 +422,11 @@ function App() {
               {/* Settings */}
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.view']} loading={permissionsLoading} />}>
                 <Route path={routes.branch_list} element={<BranchList />} />
-                <Route path={routes.branch_add} element={<AddBranch />} />
+                {/* Only the ADD route is quota-checked -- editing an existing
+                    branch creates nothing, so it has no seat to be short of. */}
+                <Route element={<RequireBranchQuota />}>
+                  <Route path={routes.branch_add} element={<AddBranch />} />
+                </Route>
                 <Route path={routes.branch_edit} element={<AddBranch />} />
                 <Route path={routes.company_edit} element={<EditCompany />} />
                 {/* The challan layout belongs to a branch, the same as its pad
@@ -892,6 +907,9 @@ function App() {
                 path={routes.report_cashbook_two_column}
                 element={<CashBookTwoColumn user={me} />}
               />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.register']} loading={permissionsLoading} />}>
+              <Route path={routes.report_voucher_register} element={<VoucherRegister user={me} />} />
             </Route>
             {/* Each of these is offered by its own sidebar permission. Guarded
                 separately so 'bank.book' opens the bank book and nothing else. */}

@@ -24,6 +24,13 @@ export type SubscriptionStatus =
 
 export type SubscriptionAccessStatus = 'full' | 'limited' | 'billing_only' | 'blocked';
 
+/**
+ * What the server decided: working, inside the grace window, or shut out.
+ * Distinct from access_status, which is the stored column this is derived
+ * from -- 'limited' there means 'grace' here.
+ */
+export type SubscriptionAccessState = 'full' | 'grace' | 'blocked';
+
 export interface SubscriptionFeature {
   feature_key: string;
   feature_name: string;
@@ -38,6 +45,7 @@ export interface SubscriptionPlan {
   price: number;
   currency: string;
   trial_days: number;
+  grace_days: number;
   max_employees?: number | null;
   max_customers?: number | null;
   max_products?: number | null;
@@ -59,6 +67,7 @@ export interface SubscriptionPlanPayload {
   price: number;
   currency: string;
   trial_days: number;
+  grace_days: number;
   max_employees?: number | null;
   max_customers?: number | null;
   max_products?: number | null;
@@ -85,6 +94,25 @@ export interface CurrentSubscription {
   trial_end_at?: string | null;
   next_billing_date?: string | null;
   grace_period_end_at?: string | null;
+  // SubscriptionGate's own verdict. The client renders this rather than
+  // working it out from the dates again -- two implementations of one rule is
+  // how the browser used to disagree with the server about who was locked out.
+  access_state?: SubscriptionAccessState;
+  grace_days_left?: number | null;
+  // null/absent = unlimited. Read by RequireUserQuota to block Add User before
+  // the form opens.
+  max_users?: number | null;
+  // The rest of the Limits card. max_branches feeds RequireBranchQuota the
+  // same way max_users feeds RequireUserQuota; the other four have no
+  // client-side pre-check screen (max_transactions_per_month is enforced
+  // purely server-side) but are here so the card can show all seven limits
+  // honestly.
+  max_employees?: number | null;
+  max_customers?: number | null;
+  max_products?: number | null;
+  max_devices_per_user?: number | null;
+  max_branches?: number | null;
+  max_transactions_per_month?: number | null;
   notes?: string | null;
   features?: SubscriptionFeature[];
 }

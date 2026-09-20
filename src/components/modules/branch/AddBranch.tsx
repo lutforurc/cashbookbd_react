@@ -75,6 +75,8 @@ interface branchItem {
   invoice_label: string;
   decimal_places: number;
   dashboard_top_sales_days: number;
+  dashboard_top_purchase_days: number;
+  dashboard_due_soon_days: number;
   device_identifier_text?: string;
   status: string;
   warranty_controll: boolean;
@@ -381,6 +383,8 @@ const AddBranch = () => {
     invoice_label: '',
     decimal_places: 0,
     dashboard_top_sales_days: 0,
+    dashboard_top_purchase_days: 0,
+    dashboard_due_soon_days: 0,
     device_identifier_text: '',
     status: '',
     warranty_controll: false,
@@ -648,6 +652,10 @@ const AddBranch = () => {
             ? ''
             : String(b.device_identifier_text),
         dashboard_top_sales_days: b.dashboard_top_sales_days != null ? b.dashboard_top_sales_days : 0,
+        dashboard_top_purchase_days:
+          b.dashboard_top_purchase_days != null ? b.dashboard_top_purchase_days : 0,
+        dashboard_due_soon_days:
+          b.dashboard_due_soon_days != null ? b.dashboard_due_soon_days : 0,
 
         // ðŸ”‘ CHECKBOX FIX
         is_opening: toBooleanFlag(b.is_opening),
@@ -1302,7 +1310,39 @@ const AddBranch = () => {
                         name="dashboard_top_sales_days"
                         placeholder={'Dashboard Top Sales Days'}
                         label={'Dashboard Top Sales Days'}
-                        description="How many days back the dashboard's top-selling list counts. 1 means today alone; left empty it looks back 7 days."
+                        description="How many days back the dashboard's top-selling list counts. 1 means today alone; left empty it looks back 1 day."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+
+                      {/* ⚠️ ITS OWN WINDOW, BECAUSE BUYING IS A DIFFERENT
+                          RHYTHM FROM SELLING. A shop restocks a line monthly,
+                          so a seven-day purchase list is usually the week the
+                          delivery happened to land. Empty means it follows the
+                          sales window above, which is what every branch had
+                          before this setting existed. */}
+                      <InputElement
+                        id="dashboard_top_purchase_days"
+                        value={formData.dashboard_top_purchase_days || ''}
+                        name="dashboard_top_purchase_days"
+                        placeholder={'Dashboard Top Purchase Days'}
+                        label={'Dashboard Top Purchase Days'}
+                        description="How many days back the dashboard's top-purchase list counts. Left empty it follows the top-sales window above."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+
+                      {/* How far ahead the dashboard's installments card
+                          looks. 7 by default: a weekly look is what a shop can
+                          act on, while the installment schedule itself is
+                          monthly. */}
+                      <InputElement
+                        id="dashboard_due_soon_days"
+                        value={formData.dashboard_due_soon_days || ''}
+                        name="dashboard_due_soon_days"
+                        placeholder={'Dashboard Due Soon Days'}
+                        label={'Dashboard Due Soon Days'}
+                        description="How many days ahead the dashboard's installments card looks. Left empty it looks 7 days ahead."
                         className={''}
                         onChange={handleOnChange}
                       />

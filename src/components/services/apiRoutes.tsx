@@ -346,6 +346,8 @@ export const API_REPORT_EXPENSE_DETAILS_URL = `${API_BASE_URL}/reports/expense-r
 export const API_REPORT_DUE_LIST_URL = `${API_BASE_URL}/reports/duelist`;
 // The cash book with a bank column beside the cash one.
 export const API_REPORT_CASH_BOOK_TWO_COLUMN_URL = `${API_BASE_URL}/reports/cash-book-two-column`;
+export const API_REPORT_VOUCHER_REGISTER_URL = `${API_BASE_URL}/reports/voucher-register`;
+export const API_REPORT_VOUCHER_REGISTER_VOUCHERS_URL = `${API_BASE_URL}/reports/voucher-register/vouchers`;
 export const API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL = `${API_BASE_URL}/reports/ledger-with-product`;
 // Company & Product-wise financial tracking
 export const API_PRODUCT_TRACKING_SETTINGS_URL = `${API_BASE_URL}/product-tracking/settings`;
@@ -776,6 +778,23 @@ export const API_REPORT_PROJECT_UNTAGGED_URL = `${API_BASE_URL}/real-estate/repo
 export const API_REPORT_PROJECT_INCOME_SUMMARY_URL = `${API_BASE_URL}/real-estate/reports/income-summary`;
 export const API_REPORT_PROJECT_INCOME_DETAIL_URL = `${API_BASE_URL}/real-estate/reports/income-detail`;
 export const API_REPORT_PROJECT_INCOME_UNTAGGED_URL = `${API_BASE_URL}/real-estate/reports/untagged-income`;
+
+// The developer's front page. One call, because the pieces agree with each
+// other: inventory and the sales book are standing positions, the takings band
+// is ranged, and both are summed on the server from the same payment rule the
+// sold-units screen uses.
+export const API_REAL_ESTATE_DASHBOARD_URL = `${API_BASE_URL}/real-estate/reports/dashboard`;
+
+// The trader's front page, and it carries only what the shop's page cannot
+// answer: what the godown is worth, both sides of the money, the month's gross
+// profit and the lines that made it. Today's sales, purchase and cash, and the
+// month-by-month chart, come from the endpoints the shop dashboard already
+// calls — so those tiles read identically on both pages.
+//
+// ⚠️ ONE PAYLOAD, TWO KINDS OF FIGURE. Stock value and the two ageing columns
+// are positions on the `to` date and ignore `from`; the profit bands honour the
+// range. The screen says which is which where they are read.
+export const API_TRADING_DASHBOARD_URL = `${API_BASE_URL}/trading/reports/dashboard`;
 
 // Real Estate Flat url
 export const API_FLAT_STORE_URL = `${API_BASE_URL}/real-estate/flats`;

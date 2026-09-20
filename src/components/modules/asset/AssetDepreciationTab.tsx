@@ -445,6 +445,7 @@ const AssetDepreciationTab = ({ branchId }: { branchId?: number | null }) => {
         onConfirm={undo}
         onCancel={() => setUndoing(null)}
         loading={saving}
+                className="bg-red-600 hover:bg-red-700"
       />
     </div>
   );

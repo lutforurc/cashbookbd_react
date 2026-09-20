@@ -28,6 +28,7 @@ type PlanFormState = {
   price: string;
   currency: string;
   trial_days: string;
+  grace_days: string;
   max_employees: string;
   max_customers: string;
   max_products: string;
@@ -62,6 +63,7 @@ const initialForm: PlanFormState = {
   price: '',
   currency: 'BDT',
   trial_days: '0',
+  grace_days: '7',
   max_employees: '',
   max_customers: '',
   max_products: '',
@@ -109,6 +111,7 @@ const SubscriptionPlanForm: React.FC = () => {
       price: editingPlan.price !== undefined ? String(editingPlan.price) : '',
       currency: editingPlan.currency || 'BDT',
       trial_days: String(editingPlan.trial_days ?? 0),
+      grace_days: String(editingPlan.grace_days ?? 7),
       max_employees: editingPlan.max_employees ?? '',
       max_customers: editingPlan.max_customers ?? '',
       max_products: editingPlan.max_products ?? '',
@@ -169,6 +172,7 @@ const SubscriptionPlanForm: React.FC = () => {
         price: String(editingPlan.price ?? ''),
         currency: editingPlan.currency || 'BDT',
         trial_days: String(editingPlan.trial_days ?? 0),
+        grace_days: String(editingPlan.grace_days ?? 7),
         max_employees: editingPlan.max_employees ?? '',
         max_customers: editingPlan.max_customers ?? '',
         max_products: editingPlan.max_products ?? '',
@@ -210,6 +214,7 @@ const SubscriptionPlanForm: React.FC = () => {
       price: Number(form.price || 0),
       currency: form.currency.trim() || 'BDT',
       trial_days: Number(form.trial_days || 0),
+      grace_days: Number(form.grace_days || 0),
       max_employees: toNullableNumber(form.max_employees),
       max_customers: toNullableNumber(form.max_customers),
       max_products: toNullableNumber(form.max_products),
@@ -316,6 +321,15 @@ const SubscriptionPlanForm: React.FC = () => {
             label="Trial Days"
             type="number"
             value={form.trial_days}
+            onChange={handleChange as any}
+            inputMode="numeric"
+          />
+          <InputElement
+            id="grace_days"
+            name="grace_days"
+            label="Grace Days"
+            type="number"
+            value={form.grace_days}
             onChange={handleChange as any}
             inputMode="numeric"
           />
