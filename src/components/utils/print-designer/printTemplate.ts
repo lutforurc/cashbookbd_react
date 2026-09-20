@@ -36,7 +36,7 @@
  * against PrintTemplateController::DOC_TYPES. A new one needs a row in both
  * lists, and renaming one orphans every layout saved under the old name.
  */
-export type DocType = 'sales_challan' | 'sales_order' | 'hotel_money_receipt' | 'hotel_bill' | 'sales_invoice';
+export type DocType = 'sales_challan' | 'sales_order' | 'hotel_money_receipt' | 'hotel_bill' | 'sales_invoice' | 'purchase_invoice';
 
 /**
  * The papers the designer offers, in the order it offers them.
@@ -70,6 +70,11 @@ export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
     id: 'sales_invoice',
     name: 'Sales Invoice',
     hint: 'What the customer takes home with the goods.',
+  },
+  {
+    id: 'purchase_invoice',
+    name: 'Purchase Invoice',
+    hint: 'What comes in with the goods, from the supplier.',
   },
 ];
 
@@ -947,12 +952,65 @@ export const SALES_INVOICE_LINE_FIELDS: FieldDef[] = [
   { key: 'amount', name: 'Amount', group: 'line', numeric: true, format: 'money' },
 ];
 
+/**
+ * The Purchase Invoice. Ported from getPurchaseMeta() in
+ * PurchaseInvoicePrintBase.tsx, which this paper replaces -- see the design
+ * spec at docs/superpowers/specs/2026-09-20-purchase-invoice-print-designer-design.md.
+ * No TDS/service-charge/carrying-outward and no installment plan -- a
+ * purchase foots at Total, Discount, Net, Paid, Due and nothing else.
+ */
+export const PURCHASE_INVOICE_FIELD_CATALOG: FieldDef[] = [
+  // Who it comes from
+  { key: 'party_name', name: 'Supplier Name', group: 'party' },
+  { key: 'mobile', name: 'Supplier Mobile', group: 'party' },
+  { key: 'manual_address', name: 'Address', group: 'party' },
+
+  // Which paper this is
+  { key: 'vr_no', name: 'Voucher No', group: 'voucher' },
+  { key: 'vr_date', name: 'Date', group: 'voucher', format: 'date' },
+  { key: 'order_number', name: 'Order Number', group: 'voucher' },
+  { key: 'delivery_location', name: 'Delivery Location', group: 'voucher' },
+  { key: 'vehicle_no', name: 'Vehicle No', group: 'transport' },
+  { key: 'created_by', name: 'Prepared By', group: 'voucher' },
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  { key: 'branch_name', name: 'Branch', group: 'voucher' },
+  { key: 'branch_address', name: 'Branch Address', group: 'voucher' },
+  { key: 'notes', name: 'Notes', group: 'voucher' },
+  { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+
+  { key: 'blank', name: 'Blank line', group: 'manual' },
+
+  // What it adds up to
+  { key: 'total_amount', name: 'Total', group: 'total', numeric: true, format: 'money' },
+  { key: 'discount_amount', name: 'Discount', group: 'total', numeric: true, format: 'money' },
+  { key: 'net_amount', name: 'Net Total', group: 'total', numeric: true, format: 'money' },
+  { key: 'paid_amount', name: 'Paid', group: 'total', numeric: true, format: 'money' },
+  { key: 'due_amount', name: 'Due', group: 'total', numeric: true, format: 'money' },
+  { key: 'amount_words', name: 'Amount In Words', group: 'total', format: 'words', from: 'net_amount' },
+  { key: 'line_count', name: 'Number of Items', group: 'total', numeric: true },
+];
+
+/** One product line of a purchase invoice. */
+export const PURCHASE_INVOICE_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  { key: 'product_name', name: 'Product Name', group: 'line' },
+  { key: 'category', name: 'Category', group: 'line' },
+  { key: 'brand', name: 'Brand', group: 'line' },
+  { key: 'description', name: 'Description', group: 'line' },
+  { key: 'serial_no', name: 'Serial No', group: 'line' },
+  { key: 'warranty', name: 'Warranty', group: 'line' },
+  { key: 'qty', name: 'Quantity', group: 'line', numeric: true },
+  { key: 'price', name: 'Rate', group: 'line', numeric: true, format: 'money' },
+  { key: 'amount', name: 'Amount', group: 'line', numeric: true, format: 'money' },
+];
+
 /** Which fields a paper may draw from. */
 export const fieldsFor = (docType: DocType): FieldDef[] => {
   if (docType === 'sales_order') return ORDER_FIELD_CATALOG;
   if (docType === 'hotel_bill') return HOTEL_BILL_FIELDS;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_FIELDS;
   if (docType === 'sales_invoice') return SALES_INVOICE_FIELD_CATALOG;
+  if (docType === 'purchase_invoice') return PURCHASE_INVOICE_FIELD_CATALOG;
   return FIELD_CATALOG;
 };
 
@@ -980,6 +1038,7 @@ export const lineFieldsFor = (docType: DocType): FieldDef[] => {
   // bill -- which is precisely the document a receipt must not become.
   if (docType === 'hotel_money_receipt') return [];
   if (docType === 'sales_invoice') return SALES_INVOICE_LINE_FIELDS;
+  if (docType === 'purchase_invoice') return PURCHASE_INVOICE_LINE_FIELDS;
   return LINE_FIELDS;
 };
 
@@ -1031,9 +1090,10 @@ const ALL_INFO_BY_KEY = byKey([
   ...HOTEL_BILL_FIELDS,
   ...HOTEL_RECEIPT_FIELDS,
   ...SALES_INVOICE_FIELD_CATALOG,
+  ...PURCHASE_INVOICE_FIELD_CATALOG,
 ]);
 
-const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS]);
+const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS, ...PURCHASE_INVOICE_LINE_FIELDS]);
 
 /** The catalogue's own name for a field, or the key itself if it is unknown. */
 export const fieldName = (key: string) =>
