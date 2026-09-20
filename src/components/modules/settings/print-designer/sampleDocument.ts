@@ -476,8 +476,99 @@ export const LEDGER_SAMPLE: DocumentData = {
   ],
 };
 
-/** Which sample the preview draws for the paper being designed. */
 /**
+ * The statement's sample: one party's account, voucher by voucher.
+ *
+ * ⚠️ THE RUNNING BALANCE IS CARRIED DOWN, not invented per row -- each row's
+ * figure is the one above it plus that row's debit less its credit, opening at
+ * 12,000. A preview whose balance column did not add up would have a tenant
+ * arranging columns around figures they cannot check, and the closing figure
+ * the totals band prints is the last row's own.
+ *
+ * No lists here, unlike the two ledgers: this paper's cells hold one value each.
+ */
+export const LEDGER_DETAILS_SAMPLE: DocumentData = {
+  basic: {
+    report_range: '01/09/2026 to 20/09/2026',
+    party_name: 'Sample Traders',
+    mobile: '01711223344',
+    manual_address: '12 Nawabpur Road, Dhaka',
+    ledger_page: 'Page 41',
+    ledger_product: 'Redmi Note 15',
+    report_trx_type: 'All',
+    opening_balance: 12000,
+    closing_balance: 14700,
+    branch_name: 'Head Office',
+  },
+  products: [
+    {
+      sl: 1,
+      voucher_no: 'PO-2071',
+      voucher_date: '05/09/2026',
+      description_lines: ['Purchase', 'Redmi Note 15 6/128GB Variant'],
+      description_flat: 'Purchase Redmi Note 15 6/128GB Variant',
+      vehicle_no: 'TA-11-2045',
+      pur_qty: 300,
+      sal_qty: 0,
+      rate: 65,
+      pur_total: 19500,
+      sal_total: 0,
+      debit: 19500,
+      credit: 0,
+      running_balance: 31500,
+    },
+    {
+      sl: 2,
+      voucher_no: 'CH-10041',
+      voucher_date: '12/09/2026',
+      description_lines: ['Sales', 'Delivered by hand.'],
+      description_flat: 'Sales Delivered by hand.',
+      vehicle_no: 'TA-11-2045',
+      pur_qty: 0,
+      sal_qty: 180,
+      rate: 130,
+      pur_total: 0,
+      sal_total: 23400,
+      debit: 0,
+      credit: 23400,
+      running_balance: 8100,
+    },
+    {
+      sl: 3,
+      voucher_no: 'MR-3312',
+      voucher_date: '16/09/2026',
+      description_lines: ['Cash Received', 'Against CH-10041'],
+      description_flat: 'Cash Received Against CH-10041',
+      vehicle_no: '',
+      pur_qty: 0,
+      sal_qty: 0,
+      rate: 0,
+      pur_total: 0,
+      sal_total: 0,
+      debit: 0,
+      credit: 6000,
+      running_balance: 2100,
+    },
+    {
+      sl: 4,
+      voucher_no: 'PO-2088',
+      voucher_date: '20/09/2026',
+      description_lines: ['Purchase', 'Order PO-2088'],
+      description_flat: 'Purchase Order PO-2088',
+      vehicle_no: 'TA-11-2045',
+      pur_qty: 200,
+      sal_qty: 0,
+      rate: 63,
+      pur_total: 12600,
+      sal_total: 0,
+      debit: 12600,
+      credit: 0,
+      running_balance: 14700,
+    },
+  ],
+};
+
+/** Which sample the preview draws for the paper being designed. *//**
  * The document the designer previews against.
  *
  * ⚠️ It has to be the right KIND of document. An order laid out against a
@@ -492,5 +583,6 @@ export const sampleFor = (docType: string): DocumentData => {
   if (docType === 'sales_invoice') return SALES_INVOICE_SAMPLE;
   if (docType === 'purchase_invoice') return PURCHASE_INVOICE_SAMPLE;
   if (docType === 'sales_ledger' || docType === 'purchase_ledger') return LEDGER_SAMPLE;
+  if (docType === 'ledger_details') return LEDGER_DETAILS_SAMPLE;
   return SAMPLE_DOCUMENT;
 };

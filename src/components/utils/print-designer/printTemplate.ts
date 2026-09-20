@@ -44,7 +44,8 @@ export type DocType =
   | 'sales_invoice'
   | 'purchase_invoice'
   | 'sales_ledger'
-  | 'purchase_ledger';
+  | 'purchase_ledger'
+  | 'ledger_details';
 
 /**
  * The papers the designer offers, in the order it offers them.
@@ -93,6 +94,11 @@ export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
     id: 'purchase_ledger',
     name: 'Purchase Ledger',
     hint: 'The report: many vouchers down one sheet, each with its own lines.',
+  },
+  {
+    id: 'ledger_details',
+    name: 'Ledger Details',
+    hint: 'The statement: one line per voucher, bought against sold, and a running balance.',
   },
 ];
 
@@ -1115,6 +1121,107 @@ export const LEDGER_LINE_FIELDS: FieldDef[] = [
   { key: 'balance', name: 'Balance', group: 'line', numeric: true },
 ];
 
+/**
+ * Ledger Details -- the customer/supplier statement.
+ *
+ * Held apart from the two ledgers above rather than folded in with them: those
+ * print a voucher's PRODUCTS, and this one prints the voucher itself -- what
+ * was bought against what was sold, debit against credit, and the balance
+ * carried down. The two have no field in common but Sl and the date.
+ *
+ * ⚠️ THERE IS NO `total_amount`, `total_qty`, `total_bag` OR `total_due` HERE,
+ * and this catalogue is therefore NOT built on top of FIELD_CATALOG the way the
+ * ledgers' is. Those four resolve, they resolve to nought, and they resolve to
+ * nought silently: this report's rows carry no `qty`, no `amount` and no
+ * `received`, so a total the catalogue offered would print 0 across a
+ * statement somebody is reconciling against. What is offered below is what
+ * this adapter actually fills, and nothing else.
+ */
+export const LEDGER_DETAILS_INFO_FIELDS: FieldDef[] = [
+  // Who the statement is for.
+  { key: 'party_name', name: 'Party Name', group: 'party' },
+  { key: 'mobile', name: 'Party Mobile', group: 'party' },
+  { key: 'manual_address', name: 'Address', group: 'party' },
+  { key: 'ledger_page', name: 'Ledger Page', group: 'party' },
+
+  // What it was filtered to. `ledger_product` is the same key the two ledgers
+  // above use and means the same thing on all three -- the product a report was
+  // narrowed to -- so a tenant who knows one knows the other. `report_trx_type`
+  // is this paper's own: an account statement is routinely pulled for sales
+  // only or purchases only, and the paper has to say which.
+  { key: 'ledger_product', name: 'Product', group: 'product' },
+  { key: 'report_trx_type', name: 'Transaction Type', group: 'voucher' },
+  { key: 'report_range', name: 'Report Date', group: 'voucher' },
+
+  /**
+   * The two ends of the statement, and NOT totals.
+   *
+   * ⚠️ Neither is a sum of the column above it. Opening is what the account
+   * stood at before the first row and closing is where the running balance
+   * finished -- the server's own figures, handed over in `basic`, which is why
+   * they carry a format and no `total_` prefix. A totals band reads a
+   * `total_`-prefixed key off the table; these two it reads off the voucher,
+   * and they print the same on page one as on page nine.
+   */
+  { key: 'opening_balance', name: 'Opening Balance', group: 'total', numeric: true, format: 'money' },
+  { key: 'closing_balance', name: 'Closing Balance', group: 'total', numeric: true, format: 'money' },
+
+  // What the table comes to. Plain sums of the columns of the same name, read
+  // by the Grand Total row and by a totals band alike.
+  { key: 'total_pur_qty', name: 'Total Purchase Quantity', group: 'total', numeric: true },
+  { key: 'total_sal_qty', name: 'Total Sales Quantity', group: 'total', numeric: true },
+  { key: 'total_pur_total', name: 'Total Purchase Value', group: 'total', numeric: true },
+  { key: 'total_sal_total', name: 'Total Sales Value', group: 'total', numeric: true },
+  { key: 'total_debit', name: 'Total Debit', group: 'total', numeric: true },
+  { key: 'total_credit', name: 'Total Credit', group: 'total', numeric: true },
+
+  // The same handful of generic keys every catalogue carries, worded as the
+  // challan words them: one answer in the flat maps is the point of them.
+  { key: 'branch_name', name: 'Branch', group: 'voucher' },
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+  { key: 'blank', name: 'Blank line', group: 'manual' },
+];
+
+/**
+ * A statement row: one voucher, and the two sides of it.
+ *
+ * ⚠️ `running_balance`, NEVER `balance`. DocumentPrint's totals map holds a
+ * `total_balance` -- a plain sum of a column called `balance`, added for the two
+ * ledgers, where a balance is what a voucher left owing. Here the balance is
+ * carried DOWN the page: adding the column up counts every earlier row again
+ * and foots the statement at a figure nothing on it says. Naming it
+ * `running_balance` leaves the column out of that map, so the Grand Total row
+ * draws no figure under it -- which is the honest answer for a running column.
+ *
+ * ⚠️ `vehicle_no` is the challan's key, reused, because it is the same fact and
+ * DocumentPrint already formats it the way a plate is written. This report's
+ * own word for it is Truck, and the column's label says so.
+ *
+ * ⚠️ `voucher_no` AND `description_flat` ARE NEW KEYS RATHER THAN THE OBVIOUS
+ * ONES. A statement row is a voucher of any of half a dozen kinds, and calling
+ * its number `vr_no` would have put this paper's wording on the challan's
+ * column of the same name -- the flat maps answer by key alone, last catalogue
+ * in wins, and a rename nobody asked for is still a rename. `sl` and
+ * `vehicle_no` are shared because their wording IS the shared one.
+ */
+export const LEDGER_DETAILS_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  { key: 'voucher_no', name: 'Voucher No', group: 'line' },
+  { key: 'voucher_date', name: 'Voucher Date', group: 'line' },
+  { key: 'description_lines', name: 'Description', group: 'line' },
+  { key: 'description_flat', name: 'Description (one line)', group: 'line' },
+  { key: 'vehicle_no', name: 'Vehicle No.', group: 'line' },
+  { key: 'pur_qty', name: 'Purchase Quantity', group: 'line', numeric: true },
+  { key: 'sal_qty', name: 'Sales Quantity', group: 'line', numeric: true },
+  { key: 'rate', name: 'Rate', group: 'line', numeric: true },
+  { key: 'pur_total', name: 'Purchase Value', group: 'line', numeric: true },
+  { key: 'sal_total', name: 'Sales Value', group: 'line', numeric: true },
+  { key: 'debit', name: 'Debit', group: 'line', numeric: true },
+  { key: 'credit', name: 'Credit', group: 'line', numeric: true },
+  { key: 'running_balance', name: 'Balance', group: 'line', numeric: true },
+];
+
 const isLedger = (docType: DocType) =>
   docType === 'sales_ledger' || docType === 'purchase_ledger';
 
@@ -1124,6 +1231,10 @@ export const fieldsFor = (docType: DocType): FieldDef[] => {
   // them -- branch, print time, blank lines, the totals. A heading is a heading
   // on any paper, and one definition of each is the point of the flat maps.
   if (isLedger(docType)) return [...LEDGER_INFO_FIELDS, ...FIELD_CATALOG];
+  // Alone among the papers here: its catalogue is not the challan's with a few
+  // keys on top, because most of the challan's keys resolve on this report to a
+  // nought that reads as a figure. See the note on LEDGER_DETAILS_INFO_FIELDS.
+  if (docType === 'ledger_details') return LEDGER_DETAILS_INFO_FIELDS;
   if (docType === 'sales_order') return ORDER_FIELD_CATALOG;
   if (docType === 'hotel_bill') return HOTEL_BILL_FIELDS;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_FIELDS;
@@ -1154,6 +1265,7 @@ export const lineFieldsFor = (docType: DocType): FieldDef[] => {
   // and offering product name, unit and bag on it would be four fields the
   // adapter has nothing to put in.
   if (isLedger(docType)) return LEDGER_LINE_FIELDS;
+  if (docType === 'ledger_details') return LEDGER_DETAILS_LINE_FIELDS;
   if (docType === 'sales_order') return ORDER_LINE_FIELDS;
   if (docType === 'hotel_bill') return HOTEL_BILL_LINE_FIELDS;
   // A money receipt has none: it is one payment, and a table on it would be the
@@ -1231,9 +1343,10 @@ const ALL_INFO_BY_KEY = byKey([
   // name of the paper that came before it, which is what keeps a challan's
   // "Number of Items" from becoming a ledger's "Number of Vouchers" everywhere.
   ...LEDGER_INFO_FIELDS,
+  ...LEDGER_DETAILS_INFO_FIELDS,
 ]);
 
-const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS, ...PURCHASE_INVOICE_LINE_FIELDS, ...LEDGER_LINE_FIELDS]);
+const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS, ...PURCHASE_INVOICE_LINE_FIELDS, ...LEDGER_LINE_FIELDS, ...LEDGER_DETAILS_LINE_FIELDS]);
 
 /** The catalogue's own name for a field, or the key itself if it is unknown. */
 export const fieldName = (key: string) =>
@@ -2326,6 +2439,123 @@ export const PURCHASE_LEDGER_PRESETS: PresetDef[] = [
   },
 ];
 
+/**
+ * The customer/supplier statement, and the only paper here that is LANDSCAPE.
+ *
+ * Twelve columns of paired figures -- purchase against sales, debit against
+ * credit -- do not fit a portrait sheet at a size anybody can read, which is
+ * why the screen it comes from has always printed it sideways. A tenant who
+ * wants it portrait may have it; they will find out why it is not.
+ *
+ * ⚠️ The Balance column is footed with nothing, on purpose: it is a running
+ * balance, and the column above it already ends at the closing figure the
+ * totals band prints. See LEDGER_DETAILS_LINE_FIELDS.
+ */
+const ledgerStatement = (): PrintTemplate => ({
+  version: 1,
+  docType: 'ledger_details',
+  orientation: 'landscape',
+  pageSize: 'a4',
+  fontSize: 9,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Ledger Details',
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'report_range', label: 'Report Date' },
+        { field: 'party_name', label: 'Name' },
+        { field: 'mobile', label: 'Mobile', hideIfEmpty: true },
+        { field: 'manual_address', label: 'Address' },
+        // The two filters, which print as "All" rather than vanishing: the
+        // statement of one product's trade is a different document from the
+        // account's, and a reader has to be able to tell which they hold.
+        { field: 'ledger_product', label: 'Product' },
+        { field: 'report_trx_type', label: 'Transaction Type' },
+        { field: 'branch_name', label: 'Branch', hideIfEmpty: true },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      totalRow: true,
+      totalRowLabel: 'Total',
+      columns: [
+        { field: 'sl', label: 'Sl', width: 4, align: 'center' },
+        // The voucher's number over its date, as the screen prints it.
+        { field: 'voucher_no', label: 'Vr No & Date', width: 10, align: 'center', subField: 'voucher_date' },
+        { field: 'description_lines', label: 'Description', width: 21, align: 'left' },
+        { field: 'vehicle_no', label: 'Truck', width: 8, align: 'left' },
+        { field: 'pur_qty', label: 'Pur. Qty.', width: 6, align: 'right' },
+        { field: 'sal_qty', label: 'Sal. Qty.', width: 6, align: 'right' },
+        { field: 'rate', label: 'Rate', width: 6, align: 'right' },
+        { field: 'pur_total', label: 'Pur. Total', width: 8, align: 'right' },
+        { field: 'sal_total', label: 'Sal. Total', width: 8, align: 'right' },
+        { field: 'debit', label: 'Debit', width: 7, align: 'right' },
+        { field: 'credit', label: 'Credit', width: 7, align: 'right' },
+        // ⚠️ No foot under this one, and the renderer is what decides that --
+        // see the note on the field. Left to its own default of centred, since
+        // a single figure against a description of three lines reads better
+        // level with the middle of them than hanging from the top.
+        { field: 'running_balance', label: 'Balance', width: 7, align: 'right', valign: 'middle' },
+      ],
+    }),
+    band<TotalsBand>({
+      id: 'totals',
+      type: 'totals',
+      show: true,
+      align: 'right',
+      // One line, as the screen's own summary bar has always been -- eight
+      // figures read across, not down a column that would take eight lines off
+      // a statement already running to several sheets.
+      layout: 'inline',
+      items: [
+        { field: 'opening_balance', label: 'Opening' },
+        { field: 'total_pur_qty', label: 'Pur. Qty', hideIfEmpty: true },
+        { field: 'total_sal_qty', label: 'Sal. Qty', hideIfEmpty: true },
+        { field: 'total_pur_total', label: 'Pur. Amt', hideIfEmpty: true },
+        { field: 'total_sal_total', label: 'Sal. Amt', hideIfEmpty: true },
+        { field: 'total_debit', label: 'Debit', hideIfEmpty: true },
+        { field: 'total_credit', label: 'Credit', hideIfEmpty: true },
+        { field: 'closing_balance', label: 'Closing' },
+      ],
+    }),
+  ],
+});
+
+export const LEDGER_DETAILS_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Ledger Details',
+    hint: 'One line per voucher, bought against sold, with the balance carried down.',
+    build: ledgerStatement,
+  },
+];
+
 export const CHALLAN_PRESETS: PresetDef[] = [
   {
     id: 'standard',
@@ -2392,6 +2622,7 @@ export const HOTEL_RECEIPT_PRESETS: PresetDef[] = [
 export const presetsFor = (docType: DocType): PresetDef[] => {
   if (docType === 'sales_ledger') return SALES_LEDGER_PRESETS;
   if (docType === 'purchase_ledger') return PURCHASE_LEDGER_PRESETS;
+  if (docType === 'ledger_details') return LEDGER_DETAILS_PRESETS;
   if (docType === 'sales_order') return ORDER_PRESETS;
   if (docType === 'hotel_bill') return HOTEL_BILL_PRESETS;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_PRESETS;
@@ -2401,6 +2632,7 @@ export const presetsFor = (docType: DocType): PresetDef[] => {
 export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTemplate => {
   if (docType === 'sales_ledger') return ledgerHeading('sales_ledger', 'Sales Ledger');
   if (docType === 'purchase_ledger') return ledgerHeading('purchase_ledger', 'Purchase Ledger');
+  if (docType === 'ledger_details') return ledgerStatement();
   if (docType === 'sales_order') return standardOrder();
   if (docType === 'hotel_bill') return hotelBill();
   if (docType === 'hotel_money_receipt') return hotelReceipt();

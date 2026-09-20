@@ -295,6 +295,28 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
        */
       total_discount: rows.reduce((sum, row) => sum + num(row?.discount), 0),
       total_balance: rows.reduce((sum, row) => sum + num(row?.balance), 0),
+
+      /**
+       * The Ledger Details foot -- six columns, four of them a pair by side.
+       *
+       * ⚠️ HERE RATHER THAN LEFT TO THE GENERIC RULE BELOW, and that is not a
+       * preference: the Grand Total ROW reads this map directly (see footOf),
+       * and the generic rule feeds the totals BAND. A statement whose columns
+       * were not named here would draw no foot at all -- firstFigure comes back
+       * -1 and there is no row -- because not one column of it would answer.
+       *
+       * ⚠️ AND `running_balance` IS DELIBERATELY NOT AMONG THEM. That column is
+       * a balance carried down, not a total of what is above it; the statement
+       * ends at the closing figure the totals band prints, and a foot under the
+       * column would put a second, different, wrong figure on the same line.
+       * Nothing here sums it, so the cell under it comes out blank.
+       */
+      total_pur_qty: rows.reduce((sum, row) => sum + num(row?.pur_qty), 0),
+      total_sal_qty: rows.reduce((sum, row) => sum + num(row?.sal_qty), 0),
+      total_pur_total: rows.reduce((sum, row) => sum + num(row?.pur_total), 0),
+      total_sal_total: rows.reduce((sum, row) => sum + num(row?.sal_total), 0),
+      total_debit: rows.reduce((sum, row) => sum + num(row?.debit), 0),
+      total_credit: rows.reduce((sum, row) => sum + num(row?.credit), 0),
     };
 
     /**

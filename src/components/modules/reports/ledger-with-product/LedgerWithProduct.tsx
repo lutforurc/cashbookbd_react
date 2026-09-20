@@ -23,6 +23,13 @@ import {
   fetchCustomerSupplierStatement,
 } from './ledgerWithProductSlice';
 import LedgerWithProductPrint from './LedgerWithProductPrint';
+import { toLedgerDetailsDocumentData } from './ledgerDetailsDocumentData';
+import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
+import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
+import { normalizeTemplate } from '../../../utils/print-designer/printTemplate';
+import type { PrintTemplate } from '../../../utils/print-designer/printTemplate';
+import httpService from '../../../services/httpService';
+import { API_PRINT_TEMPLATE_URL } from '../../../services/apiRoutes';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import { FiCheckSquare, FiDownload, FiFilter, FiRotateCcw } from 'react-icons/fi';
@@ -337,10 +344,99 @@ const LedgerWithProduct = (user: any) => {
     });
   };
 
-  const handlePrint = useReactToPrint({
+  const printBespoke = useReactToPrint({
     contentRef: printRef,
     documentTitle: 'Customer Supplier Statement',
   });
+
+  // The statement about to be printed through a saved layout, held with its
+  // data and cleared afterwards so a second print cannot go out carrying the
+  // first one's rows.
+  const [ledgerDoc, setLedgerDoc] = useState<{
+    template: PrintTemplate;
+    data: DocumentData;
+  } | null>(null);
+
+  const ledgerPrintRef = useRef<HTMLDivElement>(null);
+  const printLedgerDoc = useReactToPrint({
+    contentRef: ledgerPrintRef,
+    documentTitle: 'Ledger Details',
+    onAfterPrint: () => setLedgerDoc(null),
+  });
+
+  /**
+   * Prints once the statement is actually on the page.
+   *
+   * react-to-print copies what is in the DOM the moment it is called, so
+   * calling it in the same breath as setLedgerDoc would copy nothing at all on
+   * the first print. An effect runs after React has committed, and the short
+   * wait after that is for the letterhead image, which PadPrinting loads rather
+   * than renders inline.
+   */
+  useEffect(() => {
+    if (!ledgerDoc) return undefined;
+    const timer = setTimeout(() => printLedgerDoc(), 250);
+    return () => clearTimeout(timer);
+  }, [ledgerDoc]);
+
+  /**
+   * Print: the branch's own layout where it has saved one, and the sheet this
+   * screen has always printed where it has not.
+   *
+   * ⚠️ THE LAYOUT IS FETCHED AT THE CLICK, not when the screen loaded. Somebody
+   * who has just changed a column in the designer and come straight back to the
+   * report to see it should not have to reload first.
+   *
+   * ⚠️ AND EVERY FAILURE FALLS THROUGH TO THE OLD PAPER. No layout saved (the
+   * endpoint answers with null), a server a patch behind, a dropped connection
+   * -- all of them print the bespoke sheet rather than an error or a blank
+   * page. The report is what somebody came here for; the arrangement is on top
+   * of it.
+   */
+  const handlePrint = async () => {
+    if (!rows.length) {
+      printBespoke();
+      return;
+    }
+
+    let layout: any = null;
+
+    try {
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/ledger_details`, {
+        params: { branch_id: branchId ?? settings?.data?.branch?.id },
+      });
+      layout = response?.data?.data?.data?.layout ?? null;
+    } catch {
+      layout = null;
+    }
+
+    if (!layout) {
+      printBespoke();
+      return;
+    }
+
+    const template = normalizeTemplate(layout, 'ledger_details');
+
+    // The two knobs the screen still owns are applied over the layout: Rows per
+    // page and Font size. Everything else -- the columns, their wording, the
+    // margins -- is the saved layout's, which is the point of having saved one.
+    setLedgerDoc({
+      template: { ...template, rowsPerPage: effectiveRowsPerPage, fontSize: effectiveFontSize },
+      data: toLedgerDetailsDocumentData({
+        rows,
+        summary,
+        partyName: party?.name || partyLabel,
+        ledgerPage: party?.ledger_page,
+        mobile: party?.mobile,
+        address: party?.manual_address,
+        productName: selectedProductOption?.label || 'All',
+        transactionTypeLabel,
+        startDate,
+        endDate,
+        branchName,
+      }),
+    });
+  };
 
   const handleExcelExport = () => {
     if (!rows.length) {
@@ -1162,6 +1258,19 @@ const LedgerWithProduct = (user: any) => {
             }}
           />
         </div>
+
+        {/* Mounted only while the designed statement is being printed. Left
+            standing it would draw a whole document on every render of a screen
+            that re-renders on every keystroke in the search box -- and there is
+            nothing to draw between statements anyway. */}
+        {ledgerDoc ? (
+          <DocumentPrint
+            ref={ledgerPrintRef}
+            template={ledgerDoc.template}
+            data={ledgerDoc.data}
+          />
+        ) : null}
+
         <VoucherPrintRegistry
           ref={voucherRegistryRef}
           rowsPerPage={effectiveRowsPerPage}
