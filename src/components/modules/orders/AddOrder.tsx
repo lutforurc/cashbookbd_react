@@ -38,6 +38,27 @@ const getOrderSuggestionValue = (row: any, field: 'order_number' | 'delivery_loc
     return row?.notes || row?.label_9 || '';
 };
 
+/**
+ * What the order number says the order is: DO- is a sale, PO- is a purchase.
+ *
+ * ⚠️ THE PREFIX, NOT THE WHOLE NUMBER. Every order in this business opens with
+ * its kind — DO-202609-0504, PO-202609-0318 — and the rest of the string is a
+ * party's own reference, which can hold anything: ...-PC/HAID/26-741,
+ * ...-AAFL-SEP26-195. Read anywhere in the string, one of those would turn a
+ * purchase into a sale, and this writes the field rather than suggesting it.
+ *
+ * Null when the number says nothing — an order numbered some other way keeps
+ * whatever type was picked for it.
+ */
+const orderTypeFromNumber = (orderNumber: string | null | undefined) => {
+    const number = String(orderNumber ?? '').trim().toUpperCase();
+
+    // The ids are the OrderTypes dropdown's own: 1 Purchase, 2 Sales.
+    if (number.startsWith('DO')) return '2';
+    if (number.startsWith('PO')) return '1';
+    return null;
+};
+
 const AddOrder = (user: any) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -434,6 +455,32 @@ const AddOrder = (user: any) => {
             ...prevState,
             [name]: value,
         }));
+
+        // The order number carries the kind of order it is, so the type follows
+        // the number rather than being picked twice for the same fact.
+        //
+        // ⚠️ IN EDIT MODE TOO, unlike the block below. That one copies a note
+        // and a delivery location off some OTHER order and has no business
+        // running against an order that already has its own; this one reads the
+        // number being typed, and editing is how a number and a type that
+        // disagree get put right.
+        if (name === 'order_number') {
+            const orderType = orderTypeFromNumber(value);
+
+            if (orderType) {
+                setFormData((prevState) => ({
+                    ...prevState,
+                    order_type: orderType,
+                    // ⚠️ And the reference goes with it. A reference order is
+                    // the OPPOSITE type by definition, so a number that flips
+                    // the type leaves the chosen reference pointing into the
+                    // wrong book — the same reason handleSelectChange clears it
+                    // when the type is picked by hand.
+                    ref_order_id: '',
+                    ref_order_text: '',
+                }));
+            }
+        }
 
         // Picking an order number out of its datalist fills the rest in from
         // that order. Typing in the delivery location or the note fills nothing
