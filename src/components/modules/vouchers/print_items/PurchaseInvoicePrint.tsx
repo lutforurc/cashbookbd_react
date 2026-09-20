@@ -1,10 +1,7 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import getPrintPaperKey, { PrintPaperKey } from '../../../utils/utils-functions/printPaperSizeSelector';
-import PurchaseInvoicePrintA4Portrait from './purchase_invoice/PurchaseInvoicePrintA4Portrait';
-import PurchaseInvoicePrintA4Landscape from './purchase_invoice/PurchaseInvoicePrintA4Landscape';
-import PurchaseInvoicePrintHalfPortrait from './purchase_invoice/PurchaseInvoicePrintHalfPortrait';
-import PurchaseInvoicePrintHalfLandscape from './purchase_invoice/PurchaseInvoicePrintHalfLandscape';
+import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
+import { defaultTemplate, normalizeTemplate } from '../../../utils/print-designer/printTemplate';
+import { toPurchaseInvoiceDocumentData } from './purchaseInvoiceDocumentData';
 
 type Props = {
   data: any;
@@ -12,20 +9,32 @@ type Props = {
   fontSize?: number;
 };
 
-const componentMap: Record<PrintPaperKey, React.ForwardRefExoticComponent<any>> = {
-  'a4-portrait': PurchaseInvoicePrintA4Portrait,
-  'a4-landscape': PurchaseInvoicePrintA4Landscape,
-  'half-portrait': PurchaseInvoicePrintHalfPortrait,
-  'half-landscape': PurchaseInvoicePrintHalfLandscape,
-};
+/**
+ * The Purchase Invoice, drawn by the Print Template Designer -- the same
+ * cutover Sales Invoice went through
+ * (docs/superpowers/specs/2026-09-20-purchase-invoice-print-designer-design.md).
+ * `data` is the SAME raw payload `electronics/sales/invoice-print` has
+ * always returned -- reshaped here, not upstream, because other print
+ * components read it in its original shape too.
+ */
+const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
+  ({ data }, ref) => {
+    if (!data?.purchase_master) {
+      return <div ref={ref}>No purchase invoice data found</div>;
+    }
 
-const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
-  const settings = useSelector((state: any) => state.settings);
-  const paperKey = getPrintPaperKey(settings?.data?.branch?.paper_size);
-  const SelectedComponent = componentMap[paperKey];
+    const documentData = toPurchaseInvoiceDocumentData(data);
+    // NOT data?.purchase_print_layout?.layout -- it IS the raw layout (or
+    // null). See the plan's Global Constraints and Sales Invoice's Task 1
+    // ruling for why.
+    const savedLayout = data?.purchase_print_layout;
+    const template = savedLayout
+      ? normalizeTemplate(savedLayout, 'purchase_invoice')
+      : defaultTemplate('purchase_invoice');
 
-  return <SelectedComponent ref={ref} {...props} />;
-});
+    return <DocumentPrint ref={ref} template={template} data={documentData} />;
+  },
+);
 
 PurchaseInvoicePrint.displayName = 'PurchaseInvoicePrint';
 
