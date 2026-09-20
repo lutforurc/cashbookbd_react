@@ -78,12 +78,16 @@ generality of `TableBand`.
 
 **Half-page is a template property, not a per-branch runtime choice.**
 Today `ElectronicsSalesInvoicePrint.tsx` picks a paper size at print time from
-`settings.branch.paper_size`. After this change, a branch instead *designs* an
-a4 template and/or a half template in the Designer (the Designer already lets
-a tenant hold more than one saved layout — confirm against current
-`print_templates` save/load keying during planning); which one is used at
-print time still comes from `branch.paper_size`, preserved as-is so no branch
-has to redo a setting it already made.
+`settings.branch.paper_size`. After this change, a branch instead *designs*
+whichever one it actually uses (a4 or half) in the Designer and saves it —
+resolved during planning: `print_templates` already keys one row per
+(company, branch, doc_type, name) with an `is_default` flag deciding which one
+prints (`PrintTemplateController.php:130-144`), exactly the same mechanism
+`hotel_bill` already uses for its own single portrait-or-landscape choice.
+`pageSize` joins `orientation` inside the `layout` JSON that row already
+stores — no schema change, no second key dimension. A branch that genuinely
+wants both sizes on hand can already save two named layouts and flip
+`is_default`; nothing new is needed for that either.
 
 **No feature flag, no dead code kept as a safety net.** The five bespoke
 files are deleted once the default `sales_invoice` template is verified
@@ -156,28 +160,53 @@ someone has to remember to remove.
 - An editor for the Installment band: show/hide toggle, bordered toggle, title
   text field — same shape as the existing `NotesBand`/`SignatureBand` editors.
 
-### 4. API — new endpoint
+### 4. API — no new endpoint; extend the one already in use
 
-`GET sales/invoice-data/{main_trx_id}`, added to `SalesController.php`
-next to `apiSalesChallanData` (`routes/api.php:456`), following its exact
-contract: returns `{ basic, products, installments, branch }`. The field
-values are drawn from `getSalesMeta()`'s existing logic in
-`ElectronicsSalesInvoicePrintBase.tsx:117-157` (customer resolution, TDS /
-service charge / carrying outward by `coa4_id`, grand total) — ported
-server-side rather than left client-side, matching where the challan payload
-is built (`apiSalesChallanData`, not the old challan component).
+Corrected during planning: Sales Invoice printing does **not** go through
+`SalesController@apiSalesChallanData` at all. It already has its own live
+endpoint, `POST electronics/sales/invoice-print`
+(`ElectronicsSalesController@salesInvoicePrint` →
+`salesPrintData($transactionId)`, `routes/api.php:605`), which the whole app
+already calls for every voucher print (`electronicsSalesSlice.ts`'s
+`electronicsSalesPrint` thunk, dispatched from `VoucherPrintRegistry.tsx`,
+used across every voucher listing screen — not just Electronics Sales). It
+returns the full `MainTransactionMaster` record with `salesMaster.details`,
+`installments`, `inword`, `user`, `approvedUser` already eager-loaded — richer
+than `DocumentData` needs, and consumed **as-is** by three other print
+components that share this same Redux-held payload
+(`CashReceivedPrint`, `CashPaymentPrint`, `PurchaseInvoicePrint` — see
+`VoucherPrintRegistry.tsx:241-259`). The plan must not change this payload's
+existing shape, only add to it.
+
+Two small, additive changes instead of a new endpoint:
+- `salesPrintData()` gains one more line: look up this branch's saved
+  `sales_invoice` `PrintTemplate` row (same query
+  `PrintTemplateController::show()` runs — company, branch, doc_type,
+  `is_default`) and attach it as `$record->print_layout`. Bundles data and
+  layout in one round trip, matching the documented reason `FolioScreen.tsx`
+  does the same (`FolioScreen.tsx:445-453`: "one that needs two round trips is
+  one that opens late").
+- `PrintTemplateController::DOC_TYPES` gains `'sales_invoice'` (one line),
+  so the Designer's own save/list/delete calls for the new type are accepted
+  — it currently 404s ("Unknown document type") for anything not listed.
+
+The `{basic, products, installments, branch}` reshape happens **client-side**,
+in a new small adapter (ported from the existing, already-correct
+`getSalesMeta()` in `ElectronicsSalesInvoicePrintBase.tsx:117-157`), not on
+the server — because the server payload is shared with three unrelated print
+components that must keep receiving it unchanged.
 
 ### 5. Cutover
 
 - `ElectronicsSalesInvoicePrint.tsx` stops switching between four bespoke
-  components and instead — following `Orders.tsx` / `FolioScreen.tsx`
-  (`src/components/modules/orders/Orders.tsx:1675`,
-  `src/components/modules/hotel/booking/FolioScreen.tsx:455-478`) — fetches
-  `sales/invoice-data/{id}`, loads the branch's saved `sales_invoice` layout
-  (`normalizeTemplate`) or `defaultTemplate('sales_invoice')` when none is
-  saved, and renders `<DocumentPrint>`. `branch.paper_size` still selects
-  a4-vs-half, now by choosing which saved/default template's `pageSize` to
-  request rather than which component to mount.
+  components. It keeps receiving the same `voucherData` prop it gets today
+  (nothing changes in `VoucherPrintRegistry.tsx` or the Redux thunk), reshapes
+  it with the new adapter, reads `voucherData.print_layout` and runs it
+  through `normalizeTemplate(layout, 'sales_invoice')` or falls back to
+  `defaultTemplate('sales_invoice')`, and renders one `<DocumentPrint>`.
+  `branch.paper_size` is no longer read by this component — the printed page
+  size now comes from whichever `pageSize` the branch saved inside their
+  `sales_invoice` layout (see Decisions).
 - Delete `ElectronicsSalesInvoicePrintBase.tsx` and the four
   `ElectronicsSalesInvoicePrint{A4Portrait,A4Landscape,HalfPortrait,HalfLandscape}.tsx`
   wrappers once Verification below passes.
@@ -199,11 +228,11 @@ Non-negotiable before deleting the old files:
 
 ## Open items for the implementation plan
 
-- Confirm how `print_templates` keys a saved layout today (by `docType`
-  alone, or `docType` + branch) and whether a branch can hold both an a4 and
-  a half `sales_invoice` layout at once, or whether `pageSize` needs to be
-  part of that key. This wasn't settled in brainstorming and affects the save
-  API, not just the client.
-- Confirm the exact `main_trx_id` → sale lookup `apiSalesInvoiceData` should
-  use (the challan endpoint's pattern should carry over, but the electronics
-  sale's own id field names need checking against `ElectronicsBusinessSales.tsx`).
+Both resolved during planning (see Design §4 and the Half-page decision
+above) — kept here as a record of what changed from the original brainstorm:
+- `print_templates` keying needed no change; `pageSize` lives inside the
+  existing `layout` JSON column, like `orientation` already does.
+- There is no `apiSalesInvoiceData` — the existing
+  `electronics/sales/invoice-print` endpoint (`ElectronicsSalesController@salesInvoicePrint`)
+  is extended in place rather than duplicated, because three other print
+  components already depend on its exact current response shape.
