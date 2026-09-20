@@ -845,19 +845,32 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
     const SignatureBlock: React.FC<{ band: SignatureBand }> = ({ band }) => {
       if (!band.items.length) return null;
 
+      // Spread across the sheet with `justify-between` only where there is
+      // more than one column to spread -- that is what puts "Received By"
+      // at the left edge and "Authorized By" at the right on a challan.
+      // ONE column stretched by the same rule (a lone `flex-1` child still
+      // fills its row regardless of `justify-content`) sat centred across
+      // the whole page under a single line reading "Authorized Signature".
+      // A bill with one signature is signed at the foot, on the right, the
+      // way the bespoke Sales/Purchase Invoice components this system
+      // replaced always drew it -- so a single column drops `flex-1` (its
+      // own width, from the text-fit rule above, not the row's) and the row
+      // becomes `justify-end` to put it there.
+      const multi = band.items.length > 1;
+
       return (
         // Top-aligned, so the rules agree even where one column's label runs to
         // two lines. Bottom-aligning them let the tallest column push its own
         // rule up, and three signature lines sat at two heights on one sheet.
         <div
-          className="flex items-start justify-between gap-8"
+          className={`flex items-start gap-8 ${multi ? 'justify-between' : 'justify-end'}`}
           style={{ marginTop: `${band.space}px` }}
         >
           {band.items.map((item, index) => {
             const name = item.field ? value(item.field) : '';
 
             return (
-              <div key={`${item.label}-${index}`} className="flex-1 text-center">
+              <div key={`${item.label}-${index}`} className={multi ? 'flex-1 text-center' : 'text-center'}>
                 {/* Nothing above the rule -- that is what somebody signs on,
                     and the room to do it is the space this band carries on its
                     top. Under it goes who signed and in what capacity, which is

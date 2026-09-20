@@ -1869,7 +1869,13 @@ const salesInvoice = (): PrintTemplate => ({
       columns: 2,
       layout: 'rows',
       boxed: false,
-      labelWidth: DEFAULT_LABEL_WIDTH,
+      // Narrower than DEFAULT_LABEL_WIDTH (9em) -- this band's longest label
+      // is "Invoice No" at ten characters, and 9em was sized for a challan's
+      // "ড্রাইভারের নাম", not this one. At 9em, "Name"/"Date" sat inside a box
+      // wider than themselves and left a visible gap before their own colon.
+      // Caught in real-print review; the tenant can still widen it from here
+      // in the designer if their own labels run longer.
+      labelWidth: 6,
       rowPadding: DEFAULT_ROW_PADDING,
       rowGap: DEFAULT_ROW_GAP,
       items: [
@@ -1988,7 +1994,9 @@ const purchaseInvoice = (): PrintTemplate => ({
       columns: 2,
       layout: 'rows',
       boxed: false,
-      labelWidth: DEFAULT_LABEL_WIDTH,
+      // Same narrowing as Sales Invoice's info band, and for the same
+      // reason -- see its comment.
+      labelWidth: 6,
       rowPadding: DEFAULT_ROW_PADDING,
       rowGap: DEFAULT_ROW_GAP,
       items: [
