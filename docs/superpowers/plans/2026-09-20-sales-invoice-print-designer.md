@@ -601,7 +601,7 @@ cd "f:/All_Database/cashbookbd_react"
 npm run build
 ```
 
-Expected: succeeds. `defaultTemplate('sales_invoice')` and `normalizeTemplate(raw, 'sales_invoice')` are now both callable and return a well-formed `PrintTemplate` — this is checkable directly in the browser console once Task 8 wires the Designer's dropdown, or right now via a scratch call from any already-mounted screen's dev console: `import { defaultTemplate } from '.../printTemplate'; console.log(defaultTemplate('sales_invoice'))`. Confirm the printed object has all 7 bands and `pageSize: 'a4'`.
+Expected: succeeds. `defaultTemplate('sales_invoice')` and `normalizeTemplate(raw, 'sales_invoice')` are now both callable and return a well-formed `PrintTemplate` — this is checkable directly in the browser console once Task 8 wires the Designer's dropdown, or right now via a scratch call from any already-mounted screen's dev console: `import { defaultTemplate } from '.../printTemplate'; console.log(defaultTemplate('sales_invoice'))`. Confirm the printed object has all 8 bands (header, title, info, table, totals, installments, info/amount-words, signature) and `pageSize: 'a4'`.
 
 - [ ] **Step 8: Commit**
 
