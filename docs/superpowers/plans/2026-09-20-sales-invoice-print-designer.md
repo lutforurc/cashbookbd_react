@@ -805,12 +805,20 @@ At `DocumentPrint.tsx:87`, `PREVIEW_PAGE_HEIGHT` needs a half-page row for the D
 ```ts
 /**
  * How tall a page stands in the designer's preview, keyed by pageSize then
- * orientation. A4 numbers are unchanged from before pageSize existed; half is
- * roughly half A4's height at the same 96dpi/-76px basis (148.5mm vs 297mm).
+ * orientation. A4 numbers are unchanged from before pageSize existed.
+ *
+ * ⚠️ half.landscape is 718, THE SAME AS a4.landscape -- not half of it.
+ * PrintStyles's own sizing (see printedHeight there) makes the landscape
+ * page's HEIGHT always 210mm regardless of pageSize; only half's WIDTH
+ * shrinks, to 148.5mm. A half-page portrait sheet is 210mm wide x 148.5mm
+ * tall; turned landscape, that same sheet prints 148.5mm wide x 210mm tall
+ * -- the same 210mm height every A4-landscape report already prints at.
+ * (Caught in Task 6's review: this file originally had this wrong, at 484,
+ * as if landscape halved the height again on top of the pageSize shrink.)
  */
 const PREVIEW_PAGE_HEIGHT = {
   a4: { portrait: 1046, landscape: 718 },
-  half: { portrait: 485, landscape: 484 },
+  half: { portrait: 485, landscape: 718 },
 };
 ```
 
