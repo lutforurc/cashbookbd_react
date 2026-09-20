@@ -41,8 +41,17 @@ import DashboardCustomizeButton, {
 } from './dashboardCustomization';
 import { Button } from '../../../pages/UiElements/CustomButtons';
 
+/*
+ * ⚠️ ONE ITEM PER CARD, NOT ONE PER BAND. A band here is a row of tiles or a
+ * card, and the tiles band carried a single switch for both of its figures —
+ * so turning off "Today Vouchers" took "Today Purchase" off the screen with it.
+ *
+ * The tile ids are `kpi-<key>`, keyed to CONSTRUCTION_TILES' own keys, so the
+ * panel and the row cannot drift apart. Everything else keeps the id it had.
+ */
 const CONSTRUCTION_DASHBOARD_WIDGETS: DashboardWidget[] = [
-  { id: 'kpi-row', title: 'Today at a Glance' },
+  { id: 'kpi-purchase', title: 'Today Purchase' },
+  { id: 'kpi-vouchers', title: 'Today Vouchers' },
   { id: 'summary', title: 'Balance Summary' },
   { id: 'top-purchase', title: 'Top Purchase' },
   { id: 'receive-details', title: 'Receive Details' },
@@ -118,6 +127,10 @@ const ConstructionDashboard = () => {
       branchId: currentBranch?.id,
       enabled: Boolean(me?.id && currentBranch?.id),
     },
+  );
+  /** The day's tiles, minus the ones switched off. One id per tile, `kpi-<key>`. */
+  const kpiTiles = CONSTRUCTION_TILES.filter((tile) =>
+    isWidgetVisible(`kpi-${tile.key}`),
   );
   const isCompact = density === 'compact';
   const orderMap = useMemo(
@@ -296,14 +309,14 @@ const ConstructionDashboard = () => {
       {/* Above the grid rather than as one of its cards: it is a summary band,
           and a widget order saved before it existed would otherwise sink it to
           the bottom of the page for existing users. */}
-      {isWidgetVisible('kpi-row') ? (
+      {kpiTiles.length ? (
         <div className="mt-4">
           <KpiRow
             kpis={summaryData?.kpis}
             isLoading={summary?.isLoading}
             trxDate={summaryData?.trxDate}
             gapClass={dashboardGapClass}
-            tiles={CONSTRUCTION_TILES}
+            tiles={kpiTiles}
             columnsClass={KPI_COLUMNS}
           />
         </div>

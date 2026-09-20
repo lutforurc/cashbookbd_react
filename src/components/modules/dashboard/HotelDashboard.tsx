@@ -58,9 +58,24 @@ import DashboardCustomizeButton, {
  * guest is still in the building.
  */
 
+/*
+ * ⚠️ ONE ITEM PER CARD, NOT ONE PER BAND. The five tiles across the top are one
+ * row and the four under them another, and a single switch for a whole row meant
+ * turning off "Not ready" also took who is in the building off the screen.
+ *
+ * A band that is a single card already is one — 'nights', 'room-types' and the
+ * rest keep their band name as their id, so only the two tile rows change.
+ */
 const HOTEL_DASHBOARD_WIDGETS: DashboardWidget[] = [
-  { id: 'tonight', title: 'The Property Tonight' },
-  { id: 'performance', title: 'Occupancy, ADR and RevPAR' },
+  { id: 'tonight-inhouse', title: 'In the Building' },
+  { id: 'tonight-arrivals', title: 'Arriving' },
+  { id: 'tonight-departures', title: 'Leaving' },
+  { id: 'tonight-free', title: 'Free Tonight' },
+  { id: 'tonight-notready', title: 'Not Ready' },
+  { id: 'performance-occupancy', title: 'Occupancy' },
+  { id: 'performance-adr', title: 'ADR' },
+  { id: 'performance-revpar', title: 'RevPAR' },
+  { id: 'performance-revenue', title: 'Room Revenue' },
   { id: 'nights', title: 'Night by Night' },
   { id: 'room-types', title: 'By Room Type' },
   { id: 'takings', title: 'Money Taken This Month' },
@@ -180,6 +195,15 @@ const HotelDashboard = () => {
     },
   );
 
+  /**
+   * Whether any card in a row is still on.
+   *
+   * ⚠️ Asked before drawing the row, not after. A grid with nothing in it is
+   * still a block with a bottom margin, so a row whose every card is switched
+   * off would leave a hole in the page rather than close up.
+   */
+  const anyVisible = (...ids: string[]) => ids.some((id) => isWidgetVisible(id));
+
   const isCompact = density === 'compact';
   const gap = isCompact ? 'gap-3' : 'gap-4';
   const rowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
@@ -292,90 +316,121 @@ const HotelDashboard = () => {
       {/* ------------------------------------------------------------ */}
       {/* Tonight. The desk's band, and it comes first because at nine in
           the morning nobody is asking about the month. */}
-      {isWidgetVisible('tonight') && (counts || tonight || rooms) ? (
+      {(counts || tonight || rooms) &&
+      anyVisible(
+        'tonight-inhouse',
+        'tonight-arrivals',
+        'tonight-departures',
+        'tonight-free',
+        'tonight-notready',
+      ) ? (
         <div className={`mb-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 ${gap}`}>
-          <Tile
-            label="In the building"
-            value={String(counts?.in_house ?? 0)}
-            working="guests sleeping here tonight"
-            icon={<FaBed className="text-[11px] text-indigo-500" />}
-            tone="text-indigo-600 dark:text-indigo-300"
-          />
-          <Tile
-            label="Arriving"
-            value={String(counts?.arrivals ?? 0)}
-            working="expected at the desk today"
-            icon={<FaDoorOpen className="text-[11px] text-emerald-500" />}
-            tone="text-emerald-600 dark:text-emerald-400"
-          />
-          <Tile
-            label="Leaving"
-            value={String(counts?.departures ?? 0)}
-            working="rooms to turn round today"
-            icon={<FaSignOutAlt className="text-[11px] text-rose-500" />}
-            tone="text-rose-600 dark:text-rose-400"
-          />
+          {isWidgetVisible('tonight-inhouse') ? (
+            <Tile
+              label="In the building"
+              value={String(counts?.in_house ?? 0)}
+              working="guests sleeping here tonight"
+              icon={<FaBed className="text-[11px] text-indigo-500" />}
+              tone="text-indigo-600 dark:text-indigo-300"
+            />
+          ) : null}
+          {isWidgetVisible('tonight-arrivals') ? (
+            <Tile
+              label="Arriving"
+              value={String(counts?.arrivals ?? 0)}
+              working="expected at the desk today"
+              icon={<FaDoorOpen className="text-[11px] text-emerald-500" />}
+              tone="text-emerald-600 dark:text-emerald-400"
+            />
+          ) : null}
+          {isWidgetVisible('tonight-departures') ? (
+            <Tile
+              label="Leaving"
+              value={String(counts?.departures ?? 0)}
+              working="rooms to turn round today"
+              icon={<FaSignOutAlt className="text-[11px] text-rose-500" />}
+              tone="text-rose-600 dark:text-rose-400"
+            />
+          ) : null}
           {/* ⚠️ Free is rooms LESS sold LESS held. A room on hold is neither
               sold nor free, and offering it is how the desk promises a bed
               somebody is already waiting on. */}
-          <Tile
-            label="Free tonight"
-            value={String(tonight?.free ?? 0)}
-            working={
-              tonight
-                ? `${tonight.sold} let${tonight.held ? `, ${tonight.held} on hold` : ''} of ${
-                    run?.rooms ?? 0
-                  }`
-                : undefined
-            }
-          />
-          <Tile
-            label="Not ready"
-            value={notReady === null ? '—' : String(notReady)}
-            working={
-              rooms
-                ? `${rooms.dirty ?? 0} dirty, ${rooms.cleaning ?? 0} being done${
-                    rooms.out_of_order ? `, ${rooms.out_of_order} out of order` : ''
-                  }`
-                : 'housekeeping not visible to you'
-            }
-            icon={<FaBroom className="text-[11px] text-amber-500" />}
-            tone={notReady ? 'text-amber-600 dark:text-amber-400' : undefined}
-          />
+          {isWidgetVisible('tonight-free') ? (
+            <Tile
+              label="Free tonight"
+              value={String(tonight?.free ?? 0)}
+              working={
+                tonight
+                  ? `${tonight.sold} let${tonight.held ? `, ${tonight.held} on hold` : ''} of ${
+                      run?.rooms ?? 0
+                    }`
+                  : undefined
+              }
+            />
+          ) : null}
+          {isWidgetVisible('tonight-notready') ? (
+            <Tile
+              label="Not ready"
+              value={notReady === null ? '—' : String(notReady)}
+              working={
+                rooms
+                  ? `${rooms.dirty ?? 0} dirty, ${rooms.cleaning ?? 0} being done${
+                      rooms.out_of_order ? `, ${rooms.out_of_order} out of order` : ''
+                    }`
+                  : 'housekeeping not visible to you'
+              }
+              icon={<FaBroom className="text-[11px] text-amber-500" />}
+              tone={notReady ? 'text-amber-600 dark:text-amber-400' : undefined}
+            />
+          ) : null}
         </div>
       ) : null}
 
       {/* ------------------------------------------------------------ */}
       {/* The month. The owner's band. */}
-      {isWidgetVisible('performance') && totals ? (
+      {totals &&
+      anyVisible(
+        'performance-occupancy',
+        'performance-adr',
+        'performance-revpar',
+        'performance-revenue',
+      ) ? (
         <div className={`mb-4 grid grid-cols-2 lg:grid-cols-4 ${gap}`}>
-          <Tile
-            label="Occupancy"
-            value={`${totals.occupancy}%`}
-            working={`${totals.room_nights_sold} of ${totals.room_nights_available} room-nights`}
-          />
-          <Tile
-            label="ADR"
-            hint="Average Daily Rate — room revenue divided by the room-nights actually sold"
-            value={money(totals.adr)}
-            working="per room-night SOLD"
-          />
+          {isWidgetVisible('performance-occupancy') ? (
+            <Tile
+              label="Occupancy"
+              value={`${totals.occupancy}%`}
+              working={`${totals.room_nights_sold} of ${totals.room_nights_available} room-nights`}
+            />
+          ) : null}
+          {isWidgetVisible('performance-adr') ? (
+            <Tile
+              label="ADR"
+              hint="Average Daily Rate — room revenue divided by the room-nights actually sold"
+              value={money(totals.adr)}
+              working="per room-night SOLD"
+            />
+          ) : null}
           {/* ⚠️ The lead figure. Occupancy can be bought with discounts and ADR
               can be had by selling three rooms at a high rate; RevPAR is the
               only one of the three that both of those show up in. */}
-          <Tile
-            label="RevPAR"
-            hint="Revenue Per Available Room — room revenue divided by every room-night the property had, sold or not"
-            value={money(totals.revpar)}
-            working="per room the property HAS"
-            lead
-            tone="text-primary dark:text-secondary"
-          />
-          <Tile
-            label="Room revenue"
-            value={money(totals.revenue)}
-            working={`${run?.rooms ?? 0} rooms over ${run?.days ?? 0} nights`}
-          />
+          {isWidgetVisible('performance-revpar') ? (
+            <Tile
+              label="RevPAR"
+              hint="Revenue Per Available Room — room revenue divided by every room-night the property had, sold or not"
+              value={money(totals.revpar)}
+              working="per room the property HAS"
+              lead
+              tone="text-primary dark:text-secondary"
+            />
+          ) : null}
+          {isWidgetVisible('performance-revenue') ? (
+            <Tile
+              label="Room revenue"
+              value={money(totals.revenue)}
+              working={`${run?.rooms ?? 0} rooms over ${run?.days ?? 0} nights`}
+            />
+          ) : null}
         </div>
       ) : null}
 

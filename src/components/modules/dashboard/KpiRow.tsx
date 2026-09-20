@@ -55,7 +55,7 @@ const DEFAULT_COLUMNS = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-
  * genuine warnings (ageing debt, negative stock), and paying a supplier is not
  * a bad outcome that deserves a red number.
  */
-const DEFAULT_TILES: KpiTileSpec[] = [
+export const DEFAULT_TILES: KpiTileSpec[] = [
   // Received, payment and balance are not here on purpose: the branch summary
   // card already carries all three, now with their own sparklines. Repeating
   // them would be the same number twice on one screen.

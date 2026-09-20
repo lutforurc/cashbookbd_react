@@ -60,9 +60,24 @@ import { CARD, CARD_HEAD, Tile, count, money, share } from './dashboardKit';
  * at the foot of the page says which of the two it is.
  */
 
+/*
+ * ⚠️ ONE ITEM PER CARD, NOT ONE PER BAND. The sales band is four tiles in a row
+ * and the inventory band is six, and a single switch for the lot meant turning
+ * off "Parking sold" also took the lead Outstanding tile off the screen. The
+ * four bands that are one card each keep the id they always had, so a layout
+ * saved before this change still reads.
+ */
 const REAL_ESTATE_DASHBOARD_WIDGETS: DashboardWidget[] = [
-  { id: 'sales', title: 'The Sales Book' },
-  { id: 'inventory', title: 'What Is Left To Sell' },
+  { id: 'sales-booked', title: 'Booked Value' },
+  { id: 'sales-received', title: 'Received' },
+  { id: 'sales-outstanding', title: 'Outstanding' },
+  { id: 'sales-buyers', title: 'Buyers' },
+  { id: 'inventory-units-left', title: 'Units Left' },
+  { id: 'inventory-units-sold', title: 'Units Sold' },
+  { id: 'inventory-parking-left', title: 'Parking Left' },
+  { id: 'inventory-parking-sold', title: 'Parking Sold' },
+  { id: 'inventory-withdrawn', title: 'Withdrawn' },
+  { id: 'inventory-being-built', title: 'Being Built' },
   { id: 'projects', title: 'Project by Project' },
   { id: 'collection', title: 'Money Taken This Month' },
   { id: 'installments', title: 'Installments' },
@@ -113,6 +128,15 @@ const RealEstateDashboard = () => {
       enabled: Boolean(me?.id && branchId),
     },
   );
+
+  /**
+   * Whether any card in a row is still on.
+   *
+   * ⚠️ Asked before drawing the row, not after. A grid with nothing in it is
+   * still a block with a bottom margin, so a row whose every card is switched
+   * off would leave a hole in the page rather than close up.
+   */
+  const anyVisible = (...ids: string[]) => ids.some((id) => isWidgetVisible(id));
 
   const isCompact = density === 'compact';
   const gap = isCompact ? 'gap-3' : 'gap-4';
@@ -209,45 +233,54 @@ const RealEstateDashboard = () => {
 
       {/* ------------------------------------------------------------ */}
       {/* The sales book. Deliberately NOT this month's — see the header. */}
-      {isWidgetVisible('sales') && sales ? (
+      {sales &&
+      anyVisible('sales-booked', 'sales-received', 'sales-outstanding', 'sales-buyers') ? (
         <>
           <div className={`mb-4 grid grid-cols-2 sm:grid-cols-4 ${gap}`}>
-            <Tile
-              label="Booked value"
-              value={money(sales.booked_value)}
-              working={`${count(sales.sale_count)} live ${
-                Number(sales.sale_count) === 1 ? 'sale' : 'sales'
-              }, all time`}
-              icon={<FaBuilding className="text-[11px] text-slate-400" />}
-            />
-            <Tile
-              label="Received"
-              value={money(sales.received)}
-              working="confirmed receipts, less refunds"
-              tone="text-emerald-600 dark:text-emerald-400"
-            />
+            {isWidgetVisible('sales-booked') ? (
+              <Tile
+                label="Booked value"
+                value={money(sales.booked_value)}
+                working={`${count(sales.sale_count)} live ${
+                  Number(sales.sale_count) === 1 ? 'sale' : 'sales'
+                }, all time`}
+                icon={<FaBuilding className="text-[11px] text-slate-400" />}
+              />
+            ) : null}
+            {isWidgetVisible('sales-received') ? (
+              <Tile
+                label="Received"
+                value={money(sales.received)}
+                working="confirmed receipts, less refunds"
+                tone="text-emerald-600 dark:text-emerald-400"
+              />
+            ) : null}
             {/* ⚠️ The lead figure. Booked value flatters — a sale is worth what
                 somebody signed for — and Received is the same number for every
                 estate that has just opened. Outstanding is the one that says
                 whether the money is actually coming in. */}
-            <Tile
-              label="Outstanding"
-              value={money(sales.outstanding)}
-              working="still to collect"
-              lead
-              tone="text-primary dark:text-secondary"
-            />
-            <Tile
-              label="Buyers"
-              value={count(sales.buyer_count)}
-              working={
-                `${count(sales.sale_count)} sales between them` +
-                (Number(sales.parking_only_sales) > 0
-                  ? ` · ${count(sales.parking_only_sales)} parking only`
-                  : '')
-              }
-              icon={<FaUsers className="text-[11px] text-indigo-500" />}
-            />
+            {isWidgetVisible('sales-outstanding') ? (
+              <Tile
+                label="Outstanding"
+                value={money(sales.outstanding)}
+                working="still to collect"
+                lead
+                tone="text-primary dark:text-secondary"
+              />
+            ) : null}
+            {isWidgetVisible('sales-buyers') ? (
+              <Tile
+                label="Buyers"
+                value={count(sales.buyer_count)}
+                working={
+                  `${count(sales.sale_count)} sales between them` +
+                  (Number(sales.parking_only_sales) > 0
+                    ? ` · ${count(sales.parking_only_sales)} parking only`
+                    : '')
+                }
+                icon={<FaUsers className="text-[11px] text-indigo-500" />}
+              />
+            ) : null}
           </div>
 
           {/* ⚠️ Said where it is read, not only in the controller. Two screens
@@ -261,42 +294,58 @@ const RealEstateDashboard = () => {
       {/* ------------------------------------------------------------ */}
       {/* What is left to sell. The one band a developer reads before anything
           else, because it is the stock the business is made of. */}
-      {isWidgetVisible('inventory') && inventory ? (
+      {inventory &&
+      anyVisible(
+        'inventory-units-left',
+        'inventory-units-sold',
+        'inventory-parking-left',
+        'inventory-parking-sold',
+        'inventory-withdrawn',
+        'inventory-being-built',
+      ) ? (
         <>
           <div
             className={`mb-1 grid grid-cols-2 sm:grid-cols-3 ${
               hasWithdrawn || hasUnbuilt ? 'lg:grid-cols-6' : 'lg:grid-cols-4'
             } ${gap}`}
           >
-            <Tile
-              label="Units left"
-              value={count(inventory.unit?.available)}
-              working={`of ${count(inventory.unit?.total)} flats and plots`}
-              icon={<FaBuilding className="text-[11px] text-emerald-500" />}
-              tone="text-emerald-600 dark:text-emerald-400"
-            />
-            <Tile
-              label="Units sold"
-              value={count(inventory.unit?.sold)}
-              working={`of ${count(inventory.unit?.total)}`}
-            />
+            {isWidgetVisible('inventory-units-left') ? (
+              <Tile
+                label="Units left"
+                value={count(inventory.unit?.available)}
+                working={`of ${count(inventory.unit?.total)} flats and plots`}
+                icon={<FaBuilding className="text-[11px] text-emerald-500" />}
+                tone="text-emerald-600 dark:text-emerald-400"
+              />
+            ) : null}
+            {isWidgetVisible('inventory-units-sold') ? (
+              <Tile
+                label="Units sold"
+                value={count(inventory.unit?.sold)}
+                working={`of ${count(inventory.unit?.total)}`}
+              />
+            ) : null}
             {/* ⚠️ PARKING IS ITS OWN TILE AND NEVER ADDED INTO UNITS. The
                 module sells a space as its own unit_type, the sold-units
                 screens count it on their own card, and a sale may carry a
                 parking with no flat at all. Folding it in would offer a buyer
                 somewhere to live that has no rooms. */}
-            <Tile
-              label="Parking left"
-              value={count(inventory.parking?.available)}
-              working={`of ${count(inventory.parking?.total)} spaces`}
-              icon={<FaCar className="text-[11px] text-emerald-500" />}
-            />
-            <Tile
-              label="Parking sold"
-              value={count(inventory.parking?.sold)}
-              working={`of ${count(inventory.parking?.total)}`}
-            />
-            {hasWithdrawn ? (
+            {isWidgetVisible('inventory-parking-left') ? (
+              <Tile
+                label="Parking left"
+                value={count(inventory.parking?.available)}
+                working={`of ${count(inventory.parking?.total)} spaces`}
+                icon={<FaCar className="text-[11px] text-emerald-500" />}
+              />
+            ) : null}
+            {isWidgetVisible('inventory-parking-sold') ? (
+              <Tile
+                label="Parking sold"
+                value={count(inventory.parking?.sold)}
+                working={`of ${count(inventory.parking?.total)}`}
+              />
+            ) : null}
+            {isWidgetVisible('inventory-withdrawn') && hasWithdrawn ? (
               <Tile
                 label="Withdrawn"
                 value={count(inventory.total?.inactive)}
@@ -304,7 +353,7 @@ const RealEstateDashboard = () => {
                 tone="text-slate-400"
               />
             ) : null}
-            {hasUnbuilt ? (
+            {isWidgetVisible('inventory-being-built') && hasUnbuilt ? (
               <Tile
                 label="Being built"
                 value={count(inventory.total?.under_development)}

@@ -69,11 +69,34 @@ import { CARD, CARD_HEAD, Tile, count, money, share } from './dashboardKit';
  * the foot says which of the two it is.
  */
 
+/*
+ * ⚠️ ONE ITEM PER CARD, NOT ONE PER BAND. A band on this page is four tiles in a
+ * row with a card under them, and a single switch for the lot meant turning off
+ * "Not sold in 90 days" also took the godown's value off the screen.
+ *
+ * The band words ('stock', 'profit', 'top-profit') survive as PERMISSION scopes
+ * — see PERMISSION_BY_BAND — so a card id is read by prefix: `stock-*` is the
+ * godown's door. Everything else in the id is only the gate's name.
+ */
 const TRADING_DASHBOARD_WIDGETS: DashboardWidget[] = [
-  { id: 'kpi-row', title: 'Today at a Glance' },
-  { id: 'stock', title: 'Stock and Godown' },
-  { id: 'profit', title: 'Gross Profit' },
-  { id: 'dues', title: 'Cash Book and Both Sides of the Money' },
+  { id: 'kpi-sales', title: 'Today Sales' },
+  { id: 'kpi-purchase', title: 'Today Purchase' },
+  { id: 'kpi-received', title: 'Today Received' },
+  { id: 'kpi-payment', title: 'Today Payment' },
+  { id: 'stock-value', title: 'Stock Value' },
+  { id: 'stock-qty', title: 'Quantity on Hand' },
+  { id: 'stock-lines', title: 'Lines in Stock' },
+  { id: 'stock-dead', title: 'Not Sold Lately' },
+  { id: 'money-asleep', title: 'Money Asleep' },
+  { id: 'profit-sales', title: 'Sales' },
+  { id: 'profit-cogs', title: 'Cost of Goods' },
+  { id: 'profit-variance', title: 'Purchase Variance' },
+  { id: 'profit-gross', title: 'Gross Profit' },
+  { id: 'profit-margin', title: 'Margin' },
+  { id: 'dues-balance', title: 'Cash Book' },
+  { id: 'dues-receivable', title: 'Receivable Ageing' },
+  { id: 'dues-payable', title: 'Payable Ageing' },
+  { id: 'dues-net', title: 'Net Position' },
   { id: 'top-profit', title: 'What Made the Money' },
   { id: 'monthly-purchase-sales', title: 'Monthly Purchase Sales Chart' },
 ];
@@ -129,14 +152,25 @@ const TradingDashboard = () => {
    * without the matching permission; this is the same door on the customize
    * list, so the widgets are not offered as switches that would toggle nothing.
    */
-  const PERMISSION_BY_WIDGET: Record<string, string> = {
+  const PERMISSION_BY_BAND: Record<string, string> = {
     stock: 'dashboard.stock.view',
     profit: 'dashboard.profit.view',
     'top-profit': 'dashboard.top.profit.view',
   };
-  const widgets = TRADING_DASHBOARD_WIDGETS.filter(
-    (w) => !PERMISSION_BY_WIDGET[w.id] || hasPermission(permissions, PERMISSION_BY_WIDGET[w.id]),
-  );
+  /*
+   * ⚠️ BY PREFIX, because the list is cards now and the permissions are still
+   * per band: `stock-dead` is the godown's door and `profit-margin` the margin's.
+   * Twenty ids written against three permissions would be twenty places to
+   * forget one, and a card whose permission was forgotten is offered as a switch
+   * that toggles nothing.
+   */
+  const isPermitted = (id: string) =>
+    Object.entries(PERMISSION_BY_BAND).every(
+      ([band, permission]) =>
+        !(id === band || id.startsWith(`${band}-`)) ||
+        hasPermission(permissions, permission),
+    );
+  const widgets = TRADING_DASHBOARD_WIDGETS.filter((w) => isPermitted(w.id));
 
   const [payload, setPayload] = useState<any>(null);
   /**
@@ -164,6 +198,18 @@ const TradingDashboard = () => {
       enabled: Boolean(me?.id && branchId),
     },
   );
+
+  /** The day's tiles, minus the ones switched off. One id per tile, `kpi-<key>`. */
+  const kpiTiles = TRADING_TILES.filter((tile) => isWidgetVisible(`kpi-${tile.key}`));
+
+  /**
+   * Whether any card in a row is still on.
+   *
+   * ⚠️ Asked before drawing the row, not after. A grid with nothing in it is
+   * still a block with a bottom margin, so a row whose every card is switched
+   * off would leave a hole in the page rather than close up.
+   */
+  const anyVisible = (...ids: string[]) => ids.some((id) => isWidgetVisible(id));
 
   const isCompact = density === 'compact';
   const gap = isCompact ? 'gap-3' : 'gap-4';
@@ -274,64 +320,76 @@ const TradingDashboard = () => {
       {/* ------------------------------------------------------------ */}
       {/* Today. The shop's own call and the shop's own tiles, so these four
           read the same on both pages. */}
-      {isWidgetVisible('kpi-row') && (
+      {kpiTiles.length ? (
         <div className="mb-4">
           <KpiRow
             kpis={summaryData?.kpis}
             isLoading={summary?.isLoading}
             trxDate={summaryData?.trxDate}
             gapClass={gap}
-            tiles={TRADING_TILES}
+            tiles={kpiTiles}
           />
         </div>
-      )}
+      ) : null}
 
       {/* ------------------------------------------------------------ */}
       {/* The godown. A POSITION on the day, not the month — see the header. */}
-      {isWidgetVisible('stock') && stock ? (
+      {stock ? (
         <>
-          <div className={`mb-4 grid grid-cols-2 sm:grid-cols-4 ${gap}`}>
-            {/* ⚠️ The lead figure. Quantity flatters — a lakh of units of a
-                cheap line and a thousand of an expensive one are the same
-                number of items and nothing like the same money — and the count
-                of items says only how long the list is. What the godown is
-                worth is the figure that decides whether the month was real. */}
-            <Tile
-              label="Stock value"
-              value={money(stock.value)}
-              working="at what it cost, as at today"
-              icon={<FaBoxes className="text-[11px] text-slate-400" />}
-              lead
-              tone="text-primary dark:text-secondary"
-              hint="Purchase cost of what is still on hand — not what it would sell for"
-            />
-            <Tile
-              label="Quantity on hand"
-              value={qty(stock.qty)}
-              working="across every line held"
-              icon={<FaTruckLoading className="text-[11px] text-slate-400" />}
-            />
-            <Tile
-              label="Lines in stock"
-              value={count(stock.items)}
-              working="products with something on the floor"
-              icon={<FaFileInvoiceDollar className="text-[11px] text-slate-400" />}
-            />
-            {/* ⚠️ The tile a trader actually acts on. Stock that is standing
-                there, worth money, and has not sold in two months is money
-                asleep, and the figure is only useful beside the list below. */}
-            <Tile
-              label={`Not sold in ${deadDays} days`}
-              value={money(stock.dead_value)}
-              working={`${count(stock.dead_items)} ${
-                Number(stock.dead_items) === 1 ? 'line' : 'lines'
-              } sitting still`}
-              icon={<FaSnowflake className="text-[11px] text-sky-500" />}
-              tone={Number(stock.dead_value) > 0 ? 'text-amber-600 dark:text-amber-400' : undefined}
-            />
-          </div>
+          {anyVisible('stock-value', 'stock-qty', 'stock-lines', 'stock-dead') ? (
+            <div className={`mb-4 grid grid-cols-2 sm:grid-cols-4 ${gap}`}>
+              {/* ⚠️ The lead figure. Quantity flatters — a lakh of units of a
+                  cheap line and a thousand of an expensive one are the same
+                  number of items and nothing like the same money — and the count
+                  of items says only how long the list is. What the godown is
+                  worth is the figure that decides whether the month was real. */}
+              {isWidgetVisible('stock-value') ? (
+                <Tile
+                  label="Stock value"
+                  value={money(stock.value)}
+                  working="at what it cost, as at today"
+                  icon={<FaBoxes className="text-[11px] text-slate-400" />}
+                  lead
+                  tone="text-primary dark:text-secondary"
+                  hint="Purchase cost of what is still on hand — not what it would sell for"
+                />
+              ) : null}
+              {isWidgetVisible('stock-qty') ? (
+                <Tile
+                  label="Quantity on hand"
+                  value={qty(stock.qty)}
+                  working="across every line held"
+                  icon={<FaTruckLoading className="text-[11px] text-slate-400" />}
+                />
+              ) : null}
+              {isWidgetVisible('stock-lines') ? (
+                <Tile
+                  label="Lines in stock"
+                  value={count(stock.items)}
+                  working="products with something on the floor"
+                  icon={<FaFileInvoiceDollar className="text-[11px] text-slate-400" />}
+                />
+              ) : null}
+              {/* ⚠️ The tile a trader actually acts on. Stock that is standing
+                  there, worth money, and has not sold in two months is money
+                  asleep, and the figure is only useful beside the list below. */}
+              {isWidgetVisible('stock-dead') ? (
+                <Tile
+                  label={`Not sold in ${deadDays} days`}
+                  value={money(stock.dead_value)}
+                  working={`${count(stock.dead_items)} ${
+                    Number(stock.dead_items) === 1 ? 'line' : 'lines'
+                  } sitting still`}
+                  icon={<FaSnowflake className="text-[11px] text-sky-500" />}
+                  tone={
+                    Number(stock.dead_value) > 0 ? 'text-amber-600 dark:text-amber-400' : undefined
+                  }
+                />
+              ) : null}
+            </div>
+          ) : null}
 
-          {dead.length > 0 ? (
+          {isWidgetVisible('money-asleep') && dead.length > 0 ? (
             <div className={`mb-4 grid grid-cols-1 ${gap} lg:grid-cols-2`}>
               <div className={CARD}>
                 <div className={CARD_HEAD}>
@@ -389,33 +447,38 @@ const TradingDashboard = () => {
 
       {/* ------------------------------------------------------------ */}
       {/* The month's selling. A FLOW, so it honours the range above. */}
-      {isWidgetVisible('profit') && profit ? (
+      {profit &&
+      anyVisible('profit-sales', 'profit-cogs', 'profit-variance', 'profit-gross', 'profit-margin') ? (
         <div
           className={`mb-4 mt-4 grid grid-cols-2 ${
             variance !== 0 ? 'sm:grid-cols-3 lg:grid-cols-5' : 'sm:grid-cols-4'
           } ${gap}`}
         >
-            <Tile
-              label="Sales"
-              value={money(profit.sales)}
-              working={`${count(profit.invoices)} ${
-                Number(profit.invoices) === 1 ? 'invoice' : 'invoices'
-              } · ${qty(profit.sold_qty)} billed`}
-              icon={<FaFileInvoiceDollar className="text-[11px] text-slate-400" />}
-            />
-            <Tile
-              label="Cost of goods"
-              value={money(profit.cogs)}
-              working="what the goods that left had cost to buy"
-              icon={<FaTruckLoading className="text-[11px] text-slate-400" />}
-            />
+            {isWidgetVisible('profit-sales') ? (
+              <Tile
+                label="Sales"
+                value={money(profit.sales)}
+                working={`${count(profit.invoices)} ${
+                  Number(profit.invoices) === 1 ? 'invoice' : 'invoices'
+                } · ${qty(profit.sold_qty)} billed`}
+                icon={<FaFileInvoiceDollar className="text-[11px] text-slate-400" />}
+              />
+            ) : null}
+            {isWidgetVisible('profit-cogs') ? (
+              <Tile
+                label="Cost of goods"
+                value={money(profit.cogs)}
+                working="what the goods that left had cost to buy"
+                icon={<FaTruckLoading className="text-[11px] text-slate-400" />}
+              />
+            ) : null}
             {/* ⚠️ Its own tile, and only when it is not nought. The bill is
                 written for what was loaded and the godown for what was weighed,
                 and the money left at the bill — so this is real cost that the
                 layers above never carried. Folded silently into the cost of
                 goods it would be invisible, which is how a month of quiet
                 shortage stays unnoticed for a year. */}
-            {variance !== 0 ? (
+            {isWidgetVisible('profit-variance') && variance !== 0 ? (
               <Tile
                 label="Purchase variance"
                 value={money(variance)}
@@ -434,72 +497,85 @@ const TradingDashboard = () => {
             {/* ⚠️ The lead figure, and the one the band exists for. Sales alone
                 is quoted as success by anyone who has not seen this number, and
                 a month can sell a great deal and make nothing. */}
-            <Tile
-              label="Gross profit"
-              value={money(profit.gross)}
-              working={`sales less cost${variance !== 0 ? ', less purchase variance' : ''}`}
-              lead
-              tone={
-                Number(profit.gross) < 0
-                  ? 'text-rose-600 dark:text-rose-400'
-                  : 'text-emerald-600 dark:text-emerald-400'
-              }
-            />
-            <Tile
-              label="Margin"
-              value={margin}
-              working="before rent, salary and every other expense"
-              icon={<FaChartLine className="text-[11px] text-slate-400" />}
-              hint="Gross profit as a share of sales. Rent, wages and everything else are not deducted"
-            />
+            {isWidgetVisible('profit-gross') ? (
+              <Tile
+                label="Gross profit"
+                value={money(profit.gross)}
+                working={`sales less cost${variance !== 0 ? ', less purchase variance' : ''}`}
+                lead
+                tone={
+                  Number(profit.gross) < 0
+                    ? 'text-rose-600 dark:text-rose-400'
+                    : 'text-emerald-600 dark:text-emerald-400'
+                }
+              />
+            ) : null}
+            {isWidgetVisible('profit-margin') ? (
+              <Tile
+                label="Margin"
+                value={margin}
+                working="before rent, salary and every other expense"
+                icon={<FaChartLine className="text-[11px] text-slate-400" />}
+                hint="Gross profit as a share of sales. Rent, wages and everything else are not deducted"
+              />
+            ) : null}
           </div>
       ) : null}
 
       {/* ------------------------------------------------------------ */}
       {/* The cash book beside both books at once. A trader is chased by their
           own suppliers, so the supplier column is not decoration. */}
-      {isWidgetVisible('dues') && dues ? (
+      {dues &&
+      anyVisible('dues-balance', 'dues-receivable', 'dues-payable', 'dues-net') ? (
         <>
-          <div className={`mb-1 grid grid-cols-1 items-stretch ${gap} md:grid-cols-3`}>
-            <BalanceSummaryCard rowClass={rowClass} />
-            <DueAgingCard aging={dues.receivable} />
-            {/* ⚠️ The words are passed, not defaulted. The same four buckets
-                mean the opposite thing on this side: money the branch owes and
-                somebody has to pay. A card headed "Receivable Ageing" over the
-                supplier book would be read as money coming in, and "1,20,000 to
-                chase" against a supplier is a wrong instruction. */}
-            <DueAgingCard
-              aging={dues.payable}
-              title="Payable Ageing"
-              overdueLabel="to pay"
-              advanceLabel="Advance paid"
-            />
-          </div>
+          {anyVisible('dues-balance', 'dues-receivable', 'dues-payable') ? (
+            <div className={`mb-1 grid grid-cols-1 items-stretch ${gap} md:grid-cols-3`}>
+              {isWidgetVisible('dues-balance') ? <BalanceSummaryCard rowClass={rowClass} /> : null}
+              {isWidgetVisible('dues-receivable') ? (
+                <DueAgingCard aging={dues.receivable} />
+              ) : null}
+              {/* ⚠️ The words are passed, not defaulted. The same four buckets
+                  mean the opposite thing on this side: money the branch owes and
+                  somebody has to pay. A card headed "Receivable Ageing" over the
+                  supplier book would be read as money coming in, and "1,20,000 to
+                  chase" against a supplier is a wrong instruction. */}
+              {isWidgetVisible('dues-payable') ? (
+                <DueAgingCard
+                  aging={dues.payable}
+                  title="Payable Ageing"
+                  overdueLabel="to pay"
+                  advanceLabel="Advance paid"
+                />
+              ) : null}
+            </div>
+          ) : null}
 
           {/* ⚠️ One figure under the two columns, because that is the question
               the two columns ask together and neither can answer alone: a book
               of 30,00,000 coming in against 29,00,000 going out is a healthy
               trade with nothing in the bank. Advances are NOT netted off —
               those parties are not these parties, and the note says so. */}
-          <div
-            className={`mb-4 flex flex-wrap items-center justify-between gap-2 bg-white px-4 py-2.5 shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700`}
-          >
-            <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-400">
-              <FaBalanceScale className="text-[11px]" />
-              <span title="What customers owe this branch, less what this branch owes its suppliers. Amounts paid ahead are not set against these — a party in credit is a different party, and each side's advance is shown on its own card.">
-                Net position
-              </span>
-            </span>
-            <span
-              className={`text-lg font-bold tabular-nums ${
-                Number(dues.net) < 0
-                  ? 'text-rose-600 dark:text-rose-400'
-                  : 'text-slate-700 dark:text-slate-100'
-              }`}
+          {isWidgetVisible('dues-net') ? (
+            <div
+              className={`mb-4 flex flex-wrap items-center justify-between gap-2 bg-white px-4 py-2.5 shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700`}
             >
-              {money(dues.net)}
-            </span>
-          </div>
+              <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                <FaBalanceScale className="text-[11px]" />
+                <span title="What customers owe this branch, less what this branch owes its suppliers. Amounts paid ahead are not set against these — a party in credit is a different party, and each side's advance is shown on its own card.">
+                  Net position
+                </span>
+              </span>
+              <span
+                className={`text-lg font-bold tabular-nums ${
+                  Number(dues.net) < 0
+                    ? 'text-rose-600 dark:text-rose-400'
+                    : 'text-slate-700 dark:text-slate-100'
+                }`}
+              >
+                {money(dues.net)}
+              </span>
+            </div>
+          ) : null}
         </>
       ) : null}
 

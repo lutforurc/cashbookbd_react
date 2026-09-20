@@ -3,7 +3,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useDispatch, useSelector } from 'react-redux';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDashboard, getDashboardSummary } from './dashboardSlice';
-import KpiRow from './KpiRow';
+import KpiRow, { DEFAULT_TILES } from './KpiRow';
 import DueAgingCard from './DueAgingCard';
 import LowStockCard from './LowStockCard';
 import StockValueCard from './StockValueCard';
@@ -18,8 +18,18 @@ import DashboardCustomizeButton, {
   useDashboardCustomization,
 } from './dashboardCustomization';
 
+/*
+ * ⚠️ ONE ITEM PER TILE, NOT ONE PER ROW. The four KPI tiles sit in one band, and
+ * a single switch for the lot meant turning off "New Customers" also took
+ * Today's Sales off the screen. Each tile in the band is its own switch now, so
+ * the ids below are `kpi-<key>` against the specs KpiRow exports as
+ * DEFAULT_TILES.
+ */
 const NORMAL_DASHBOARD_WIDGETS: DashboardWidget[] = [
-  { id: 'kpi-row', title: 'Today at a Glance' },
+  { id: 'kpi-sales', title: 'Today Sales' },
+  { id: 'kpi-purchase', title: 'Today Purchase' },
+  { id: 'kpi-newCustomers', title: 'New Customers' },
+  { id: 'kpi-vouchers', title: 'Today Vouchers' },
   { id: 'summary', title: 'Balance Summary' },
   { id: 'due-aging', title: 'Receivable Ageing' },
   { id: 'payable-aging', title: 'Payable Ageing' },
@@ -96,6 +106,9 @@ const ComputerAccessories = () => {
   // Feeds both the KPI row and the widget grid, so the two stay aligned.
   const dashboardGapClass = isCompact ? 'gap-3' : 'gap-4';
 
+  /** The day's tiles, minus the ones switched off. One id per tile, `kpi-<key>`. */
+  const kpiTiles = DEFAULT_TILES.filter((tile) => isWidgetVisible(`kpi-${tile.key}`));
+
   const summary = useSelector((s: any) => s.dashboard?.summary);
   const summaryData = summary?.data;
 
@@ -124,16 +137,17 @@ const ComputerAccessories = () => {
       {/* Rendered above the grid rather than as one of its cards: it is a
           summary band, and a saved widget order from before it existed would
           otherwise push it to the bottom of the page for existing users. */}
-      {isWidgetVisible('kpi-row') && (
+      {kpiTiles.length ? (
         <div className="mb-4">
           <KpiRow
             kpis={summaryData?.kpis}
             isLoading={summary?.isLoading}
             trxDate={summaryData?.trxDate}
             gapClass={dashboardGapClass}
+            tiles={kpiTiles}
           />
         </div>
-      )}
+      ) : null}
 
       {/* items-stretch, not items-start: every card in a row ends at the same
           line. Each card is a flex column with its footer on mt-auto, so the
