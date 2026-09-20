@@ -298,10 +298,9 @@ export const HOTEL_RECEIPT_SAMPLE: DocumentData = {
 /**
  * A sale that never happened, matching the screenshot this feature was built
  * from: two products (one with a warranty, one a flat service charge with
- * none), an installment plan, and every optional total at a real
- * non-zero value so none of them are silently hidden in the preview -- a
- * sample with a zero TDS would let a tenant design a layout that never shows
- * where a real one goes.
+ * none), an installment plan, and every optional total at a real value where
+ * non-zero -- the TDS charged and visible, the other two extra-charge lines
+ * deliberately left at zero to prove they hide when there's nothing to show.
  */
 export const SALES_INVOICE_SAMPLE: DocumentData = {
   basic: {
@@ -322,7 +321,7 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
     net_amount: 36120,
     received_amount: 7000,
     due_amount: 29120,
-    amount_words: 'Thirty Six Thousands One Hundred And Twenty Taka Only',
+    amount_words: 'Thirty Six Thousand One Hundred And Twenty Taka Only',
     printed_by: 'Sample User',
   },
   products: [
