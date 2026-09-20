@@ -2621,7 +2621,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.print_template_designer}
                                 className={subMenuLinkClass}
                               >
-                                Print Template Designer
+                                Template Designer
                               </NavLink>
                             </li>
                           )}
