@@ -276,18 +276,27 @@ export type TableBand = BandBase & {
 
 /**
  * The Installment Details table -- a sale's own repayment schedule, printed
- * on its invoice. Unlike TableBand this has no columns to configure: its
- * three (Sl, Due Date, Amount) are fixed by the data shape
- * (`installments[].due_date`, `installments[].amount`), so there is nothing
- * for a tenant to choose there. Only whether it shows, whether it is ruled,
- * and what it is called are template-level decisions -- the same level of
- * configurability as NotesBand and SignatureBand, not TableBand's.
+ * on its invoice.
+ *
+ * ⚠️ THE THREE COLUMNS ARE FIXED -- Sl, Due Date, Amount, reading
+ * `installments[].due_date`/`installments[].amount` -- and a tenant may not
+ * add, remove, or retarget one to a different field, unlike TableBand's
+ * columns. What a tenant DOES get, from real-print feedback: the same
+ * width-share and alignment a TableColumn already carries, plus the order
+ * they print in -- so "Amount" can sit first, or "Due Date" can be centred,
+ * without touching code. `columns` is a `TableColumn[]` for exactly that
+ * reason: it is the same shape and the same width/align/reorder editor
+ * TableBand already has, restricted to these three fields rather than a new
+ * mechanism of its own.
  */
 export type InstallmentBand = BandBase & {
   type: 'installments';
   /** "Installment Details" by default -- renameable like every other title. */
   title: string;
   bordered: boolean;
+  /** Always exactly {field: 'sl'|'due_date'|'amount'}, in whatever order and
+   *  width/align a tenant has set. See DEFAULT_INSTALLMENT_COLUMNS. */
+  columns: TableColumn[];
 };
 
 export type TotalsBand = BandBase & {
@@ -1061,6 +1070,19 @@ export const DEFAULT_LABEL_WIDTH = 9;
  */
 export const DEFAULT_ROW_PADDING = 1;
 export const DEFAULT_ROW_GAP = 0;
+
+/**
+ * The Installment Details table's three columns, in the order and widths it
+ * has always printed at. `field` is one of 'sl' | 'due_date' | 'amount' and
+ * nothing else may appear here -- see InstallmentBand's own comment for why.
+ * A tenant reorders, resizes, and realigns from these starting points; they
+ * do not add a fourth or point one at a different field.
+ */
+export const DEFAULT_INSTALLMENT_COLUMNS: TableColumn[] = [
+  { field: 'sl', label: 'SL', width: 15, align: 'center' },
+  { field: 'due_date', label: 'Due Date', width: 45, align: 'left' },
+  { field: 'amount', label: 'Amount', width: 40, align: 'right' },
+];
 
 const byKey = (list: FieldDef[]) =>
   list.reduce<Record<string, FieldDef>>((map, field) => {
@@ -1936,6 +1958,7 @@ const salesInvoice = (): PrintTemplate => ({
       show: true,
       title: 'Installment Details',
       bordered: true,
+      columns: DEFAULT_INSTALLMENT_COLUMNS,
     }),
     band<InfoBand>({
       id: 'amount-words',
@@ -2191,6 +2214,22 @@ const tableColumns = (value: any): TableColumn[] =>
     }));
 
 /**
+ * The Installment band's columns, read back the same way TableBand's are
+ * (`tableColumns`, just above) but held to the fixed three fields the type
+ * allows -- a stray field from a hand-edited layout is dropped rather than
+ * rendered as a blank column, and any of the three MISSING from what was
+ * saved is appended from DEFAULT_INSTALLMENT_COLUMNS rather than left out,
+ * so a truncated save can never drop Sl, Due Date, or Amount off the paper.
+ */
+const installmentColumns = (value: any): TableColumn[] => {
+  const allowed = new Set(DEFAULT_INSTALLMENT_COLUMNS.map((c) => c.field));
+  const saved = tableColumns(value).filter((c) => allowed.has(c.field));
+  const have = new Set(saved.map((c) => c.field));
+  const missing = DEFAULT_INSTALLMENT_COLUMNS.filter((c) => !have.has(c.field));
+  return [...saved, ...missing];
+};
+
+/**
  * Anything at all, turned into a template the renderer can trust.
  *
  * What comes back from the server is whatever was saved months ago by a version
@@ -2434,6 +2473,7 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
             type: 'installments',
             title: typeof item.title === 'string' && item.title.trim() ? item.title : 'Installment Details',
             bordered: item.bordered !== false,
+            columns: installmentColumns(item.columns),
           };
         default:
           return null;
@@ -2579,7 +2619,14 @@ export const ADDABLE_BANDS: AddableBand[] = [
     name: 'Installment Details',
     hint: 'A repayment schedule, read off the sale\'s own installment plan.',
     build: (id) =>
-      band<InstallmentBand>({ id, type: 'installments', show: true, title: 'Installment Details', bordered: true }),
+      band<InstallmentBand>({
+        id,
+        type: 'installments',
+        show: true,
+        title: 'Installment Details',
+        bordered: true,
+        columns: DEFAULT_INSTALLMENT_COLUMNS,
+      }),
   },
 ];
 

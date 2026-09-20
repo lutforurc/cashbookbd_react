@@ -856,30 +856,106 @@ export const NotesBandEditor: React.FC<{
 export const InstallmentBandEditor: React.FC<{
   band: InstallmentBand;
   onChange: (band: InstallmentBand) => void;
-}> = ({ band, onChange }) => (
-  <div className="flex flex-col gap-3">
-    <div>
-      <span className={SUB_LABEL}>Title</span>
-      <Input
-        value={band.title}
-        placeholder="Installment Details"
-        onChange={(event) => onChange({ ...band, title: event.target.value })}
-        className={CONTROL}
+}> = ({ band, onChange }) => {
+  const { handlers, rowClass } = useRowDrag();
+  const move = (from: number, to: number) =>
+    onChange({ ...band, columns: reorder(band.columns, from, to) });
+  const rowId = (index: number) => `inst-col-${index}`;
+
+  const update = (index: number, patch: Partial<TableColumn>) => {
+    const next = band.columns.slice();
+    next[index] = { ...next[index], ...patch };
+    onChange({ ...band, columns: next });
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div>
+        <span className={SUB_LABEL}>Title</span>
+        <Input
+          value={band.title}
+          placeholder="Installment Details"
+          onChange={(event) => onChange({ ...band, title: event.target.value })}
+          className={CONTROL}
+        />
+      </div>
+      <CheckRow
+        checked={band.bordered}
+        onChange={(bordered) => onChange({ ...band, bordered })}
+        label="Draw a border around it"
       />
+
+      <div>
+        <span className={SUB_LABEL}>Columns</span>
+        {/* Reorder, resize, realign -- but neither add nor remove: the three
+            rows below are always Sl / Due Date / Amount, because that is
+            what a row of the sale's own installment plan has to say. Drag
+            (or the arrows) to put any of the three first. */}
+        <ul className="flex flex-col gap-1.5">
+          {band.columns.map((column, index) => (
+            <li
+              key={rowId(index)}
+              {...handlers(rowId(index), (dragged, over) =>
+                move(Number(dragged.split('-').pop()), Number(over.split('-').pop())),
+              )}
+              className={rowClass(rowId(index))}
+            >
+              <FiMenu className="shrink-0 text-slate-400" />
+
+              <span
+                className="w-20 shrink-0 truncate text-xs text-slate-500 dark:text-slate-400"
+                title={fieldName(column.field)}
+              >
+                {fieldName(column.field)}
+              </span>
+
+              <Input
+                value={column.label ?? ''}
+                draggable={false}
+                placeholder={fieldName(column.field)}
+                onChange={(event) => update(index, { label: event.target.value })}
+                className="min-w-0 flex-1 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1.5 py-0.5 text-sm outline-none dark:bg-boxdark"
+              />
+
+              {/* Same share-based width TableBand's columns use -- need not
+                  add to 100, the renderer scales whatever is here. */}
+              <Input
+                type="number"
+                min={3}
+                max={100}
+                value={column.width ?? 10}
+                draggable={false}
+                title="Width share"
+                onChange={(event) => update(index, { width: Number(event.target.value) })}
+                className="w-16 shrink-0 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1.5 py-0.5 text-sm outline-none dark:bg-boxdark"
+              />
+
+              <Select
+                value={column.align ?? (isNumericField(column.field) ? 'right' : 'left')}
+                draggable={false}
+                onChange={(event) => update(index, { align: event.target.value as Align })}
+                className="w-24 shrink-0 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1 py-0.5 text-xs outline-none dark:bg-boxdark"
+              >
+                {ALIGN_OPTIONS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
+              </Select>
+
+              <MoveButtons index={index} count={band.columns.length} onMove={move} />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <p className="text-xs leading-snug text-slate-500 dark:text-slate-400">
+        The table only appears on a sale that actually has an installment
+        plan, and only on the last page, beside the totals.
+      </p>
     </div>
-    <CheckRow
-      checked={band.bordered}
-      onChange={(bordered) => onChange({ ...band, bordered })}
-      label="Draw a border around it"
-    />
-    <p className="text-xs leading-snug text-slate-500 dark:text-slate-400">
-      Its three columns -- Sl, Due Date, Amount -- come from the sale's own
-      installment plan and are not configurable here. The table only appears
-      on a sale that actually has one, and only on the last page, beside the
-      totals.
-    </p>
-  </div>
-);
+  );
+};
 
 export const SignatureBandEditor: React.FC<{
   band: SignatureBand;

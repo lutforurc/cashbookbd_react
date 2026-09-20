@@ -12,6 +12,7 @@ import type { PrintBranch } from '../utils-functions/printBranch';
 import {
   Align,
   Band,
+  DEFAULT_INSTALLMENT_COLUMNS,
   InfoBand,
   InfoItem,
   InstallmentBand,
@@ -792,33 +793,67 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       const rows = Array.isArray(data?.installments) ? data.installments : [];
       if (!rows.length) return null;
 
+      // Reorder, resize, realign -- see InstallmentBand's own comment for why
+      // this is a TableColumn[] restricted to three fields rather than a
+      // mechanism of its own. Falls back to the standard order if a very old
+      // saved layout somehow reaches the renderer with none, though
+      // normalizeTemplate never lets that through in practice.
+      const columns = band.columns?.length ? band.columns : DEFAULT_INSTALLMENT_COLUMNS;
+      const widths = columnWidths(columns);
+
+      // The row-independent facts a column can print, by field. Unlike
+      // TableBlock's `cell()` this never reads FIELD_CATALOG -- the three
+      // fields here are not in any catalogue, because they name a row of
+      // `data.installments`, not a row of `data.basic` or `data.products`.
+      const cellValue = (column: TableColumn, row: any, index: number) => {
+        if (column.field === 'sl') return index + 1;
+        if (column.field === 'due_date') {
+          return dayjs(row?.due_date).isValid() ? dayjs(row.due_date).format('DD/MM/YYYY') : '';
+        }
+        if (column.field === 'amount') return thousandSeparator(num(row?.amount));
+        return '';
+      };
+
       const border = band.bordered ? 'border border-gray-800' : '';
 
       return (
-        <div className={`mb-2 inline-block ${border}`} style={{ minWidth: '260px' }}>
+        <div className={`mb-2 w-full ${border}`}>
           {band.title ? (
             <h2 className="w-full border-b border-gray-800 px-2 py-0.5 text-center text-[0.9em] font-semibold">
               {band.title}
             </h2>
           ) : null}
-          <table className="w-full">
+          <table className="w-full table-fixed">
+            <colgroup>
+              {columns.map((column, index) => (
+                <col key={column.field} style={{ width: widths[index] }} />
+              ))}
+            </colgroup>
             <thead>
               <tr className="border-b border-gray-800 text-[0.85em] font-semibold">
-                <th className="px-2 py-0.5 text-center">SL</th>
-                <th className="px-2 py-0.5 text-left">Due Date</th>
-                <th className="px-2 py-0.5 text-right">Amount</th>
+                {columns.map((column) => (
+                  <th
+                    key={column.field}
+                    className={`px-2 py-0.5 ${alignClass[column.align ?? 'left']}`}
+                  >
+                    {column.label || fieldName(column.field)}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {rows.map((row: any, index: number) => (
                 <tr key={index} className="border-b border-gray-300 last:border-b-0">
-                  <td className="px-2 py-0.5 text-center">{index + 1}</td>
-                  <td className="px-2 py-0.5 text-left">
-                    {dayjs(row?.due_date).isValid() ? dayjs(row.due_date).format('DD/MM/YYYY') : ''}
-                  </td>
-                  <td className="px-2 py-0.5 text-right font-medium">
-                    {thousandSeparator(num(row?.amount))}
-                  </td>
+                  {columns.map((column) => (
+                    <td
+                      key={column.field}
+                      className={`px-2 py-0.5 ${alignClass[column.align ?? 'left']} ${
+                        column.field === 'amount' ? 'font-medium' : ''
+                      }`}
+                    >
+                      {cellValue(column, row, index)}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
