@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
 
 /**
@@ -76,7 +75,6 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
       delivery_location: salesMaster?.sales_order?.delivery_location || '',
       vehicle_no: salesMaster?.vehicle_no || '',
       created_by: data?.user?.name || '',
-      printed_by: data?.approved_user?.name || data?.user?.name || '',
       grand_total: grandTotal,
       tds_name: tds ? tds.coa_l4?.name : '',
       tds_amount: tdsAmount,
