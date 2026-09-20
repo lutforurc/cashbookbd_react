@@ -1137,7 +1137,16 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
       delivery_location: salesMaster?.sales_order?.delivery_location || '',
       vehicle_no: salesMaster?.vehicle_no || '',
       created_by: data?.user?.name || '',
-      printed_by: data?.approved_user?.name || data?.user?.name || '',
+      // NOT printed_by. DocumentPrint.tsx:209 does
+      // `{ printed_by: printedBy, ...(data?.basic ?? {}) }` -- the spread
+      // runs AFTER the session default, so a `printed_by` key here would
+      // OVERRIDE it with a stale voucher fact (whoever approved/created the
+      // sale) instead of whoever is actually at the printer today. See the
+      // comment on `printed_by` right there and in
+      // SALES_INVOICE_FIELD_CATALOG -- this field exists for a template to
+      // NAME on the signature line, not for an adapter to fill in. (Caught
+      // in Task 9's review: this line was wrong in the plan, not an
+      // implementer error.)
       grand_total: grandTotal,
       tds_name: tds ? tds.coa_l4?.name : '',
       tds_amount: tdsAmount,
