@@ -1270,13 +1270,16 @@ const SalesLedger = (user: any) => {
         <Table columns={columns} data={tableData || []} />
 
         {tableData.length > 0 && (
-          <div className="mt-2 border-t font-bold">
-            <div className="flex justify-end space-x-8 p-2">
-              <div>Quantity: {thousandSeparator(totalQuantity)}</div>
-              <div>Total: {thousandSeparator(totalPayment)}</div>
-              <div>Discount: {thousandSeparator(totalDiscount)}</div>
-              <div>Received: {thousandSeparator(grandTotal)}</div>
-              <div>Balance: {thousandSeparator(totalBalance)}</div>
+          <div className="mt-2 border-t border-b font-bold">
+            <div className="flex items-center justify-between p-2">
+              <div>Grand Total</div>
+              <div className="flex space-x-8">
+                <div>Quantity: {thousandSeparator(totalQuantity)}</div>
+                <div>Total: {thousandSeparator(totalPayment)}</div>
+                <div>Discount: {thousandSeparator(totalDiscount)}</div>
+                <div>Received: {thousandSeparator(grandTotal)}</div>
+                <div>Balance: {thousandSeparator(totalBalance)}</div>
+              </div>
             </div>
           </div>
         )}
