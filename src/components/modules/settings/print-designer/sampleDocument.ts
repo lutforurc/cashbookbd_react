@@ -354,6 +354,49 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
   ],
 };
 
+/**
+ * A purchase that never happened, for the same preview -- one product with a
+ * warranty, one without, and a non-zero discount so that line's hide-when-zero
+ * behavior can be seen NOT hiding here (compare against a real invoice with
+ * no discount, where it correctly disappears).
+ */
+export const PURCHASE_INVOICE_SAMPLE: DocumentData = {
+  basic: {
+    party_name: 'Sample Wholesale Traders',
+    mobile: '01700000000',
+    manual_address: 'Sample Bazar, Sample Sadar',
+    notes: 'Purchased against PO-1100025951.',
+    vr_no: '4-260900021',
+    vr_date: dayjs().format('YYYY-MM-DD'),
+    total_amount: 84000,
+    discount_amount: 2000,
+    net_amount: 82000,
+    paid_amount: 50000,
+    due_amount: 32000,
+    amount_words: 'Eighty Two Thousand Taka Only',
+  },
+  products: [
+    {
+      sl: 1,
+      product_name: 'Xiaomi Redmi Note 15 6/128GB Variant',
+      qty: 3,
+      price: 24000,
+      amount: 72000,
+      serial_no: '',
+      warranty: '365 day',
+    },
+    {
+      sl: 2,
+      product_name: 'Screen Guard (Pack of 10)',
+      qty: 2,
+      price: 6000,
+      amount: 12000,
+      serial_no: '',
+      warranty: '',
+    },
+  ],
+};
+
 /** Which sample the preview draws for the paper being designed. */
 /**
  * The document the designer previews against.
@@ -368,5 +411,6 @@ export const sampleFor = (docType: string): DocumentData => {
   if (docType === 'hotel_bill') return HOTEL_BILL_SAMPLE;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_SAMPLE;
   if (docType === 'sales_invoice') return SALES_INVOICE_SAMPLE;
+  if (docType === 'purchase_invoice') return PURCHASE_INVOICE_SAMPLE;
   return SAMPLE_DOCUMENT;
 };
