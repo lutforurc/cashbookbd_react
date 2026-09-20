@@ -32,6 +32,8 @@ import {
   DocType,
   InfoBand,
   InstallmentBand,
+  MARGIN_LEFT,
+  MARGIN_RIGHT,
   NotesBand,
   PrintTemplate,
   SignatureBand,
@@ -956,7 +958,20 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
           <div className="flex flex-col justify-end">
             <CheckRow
               checked={template.pageSize === 'half'}
-              onChange={(half) => patch({ pageSize: half ? 'half' : 'a4' })}
+              onChange={(half) =>
+                // The 18mm/16mm every other report defaults to is sized for
+                // A4 -- on a 148.5mm-wide half sheet it eats a real fraction
+                // of the paper. 5mm both sides on the way in, and the FULL
+                // margins back on the way out, so toggling this off does not
+                // strand somebody's receipt at 5mm on a full sheet. Still
+                // just a starting point: the two number boxes beside this
+                // one are where a tenant who wants something else sets it.
+                patch({
+                  pageSize: half ? 'half' : 'a4',
+                  marginLeft: half ? 5 : MARGIN_LEFT,
+                  marginRight: half ? 5 : MARGIN_RIGHT,
+                })
+              }
               label="Half page (210 x 148.5mm)"
               hint="For a small receipt printer instead of a full A4 sheet."
             />
