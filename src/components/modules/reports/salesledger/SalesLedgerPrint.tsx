@@ -478,29 +478,29 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                   </tbody>
                 </table>
 
-                {/* Summary only last page */}
+                {/* Summary only last page -- same row, same two rules, the
+                    on-screen table foots with. */}
                 {rowsArr?.length > 0 && pIdx === pages.length - 1 && (
-                  <div className="mt-3 border-t border-gray-900 pt-2">
-                    <div className="flex justify-end gap-6 font-bold text-xs">
-                      <div>
-                        Quantity: {thousandSeparator(totalQuantity)}
-                      </div>
-                      <div>Total: {thousandSeparator(totalPayment)}</div>
-                      <div>Received: {thousandSeparator(grandTotal)}</div>
-                      {totalDiscount > 0 && (
+                  <div className="mt-3 border-t border-b border-gray-900 py-2">
+                    <div className="flex items-center justify-between font-bold text-xs">
+                      <div>Grand Total</div>
+                      <div className="flex gap-6">
                         <div>
-                          Discount: {thousandSeparator(totalDiscount)}
+                          Quantity: {thousandSeparator(totalQuantity)}
                         </div>
-                      )}
-                      {totalBalance > 0 && (
-                        <div>Due: {thousandSeparator(totalBalance)}</div>
-                      )}
+                        <div>Total: {thousandSeparator(totalPayment)}</div>
+                        <div>Discount: {thousandSeparator(totalDiscount)}</div>
+                        <div>Received: {thousandSeparator(grandTotal)}</div>
+                        <div>Balance: {thousandSeparator(totalBalance)}</div>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
 
-              <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
+              {/* `fixed`, alongside the page count, not instead of it -- see
+                  the same note in PurchaseLedgerPrint.tsx. */}
+              <PrintFooter fixed page={pIdx + 1} total={pages.length} fontSize={fs} />
 
               {pIdx !== pages.length - 1 && <div className="page-break" />}
             </div>

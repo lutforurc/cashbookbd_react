@@ -346,20 +346,32 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                   </tbody>
                 </table>
 
-                {/* Summary only on LAST page (CashBook style compatible) */}
+                {/* Summary only on LAST page -- same row, same two rules,
+                    the on-screen table foots with. */}
                 {rowsArr?.length > 0 && pIdx === pages.length - 1 && (
-                  <div className="mt-3 border-t border-gray-900 pt-2">
-                    <div className="flex justify-end gap-6 font-bold text-xs">
-                      <div>Quantity: {thousandSeparator(totalQuantity)}</div>
-                      <div>Total: {thousandSeparator(totalPayment)}</div>
-                      { discountTotal > 0 && <div>Discount: {thousandSeparator(discountTotal)}</div>}
-                      <div>Payment: {thousandSeparator(grandTotal)}</div>
+                  <div className="mt-3 border-t border-b border-gray-900 py-2">
+                    <div className="flex items-center justify-between font-bold text-xs">
+                      <div>Grand Total</div>
+                      <div className="flex gap-6">
+                        <div>Quantity: {thousandSeparator(totalQuantity)}</div>
+                        <div>Total: {thousandSeparator(totalPayment)}</div>
+                        <div>Discount: {thousandSeparator(discountTotal)}</div>
+                        <div>Payment: {thousandSeparator(grandTotal)}</div>
+                        <div>Balance: {thousandSeparator(totalPayment - grandTotal - discountTotal)}</div>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
 
-              <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
+              {/* `fixed`, alongside the page count, not instead of it: with
+                  "All" the default row-per-page choice (see
+                  PurchaseLedger.tsx's perPage state), this page is one
+                  unbroken flex box, and `mt-auto` alone only reaches the foot
+                  of a box whose own height is still the sheet's -- a box
+                  that grew past it has nothing left for `mt-auto` to push
+                  into. `fixed` pins the line to the physical page instead. */}
+              <PrintFooter fixed page={pIdx + 1} total={pages.length} fontSize={fs} />
 
               {pIdx !== pages.length - 1 && <div className="page-break" />}
 
