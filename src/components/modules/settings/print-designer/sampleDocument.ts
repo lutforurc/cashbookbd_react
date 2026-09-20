@@ -295,6 +295,66 @@ export const HOTEL_RECEIPT_SAMPLE: DocumentData = {
   products: [],
 };
 
+/**
+ * A sale that never happened, matching the screenshot this feature was built
+ * from: two products (one with a warranty, one a flat service charge with
+ * none), an installment plan, and every optional total at a real
+ * non-zero value so none of them are silently hidden in the preview -- a
+ * sample with a zero TDS would let a tenant design a layout that never shows
+ * where a real one goes.
+ */
+export const SALES_INVOICE_SAMPLE: DocumentData = {
+  basic: {
+    party_name: 'MD. Sample Islam',
+    mobile: '01700000000',
+    manual_address: 'Sample Bazar, Sample Sadar, Sample District',
+    notes: 'Sales By Installments.',
+    vr_no: '3-260900038',
+    vr_date: dayjs().format('YYYY-MM-DD'),
+    grand_total: 32520,
+    tds_name: 'Installment Charge',
+    tds_amount: 3600,
+    service_charge_name: '',
+    service_charge_amount: 0,
+    carrying_outward_name: '',
+    carrying_outward_amount: 0,
+    discount_amount: 0,
+    net_amount: 36120,
+    received_amount: 7000,
+    due_amount: 29120,
+    amount_words: 'Thirty Six Thousands One Hundred And Twenty Taka Only',
+    printed_by: 'Sample User',
+  },
+  products: [
+    {
+      sl: 1,
+      product_name: 'Xiaomi Redmi Note 15 6/128GB Variant',
+      qty: 1,
+      price: 28000,
+      amount: 28000,
+      serial_no: '862795086755008',
+      warranty: '365 day',
+    },
+    {
+      sl: 2,
+      product_name: 'Sample Mobile Shop Service Charge (Stamp with Locker)',
+      qty: 1,
+      price: 4520,
+      amount: 4520,
+      serial_no: '',
+      warranty: '',
+    },
+  ],
+  installments: [
+    { due_date: dayjs().add(1, 'month').format('YYYY-MM-DD'), amount: 4860 },
+    { due_date: dayjs().add(2, 'month').format('YYYY-MM-DD'), amount: 4860 },
+    { due_date: dayjs().add(3, 'month').format('YYYY-MM-DD'), amount: 4860 },
+    { due_date: dayjs().add(4, 'month').format('YYYY-MM-DD'), amount: 4860 },
+    { due_date: dayjs().add(5, 'month').format('YYYY-MM-DD'), amount: 4860 },
+    { due_date: dayjs().add(6, 'month').format('YYYY-MM-DD'), amount: 4820 },
+  ],
+};
+
 /** Which sample the preview draws for the paper being designed. */
 /**
  * The document the designer previews against.
@@ -308,5 +368,6 @@ export const sampleFor = (docType: string): DocumentData => {
   if (docType === 'sales_order') return SAMPLE_ORDER_DOCUMENT;
   if (docType === 'hotel_bill') return HOTEL_BILL_SAMPLE;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_SAMPLE;
+  if (docType === 'sales_invoice') return SALES_INVOICE_SAMPLE;
   return SAMPLE_DOCUMENT;
 };
