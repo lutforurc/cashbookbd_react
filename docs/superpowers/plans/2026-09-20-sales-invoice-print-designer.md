@@ -29,7 +29,7 @@
 
 **Interfaces:**
 - Consumes: nothing from earlier tasks (first task).
-- Produces: `electronics/sales/invoice-print`'s JSON response gains a `print_layout` key (`array|null` — the same shape `PrintTemplateController::show()` already returns under `layout`, i.e. `{id, branch_id, doc_type, name, is_default, layout}` or `null`). Every later frontend task that reads the sales-invoice print payload relies on `voucherData.print_layout.layout` being the raw template JSON (or `voucherData.print_layout` being `null`).
+- Produces: `electronics/sales/invoice-print`'s JSON response gains a `print_layout` key (`array|null`). **Corrected during task review (ruling in the SDD ledger):** this is the RAW template JSON directly (or `null`), matching the established convention `SalesController::apiSalesChallanData()` already uses for its own bare `layout` field — not the wrapped `{id, branch_id, doc_type, name, is_default, layout}` object `PrintTemplateController::show()` returns (that shape is for the *editing* screen; this endpoint follows the *printing*-time convention instead, which every existing doc type's print path already uses unwrapped). Every later frontend task that reads the sales-invoice print payload relies on `voucherData.print_layout` being the raw template JSON directly (or `null`) — NOT `voucherData.print_layout.layout`.
 
 - [ ] **Step 1: Add `'sales_invoice'` to the accepted doc types**
 
@@ -1238,7 +1238,11 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
     }
 
     const documentData = toSalesInvoiceDocumentData(data);
-    const savedLayout = data?.print_layout?.layout;
+    // NOT `data?.print_layout?.layout` — print_layout IS the raw layout
+    // (or null), the same bare-field convention apiSalesChallanData's own
+    // `layout` field already uses. See the ruling on Task 1 in the SDD
+    // ledger for why.
+    const savedLayout = data?.print_layout;
     const template = savedLayout
       ? normalizeTemplate(savedLayout, 'sales_invoice')
       : defaultTemplate('sales_invoice');
