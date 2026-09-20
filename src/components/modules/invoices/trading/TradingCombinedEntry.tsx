@@ -81,6 +81,21 @@ const normalizeLookupText = (value: any) =>
     .toLowerCase()
     .replace(/\s+/g, ' ');
 
+/**
+ * Whether two orders are for the same product. By id when both orders named
+ * one, by name otherwise -- an order is not always resolved down to an id.
+ */
+const isSameOrderProduct = (
+  first: { id: string; name: string },
+  second: { id: string; name: string },
+) =>
+  first.id && second.id
+    ? first.id === second.id
+    : normalizeLookupText(first.name) === normalizeLookupText(second.name);
+
+const PRODUCT_MISMATCH_MESSAGE =
+  'Purchase Order and Sales Order are for different products. Change or clear one of the orders.';
+
 const toBooleanFlag = (value: unknown) => value == 1 || value === '1' || value === true;
 const hasPositiveAmount = (value: unknown) => {
   const amount = Number(value || 0);
@@ -800,23 +815,16 @@ const TradingCombinedEntry = () => {
 
   /**
    * One entry writes a purchase and a sale of the same goods, so the two orders
-   * have to be for one product. Said and not enforced: the clerk may be part
-   * way through setting the entry up, and the orders themselves are what the
-   * vouchers hang off -- refusing the save would not fix either one.
+   * have to be for one product. Said here the moment the second order arrives,
+   * so the clerk hears it while the entry is still being set up and not only at
+   * the end; handleSave refuses the save on the same condition.
    */
   useEffect(() => {
     const { purchase, sales } = orderProducts;
     if (!purchase || !sales) return;
 
-    const sameProduct =
-      purchase.id && sales.id
-        ? purchase.id === sales.id
-        : normalizeLookupText(purchase.name) === normalizeLookupText(sales.name);
-
-    if (!sameProduct) {
-      toast.info(
-        'The Purchase Order and the Sales Order are for different products. Check the two orders.',
-      );
+    if (!isSameOrderProduct(purchase, sales)) {
+      toast.info(PRODUCT_MISMATCH_MESSAGE);
     }
   }, [orderProducts]);
 
@@ -981,6 +989,19 @@ const TradingCombinedEntry = () => {
     if (!formData.customerAccount) {
       toast.info('Please select Customer');
       focusField('customerAccount');
+      return;
+    }
+    // The two orders say what is being bought and sold; when they disagree the
+    // entry has no single product to write on both legs, so it is not saved.
+    // Clearing an order releases this, exactly as it releases the party boxes.
+    const { purchase: purchaseOrderProduct, sales: salesOrderProduct } = orderProducts;
+    if (
+      purchaseOrderProduct &&
+      salesOrderProduct &&
+      !isSameOrderProduct(purchaseOrderProduct, salesOrderProduct)
+    ) {
+      toast.info(PRODUCT_MISMATCH_MESSAGE);
+      focusField('purchaseOrderNumber');
       return;
     }
     if (!Number.isFinite(amount) || amount < 0) {
