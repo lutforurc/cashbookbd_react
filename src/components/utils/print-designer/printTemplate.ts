@@ -878,11 +878,81 @@ export const HOTEL_RECEIPT_FIELDS: FieldDef[] = [
   { key: 'advance_held', name: 'Total Held To Date', group: 'receipt', numeric: true, format: 'money' },
 ];
 
+/**
+ * The Electronics Sales Invoice.
+ *
+ * Ported from ElectronicsSalesInvoicePrintBase.tsx's getSalesMeta(), which
+ * this paper replaces. The three "extra charge" fields (tds/service
+ * charge/carrying outward) keep their DYNAMIC names on purpose -- they are
+ * whichever account the sale posted to coa4_id 41/198/42, named however the
+ * tenant's own chart of accounts names it ("Installment Charge", "Delivery
+ * Charge", whatever a branch actually calls it), not a fixed label. A
+ * template names the AMOUNT field; the label the paper prints is read off
+ * the sale itself, the same way `bill_vat_summary` already works on the
+ * hotel bill.
+ */
+export const SALES_INVOICE_FIELD_CATALOG: FieldDef[] = [
+  // Who it goes to
+  { key: 'party_name', name: 'Customer Name', group: 'party' },
+  { key: 'mobile', name: 'Customer Mobile', group: 'party' },
+  { key: 'manual_address', name: 'Address', group: 'party' },
+
+  // Which paper this is
+  { key: 'vr_no', name: 'Invoice No', group: 'voucher' },
+  { key: 'vr_date', name: 'Invoice Date', group: 'voucher', format: 'date' },
+  { key: 'order_number', name: 'Order Number', group: 'voucher' },
+  { key: 'delivery_location', name: 'Delivery Location', group: 'voucher' },
+  { key: 'vehicle_no', name: 'Vehicle No', group: 'transport' },
+  { key: 'created_by', name: 'Sales By', group: 'voucher' },
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  { key: 'branch_name', name: 'Branch', group: 'voucher' },
+  { key: 'branch_address', name: 'Branch Address', group: 'voucher' },
+  { key: 'notes', name: 'Notes', group: 'voucher' },
+  { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+
+  { key: 'blank', name: 'Blank line', group: 'manual' },
+
+  // What it adds up to
+  { key: 'grand_total', name: 'Total', group: 'total', numeric: true, format: 'money' },
+  // The name is read off the sale's own chart of accounts -- see the note
+  // above the catalogue. Empty on a sale with none, and the amount line
+  // hides with it (TotalsBand already hides a zero money line).
+  { key: 'tds_name', name: 'Extra Charge 1 -- Label', group: 'total' },
+  { key: 'tds_amount', name: 'Extra Charge 1 -- Amount', group: 'total', numeric: true, format: 'money' },
+  { key: 'service_charge_name', name: 'Extra Charge 2 -- Label', group: 'total' },
+  { key: 'service_charge_amount', name: 'Extra Charge 2 -- Amount', group: 'total', numeric: true, format: 'money' },
+  { key: 'carrying_outward_name', name: 'Extra Charge 3 -- Label', group: 'total' },
+  { key: 'carrying_outward_amount', name: 'Extra Charge 3 -- Amount', group: 'total', numeric: true, format: 'money' },
+  { key: 'discount_amount', name: 'Discount', group: 'total', numeric: true, format: 'money' },
+  { key: 'net_amount', name: 'Net Total', group: 'total', numeric: true, format: 'money' },
+  { key: 'received_amount', name: 'Received', group: 'total', numeric: true, format: 'money' },
+  { key: 'due_amount', name: 'Due', group: 'total', numeric: true, format: 'money' },
+  { key: 'amount_words', name: 'Amount In Words', group: 'total', format: 'words', from: 'net_amount' },
+  { key: 'line_count', name: 'Number of Items', group: 'total', numeric: true },
+];
+
+/** One product line of a sales invoice. */
+export const SALES_INVOICE_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  { key: 'product_name', name: 'Product Name', group: 'line' },
+  { key: 'category', name: 'Category', group: 'line' },
+  { key: 'brand', name: 'Brand', group: 'line' },
+  { key: 'description', name: 'Description', group: 'line' },
+  { key: 'serial_no', name: 'Serial No', group: 'line' },
+  // The second line under the product name -- see TableColumn.subField.
+  // "X day" the way the old component's getWarrantyInfo() read it.
+  { key: 'warranty', name: 'Warranty', group: 'line' },
+  { key: 'qty', name: 'Quantity', group: 'line', numeric: true },
+  { key: 'price', name: 'Rate', group: 'line', numeric: true, format: 'money' },
+  { key: 'amount', name: 'Amount', group: 'line', numeric: true, format: 'money' },
+];
+
 /** Which fields a paper may draw from. */
 export const fieldsFor = (docType: DocType): FieldDef[] => {
   if (docType === 'sales_order') return ORDER_FIELD_CATALOG;
   if (docType === 'hotel_bill') return HOTEL_BILL_FIELDS;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_FIELDS;
+  if (docType === 'sales_invoice') return SALES_INVOICE_FIELD_CATALOG;
   return FIELD_CATALOG;
 };
 
@@ -909,6 +979,7 @@ export const lineFieldsFor = (docType: DocType): FieldDef[] => {
   // A money receipt has none: it is one payment, and a table on it would be the
   // bill -- which is precisely the document a receipt must not become.
   if (docType === 'hotel_money_receipt') return [];
+  if (docType === 'sales_invoice') return SALES_INVOICE_LINE_FIELDS;
   return LINE_FIELDS;
 };
 
@@ -959,9 +1030,10 @@ const ALL_INFO_BY_KEY = byKey([
   ...ORDER_FIELD_CATALOG,
   ...HOTEL_BILL_FIELDS,
   ...HOTEL_RECEIPT_FIELDS,
+  ...SALES_INVOICE_FIELD_CATALOG,
 ]);
 
-const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS]);
+const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS]);
 
 /** The catalogue's own name for a field, or the key itself if it is unknown. */
 export const fieldName = (key: string) =>
