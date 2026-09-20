@@ -14,6 +14,7 @@ import {
   Band,
   InfoBand,
   InfoItem,
+  InstallmentBand,
   NotesBand,
   PrintTemplate,
   SignatureBand,
@@ -38,6 +39,8 @@ import {
 export type DocumentData = {
   basic?: Record<string, any> | null;
   products?: any[] | null;
+  /** A sale's own repayment schedule -- {due_date, amount}[]. */
+  installments?: any[] | null;
   /** Whose letterhead heads the page -- the voucher's branch, not the reader's. */
   branch?: PrintBranch | null;
 };
@@ -83,8 +86,15 @@ const plate = (value: any) => (blank(value) ? '' : formatTransportationNumber(va
  * print governs the real height -- so without a height stated here every
  * preview page would be exactly as tall as the rows on it, and a tenant could
  * not see how much of the sheet a challan actually fills.
+ *
+ * Keyed by pageSize then orientation. The a4 numbers are unchanged from
+ * before pageSize existed; half is roughly half A4's height at the same
+ * 96dpi/-76px basis (148.5mm vs 297mm).
  */
-const PREVIEW_PAGE_HEIGHT = { portrait: 1046, landscape: 718 };
+const PREVIEW_PAGE_HEIGHT = {
+  a4: { portrait: 1046, landscape: 718 },
+  half: { portrait: 485, landscape: 484 },
+};
 
 const alignClass: Record<Align, string> = {
   left: 'text-left',
@@ -774,6 +784,45 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       );
     };
 
+    const InstallmentBlock: React.FC<{ band: InstallmentBand }> = ({ band }) => {
+      const rows = Array.isArray(data?.installments) ? data.installments : [];
+      if (!rows.length) return null;
+
+      const border = band.bordered ? 'border border-gray-800' : '';
+
+      return (
+        <div className={`mb-2 inline-block ${border}`} style={{ minWidth: '260px' }}>
+          {band.title ? (
+            <h2 className="w-full border-b border-gray-800 px-2 py-0.5 text-center text-[0.9em] font-semibold">
+              {band.title}
+            </h2>
+          ) : null}
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-800 text-[0.85em] font-semibold">
+                <th className="px-2 py-0.5 text-center">SL</th>
+                <th className="px-2 py-0.5 text-left">Due Date</th>
+                <th className="px-2 py-0.5 text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row: any, index: number) => (
+                <tr key={index} className="border-b border-gray-300 last:border-b-0">
+                  <td className="px-2 py-0.5 text-center">{index + 1}</td>
+                  <td className="px-2 py-0.5 text-left">
+                    {dayjs(row?.due_date).isValid() ? dayjs(row.due_date).format('DD/MM/YYYY') : ''}
+                  </td>
+                  <td className="px-2 py-0.5 text-right font-medium">
+                    {thousandSeparator(num(row?.amount))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    };
+
     /**
      * Blank paper of a stated height.
      *
@@ -1125,6 +1174,8 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           return <NotesBlock key={band.id} band={band} />;
         case 'signature':
           return <SignatureBlock key={band.id} band={band} />;
+        case 'installments':
+          return <InstallmentBlock key={band.id} band={band as InstallmentBand} />;
         case 'spacer':
           return <SpacerBlock key={band.id} band={band} />;
         default:
@@ -1145,7 +1196,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
     // paper belongs.
     return (
       <div ref={ref} className="print-root text-black">
-        <PrintStyles orientation={template.orientation} />
+        <PrintStyles orientation={template.orientation} pageSize={template.pageSize} />
 
         {/*
           This document's own side margins, and nothing else's.
@@ -1203,7 +1254,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                 fontSize: `${template.fontSize}px`,
                 ...(preview
                   ? {
-                      minHeight: PREVIEW_PAGE_HEIGHT[template.orientation],
+                      minHeight: PREVIEW_PAGE_HEIGHT[template.pageSize ?? 'a4'][template.orientation],
                       // On screen the print stylesheet is asleep, so the margins
                       // have to be drawn here or the preview would show the text
                       // running to the edge of a sheet it will not run to.

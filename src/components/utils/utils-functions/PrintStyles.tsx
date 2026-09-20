@@ -3,6 +3,13 @@ import React from 'react';
 type Props = {
   /** A4 the tall way unless a report says otherwise. */
   orientation?: 'portrait' | 'landscape';
+  /**
+   * A4 unless the page is a half-size receipt -- 210mm x 148.5mm, the same
+   * figure the old Electronics Sales Invoice's half-page variants used. Only
+   * the Sales Invoice paper uses this; every other report's default (`'a4'`)
+   * is unchanged from before this prop existed.
+   */
+  pageSize?: 'a4' | 'half';
 };
 
 /**
@@ -27,8 +34,13 @@ type Props = {
  *               page 8mm short and the footer 8mm up the sheet. The millimetre
  *               keeps a rounding overflow from spilling onto a page of its own.
  */
-const PrintStyles: React.FC<Props> = ({ orientation = 'portrait' }) => {
-  const sheet = orientation === 'landscape' ? '210mm' : '297mm';
+const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4' }) => {
+  // A4: 210 x 297mm. Half: 210 x 148.5mm -- half of A4's height, the sheet a
+  // half-page receipt is actually cut from. 'landscape' swaps which of the
+  // two is the printed width, exactly as it already did for A4 alone.
+  const dims = pageSize === 'half' ? { width: '210mm', height: '148.5mm' } : { width: '210mm', height: '297mm' };
+  const printedWidth = orientation === 'landscape' ? dims.height : dims.width;
+  const printedHeight = orientation === 'landscape' ? dims.width : dims.height;
 
   return (
     <style>
@@ -38,7 +50,7 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait' }) => {
              below it is the edge of the paper. Change it here and every report
              moves together; nothing else in the app states it. */
           @page {
-            size: A4 ${orientation};
+            size: ${printedWidth} ${printedHeight};
             margin: 6mm 8mm 5mm 10mm;
           }
 
@@ -52,7 +64,7 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait' }) => {
              page, a landscape cash-and-bank page -- can stand exactly as tall
              without doing the arithmetic again. */
           :root {
-            --print-page-height: calc(${sheet} - 6mm - 5mm - 1mm);
+            --print-page-height: calc(${printedHeight} - 6mm - 5mm - 1mm);
           }
 
           .print-page {
