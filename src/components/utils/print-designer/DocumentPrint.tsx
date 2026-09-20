@@ -343,6 +343,11 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         }
         case 'printed_at':
           return dayjs().format('DD/MM/YYYY hh:mm A');
+        // The day the bill is made, date and no hour: the hour is what
+        // printed_at is for, and a paper carrying both would say the same thing
+        // twice. See the note beside bill_date in HOTEL_BILL_FIELDS.
+        case 'bill_date':
+          return dayjs().format('DD/MM/YYYY');
         case 'branch_name':
           return String(data?.branch?.name ?? basic?.branch_name ?? '');
         case 'branch_address':

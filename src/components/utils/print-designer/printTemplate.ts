@@ -710,6 +710,19 @@ const HOTEL_STAY_FIELDS: FieldDef[] = [
 export const HOTEL_BILL_FIELDS: FieldDef[] = [
   // Who is at the printer. See the note beside it in FIELD_CATALOG.
   { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  // ⚠️ THE DAY THE BILL IS MADE, which is neither the day the stay was booked
+  // (`booking_date`) nor either end of the stay. A property that shows Booking
+  // Date on its paper needs this beside it, or the reader takes one date for
+  // the other -- and it is this one the guest's accountant files the paper by.
+  //
+  // Read off the printer's clock, like `printed_at` below it, because nothing
+  // on the folio stores a bill date: the bill is made when it is printed, which
+  // at a counter is the moment of check-out. A REPRINT therefore carries the
+  // day it was reprinted -- honest, and the same as the Print Time line every
+  // paper already has. A fixed date would mean storing one, which is a column,
+  // a migration and a decision about which moment to store; say the word if a
+  // reprinted bill must keep its original date.
+  { key: 'bill_date', name: 'Bill Date', group: 'bill', format: 'date' },
   ...HOTEL_STAY_FIELDS,
 
   { key: 'bill_base', name: 'Room & Charges', group: 'bill', numeric: true, format: 'money' },

@@ -835,7 +835,7 @@ const BookingsScreen = ({ user }: any) => {
       },
       {
         key: 'stay',
-        header: 'Stay / Booking Date',
+        header: 'Booking Information',
         render: (row: any) =>
           // ⚠️ A walk-in sale has no stay to show. Left to the arrow below it
           // would read "27/08 → 27/08, 0 nights", which looks like a booking
