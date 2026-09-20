@@ -1953,6 +1953,106 @@ const salesInvoice = (): PrintTemplate => ({
   ],
 });
 
+/**
+ * The Purchase Invoice -- built to match, field for field, the arrangement
+ * PurchaseInvoicePrintBase.tsx has always printed by default: two-column
+ * supplier/voucher info, the product table with warranty as a sub-line, a
+ * right-aligned Total/Discount/Net/Paid/Due column, and a signature line.
+ * No Installment band -- a purchase carries no repayment plan.
+ */
+const purchaseInvoice = (): PrintTemplate => ({
+  version: 1,
+  docType: 'purchase_invoice',
+  orientation: 'portrait',
+  pageSize: 'a4',
+  fontSize: 13,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Purchase Invoice',
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'party_name', label: 'Name' },
+        { field: 'vr_no', label: 'Voucher No' },
+        { field: 'mobile', label: 'Mobile', hideIfEmpty: true },
+        { field: 'vr_date', label: 'Date' },
+        { field: 'manual_address', label: 'Address', hideIfEmpty: true },
+        { field: 'notes', label: 'Notes', hideIfEmpty: true },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      totalRow: false,
+      totalRowLabel: 'Grand Total',
+      columns: [
+        { field: 'sl', label: '#', width: 6, align: 'center' },
+        { field: 'product_name', label: 'Product', width: 54, align: 'left', subField: 'warranty' },
+        { field: 'qty', label: 'Qty', width: 12, align: 'center' },
+        { field: 'price', label: 'Rate', width: 14, align: 'right' },
+        { field: 'amount', label: 'Amount', width: 14, align: 'right' },
+      ],
+    }),
+    band<TotalsBand>({
+      id: 'totals',
+      type: 'totals',
+      show: true,
+      align: 'right',
+      layout: 'rows',
+      items: [
+        { field: 'total_amount', label: 'Total Tk.', ruleAbove: false },
+        { field: 'discount_amount', label: 'Discount Tk.', hideIfEmpty: true },
+        { field: 'net_amount', label: 'Net Tk.', ruleAbove: true },
+        { field: 'paid_amount', label: 'Paid Tk.' },
+        { field: 'due_amount', label: 'Due Tk.', ruleAbove: true },
+      ],
+    }),
+    band<InfoBand>({
+      id: 'amount-words',
+      type: 'info',
+      show: true,
+      columns: 1,
+      layout: 'inline',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [{ field: 'amount_words', label: 'In Word', hideIfEmpty: true }],
+    }),
+    band<SignatureBand>({
+      id: 'signature',
+      type: 'signature',
+      show: true,
+      space: 50,
+      items: [{ label: 'Authorized Signature', field: 'printed_by' }],
+    }),
+  ],
+});
+
 export const CHALLAN_PRESETS: PresetDef[] = [
   {
     id: 'standard',
@@ -2028,6 +2128,7 @@ export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTempla
   if (docType === 'hotel_bill') return hotelBill();
   if (docType === 'hotel_money_receipt') return hotelReceipt();
   if (docType === 'sales_invoice') return salesInvoice();
+  if (docType === 'purchase_invoice') return purchaseInvoice();
   return standardChallan();
 };
 
