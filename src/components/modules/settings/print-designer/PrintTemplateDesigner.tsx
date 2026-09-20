@@ -31,6 +31,7 @@ import {
   DOC_TYPES,
   DocType,
   InfoBand,
+  InstallmentBand,
   NotesBand,
   PrintTemplate,
   SignatureBand,
@@ -47,6 +48,7 @@ import {
   CheckRow,
   DocTypeContext,
   InfoBandEditor,
+  InstallmentBandEditor,
   NotesBandEditor,
   NumberBox,
   PANEL,
@@ -138,8 +140,11 @@ const bandName = (band: Band) => {
 /** The parts that came with the paper. Anything added can be taken away. */
 const isRemovable = (band: Band) => band.type !== 'header' && band.type !== 'table';
 
-/** A4 at the 96dpi a browser lays out in: 210mm and 297mm, rounded. */
-const PAPER_WIDTH_PX = { portrait: 794, landscape: 1123 };
+/** The preview pane's width, keyed by pageSize then orientation. */
+const PAPER_WIDTH_PX = {
+  a4: { portrait: 794, landscape: 1123 },
+  half: { portrait: 794, landscape: 561 },
+};
 
 /**
  * Which papers have an address of their own.
@@ -227,7 +232,7 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
   const paperRef = useRef<HTMLDivElement>(null);
   const { handlers, rowClass, dragging } = useRowDrag();
 
-  const paperWidth = PAPER_WIDTH_PX[template.orientation];
+  const paperWidth = PAPER_WIDTH_PX[template.pageSize ?? 'a4'][template.orientation];
   const [previewScale, setPreviewScale] = useState(0.6);
   const [paperHeight, setPaperHeight] = useState(0);
 
@@ -603,6 +608,10 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
         return (
           <SignatureBandEditor band={selected as SignatureBand} onChange={replaceBand} />
         );
+      case 'installments':
+        return (
+          <InstallmentBandEditor band={selected as InstallmentBand} onChange={replaceBand} />
+        );
       case 'spacer':
         return <SpacerBandEditor band={selected as SpacerBand} onChange={replaceBand} />;
       default:
@@ -942,6 +951,14 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
                 patch({ orientation: landscape ? 'landscape' : 'portrait' })
               }
               label="Print sideways (landscape)"
+            />
+          </div>
+          <div className="flex flex-col justify-end">
+            <CheckRow
+              checked={template.pageSize === 'half'}
+              onChange={(half) => patch({ pageSize: half ? 'half' : 'a4' })}
+              label="Half page (210 x 148.5mm)"
+              hint="For a small receipt printer instead of a full A4 sheet."
             />
           </div>
           <div className="flex flex-col justify-end">
