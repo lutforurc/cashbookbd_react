@@ -88,12 +88,16 @@ const plate = (value: any) => (blank(value) ? '' : formatTransportationNumber(va
  * not see how much of the sheet a challan actually fills.
  *
  * Keyed by pageSize then orientation. The a4 numbers are unchanged from
- * before pageSize existed; half is roughly half A4's height at the same
- * 96dpi/-76px basis (148.5mm vs 297mm).
+ * before pageSize existed; half.portrait is roughly half A4's height at the
+ * same 96dpi/-76px basis (148.5mm vs 297mm). half.landscape is NOT a
+ * fraction of anything -- PrintStyles swaps a page's two edges for
+ * landscape, and the edge that becomes the printed height is the one 'half'
+ * never shrinks (210mm, same as A4's own width), so a half-page sheet turned
+ * sideways stands exactly as tall on screen as an A4 one does.
  */
 const PREVIEW_PAGE_HEIGHT = {
   a4: { portrait: 1046, landscape: 718 },
-  half: { portrait: 485, landscape: 484 },
+  half: { portrait: 485, landscape: 718 },
 };
 
 const alignClass: Record<Align, string> = {
