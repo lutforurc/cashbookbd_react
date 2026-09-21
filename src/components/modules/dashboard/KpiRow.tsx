@@ -17,6 +17,8 @@ export interface KpiTileSpec {
 }
 
 interface KpiRowProps {
+  /** Render a tile directly in the dashboard grid so it can move between other widgets. */
+  embedded?: boolean;
   kpis?: Record<string, KpiValue>;
   isLoading?: boolean;
   trxDate?: string;
@@ -45,7 +47,8 @@ interface KpiRowProps {
  * have to be changed together. ConstructionDashboard uses an auto-fit track
  * instead and passes its own class.
  */
-const DEFAULT_COLUMNS = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+const DEFAULT_COLUMNS =
+  'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
 /**
  * Fixed order, fixed hue per tile.
@@ -59,9 +62,23 @@ export const DEFAULT_TILES: KpiTileSpec[] = [
   // Received, payment and balance are not here on purpose: the branch summary
   // card already carries all three, now with their own sparklines. Repeating
   // them would be the same number twice on one screen.
-  { key: 'sales', label: 'Today Sales', colour: 'rgb(var(--c-teal-500))', money: true },
-  { key: 'purchase', label: 'Today Purchase', colour: 'rgb(var(--c-amber-500))', money: true },
-  { key: 'newCustomers', label: 'New Customers', colour: 'rgb(var(--c-cyan-500))' },
+  {
+    key: 'sales',
+    label: 'Today Sales',
+    colour: 'rgb(var(--c-teal-500))',
+    money: true,
+  },
+  {
+    key: 'purchase',
+    label: 'Today Purchase',
+    colour: 'rgb(var(--c-amber-500))',
+    money: true,
+  },
+  {
+    key: 'newCustomers',
+    label: 'New Customers',
+    colour: 'rgb(var(--c-cyan-500))',
+  },
   { key: 'vouchers', label: 'Today Vouchers', colour: 'rgb(var(--c-body))' },
 ];
 
@@ -76,7 +93,12 @@ export const DEFAULT_TILES: KpiTileSpec[] = [
  * screen.
  */
 export const CONSTRUCTION_TILES: KpiTileSpec[] = [
-  { key: 'purchase', label: 'Today Purchase', colour: 'rgb(var(--c-amber-500))', money: true },
+  {
+    key: 'purchase',
+    label: 'Today Purchase',
+    colour: 'rgb(var(--c-amber-500))',
+    money: true,
+  },
   { key: 'vouchers', label: 'Today Vouchers', colour: 'rgb(var(--c-body))' },
 ];
 
@@ -96,10 +118,30 @@ export const CONSTRUCTION_TILES: KpiTileSpec[] = [
  * told so on a tile.
  */
 export const TRADING_TILES: KpiTileSpec[] = [
-  { key: 'sales', label: 'Today Sales', colour: 'rgb(var(--c-teal-500))', money: true },
-  { key: 'purchase', label: 'Today Purchase', colour: 'rgb(var(--c-amber-500))', money: true },
-  { key: 'received', label: 'Today Received', colour: 'rgb(var(--c-emerald-500))', money: true },
-  { key: 'payment', label: 'Today Payment', colour: 'rgb(var(--c-rose-500))', money: true },
+  {
+    key: 'sales',
+    label: 'Today Sales',
+    colour: 'rgb(var(--c-teal-500))',
+    money: true,
+  },
+  {
+    key: 'purchase',
+    label: 'Today Purchase',
+    colour: 'rgb(var(--c-amber-500))',
+    money: true,
+  },
+  {
+    key: 'received',
+    label: 'Today Received',
+    colour: 'rgb(var(--c-emerald-500))',
+    money: true,
+  },
+  {
+    key: 'payment',
+    label: 'Today Payment',
+    colour: 'rgb(var(--c-rose-500))',
+    money: true,
+  },
 ];
 
 const formatValue = (value: number, money?: boolean) => {
@@ -122,7 +164,7 @@ const formatValue = (value: number, money?: boolean) => {
 const changePercent = (value: number, previous: number): number | null => {
   const prev = Number(previous) || 0;
   if (prev === 0) return null;
-  return ((Number(value) || 0) - prev) / Math.abs(prev) * 100;
+  return (((Number(value) || 0) - prev) / Math.abs(prev)) * 100;
 };
 
 /**
@@ -146,7 +188,12 @@ const KpiTile: React.FC<{
   const change = changePercent(value, kpi?.previous ?? 0);
   const spark = kpi?.spark ?? [];
 
-  const Arrow = change === null || change === 0 ? FaMinus : change > 0 ? FaArrowUp : FaArrowDown;
+  const Arrow =
+    change === null || change === 0
+      ? FaMinus
+      : change > 0
+        ? FaArrowUp
+        : FaArrowDown;
 
   return (
     <div className="flex flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700">
@@ -182,14 +229,52 @@ const KpiTile: React.FC<{
   );
 };
 
+export const KpiHeading = ({ trxDate }: { trxDate?: string }) => (
+  <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3">
+    <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+      Today at a glance
+      {trxDate && (
+        <span className="ml-2 font-semibold normal-case tracking-normal text-slate-400">
+          Trx Date: {formatTrxDate(trxDate)}
+        </span>
+      )}
+    </h3>
+    <span className="text-[10px] text-slate-400">
+      change vs previous day · sparkline last 14 days
+    </span>
+  </div>
+);
+
 const KpiRow: React.FC<KpiRowProps> = ({
   kpis,
+  embedded = false,
   isLoading,
   trxDate,
   gapClass = 'gap-4',
   tiles = DEFAULT_TILES,
   columnsClass = DEFAULT_COLUMNS,
 }) => {
+  if (embedded) {
+    if (isLoading && !kpis)
+      return (
+        <div className="h-[86px] animate-pulse bg-slate-100 dark:bg-gray-800" />
+      );
+    if (!kpis) return null;
+    return (
+      <>
+        {tiles.map((tile) => (
+          <KpiTile
+            key={tile.key}
+            label={tile.label}
+            colour={tile.colour}
+            money={tile.money}
+            kpi={kpis[tile.key]}
+          />
+        ))}
+      </>
+    );
+  }
+
   if (isLoading && !kpis) {
     return (
       <div className={`${columnsClass} ${gapClass}`}>
@@ -207,19 +292,7 @@ const KpiRow: React.FC<KpiRowProps> = ({
 
   return (
     <div>
-      <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-300">
-          Today at a glance
-          {trxDate && (
-            <span className="ml-2 font-semibold normal-case tracking-normal text-slate-400">
-              Trx Date: {formatTrxDate(trxDate)}
-            </span>
-          )}
-        </h3>
-        <span className="text-[10px] text-slate-400">
-          change vs previous day · sparkline last 14 days
-        </span>
-      </div>
+      <KpiHeading trxDate={trxDate} />
 
       <div className={`${columnsClass} ${gapClass}`}>
         {tiles.map((tile) => (

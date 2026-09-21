@@ -33,7 +33,7 @@ import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { formatDate } from '../../utils/utils-functions/formatDate';
 import { FaRightToBracket } from 'react-icons/fa6';
 import CompareSingleItem from './CompareSingleItem';
-import KpiRow, { CONSTRUCTION_TILES } from './KpiRow';
+import KpiRow, { KpiHeading, CONSTRUCTION_TILES } from './KpiRow';
 import Sparkline from './Sparkline';
 import DashboardCustomizeButton, {
   DashboardWidget,
@@ -60,18 +60,6 @@ const CONSTRUCTION_DASHBOARD_WIDGETS: DashboardWidget[] = [
 
 const DASHBOARD_COLUMNS =
   'grid grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))]';
-
-/**
- * The same track as DASHBOARD_COLUMNS but auto-fill rather than auto-fit.
- *
- * The band carries fewer tiles than the grid below carries cards, and auto-fit
- * collapses the tracks it has nothing to put in — two tiles would then stretch
- * across the whole width and tower over the cards underneath. auto-fill keeps
- * the empty tracks, so a tile stays the width of a card and the spare space
- * falls off the right-hand end.
- */
-const KPI_COLUMNS =
-  'grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))]';
 
 const ConstructionDashboard = () => {
   const dashboard = useSelector((state) => state.dashboard);
@@ -306,26 +294,18 @@ const ConstructionDashboard = () => {
           onReset={reset}
         />
       </div>
-      {/* Above the grid rather than as one of its cards: it is a summary band,
-          and a widget order saved before it existed would otherwise sink it to
-          the bottom of the page for existing users. */}
-      {kpiTiles.length ? (
-        <div className="mt-4">
-          <KpiRow
-            kpis={summaryData?.kpis}
-            isLoading={summary?.isLoading}
-            trxDate={summaryData?.trxDate}
-            gapClass={dashboardGapClass}
-            tiles={kpiTiles}
-            columnsClass={KPI_COLUMNS}
-          />
-        </div>
-      ) : null}
+      {kpiTiles.length > 0 && <KpiHeading trxDate={summaryData?.trxDate} />}
+
 
       <div
         aria-busy={dashboard.isLoading}
         className={`mt-4 ${DASHBOARD_COLUMNS} items-start ${dashboardGapClass}`}
       >
+        {orderedWidgets.filter(widget => isWidgetVisible(widget.id)).map(widget => {
+          const tile = CONSTRUCTION_TILES.find(tile => widget.id === `kpi-${tile.key}`);
+          if (!tile) return null;
+          return <div key={widget.id} className="min-w-0" style={{ order: widgetOrder(widget.id) }}><KpiRow embedded kpis={summaryData?.kpis} isLoading={summary?.isLoading} tiles={[tile]} /></div>;
+        })}
         {dashboard.isLoading == false ? (
           <>
             {dashboard.errors ? (

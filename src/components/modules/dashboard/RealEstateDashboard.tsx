@@ -95,7 +95,9 @@ const asText = (date: Date) => {
 const RealEstateDashboard = () => {
   const dispatch = useDispatch<any>();
 
-  const currentBranch = useSelector((state: any) => state.branchList?.currentBranch);
+  const currentBranch = useSelector(
+    (state: any) => state.branchList?.currentBranch,
+  );
   const settings = useSelector((state: any) => state.settings);
   const dashboard = useSelector((state: any) => state.dashboard);
   const me = useSelector((state: any) => state.auth?.me);
@@ -128,15 +130,6 @@ const RealEstateDashboard = () => {
       enabled: Boolean(me?.id && branchId),
     },
   );
-
-  /**
-   * Whether any card in a row is still on.
-   *
-   * ⚠️ Asked before drawing the row, not after. A grid with nothing in it is
-   * still a block with a bottom margin, so a row whose every card is switched
-   * off would leave a hole in the page rather than close up.
-   */
-  const anyVisible = (...ids: string[]) => ids.some((id) => isWidgetVisible(id));
 
   const isCompact = density === 'compact';
   const gap = isCompact ? 'gap-3' : 'gap-4';
@@ -191,7 +184,9 @@ const RealEstateDashboard = () => {
   const sales = payload?.sales;
   const collection = payload?.collection;
   const installments = payload?.installments;
-  const projects: any[] = Array.isArray(payload?.by_project) ? payload.by_project : [];
+  const projects: any[] = Array.isArray(payload?.by_project)
+    ? payload.by_project
+    : [];
 
   /*
    * ⚠️ Sold and available are the two halves of the switch, and withdrawn is
@@ -203,182 +198,136 @@ const RealEstateDashboard = () => {
   const hasWithdrawn = Number(inventory?.total?.inactive ?? 0) > 0;
   const hasUnbuilt = Number(inventory?.total?.under_development ?? 0) > 0;
 
-  return (
-    <div>
-      <HelmetTitle title="Dashboard" />
-
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
-            {currentBranch?.name || 'The estate'}
-          </h1>
-          <p className="text-xs text-slate-400">
-            {payload?.from && payload?.to
-              ? `This month so far · ${formatDayMonthYear(payload.from)} to ${formatDayMonthYear(
-                  payload.to,
-                )}`
-              : 'Reading the estate…'}
-          </p>
-        </div>
-        <DashboardCustomizeButton
-          density={density}
-          widgets={orderedWidgets}
-          isWidgetVisible={isWidgetVisible}
-          onToggleWidget={toggleWidget}
-          onMoveWidget={moveWidget}
-          onDensityChange={setDensity}
-          onReset={reset}
-        />
-      </div>
-
-      {/* ------------------------------------------------------------ */}
-      {/* The sales book. Deliberately NOT this month's — see the header. */}
-      {sales &&
-      anyVisible('sales-booked', 'sales-received', 'sales-outstanding', 'sales-buyers') ? (
-        <>
-          <div className={`mb-4 grid grid-cols-2 sm:grid-cols-4 ${gap}`}>
-            {isWidgetVisible('sales-booked') ? (
-              <Tile
-                label="Booked value"
-                value={money(sales.booked_value)}
-                working={`${count(sales.sale_count)} live ${
-                  Number(sales.sale_count) === 1 ? 'sale' : 'sales'
-                }, all time`}
-                icon={<FaBuilding className="text-[11px] text-slate-400" />}
-              />
-            ) : null}
-            {isWidgetVisible('sales-received') ? (
-              <Tile
-                label="Received"
-                value={money(sales.received)}
-                working="confirmed receipts, less refunds"
-                tone="text-emerald-600 dark:text-emerald-400"
-              />
-            ) : null}
-            {/* ⚠️ The lead figure. Booked value flatters — a sale is worth what
-                somebody signed for — and Received is the same number for every
-                estate that has just opened. Outstanding is the one that says
-                whether the money is actually coming in. */}
-            {isWidgetVisible('sales-outstanding') ? (
-              <Tile
-                label="Outstanding"
-                value={money(sales.outstanding)}
-                working="still to collect"
-                lead
-                tone="text-primary dark:text-secondary"
-              />
-            ) : null}
-            {isWidgetVisible('sales-buyers') ? (
-              <Tile
-                label="Buyers"
-                value={count(sales.buyer_count)}
-                working={
-                  `${count(sales.sale_count)} sales between them` +
-                  (Number(sales.parking_only_sales) > 0
-                    ? ` · ${count(sales.parking_only_sales)} parking only`
-                    : '')
-                }
-                icon={<FaUsers className="text-[11px] text-indigo-500" />}
-              />
-            ) : null}
-          </div>
-
-          {/* ⚠️ Said where it is read, not only in the controller. Two screens
-              in this module count receipts by different rules, and the one a
-              dashboard links to has to be named as the odd one out rather than
-              quietly disagreed with. */}
-          
-        </>
-      ) : null}
-
-      {/* ------------------------------------------------------------ */}
-      {/* What is left to sell. The one band a developer reads before anything
-          else, because it is the stock the business is made of. */}
-      {inventory &&
-      anyVisible(
-        'inventory-units-left',
-        'inventory-units-sold',
-        'inventory-parking-left',
-        'inventory-parking-sold',
-        'inventory-withdrawn',
-        'inventory-being-built',
-      ) ? (
-        <>
-          <div
-            className={`mb-1 grid grid-cols-2 sm:grid-cols-3 ${
-              hasWithdrawn || hasUnbuilt ? 'lg:grid-cols-6' : 'lg:grid-cols-4'
-            } ${gap}`}
-          >
-            {isWidgetVisible('inventory-units-left') ? (
-              <Tile
-                label="Units left"
-                value={count(inventory.unit?.available)}
-                working={`of ${count(inventory.unit?.total)} flats and plots`}
-                icon={<FaBuilding className="text-[11px] text-emerald-500" />}
-                tone="text-emerald-600 dark:text-emerald-400"
-              />
-            ) : null}
-            {isWidgetVisible('inventory-units-sold') ? (
-              <Tile
-                label="Units sold"
-                value={count(inventory.unit?.sold)}
-                working={`of ${count(inventory.unit?.total)}`}
-              />
-            ) : null}
-            {/* ⚠️ PARKING IS ITS OWN TILE AND NEVER ADDED INTO UNITS. The
-                module sells a space as its own unit_type, the sold-units
-                screens count it on their own card, and a sale may carry a
-                parking with no flat at all. Folding it in would offer a buyer
-                somewhere to live that has no rooms. */}
-            {isWidgetVisible('inventory-parking-left') ? (
-              <Tile
-                label="Parking left"
-                value={count(inventory.parking?.available)}
-                working={`of ${count(inventory.parking?.total)} spaces`}
-                icon={<FaCar className="text-[11px] text-emerald-500" />}
-              />
-            ) : null}
-            {isWidgetVisible('inventory-parking-sold') ? (
-              <Tile
-                label="Parking sold"
-                value={count(inventory.parking?.sold)}
-                working={`of ${count(inventory.parking?.total)}`}
-              />
-            ) : null}
-            {isWidgetVisible('inventory-withdrawn') && hasWithdrawn ? (
-              <Tile
-                label="Withdrawn"
-                value={count(inventory.total?.inactive)}
-                working="off the market, not for sale"
-                tone="text-slate-400"
-              />
-            ) : null}
-            {isWidgetVisible('inventory-being-built') && hasUnbuilt ? (
-              <Tile
-                label="Being built"
-                value={count(inventory.total?.under_development)}
-                working="not finished, not yet offered"
-              />
-            ) : null}
-          </div>
-
-          <p className="mb-4 text-[11px] leading-snug text-slate-400">
-            Every unit on this branch's books, counted by{' '}
-            <Link
-              to={routes.real_estate_floor_unit_list}
-              className="text-primary hover:underline dark:text-secondary"
-            >
-              the unit list
-            </Link>
-            . A unit whose floor or building has gone missing cannot be placed on a branch and is not
-            counted here.
-          </p>
-        </>
-      ) : null}
-
-      <div className={`grid grid-cols-1 items-stretch ${gap} lg:grid-cols-2`}>
-        {/* ---------------------------------------------------------- */}
-        {isWidgetVisible('projects') && projects.length ? (
+  const renderWidget = (id: string): React.ReactNode => {
+    switch (id) {
+      case 'sales-booked':
+        return (
+          sales &&
+          (isWidgetVisible('sales-booked') ? (
+            <Tile
+              label="Booked value"
+              value={money(sales.booked_value)}
+              working={`${count(sales.sale_count)} live ${
+                Number(sales.sale_count) === 1 ? 'sale' : 'sales'
+              }, all time`}
+              icon={<FaBuilding className="text-[11px] text-slate-400" />}
+            />
+          ) : null)
+        );
+      case 'sales-received':
+        return (
+          sales &&
+          (isWidgetVisible('sales-received') ? (
+            <Tile
+              label="Received"
+              value={money(sales.received)}
+              working="confirmed receipts, less refunds"
+              tone="text-emerald-600 dark:text-emerald-400"
+            />
+          ) : null)
+        );
+      case 'sales-outstanding':
+        return (
+          sales &&
+          (isWidgetVisible('sales-outstanding') ? (
+            <Tile
+              label="Outstanding"
+              value={money(sales.outstanding)}
+              working="still to collect"
+              lead
+              tone="text-primary dark:text-secondary"
+            />
+          ) : null)
+        );
+      case 'sales-buyers':
+        return (
+          sales &&
+          (isWidgetVisible('sales-buyers') ? (
+            <Tile
+              label="Buyers"
+              value={count(sales.buyer_count)}
+              working={
+                `${count(sales.sale_count)} sales between them` +
+                (Number(sales.parking_only_sales) > 0
+                  ? ` · ${count(sales.parking_only_sales)} parking only`
+                  : '')
+              }
+              icon={<FaUsers className="text-[11px] text-indigo-500" />}
+            />
+          ) : null)
+        );
+      case 'inventory-units-left':
+        return (
+          inventory &&
+          (isWidgetVisible('inventory-units-left') ? (
+            <Tile
+              label="Units left"
+              value={count(inventory.unit?.available)}
+              working={`of ${count(inventory.unit?.total)} flats and plots`}
+              icon={<FaBuilding className="text-[11px] text-emerald-500" />}
+              tone="text-emerald-600 dark:text-emerald-400"
+            />
+          ) : null)
+        );
+      case 'inventory-units-sold':
+        return (
+          inventory &&
+          (isWidgetVisible('inventory-units-sold') ? (
+            <Tile
+              label="Units sold"
+              value={count(inventory.unit?.sold)}
+              working={`of ${count(inventory.unit?.total)}`}
+            />
+          ) : null)
+        );
+      case 'inventory-parking-left':
+        return (
+          inventory &&
+          (isWidgetVisible('inventory-parking-left') ? (
+            <Tile
+              label="Parking left"
+              value={count(inventory.parking?.available)}
+              working={`of ${count(inventory.parking?.total)} spaces`}
+              icon={<FaCar className="text-[11px] text-emerald-500" />}
+            />
+          ) : null)
+        );
+      case 'inventory-parking-sold':
+        return (
+          inventory &&
+          (isWidgetVisible('inventory-parking-sold') ? (
+            <Tile
+              label="Parking sold"
+              value={count(inventory.parking?.sold)}
+              working={`of ${count(inventory.parking?.total)}`}
+            />
+          ) : null)
+        );
+      case 'inventory-withdrawn':
+        return (
+          inventory &&
+          (isWidgetVisible('inventory-withdrawn') && hasWithdrawn ? (
+            <Tile
+              label="Withdrawn"
+              value={count(inventory.total?.inactive)}
+              working="off the market, not for sale"
+              tone="text-slate-400"
+            />
+          ) : null)
+        );
+      case 'inventory-being-built':
+        return (
+          inventory &&
+          (isWidgetVisible('inventory-being-built') && hasUnbuilt ? (
+            <Tile
+              label="Being built"
+              value={count(inventory.total?.under_development)}
+              working="not finished, not yet offered"
+            />
+          ) : null)
+        );
+      case 'projects':
+        return isWidgetVisible('projects') && projects.length ? (
           <div className={CARD}>
             <div className={CARD_HEAD}>
               <span>Project by project</span>
@@ -392,7 +341,10 @@ const RealEstateDashboard = () => {
 
             <div className="flex-1 divide-y divide-slate-100 dark:divide-gray-700">
               {projects.map((project: any) => {
-                const soldThrough = share(project.unit_sold, project.unit_total);
+                const soldThrough = share(
+                  project.unit_sold,
+                  project.unit_total,
+                );
 
                 return (
                   <div
@@ -404,8 +356,9 @@ const RealEstateDashboard = () => {
                         {project.project_name || 'No project'}
                       </p>
                       <p className="text-[11px] text-slate-400">
-                        {project.unit_sold} of {project.unit_total} units · {project.parking_sold}{' '}
-                        of {project.parking_total} parking
+                        {project.unit_sold} of {project.unit_total} units ·{' '}
+                        {project.parking_sold} of {project.parking_total}{' '}
+                        parking
                       </p>
                     </div>
 
@@ -444,14 +397,14 @@ const RealEstateDashboard = () => {
             </div>
 
             <div className="mt-auto bg-slate-50 px-4 py-2 text-[11px] text-slate-400 dark:bg-gray-700/50">
-              What is still owed on each project, against what it was sold for. The schedule behind
-              every one of those sales is on the installment screens, not here.
+              What is still owed on each project, against what it was sold for.
+              The schedule behind every one of those sales is on the installment
+              screens, not here.
             </div>
           </div>
-        ) : null}
-
-        {/* ---------------------------------------------------------- */}
-        {isWidgetVisible('collection') && collection ? (
+        ) : null;
+      case 'collection':
+        return isWidgetVisible('collection') && collection ? (
           <div className={CARD}>
             <div className={CARD_HEAD}>
               <span>Money taken this month</span>
@@ -496,7 +449,8 @@ const RealEstateDashboard = () => {
 
             <div className="mt-auto bg-slate-50 px-4 py-2 text-[11px] text-slate-400 dark:bg-gray-700/50">
               {count(collection.receipt_count)}{' '}
-              {Number(collection.receipt_count) === 1 ? 'receipt' : 'receipts'}, confirmed, in{' '}
+              {Number(collection.receipt_count) === 1 ? 'receipt' : 'receipts'},
+              confirmed, in{' '}
               {payload?.from ? formatDayMonthYear(payload.from) : '—'} to{' '}
               {payload?.to ? formatDayMonthYear(payload.to) : '—'} —{' '}
               <Link
@@ -507,14 +461,9 @@ const RealEstateDashboard = () => {
               </Link>
             </div>
           </div>
-        ) : null}
-
-        {/* ---------------------------------------------------------- */}
-        {/* ⚠️ Both figures shown even at nought, unlike the inventory tiles
-            above. "Nothing is overdue" is the answer somebody opens this page
-            for, and a band that vanished on a good month would send them to the
-            due-installments screen to check. */}
-        {isWidgetVisible('installments') && installments ? (
+        ) : null;
+      case 'installments':
+        return isWidgetVisible('installments') && installments ? (
           <div className={CARD}>
             <div className={CARD_HEAD}>
               <span>Installments</span>
@@ -537,8 +486,10 @@ const RealEstateDashboard = () => {
                   </p>
                   <p className="text-[11px] text-slate-400">
                     {count(installments.overdue_count)}{' '}
-                    {Number(installments.overdue_count) === 1 ? 'installment' : 'installments'} past
-                    the due date
+                    {Number(installments.overdue_count) === 1
+                      ? 'installment'
+                      : 'installments'}{' '}
+                    past the due date
                   </p>
                 </div>
                 <span className="shrink-0 text-lg font-bold tabular-nums text-rose-600 dark:text-rose-400">
@@ -556,8 +507,10 @@ const RealEstateDashboard = () => {
                   </p>
                   <p className="text-[11px] text-slate-400">
                     {count(installments.due_soon_count)}{' '}
-                    {Number(installments.due_soon_count) === 1 ? 'installment' : 'installments'} not
-                    yet late
+                    {Number(installments.due_soon_count) === 1
+                      ? 'installment'
+                      : 'installments'}{' '}
+                    not yet late
                   </p>
                 </div>
                 <span className="shrink-0 text-lg font-bold tabular-nums text-amber-600 dark:text-amber-400">
@@ -567,24 +520,23 @@ const RealEstateDashboard = () => {
             </div>
 
             <div className="mt-auto bg-slate-50 px-4 py-2 text-[11px] text-slate-400 dark:bg-gray-700/50">
-              What each installment still owes, after early-payment discounts and receipts — the same
-              rule{' '}
+              What each installment still owes, after early-payment discounts
+              and receipts — the same rule{' '}
               <Link
                 to={routes.due_installment_list}
                 className="text-primary hover:underline dark:text-secondary"
               >
                 the due list
               </Link>{' '}
-              uses, counted on today's calendar date rather than the branch's transaction date.
+              uses, counted on today's calendar date rather than the branch's
+              transaction date.
             </div>
           </div>
-        ) : null}
-
-        {/* ---------------------------------------------------------- */}
-        {/* The cash book, kept. A developer is still a business with a drawer,
-            and this is the one card from the generic dashboard that answers a
-            question an estate actually asks. */}
-        {isWidgetVisible('balance') && !dashboard?.isLoading && dashboard?.data ? (
+        ) : null;
+      case 'balance':
+        return isWidgetVisible('balance') &&
+          !dashboard?.isLoading &&
+          dashboard?.data ? (
           <div className={CARD}>
             <div className={CARD_HEAD}>
               <span className="truncate">{dashboard?.data?.branch?.name}</span>
@@ -609,14 +561,18 @@ const RealEstateDashboard = () => {
               <div className={`flex items-center justify-between ${rowClass}`}>
                 <span className="text-xs text-slate-400">Today received</span>
                 <span className="text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                  {thousandSeparator(dashboard?.data?.todayReceived?.debit || 0)}
+                  {thousandSeparator(
+                    dashboard?.data?.todayReceived?.debit || 0,
+                  )}
                 </span>
               </div>
 
               <div className={`flex items-center justify-between ${rowClass}`}>
                 <span className="text-xs text-slate-400">Today payment</span>
                 <span className="text-base font-bold tabular-nums text-rose-600 dark:text-rose-400">
-                  {thousandSeparator(dashboard?.data?.todayReceived?.credit || 0)}
+                  {thousandSeparator(
+                    dashboard?.data?.todayReceived?.credit || 0,
+                  )}
                 </span>
               </div>
 
@@ -638,7 +594,68 @@ const RealEstateDashboard = () => {
               <span>Last updated: {dashboard?.data?.last_update}</span>
             </div>
           </div>
-        ) : null}
+        ) : null;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div>
+      <HelmetTitle title="Dashboard" />
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
+            {currentBranch?.name || 'The estate'}
+          </h1>
+          <p className="text-xs text-slate-400">
+            {payload?.from && payload?.to
+              ? `This month so far · ${formatDayMonthYear(payload.from)} to ${formatDayMonthYear(
+                  payload.to,
+                )}`
+              : 'Reading the estate…'}
+          </p>
+        </div>
+        <DashboardCustomizeButton
+          density={density}
+          widgets={orderedWidgets}
+          isWidgetVisible={isWidgetVisible}
+          onToggleWidget={toggleWidget}
+          onMoveWidget={moveWidget}
+          onDensityChange={setDensity}
+          onReset={reset}
+        />
+      </div>
+
+      {/* ------------------------------------------------------------ */}
+      {/* The sales book. Deliberately NOT this month's — see the header. */}
+      <div
+        className={`grid grid-cols-1 items-start md:grid-cols-2 lg:grid-cols-4 ${gap}`}
+      >
+        {orderedWidgets
+          .filter((widget) => isWidgetVisible(widget.id))
+          .map((widget) => {
+            const content = renderWidget(widget.id);
+            if (!content) return null;
+            return (
+              <div
+                key={widget.id}
+                className={
+                  [
+                    'projects',
+                    'collection',
+                    'installments',
+                    'balance',
+                  ].includes(widget.id)
+                    ? 'min-w-0 md:col-span-2'
+                    : 'min-w-0'
+                }
+              >
+                {content}
+              </div>
+            );
+          })}
       </div>
 
       {/* ⚠️ Said once, at the foot, rather than as an error on every band that
@@ -648,10 +665,11 @@ const RealEstateDashboard = () => {
           like a quiet page, and neither is a fault on this screen. */}
       {settled && !payload ? (
         <p className="mt-4 text-[11px] leading-snug text-slate-400">
-          Nothing could be read. These figures need the Real Estate module permission
-          (<code>real.estate.view</code>), and a figure this page cannot read is left out rather than
-          shown as nought. A band that is empty for you is one you are not permitted to see — this
-          page draws no error of its own.
+          Nothing could be read. These figures need the Real Estate module
+          permission (<code>real.estate.view</code>), and a figure this page
+          cannot read is left out rather than shown as nought. A band that is
+          empty for you is one you are not permitted to see — this page draws no
+          error of its own.
         </p>
       ) : null}
     </div>

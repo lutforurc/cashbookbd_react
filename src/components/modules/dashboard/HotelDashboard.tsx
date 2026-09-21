@@ -144,18 +144,25 @@ const Tile = ({
       title={hint}
     >
       {icon}
-      <span className={`truncate ${hint ? 'cursor-help decoration-dotted underline-offset-2 hover:underline' : ''}`}>
+      <span
+        className={`truncate ${hint ? 'cursor-help decoration-dotted underline-offset-2 hover:underline' : ''}`}
+      >
         {label}
       </span>
     </div>
-    <div className={`mt-1 text-2xl font-bold ${tone ?? 'text-slate-700 dark:text-slate-100'}`}>
+    <div
+      className={`mt-1 text-2xl font-bold ${tone ?? 'text-slate-700 dark:text-slate-100'}`}
+    >
       {value}
     </div>
     {/* ⚠️ The working is on the tile deliberately. These figures are quoted at
         meetings by people who did not run the report, and "11% — 30 of 264
         room-nights" can be argued with where a bare 11% can only be believed. */}
     {working ? (
-      <div className="mt-0.5 truncate text-[11px] text-slate-400" title={working}>
+      <div
+        className="mt-0.5 truncate text-[11px] text-slate-400"
+        title={working}
+      >
         {working}
       </div>
     ) : null}
@@ -165,7 +172,9 @@ const Tile = ({
 const HotelDashboard = () => {
   const dispatch = useDispatch<any>();
 
-  const currentBranch = useSelector((state: any) => state.branchList?.currentBranch);
+  const currentBranch = useSelector(
+    (state: any) => state.branchList?.currentBranch,
+  );
   const settings = useSelector((state: any) => state.settings);
   const dashboard = useSelector((state: any) => state.dashboard);
   const me = useSelector((state: any) => state.auth?.me);
@@ -194,15 +203,6 @@ const HotelDashboard = () => {
       enabled: Boolean(me?.id && branchId),
     },
   );
-
-  /**
-   * Whether any card in a row is still on.
-   *
-   * ⚠️ Asked before drawing the row, not after. A grid with nothing in it is
-   * still a block with a bottom margin, so a row whose every card is switched
-   * off would leave a hole in the page rather than close up.
-   */
-  const anyVisible = (...ids: string[]) => ids.some((id) => isWidgetVisible(id));
 
   const isCompact = density === 'compact';
   const gap = isCompact ? 'gap-3' : 'gap-4';
@@ -256,7 +256,9 @@ const HotelDashboard = () => {
     );
 
     settle(
-      httpService.get(API_HOTEL_HOUSEKEEPING_URL, { params: { branch_id: branchId } }),
+      httpService.get(API_HOTEL_HOUSEKEEPING_URL, {
+        params: { branch_id: branchId },
+      }),
       (payload) => setRooms(payload?.counts ?? null),
     );
 
@@ -264,7 +266,12 @@ const HotelDashboard = () => {
       httpService.get(API_HOTEL_COLLECTION_URL, {
         params: { from: monthStart, to: today, branch_id: branchId },
       }),
-      (payload) => setTakings(payload?.totals ? { ...payload.totals, unposted: payload.unposted } : null),
+      (payload) =>
+        setTakings(
+          payload?.totals
+            ? { ...payload.totals, unposted: payload.unposted }
+            : null,
+        ),
     );
 
     return () => {
@@ -277,55 +284,30 @@ const HotelDashboard = () => {
   // The last night of the range IS tonight, because the range ends today. One
   // read answers both questions rather than two that could drift apart.
   const tonight = useMemo(
-    () => (Array.isArray(run?.daily) && run.daily.length ? run.daily[run.daily.length - 1] : null),
+    () =>
+      Array.isArray(run?.daily) && run.daily.length
+        ? run.daily[run.daily.length - 1]
+        : null,
     [run],
   );
 
   // The strip only reads as a shape if every bar is measured against the same
   // ceiling, and that ceiling is the property — not the fullest night in it.
-  const nights = useMemo(() => (Array.isArray(run?.daily) ? run.daily : []), [run]);
+  const nights = useMemo(
+    () => (Array.isArray(run?.daily) ? run.daily : []),
+    [run],
+  );
 
-  const notReady = rooms ? Number(rooms.dirty ?? 0) + Number(rooms.cleaning ?? 0) : null;
+  const notReady = rooms
+    ? Number(rooms.dirty ?? 0) + Number(rooms.cleaning ?? 0)
+    : null;
 
-  return (
-    <div>
-      <HelmetTitle title="Dashboard" />
-
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
-            {currentBranch?.name || 'The property'}
-          </h1>
-          <p className="text-xs text-slate-400">
-            {run?.from && run?.to
-              ? `This month so far · ${formatDayMonthYear(run.from)} to ${formatDayMonthYear(run.to)}`
-              : 'Reading the property…'}
-          </p>
-        </div>
-        <DashboardCustomizeButton
-          density={density}
-          widgets={orderedWidgets}
-          isWidgetVisible={isWidgetVisible}
-          onToggleWidget={toggleWidget}
-          onMoveWidget={moveWidget}
-          onDensityChange={setDensity}
-          onReset={reset}
-        />
-      </div>
-
-      {/* ------------------------------------------------------------ */}
-      {/* Tonight. The desk's band, and it comes first because at nine in
-          the morning nobody is asking about the month. */}
-      {(counts || tonight || rooms) &&
-      anyVisible(
-        'tonight-inhouse',
-        'tonight-arrivals',
-        'tonight-departures',
-        'tonight-free',
-        'tonight-notready',
-      ) ? (
-        <div className={`mb-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 ${gap}`}>
-          {isWidgetVisible('tonight-inhouse') ? (
+  const renderWidget = (id: string): React.ReactNode => {
+    switch (id) {
+      case 'tonight-inhouse':
+        return (
+          (counts || tonight || rooms) &&
+          (isWidgetVisible('tonight-inhouse') ? (
             <Tile
               label="In the building"
               value={String(counts?.in_house ?? 0)}
@@ -333,8 +315,12 @@ const HotelDashboard = () => {
               icon={<FaBed className="text-[11px] text-indigo-500" />}
               tone="text-indigo-600 dark:text-indigo-300"
             />
-          ) : null}
-          {isWidgetVisible('tonight-arrivals') ? (
+          ) : null)
+        );
+      case 'tonight-arrivals':
+        return (
+          (counts || tonight || rooms) &&
+          (isWidgetVisible('tonight-arrivals') ? (
             <Tile
               label="Arriving"
               value={String(counts?.arrivals ?? 0)}
@@ -342,8 +328,12 @@ const HotelDashboard = () => {
               icon={<FaDoorOpen className="text-[11px] text-emerald-500" />}
               tone="text-emerald-600 dark:text-emerald-400"
             />
-          ) : null}
-          {isWidgetVisible('tonight-departures') ? (
+          ) : null)
+        );
+      case 'tonight-departures':
+        return (
+          (counts || tonight || rooms) &&
+          (isWidgetVisible('tonight-departures') ? (
             <Tile
               label="Leaving"
               value={String(counts?.departures ?? 0)}
@@ -351,11 +341,12 @@ const HotelDashboard = () => {
               icon={<FaSignOutAlt className="text-[11px] text-rose-500" />}
               tone="text-rose-600 dark:text-rose-400"
             />
-          ) : null}
-          {/* ⚠️ Free is rooms LESS sold LESS held. A room on hold is neither
-              sold nor free, and offering it is how the desk promises a bed
-              somebody is already waiting on. */}
-          {isWidgetVisible('tonight-free') ? (
+          ) : null)
+        );
+      case 'tonight-free':
+        return (
+          (counts || tonight || rooms) &&
+          (isWidgetVisible('tonight-free') ? (
             <Tile
               label="Free tonight"
               value={String(tonight?.free ?? 0)}
@@ -367,54 +358,56 @@ const HotelDashboard = () => {
                   : undefined
               }
             />
-          ) : null}
-          {isWidgetVisible('tonight-notready') ? (
+          ) : null)
+        );
+      case 'tonight-notready':
+        return (
+          (counts || tonight || rooms) &&
+          (isWidgetVisible('tonight-notready') ? (
             <Tile
               label="Not ready"
               value={notReady === null ? '—' : String(notReady)}
               working={
                 rooms
                   ? `${rooms.dirty ?? 0} dirty, ${rooms.cleaning ?? 0} being done${
-                      rooms.out_of_order ? `, ${rooms.out_of_order} out of order` : ''
+                      rooms.out_of_order
+                        ? `, ${rooms.out_of_order} out of order`
+                        : ''
                     }`
                   : 'housekeeping not visible to you'
               }
               icon={<FaBroom className="text-[11px] text-amber-500" />}
               tone={notReady ? 'text-amber-600 dark:text-amber-400' : undefined}
             />
-          ) : null}
-        </div>
-      ) : null}
-
-      {/* ------------------------------------------------------------ */}
-      {/* The month. The owner's band. */}
-      {totals &&
-      anyVisible(
-        'performance-occupancy',
-        'performance-adr',
-        'performance-revpar',
-        'performance-revenue',
-      ) ? (
-        <div className={`mb-4 grid grid-cols-2 lg:grid-cols-4 ${gap}`}>
-          {isWidgetVisible('performance-occupancy') ? (
+          ) : null)
+        );
+      case 'performance-occupancy':
+        return (
+          totals &&
+          (isWidgetVisible('performance-occupancy') ? (
             <Tile
               label="Occupancy"
               value={`${totals.occupancy}%`}
               working={`${totals.room_nights_sold} of ${totals.room_nights_available} room-nights`}
             />
-          ) : null}
-          {isWidgetVisible('performance-adr') ? (
+          ) : null)
+        );
+      case 'performance-adr':
+        return (
+          totals &&
+          (isWidgetVisible('performance-adr') ? (
             <Tile
               label="ADR"
               hint="Average Daily Rate — room revenue divided by the room-nights actually sold"
               value={money(totals.adr)}
               working="per room-night SOLD"
             />
-          ) : null}
-          {/* ⚠️ The lead figure. Occupancy can be bought with discounts and ADR
-              can be had by selling three rooms at a high rate; RevPAR is the
-              only one of the three that both of those show up in. */}
-          {isWidgetVisible('performance-revpar') ? (
+          ) : null)
+        );
+      case 'performance-revpar':
+        return (
+          totals &&
+          (isWidgetVisible('performance-revpar') ? (
             <Tile
               label="RevPAR"
               hint="Revenue Per Available Room — room revenue divided by every room-night the property had, sold or not"
@@ -423,20 +416,21 @@ const HotelDashboard = () => {
               lead
               tone="text-primary dark:text-secondary"
             />
-          ) : null}
-          {isWidgetVisible('performance-revenue') ? (
+          ) : null)
+        );
+      case 'performance-revenue':
+        return (
+          totals &&
+          (isWidgetVisible('performance-revenue') ? (
             <Tile
               label="Room revenue"
               value={money(totals.revenue)}
               working={`${run?.rooms ?? 0} rooms over ${run?.days ?? 0} nights`}
             />
-          ) : null}
-        </div>
-      ) : null}
-
-      <div className={`grid grid-cols-1 items-stretch ${gap} lg:grid-cols-2`}>
-        {/* ---------------------------------------------------------- */}
-        {isWidgetVisible('nights') && nights.length ? (
+          ) : null)
+        );
+      case 'nights':
+        return isWidgetVisible('nights') && nights.length ? (
           <div className={CARD}>
             <div className={CARD_HEAD}>
               <span>Night by night</span>
@@ -464,7 +458,9 @@ const HotelDashboard = () => {
                     <div className="flex h-24 w-full items-end">
                       <div
                         className="w-full rounded-t bg-primary/70 transition group-hover:bg-primary dark:bg-secondary/70 dark:group-hover:bg-secondary"
-                        style={{ height: `${Math.max(2, Math.min(100, night.occupancy))}%` }}
+                        style={{
+                          height: `${Math.max(2, Math.min(100, night.occupancy))}%`,
+                        }}
                       />
                     </div>
                     <span className="text-[9px] tabular-nums text-slate-400">
@@ -476,13 +472,13 @@ const HotelDashboard = () => {
             </div>
 
             <div className="mt-auto bg-slate-50 px-4 py-2 text-[11px] text-slate-400 dark:bg-gray-700/50">
-              Occupancy each night, against the {run?.rooms ?? 0} rooms this property has today.
+              Occupancy each night, against the {run?.rooms ?? 0} rooms this
+              property has today.
             </div>
           </div>
-        ) : null}
-
-        {/* ---------------------------------------------------------- */}
-        {isWidgetVisible('room-types') && run?.by_room_type?.length ? (
+        ) : null;
+      case 'room-types':
+        return isWidgetVisible('room-types') && run?.by_room_type?.length ? (
           <div className={CARD}>
             <div className={CARD_HEAD}>
               <span>By room type</span>
@@ -490,20 +486,26 @@ const HotelDashboard = () => {
 
             <div className="flex-1 divide-y divide-slate-100 dark:divide-gray-700">
               {run.by_room_type.map((type: any) => (
-                <div key={type.name} className={`flex items-center gap-3 ${rowClass}`}>
+                <div
+                  key={type.name}
+                  className={`flex items-center gap-3 ${rowClass}`}
+                >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-slate-700 dark:text-slate-100">
                       {type.name}
                     </p>
                     <p className="text-[11px] text-slate-400">
-                      {type.rooms} rooms · {type.sold} of {type.room_nights_available} sold
+                      {type.rooms} rooms · {type.sold} of{' '}
+                      {type.room_nights_available} sold
                     </p>
                   </div>
                   <div className="w-24 shrink-0">
                     <div className="h-1.5 overflow-hidden rounded bg-slate-200 dark:bg-gray-700">
                       <div
                         className="h-full rounded bg-primary dark:bg-secondary"
-                        style={{ width: `${Math.min(100, Math.max(0, type.occupancy))}%` }}
+                        style={{
+                          width: `${Math.min(100, Math.max(0, type.occupancy))}%`,
+                        }}
                       />
                     </div>
                     <p className="mt-0.5 text-right text-[11px] tabular-nums text-slate-400">
@@ -521,13 +523,13 @@ const HotelDashboard = () => {
             </div>
 
             <div className="mt-auto bg-slate-50 px-4 py-2 text-[11px] text-slate-400 dark:bg-gray-700/50">
-              A floor at 40% beside one at 95% is a pricing question the single ADR hides.
+              A floor at 40% beside one at 95% is a pricing question the single
+              ADR hides.
             </div>
           </div>
-        ) : null}
-
-        {/* ---------------------------------------------------------- */}
-        {isWidgetVisible('takings') && takings ? (
+        ) : null;
+      case 'takings':
+        return isWidgetVisible('takings') && takings ? (
           <div className={CARD}>
             <div className={CARD_HEAD}>
               <span>Money taken this month</span>
@@ -574,7 +576,8 @@ const HotelDashboard = () => {
               {takings.unposted ? (
                 <p className="bg-amber-50 px-4 py-2 text-[11px] text-amber-900 dark:bg-amber-500/15 dark:text-amber-50">
                   <strong>{takings.unposted}</strong>{' '}
-                  {takings.unposted === 1 ? 'receipt is' : 'receipts are'} not in the ledger.
+                  {takings.unposted === 1 ? 'receipt is' : 'receipts are'} not
+                  in the ledger.
                 </p>
               ) : (
                 <p className="bg-slate-50 px-4 py-2 text-[11px] text-slate-400 dark:bg-gray-700/50">
@@ -583,13 +586,11 @@ const HotelDashboard = () => {
               )}
             </div>
           </div>
-        ) : null}
-
-        {/* ---------------------------------------------------------- */}
-        {/* The cash book, kept. A hotel is still a business with a drawer,
-            and this is the one card from the generic dashboard that answers
-            a question a motel actually asks. */}
-        {isWidgetVisible('balance') && !dashboard?.isLoading && dashboard?.data ? (
+        ) : null;
+      case 'balance':
+        return isWidgetVisible('balance') &&
+          !dashboard?.isLoading &&
+          dashboard?.data ? (
           <div className={CARD}>
             <div className={CARD_HEAD}>
               <span className="truncate">{dashboard?.data?.branch?.name}</span>
@@ -614,14 +615,18 @@ const HotelDashboard = () => {
               <div className={`flex items-center justify-between ${rowClass}`}>
                 <span className="text-xs text-slate-400">Today received</span>
                 <span className="text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                  {thousandSeparator(dashboard?.data?.todayReceived?.debit || 0)}
+                  {thousandSeparator(
+                    dashboard?.data?.todayReceived?.debit || 0,
+                  )}
                 </span>
               </div>
 
               <div className={`flex items-center justify-between ${rowClass}`}>
                 <span className="text-xs text-slate-400">Today payment</span>
                 <span className="text-base font-bold tabular-nums text-rose-600 dark:text-rose-400">
-                  {thousandSeparator(dashboard?.data?.todayReceived?.credit || 0)}
+                  {thousandSeparator(
+                    dashboard?.data?.todayReceived?.credit || 0,
+                  )}
                 </span>
               </div>
 
@@ -643,7 +648,64 @@ const HotelDashboard = () => {
               <span>Last updated: {dashboard?.data?.last_update}</span>
             </div>
           </div>
-        ) : null}
+        ) : null;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div>
+      <HelmetTitle title="Dashboard" />
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
+            {currentBranch?.name || 'The property'}
+          </h1>
+          <p className="text-xs text-slate-400">
+            {run?.from && run?.to
+              ? `This month so far · ${formatDayMonthYear(run.from)} to ${formatDayMonthYear(run.to)}`
+              : 'Reading the property…'}
+          </p>
+        </div>
+        <DashboardCustomizeButton
+          density={density}
+          widgets={orderedWidgets}
+          isWidgetVisible={isWidgetVisible}
+          onToggleWidget={toggleWidget}
+          onMoveWidget={moveWidget}
+          onDensityChange={setDensity}
+          onReset={reset}
+        />
+      </div>
+
+      {/* ------------------------------------------------------------ */}
+      {/* Tonight. The desk's band, and it comes first because at nine in
+          the morning nobody is asking about the month. */}
+      <div
+        className={`grid grid-cols-1 items-start md:grid-cols-2 lg:grid-cols-4 ${gap}`}
+      >
+        {orderedWidgets
+          .filter((widget) => isWidgetVisible(widget.id))
+          .map((widget) => {
+            const content = renderWidget(widget.id);
+            if (!content) return null;
+            return (
+              <div
+                key={widget.id}
+                className={
+                  ['nights', 'room-types', 'takings', 'balance'].includes(
+                    widget.id,
+                  )
+                    ? 'min-w-0 md:col-span-2'
+                    : 'min-w-0'
+                }
+              >
+                {content}
+              </div>
+            );
+          })}
       </div>
 
       {/* ⚠️ The caveat every occupancy report in the world has and most of them
@@ -655,11 +717,12 @@ const HotelDashboard = () => {
           explain when there are no figures on the page to qualify. */}
       {run ? (
         <p className="mt-4 text-[11px] leading-snug text-slate-400">
-          Rooms only — halls and community centres are let by the sitting, not the night. Confirmed,
-          checked-in and checked-out stays count; holds do not. Rent is the full tariff, so a
-          discount lowers the takings and never the ADR. Measured against the {run.rooms} rooms this
-          property has <strong>today</strong> — a floor opened last week makes earlier months read
-          low.
+          Rooms only — halls and community centres are let by the sitting, not
+          the night. Confirmed, checked-in and checked-out stays count; holds do
+          not. Rent is the full tariff, so a discount lowers the takings and
+          never the ADR. Measured against the {run.rooms} rooms this property
+          has <strong>today</strong> — a floor opened last week makes earlier
+          months read low.
         </p>
       ) : null}
     </div>

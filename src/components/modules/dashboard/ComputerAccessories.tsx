@@ -3,7 +3,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useDispatch, useSelector } from 'react-redux';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDashboard, getDashboardSummary } from './dashboardSlice';
-import KpiRow, { DEFAULT_TILES } from './KpiRow';
+import KpiRow, { KpiHeading, DEFAULT_TILES } from './KpiRow';
 import DueAgingCard from './DueAgingCard';
 import LowStockCard from './LowStockCard';
 import StockValueCard from './StockValueCard';
@@ -134,20 +134,8 @@ const ComputerAccessories = () => {
         />
       </div>
 
-      {/* Rendered above the grid rather than as one of its cards: it is a
-          summary band, and a saved widget order from before it existed would
-          otherwise push it to the bottom of the page for existing users. */}
-      {kpiTiles.length ? (
-        <div className="mb-4">
-          <KpiRow
-            kpis={summaryData?.kpis}
-            isLoading={summary?.isLoading}
-            trxDate={summaryData?.trxDate}
-            gapClass={dashboardGapClass}
-            tiles={kpiTiles}
-          />
-        </div>
-      ) : null}
+      {kpiTiles.length > 0 && <KpiHeading trxDate={summaryData?.trxDate} />}
+
 
       {/* items-stretch, not items-start: every card in a row ends at the same
           line. Each card is a flex column with its footer on mt-auto, so the
@@ -159,6 +147,8 @@ const ComputerAccessories = () => {
             under the KPI row -- including the cards fed by a completely
             different endpoint. Each card waits for its own data now. */}
         {visibleWidgets.map((widget) => {
+            const tile = DEFAULT_TILES.find(tile => widget.id === `kpi-${tile.key}`);
+            if (tile) return <KpiRow key={widget.id} embedded kpis={summaryData?.kpis} isLoading={summary?.isLoading} tiles={[tile]} />;
             if (widget.id === 'summary') {
               return <BalanceSummaryCard key={widget.id} rowClass={cardRowClass} />;
             }
