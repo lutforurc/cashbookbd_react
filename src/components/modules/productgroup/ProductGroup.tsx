@@ -4,7 +4,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
+import { FiEdit2, FiPlus, FiRefreshCcw, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { deleteProductGroup, getProductGroup, storeProductGroup } from './productGroupSlice';
