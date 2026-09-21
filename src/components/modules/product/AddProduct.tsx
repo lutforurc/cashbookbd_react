@@ -3,7 +3,6 @@ import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCategoryDdl } from '../category/categorySlice';
 import { getProductGroupDdl } from '../productgroup/productGroupSlice';
@@ -14,7 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { editProduct, storeProduct, updateProduct } from './productSlice';
 import { useParams } from 'react-router-dom';
 import { warrantyType } from '../../utils/fields/DataConstant';
-import { FiRefreshCcw, FiSave } from 'react-icons/fi';
+import { FiArrowLeft, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { fetchBrandDdl } from './brand/brandSlice';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
@@ -488,27 +487,30 @@ const AddProduct = () => {
           className={''}
           onChange={handleOnChange}
         />
-        <InputElement
-          id="purchase_price"
-          value={
-            formData.purchase_price ? formData.purchase_price.toString() : ''
-          }
-          name="purchase_price"
-          placeholder={'Enter Purchase Price'}
-          label={'Purchase Price'}
-          className={''}
-          onChange={handleOnChange}
-        />
-        <InputElement
-          id="sales_price"
-          value={formData.sales_price ? formData.sales_price.toString() : ''}
-          // value={formData.sales_price.toString()}
-          name="sales_price"
-          placeholder={'Enter Sales Price'}
-          label={'Sales Price'}
-          className={''}
-          onChange={handleOnChange}
-        />
+        {/* The two prices side by side in one cell, the way Product Type and
+            Unit already are below: they are read together. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          <InputElement
+            id="purchase_price"
+            value={
+              formData.purchase_price ? formData.purchase_price.toString() : ''
+            }
+            name="purchase_price"
+            placeholder={'Enter Purchase Price'}
+            label={'Purchase Price'}
+            className={''}
+            onChange={handleOnChange}
+          />
+          <InputElement
+            id="sales_price"
+            value={formData.sales_price ? formData.sales_price.toString() : ''}
+            name="sales_price"
+            placeholder={'Enter Sales Price'}
+            label={'Sales Price'}
+            className={''}
+            onChange={handleOnChange}
+          />
+        </div>
 
         {/* the text '0' is truthy, so this has to be asked, not assumed */}
         {isBranchSettingOn(settings, 'warranty_controll') ? (
@@ -675,9 +677,12 @@ const AddProduct = () => {
             icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
         )}
-        <Link to="/product/product-list" className="text-nowrap py-1.5">
-          Go to back
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate('/product/product-list')}
+          label="Go to back"
+          className="whitespace-nowrap mr-2 py-1.5"
+          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+        />
       </div>
     </div>
   );

@@ -659,7 +659,7 @@ const Product = (user: any) => {
     <div>
       <HelmetTitle title="Product List" />
 
-      <div className="mb-2 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-2">
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap lg:items-center">
           <div className="w-full ">
             <CategoryDropdown
@@ -700,7 +700,7 @@ const Product = (user: any) => {
             <ButtonLoading label="Search" icon={<FiSearch className="text-gray-500" />}  onClick={handleSearchButton} className="w-full sm:w-auto" />
           </div>
 
-          <div className="flex w-full">
+          <div className="flex w-full items-center">
             <div className="mr-2">
               <PrintRowsInput
  id="perPage"
@@ -709,7 +709,7 @@ const Product = (user: any) => {
  value={rowsPerPage.toString()}
  onChange={handlePerPageChange}
  type="text"
- className="font-medium text-sm w-12"
+ className="font-medium text-sm w-12!"
               />
             </div>
 
@@ -725,17 +725,17 @@ const Product = (user: any) => {
               />
             </div>
             <PrintButton onClick={handlePrint} label="Print" className="ml-2 pt-[0.45rem] pb-[0.45rem]" />
-          </div>
-        </div>
 
-        <div>
-          <ButtonLoading
-            onClick={() => navigate('/product/add-product')}
-            label="New"
-            size="sm"
-            className="w-full sm:w-auto"
-            icon={<FiPlus className="text-white text-base ml-1 mr-1" />}
-          />
+            {/* Beside Print, at Print's own size, rather than in a cell of
+                its own beside a full-width filter group -- that cell was a
+                sliver, and the button sat squeezed against the edge. */}
+            <ButtonLoading
+              onClick={() => navigate('/product/add-product')}
+              label="New"
+              className="ml-2 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
+              icon={<FiPlus className="h-5 w-5" />}
+            />
+          </div>
         </div>
       </div>
 
