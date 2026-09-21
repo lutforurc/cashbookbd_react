@@ -6,7 +6,8 @@ interface CategoryDropdownProps {
   categoryDdl: { id: number | string; name: string }[];
   onChange: (selectedOption: any) => void;
   className?: string;
-  value?: string | number | null;  
+  value?: string | number | null;
+  placeholder?: string;
 }
 
 const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
@@ -14,6 +15,7 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   onChange,
   className,
   value,
+  placeholder = 'Select Category...',
 }) => {
   const [selectedOption, setSelectedOption] = useState<any>(null);
 
@@ -64,7 +66,7 @@ useEffect(() => {
       value={selectedOption}
       onChange={handleChange}
       options={options}
-      placeholder="Select Category..."
+      placeholder={placeholder}
       isSearchable
       className={`block text-sm bg-transparent outline-none dark:bg-boxdark dark:border-gray-600 dark:placeholder-gray-400 dark:text-[rgb(var(--c-text))] dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}
       styles={withFieldHeight({

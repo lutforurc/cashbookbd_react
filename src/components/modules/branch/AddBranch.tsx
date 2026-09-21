@@ -87,6 +87,7 @@ interface branchItem {
   have_is_guaranter: boolean;
   have_customer_nominee: boolean;
   stock_report_type: boolean;
+  need_product_group: boolean;
   is_opening: boolean;
   use_bangla: boolean;
   report_zero_bal: boolean;
@@ -395,6 +396,7 @@ const AddBranch = () => {
     have_is_guaranter: false,
     have_customer_nominee: false,
     stock_report_type: false,
+    need_product_group: false,
     is_opening: false,
     use_bangla: false,
     report_zero_bal: false,
@@ -671,6 +673,7 @@ const AddBranch = () => {
         share_customer_with_other_branch: toBooleanFlag(b.share_customer_with_other_branch),
         have_customer_sl: toBooleanFlag(b.have_customer_sl),
         stock_report_type: toBooleanFlag(b.stock_report_type),
+        need_product_group: toBooleanFlag(b.need_product_group),
         use_bangla: toBooleanFlag(b.use_bangla),
         show_instalment_list: toBooleanFlag(b.show_instalment_list),
         show_spelling_of_money: toBooleanFlag(b.show_spelling_of_money),
@@ -1630,6 +1633,12 @@ const AddBranch = () => {
                         description="Keeps items with no balance on the stock report, so what has run out is still visible."
                         checked={Boolean(formData.report_zero_bal)}
                         onChange={(checked) => handleToggleFieldChange('report_zero_bal', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Product Group?"
+                        description="Adds a Product Group dropdown ahead of Category on the Add Product form."
+                        checked={Boolean(formData.need_product_group)}
+                        onChange={(checked) => handleToggleFieldChange('need_product_group', checked)}
                       />
                       <FormToggleField
                         label="Stock: Brand->Category->Item"

@@ -154,6 +154,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   'products': [
     { id: 'brand/brand-list', title: "Brand List" },
     { id: 'category/category-list', title: "Category List" },
+    { id: 'product-group/product-group-list', title: "Product Group" },
     { id: 'product/product-list', title: "Product List" },
     { id: 'product_low_stock', title: "Low Stock" },
     { id: 'product_negative_stock', title: "Negative Stock" },
@@ -2378,6 +2379,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Category List
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product_group.view') && (
+                            <li style={subSlot('products', 'product-group/product-group-list')}>
+                              <NavLink
+                                to="/product-group/product-group-list"
+                                className={subMenuLinkClass}
+                              >
+                                Product Group
                               </NavLink>
                             </li>
                           )}

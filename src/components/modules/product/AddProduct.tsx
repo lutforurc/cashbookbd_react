@@ -6,6 +6,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCategoryDdl } from '../category/categorySlice';
+import { getProductGroupDdl } from '../productgroup/productGroupSlice';
 import Loader from '../../../common/Loader';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -27,6 +28,8 @@ interface productItem {
   description: string;
   manufacture_id: string | number;
   category_id: string | number;
+  /** Optional second grouping level; only shown when the branch asks for it. */
+  group_id?: string | number;
   product_type: string | number;
   purchase_price: string | number;
   sales_price: string | number;
@@ -61,6 +64,7 @@ const AddProduct = () => {
     description: '',
     manufacture_id: '',
     category_id: '',
+    group_id: '',
     product_type: '',
     purchase_price: '',
     sales_price: '',
@@ -84,6 +88,9 @@ const AddProduct = () => {
   const { id } = useParams();
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
+  const productGroupData = useSelector((state) => state.productGroup);
+  const [ddlProductGroup, setDdlProductGroup] = useState<any[]>([]);
+  const needProductGroup = isBranchSettingOn(settings, 'need_product_group');
   const productTypeOptions = category?.ddlData?.data?.product_type || [];
   const unitOptions = category?.ddlData?.data?.unit || [];
 
@@ -98,6 +105,7 @@ const AddProduct = () => {
       setFormData({
         ...edit,
         category_id: edit?.category_id != null ? String(edit.category_id) : '',
+        group_id: edit?.group_id != null ? String(edit.group_id) : '',
         product_type: edit?.product_type != null ? String(edit.product_type) : '',
         unit_id: edit?.unit_id != null ? String(edit.unit_id) : '',
         manufacture_id: edit?.manufacture_id != null ? String(edit.manufacture_id) : '',
@@ -135,6 +143,7 @@ const AddProduct = () => {
   useEffect(() => {
     dispatch(getCategoryDdl({ search }));
     dispatch(fetchBrandDdl());
+    dispatch(getProductGroupDdl());
   }, []);
 
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -189,7 +198,7 @@ const AddProduct = () => {
         }
       }),
     );
- 
+
   };
 
   const handleProductCreate = (e) => {
@@ -241,6 +250,13 @@ const AddProduct = () => {
     }
   };
 
+  const handleGroupChange = (selectedOption: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      group_id: selectedOption?.value ?? '',
+    }));
+  };
+
   const handleCategoryChange = (selectedOption: any) => {
     const selectedId = selectedOption?.value ?? '';
 
@@ -273,8 +289,16 @@ const AddProduct = () => {
   ];
 
   const optionsWithAll = [
-    { id: '', name: 'All Product' },
+    { id: '', name: 'Select Category' },
     ...(Array.isArray(ddlCategory) ? ddlCategory : []),
+  ];
+
+  // Optional, so the list opens on this blank option rather than forcing a
+  // pick -- CategoryDropdown auto-selects its first option when nothing is
+  // chosen yet.
+  const productGroupOptions = [
+    { id: '', name: 'Not applicable' },
+    ...(Array.isArray(ddlProductGroup) ? ddlProductGroup : []),
   ];
 
   useEffect(() => {
@@ -283,6 +307,12 @@ const AddProduct = () => {
       setCategoryId(categoryData.ddlData[0]?.id ?? null);
     }
   }, [categoryData]);
+
+  useEffect(() => {
+    if (Array.isArray(productGroupData?.ddlData?.data)) {
+      setDdlProductGroup(productGroupData?.ddlData?.data || []);
+    }
+  }, [productGroupData]);
 
   useEffect(() => {
     setFormData((prev) => {
@@ -312,17 +342,17 @@ const AddProduct = () => {
   }, [productTypeOptions, unitOptions]);
 
   const handleBrandChange = (selectedOption: any) => {
-  const selectedId = selectedOption?.value ?? '';
+    const selectedId = selectedOption?.value ?? '';
 
-  setFormData((prev) => ({
-    ...prev,
-    manufacture_id: selectedId,
-  }));
-};
+    setFormData((prev) => ({
+      ...prev,
+      manufacture_id: selectedId,
+    }));
+  };
 
-console.log('====================================');
-console.log("category control", settings?.data?.branch?.warranty_controll);
-console.log('====================================');
+  console.log('====================================');
+  console.log("category control", settings?.data?.branch?.warranty_controll);
+  console.log('====================================');
 
 
   return (
@@ -334,22 +364,34 @@ console.log('====================================');
         <div>
           <label htmlFor="" className='text-sm'>Select Brand</label>
           <CategoryDropdown
- onChange={handleBrandChange}
- className="w-full text-sm !"
- categoryDdl={brandOptions}
- value={formData.manufacture_id}
+            onChange={handleBrandChange}
+            className="w-full text-sm !"
+            categoryDdl={brandOptions}
+            value={formData.manufacture_id}
           />
         </div>
+        {needProductGroup && (
+          <div>
+            <label htmlFor="" className='text-sm'>Select Product Group</label>
+            <CategoryDropdown
+              onChange={handleGroupChange}
+              className="w-full text-sm !"
+              categoryDdl={productGroupOptions}
+              value={formData.group_id}
+              placeholder="Not Applicable..."
+            />
+          </div>
+        )}
         {categoryData.isLoading ? (
           <Loader />
         ) : (
           <div>
             <label htmlFor="" className='text-sm'>Select Category</label>
             <CategoryDropdown
- onChange={handleCategoryChange}
- className="w-full text-sm !"
- categoryDdl={optionsWithAll}
- value={formData.category_id}
+              onChange={handleCategoryChange}
+              className="w-full text-sm !"
+              categoryDdl={optionsWithAll}
+              value={formData.category_id}
             />
           </div>
         )}
@@ -406,13 +448,13 @@ console.log('====================================');
         {isBranchSettingOn(settings, 'warranty_controll') ? (
           <>
             <DropdownCommon
- id="warranty_type"
- label="Select Waranty/Guaranty Type"
- onChange={handleOnChange}
- name="warranty_type"
- className=""
- data={warrantyTypeOptions}
- value={formData?.warranty_type?.toString() || '0'}
+              id="warranty_type"
+              label="Select Waranty/Guaranty Type"
+              onChange={handleOnChange}
+              name="warranty_type"
+              className=""
+              data={warrantyTypeOptions}
+              value={formData?.warranty_type?.toString() || '0'}
             />
             <InputElement
               id="warranty_days"
@@ -441,25 +483,25 @@ console.log('====================================');
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           <div className="w-full">
             <DropdownCommon
- id="product_type"
- label="Select Product Type"
- onChange={handleOnChange}
- name="product_type"
- className="w-full"
- data={category?.ddlData?.data?.product_type}
- value={formData?.product_type?.toString() ?? ''}
+              id="product_type"
+              label="Select Product Type"
+              onChange={handleOnChange}
+              name="product_type"
+              className="w-full"
+              data={category?.ddlData?.data?.product_type}
+              value={formData?.product_type?.toString() ?? ''}
             />
           </div>
 
           <div className="w-full">
             <DropdownCommon
- id="unit_id"
- label="Select Unit"
- onChange={handleOnChange}
- name="unit_id"
- className="w-full"
- data={category?.ddlData?.data?.unit}
- value={formData?.unit_id?.toString() ?? ''}
+              id="unit_id"
+              label="Select Unit"
+              onChange={handleOnChange}
+              name="unit_id"
+              className="w-full"
+              data={category?.ddlData?.data?.unit}
+              value={formData?.unit_id?.toString() ?? ''}
             />
           </div>
         </div>

@@ -485,6 +485,12 @@ export const API_CATEGORY_EDIT_URL = `${API_BASE_URL}/category/edit/`;
 export const API_CATEGORY_UPDATE_URL = `${API_BASE_URL}/category/category-update`;
 export const API_CATEGORY_CHECK = `${API_BASE_URL}/category/category-check`;
 
+// Product Group Route
+export const API_PRODUCT_GROUP_DDL_URL = `${API_BASE_URL}/product-group/product-group-ddl`;
+export const API_PRODUCT_GROUP_LIST_URL = `${API_BASE_URL}/product-group/product-group-list`;
+export const API_PRODUCT_GROUP_STORE_URL = `${API_BASE_URL}/product-group/api-store`;
+export const API_PRODUCT_GROUP_DELETE_URL = `${API_BASE_URL}/product-group/delete`;
+
 // Trading Purchase Route
 export const API_TRADING_PURCHASE_STORE_URL = `${API_BASE_URL}/trading/purchase/api-store`;
 export const API_TRADING_PURCHASE_EDIT_URL = `${API_BASE_URL}/trading/purchase/api-edit`;

@@ -206,6 +206,7 @@ const ROUTES = {
   category_list: '/category/category-list',
   category_create: '/category/create',
   category_edit: '/category/edit',
+  product_group_list: '/product-group/product-group-list',
   category_store: '/category/store',
 
   // The archive of an old RAAJRANI ERP. One screen: search a customer, open

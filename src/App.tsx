@@ -40,6 +40,7 @@ import AddProduct from './components/modules/product/AddProduct';
 import Category from './components/modules/category/Category';
 import AddCategory from './components/modules/category/AddCategory';
 import EditCategory from './components/modules/category/EditCategory';
+import ProductGroup from './components/modules/productgroup/ProductGroup';
 import LegacyRecordSearch from './components/modules/legacy/LegacyRecordSearch';
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import CashBookTwoColumn from './components/modules/reports/cash-book-two-column/CashBookTwoColumn';
@@ -529,6 +530,11 @@ function App() {
               <Route path={routes.category_list} element={<Category />} />
               <Route path={routes.category_create} element={<AddCategory />} />
               <Route path={routes.category_edit} element={<EditCategory />} />
+            </Route>
+
+            {/* Product Group */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product_group.view']} loading={permissionsLoading} />}>
+              <Route path={routes.product_group_list} element={<ProductGroup />} />
             </Route>
 
             {/* The archive of an old RAAJRANI ERP, read-only: search a customer
