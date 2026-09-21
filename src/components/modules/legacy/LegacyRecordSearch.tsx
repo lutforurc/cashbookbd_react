@@ -152,7 +152,7 @@ const LegacyRecordSearch = () => {
           <PrintButton onClick={handlePrint} label="Print" className="px-6" />
         </div>
 
-        <div className="overflow-hidden rounded border border-gray-300 bg-white">
+        <div className="overflow-hidden rounded border border-gray-300">
           <LegacyInvoicePrint ref={printRef} invoice={bill} />
         </div>
       </div>
@@ -169,42 +169,42 @@ const LegacyRecordSearch = () => {
         <button
           type="button"
           onClick={() => setCard(null)}
-          className="mb-3 flex items-center gap-1 text-sm text-blue-700 hover:underline"
+          className="mb-3 flex items-center gap-1 text-sm dark:text-white text-gray-600 underline  hover:underline"
         >
           <FiArrowLeft /> নতুন করে খুঁজুন
         </button>
 
-        <div className="mb-4 rounded border border-gray-300 bg-white p-4">
+        <div className="mb-4 rounded border border-gray-300 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h1 className="text-lg font-semibold">{card.party?.name}</h1>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm ">
                 {card.party?.address}
                 {card.party?.phone ? ` — ${card.party.phone}` : ""}
               </div>
-              <div className="mt-1 text-xs text-gray-500">
+              <div className="mt-1 text-xs ">
                 পুরনো সিস্টেমের আইডি {card.party?.legacy_id}
               </div>
             </div>
 
             <div className="text-right">
-              <div className="text-xs text-gray-500">সর্বশেষ ব্যালেন্স</div>
+              <div className="text-xs ">সর্বশেষ ব্যালেন্স</div>
               <div className="text-xl font-semibold">
                 {money(card.summary?.closing)}
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs ">
                 {card.summary?.bills ?? 0} টা বিল, {card.summary?.payments ?? 0} টা জমা
               </div>
             </div>
           </div>
 
-          <p className="mt-3 border-t pt-2 text-xs text-gray-500">
+          <p className="mt-3 border-t pt-2 text-xs ">
             পুরনো সিস্টেমের রেকর্ড — এখানে কোনো হিসাব হয় না, খাতায় কিছু পোস্ট হয় না।
             বিলের লাইনে ক্লিক করলে বিলটা খুলবে।
           </p>
         </div>
 
-        <div className="rounded border border-gray-300 bg-white">
+        <div className="rounded border border-gray-300 dark:bg-gray-800">
           <Table
             columns={[
               {
@@ -266,31 +266,31 @@ const LegacyRecordSearch = () => {
     <div className="p-4">
       <div className="mb-4">
         <h1 className="text-lg font-semibold">পুরনো ERP-র রেকর্ড</h1>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm dark:text-white text-gray-600">
           কাস্টমারের নাম বা মোবাইল নম্বর দিয়ে খুঁজুন।
         </p>
       </div>
 
-      <div className="mb-3 max-w-xl">
+      <div className="mb-3 min-w-xl">
         <SearchInput
           search={term}
           setSearchValue={(value: string) => {
             setTerm(value);
             setPage(1);
           }}
-          className=""
+          className="w-full"
           id="legacy-search"
           label="নাম বা মোবাইল"
         />
         <p className="mt-1 text-xs text-gray-500">
-          দুটো ফরম্যাটেই কাজ করবে — 01712-437131 আর 01712437131।
+          দুটো ফরম্যাটেই কাজ করবে — 01712-437131 আর 01712437131
         </p>
       </div>
 
       {loading ? (
         <Loader />
       ) : (
-        <div className="rounded border border-gray-300 bg-white">
+        <div className="rounded border border-gray-300 bg-gray-50 dark:bg-gray-800">
           <Table
             columns={[
               { key: "name", header: "নাম" },
