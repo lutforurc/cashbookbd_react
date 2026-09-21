@@ -18,6 +18,7 @@ import {
 import { money } from "../hotel/setupHelpers";
 
 import LegacyInvoicePrint, { LegacyInvoice } from "./LegacyInvoicePrint";
+import { formatDate } from "../../utils/utils-functions/formatDate";
 
 /**
  * The archive of an old RAAJRANI ERP the client migrated off.
@@ -210,7 +211,7 @@ const LegacyRecordSearch = () => {
               {
                 key: "doc_date",
                 header: "তারিখ",
-                render: (row: any) => row.doc_date ?? "—",
+                render: (row: any) => row.doc_date ?  formatDate(row.doc_date) : "—",
               },
               {
                 key: "particulars",
