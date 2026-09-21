@@ -205,7 +205,7 @@ const LegacyRecordSearch = () => {
           </p>
         </div>
 
-        <div className="rounded border border-gray-300 dark:bg-gray-800">
+        <div className="rounded border border-gray-300">
           <Table
             columns={[
               {
