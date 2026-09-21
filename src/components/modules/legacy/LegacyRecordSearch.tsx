@@ -19,6 +19,7 @@ import { money } from "../hotel/setupHelpers";
 
 import LegacyInvoicePrint, { LegacyInvoice } from "./LegacyInvoicePrint";
 import { formatDate } from "../../utils/utils-functions/formatDate";
+import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
 
 /**
  * The archive of an old Old ERP the client migrated off.
@@ -209,8 +210,17 @@ const LegacyRecordSearch = () => {
           <Table
             columns={[
               {
+                key: "sl_no",
+                header: "ক্রমিক নং",
+                headerClass: "text-center",
+                cellClass: "text-center",
+                render: (_row, index) => index + 1,
+              },
+              {
                 key: "doc_date",
                 header: "তারিখ",
+                headerClass: "text-center",
+                cellClass: "text-center",
                 render: (row: any) => row.doc_date ?  formatDate(row.doc_date) : "—",
               },
               {
@@ -229,19 +239,19 @@ const LegacyRecordSearch = () => {
                 key: "debit",
                 header: "ডেবিট",
                 cellClass: "text-right",
-                render: (row: any) => money(row.debit),
+                render: (row: any) => thousandSeparator(row.debit),
               },
               {
                 key: "credit",
                 header: "ক্রেডিট",
                 cellClass: "text-right",
-                render: (row: any) => money(row.credit),
+                render: (row: any) => thousandSeparator(row.credit),
               },
               {
                 key: "balance",
                 header: "ব্যালেন্স",
                 cellClass: "text-right",
-                render: (row: any) => money(row.balance),
+                render: (row: any) => thousandSeparator(row.balance),
               },
             ]}
             data={rows}

@@ -159,8 +159,8 @@ const LegacyInvoicePrint = forwardRef<HTMLDivElement, Props>(
                     <td className={cell("text-center")}>
                       {it?.qty_raw ?? it?.quantity}
                     </td>
-                    <td className={cell("text-right")}>{money(it?.rate)}</td>
-                    <td className={cell("text-right")}>{money(it?.amount)}</td>
+                    <td className={cell("text-right")}>{thousandSeparator(it?.rate ?? 0)}</td>
+                    <td className={cell("text-right")}>{thousandSeparator(it?.amount ?? 0)}</td>
                   </tr>
                 ))
               ) : (
@@ -177,11 +177,11 @@ const LegacyInvoicePrint = forwardRef<HTMLDivElement, Props>(
                   Total
                 </td>
                 <td className={cell("text-center")}>
-                  {thousandSeparator(totals?.quantity)}
+                  {thousandSeparator(totals?.quantity??0)}
                 </td>
                 <td className={cell("text-right")} />
                 <td className={cell("text-right")}>
-                  {money(totals?.price_amount)}
+                  {thousandSeparator(totals?.price_amount ?? 0)}
                 </td>
               </tr>
             </tbody>
@@ -197,8 +197,8 @@ const LegacyInvoicePrint = forwardRef<HTMLDivElement, Props>(
 
           {/* ---- amounts ---- */}
           <div className="mt-3 space-y-0.5">
-            <LabelValue label="Price Amount:" value={totals?.price_amount} fs={fs} />
-            <LabelValue label="Discount Amount:" value={totals?.discount} fs={fs} />
+            <LabelValue label="Price Amount:" value={totals?.price_amount ?? 0} fs={fs} />
+            <LabelValue label="Discount Amount:" value={totals?.discount ?? 0} fs={fs} />
             <LabelValue
               label="Previous Advanced"
               value={totals?.previous_advanced}
