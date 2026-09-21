@@ -21,7 +21,7 @@ import LegacyInvoicePrint, { LegacyInvoice } from "./LegacyInvoicePrint";
 import { formatDate } from "../../utils/utils-functions/formatDate";
 
 /**
- * The archive of an old RAAJRANI ERP the client migrated off.
+ * The archive of an old Old ERP the client migrated off.
  *
  * Somebody walks in and asks what they took in 2022. Type their name or their
  * mobile number, open their card, open the bill. Print it if they want it.
@@ -145,7 +145,7 @@ const LegacyRecordSearch = () => {
               পুরনো সিস্টেমের বিল #{(bill as any)?.legacy_no}
             </h1>
             <p className="text-sm text-gray-600">
-              RAAJRANI ERP থেকে নেওয়া রেকর্ড — এখানে কোনো হিসাব হয় না, খাতায় কিছু
+              Old ERP থেকে নেওয়া রেকর্ড — এখানে কোনো হিসাব হয় না, খাতায় কিছু
               পোস্ট হয় না।
             </p>
           </div>

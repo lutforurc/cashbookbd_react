@@ -1602,7 +1602,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/*
                 Old Software.
 
-                The archive of the RAAJRANI ERP the client migrated off. A group
+                The archive of the Old ERP the client migrated off. A group
                 of its own rather than a corner of Reports because it is not this
                 software's own bookkeeping at all -- it is somebody else's
                 records, kept so a customer asking "what did I take in 2022" can

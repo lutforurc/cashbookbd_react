@@ -4,7 +4,7 @@ import PrintStyles from "../../utils/utils-functions/PrintStyles";
 import PrintFooter from "../../utils/utils-functions/PrintFooter";
 
 /**
- * A bill from the old RAAJRANI ERP, redrawn from the archived JSON.
+ * A bill from the old Old ERP, redrawn from the archived JSON.
  *
  * This is a reproduction of somebody else's document, so it deliberately does
  * NOT follow the modern bill's layout: same headings, same order, same

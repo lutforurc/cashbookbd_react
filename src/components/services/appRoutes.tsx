@@ -209,7 +209,7 @@ const ROUTES = {
   product_group_list: '/product-group/product-group-list',
   category_store: '/category/store',
 
-  // The archive of an old RAAJRANI ERP. One screen: search a customer, open
+  // The archive of an old Old ERP. One screen: search a customer, open
   // their card, open the bill. Read-only, and nothing of it reaches the ledger.
   legacy_record: '/legacy/records',
 

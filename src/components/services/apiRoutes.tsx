@@ -1172,7 +1172,7 @@ export const API_BUDGET_URL = `${API_BASE_URL}/budget`;
 // stem is the browsable window, which is the part that did not exist before.
 export const API_AUDIT_TRAIL_URL = `${API_BASE_URL}/audit-trail`;
 
-// The archived bills of an old RAAJRANI ERP, read-only.
+// The archived bills of an old Old ERP, read-only.
 //
 // ⚠️ NOTHING HERE WRITES. No store, no delete, and nothing posts to the ledger
 // -- the books started from an opening balance that already summarises these.

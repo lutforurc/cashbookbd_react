@@ -537,7 +537,7 @@ function App() {
               <Route path={routes.product_group_list} element={<ProductGroup />} />
             </Route>
 
-            {/* The archive of an old RAAJRANI ERP, read-only: search a customer
+            {/* The archive of an old Old ERP, read-only: search a customer
                 by name or mobile, open their card, open the bill, print it.
                 Nothing on it writes and nothing of it reaches the ledger. */}
             <Route
