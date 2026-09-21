@@ -58,6 +58,11 @@ const money = (v: number | null | undefined) =>
         maximumFractionDigits: 2,
       });
 
+/**
+ * One line of the amount block -- drawn only where the archive has the
+ * figure. A second old system may have no "Previous Advanced" at all, and a
+ * label over an empty space would be a reprint of a sheet that never existed.
+ */
 const LabelValue = ({
   label,
   value,
@@ -66,12 +71,20 @@ const LabelValue = ({
   label: string;
   value?: number | null;
   fs: number;
-}) => (
-  <div className="flex justify-between" style={{ fontSize: fs }}>
-    <span>{label}</span>
-    <span>{money(value)}</span>
-  </div>
-);
+}) =>
+  value == null ? null : (
+    <div className="flex justify-between" style={{ fontSize: fs }}>
+      <span>{label}</span>
+      <span>{money(value)}</span>
+    </div>
+  );
+
+/** "Invoice: 14611, Challan: C-8074" -- each part only where it has a value. */
+const joinPresent = (parts: Array<[string, unknown]>) =>
+  parts
+    .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== "")
+    .map(([label, v]) => `${label} ${v}`)
+    .join(", ");
 
 const LegacyInvoicePrint = forwardRef<HTMLDivElement, Props>(
   ({ invoice, title = "BILL INVOICE", fontSize = 11 }, ref) => {
@@ -80,35 +93,44 @@ const LegacyInvoicePrint = forwardRef<HTMLDivElement, Props>(
     const fs = fontSize;
 
     const cell = (extra = "") =>
-      `border border-gray-900 px-2 py-1 ${extra}`.trim();
+      `border border-gray-900 dark:border-gray-500 print:border-gray-900 px-2 py-1 ${extra}`.trim();
 
     return (
-      <div ref={ref} className="p-8 text-gray-900 print-root">
+      <div ref={ref} className="p-8 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 print:bg-white print:text-gray-900 print-root">
+        {/* On screen the sheet follows the theme like every other screen (the
+            app's dark background used to swallow its black text); on paper it
+            is always white with black rules -- the .dark class is still on
+            <html> when the print dialog opens, so print: has to say so. */}
         <PrintStyles />
 
         <div className="print-page">
-          {/* ---- pad ---- */}
-          <div className="text-center leading-tight">
-            <div className="font-bold" style={{ fontSize: fs + 5 }}>
-              {invoice?.pad?.name}
+          {/* ---- pad: the old system's own letterhead, or nothing -- never
+                  another client's ---- */}
+          {invoice?.pad?.name ? (
+            <div className="text-center leading-tight">
+              <div className="font-bold" style={{ fontSize: fs + 5 }}>
+                {invoice.pad.name}
+              </div>
+              {invoice.pad.address ? (
+                <div style={{ fontSize: fs - 1 }}>{invoice.pad.address}</div>
+              ) : null}
+              {invoice.pad.phone ? (
+                <div style={{ fontSize: fs - 1 }}>Mobile: {invoice.pad.phone}</div>
+              ) : null}
             </div>
-            <div style={{ fontSize: fs - 1 }}>{invoice?.pad?.address}</div>
-            <div style={{ fontSize: fs - 1 }}>
-              Mobile: {invoice?.pad?.phone}
-            </div>
-          </div>
+          ) : null}
 
           {/* ---- title ---- */}
           <div
-            className="mt-3 border border-gray-900 py-1 text-center font-bold"
+            className="mt-3 border border-gray-900 dark:border-gray-500 print:border-gray-900 py-1 text-center font-bold"
             style={{ fontSize: fs + 1 }}
           >
             {title}
           </div>
 
           {/* ---- customer | invoice meta ---- */}
-          <div className="grid grid-cols-2 border-x border-b border-gray-900">
-            <div className="border-r border-gray-900 p-2 leading-snug">
+          <div className="grid grid-cols-2 border-x border-b border-gray-900 dark:border-gray-500 print:border-gray-900">
+            <div className="border-r border-gray-900 dark:border-gray-500 print:border-gray-900 p-2 leading-snug">
               <div style={{ fontSize: fs }} className="font-bold">
                 Customer Name: {invoice?.party?.name}
               </div>
@@ -120,14 +142,19 @@ const LegacyInvoicePrint = forwardRef<HTMLDivElement, Props>(
 
             <div className="p-2 leading-snug">
               <div style={{ fontSize: fs }} className="font-bold">
-                Invoice: {invoice?.legacy_no}, Challan: {invoice?.challan},
-                Cash Memo: {invoice?.cash_memo}
+                {joinPresent([
+                  ["Invoice:", invoice?.legacy_no],
+                  ["Challan:", invoice?.challan],
+                  ["Cash Memo:", invoice?.cash_memo],
+                ])}
               </div>
               <div style={{ fontSize: fs }}>
-                Date:{invoice?.invoice_date_raw}
+                Date: {invoice?.invoice_date_raw}
                 {invoice?.invoice_time ? `, ${invoice.invoice_time}` : ""}
               </div>
-              <div style={{ fontSize: fs }}>Sold:{invoice?.sold_by}</div>
+              {invoice?.sold_by ? (
+                <div style={{ fontSize: fs }}>Sold: {invoice.sold_by}</div>
+              ) : null}
             </div>
           </div>
 
@@ -137,7 +164,7 @@ const LegacyInvoicePrint = forwardRef<HTMLDivElement, Props>(
             style={{ fontSize: fs }}
           >
             <thead>
-              <tr className="bg-gray-200 font-bold">
+              <tr className="bg-gray-200 dark:bg-gray-700 print:bg-gray-200 font-bold">
                 <th className={cell("w-10 text-center")}>SL</th>
                 <th className={cell("w-24 text-left")}>Code</th>
                 <th className={cell("text-left")}>Particulars</th>
@@ -188,26 +215,30 @@ const LegacyInvoicePrint = forwardRef<HTMLDivElement, Props>(
           </table>
 
           {/* ---- in word ---- */}
-          <div
-            className="mt-3 text-center font-bold"
-            style={{ fontSize: fs }}
-          >
-            In Word: {invoice?.in_word}
-          </div>
+          {invoice?.in_word ? (
+            <div
+              className="mt-3 text-center font-bold"
+              style={{ fontSize: fs }}
+            >
+              In Word: {invoice.in_word}
+            </div>
+          ) : null}
 
-          {/* ---- amounts ---- */}
+          {/* ---- amounts: each line only where the archive has it ---- */}
           <div className="mt-3 space-y-0.5">
-            <LabelValue label="Price Amount:" value={totals?.price_amount ?? 0} fs={fs} />
-            <LabelValue label="Discount Amount:" value={totals?.discount ?? 0} fs={fs} />
+            <LabelValue label="Price Amount:" value={totals?.price_amount} fs={fs} />
+            <LabelValue label="Discount Amount:" value={totals?.discount} fs={fs} />
             <LabelValue
               label="Previous Advanced"
               value={totals?.previous_advanced}
               fs={fs}
             />
-            <div className="flex justify-between border-y border-gray-900 py-0.5 font-bold" style={{ fontSize: fs }}>
-              <span>Final Amount</span>
-              <span>{money(totals?.final_amount)}</span>
-            </div>
+            {totals?.final_amount != null ? (
+              <div className="flex justify-between border-y border-gray-900 dark:border-gray-500 print:border-gray-900 py-0.5 font-bold" style={{ fontSize: fs }}>
+                <span>Final Amount</span>
+                <span>{money(totals.final_amount)}</span>
+              </div>
+            ) : null}
             <LabelValue label="Paid Amount:" value={totals?.paid} fs={fs} />
             <LabelValue
               label="Advanced Amount"

@@ -6,6 +6,7 @@ import { FiArrowLeft, FiExternalLink } from "react-icons/fi";
 import Table from "../../utils/others/Table";
 import Pagination from "../../utils/utils-functions/Pagination";
 import SearchInput from "../../utils/fields/SearchInput";
+import SelectOption from "../../utils/utils-functions/SelectOption";
 import Loader from "../../../common/Loader";
 import { PrintButton } from "../../../pages/UiElements/CustomButtons";
 
@@ -14,7 +15,9 @@ import {
   API_LEGACY_INVOICE_URL,
   API_LEGACY_PARTIES_URL,
   API_LEGACY_PARTY_URL,
+  API_LEGACY_SOURCES_URL,
 } from "../../services/apiRoutes";
+import DropdownCommon from "../../utils/utils-functions/DropdownCommon";
 import { money } from "../hotel/setupHelpers";
 
 import LegacyInvoicePrint, { LegacyInvoice } from "./LegacyInvoicePrint";
@@ -43,6 +46,11 @@ import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
  * The mobile is matched on digits, so 01712-437131 and 01712437131 both find
  * the same person: the old system keeps numbers in several shapes and nobody
  * at the counter knows which.
+ *
+ * ⚠️ MORE THAN ONE OLD SYSTEM CAN BE IN THE ARCHIVE. Every row names its
+ * `source`, and a party is (source, party_type, legacy_id): customer 1473 of
+ * one old ERP and customer 1473 of another are two people. A client with one
+ * old system never sees the picker; it appears only when there is a choice.
  */
 const LegacyRecordSearch = () => {
   const [term, setTerm] = useState("");
@@ -50,6 +58,26 @@ const LegacyRecordSearch = () => {
   const [rows, setRows] = useState<any[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  const [sources, setSources] = useState<{ id: string; name: string }[]>([]);
+  const [source, setSource] = useState("");
+
+  useEffect(() => {
+    httpService
+      .get(API_LEGACY_SOURCES_URL)
+      .then((res) => {
+        const list = res?.data?.data?.data?.rows ?? res?.data?.data?.rows ?? [];
+        const options = (Array.isArray(list) ? list : []).map((s: any) => ({
+          id: String(s.source),
+          name: String(s.label ?? s.source),
+        }));
+        setSources(options);
+        // One system: chosen for them, picker hidden. Several: start on
+        // "all", the search spans them and each row says which it is from.
+        if (options.length === 1) setSource(options[0].id);
+      })
+      .catch(() => setSources([]));
+  }, []);
 
   const [card, setCard] = useState<any>(null);
   const [cardLoading, setCardLoading] = useState(false);
@@ -64,18 +92,18 @@ const LegacyRecordSearch = () => {
     documentTitle: `Legacy Invoice ${(bill as any)?.legacy_no ?? ""}`.trim(),
   });
 
-  const load = useCallback(async () => {
-    if (term.trim().length < 2) {
-      setRows([]);
-      setTotalPages(1);
-      return;
-    }
+  // 10 to match the first entry of the app's per-page select.
+  const [perPage, setPerPage] = useState(10);
 
+  // The whole list, paged, from the moment the screen opens -- somebody can
+  // leaf through the old customers without knowing a name to type. A search
+  // term narrows the same list.
+  const load = useCallback(async () => {
     setLoading(true);
 
     try {
       const res = await httpService.get(API_LEGACY_PARTIES_URL, {
-        params: { q: term.trim(), page, per_page: 20 },
+        params: { q: term.trim(), page, per_page: perPage, source: source || undefined },
       });
 
       const data = res?.data?.data?.data ?? res?.data?.data ?? {};
@@ -88,7 +116,7 @@ const LegacyRecordSearch = () => {
     } finally {
       setLoading(false);
     }
-  }, [term, page]);
+  }, [term, page, perPage, source]);
 
   useEffect(() => {
     load();
@@ -99,8 +127,10 @@ const LegacyRecordSearch = () => {
     setBill(null);
 
     try {
-      const res = await httpService.get(`${API_LEGACY_PARTY_URL}/${party.legacy_id}`, {
-        params: { party_type: party.party_type },
+      // The row's own source, not the picker's: on "all" the list mixes
+      // systems, and 1473 has to open as the 1473 that was clicked.
+      const res = await httpService.get(`${API_LEGACY_PARTY_URL}/${encodeURIComponent(party.legacy_id)}`, {
+        params: { party_type: party.party_type, source: party.source },
       });
 
       setCard(res?.data?.data?.data ?? null);
@@ -111,10 +141,13 @@ const LegacyRecordSearch = () => {
     }
   };
 
+  // A sale or a purchase can have a bill behind it; a payment or an opening
+  // row is a line in a ledger and has nothing more to show.
+  const hasBill = (row: any) =>
+    !!row?.legacy_no && (row.doc_type === "sale" || row.doc_type === "purchase");
+
   const openBill = async (row: any) => {
-    // Only a sale has a bill behind it. A payment or an opening row is a line
-    // in a ledger and has nothing more to show.
-    if (row.doc_type !== "sale" || !row.legacy_no) return;
+    if (!hasBill(row)) return;
 
     setBillLoading(true);
 
@@ -221,7 +254,7 @@ const LegacyRecordSearch = () => {
                 header: "তারিখ",
                 headerClass: "text-center",
                 cellClass: "text-center",
-                render: (row: any) => row.doc_date ?  formatDate(row.doc_date) : "—",
+                render: (row: any) => row.doc_date ? formatDate(row.doc_date) : "—",
               },
               {
                 key: "particulars",
@@ -229,7 +262,7 @@ const LegacyRecordSearch = () => {
                 render: (row: any) => (
                   <span className="flex items-center gap-1">
                     {row.particulars}
-                    {row.doc_type === "sale" && row.legacy_no ? (
+                    {hasBill(row) ? (
                       <FiExternalLink className="text-blue-600" title="বিল দেখুন" />
                     ) : null}
                   </span>
@@ -256,9 +289,7 @@ const LegacyRecordSearch = () => {
             ]}
             data={rows}
             onRowClick={openBill}
-            rowClassName={(row: any) =>
-              row.doc_type === "sale" && row.legacy_no ? "cursor-pointer" : ""
-            }
+            rowClassName={(row: any) => (hasBill(row) ? "cursor-pointer" : "")}
             getRowKey={(row: any) => row.id}
             noDataMessage="এই পার্টির কোনো লেনদেন পাওয়া যায়নি"
           />
@@ -282,29 +313,86 @@ const LegacyRecordSearch = () => {
         </p>
       </div>
 
-      <div className="mb-3 min-w-xl">
-        <SearchInput
-          search={term}
-          setSearchValue={(value: string) => {
-            setTerm(value);
-            setPage(1);
-          }}
-          className="w-full"
-          id="legacy-search"
-          label="নাম বা মোবাইল"
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          দুটো ফরম্যাটেই কাজ করবে — 01712-437131 আর 01712437131
-        </p>
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end">
+        <div className="w-full sm:w-28">
+          <SelectOption
+            id="legacy-per-page"
+            className="w-full!"
+            onChange={(e: any) => {
+              // "All" is the empty option; a thousand is all of them here.
+              const v = Number(e.target.value);
+              setPerPage(v > 0 ? v : 1000);
+              setPage(1);
+            }}
+          />
+        </div>
+
+        {/* Only where there is a choice. One old system, no picker. */}
+        {sources.length > 1 ? (
+          <div className="w-full sm:w-56">
+            <DropdownCommon
+              id="legacy-source"
+              name="source"
+              label="কোন সিস্টেম"
+              className="w-full"
+              data={[{ id: "", name: "সব সিস্টেম" }, ...sources]}
+              value={source}
+              onChange={(e: any) => {
+                setSource(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+        ) : null}
+
+        <div className="w-full">
+          <SearchInput
+            search={term}
+            setSearchValue={(value: string) => {
+              setTerm(value);
+              setPage(1);
+            }}
+            className="w-full"
+            id="legacy-search"
+            label="নাম বা মোবাইল"
+          />
+        </div>
       </div>
 
-      {loading ? (
-        <Loader />
-      ) : (
-        <div className="rounded border border-gray-300 bg-gray-50 dark:bg-gray-800">
+      {/* Under the whole row, not under the search box: inside the row it
+          pushed the box up past the per-page select beside it. */}
+      <p className="-mt-2 mb-3 text-xs text-gray-500">
+        দুটো ফরম্যাটেই কাজ করবে — 01712-437131 আর 01712437131
+      </p>
+
+      {/* The table stays on screen while the next page loads, with the
+          loader over it -- the way every other list in the app does it. It
+          used to be swapped out for the loader, so each page flip emptied
+          the screen and then refilled it. */}
+      <div className="relative rounded border border-gray-300 bg-gray-50 dark:bg-gray-800">
+        {loading ? <Loader /> : null}
+        <div className={loading ? "pointer-events-none opacity-60" : ""}>
           <Table
             columns={[
+              {
+                key: "sl",
+                header: "ক্রমিক",
+                headerClass: "text-center",
+                cellClass: "text-center",
+                render: (_row: any, index: number) => (page - 1) * perPage + index + 1,
+              },
               { key: "name", header: "নাম" },
+              // Which old system, only when the list can mix them.
+              ...(sources.length > 1
+                ? [
+                  {
+                    key: "source",
+                    header: "সিস্টেম",
+                    render: (row: any) =>
+                      sources.find((s) => s.id === String(row.source))?.name ?? row.source,
+                  },
+                ]
+                : []),
               {
                 key: "address",
                 header: "ঠিকানা",
@@ -318,28 +406,32 @@ const LegacyRecordSearch = () => {
               {
                 key: "documents",
                 header: "লেনদেন",
+                headerClass: "text-center",
                 cellClass: "text-right",
                 render: (row: any) => row.documents ?? 0,
               },
               {
                 key: "balance",
                 header: "ব্যালেন্স",
+                headerClass: "text-center",
                 cellClass: "text-right",
-                render: (row: any) => money(row.balance),
+                render: (row: any) => thousandSeparator(row.balance),
               },
             ]}
             data={rows}
             onRowClick={openCard}
             rowClassName={() => "cursor-pointer"}
-            getRowKey={(row: any) => `${row.party_type}-${row.legacy_id}`}
+            getRowKey={(row: any) => `${row.source}-${row.party_type}-${row.legacy_id}`}
             noDataMessage={
-              term.trim().length < 2
-                ? "কমপক্ষে দুই অক্ষর লিখুন"
-                : "এই নামে বা নম্বরে কাউকে পাওয়া যায়নি"
+              loading
+                ? "আনা হচ্ছে…"
+                : term.trim() === ""
+                  ? "পুরনো সিস্টেমের কোনো কাস্টমার এখনো আনা হয়নি"
+                  : "এই নামে বা নম্বরে কাউকে পাওয়া যায়নি"
             }
           />
         </div>
-      )}
+      </div>
 
       {cardLoading ? <Loader /> : null}
 

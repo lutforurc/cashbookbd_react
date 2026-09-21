@@ -1187,6 +1187,7 @@ export const API_AUDIT_TRAIL_URL = `${API_BASE_URL}/audit-trail`;
 // ⚠️ `parties` SEARCHES BY NAME, EVERYTHING ELSE IS BY ID. Two bills for one
 // person read "Robiul Islam" and "Robiul Islam/Tolar Gate", so the name finds
 // the party and the old system's own cid does the joining from there.
+export const API_LEGACY_SOURCES_URL = `${API_BASE_URL}/legacy/sources`;
 export const API_LEGACY_PARTIES_URL = `${API_BASE_URL}/legacy/parties`;
 export const API_LEGACY_PARTY_URL = `${API_BASE_URL}/legacy/party`;
 export const API_LEGACY_INVOICE_URL = `${API_BASE_URL}/legacy/invoice`;
