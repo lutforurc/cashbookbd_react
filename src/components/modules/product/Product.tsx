@@ -5,7 +5,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiRefreshCcw, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiSearch, FiTrash2 } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';

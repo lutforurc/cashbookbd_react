@@ -13,9 +13,9 @@ import {
   printPadHeading,
   status,
 } from '../../utils/fields/DataConstant';
-import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import StepRail from '../../utils/others/StepRail';
-import { FiArrowLeft, FiArrowRight, FiCheck, FiRefreshCcw, FiSave } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
 import { useDispatch, useSelector } from 'react-redux';
