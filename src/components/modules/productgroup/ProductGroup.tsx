@@ -4,7 +4,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiEdit2, FiPlus, FiRefreshCcw, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
+import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { deleteProductGroup, getProductGroup, storeProductGroup } from './productGroupSlice';
@@ -207,9 +207,13 @@ const ProductGroup = () => {
           />
         </div>
 
-        <Button onClick={openNew} className="text-nowrap flex items-center gap-1">
-          <FiPlus /> New Group
-        </Button>
+        <ButtonLoading
+          onClick={openNew}
+          label="New Group"
+          size="sm"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiPlus className="text-white text-base ml-1 mr-1" />}
+        />
       </div>
 
       <div className="relative overflow-x-auto">

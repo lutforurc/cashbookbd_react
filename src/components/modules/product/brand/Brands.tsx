@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { FiEdit2, FiPlus, FiRefreshCw, FiRefreshCcw, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -10,7 +11,6 @@ import Loader from '../../../../common/Loader';
 import { fetchBrands, updateBrand, deleteBrand } from './brandSlice';
 import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
-import Link from '../../../utils/others/Link';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import SearchInput from '../../../utils/fields/SearchInput';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
@@ -31,6 +31,7 @@ type BrandRow = {
 
 const Brands = () => {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
   const brandState = useSelector((state: any) => state.brand);
 
   const [perPage, setPerPage] = useState(10);
@@ -245,9 +246,13 @@ const Brands = () => {
           />
         </div>
 
-        <Link to={ROUTES.brand_create} className="text-nowrap">
-          New Brand
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate(ROUTES.brand_create)}
+          label="New Brand"
+          size="sm"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiPlus className="text-white text-base ml-1 mr-1" />}
+        />
       </div>
 
       <div className="relative overflow-x-auto">

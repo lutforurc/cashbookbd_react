@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiBook, FiEdit2, FiRefreshCcw, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
+import { FiBook, FiEdit2, FiPlus, FiRefreshCcw, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
-import Link from '../../utils/others/Link';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { deleteCategory, getCategory, storeCategory } from './categorySlice';
 import Table from '../../utils/others/Table';
@@ -18,6 +18,7 @@ const emptyEditForm = { id: '', category_name: '', description: '' };
 const Category = () => {
   const category = useSelector((state: any) => state.category);
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
 
   const [search, setSearchValue] = useState('');
   const [page, setPage] = useState(1);            // ✅ page 0 না, 1 থেকে শুরু
@@ -204,9 +205,13 @@ const Category = () => {
           />
         </div>
 
-        <Link to="/category/create" className="text-nowrap">
-          New Category
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate('/category/create')}
+          label="New Category"
+          size="sm"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiPlus className="text-white text-base ml-1 mr-1" />}
+        />
       </div>
 
       <div className="relative overflow-x-auto">
