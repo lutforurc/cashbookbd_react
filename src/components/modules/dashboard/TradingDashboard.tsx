@@ -522,25 +522,18 @@ const TradingDashboard = () => {
         return (
           dues &&
           (isWidgetVisible('dues-net') ? (
-            <div
-              className={`mb-4 flex flex-wrap items-center justify-between gap-2 bg-white px-4 py-2.5 shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700`}
-            >
-              <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-400">
-                <FaBalanceScale className="text-[11px]" />
-                <span title="What customers owe this branch, less what this branch owes its suppliers. Amounts paid ahead are not set against these — a party in credit is a different party, and each side's advance is shown on its own card.">
-                  Net position
-                </span>
-              </span>
-              <span
-                className={`text-lg font-bold tabular-nums ${
-                  Number(dues.net) < 0
-                    ? 'text-rose-600 dark:text-rose-400'
-                    : 'text-slate-700 dark:text-slate-100'
-                }`}
-              >
-                {money(dues.net)}
-              </span>
-            </div>
+            <Tile
+              label="Net position"
+              value={money(dues.net)}
+              working="receivables less payables"
+              icon={<FaBalanceScale className="text-[11px]" />}
+              tone={
+                Number(dues.net) < 0
+                  ? 'text-rose-600 dark:text-rose-400'
+                  : 'text-slate-700 dark:text-slate-100'
+              }
+              hint="What customers owe this branch, less what this branch owes its suppliers. Amounts paid ahead are not set against these — a party in credit is a different party, and each side's advance is shown on its own card."
+            />
           ) : null)
         );
       case 'top-profit':
@@ -677,7 +670,7 @@ const TradingDashboard = () => {
               <div
                 key={widget.id}
                 className={
-                  ['monthly-purchase-sales', 'dues-net'].includes(widget.id)
+                  widget.id === 'monthly-purchase-sales'
                     ? 'min-w-0 col-span-full'
                     : ['money-asleep', 'top-profit'].includes(widget.id)
                       ? 'min-w-0 md:col-span-2'
