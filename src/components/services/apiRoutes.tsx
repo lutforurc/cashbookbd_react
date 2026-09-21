@@ -453,6 +453,7 @@ export const API_PRODUCT_WAREHOUSE_DIFFERENCE_URL = `${API_BASE_URL}/product/war
 export const API_PRODUCT_ADD_URL = `${API_BASE_URL}/product/add-product`;
 export const API_PRODUCT_STORE_URL = `${API_BASE_URL}/product/store`;
 export const API_PRODUCT_EDIT_URL = `${API_BASE_URL}/product/product-edit/`;
+export const API_PRODUCT_HISTORY_URL = `${API_BASE_URL}/product/history/`;
 export const API_PRODUCT_UPDATE_URL = `${API_BASE_URL}/product/update`;
 export const API_PRODUCT_CHECK = `${API_BASE_URL}/product/product-check`;
 export const API_PRODUCT_UPDATE_BY_RATE_URL = `${API_BASE_URL}/product/update-qty-rate`;

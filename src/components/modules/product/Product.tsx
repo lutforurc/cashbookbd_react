@@ -5,7 +5,9 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiCheckSquare, FiClock, FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
+import httpService from '../../services/httpService';
+import { API_PRODUCT_HISTORY_URL } from '../../services/apiRoutes';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
@@ -103,6 +105,53 @@ const Product = (user: any) => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [openingDeleteRow, setOpeningDeleteRow] = useState<any>(null);
   const [openingDeleteLoading, setOpeningDeleteLoading] = useState(false);
+
+  // The Change Log, the customer list's own: who changed this product, when,
+  // from what to what. Opened here because this is where the question is
+  // asked -- somebody sees "000" where a name was and wants to know.
+  const [historyProduct, setHistoryProduct] = useState<any>(null);
+  const [historyEvents, setHistoryEvents] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const handleShowHistory = async (row: any) => {
+    setHistoryProduct(row);
+    setHistoryEvents([]);
+    setHistoryLoading(true);
+
+    try {
+      // product_id is the hashed id, the same one product-edit takes.
+      const response = await httpService.get(`${API_PRODUCT_HISTORY_URL}${row.product_id}`);
+      const payload = response?.data?.data?.data ?? response?.data?.data ?? {};
+
+      setHistoryEvents(Array.isArray(payload?.events) ? payload.events : []);
+    } catch (error) {
+      console.error(error);
+      toast.error('Could not load the change log for this product.');
+      setHistoryProduct(null);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  /** A stamp as a person reads it: 05/09/2026 02:14 PM. */
+  const historyStamp = (value: any) => {
+    if (!value) return '';
+
+    const at = new Date(String(value).replace(' ', 'T'));
+
+    if (Number.isNaN(at.getTime())) return String(value);
+
+    const two = (n: number) => String(n).padStart(2, '0');
+    const hour = at.getHours() % 12 || 12;
+
+    return `${two(at.getDate())}/${two(at.getMonth() + 1)}/${at.getFullYear()} `
+      + `${two(hour)}:${two(at.getMinutes())} ${at.getHours() < 12 ? 'AM' : 'PM'}`;
+  };
+
+  // An empty field reads as a dash rather than as nothing at all, so a value
+  // that was cleared is visibly a change and not a rendering fault.
+  const historyValue = (value: any) =>
+    value === null || value === undefined || String(value).trim() === '' ? '—' : String(value);
 
   // Removing opening stock removes a voucher, so it answers to the voucher
   // permission -- the same one the API checks.
@@ -546,11 +595,24 @@ const Product = (user: any) => {
         render: (row: any) => {
           if (isGroupRow(row)) return '';
           return (
-            <div className="flex justify-center gap-2">
-              <FiBook className="cursor-pointer text-blue-500" />
-              <FiEdit2 className="cursor-pointer text-blue-500" onClick={() => handleProductEdit(row)} />
-              <Button type="button" onClick={() => setDeleteRow(row)} title="Delete">
-                <FiTrash2 className="cursor-pointer text-red-500" />
+            <div className="flex justify-center items-center gap-2">
+              {/* All three as Button, the way Category List does it: two bare
+                  icons beside one Button (which stands a control-height tall)
+                  sat higher than the bin. The clock stands where a book icon
+                  that did nothing used to. */}
+              <Button
+                type="button"
+                title="Change log"
+                className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+                onClick={() => handleShowHistory(row)}
+              >
+                <FiClock size={15} />
+              </Button>
+              <Button type="button" onClick={() => handleProductEdit(row)} className="text-blue-500" title="Edit">
+                <FiEdit2 className="cursor-pointer" />
+              </Button>
+              <Button type="button" onClick={() => setDeleteRow(row)} className="text-red-500" title="Delete">
+                <FiTrash2 className="cursor-pointer" />
               </Button>
             </div>
           );
@@ -695,6 +757,90 @@ const Product = (user: any) => {
           />
         </div>
       </div>
+
+      {historyProduct && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-20">
+          <div className="bg-white dark:bg-gray-800 rounded-sm w-[900px] max-h-[85vh] overflow-hidden shadow-xl border border-[rgb(var(--c-border))]">
+            <div className="flex justify-between items-center px-4 py-3 bg-gray-300 dark:bg-gray-700 border-b border-[rgb(var(--c-border))]">
+              <h2 className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-200">
+                Change Log — {historyProduct?.name}
+              </h2>
+
+              <Button
+                onClick={() => setHistoryProduct(null)}
+                className="text-gray-600 dark:text-gray-300 hover:text-red-500"
+              >
+                <FiX className="text-lg cursor-pointer" />
+              </Button>
+            </div>
+
+            <div className="overflow-auto max-h-[75vh]">
+              <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
+                <thead className="text-xs uppercase bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 border-b border-[rgb(var(--c-border))]">
+                  <tr>
+                    <th className="px-3 py-2 w-44">When</th>
+                    <th className="px-3 py-2 w-40">Who</th>
+                    <th className="px-3 py-2 w-24">Action</th>
+                    <th className="px-3 py-2">What changed</th>
+                  </tr>
+                </thead>
+
+                <tbody className="bg-[rgb(var(--c-table-body))] divide-y divide-gray-200 dark:divide-gray-700">
+                  {historyLoading ? (
+                    <tr>
+                      <td colSpan={4} className="text-center py-4 text-gray-500 dark:text-gray-400">
+                        Loading…
+                      </td>
+                    </tr>
+                  ) : historyEvents.length > 0 ? (
+                    historyEvents.map((event: any) => (
+                      <tr key={event.id} className="align-top">
+                        <td className="px-3 py-2 whitespace-nowrap">{historyStamp(event.at)}</td>
+                        <td className="px-3 py-2">{event.user || '—'}</td>
+                        <td className="px-3 py-2 capitalize">{event.action}</td>
+                        <td className="px-3 py-2">
+                          {Array.isArray(event.changes) && event.changes.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {event.changes.map((change: any, index: number) => (
+                                <div key={index} className="flex flex-wrap items-baseline gap-2">
+                                  <span className="font-semibold">{change.field}:</span>
+                                  {/* A create has nothing before it, so it prints
+                                      the value alone rather than an arrow out of
+                                      an empty dash. */}
+                                  {event.action === 'update' ? (
+                                    <>
+                                      <span className="line-through opacity-70">
+                                        {historyValue(change.old)}
+                                      </span>
+                                      <span>→</span>
+                                      <span className="font-semibold">{historyValue(change.new)}</span>
+                                    </>
+                                  ) : (
+                                    <span>{historyValue(change.new ?? change.old)}</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-gray-500 dark:text-gray-400">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="text-center py-4 text-gray-500 dark:text-gray-400">
+                        Nothing recorded for this product yet. Changes made before the log was
+                        switched on are not in it.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Naming the voucher and the quantity, not just "are you sure": this
           takes stock back out of the ledger, and this is the last place to

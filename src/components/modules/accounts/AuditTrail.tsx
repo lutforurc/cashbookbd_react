@@ -194,6 +194,7 @@ const AuditTrail = () => {
               { id: '', name: 'Everything' },
               { id: 'voucher', name: 'Vouchers' },
               { id: 'customer', name: 'Customers' },
+              { id: 'product', name: 'Products' },
             ]}
             value={source}
             onChange={(e: any) => setSource(e.target.value)}
@@ -204,7 +205,7 @@ const AuditTrail = () => {
           <InputElement
             id="trail_voucher"
             name="voucher_no"
-            label="Voucher / Customer"
+            label="Voucher / Customer / Product"
             value={voucherNo}
             onChange={(e: any) => setVoucherNo(e.target.value)}
           />
@@ -219,7 +220,7 @@ const AuditTrail = () => {
               <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">Who</th>
               <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">What</th>
               <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">
-                Voucher / Customer
+                Voucher / Customer / Product
               </th>
               <th className="px-3 py-2 text-sm font-medium text-black dark:text-white">
                 What changed
