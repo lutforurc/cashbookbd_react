@@ -26,6 +26,8 @@ interface productItem {
   id: string | number;
   product_id: string;
   name: string;
+  /** The business's own product code; only shown when the branch asks for it. */
+  code?: string;
   description: string;
   manufacture_id: string | number;
   category_id: string | number;
@@ -64,6 +66,7 @@ const AddProduct = () => {
     id: '',
     product_id: '',
     name: '',
+    code: '',
     description: '',
     manufacture_id: '',
     category_id: '',
@@ -98,6 +101,7 @@ const AddProduct = () => {
   const packSizeData = useSelector((state) => state.packSize);
   const [ddlPackSize, setDdlPackSize] = useState<any[]>([]);
   const needPackage = isBranchSettingOn(settings, 'need_package');
+  const needCode = isBranchSettingOn(settings, 'need_code');
   const productTypeOptions = category?.ddlData?.data?.product_type || [];
   const unitOptions = category?.ddlData?.data?.unit || [];
 
@@ -111,6 +115,7 @@ const AddProduct = () => {
 
       setFormData({
         ...edit,
+        code: edit?.code ?? '',
         category_id: edit?.category_id != null ? String(edit.category_id) : '',
         group_id: edit?.group_id != null ? String(edit.group_id) : '',
         pack_size_id: edit?.pack_size_id ? String(edit.pack_size_id) : '',
@@ -454,6 +459,17 @@ const AddProduct = () => {
  data={category?.ddlData?.data?.category}
  defaultValue={formData?.category_id?.toString() ?? ''}
         /> */}
+        {needCode && (
+          <InputElement
+            id="code"
+            value={formData.code ?? ''}
+            name="code"
+            placeholder={'Enter Product Code'}
+            label={'Product Code'}
+            className={''}
+            onChange={handleOnChange}
+          />
+        )}
         <InputElement
           id="name"
           value={formData.name}

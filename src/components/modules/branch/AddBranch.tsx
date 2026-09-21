@@ -89,6 +89,7 @@ interface branchItem {
   stock_report_type: boolean;
   need_product_group: boolean;
   need_package: boolean;
+  need_code: boolean;
   is_opening: boolean;
   use_bangla: boolean;
   report_zero_bal: boolean;
@@ -399,6 +400,7 @@ const AddBranch = () => {
     stock_report_type: false,
     need_product_group: false,
     need_package: false,
+    need_code: false,
     is_opening: false,
     use_bangla: false,
     report_zero_bal: false,
@@ -677,6 +679,7 @@ const AddBranch = () => {
         stock_report_type: toBooleanFlag(b.stock_report_type),
         need_product_group: toBooleanFlag(b.need_product_group),
         need_package: toBooleanFlag(b.need_package),
+        need_code: toBooleanFlag(b.need_code),
         use_bangla: toBooleanFlag(b.use_bangla),
         show_instalment_list: toBooleanFlag(b.show_instalment_list),
         show_spelling_of_money: toBooleanFlag(b.show_spelling_of_money),
@@ -1648,6 +1651,12 @@ const AddBranch = () => {
                         description="Adds a Pack Size dropdown (12Kg, 35Kg) to the Add / Edit Product form."
                         checked={Boolean(formData.need_package)}
                         onChange={(checked) => handleToggleFieldChange('need_package', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Code?"
+                        description="Adds a Product Code box to the Add / Edit Product form -- a code of your own, unique within the company."
+                        checked={Boolean(formData.need_code)}
+                        onChange={(checked) => handleToggleFieldChange('need_code', checked)}
                       />
                       <FormToggleField
                         label="Stock: Brand->Category->Item"
