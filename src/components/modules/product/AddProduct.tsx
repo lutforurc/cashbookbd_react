@@ -7,6 +7,7 @@ import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCategoryDdl } from '../category/categorySlice';
 import { getProductGroupDdl } from '../productgroup/productGroupSlice';
+import { getPackSizeDdl } from '../packsize/packSizeSlice';
 import Loader from '../../../common/Loader';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -30,6 +31,8 @@ interface productItem {
   category_id: string | number;
   /** Optional second grouping level; only shown when the branch asks for it. */
   group_id?: string | number;
+  /** Pack size (12Kg, 35Kg); only shown when the branch asks for it. */
+  pack_size_id?: string | number;
   product_type: string | number;
   purchase_price: string | number;
   sales_price: string | number;
@@ -65,6 +68,7 @@ const AddProduct = () => {
     manufacture_id: '',
     category_id: '',
     group_id: '',
+    pack_size_id: '',
     product_type: '',
     purchase_price: '',
     sales_price: '',
@@ -91,6 +95,9 @@ const AddProduct = () => {
   const productGroupData = useSelector((state) => state.productGroup);
   const [ddlProductGroup, setDdlProductGroup] = useState<any[]>([]);
   const needProductGroup = isBranchSettingOn(settings, 'need_product_group');
+  const packSizeData = useSelector((state) => state.packSize);
+  const [ddlPackSize, setDdlPackSize] = useState<any[]>([]);
+  const needPackage = isBranchSettingOn(settings, 'need_package');
   const productTypeOptions = category?.ddlData?.data?.product_type || [];
   const unitOptions = category?.ddlData?.data?.unit || [];
 
@@ -106,6 +113,7 @@ const AddProduct = () => {
         ...edit,
         category_id: edit?.category_id != null ? String(edit.category_id) : '',
         group_id: edit?.group_id != null ? String(edit.group_id) : '',
+        pack_size_id: edit?.pack_size_id ? String(edit.pack_size_id) : '',
         product_type: edit?.product_type != null ? String(edit.product_type) : '',
         unit_id: edit?.unit_id != null ? String(edit.unit_id) : '',
         manufacture_id: edit?.manufacture_id != null ? String(edit.manufacture_id) : '',
@@ -152,6 +160,10 @@ const AddProduct = () => {
   useEffect(() => {
     if (needProductGroup) dispatch(getProductGroupDdl());
   }, [needProductGroup]);
+
+  useEffect(() => {
+    if (needPackage) dispatch(getPackSizeDdl());
+  }, [needPackage]);
 
   const [buttonLoading, setButtonLoading] = useState(false);
   const handleSelectChange = (e) => {
@@ -264,6 +276,13 @@ const AddProduct = () => {
     }));
   };
 
+  const handlePackSizeChange = (selectedOption: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      pack_size_id: selectedOption?.value ?? '',
+    }));
+  };
+
   const handleCategoryChange = (selectedOption: any) => {
     const selectedId = selectedOption?.value ?? '';
 
@@ -320,6 +339,18 @@ const AddProduct = () => {
       setDdlProductGroup(productGroupData?.ddlData?.data || []);
     }
   }, [productGroupData]);
+
+  // Same shape as the group: optional, so it opens on "Not applicable".
+  const packSizeOptions = [
+    { id: '', name: 'Not applicable' },
+    ...(Array.isArray(ddlPackSize) ? ddlPackSize : []),
+  ];
+
+  useEffect(() => {
+    if (Array.isArray(packSizeData?.ddlData?.data)) {
+      setDdlPackSize(packSizeData?.ddlData?.data || []);
+    }
+  }, [packSizeData]);
 
   useEffect(() => {
     setFormData((prev) => {
@@ -385,6 +416,18 @@ const AddProduct = () => {
               className="w-full text-sm !"
               categoryDdl={productGroupOptions}
               value={formData.group_id}
+              placeholder="Not Applicable..."
+            />
+          </div>
+        )}
+        {needPackage && (
+          <div>
+            <label htmlFor="" className='text-sm'>Select Package</label>
+            <CategoryDropdown
+              onChange={handlePackSizeChange}
+              className="w-full text-sm !"
+              categoryDdl={packSizeOptions}
+              value={formData.pack_size_id}
               placeholder="Not Applicable..."
             />
           </div>

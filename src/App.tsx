@@ -41,6 +41,7 @@ import Category from './components/modules/category/Category';
 import AddCategory from './components/modules/category/AddCategory';
 import EditCategory from './components/modules/category/EditCategory';
 import ProductGroup from './components/modules/productgroup/ProductGroup';
+import PackSize from './components/modules/packsize/PackSize';
 import LegacyRecordSearch from './components/modules/legacy/LegacyRecordSearch';
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import CashBookTwoColumn from './components/modules/reports/cash-book-two-column/CashBookTwoColumn';
@@ -535,6 +536,11 @@ function App() {
             {/* Product Group */}
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product_group.view']} loading={permissionsLoading} />}>
               <Route path={routes.product_group_list} element={<ProductGroup />} />
+            </Route>
+
+            {/* Pack Size */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['package.size.view']} loading={permissionsLoading} />}>
+              <Route path={routes.pack_size_list} element={<PackSize />} />
             </Route>
 
             {/* The archive of an old Old ERP, read-only: search a customer

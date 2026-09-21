@@ -207,6 +207,7 @@ const ROUTES = {
   category_create: '/category/create',
   category_edit: '/category/edit',
   product_group_list: '/product-group/product-group-list',
+  pack_size_list: '/pack-size/pack-size-list',
   category_store: '/category/store',
 
   // The archive of an old Old ERP. One screen: search a customer, open

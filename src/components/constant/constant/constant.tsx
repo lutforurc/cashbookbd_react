@@ -240,6 +240,20 @@ export const PRODUCT_GROUP_STORE_PENDING = 'PRODUCT_GROUP/store/pending';
 export const PRODUCT_GROUP_STORE_SUCCESS = 'PRODUCT_GROUP/store/success';
 export const PRODUCT_GROUP_STORE_ERROR = 'PRODUCT_GROUP/store/error';
 
+// Pack Size Route
+export const PACK_SIZE_LIST_PENDING = 'PACK_SIZE/list/pending';
+export const PACK_SIZE_LIST_SUCCESS = 'PACK_SIZE/list/success';
+export const PACK_SIZE_LIST_ERROR = 'PACK_SIZE/list/error';
+
+// Pack Size DDL Route
+export const PACK_SIZE_LIST_DDL_PENDING = 'PACK_SIZE/ddl/list/pending';
+export const PACK_SIZE_LIST_DDL_SUCCESS = 'PACK_SIZE/ddl/list/success';
+export const PACK_SIZE_LIST_DDL_ERROR = 'PACK_SIZE/ddl/list/error';
+
+export const PACK_SIZE_STORE_PENDING = 'PACK_SIZE/store/pending';
+export const PACK_SIZE_STORE_SUCCESS = 'PACK_SIZE/store/success';
+export const PACK_SIZE_STORE_ERROR = 'PACK_SIZE/store/error';
+
 export const CATEGORY_EDIT_PENDING = 'CATEGORY/edit/pending';
 export const CATEGORY_EDIT_SUCCESS = 'CATEGORY/edit/success';
 export const CATEGORY_EDIT_ERROR = 'CATEGORY/edit/success';

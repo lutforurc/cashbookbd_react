@@ -491,6 +491,12 @@ export const API_PRODUCT_GROUP_LIST_URL = `${API_BASE_URL}/product-group/product
 export const API_PRODUCT_GROUP_STORE_URL = `${API_BASE_URL}/product-group/api-store`;
 export const API_PRODUCT_GROUP_DELETE_URL = `${API_BASE_URL}/product-group/delete`;
 
+// Pack Size Route
+export const API_PACK_SIZE_DDL_URL = `${API_BASE_URL}/pack-size/pack-size-ddl`;
+export const API_PACK_SIZE_LIST_URL = `${API_BASE_URL}/pack-size/pack-size-list`;
+export const API_PACK_SIZE_STORE_URL = `${API_BASE_URL}/pack-size/api-store`;
+export const API_PACK_SIZE_DELETE_URL = `${API_BASE_URL}/pack-size/delete`;
+
 // Trading Purchase Route
 export const API_TRADING_PURCHASE_STORE_URL = `${API_BASE_URL}/trading/purchase/api-store`;
 export const API_TRADING_PURCHASE_EDIT_URL = `${API_BASE_URL}/trading/purchase/api-edit`;

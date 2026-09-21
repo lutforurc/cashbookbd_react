@@ -65,6 +65,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Product Units', path: routes.product_unit_list, group: 'Products', permissions: ['products.view'] },
   { title: 'Category List', path: routes.category_list, group: 'Products', permissions: ['category.view'] },
   { title: 'Product Group', path: routes.product_group_list, group: 'Products', permissions: ['product_group.view'] },
+  { title: 'Pack Size', path: routes.pack_size_list, group: 'Products', permissions: ['package.size.view'] },
 
   { title: 'Customer & Supplier List', path: routes.supplier_customer_list, group: 'Customer & Supplier', permissions: ['cs.view'] },
   { title: 'Add Customer & Supplier', path: routes.supplier_customer_add, group: 'Customer & Supplier', permissions: ['cs.view'], keywords: ['new customer', 'new supplier', 'create customer'] },
