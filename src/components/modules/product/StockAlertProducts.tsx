@@ -391,71 +391,81 @@ const StockAlertProducts = ({ alertType }: Props) => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-7">
-          <CategoryDropdown
-            key={`${alertType}-category-${categoryId}`}
-            onChange={(option: any) => {
-              setCategoryId(option?.value || '');
-              setPage(1);
-            }}
-            value={categoryId}
-            className="w-full text-sm !"
-            categoryDdl={categoryOptions}
-          />
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:items-center">
+          <div className="w-full sm:w-56">
+            <CategoryDropdown
+              key={`${alertType}-category-${categoryId}`}
+              onChange={(option: any) => {
+                setCategoryId(option?.value || '');
+                setPage(1);
+              }}
+              value={categoryId}
+              className="w-full text-sm !"
+              categoryDdl={categoryOptions}
+            />
+          </div>
 
-          <CategoryDropdown
-            key={`${alertType}-brand-${brandId}`}
-            onChange={(option: any) => {
-              setBrandId(option?.value || '');
-              setPage(1);
-            }}
-            value={brandId}
-            className="w-full text-sm !"
-            categoryDdl={brandOptions}
-          />
+          <div className="w-full sm:w-56">
+            <CategoryDropdown
+              key={`${alertType}-brand-${brandId}`}
+              onChange={(option: any) => {
+                setBrandId(option?.value || '');
+                setPage(1);
+              }}
+              value={brandId}
+              className="w-full text-sm !"
+              categoryDdl={brandOptions}
+            />
+          </div>
 
           {alertType === 'slowMoving' ? (
-            <Input
+            <div className="w-full sm:w-32">
+              <Input
  type="number"
  min="1"
  className={`${FIELD_BASE} w-full px-3 text-sm`}
  value={days}
  onChange={(event) => {
-                setDays(Number(event.target.value) || 90);
-                setPage(1);
-              }}
-              placeholder="Days"
-            />
+                  setDays(Number(event.target.value) || 90);
+                  setPage(1);
+                }}
+                placeholder="Days"
+              />
+            </div>
           ) : null}
 
-          <SelectOption
-            key={`${alertType}-per-page-${perPage}`}
-            className="w-full! h-9"
-            onChange={(e: any) => {
-              const value = e.target.value === '' ? 0 : Number(e.target.value) || 10;
-              setPerPage(value);
-              setPage(1);
-            }}
-          />
+          <div className="w-full sm:w-40">
+            <SelectOption
+              key={`${alertType}-per-page-${perPage}`}
+              className="w-full! h-9"
+              onChange={(e: any) => {
+                const value = e.target.value === '' ? 0 : Number(e.target.value) || 10;
+                setPerPage(value);
+                setPage(1);
+              }}
+            />
+          </div>
 
-          <SearchInput
+          <div className="w-full sm:w-64">
+            <SearchInput
  className="w-full! "
  search={search}
  setSearchValue={setSearchValue}
-          />
+            />
+          </div>
 
-          <div className="flex flex-wrap gap-2 xl:col-span-2 xl:flex-nowrap">
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
             <ButtonLoading
               label="Search"
               icon={<FiSearch className="text-gray-500" />}
               onClick={handleSearch}
-              className="flex-1"
+              className="flex-1 sm:flex-none"
             />
             <ButtonLoading
               label="Reset"
               icon={<FiRefreshCcw className="text-gray-500" />}
               onClick={handleReset}
-              className="flex-1"
+              className="flex-1 sm:flex-none"
             />
             {canPrint ? (
               <>
@@ -482,7 +492,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
                 <PrintButton
                   label="Print"
                   onClick={handlePrint}
-                  className="flex-1"
+                  className="flex-1 sm:flex-none"
                   disabled={rows.length === 0}
                 />
               </>

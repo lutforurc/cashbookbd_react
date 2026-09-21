@@ -267,57 +267,65 @@ const LowStockProducts = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-6">
-          <CategoryDropdown
-            key={`category-${categoryId}`}
-            onChange={(option: any) => {
-              setCategoryId(option?.value || '');
-              setPage(1);
-            }}
-            value={categoryId}
-            className="w-full text-sm !"
-            categoryDdl={categoryOptions}
-          />
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:items-center">
+          <div className="w-full sm:w-56">
+            <CategoryDropdown
+              key={`category-${categoryId}`}
+              onChange={(option: any) => {
+                setCategoryId(option?.value || '');
+                setPage(1);
+              }}
+              value={categoryId}
+              className="w-full text-sm !"
+              categoryDdl={categoryOptions}
+            />
+          </div>
 
-          <CategoryDropdown
-            key={`brand-${brandId}`}
-            onChange={(option: any) => {
-              setBrandId(option?.value || '');
-              setPage(1);
-            }}
-            value={brandId}
-            className="w-full text-sm !"
-            categoryDdl={brandOptions}
-          />
+          <div className="w-full sm:w-56">
+            <CategoryDropdown
+              key={`brand-${brandId}`}
+              onChange={(option: any) => {
+                setBrandId(option?.value || '');
+                setPage(1);
+              }}
+              value={brandId}
+              className="w-full text-sm !"
+              categoryDdl={brandOptions}
+            />
+          </div>
 
-          <SelectOption
-            key={`per-page-${perPage}`}
-            className="w-full! h-9"
-            onChange={(e: any) => {
-              const value = e.target.value === '' ? 0 : Number(e.target.value) || 10;
-              setPerPage(value);
-              setPage(1);
-            }}
-          />
+          <div className="w-full sm:w-40">
+            <SelectOption
+              key={`per-page-${perPage}`}
+              className="w-full! h-9"
+              onChange={(e: any) => {
+                const value = e.target.value === '' ? 0 : Number(e.target.value) || 10;
+                setPerPage(value);
+                setPage(1);
+              }}
+            />
+          </div>
 
-          <SearchInput
+          <div className="w-full sm:w-64">
+            <SearchInput
  className="w-full! "
  search={search}
  setSearchValue={setSearchValue}
-          />
+            />
+          </div>
 
-          <div className="flex flex-wrap gap-2 xl:col-span-2 xl:flex-nowrap">
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
             <ButtonLoading
               label="Search"
               icon={<FiSearch className="text-gray-500" />}
               onClick={handleSearchButton}
-              className="flex-1"
+              className="flex-1 sm:flex-none"
             />
             <ButtonLoading
               label="Reset"
               icon={<FiRefreshCcw className="text-gray-500" />}
               onClick={handleReset}
-              className="flex-1"
+              className="flex-1 sm:flex-none"
             />
             <PrintRowsInput
  id="low-stock-print-rows"
@@ -342,7 +350,7 @@ const LowStockProducts = () => {
             <PrintButton
               label="Print"
               onClick={handlePrint}
-              className="flex-1"
+              className="flex-1 sm:flex-none"
               disabled={rows.length === 0}
             />
           </div>
