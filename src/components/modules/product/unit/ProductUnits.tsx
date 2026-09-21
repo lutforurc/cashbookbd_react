@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import Loader from '../../../../common/Loader';
@@ -12,10 +13,11 @@ import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import ROUTES from '../../../services/appRoutes';
 import { fetchProductUnits } from './unitSlice';
-import { FiSearch } from 'react-icons/fi';
+import { FiPlus, FiSearch } from 'react-icons/fi';
 
 const ProductUnits = () => {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
   const productUnit = useSelector((state: any) => state.productUnit);
 
   const [perPage, setPerPage] = useState(10);
@@ -134,9 +136,13 @@ const ProductUnits = () => {
           />
         </div>
 
-        <Link to={ROUTES.product_unit_create} className="text-nowrap">
-          New Unit
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate(ROUTES.product_unit_create)}
+          label="New Unit"
+          size="sm"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiPlus className="text-white text-base ml-1 mr-1" />}
+        />
       </div>
 
       <div className="relative overflow-x-auto">

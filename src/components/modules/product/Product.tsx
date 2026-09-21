@@ -5,9 +5,8 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiBook, FiCheckSquare, FiEdit2, FiRefreshCcw, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiRefreshCcw, FiSearch, FiTrash2 } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
-import Link from '../../utils/others/Link';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
@@ -668,9 +667,13 @@ const Product = (user: any) => {
         </div>
 
         <div>
-          <Link to="/product/add-product" className="w-full rounded-md px-3 py-2 text-center text-sm sm:w-auto">
-            New
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/product/add-product')}
+            label="New"
+            size="sm"
+            className="w-full sm:w-auto"
+            icon={<FiPlus className="text-white text-base ml-1 mr-1" />}
+          />
         </div>
       </div>
 
