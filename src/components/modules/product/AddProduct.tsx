@@ -14,7 +14,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { editProduct, storeProduct, updateProduct } from './productSlice';
 import { useParams } from 'react-router-dom';
 import { warrantyType } from '../../utils/fields/DataConstant';
-import { FiSave } from 'react-icons/fi';
+import { FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { fetchBrandDdl } from './brand/brandSlice';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
@@ -664,6 +664,7 @@ const AddProduct = () => {
             buttonLoading={buttonLoading}
             label="Update"
             className="whitespace-nowrap mr-2 py-1.5"
+            icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
           />
         ) : (
           <ButtonLoading
