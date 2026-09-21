@@ -52,6 +52,15 @@ const ProductGroup = () => {
     }
   }, [productGroup?.listData]);
 
+  // Said out loud, the way Brand List says it. A server not yet patched --
+  // no product_groups table -- answers 500, and without this the screen
+  // shows "No data found" as if the list were simply empty.
+  useEffect(() => {
+    if (productGroup?.errors) {
+      toast.error(productGroup.errors);
+    }
+  }, [productGroup?.errors]);
+
   const handleSearchButton = () => {
     setButtonLoading(true);
 

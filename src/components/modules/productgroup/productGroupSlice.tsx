@@ -50,7 +50,7 @@ export const getProductGroup =
       .catch((err) => {
         dispatch({
           type: PRODUCT_GROUP_LIST_ERROR,
-          payload: 'Something went wrongs!',
+          payload: 'Could not load product groups. Please try again.',
         });
       });
   };
