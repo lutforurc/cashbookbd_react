@@ -11,7 +11,7 @@ import Loader from '../../../common/Loader';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { editProduct, storeProduct, updateProduct } from './productSlice';
-import { Navigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { warrantyType } from '../../utils/fields/DataConstant';
 import { FiSave } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
@@ -143,8 +143,15 @@ const AddProduct = () => {
   useEffect(() => {
     dispatch(getCategoryDdl({ search }));
     dispatch(fetchBrandDdl());
-    dispatch(getProductGroupDdl());
   }, []);
+
+  // Only where the branch has asked for it. Fetched unconditionally, every
+  // branch that never turned the switch on would still make the call -- and
+  // settings can arrive after mount, so this waits for the switch rather than
+  // reading it once at mount.
+  useEffect(() => {
+    if (needProductGroup) dispatch(getProductGroupDdl());
+  }, [needProductGroup]);
 
   const [buttonLoading, setButtonLoading] = useState(false);
   const handleSelectChange = (e) => {
