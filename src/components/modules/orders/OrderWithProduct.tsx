@@ -22,6 +22,12 @@ import { VoucherPrintRegistry } from '../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../vouchers';
 import { isUserFeatureEnabled } from '../../utils/userFeatureSettings';
 import { formatTransportationNumber } from '../../utils/utils-functions/formatRoleName';
+import DocumentPrint from '../../utils/print-designer/DocumentPrint';
+import type { DocumentData } from '../../utils/print-designer/DocumentPrint';
+import { normalizeTemplate } from '../../utils/print-designer/printTemplate';
+import type { PrintTemplate } from '../../utils/print-designer/printTemplate';
+import { API_PRINT_TEMPLATE_URL } from '../../services/apiRoutes';
+import { toOrderTransactionDocumentData } from './orderTransactionDocumentData';
 
 type Primitive = string | number | null | undefined;
 
@@ -669,10 +675,69 @@ const OrderWithProduct = ({
     setIsFilterMenuOpen(false);
   };
 
-  const handlePrint = useReactToPrint({
+  const documentTitle = payload?.order_number ? `Order-${payload.order_number}` : 'Order With Transaction';
+
+  const printBespoke = useReactToPrint({
     contentRef: printRef,
-    documentTitle: payload?.order_number ? `Order-${payload.order_number}` : 'Order With Transaction',
+    documentTitle,
   });
+
+  // The sheet about to be printed through a saved layout, held with its data
+  // and cleared afterwards so a second print cannot go out carrying the
+  // first one's rows.
+  const [orderDoc, setOrderDoc] = useState<{ template: PrintTemplate; data: DocumentData } | null>(null);
+  const orderDocRef = useRef<HTMLDivElement>(null);
+  const printOrderDoc = useReactToPrint({
+    contentRef: orderDocRef,
+    documentTitle,
+    onAfterPrint: () => setOrderDoc(null),
+  });
+
+  // Prints once the document is on the page: react-to-print copies the DOM
+  // the moment it is called, and the short wait is for the letterhead image.
+  useEffect(() => {
+    if (!orderDoc) return undefined;
+    const timer = setTimeout(() => printOrderDoc(), 250);
+    return () => clearTimeout(timer);
+  }, [orderDoc]);
+
+  /**
+   * Print: the branch's own layout where it has saved one, and the sheet this
+   * screen has always printed where it has not. Fetched at the click; every
+   * failure -- none saved, server behind, connection dropped -- falls through
+   * to the old paper.
+   */
+  const handlePrint = async () => {
+    let layout: any = null;
+
+    try {
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/order_transaction`, {
+        params: { branch_id: branchId || settings?.data?.branch?.id },
+      });
+      layout = response?.data?.data?.data?.layout ?? null;
+    } catch {
+      layout = null;
+    }
+
+    if (!rows.length || !layout) {
+      printBespoke();
+      return;
+    }
+
+    const template = normalizeTemplate(layout, 'order_transaction');
+
+    // The two knobs the screen still owns are applied over the layout: Rows
+    // and Font. Everything else is the saved layout's.
+    setOrderDoc({
+      template: { ...template, rowsPerPage: Number(perPage), fontSize: Number(fontSize) },
+      data: toOrderTransactionDocumentData({
+        payload,
+        rows,
+        receivedLabel: paymentColumnLabel === 'RECEIVED' ? 'Received' : 'Payment',
+        branchName: dropdownData.find((item: any) => String(item?.id) === String(branchId))?.name,
+      }),
+    });
+  };
 
   const showSelector = orderId === undefined || orderId === null;
 
@@ -913,6 +978,8 @@ const OrderWithProduct = ({
             fontSize={fontSize}
             paymentColumnLabel={paymentColumnLabel === 'RECEIVED' ? 'Received' : 'Payment'}
           />
+          {/* Mounted only while the designed sheet is being printed. */}
+          {orderDoc ? <DocumentPrint ref={orderDocRef} template={orderDoc.template} data={orderDoc.data} /> : null}
           <VoucherPrintRegistry
             ref={voucherRegistryRef}
             rowsPerPage={Number(perPage)}

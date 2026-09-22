@@ -23,6 +23,7 @@ import { Select } from '../../../utils/fields/FormControls';
 import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import { useVoucherPrint } from '../../vouchers';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import VoucherRegisterPrint from './VoucherRegisterPrint';
 
 /**
  * Tally's Voucher Monthly Register: every voucher type together, or one, month
@@ -30,10 +31,11 @@ import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
  * month opens to the vouchers behind its count; a voucher number opens the
  * voucher.
  *
- * The boxes open on the branch's transaction date: the 1st of its month to
- * the date itself, the way every other report here opens. Cleared by hand,
- * the API answers with the year that date falls in and the boxes are filled
- * from what it answered, so what is on screen is always the range counted.
+ * The boxes open on the branch's transaction date: the first day of the
+ * financial year it falls in (the company's fy_start_month) to the date
+ * itself. Cleared by hand, the API answers with that same year and the boxes
+ * are filled from what it answered, so what is on screen is always the range
+ * counted.
  */
 
 /** Empty type id: the API counts every type together. */
@@ -47,7 +49,11 @@ const parseTrxDate = (said: any): Date | null => {
   return day && month && year ? new Date(Number(year), Number(month) - 1, Number(day)) : null;
 };
 
-const monthStart = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1);
+/** First day of the financial year $date falls in; startMonth is 1-12 (7 = July). */
+const yearStart = (date: Date, startMonth: number) => {
+  const first = startMonth - 1;
+  return new Date(date.getMonth() >= first ? date.getFullYear() : date.getFullYear() - 1, first, 1);
+};
 
 /** 'YYYY-MM-DD' read by hand: handed to Date it is UTC midnight, the day before east of Greenwich. */
 const parseApiDate = (said: any): Date | null => {
@@ -59,6 +65,7 @@ const VoucherRegister = ({ user }: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
+  const fyStartMonth = Number(settings?.data?.company?.fy_start_month) || 7;
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [voucherTypes, setVoucherTypes] = useState<any[]>([]);
@@ -97,14 +104,14 @@ const VoucherRegister = ({ user }: any) => {
     setDropdownData(payload.data);
     setBranchId((current) => current ?? user?.user?.branch_id ?? settings?.data?.branch?.id ?? null);
 
-    // First of the month to the transaction date, unless a date is already in
-    // the box — the branch list can arrive again after the user has typed.
+    // Year start to the transaction date, unless a date is already in the
+    // box — the branch list can arrive again after the user has typed.
     const trxDate = parseTrxDate(payload.transactionDate);
     if (trxDate) {
-      setStartDate((current) => current ?? monthStart(trxDate));
+      setStartDate((current) => current ?? yearStart(trxDate, fyStartMonth));
       setEndDate((current) => current ?? trxDate);
     }
-  }, [branchDdlData, user, settings]);
+  }, [branchDdlData, user, settings, fyStartMonth]);
 
   const load = async () => {
     if (!branchId) {
@@ -168,7 +175,7 @@ const VoucherRegister = ({ user }: any) => {
 
   const handleReset = () => {
     const trxDate = parseTrxDate(branchDdlData?.protectedData?.transactionDate);
-    setStartDate(trxDate ? monthStart(trxDate) : null);
+    setStartDate(trxDate ? yearStart(trxDate, fyStartMonth) : null);
     setEndDate(trxDate);
     setVoucherTypeId(ALL_TYPES);
     setReport(null);
@@ -187,7 +194,9 @@ const VoucherRegister = ({ user }: any) => {
   // month moved stock.
   const hasQty = months.some((m: any) => Number(m.purchase_qty) || Number(m.sales_qty));
 
-  const count = (n: any) => (Number(n) ? String(n) : '');
+  // Whole numbers grouped the way thousandSeparator groups, without its
+  // branch decimal places: 1,078 vouchers, never 1,078.00.
+  const count = (n: any) => (Number(n) ? Number(n).toLocaleString('en-IN') : '');
   const money = (n: any) => (Number(n) ? thousandSeparator(Number(n)) : '');
 
   const right = (key: string, header: string, cell: (row: any) => any, width = 'w-32') => ({
@@ -380,7 +389,7 @@ const VoucherRegister = ({ user }: any) => {
         </div>
       </div>
 
-      <div ref={printRef} className="overflow-y-auto">
+      <div className="overflow-y-auto">
         {loading ? <Loader /> : null}
 
         <Table
@@ -413,6 +422,7 @@ const VoucherRegister = ({ user }: any) => {
       </div>
 
       <div className="hidden">
+        <VoucherRegisterPrint ref={printRef} report={report} columns={columns} />
         <VoucherPrintRegistry ref={voucherRegistryRef} rowsPerPage={0} fontSize={10} />
       </div>
     </div>

@@ -568,6 +568,170 @@ export const LEDGER_DETAILS_SAMPLE: DocumentData = {
   ],
 };
 
+/**
+ * The Due List's sample: four parties as on a date.
+ *
+ * ⚠️ Each row's four ages add up to its Debit, as the server guarantees for
+ * the real report -- a preview whose buckets did not foot to the balance
+ * beside them would have a tenant arranging columns around figures they
+ * cannot check.
+ */
+export const DUE_LIST_SAMPLE: DocumentData = {
+  basic: {
+    as_on_date: '20/09/2026',
+    ageing_rule: 'From voucher date, oldest unpaid amount settled first.',
+    party_count: 4,
+    branch_name: 'Head Office',
+  },
+  products: [
+    {
+      sl: 1,
+      party_lines: ['Sample Traders', '01711223344', '12 Nawabpur Road, Dhaka'],
+      party_name: 'Sample Traders',
+      mobile: '01711223344',
+      manual_address: '12 Nawabpur Road, Dhaka',
+      ledger_page: '41',
+      area_code: 'A-3',
+      debit: 45000,
+      credit: 0,
+      last_paid_lines: ['12/09/2026', '8d'],
+      last_paid: '12/09/2026',
+      last_paid_age: '8d',
+      age_0_30: 20000,
+      age_31_60: 15000,
+      age_61_90: 10000,
+      age_90_plus: 0,
+      oldest_age: '',
+    },
+    {
+      sl: 2,
+      party_lines: ['Rahim Enterprise', '01811556677', 'Station Road, Bogura'],
+      party_name: 'Rahim Enterprise',
+      mobile: '01811556677',
+      manual_address: 'Station Road, Bogura',
+      ledger_page: '17',
+      area_code: 'B-1',
+      debit: 128000,
+      credit: 0,
+      last_paid_lines: ['03/06/2026', '3m 17d'],
+      last_paid: '03/06/2026',
+      last_paid_age: '3m 17d',
+      age_0_30: 0,
+      age_31_60: 0,
+      age_61_90: 28000,
+      age_90_plus: 100000,
+      oldest_age: '1y 2m 5d',
+    },
+    {
+      sl: 3,
+      party_lines: ['Karim & Sons', '', ''],
+      party_name: 'Karim & Sons',
+      mobile: '',
+      manual_address: '',
+      ledger_page: '',
+      area_code: '',
+      debit: 0,
+      credit: 6500,
+      last_paid_lines: ['18/09/2026', '2d'],
+      last_paid: '18/09/2026',
+      last_paid_age: '2d',
+      age_0_30: 0,
+      age_31_60: 0,
+      age_61_90: 0,
+      age_90_plus: 0,
+      oldest_age: '',
+    },
+    {
+      sl: 4,
+      party_lines: ['Nadia Store', '01911889900', 'Sherpur Bazar'],
+      party_name: 'Nadia Store',
+      mobile: '01911889900',
+      manual_address: 'Sherpur Bazar',
+      ledger_page: '88',
+      area_code: 'A-3',
+      debit: 9200,
+      credit: 0,
+      last_paid_lines: ['never'],
+      last_paid: '',
+      last_paid_age: 'never',
+      age_0_30: 9200,
+      age_31_60: 0,
+      age_61_90: 0,
+      age_90_plus: 0,
+      oldest_age: '',
+    },
+  ],
+};
+
+/**
+ * Order With Transaction's sample: one sales order and three vouchers against
+ * it. The balance is carried down -- amount less discount less received, row
+ * on row -- and `closing_balance` is the last row's own figure.
+ */
+export const ORDER_TRANSACTION_SAMPLE: DocumentData = {
+  basic: {
+    order_for: 'Sample Traders',
+    address: '12 Nawabpur Road, Dhaka',
+    order_type_label: 'Sales',
+    party_label: 'Customer Name',
+    received_label: 'Received',
+    order_number: 'ORD-2026-041',
+    order_date: '01/09/2026',
+    product_name: 'Cement (Shah)',
+    unit: 'Bag',
+    contract_order_qty: 2000,
+    order_rate: 520,
+    total_order: 2000,
+    order_amount: 1040000,
+    duration: '01/09/2026 to 30/09/2026',
+    delivery_location: 'Sherpur site',
+    notes: 'Deliver mornings only.',
+    closing_balance: 169000,
+    branch_name: 'Head Office',
+  },
+  products: [
+    {
+      sl: 1,
+      voucher_no: '3-260900012',
+      voucher_date: '05/09/2026',
+      detail_lines: ['Cement (Shah)', 'Truck loaded at 7am'],
+      vehicle_no: 'DMT-11-7226',
+      qty: 500,
+      price: 520,
+      amount: 260000,
+      discount: 0,
+      received: 100000,
+      running_balance: 160000,
+    },
+    {
+      sl: 2,
+      voucher_no: '3-260900019',
+      voucher_date: '12/09/2026',
+      detail_lines: ['Cement (Shah)'],
+      vehicle_no: 'DMT-11-7226',
+      qty: 400,
+      price: 520,
+      amount: 208000,
+      discount: 4000,
+      received: 145000,
+      running_balance: 219000,
+    },
+    {
+      sl: 3,
+      voucher_no: '1-260900044',
+      voucher_date: '18/09/2026',
+      detail_lines: ['Cash', 'Against ORD-2026-041'],
+      vehicle_no: '',
+      qty: 0,
+      price: 0,
+      amount: 0,
+      discount: 0,
+      received: 50000,
+      running_balance: 169000,
+    },
+  ],
+};
+
 /** Which sample the preview draws for the paper being designed. *//**
  * The document the designer previews against.
  *
@@ -584,5 +748,7 @@ export const sampleFor = (docType: string): DocumentData => {
   if (docType === 'purchase_invoice') return PURCHASE_INVOICE_SAMPLE;
   if (docType === 'sales_ledger' || docType === 'purchase_ledger') return LEDGER_SAMPLE;
   if (docType === 'ledger_details') return LEDGER_DETAILS_SAMPLE;
+  if (docType === 'due_list') return DUE_LIST_SAMPLE;
+  if (docType === 'order_transaction') return ORDER_TRANSACTION_SAMPLE;
   return SAMPLE_DOCUMENT;
 };

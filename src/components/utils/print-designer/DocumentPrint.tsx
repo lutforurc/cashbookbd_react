@@ -317,6 +317,13 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       total_sal_total: rows.reduce((sum, row) => sum + num(row?.sal_total), 0),
       total_debit: rows.reduce((sum, row) => sum + num(row?.debit), 0),
       total_credit: rows.reduce((sum, row) => sum + num(row?.credit), 0),
+
+      // The Due List's four ages, here for the same reason as the six above:
+      // the Grand Total row reads this map and nothing else.
+      total_age_0_30: rows.reduce((sum, row) => sum + num(row?.age_0_30), 0),
+      total_age_31_60: rows.reduce((sum, row) => sum + num(row?.age_31_60), 0),
+      total_age_61_90: rows.reduce((sum, row) => sum + num(row?.age_61_90), 0),
+      total_age_90_plus: rows.reduce((sum, row) => sum + num(row?.age_90_plus), 0),
     };
 
     /**

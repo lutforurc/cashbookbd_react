@@ -45,7 +45,9 @@ export type DocType =
   | 'purchase_invoice'
   | 'sales_ledger'
   | 'purchase_ledger'
-  | 'ledger_details';
+  | 'ledger_details'
+  | 'due_list'
+  | 'order_transaction';
 
 /**
  * The papers the designer offers, in the order it offers them.
@@ -99,6 +101,16 @@ export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
     id: 'ledger_details',
     name: 'Ledger Details',
     hint: 'The statement: one line per voucher, bought against sold, and a running balance.',
+  },
+  {
+    id: 'due_list',
+    name: 'Due List',
+    hint: 'Who owes what as on a date, with how old the money is.',
+  },
+  {
+    id: 'order_transaction',
+    name: 'Order With Transaction',
+    hint: 'One order, every voucher against it, and the balance carried down.',
   },
 ];
 
@@ -1222,6 +1234,136 @@ export const LEDGER_DETAILS_LINE_FIELDS: FieldDef[] = [
   { key: 'running_balance', name: 'Balance', group: 'line', numeric: true },
 ];
 
+/**
+ * The Due List: who owes what as on a date.
+ *
+ * Its own catalogue for the reason Ledger Details has one -- its rows carry no
+ * qty, amount or received, and a total the challan's catalogue offered would
+ * print a silent nought. What is here is what dueListDocumentData fills.
+ */
+export const DUE_LIST_INFO_FIELDS: FieldDef[] = [
+  { key: 'as_on_date', name: 'As On', group: 'voucher' },
+  // The rule behind the four buckets, said on the paper: a receipt here never
+  // names the bill it settles, so the oldest open debt is taken as the one
+  // paid. The page outlives the screen, and its reader has to know that.
+  { key: 'ageing_rule', name: 'Ageing Rule', group: 'voucher' },
+  { key: 'party_count', name: 'Number of Parties', group: 'total', numeric: true },
+
+  { key: 'total_debit', name: 'Total Debit', group: 'total', numeric: true },
+  { key: 'total_credit', name: 'Total Credit', group: 'total', numeric: true },
+  { key: 'total_age_0_30', name: 'Total 0-30 days', group: 'total', numeric: true },
+  { key: 'total_age_31_60', name: 'Total 31-60 days', group: 'total', numeric: true },
+  { key: 'total_age_61_90', name: 'Total 61-90 days', group: 'total', numeric: true },
+  { key: 'total_age_90_plus', name: 'Total 90+ days', group: 'total', numeric: true },
+
+  { key: 'branch_name', name: 'Branch', group: 'voucher' },
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+  { key: 'blank', name: 'Blank line', group: 'manual' },
+];
+
+/**
+ * A due list row: one party, its balance, and the age of that balance.
+ *
+ * `party_lines` is the name over the mobile over the address -- what the
+ * bespoke paper prints when the branch's due_list_with_address is on -- and
+ * `last_paid_lines` the date over its age; the scalar twins beside them are
+ * for a tenant who wants one of the facts in a column of its own.
+ *
+ * ⚠️ The four `age_*` columns add up to `debit`, and the server checks that
+ * for every row (ageing_check.php). They are footed by name in DocumentPrint's
+ * totals map, because the Grand Total row reads only that map.
+ */
+export const DUE_LIST_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  { key: 'party_lines', name: 'Party (name, mobile, address)', group: 'line' },
+  { key: 'party_name', name: 'Party Name', group: 'line' },
+  { key: 'mobile', name: 'Party Mobile', group: 'line' },
+  { key: 'manual_address', name: 'Address', group: 'line' },
+  { key: 'ledger_page', name: 'Ledger Page', group: 'line' },
+  { key: 'area_code', name: 'Area Code', group: 'line' },
+  { key: 'debit', name: 'Debit', group: 'line', numeric: true },
+  { key: 'credit', name: 'Credit', group: 'line', numeric: true },
+  { key: 'last_paid_lines', name: 'Last Paid (date, age)', group: 'line' },
+  { key: 'last_paid', name: 'Last Paid Date', group: 'line' },
+  { key: 'last_paid_age', name: 'Last Paid Age', group: 'line' },
+  { key: 'age_0_30', name: '0-30 days', group: 'line', numeric: true },
+  { key: 'age_31_60', name: '31-60 days', group: 'line', numeric: true },
+  { key: 'age_61_90', name: '61-90 days', group: 'line', numeric: true },
+  { key: 'age_90_plus', name: '90+ days', group: 'line', numeric: true },
+  { key: 'oldest_age', name: 'Oldest Due Age', group: 'line' },
+];
+
+/**
+ * Order With Transaction: one order, and every voucher raised against it.
+ *
+ * The order's own facts take the ORDER catalogue's keys (order_for, order_rate,
+ * total_order ...) because they ARE the same facts, and the three word-fields
+ * work the same way -- "{received_label}" over the payment column reads
+ * Received on a sales order and Payment on a purchase one.
+ *
+ * ⚠️ NO `total_due` HERE. On the sales order it is amount less received; on
+ * this paper the balance is amount less discount less payment, carried down.
+ * What the sheet ends at is `closing_balance`, the last row's own figure, the
+ * way Ledger Details says it.
+ */
+export const ORDER_TRANSACTION_INFO_FIELDS: FieldDef[] = [
+  // ⚠️ Every key shared with another catalogue keeps that catalogue's wording:
+  // the flat maps answer by key alone, last in wins, and a different name here
+  // would rename the other paper's fallback label.
+  { key: 'order_for', name: 'Customer Name', group: 'party' },
+  { key: 'address', name: 'Address', group: 'party' },
+  { key: 'order_type_label', name: 'Purchase / Sales', group: 'party' },
+  { key: 'party_label', name: 'Word for the party (Customer / Supplier)', group: 'party' },
+  { key: 'received_label', name: 'Word for money in (Received / Payment)', group: 'party' },
+
+  { key: 'order_number', name: 'Order No', group: 'voucher' },
+  { key: 'order_date', name: 'Order Date', group: 'voucher' },
+  { key: 'notes', name: 'Notes', group: 'voucher' },
+  { key: 'branch_name', name: 'Branch', group: 'voucher' },
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+
+  { key: 'product_name', name: 'Product Name', group: 'order' },
+  { key: 'unit', name: 'Unit', group: 'order' },
+  { key: 'contract_order_qty', name: 'Contract Quantity', group: 'order', numeric: true },
+  { key: 'order_rate', name: 'Order Rate', group: 'order', numeric: true },
+  { key: 'total_order', name: 'Order Quantity', group: 'order', numeric: true },
+  { key: 'order_amount', name: 'Order Amount', group: 'order', numeric: true },
+  { key: 'duration', name: 'Duration', group: 'order' },
+  { key: 'delivery_location', name: 'Delivery Location', group: 'order' },
+
+  { key: 'blank', name: 'Blank line', group: 'manual' },
+
+  { key: 'total_qty', name: 'Total Quantity', group: 'total', numeric: true },
+  { key: 'total_amount', name: 'Total Amount', group: 'total', numeric: true },
+  { key: 'total_discount', name: 'Total Discount', group: 'total', numeric: true },
+  { key: 'total_received', name: 'Total Received', group: 'total', numeric: true },
+  { key: 'closing_balance', name: 'Closing Balance', group: 'total', numeric: true, format: 'money' },
+  { key: 'line_count', name: 'Number of Deliveries', group: 'total', numeric: true },
+];
+
+/**
+ * One voucher against the order. `qty`, `price`, `amount`, `received` and
+ * `discount` are keys the renderer already separates and foots; `detail_lines`
+ * is the product over the voucher's note over the ledger remark, as the
+ * bespoke sheet stacks them. `running_balance` foots blank on purpose -- see
+ * LEDGER_DETAILS_LINE_FIELDS -- and the sheet ends at `closing_balance`.
+ */
+export const ORDER_TRANSACTION_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  { key: 'voucher_no', name: 'Voucher No', group: 'line' },
+  { key: 'voucher_date', name: 'Voucher Date', group: 'line' },
+  { key: 'detail_lines', name: 'Product & Details', group: 'line' },
+  { key: 'vehicle_no', name: 'Vehicle No.', group: 'line' },
+  { key: 'qty', name: 'Quantity', group: 'line', numeric: true },
+  { key: 'price', name: 'Rate', group: 'line', numeric: true },
+  { key: 'amount', name: 'Amount', group: 'line', numeric: true },
+  { key: 'discount', name: 'Discount', group: 'line', numeric: true },
+  { key: 'received', name: 'Received', group: 'line', numeric: true },
+  { key: 'running_balance', name: 'Balance', group: 'line', numeric: true },
+];
+
 const isLedger = (docType: DocType) =>
   docType === 'sales_ledger' || docType === 'purchase_ledger';
 
@@ -1235,6 +1377,8 @@ export const fieldsFor = (docType: DocType): FieldDef[] => {
   // keys on top, because most of the challan's keys resolve on this report to a
   // nought that reads as a figure. See the note on LEDGER_DETAILS_INFO_FIELDS.
   if (docType === 'ledger_details') return LEDGER_DETAILS_INFO_FIELDS;
+  if (docType === 'due_list') return DUE_LIST_INFO_FIELDS;
+  if (docType === 'order_transaction') return ORDER_TRANSACTION_INFO_FIELDS;
   if (docType === 'sales_order') return ORDER_FIELD_CATALOG;
   if (docType === 'hotel_bill') return HOTEL_BILL_FIELDS;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_FIELDS;
@@ -1266,6 +1410,8 @@ export const lineFieldsFor = (docType: DocType): FieldDef[] => {
   // adapter has nothing to put in.
   if (isLedger(docType)) return LEDGER_LINE_FIELDS;
   if (docType === 'ledger_details') return LEDGER_DETAILS_LINE_FIELDS;
+  if (docType === 'due_list') return DUE_LIST_LINE_FIELDS;
+  if (docType === 'order_transaction') return ORDER_TRANSACTION_LINE_FIELDS;
   if (docType === 'sales_order') return ORDER_LINE_FIELDS;
   if (docType === 'hotel_bill') return HOTEL_BILL_LINE_FIELDS;
   // A money receipt has none: it is one payment, and a table on it would be the
@@ -1344,9 +1490,11 @@ const ALL_INFO_BY_KEY = byKey([
   // "Number of Items" from becoming a ledger's "Number of Vouchers" everywhere.
   ...LEDGER_INFO_FIELDS,
   ...LEDGER_DETAILS_INFO_FIELDS,
+  ...DUE_LIST_INFO_FIELDS,
+  ...ORDER_TRANSACTION_INFO_FIELDS,
 ]);
 
-const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS, ...PURCHASE_INVOICE_LINE_FIELDS, ...LEDGER_LINE_FIELDS, ...LEDGER_DETAILS_LINE_FIELDS]);
+const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS, ...PURCHASE_INVOICE_LINE_FIELDS, ...LEDGER_LINE_FIELDS, ...LEDGER_DETAILS_LINE_FIELDS, ...DUE_LIST_LINE_FIELDS, ...ORDER_TRANSACTION_LINE_FIELDS]);
 
 /** The catalogue's own name for a field, or the key itself if it is unknown. */
 export const fieldName = (key: string) =>
@@ -2547,6 +2695,180 @@ const ledgerStatement = (): PrintTemplate => ({
   ],
 });
 
+/**
+ * The Due List as the bespoke paper (DueListPrint.tsx) has always drawn it:
+ * party, area, the two sides of the balance, when they last paid, and the
+ * four ages of what is owed. Portrait -- ten columns, but most of them a
+ * single figure wide.
+ */
+const dueListPaper = (): PrintTemplate => ({
+  version: 1,
+  docType: 'due_list',
+  orientation: 'portrait',
+  pageSize: 'a4',
+  fontSize: 9,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Due List',
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'as_on_date', label: 'As On' },
+        { field: 'branch_name', label: 'Branch', hideIfEmpty: true },
+        { field: 'ageing_rule', label: 'Ageing', hideIfEmpty: true },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      totalRow: true,
+      totalRowLabel: 'Total',
+      columns: [
+        { field: 'sl', label: 'Sl', width: 5, align: 'center' },
+        { field: 'party_lines', label: 'Member Info', width: 27, align: 'left' },
+        { field: 'area_code', label: 'Area', width: 8, align: 'center' },
+        { field: 'debit', label: 'Debit', width: 10, align: 'right', valign: 'middle' },
+        { field: 'credit', label: 'Credit', width: 10, align: 'right', valign: 'middle' },
+        { field: 'last_paid_lines', label: 'Last Paid', width: 10, align: 'center' },
+        { field: 'age_0_30', label: '0-30', width: 7.5, align: 'right', valign: 'middle' },
+        { field: 'age_31_60', label: '31-60', width: 7.5, align: 'right', valign: 'middle' },
+        { field: 'age_61_90', label: '61-90', width: 7.5, align: 'right', valign: 'middle' },
+        { field: 'age_90_plus', label: '90+ d', width: 7.5, align: 'right', valign: 'middle' },
+      ],
+    }),
+  ],
+});
+
+/**
+ * Order With Transaction as the bespoke sheet (OrderWithProductPrint.tsx)
+ * draws it: the order's facts in two columns, the vouchers under them, and
+ * the balance carried down. Landscape, as it has always printed.
+ *
+ * ⚠️ The Balance column foots blank; the sheet's last balance is the totals
+ * band's `closing_balance`, which is what the bespoke foot printed there.
+ */
+const orderTransactionPaper = (): PrintTemplate => ({
+  version: 1,
+  docType: 'order_transaction',
+  orientation: 'landscape',
+  pageSize: 'a4',
+  fontSize: 10,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Order With Transaction',
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'order_for', label: '{party_label}' },
+        { field: 'product_name', label: 'Product Name' },
+        { field: 'address', label: 'Address' },
+        { field: 'contract_order_qty', label: 'Contract Qty' },
+        { field: 'duration', label: 'Duration' },
+        { field: 'order_rate', label: 'Order Rate' },
+        { field: 'delivery_location', label: 'Delivery Location' },
+        { field: 'total_order', label: 'Order Qty' },
+        { field: 'order_number', label: 'Order No.' },
+        { field: 'order_amount', label: 'Amount' },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      totalRow: true,
+      totalRowLabel: 'Total',
+      columns: [
+        { field: 'sl', label: 'Sl. No', width: 5, align: 'center' },
+        { field: 'voucher_no', label: 'Chal. No. & Date', width: 11, align: 'left', subField: 'voucher_date' },
+        { field: 'detail_lines', label: 'Product & Details', width: 24, align: 'left' },
+        { field: 'vehicle_no', label: 'Truck Number', width: 10, align: 'left' },
+        { field: 'qty', label: 'Quantity', width: 8, align: 'right', valign: 'middle' },
+        { field: 'price', label: 'Rate', width: 7, align: 'right', valign: 'middle' },
+        { field: 'amount', label: 'Total', width: 9, align: 'right', valign: 'middle' },
+        { field: 'discount', label: 'Discount', width: 8, align: 'right', valign: 'middle' },
+        { field: 'received', label: '{received_label}', width: 9, align: 'right', valign: 'middle' },
+        { field: 'running_balance', label: 'Balance', width: 9, align: 'right', valign: 'middle' },
+      ],
+    }),
+    band<TotalsBand>({
+      id: 'totals',
+      type: 'totals',
+      show: true,
+      align: 'right',
+      layout: 'inline',
+      items: [{ field: 'closing_balance', label: 'Balance' }],
+    }),
+    // The order's own note under the table. A bare token, so a blank note
+    // takes the whole line away rather than printing "Note:" over nothing.
+    band<NotesBand>({ id: 'notes', type: 'notes', show: true, text: '{notes}', align: 'left', boxed: false }),
+  ],
+});
+
+export const ORDER_TRANSACTION_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Order With Transaction',
+    hint: 'The order above, every voucher against it below, the balance carried down.',
+    build: orderTransactionPaper,
+  },
+];
+
+export const DUE_LIST_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Due List',
+    hint: 'Party, balance, last payment and the four ages of the debt.',
+    build: dueListPaper,
+  },
+];
+
 export const LEDGER_DETAILS_PRESETS: PresetDef[] = [
   {
     id: 'standard',
@@ -2623,6 +2945,8 @@ export const presetsFor = (docType: DocType): PresetDef[] => {
   if (docType === 'sales_ledger') return SALES_LEDGER_PRESETS;
   if (docType === 'purchase_ledger') return PURCHASE_LEDGER_PRESETS;
   if (docType === 'ledger_details') return LEDGER_DETAILS_PRESETS;
+  if (docType === 'due_list') return DUE_LIST_PRESETS;
+  if (docType === 'order_transaction') return ORDER_TRANSACTION_PRESETS;
   if (docType === 'sales_order') return ORDER_PRESETS;
   if (docType === 'hotel_bill') return HOTEL_BILL_PRESETS;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_PRESETS;
@@ -2633,6 +2957,8 @@ export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTempla
   if (docType === 'sales_ledger') return ledgerHeading('sales_ledger', 'Sales Ledger');
   if (docType === 'purchase_ledger') return ledgerHeading('purchase_ledger', 'Purchase Ledger');
   if (docType === 'ledger_details') return ledgerStatement();
+  if (docType === 'due_list') return dueListPaper();
+  if (docType === 'order_transaction') return orderTransactionPaper();
   if (docType === 'sales_order') return standardOrder();
   if (docType === 'hotel_bill') return hotelBill();
   if (docType === 'hotel_money_receipt') return hotelReceipt();

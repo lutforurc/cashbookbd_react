@@ -20,6 +20,13 @@ import { isBranchSettingOn, isUserFeatureEnabled } from '../../../utils/userFeat
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import ToggleSwitch from '../../../utils/utils-functions/ToggleSwitch';
 import formatAge from '../../../utils/utils-functions/formatAge';
+import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
+import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
+import { normalizeTemplate } from '../../../utils/print-designer/printTemplate';
+import type { PrintTemplate } from '../../../utils/print-designer/printTemplate';
+import httpService from '../../../services/httpService';
+import { API_PRINT_TEMPLATE_URL } from '../../../services/apiRoutes';
+import { toDueListDocumentData } from './dueListDocumentData';
 
 
 
@@ -297,11 +304,72 @@ const DueList = (user: any) => {
     }
   };
 
-  const handlePrint = useReactToPrint({
+  const printBespoke = useReactToPrint({
     contentRef: printRef,
     documentTitle: 'Due Report',
-    // onAfterPrint: () => alert('Printed successfully!'),
   });
+
+  // The list about to be printed through a saved layout, held with its data
+  // and cleared afterwards so a second print cannot go out carrying the
+  // first one's rows.
+  const [dueDoc, setDueDoc] = useState<{ template: PrintTemplate; data: DocumentData } | null>(null);
+  const dueDocRef = useRef<HTMLDivElement>(null);
+  const printDueDoc = useReactToPrint({
+    contentRef: dueDocRef,
+    documentTitle: 'Due Report',
+    onAfterPrint: () => setDueDoc(null),
+  });
+
+  // Prints once the document is actually on the page: react-to-print copies
+  // the DOM the moment it is called, and the short wait is for the letterhead
+  // image PadPrinting loads. Same shape as LedgerWithProduct.
+  useEffect(() => {
+    if (!dueDoc) return undefined;
+    const timer = setTimeout(() => printDueDoc(), 250);
+    return () => clearTimeout(timer);
+  }, [dueDoc]);
+
+  /**
+   * Print: the branch's own layout where it has saved one, and the sheet this
+   * screen has always printed where it has not. The layout is fetched at the
+   * click, and every failure -- none saved, server behind, connection dropped
+   * -- falls through to the old paper.
+   */
+  const handlePrint = async () => {
+    const rows = Array.isArray(tableData) ? tableData : [];
+    let layout: any = null;
+
+    try {
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/due_list`, {
+        params: { branch_id: branchId ?? settings?.data?.branch?.id },
+      });
+      layout = response?.data?.data?.data?.layout ?? null;
+    } catch {
+      layout = null;
+    }
+
+    if (!rows.length || !layout) {
+      printBespoke();
+      return;
+    }
+
+    const template = normalizeTemplate(layout, 'due_list');
+    const branch = dropdownData.find((b: any) => String(b?.id) === String(branchId));
+
+    // The two knobs the screen still owns are applied over the layout: Rows
+    // and Font. Everything else is the saved layout's.
+    setDueDoc({
+      template: { ...template, rowsPerPage: Number(perPage), fontSize: Number(fontSize) },
+      data: toDueListDocumentData({
+        rows,
+        endDate,
+        showAddress,
+        showAgeing,
+        mobileFormat,
+        branchName: branch?.name,
+      }),
+    });
+  };
 
   return (
     <div className="">
@@ -479,6 +547,9 @@ const DueList = (user: any) => {
             fontSize={Number(fontSize)}
             showAgeing={showAgeing}
           />
+
+          {/* Mounted only while the designed list is being printed. */}
+          {dueDoc ? <DocumentPrint ref={dueDocRef} template={dueDoc.template} data={dueDoc.data} /> : null}
         </div>
       </div>
     </div>
