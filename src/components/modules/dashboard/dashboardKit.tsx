@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { FaArrowRight } from 'react-icons/fa';
 
 /**
  * The few pieces every vertical dashboard draws its own way of.
@@ -50,6 +52,29 @@ export const DASHBOARD_FADE = 'transition-opacity duration-300';
 
 export const CARD =
   'flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 transition hover:shadow-md dark:bg-gray-800 dark:text-[rgb(var(--c-text))] dark:ring-gray-700';
+
+/**
+ * A card's title, and the way into the report behind it.
+ *
+ * Given `href`, the title is a link and carries a small arrow: the card's
+ * figures are a summary, and the report it links to -- opened on the same
+ * dates and branch, see reportUrl -- is where they are argued over. Without
+ * one it is plain text, so a card with nothing to open looks like nothing
+ * to open.
+ */
+export const CardTitle = ({ children, href }: { children: React.ReactNode; href?: string }) =>
+  href ? (
+    <Link
+      to={href}
+      title="Open the report"
+      className="group/title inline-flex min-w-0 items-center gap-1.5 hover:underline"
+    >
+      <span className="truncate">{children}</span>
+      <FaArrowRight className="shrink-0 text-[10px] text-slate-400 transition group-hover/title:translate-x-0.5 group-hover/title:text-primary" />
+    </Link>
+  ) : (
+    <span className="truncate">{children}</span>
+  );
 
 export const CARD_HEAD =
   'flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100';

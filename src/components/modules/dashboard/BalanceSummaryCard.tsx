@@ -4,6 +4,7 @@ import { FaArrowDown, FaArrowUp, FaRegCalendarAlt, FaRegClock, FaWallet } from '
 
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import Sparkline from './Sparkline';
+import { CardTitle } from './dashboardKit';
 
 /**
  * The cash-book card: trx date, today's received and payment, and the running
@@ -13,7 +14,14 @@ import Sparkline from './Sparkline';
  * getDashboardSummary()'s sparklines straight from the store, so a page that
  * shows it only has to dispatch both — the shop and the trade both do.
  */
-const BalanceSummaryCard = ({ rowClass = 'px-4 py-2.5' }: { rowClass?: string }) => {
+const BalanceSummaryCard = ({
+  rowClass = 'px-4 py-2.5',
+  href,
+}: {
+  rowClass?: string;
+  /** The Cash Book report for this day, where these three figures come from. */
+  href?: string;
+}) => {
   const dashboard = useSelector((state: any) => state.dashboard);
   const settings = useSelector((s: any) => s.settings);
   const summaryData = useSelector((s: any) => s.dashboard?.summary?.data);
@@ -21,8 +29,8 @@ const BalanceSummaryCard = ({ rowClass = 'px-4 py-2.5' }: { rowClass?: string })
   return (
     <div className="group relative flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:text-[rgb(var(--c-text))] dark:ring-gray-700">
       <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] bg-white px-4 py-3 dark:bg-gray-800">
-        <span className="truncate text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
-          {dashboard?.data?.branch?.name}
+        <span className="min-w-0 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
+          <CardTitle href={href}>{dashboard?.data?.branch?.name}</CardTitle>
         </span>
         <FaWallet className="shrink-0 text-indigo-500" />
       </div>

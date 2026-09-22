@@ -6,6 +6,7 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
+import { useReportQuery } from '../../../utils/hooks/useReportQuery';
 import Table from '../../../utils/others/Table';
 import { useHighlightRules } from '../../../utils/highlight/useHighlightRules';
 import { matchHighlightRule, highlightLineClass } from '../../../utils/highlight/highlightRules';
@@ -135,6 +136,9 @@ const PurchaseLedger = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
   const restoredFilterRef = useRef(false);
+  // What the address bar asked for, and whether it has been answered once.
+  const query = useReportQuery();
+  const answered = useRef(false);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
   const [perPage, setPerPage] = useState<number>(0);
@@ -248,6 +252,31 @@ const PurchaseLedger = (user: any) => {
       const [day, month, year] =
         branchDdlData?.protectedData?.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
+
+      // The address bar wins over both the saved filters and the transaction
+      // date: a dashboard's top-products card links here with the range and
+      // branch it was showing, and the ledger runs itself on them.
+      if (query.asked && !answered.current) {
+        answered.current = true;
+        const from = query.from ?? query.to ?? parsedDate;
+        const to = query.to ?? from;
+        const branch = query.branch ?? user.user.branch_id;
+        setStartDate(from);
+        setEndDate(to);
+        setBranchId(branch);
+        dispatch(
+          getPurchaseLedger({
+            branchId: branch,
+            ledgerId: null,
+            productId: null,
+            startDate: dayjs(from).format('YYYY-MM-DD'),
+            endDate: dayjs(to).format('YYYY-MM-DD'),
+            search: '',
+          }),
+        );
+        return;
+      }
+
       if (!restoredFilterRef.current) {
         setStartDate(parsedDate);
         setEndDate(parsedDate);

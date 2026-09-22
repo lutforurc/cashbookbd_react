@@ -13,6 +13,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import {
   DashboardRangeBar,
   rangeCaption,
+  reportLinks,
   useAutoRefresh,
   useDashboardRange,
   useViewBranch,
@@ -33,7 +34,7 @@ import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
-import { CARD, CARD_HEAD, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
+import { CARD, CARD_HEAD, CardTitle, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
 
 /**
  * The dashboard a trader opens the morning on: goods in, goods out, and what
@@ -218,6 +219,8 @@ const TradingDashboard = () => {
   // takes any range up to a year (MAX_DAYS), so this page never knows the rule.
   const range = useDashboardRange();
   const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
+  // Where each card opens: its report, on this branch and these dates.
+  const links = reportLinks(branchId, range.from, range.to);
 
   useEffect(() => {
     dispatch(getDashboard(branchId)); // the cash-book card's figures
@@ -312,6 +315,7 @@ const TradingDashboard = () => {
     verb: string,
     tone: string,
     days: number,
+    href: string,
   ): React.ReactNode => {
     if (!isWidgetVisible(id) || rows.length === 0) return null;
     const total = listedValue(rows, 'amount');
@@ -321,7 +325,7 @@ const TradingDashboard = () => {
     return (
       <div className={`mb-4 ${CARD}`}>
         <div className={CARD_HEAD}>
-          <span className="truncate">{title}</span>
+          <CardTitle href={href}>{title}</CardTitle>
           <span className="shrink-0 text-[11px] font-normal text-slate-400">
             by quantity
           </span>
@@ -577,18 +581,18 @@ const TradingDashboard = () => {
         return (
           dues &&
           (isWidgetVisible('dues-balance') ? (
-            <BalanceSummaryCard rowClass={rowClass} />
+            <BalanceSummaryCard rowClass={rowClass} href={links.cashBook} />
           ) : null)
         );
       case 'dues-balance-range':
         return isWidgetVisible('dues-balance-range') ? (
-          <RangeCashCard cash={payload?.cash} rowClass={rowClass} />
+          <RangeCashCard cash={payload?.cash} rowClass={rowClass} href={links.cashBook} />
         ) : null;
       case 'dues-receivable':
         return (
           dues &&
           (isWidgetVisible('dues-receivable') ? (
-            <DueAgingCard aging={dues.receivable} />
+            <DueAgingCard aging={dues.receivable} href={links.dueList} />
           ) : null)
         );
       case 'dues-payable':
@@ -597,6 +601,7 @@ const TradingDashboard = () => {
           (isWidgetVisible('dues-payable') ? (
             <DueAgingCard
               aging={dues.payable}
+              href={links.dueList}
               title="Payable Ageing"
               overdueLabel="to pay"
               advanceLabel="Advance paid"
@@ -704,6 +709,7 @@ const TradingDashboard = () => {
           'sold',
           'text-emerald-600 dark:text-emerald-400',
           Number(payload?.top_sales_days) || 1,
+          links.salesLedger,
         );
       case 'top-purchase':
         return unitsCard(
@@ -713,6 +719,7 @@ const TradingDashboard = () => {
           'bought',
           'text-primary dark:text-secondary',
           Number(payload?.top_purchase_days) || 1,
+          links.purchaseLedger,
         );
       case 'daily-sales':
         return isWidgetVisible('daily-sales') ? (

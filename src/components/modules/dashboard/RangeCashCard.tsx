@@ -3,6 +3,7 @@ import { FaArrowDown, FaArrowUp, FaRegCalendarAlt, FaWallet } from 'react-icons/
 import dayjs from 'dayjs';
 
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { CardTitle } from './dashboardKit';
 
 /**
  * The Cash Book card for the chosen range, drawn the way the today card is
@@ -18,9 +19,12 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 const RangeCashCard = ({
   cash,
   rowClass = 'px-4 py-2.5',
+  href,
 }: {
   cash: { from: string; to: string; received: number; payment: number; balance: number } | null | undefined;
   rowClass?: string;
+  /** The Cash Book report over this range. */
+  href?: string;
 }) => {
   if (!cash) return null;
 
@@ -29,8 +33,8 @@ const RangeCashCard = ({
   return (
     <div className="flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700">
       <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
-        <span className="truncate text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
-          Cash Book · Range
+        <span className="min-w-0 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
+          <CardTitle href={href}>Cash Book · Range</CardTitle>
         </span>
         <FaWallet className="shrink-0 text-indigo-500" />
       </div>

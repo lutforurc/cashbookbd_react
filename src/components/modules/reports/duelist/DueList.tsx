@@ -27,6 +27,7 @@ import type { PrintTemplate } from '../../../utils/print-designer/printTemplate'
 import httpService from '../../../services/httpService';
 import { API_PRINT_TEMPLATE_URL } from '../../../services/apiRoutes';
 import { toDueListDocumentData } from './dueListDocumentData';
+import { useReportQuery } from '../../../utils/hooks/useReportQuery';
 
 
 
@@ -67,6 +68,9 @@ const DueList = (user: any) => {
   const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
+  // What the address bar asked for, and whether it has been answered once.
+  const query = useReportQuery();
+  const answered = useRef(false);
 
 
   interface OptionType {
@@ -114,8 +118,21 @@ const DueList = (user: any) => {
       const [day, month, year] =
         branchDdlData?.protectedData?.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-      setEndDate(parsedDate);
-      setBranchId(user.user.branch_id);
+
+      // The address bar wins where it has something to say: a dashboard's
+      // ageing card links here with the day and branch it was showing, and
+      // the list is run on them rather than left as a question above
+      // "No data found". From the menu there is no query, and the branch's
+      // transaction date is what a fresh visit means.
+      const asOn = query.to ?? query.from ?? parsedDate;
+      const branch = query.branch ?? user.user.branch_id;
+      setEndDate(asOn);
+      setBranchId(branch);
+
+      if (query.asked && !answered.current) {
+        answered.current = true;
+        dispatch(getDueList({ branchId: branch, endDate: dayjs(asOn).format('YYYY-MM-DD') }));
+      }
     } else {
     }
   }, [branchDdlData?.protectedData?.data]);

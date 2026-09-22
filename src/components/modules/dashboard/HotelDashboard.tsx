@@ -31,11 +31,12 @@ import {
   rangeCaption,
   useAutoRefresh,
   useCashBookRange,
+  reportLinks,
   useDashboardRange,
   useViewBranch,
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
-import { DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
+import { CardTitle, DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
 
 /**
  * The dashboard a hotel opens the morning on.
@@ -225,6 +226,8 @@ const HotelDashboard = () => {
   const range = useDashboardRange();
   const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
   const cash = useCashBookRange(branchId, range.from, range.to, tick);
+  // Where each card opens: its report, on this branch and these dates.
+  const links = reportLinks(branchId, range.from, range.to);
 
   useEffect(() => {
     dispatch(getDashboard(branchId));
@@ -621,7 +624,7 @@ const HotelDashboard = () => {
           dashboard?.data ? (
           <div className={CARD}>
             <div className={CARD_HEAD}>
-              <span className="truncate">{dashboard?.data?.branch?.name}</span>
+              <CardTitle href={links.cashBook}>{dashboard?.data?.branch?.name}</CardTitle>
               <FaWallet className="shrink-0 text-indigo-500" />
             </div>
 
@@ -679,7 +682,7 @@ const HotelDashboard = () => {
         ) : null;
       case 'balance-range':
         return isWidgetVisible('balance-range') ? (
-          <RangeCashCard cash={cash} rowClass={rowClass} />
+          <RangeCashCard cash={cash} rowClass={rowClass} href={links.cashBook} />
         ) : null;
       default:
         return null;

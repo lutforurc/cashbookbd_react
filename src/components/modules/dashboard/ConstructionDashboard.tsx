@@ -44,11 +44,12 @@ import {
   rangeCaption,
   useAutoRefresh,
   useCashBookRange,
+  reportLinks,
   useDashboardRange,
   useViewBranch,
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
-import { DASHBOARD_FADE } from './dashboardKit';
+import { CardTitle, DASHBOARD_FADE } from './dashboardKit';
 import { Button } from '../../../pages/UiElements/CustomButtons';
 
 /*
@@ -101,6 +102,8 @@ const ConstructionDashboard = () => {
   const view = useViewBranch();
   const viewBranchId = view.viewBranchId;
   const cash = useCashBookRange(viewBranchId, range.from, range.to, tick);
+  // Where each card opens: its report, on this branch and these dates.
+  const links = reportLinks(viewBranchId, range.from, range.to);
 
   useEffect(() => {
     dispatch(getDashboard(viewBranchId, { from: range.from, to: range.to }));
@@ -376,10 +379,8 @@ const ConstructionDashboard = () => {
               style={{ order: widgetOrder('summary') }}
             >
               <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] bg-white px-4 py-3 dark:bg-gray-800">
-                <span className="truncate text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
-                  {dashboard?.data &&
-                    !dashboard.isLoading &&
-                    dashboard?.data?.branch?.name}
+                <span className="min-w-0 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
+                  <CardTitle href={links.cashBook}>{dashboard?.data?.branch?.name}</CardTitle>
                 </span>
                 <FaWallet className="shrink-0 text-indigo-500" />
               </div>
@@ -485,7 +486,7 @@ const ConstructionDashboard = () => {
             {/* The same three figures over the chosen range, beside the today card. */}
             {!dashboard.errors && isWidgetVisible('summary-range') && cash ? (
               <div className={`min-w-0 ${dashboardCardHeightClass} *:h-full`} style={{ order: widgetOrder('summary-range') }}>
-                <RangeCashCard cash={cash} rowClass={summaryRowClass} />
+                <RangeCashCard cash={cash} rowClass={summaryRowClass} href={links.cashBook} />
               </div>
             ) : null}
 

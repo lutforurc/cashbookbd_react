@@ -7,6 +7,8 @@ import httpService from '../../services/httpService';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { API_DASHBOARD_CASH_BOOK_URL, API_USER_CURRENT_BRANCH_URL } from '../../services/apiRoutes';
+import ROUTES from '../../services/appRoutes';
+import { reportUrl } from '../../utils/hooks/useReportQuery';
 import { Button } from '../../../pages/UiElements/CustomButtons';
 import { Select } from '../../utils/fields/FormControls';
 import InputDatePicker from '../../utils/fields/DatePicker';
@@ -37,9 +39,44 @@ const fromText = (text: string): Date | null => {
   return parts ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3])) : null;
 };
 
+/**
+ * A value kept in the browser for this user, so a reload -- or the page
+ * swapping under a head office's branch choice -- comes back where it was.
+ * Reads and writes are guarded: a private window or blocked storage just
+ * means nothing is remembered.
+ */
+const useRemembered = <T,>(key: string, fallback: T): [T, (next: T) => void] => {
+  const userId = useSelector((state: any) => state.auth?.me?.id) ?? 'user';
+  const storageKey = `cashbook-dashboard:${userId}:${key}`;
+  const [value, setValue] = useState<T>(() => {
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      return raw ? { ...fallback, ...JSON.parse(raw) } : fallback;
+    } catch {
+      return fallback;
+    }
+  });
+  const remember = (next: T) => {
+    setValue(next);
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(next));
+    } catch {
+      // Nothing remembered; the page still works.
+    }
+  };
+  return [value, remember];
+};
+
 export const useDashboardRange = () => {
-  const [preset, setPreset] = useState<RangePreset>('this-month');
-  const [custom, setCustom] = useState({ from: '', to: '' });
+  // Remembered across reloads and page swaps, for this user.
+  const [saved, remember] = useRemembered<{ preset: RangePreset; custom: { from: string; to: string } }>('range', {
+    preset: 'this-month',
+    custom: { from: '', to: '' },
+  });
+  const { preset, custom } = saved;
+  const setPreset = (next: RangePreset) => remember({ ...saved, preset: next });
+  const setCustom = (update: (c: { from: string; to: string }) => { from: string; to: string }) =>
+    remember({ ...saved, custom: update(saved.custom) });
 
   const now = new Date();
   const range =
@@ -118,7 +155,10 @@ export const ViewBranchProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const currentBranch = useSelector((state: any) => state.branchList?.currentBranch);
   const branches: any[] = useSelector((state: any) => state.branchDdl?.protectedData?.data) ?? [];
   const isHeadOffice = Number(currentBranch?.branch_types_id) === 1;
-  const [chosen, setChosen] = useState<string>('');
+  // Remembered across reloads, for this user: a head office that was
+  // looking at a site comes back to the site.
+  const [{ chosen }, rememberChosen] = useRemembered<{ chosen: string }>('branch', { chosen: '' });
+  const setChosen = (id: string) => rememberChosen({ chosen: id });
   const [fetched, setFetched] = useState<{ id: number; branch: any } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -225,6 +265,18 @@ export const useCashBookRange = (
 
   return cash;
 };
+
+/**
+ * Where each card's figures are argued over: the report, opened on the same
+ * branch and dates the card was showing. One list, so the five dashboards
+ * send the same card to the same report.
+ */
+export const reportLinks = (branchId: number | string | null | undefined, from: string, to: string) => ({
+  cashBook: reportUrl(ROUTES.report_cashbook, { from, to, branch: branchId }),
+  dueList: reportUrl(ROUTES.report_due_list, { to, branch: branchId }),
+  salesLedger: reportUrl(ROUTES.sales_ledger, { from, to, branch: branchId }),
+  purchaseLedger: reportUrl(ROUTES.purchase_ledger, { from, to, branch: branchId }),
+});
 
 /** "1 Sep 2026 to 22 Sep 2026 · updated 11:32 AM", for a page's subtitle. */
 export const rangeCaption = (from?: string, to?: string, refreshedAt?: Date | null) =>

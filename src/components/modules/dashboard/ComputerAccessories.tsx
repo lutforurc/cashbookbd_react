@@ -22,10 +22,11 @@ import {
   rangeCaption,
   useAutoRefresh,
   useCashBookRange,
+  reportLinks,
   useDashboardRange,
   useViewBranch,
 } from './dashboardRange';
-import { DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
+import { CardTitle, DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
 import RangeCashCard from './RangeCashCard';
 
 /*
@@ -131,6 +132,8 @@ const ComputerAccessories = () => {
   const range = useDashboardRange();
   const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
   const cash = useCashBookRange(branchId, range.from, range.to, tick);
+  // Where each card opens: its report, on this branch and these dates.
+  const links = reportLinks(branchId, range.from, range.to);
 
   useEffect(() => {
     dispatch(getDashboard(branchId));
@@ -176,10 +179,10 @@ const ComputerAccessories = () => {
             const tile = DEFAULT_TILES.find(tile => widget.id === `kpi-${tile.key}`);
             if (tile) return <KpiRow key={widget.id} embedded kpis={summaryData?.kpis} isLoading={summary?.isLoading} tiles={[tile]} />;
             if (widget.id === 'summary') {
-              return <BalanceSummaryCard key={widget.id} rowClass={cardRowClass} />;
+              return <BalanceSummaryCard key={widget.id} rowClass={cardRowClass} href={links.cashBook} />;
             }
             if (widget.id === 'summary-range') {
-              return <RangeCashCard key={widget.id} cash={cash} rowClass={cardRowClass} />;
+              return <RangeCashCard key={widget.id} cash={cash} rowClass={cardRowClass} href={links.cashBook} />;
             }
 
             if (widget.id === 'due-aging') {
@@ -187,6 +190,7 @@ const ComputerAccessories = () => {
                 <DueAgingCard
                   key={widget.id}
                   aging={summaryData?.dueAging}
+                  href={links.dueList}
                   isLoading={summary?.isLoading}
                 />
               );
@@ -197,6 +201,7 @@ const ComputerAccessories = () => {
                 <DueAgingCard
                   key={widget.id}
                   aging={summaryData?.payableAging}
+                  href={links.dueList}
                   isLoading={summary?.isLoading}
                   title="Payable Ageing"
                   overdueLabel="to pay"
@@ -240,8 +245,8 @@ const ComputerAccessories = () => {
               <div key={widget.id} className="relative flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:text-[rgb(var(--c-text))] dark:ring-gray-700">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
-                  <span className="truncate text-sm font-bold">
-                    Top Sales Products
+                  <span className="min-w-0 text-sm font-bold">
+                    <CardTitle href={links.salesLedger}>Top Sales Products</CardTitle>
                   </span>
                   {salesDaysLabel && (
                     <span className="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
@@ -324,8 +329,8 @@ const ComputerAccessories = () => {
               <div key={widget.id} className="relative flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:text-[rgb(var(--c-text))] dark:ring-gray-700">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
-                  <span className="truncate text-sm font-bold">
-                    Top Purchase Products
+                  <span className="min-w-0 text-sm font-bold">
+                    <CardTitle href={links.purchaseLedger}>Top Purchase Products</CardTitle>
                   </span>
                   {purchaseDaysLabel && (
                     <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">

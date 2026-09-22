@@ -28,6 +28,7 @@ import {
   rangeCaption,
   useAutoRefresh,
   useCashBookRange,
+  reportLinks,
   useDashboardRange,
   useViewBranch,
 } from './dashboardRange';
@@ -35,7 +36,7 @@ import RangeCashCard from './RangeCashCard';
 // money(), count(), share(), CARD, CARD_HEAD and Tile moved to the shared kit so
 // the trading dashboard cannot drift away from this one on how a taka is
 // written. Nothing here changed but where they are read from.
-import { CARD, CARD_HEAD, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
+import { CARD, CARD_HEAD, CardTitle, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
 
 /**
  * The dashboard a developer opens the morning on: flats, plots and parking.
@@ -144,6 +145,8 @@ const RealEstateDashboard = () => {
   const range = useDashboardRange();
   const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
   const cash = useCashBookRange(branchId, range.from, range.to, tick);
+  // Where each card opens: its report, on this branch and these dates.
+  const links = reportLinks(branchId, range.from, range.to);
 
   useEffect(() => {
     dispatch(getDashboard(branchId));
@@ -548,7 +551,7 @@ const RealEstateDashboard = () => {
           dashboard?.data ? (
           <div className={CARD}>
             <div className={CARD_HEAD}>
-              <span className="truncate">{dashboard?.data?.branch?.name}</span>
+              <CardTitle href={links.cashBook}>{dashboard?.data?.branch?.name}</CardTitle>
               <FaWallet className="shrink-0 text-indigo-500" />
             </div>
 
@@ -606,7 +609,7 @@ const RealEstateDashboard = () => {
         ) : null;
       case 'balance-range':
         return isWidgetVisible('balance-range') ? (
-          <RangeCashCard cash={cash} rowClass={rowClass} />
+          <RangeCashCard cash={cash} rowClass={rowClass} href={links.cashBook} />
         ) : null;
       default:
         return null;
