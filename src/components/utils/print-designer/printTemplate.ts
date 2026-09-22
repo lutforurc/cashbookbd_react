@@ -198,19 +198,20 @@ export type TableColumn = {
   subInBrackets?: boolean;
   /**
    * For a COMPOSED column (product_flat / product_lines): which of the five
-   * product facts it prints, in PRODUCT_PARTS order. One shop wants Group and
-   * Name, the next Category, Name and Serial; a column that printed all five
-   * for everybody would be the wrong column for most of them.
+   * product facts it prints, IN THIS ORDER. One shop wants Group then Name,
+   * the next Name then Serial then Category; a column that printed all five
+   * in one fixed order for everybody would be the wrong column for most.
    *
-   * Absent means all five -- what a layout saved before this existed asked for.
+   * Absent means all five in PRODUCT_PARTS order -- what a layout saved
+   * before this existed asked for.
    */
   parts?: string[];
 };
 
 /**
- * The five facts that name a product on an invoice line, in the order they
- * are printed: the broad thing first, the serial last, the way a label reads.
- * Each is a line key the invoice adapters already fill.
+ * The five facts that name a product on an invoice line, in the order a
+ * column prints them until the tenant reorders: the broad thing first, the
+ * serial last. Each is a line key the invoice adapters already fill.
  */
 export const PRODUCT_PARTS: { key: string; name: string }[] = [
   { key: 'brand', name: 'Brand' },
@@ -3061,11 +3062,13 @@ const tableColumns = (value: any): TableColumn[] =>
       // no paper gains a second line it did not ask for.
       subField: typeof item.subField === 'string' && item.subField ? item.subField : undefined,
       subInBrackets: item.subInBrackets === true,
-      // Only the five known parts survive, in the fixed order; none chosen
-      // reads as all, so a column can never be saved into printing nothing.
+      // Only the five known parts survive, each once, IN THE SAVED ORDER --
+      // the order is the tenant's choice. None chosen reads as all, so a
+      // column can never be saved into printing nothing.
       parts: (() => {
+        const known = PRODUCT_PARTS.map((part) => part.key);
         const chosen = Array.isArray(item.parts) ? item.parts.map(String) : [];
-        const kept = PRODUCT_PARTS.map((part) => part.key).filter((key) => chosen.includes(key));
+        const kept = chosen.filter((key, at) => known.includes(key) && chosen.indexOf(key) === at);
         return kept.length ? kept : undefined;
       })(),
     }));

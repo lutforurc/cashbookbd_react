@@ -308,6 +308,66 @@ const MoveButtons: React.FC<{
   </>
 );
 
+/**
+ * The parts of a composed product column, in the order they print.
+ *
+ * A list rather than checkboxes because the order is the point: "Group,
+ * Name" and "Name, Group" are two different labels, and a row of ticks
+ * cannot say which. Each part moves up or down or comes off; the ones not
+ * in the list are offered back through the select at the end.
+ */
+const ComposedParts: React.FC<{
+  parts: string[];
+  onChange: (parts: string[]) => void;
+}> = ({ parts, onChange }) => {
+  const nameOf = (key: string) => PRODUCT_PARTS.find((part) => part.key === key)?.name ?? key;
+  const left = PRODUCT_PARTS.filter((part) => !parts.includes(part.key));
+  const move = (from: number, to: number) => {
+    const next = [...parts];
+    next.splice(to, 0, next.splice(from, 1)[0]);
+    onChange(next);
+  };
+
+  return (
+    <div className="flex w-full flex-col gap-1 pl-6">
+      <span className="text-[0.65rem] uppercase tracking-wide text-slate-400">Parts, in order</span>
+      {parts.map((key, at) => (
+        <div key={key} className="flex items-center gap-1 text-xs">
+          <span className="w-28 truncate">{nameOf(key)}</span>
+          <MoveButtons index={at} count={parts.length} onMove={move} />
+          <Button
+            type="button"
+            draggable={false}
+            title="Remove this part"
+            // The last part stays: an empty list would print all five again,
+            // which is not what removing the last one looks like it does.
+            disabled={parts.length === 1}
+            onClick={() => onChange(parts.filter((part) => part !== key))}
+            className="rounded p-1 text-danger hover:bg-gray-100 disabled:opacity-30 dark:hover:bg-meta-4"
+          >
+            <FiTrash2 />
+          </Button>
+        </div>
+      ))}
+      {left.length ? (
+        <Select
+          value=""
+          draggable={false}
+          onChange={(event) => event.target.value && onChange([...parts, event.target.value])}
+          className="w-40 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1 py-0.5 text-xs outline-none dark:bg-boxdark"
+        >
+          <option value="">Add a part…</option>
+          {left.map((part) => (
+            <option key={part.key} value={part.key}>
+              {part.name}
+            </option>
+          ))}
+        </Select>
+      ) : null}
+    </div>
+  );
+};
+
 /* ------------------------------------------------------------------ */
 /* Info / totals: a list of label:value fields                         */
 /* ------------------------------------------------------------------ */
@@ -739,33 +799,16 @@ export const TableBandEditor: React.FC<{
               ) : null}
             </div>
 
-            {/* WHICH of the five product facts a composed column prints.
-                Nothing ticked reads as all five -- see tableColumns() -- so
-                the boxes show that rather than an empty row. */}
+            {/* WHICH of the five product facts a composed column prints, and
+                IN WHAT ORDER: the list is the order, top to bottom on a
+                stacked column and left to right on a one-line one. Nothing
+                chosen reads as all five -- see tableColumns() -- so the list
+                shows that rather than standing empty. */}
             {isComposedField(column.field) ? (
-              <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 pl-6">
-                <span className="shrink-0 text-[0.65rem] uppercase tracking-wide text-slate-400">
-                  Parts
-                </span>
-                {PRODUCT_PARTS.map((part) => {
-                  const chosen = column.parts?.length ? column.parts : PRODUCT_PARTS.map((p) => p.key);
-                  return (
-                    <CheckRow
-                      key={part.key}
-                      checked={chosen.includes(part.key)}
-                      label={part.name}
-                      onChange={(on) =>
-                        update(index, {
-                          // Kept in PRODUCT_PARTS order whatever order the boxes were ticked in.
-                          parts: PRODUCT_PARTS.map((p) => p.key).filter((key) =>
-                            key === part.key ? on : chosen.includes(key),
-                          ),
-                        })
-                      }
-                    />
-                  );
-                })}
-              </div>
+              <ComposedParts
+                parts={column.parts?.length ? column.parts : PRODUCT_PARTS.map((p) => p.key)}
+                onChange={(parts) => update(index, { parts })}
+              />
             ) : null}
           </li>
         ))}
