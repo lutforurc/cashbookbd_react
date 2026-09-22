@@ -492,13 +492,16 @@ const ConstructionDashboard = () => {
 
             {!dashboard.errors && isWidgetVisible('top-purchase') && dashboard?.data?.topProductsPurchase?.length > 0 && (
               <div
-                className="relative flex min-w-0 flex-col overflow-hidden border border-[rgb(var(--c-border))] bg-white shadow-sm dark:bg-[rgb(var(--c-gray-800))]"
+                // The same fixed height as every other card on this page: this
+                // one had none and stood as tall as its five rows, a head
+                // shorter than the cash book beside it.
+                className={`relative flex min-w-0 flex-col overflow-hidden border border-[rgb(var(--c-border))] bg-white shadow-sm dark:bg-[rgb(var(--c-gray-800))] ${dashboardCardHeightClass}`}
                 style={{ order: widgetOrder('top-purchase') }}
               >
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3.5">
-                  <span className="truncate text-base font-bold tracking-wide text-slate-700 dark:text-slate-100">
-                    Top Purchase
+                  <span className="min-w-0 text-base font-bold tracking-wide text-slate-700 dark:text-slate-100">
+                    <CardTitle href={links.purchaseLedger}>Top Purchase</CardTitle>
                   </span>
                   {/* ⚠️ THE PAYLOAD'S WINDOW, NOT THE BRANCH SETTING. The
                       setting falls back to 7 in the client while the server
