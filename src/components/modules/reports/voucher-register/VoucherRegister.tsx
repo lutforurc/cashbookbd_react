@@ -25,18 +25,29 @@ import { useVoucherPrint } from '../../vouchers';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 
 /**
- * Tally's Voucher Monthly Register: one voucher type, every month of the
- * year, how many were written and how many of those were cancelled. A month
- * opens to the vouchers behind its count; a voucher number opens the voucher.
+ * Tally's Voucher Monthly Register: every voucher type together, or one, month
+ * by month, how many were written and how many of those were cancelled. A
+ * month opens to the vouchers behind its count; a voucher number opens the
+ * voucher.
  *
- * The dates may be left blank: the API then answers with the year the
- * branch's transaction date falls in, and the boxes are filled from what it
- * answered, so what is on screen is always the range that was counted.
+ * The boxes open on the branch's transaction date: the 1st of its month to
+ * the date itself, the way every other report here opens. Cleared by hand,
+ * the API answers with the year that date falls in and the boxes are filled
+ * from what it answered, so what is on screen is always the range counted.
  */
 
-const SALES_TYPE_ID = 3;
+/** Empty type id: the API counts every type together. */
+const ALL_TYPES = '';
 
 const asText = (date: any) => (date ? dayjs(date).format('YYYY-MM-DD') : '');
+
+/** The branch's 'DD/MM/YYYY' transaction date as a local Date, or null. */
+const parseTrxDate = (said: any): Date | null => {
+  const [day, month, year] = String(said ?? '').split('/');
+  return day && month && year ? new Date(Number(year), Number(month) - 1, Number(day)) : null;
+};
+
+const monthStart = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1);
 
 /** 'YYYY-MM-DD' read by hand: handed to Date it is UTC midnight, the day before east of Greenwich. */
 const parseApiDate = (said: any): Date | null => {
@@ -52,7 +63,7 @@ const VoucherRegister = ({ user }: any) => {
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [voucherTypes, setVoucherTypes] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
-  const [voucherTypeId, setVoucherTypeId] = useState<string>(String(SALES_TYPE_ID));
+  const [voucherTypeId, setVoucherTypeId] = useState<string>(ALL_TYPES);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [report, setReport] = useState<any>(null);
@@ -85,6 +96,14 @@ const VoucherRegister = ({ user }: any) => {
 
     setDropdownData(payload.data);
     setBranchId((current) => current ?? user?.user?.branch_id ?? settings?.data?.branch?.id ?? null);
+
+    // First of the month to the transaction date, unless a date is already in
+    // the box — the branch list can arrive again after the user has typed.
+    const trxDate = parseTrxDate(payload.transactionDate);
+    if (trxDate) {
+      setStartDate((current) => current ?? monthStart(trxDate));
+      setEndDate((current) => current ?? trxDate);
+    }
   }, [branchDdlData, user, settings]);
 
   const load = async () => {
@@ -148,9 +167,10 @@ const VoucherRegister = ({ user }: any) => {
   };
 
   const handleReset = () => {
-    setStartDate(null);
-    setEndDate(null);
-    setVoucherTypeId(String(SALES_TYPE_ID));
+    const trxDate = parseTrxDate(branchDdlData?.protectedData?.transactionDate);
+    setStartDate(trxDate ? monthStart(trxDate) : null);
+    setEndDate(trxDate);
+    setVoucherTypeId(ALL_TYPES);
     setReport(null);
     setOpenMonth(null);
     setVouchers([]);
@@ -163,7 +183,12 @@ const VoucherRegister = ({ user }: any) => {
 
   const months: any[] = report?.months ?? [];
 
+  // A cash register has no quantities; the column only appears when one
+  // month moved stock.
+  const hasQty = months.some((m: any) => Number(m.qty));
+
   const count = (n: any) => (Number(n) ? String(n) : '');
+  const money = (n: any) => (Number(n) ? thousandSeparator(Number(n)) : '');
 
   const columns = [
     {
@@ -195,6 +220,24 @@ const VoucherRegister = ({ user }: any) => {
       cellClass: 'w-32 text-right',
       render: (row: any) => count(row.cancelled),
     },
+    {
+      key: 'amount',
+      header: 'Total Amount',
+      headerClass: 'text-right',
+      cellClass: 'w-40 text-right',
+      render: (row: any) => money(row.amount),
+    },
+    ...(hasQty
+      ? [
+          {
+            key: 'qty',
+            header: 'Total Qty',
+            headerClass: 'text-right',
+            cellClass: 'w-32 text-right',
+            render: (row: any) => money(row.qty),
+          },
+        ]
+      : []),
   ];
 
   const voucherColumns = [
@@ -248,7 +291,7 @@ const VoucherRegister = ({ user }: any) => {
                 </div>
               </div>
             ),
-            colSpan: 4,
+            colSpan: columns.length,
           },
         ],
         [
@@ -256,6 +299,8 @@ const VoucherRegister = ({ user }: any) => {
           { label: 'Particulars' },
           { label: 'Total Vouchers', className: 'text-right' },
           { label: '(cancelled)', className: 'text-right' },
+          { label: 'Total Amount', className: 'text-right' },
+          ...(hasQty ? [{ label: 'Total Qty', className: 'text-right' }] : []),
         ],
       ]
     : [];
@@ -266,6 +311,8 @@ const VoucherRegister = ({ user }: any) => {
           { label: 'Total', className: 'text-right font-semibold', colSpan: 2 },
           { label: count(report.grand?.total), className: 'text-right font-semibold' },
           { label: count(report.grand?.cancelled), className: 'text-right font-semibold' },
+          { label: money(report.grand?.amount), className: 'text-right font-semibold' },
+          ...(hasQty ? [{ label: money(report.grand?.qty), className: 'text-right font-semibold' }] : []),
         ],
       ]
     : [];
@@ -300,6 +347,7 @@ const VoucherRegister = ({ user }: any) => {
               value={voucherTypeId}
               onChange={(event) => setVoucherTypeId(event.target.value)}
             >
+              <option value={ALL_TYPES}>All Voucher Types</option>
               {voucherTypes.map((type: any) => (
                 <option key={type.id} value={type.id}>
                   {type.name}
@@ -363,7 +411,7 @@ const VoucherRegister = ({ user }: any) => {
           getRowKey={(row: any) => row.month}
           onRowClick={(row: any) => (row.total || row.cancelled) && openMonthRows(row.month)}
           rowClassName={(row: any) => (row.month === openMonth ? 'font-semibold' : '')}
-          noDataMessage="Choose a branch and a voucher type, then press Apply."
+          noDataMessage="Choose a branch, then press Apply."
           renderRowExpansion={(row: any) =>
             row.month === openMonth ? (
               <div className="px-2 py-2">

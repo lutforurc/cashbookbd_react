@@ -9,10 +9,14 @@ import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomB
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
+import CategoryDropdown from "../../../utils/utils-functions/CategoryDropdown";
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
+import { getCategoryDdl } from "../../category/categorySlice";
+import { fetchBrandDdl } from "../../product/brand/brandSlice";
+import { getProductGroupDdl } from "../../productgroup/productGroupSlice";
 import { API_REPORT_CLOSING_STOCK_URL } from "../../../services/apiRoutes";
 import httpService from "../../../services/httpService";
 import ItemDetailsPrint from "../profit-loss/ItemDetailsPrint";
@@ -108,10 +112,20 @@ const ClosingStockReport = ({ user }: any) => {
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
   const groupByBrand = isBranchSettingOn(settings, "stock_report_type");
+  // The Group filter appears only where the branch files products under
+  // groups at all -- the same switch that puts the box on the product form.
+  const needProductGroup = isBranchSettingOn(settings, "need_product_group");
   const authUser = user?.user ?? user;
+
+  const categoryData = useSelector((state: any) => state.category);
+  const brandData = useSelector((state: any) => state.brand);
+  const productGroupData = useSelector((state: any) => state.productGroup);
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | string | null>(null);
+  const [brandId, setBrandId] = useState<string>("");
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [groupId, setGroupId] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
@@ -125,7 +139,24 @@ const ClosingStockReport = ({ user }: any) => {
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
+    dispatch(getCategoryDdl() as any);
+    dispatch(fetchBrandDdl() as any);
   }, [dispatch]);
+
+  useEffect(() => {
+    if (needProductGroup) dispatch(getProductGroupDdl() as any);
+  }, [dispatch, needProductGroup]);
+
+  // "All …" first, so the list opens on it and nothing is filtered until asked.
+  const brandOptions = [{ id: "", name: "All Brand" }, ...(brandData?.brandDdl?.data || [])];
+  const categoryOptions = [
+    { id: "", name: "All Categories" },
+    ...(Array.isArray(categoryData?.ddlData?.data?.category) ? categoryData.ddlData.data.category : []),
+  ];
+  const groupOptions = [
+    { id: "", name: "All Groups" },
+    ...(Array.isArray(productGroupData?.ddlData?.data) ? productGroupData.ddlData.data : []),
+  ];
 
   useEffect(() => {
     if (branchDdlData?.protectedData?.data && branchDdlData?.protectedData?.transactionDate) {
@@ -194,6 +225,9 @@ const ClosingStockReport = ({ user }: any) => {
         enddate: endD,
         start_date: startD,
         end_date: endD,
+        brand_id: brandId || null,
+        category_id: categoryId || null,
+        group_id: needProductGroup ? groupId || null : null,
       });
 
       const nextRows = normalizeRows(response.data);
@@ -216,6 +250,9 @@ const ClosingStockReport = ({ user }: any) => {
     setEndDate(defaultTransactionDate);
     setPerPage(12);
     setFontSize(12);
+    setBrandId("");
+    setCategoryId("");
+    setGroupId("");
     if (authUser?.branch_id) setBranchId(authUser.branch_id);
   };
 
@@ -240,6 +277,41 @@ const ClosingStockReport = ({ user }: any) => {
               branchDdl={dropdownData}
             />
           </div>
+
+          <div className="min-w-50">
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
+            <CategoryDropdown
+              onChange={(opt: any) => setBrandId(String(opt?.value ?? ""))}
+              className="w-full text-sm"
+              categoryDdl={brandOptions}
+              value={brandId}
+              placeholder="All Brand"
+            />
+          </div>
+
+          <div className="min-w-50">
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
+            <CategoryDropdown
+              onChange={(opt: any) => setCategoryId(String(opt?.value ?? ""))}
+              className="w-full text-sm"
+              categoryDdl={categoryOptions}
+              value={categoryId}
+              placeholder="All Categories"
+            />
+          </div>
+
+          {needProductGroup ? (
+            <div className="min-w-50">
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Group</label>
+              <CategoryDropdown
+                onChange={(opt: any) => setGroupId(String(opt?.value ?? ""))}
+                className="w-full text-sm"
+                categoryDdl={groupOptions}
+                value={groupId}
+                placeholder="All Groups"
+              />
+            </div>
+          ) : null}
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
