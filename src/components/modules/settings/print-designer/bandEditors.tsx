@@ -22,6 +22,8 @@ import {
   fieldsFor,
   isNumericField,
   lineFieldsFor,
+  PRODUCT_PARTS,
+  isComposedField,
 } from '../../../utils/print-designer/printTemplate';
 
 /**
@@ -736,6 +738,35 @@ export const TableBandEditor: React.FC<{
                 />
               ) : null}
             </div>
+
+            {/* WHICH of the five product facts a composed column prints.
+                Nothing ticked reads as all five -- see tableColumns() -- so
+                the boxes show that rather than an empty row. */}
+            {isComposedField(column.field) ? (
+              <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 pl-6">
+                <span className="shrink-0 text-[0.65rem] uppercase tracking-wide text-slate-400">
+                  Parts
+                </span>
+                {PRODUCT_PARTS.map((part) => {
+                  const chosen = column.parts?.length ? column.parts : PRODUCT_PARTS.map((p) => p.key);
+                  return (
+                    <CheckRow
+                      key={part.key}
+                      checked={chosen.includes(part.key)}
+                      label={part.name}
+                      onChange={(on) =>
+                        update(index, {
+                          // Kept in PRODUCT_PARTS order whatever order the boxes were ticked in.
+                          parts: PRODUCT_PARTS.map((p) => p.key).filter((key) =>
+                            key === part.key ? on : chosen.includes(key),
+                          ),
+                        })
+                      }
+                    />
+                  );
+                })}
+              </div>
+            ) : null}
           </li>
         ))}
       </ul>

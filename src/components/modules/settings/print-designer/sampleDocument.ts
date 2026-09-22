@@ -328,6 +328,9 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
     {
       sl: 1,
       product_name: 'Xiaomi Redmi Note 15 6/128GB Variant',
+      brand: 'Xiaomi',
+      category: 'Mobile',
+      group: 'Smartphone',
       qty: 1,
       price: 28000,
       amount: 28000,
@@ -337,6 +340,9 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
     {
       sl: 2,
       product_name: 'Sample Mobile Shop Service Charge (Stamp with Locker)',
+      brand: '',
+      category: 'Service',
+      group: '',
       qty: 1,
       price: 4520,
       amount: 4520,
@@ -379,6 +385,9 @@ export const PURCHASE_INVOICE_SAMPLE: DocumentData = {
     {
       sl: 1,
       product_name: 'Xiaomi Redmi Note 15 6/128GB Variant',
+      brand: 'Xiaomi',
+      category: 'Mobile',
+      group: 'Smartphone',
       qty: 3,
       price: 24000,
       amount: 72000,
@@ -388,6 +397,9 @@ export const PURCHASE_INVOICE_SAMPLE: DocumentData = {
     {
       sl: 2,
       product_name: 'Screen Guard (Pack of 10)',
+      brand: '',
+      category: 'Accessories',
+      group: '',
       qty: 2,
       price: 6000,
       amount: 12000,

@@ -196,6 +196,38 @@ export type TableColumn = {
   subField?: string;
   /** Draw the second line in brackets, the way a note under a name reads. */
   subInBrackets?: boolean;
+  /**
+   * For a COMPOSED column (product_flat / product_lines): which of the five
+   * product facts it prints, in PRODUCT_PARTS order. One shop wants Group and
+   * Name, the next Category, Name and Serial; a column that printed all five
+   * for everybody would be the wrong column for most of them.
+   *
+   * Absent means all five -- what a layout saved before this existed asked for.
+   */
+  parts?: string[];
+};
+
+/**
+ * The five facts that name a product on an invoice line, in the order they
+ * are printed: the broad thing first, the serial last, the way a label reads.
+ * Each is a line key the invoice adapters already fill.
+ */
+export const PRODUCT_PARTS: { key: string; name: string }[] = [
+  { key: 'brand', name: 'Brand' },
+  { key: 'category', name: 'Category' },
+  { key: 'group', name: 'Group' },
+  { key: 'product_name', name: 'Product Name' },
+  { key: 'serial_no', name: 'Serial No' },
+];
+
+/** A column the renderer builds from `parts` rather than reads from one key. */
+export const isComposedField = (key: string) => key === 'product_flat' || key === 'product_lines';
+
+/** The facts a composed column prints for one row, blanks dropped. */
+export const composedParts = (row: any, column: TableColumn): string[] | null => {
+  if (!isComposedField(column.field)) return null;
+  const keys = column.parts?.length ? column.parts : PRODUCT_PARTS.map((part) => part.key);
+  return keys.map((key) => String(row?.[key] ?? '').trim()).filter(Boolean);
 };
 
 export type SignatureItem = {
@@ -1013,6 +1045,12 @@ export const SALES_INVOICE_LINE_FIELDS: FieldDef[] = [
   { key: 'product_name', name: 'Product Name', group: 'line' },
   { key: 'category', name: 'Category', group: 'line' },
   { key: 'brand', name: 'Brand', group: 'line' },
+  { key: 'group', name: 'Group', group: 'line' },
+  // Any of brand, category, group, name and serial as ONE cell, two ways: run
+  // together on a line, or one under the other. Which of the five is the
+  // column's own `parts` -- see PRODUCT_PARTS and composedParts().
+  { key: 'product_flat', name: 'Product — one line (pick the parts)', group: 'line' },
+  { key: 'product_lines', name: 'Product — stacked (pick the parts)', group: 'line' },
   { key: 'description', name: 'Description', group: 'line' },
   { key: 'serial_no', name: 'Serial No', group: 'line' },
   // The second line under the product name -- see TableColumn.subField.
@@ -1067,6 +1105,9 @@ export const PURCHASE_INVOICE_LINE_FIELDS: FieldDef[] = [
   { key: 'product_name', name: 'Product Name', group: 'line' },
   { key: 'category', name: 'Category', group: 'line' },
   { key: 'brand', name: 'Brand', group: 'line' },
+  { key: 'group', name: 'Group', group: 'line' },
+  { key: 'product_flat', name: 'Product — one line (pick the parts)', group: 'line' },
+  { key: 'product_lines', name: 'Product — stacked (pick the parts)', group: 'line' },
   { key: 'description', name: 'Description', group: 'line' },
   { key: 'serial_no', name: 'Serial No', group: 'line' },
   { key: 'warranty', name: 'Warranty', group: 'line' },
@@ -3020,6 +3061,13 @@ const tableColumns = (value: any): TableColumn[] =>
       // no paper gains a second line it did not ask for.
       subField: typeof item.subField === 'string' && item.subField ? item.subField : undefined,
       subInBrackets: item.subInBrackets === true,
+      // Only the five known parts survive, in the fixed order; none chosen
+      // reads as all, so a column can never be saved into printing nothing.
+      parts: (() => {
+        const chosen = Array.isArray(item.parts) ? item.parts.map(String) : [];
+        const kept = PRODUCT_PARTS.map((part) => part.key).filter((key) => chosen.includes(key));
+        return kept.length ? kept : undefined;
+      })(),
     }));
 
 /**

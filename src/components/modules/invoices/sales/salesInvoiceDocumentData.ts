@@ -93,6 +93,7 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
       product_name: row?.product?.name || '',
       category: row?.product?.category?.name || '',
       brand: row?.product?.brand?.name || '',
+      group: row?.product?.group?.name || '',
       description: row?.product?.description || '',
       serial_no: row?.serial_no || '',
       warranty: getWarranty(row?.product?.warranty_days),
