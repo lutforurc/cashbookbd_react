@@ -741,9 +741,12 @@ const TradingDashboard = () => {
       )}
 
       {/* ------------------------------------------------------------ */}
-      <div
-        className={`grid grid-cols-1 items-start md:grid-cols-2 lg:grid-cols-4 ${gap}`}
-      >
+      {/* Every card in a row stands as tall as the tallest: the grid stretches
+          the cell and the card fills it. Each card is a flex column with its
+          foot on mt-auto, so the extra height opens between list and foot
+          rather than under the foot. The cards' own mb-4 is taken off here:
+          a full-height card plus a margin is taller than its cell. */}
+      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 ${gap}`}>
         {orderedWidgets
           .filter((widget) => isWidgetVisible(widget.id))
           .map((widget) => {
@@ -753,13 +756,12 @@ const TradingDashboard = () => {
               <div
                 key={widget.id}
                 className={
-                  widget.id === 'monthly-purchase-sales'
-                    ? 'min-w-0 col-span-full'
-                    : ['money-asleep', 'top-profit', 'top-sales', 'top-purchase'].includes(
-                          widget.id,
-                        )
-                      ? 'min-w-0 md:col-span-2'
-                      : 'min-w-0'
+                  'min-w-0 *:h-full *:mb-0 ' +
+                  (widget.id === 'monthly-purchase-sales'
+                    ? 'col-span-full'
+                    : widget.id === 'money-asleep'
+                      ? 'md:col-span-2'
+                      : '')
                 }
               >
                 {content}

@@ -197,39 +197,104 @@ export type TableColumn = {
   /** Draw the second line in brackets, the way a note under a name reads. */
   subInBrackets?: boolean;
   /**
-   * For a COMPOSED column (product_flat / product_lines): which of the five
-   * product facts it prints, IN THIS ORDER. One shop wants Group then Name,
-   * the next Name then Serial then Category; a column that printed all five
-   * in one fixed order for everybody would be the wrong column for most.
+   * For a COMPOSED column (product_flat / product_lines): HOW the product is
+   * written, as the tenant writes it -- "{brand} {product_name} [({code})]".
+   * Nobody can list in advance which of brand, group, category, name, code
+   * and serial a shop puts on its bill, in what order, with what between
+   * them, so the shop writes the sentence itself. See PRODUCT_TOKENS and
+   * composeProduct() for the two rules.
    *
-   * Absent means all five in PRODUCT_PARTS order -- what a layout saved
-   * before this existed asked for.
+   * On a stacked column each line of the pattern is one line of the cell.
+   * Absent means DEFAULT_PRODUCT_PATTERN -- what a layout saved before this
+   * existed asked for.
    */
-  parts?: string[];
+  pattern?: string;
 };
 
 /**
- * The five facts that name a product on an invoice line, in the order a
- * column prints them until the tenant reorders: the broad thing first, the
- * serial last. Each is a line key the invoice adapters already fill.
+ * The facts a product pattern may name, each a line key the invoice adapters
+ * fill. The order here is only the order of the buttons in the designer.
  */
-export const PRODUCT_PARTS: { key: string; name: string }[] = [
+export const PRODUCT_TOKENS: { key: string; name: string }[] = [
   { key: 'brand', name: 'Brand' },
   { key: 'category', name: 'Category' },
   { key: 'group', name: 'Group' },
   { key: 'product_name', name: 'Product Name' },
+  { key: 'code', name: 'Code' },
+  { key: 'description', name: 'Description' },
   { key: 'serial_no', name: 'Serial No' },
 ];
 
-/** A column the renderer builds from `parts` rather than reads from one key. */
-export const isComposedField = (key: string) => key === 'product_flat' || key === 'product_lines';
+/** All five naming facts, the broad thing first, one to a line. */
+export const DEFAULT_PRODUCT_PATTERN = '{brand}\n{category}\n{group}\n{product_name}\n{serial_no}';
 
-/** The facts a composed column prints for one row, blanks dropped. */
-export const composedParts = (row: any, column: TableColumn): string[] | null => {
-  if (!isComposedField(column.field)) return null;
-  const keys = column.parts?.length ? column.parts : PRODUCT_PARTS.map((part) => part.key);
-  return keys.map((key) => String(row?.[key] ?? '').trim()).filter(Boolean);
+/**
+ * A column the renderer builds from its pattern rather than reads from one
+ * key. The two product ones name the product's facts; `own_format` may name
+ * ANY line field -- "{qty} / {unit}", "{product_name} @ {price}" -- and is
+ * stacked wherever its pattern breaks a line.
+ */
+export const isComposedField = (key: string) =>
+  key === 'product_flat' || key === 'product_lines' || key === 'own_format';
+
+/**
+ * One line of a pattern, written out for one row.
+ *
+ * Two rules, and only two:
+ *   {key}      the row's value for that key, blank where it has none
+ *   [ ... ]    an OPTIONAL stretch: kept, brackets off, when any token inside
+ *              it has a value; dropped whole when none has -- so "[({code})]"
+ *              prints "(A-17)" or nothing, never "()", and "[ - {code}]" takes
+ *              its dash with it.
+ * What is left is trimmed and its runs of spaces closed up, so a token that
+ * came up blank in the middle of a line leaves no double space behind.
+ */
+export const resolvePattern = (
+  line: string,
+  row: any,
+  // How a token's raw value is written -- the renderer hands in one that
+  // separates thousands in a figure, so "{qty}" reads 1,500 and not 1500.
+  write: (key: string, raw: any) => string = (_key, raw) => String(raw ?? '').trim(),
+): string => {
+  const valueOf = (key: string) => write(key.trim(), row?.[key.trim()]).trim();
+
+  const optional = line.replace(/\[([^[\]]*)\]/g, (_match, inside: string) => {
+    const filled = [...inside.matchAll(/\{([^{}]+)\}/g)].some(([, key]) => valueOf(key) !== '');
+    return filled ? inside : '';
+  });
+
+  return optional
+    .replace(/\{([^{}]+)\}/g, (_match, key: string) => valueOf(key))
+    .replace(/\s+/g, ' ')
+    .trim();
 };
+
+/**
+ * The lines a composed column prints for one row, blank lines dropped: one
+ * per line of the pattern on a stacked column, all of them run together on a
+ * one-line column (the caller joins them).
+ */
+export const composeProduct = (
+  row: any,
+  column: TableColumn,
+  write?: (key: string, raw: any) => string,
+): string[] | null => {
+  if (!isComposedField(column.field)) return null;
+  const pattern = column.pattern?.trim()
+    ? column.pattern
+    : column.field === 'own_format'
+      ? '{qty} {unit}'
+      : DEFAULT_PRODUCT_PATTERN;
+  return pattern
+    .split('\n')
+    .map((line) => resolvePattern(line, row, write))
+    .filter(Boolean);
+};
+
+/** A composed column whose cell is a stack: the product one, or any pattern with a line break. */
+export const isStackedComposed = (column: TableColumn) =>
+  column.field === 'product_lines' ||
+  (column.field === 'own_format' && (column.pattern ?? '').includes('\n'));
 
 export type SignatureItem = {
   /** The line under the rule -- "Received By", "ড্রাইভারের স্বাক্ষর". */
@@ -1047,17 +1112,21 @@ export const SALES_INVOICE_LINE_FIELDS: FieldDef[] = [
   { key: 'category', name: 'Category', group: 'line' },
   { key: 'brand', name: 'Brand', group: 'line' },
   { key: 'group', name: 'Group', group: 'line' },
-  // Any of brand, category, group, name and serial as ONE cell, two ways: run
-  // together on a line, or one under the other. Which of the five is the
-  // column's own `parts` -- see PRODUCT_PARTS and composedParts().
-  { key: 'product_flat', name: 'Product — one line (pick the parts)', group: 'line' },
-  { key: 'product_lines', name: 'Product — stacked (pick the parts)', group: 'line' },
+  { key: 'code', name: 'Code', group: 'line' },
+  // The product written the tenant's own way -- "{brand} {product_name}
+  // [({code})]" -- as one line or as a stack. See TableColumn.pattern.
+  { key: 'product_flat', name: 'Product — one line (own format)', group: 'line' },
+  { key: 'product_lines', name: 'Product — stacked (own format)', group: 'line' },
+  // Any facts at all, the tenant's way: "{qty} / {unit}", "{product_name} @ {price}".
+  { key: 'own_format', name: 'Own format (any facts)', group: 'line' },
   { key: 'description', name: 'Description', group: 'line' },
   { key: 'serial_no', name: 'Serial No', group: 'line' },
   // The second line under the product name -- see TableColumn.subField.
   // "X day" the way the old component's getWarrantyInfo() read it.
   { key: 'warranty', name: 'Warranty', group: 'line' },
   { key: 'qty', name: 'Quantity', group: 'line', numeric: true },
+  { key: 'unit', name: 'Unit', group: 'line' },
+  { key: 'qty_unit', name: 'Quantity + Unit', group: 'line' },
   { key: 'price', name: 'Rate', group: 'line', numeric: true, format: 'money' },
   { key: 'amount', name: 'Amount', group: 'line', numeric: true, format: 'money' },
 ];
@@ -1107,12 +1176,16 @@ export const PURCHASE_INVOICE_LINE_FIELDS: FieldDef[] = [
   { key: 'category', name: 'Category', group: 'line' },
   { key: 'brand', name: 'Brand', group: 'line' },
   { key: 'group', name: 'Group', group: 'line' },
-  { key: 'product_flat', name: 'Product — one line (pick the parts)', group: 'line' },
-  { key: 'product_lines', name: 'Product — stacked (pick the parts)', group: 'line' },
+  { key: 'code', name: 'Code', group: 'line' },
+  { key: 'product_flat', name: 'Product — one line (own format)', group: 'line' },
+  { key: 'product_lines', name: 'Product — stacked (own format)', group: 'line' },
+  { key: 'own_format', name: 'Own format (any facts)', group: 'line' },
   { key: 'description', name: 'Description', group: 'line' },
   { key: 'serial_no', name: 'Serial No', group: 'line' },
   { key: 'warranty', name: 'Warranty', group: 'line' },
   { key: 'qty', name: 'Quantity', group: 'line', numeric: true },
+  { key: 'unit', name: 'Unit', group: 'line' },
+  { key: 'qty_unit', name: 'Quantity + Unit', group: 'line' },
   { key: 'price', name: 'Rate', group: 'line', numeric: true, format: 'money' },
   { key: 'amount', name: 'Amount', group: 'line', numeric: true, format: 'money' },
 ];
@@ -3062,14 +3135,14 @@ const tableColumns = (value: any): TableColumn[] =>
       // no paper gains a second line it did not ask for.
       subField: typeof item.subField === 'string' && item.subField ? item.subField : undefined,
       subInBrackets: item.subInBrackets === true,
-      // Only the five known parts survive, each once, IN THE SAVED ORDER --
-      // the order is the tenant's choice. None chosen reads as all, so a
-      // column can never be saved into printing nothing.
-      parts: (() => {
-        const known = PRODUCT_PARTS.map((part) => part.key);
-        const chosen = Array.isArray(item.parts) ? item.parts.map(String) : [];
-        const kept = chosen.filter((key, at) => known.includes(key) && chosen.indexOf(key) === at);
-        return kept.length ? kept : undefined;
+      // A layout saved in the day the column carried a `parts` list (2026-09-22)
+      // is read as the pattern that list meant: one token per line, in its
+      // order. Blank means the default, so a column can never be saved into
+      // printing nothing.
+      pattern: (() => {
+        if (typeof item.pattern === 'string' && item.pattern.trim()) return item.pattern;
+        const parts = Array.isArray(item.parts) ? item.parts.map(String).filter(Boolean) : [];
+        return parts.length ? parts.map((key) => `{${key}}`).join('\n') : undefined;
       })(),
     }));
 

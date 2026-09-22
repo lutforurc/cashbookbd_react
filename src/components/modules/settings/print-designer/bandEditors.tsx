@@ -22,7 +22,8 @@ import {
   fieldsFor,
   isNumericField,
   lineFieldsFor,
-  PRODUCT_PARTS,
+  DEFAULT_PRODUCT_PATTERN,
+  PRODUCT_TOKENS,
   isComposedField,
 } from '../../../utils/print-designer/printTemplate';
 
@@ -309,61 +310,85 @@ const MoveButtons: React.FC<{
 );
 
 /**
- * The parts of a composed product column, in the order they print.
+ * How a composed product column writes the product: the tenant's own
+ * sentence, with the facts as {tokens}.
  *
- * A list rather than checkboxes because the order is the point: "Group,
- * Name" and "Name, Group" are two different labels, and a row of ticks
- * cannot say which. Each part moves up or down or comes off; the ones not
- * in the list are offered back through the select at the end.
+ * A text box rather than a list of parts, because a list cannot say what
+ * goes BETWEEN them -- "Brand Product (Code)", "Code - Brand Product",
+ * "(Code) - Brand Product" are three different papers from the same three
+ * facts, and nobody can enumerate the fourth in advance. The buttons drop a
+ * token in at the cursor so the names need not be remembered; the [ ]
+ * rule is explained beside them, since it is the one thing that is not
+ * obvious from looking.
+ *
+ * Stacked: a textarea, one line of the pattern per line of the cell.
+ * One-line: a single box, the whole pattern on one line.
  */
-const ComposedParts: React.FC<{
-  parts: string[];
-  onChange: (parts: string[]) => void;
-}> = ({ parts, onChange }) => {
-  const nameOf = (key: string) => PRODUCT_PARTS.find((part) => part.key === key)?.name ?? key;
-  const left = PRODUCT_PARTS.filter((part) => !parts.includes(part.key));
-  const move = (from: number, to: number) => {
-    const next = [...parts];
-    next.splice(to, 0, next.splice(from, 1)[0]);
-    onChange(next);
+const ComposedPattern: React.FC<{
+  stacked: boolean;
+  pattern: string;
+  /** The facts the buttons offer -- the product's, or the paper's whole line catalogue. */
+  tokens: { key: string; name: string }[];
+  onChange: (pattern: string) => void;
+}> = ({ stacked, pattern, tokens, onChange }) => {
+  const boxRef = React.useRef<HTMLTextAreaElement & HTMLInputElement>(null);
+
+  const insert = (token: string) => {
+    const box = boxRef.current;
+    const at = box?.selectionStart ?? pattern.length;
+    const end = box?.selectionEnd ?? at;
+    onChange(pattern.slice(0, at) + token + pattern.slice(end));
+    // Back into the box, just after what was dropped in, so the next token
+    // lands after it rather than at the start.
+    requestAnimationFrame(() => {
+      box?.focus();
+      box?.setSelectionRange(at + token.length, at + token.length);
+    });
   };
+
+  const boxClass =
+    'w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1.5 py-0.5 font-mono text-xs outline-none dark:bg-boxdark';
 
   return (
     <div className="flex w-full flex-col gap-1 pl-6">
-      <span className="text-[0.65rem] uppercase tracking-wide text-slate-400">Parts, in order</span>
-      {parts.map((key, at) => (
-        <div key={key} className="flex items-center gap-1 text-xs">
-          <span className="w-28 truncate">{nameOf(key)}</span>
-          <MoveButtons index={at} count={parts.length} onMove={move} />
+      <span className="text-[0.65rem] uppercase tracking-wide text-slate-400">
+        Format{stacked ? ' — each line prints under the one before' : ''}
+      </span>
+      {stacked ? (
+        <Textarea
+          ref={boxRef as any}
+          value={pattern}
+          rows={Math.min(7, Math.max(2, pattern.split('\n').length))}
+          draggable={false}
+          onChange={(event) => onChange(event.target.value)}
+          className={boxClass}
+        />
+      ) : (
+        <Input
+          ref={boxRef as any}
+          value={pattern.replace(/\n/g, ' ')}
+          draggable={false}
+          onChange={(event) => onChange(event.target.value)}
+          className={boxClass}
+        />
+      )}
+      <div className="flex flex-wrap items-center gap-1">
+        {tokens.map((token) => (
           <Button
+            key={token.key}
             type="button"
             draggable={false}
-            title="Remove this part"
-            // The last part stays: an empty list would print all five again,
-            // which is not what removing the last one looks like it does.
-            disabled={parts.length === 1}
-            onClick={() => onChange(parts.filter((part) => part !== key))}
-            className="rounded p-1 text-danger hover:bg-gray-100 disabled:opacity-30 dark:hover:bg-meta-4"
+            title={`{${token.key}}`}
+            onClick={() => insert(`{${token.key}}`)}
+            className="rounded border border-[rgb(var(--c-border))] px-1.5 py-0.5 text-[0.65rem] hover:bg-gray-100 dark:hover:bg-meta-4"
           >
-            <FiTrash2 />
+            {token.name}
           </Button>
-        </div>
-      ))}
-      {left.length ? (
-        <Select
-          value=""
-          draggable={false}
-          onChange={(event) => event.target.value && onChange([...parts, event.target.value])}
-          className="w-40 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1 py-0.5 text-xs outline-none dark:bg-boxdark"
-        >
-          <option value="">Add a part…</option>
-          {left.map((part) => (
-            <option key={part.key} value={part.key}>
-              {part.name}
-            </option>
-          ))}
-        </Select>
-      ) : null}
+        ))}
+      </div>
+      <span className="text-[0.65rem] text-slate-400">
+        Anything in [ ] prints only when a token inside it has a value: [({'{code}'})] gives (A-17) or nothing.
+      </span>
     </div>
   );
 };
@@ -799,15 +824,29 @@ export const TableBandEditor: React.FC<{
               ) : null}
             </div>
 
-            {/* WHICH of the five product facts a composed column prints, and
-                IN WHAT ORDER: the list is the order, top to bottom on a
-                stacked column and left to right on a one-line one. Nothing
-                chosen reads as all five -- see tableColumns() -- so the list
-                shows that rather than standing empty. */}
+            {/* HOW a composed column writes the product. Blank reads as the
+                default -- see tableColumns() -- so the box shows that rather
+                than standing empty; a one-line column shows it on one line. */}
             {isComposedField(column.field) ? (
-              <ComposedParts
-                parts={column.parts?.length ? column.parts : PRODUCT_PARTS.map((p) => p.key)}
-                onChange={(parts) => update(index, { parts })}
+              <ComposedPattern
+                // own_format takes the textarea too: a line break in it is
+                // what makes the cell a stack.
+                stacked={column.field !== 'product_flat'}
+                pattern={
+                  column.pattern?.trim()
+                    ? column.pattern
+                    : column.field === 'own_format'
+                      ? '{qty} {unit}'
+                      : column.field === 'product_lines'
+                        ? DEFAULT_PRODUCT_PATTERN
+                        : DEFAULT_PRODUCT_PATTERN.replace(/\n/g, ' ')
+                }
+                tokens={
+                  column.field === 'own_format'
+                    ? lineFieldsFor(docType).filter((entry) => entry.key !== 'sl' && !isComposedField(entry.key))
+                    : PRODUCT_TOKENS
+                }
+                onChange={(pattern) => update(index, { pattern })}
               />
             ) : null}
           </li>

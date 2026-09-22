@@ -25,7 +25,8 @@ import {
   TitleBand,
   TotalsBand,
   Valign,
-  composedParts,
+  composeProduct,
+  isStackedComposed,
   fieldFormat,
   fieldName,
   isNumericField,
@@ -1191,13 +1192,18 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                   // markings survive both.
                   const marked = column.field === 'price' && offRate(row);
 
-                  // A column BUILT from the row's product facts, as the
-                  // column's own `parts` say -- one line of them or a stack.
-                  const composed = composedParts(row, column);
+                  // A column WRITTEN from the row's product facts the way the
+                  // column's own pattern says -- one line of them or a stack.
+                  // A figure token is written as the column of that name
+                  // would write it -- thousands separated -- and any other
+                  // token as its text.
+                  const composed = composeProduct(row, column, (key, raw) =>
+                    isNumericLineField(key) && !blank(raw) ? thousandSeparator(num(raw)) : String(raw ?? ''),
+                  );
 
                   // A column of lines, on a ledger -- see `lines` above.
                   const stacked =
-                    composed && column.field === 'product_lines' ? composed : lines(row, column.field);
+                    composed && isStackedComposed(column) ? composed : lines(row, column.field);
 
                   return (
                     <td
