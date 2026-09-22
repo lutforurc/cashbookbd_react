@@ -230,11 +230,13 @@ const VoucherRegister = ({ user }: any) => {
           right('sales_qty', 'Total Sales Qty', (row) => money(row.sales_qty), 'w-36'),
         ]
       : []),
-    right('amount', 'Total Amount', (row) => money(row.amount), 'w-40'),
     // The cash that moved with the month's vouchers, the Cash Book's own
     // reading: the cash head's debit in, its credit out.
     right('received', 'Total Received', (row) => money(row.received), 'w-36'),
     right('payment', 'Total Payment', (row) => money(row.payment), 'w-36'),
+    // The vouchers' own value -- the invoice on a sale, not invoice plus the
+    // cash taken against it. See VoucherRegister::moneyPerVoucher.
+    right('amount', 'Total Amount', (row) => money(row.amount), 'w-40'),
     right('cancelled', '(cancelled)', (row) => count(row.cancelled)),
   ];
 
