@@ -33,6 +33,7 @@ import {
   useViewBranch,
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
+import BranchRollCallCard from './BranchRollCallCard';
 // money(), count(), share(), CARD, CARD_HEAD and Tile moved to the shared kit so
 // the trading dashboard cannot drift away from this one on how a taka is
 // written. Nothing here changed but where they are read from.
@@ -78,6 +79,8 @@ import { CARD, CARD_HEAD, CardTitle, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count
  * saved before this change still reads.
  */
 const REAL_ESTATE_DASHBOARD_WIDGETS: DashboardWidget[] = [
+  // Head office only -- filtered out for everyone else below.
+  { id: 'all-branches', title: 'All Branches' },
   { id: 'sales-booked', title: 'Booked Value' },
   { id: 'sales-received', title: 'Received' },
   { id: 'sales-outstanding', title: 'Outstanding' },
@@ -129,7 +132,7 @@ const RealEstateDashboard = () => {
     reset,
   } = useDashboardCustomization(
     `cashbook-real-estate-dashboard:${me?.id || 'user'}:${branchId || 'branch'}`,
-    REAL_ESTATE_DASHBOARD_WIDGETS,
+    REAL_ESTATE_DASHBOARD_WIDGETS.filter((w) => w.id !== 'all-branches' || view.isHeadOffice),
     {
       dashboardKey: 'real-estate',
       branchId,
@@ -607,6 +610,12 @@ const RealEstateDashboard = () => {
             </div>
           </div>
         ) : null;
+      case 'all-branches':
+        return isWidgetVisible('all-branches') ? (
+          <div className="mb-4">
+            <BranchRollCallCard tick={tick} rowClass={rowClass} />
+          </div>
+        ) : null;
       case 'balance-range':
         return isWidgetVisible('balance-range') ? (
           <RangeCashCard cash={cash} rowClass={rowClass} href={links.cashBook} />
@@ -663,7 +672,9 @@ const RealEstateDashboard = () => {
                 key={widget.id}
                 className={
                   'min-w-0 *:h-full *:mb-0 ' +
-                  (['projects', 'collection', 'installments', 'balance'].includes(widget.id)
+                  widget.id === 'all-branches'
+                    ? 'col-span-full'
+                    : (['projects', 'collection', 'installments', 'balance'].includes(widget.id)
                     ? 'xl:col-span-2'
                     : '')
                 }

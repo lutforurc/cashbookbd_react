@@ -27,6 +27,7 @@ import KpiRow, { KpiHeading, TRADING_TILES } from './KpiRow';
 import DueAgingCard from './DueAgingCard';
 import BalanceSummaryCard from './BalanceSummaryCard';
 import RangeCashCard from './RangeCashCard';
+import BranchRollCallCard from './BranchRollCallCard';
 import MonthlyPurchaseSalesChart from './MonthlyPurchaseSalesChart';
 import DailySalesChart from './DailySalesChart';
 import DailyPurchaseChart from './DailyPurchaseChart';
@@ -89,6 +90,8 @@ import { CARD, CARD_HEAD, CardTitle, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count
  * godown's door. Everything else in the id is only the gate's name.
  */
 const TRADING_DASHBOARD_WIDGETS: DashboardWidget[] = [
+  // Head office only -- filtered out for everyone else below.
+  { id: 'all-branches', title: 'All Branches' },
   { id: 'kpi-sales', title: 'Today Sales' },
   { id: 'kpi-purchase', title: 'Today Purchase' },
   { id: 'kpi-received', title: 'Today Received' },
@@ -182,7 +185,9 @@ const TradingDashboard = () => {
         !(id === band || id.startsWith(`${band}-`)) ||
         hasPermission(permissions, permission),
     );
-  const widgets = TRADING_DASHBOARD_WIDGETS.filter((w) => isPermitted(w.id));
+  const widgets = TRADING_DASHBOARD_WIDGETS.filter(
+    (w) => isPermitted(w.id) && (w.id !== 'all-branches' || view.isHeadOffice),
+  );
 
   const [payload, setPayload] = useState<any>(null);
   /**
@@ -721,6 +726,12 @@ const TradingDashboard = () => {
           Number(payload?.top_purchase_days) || 1,
           links.purchaseLedger,
         );
+      case 'all-branches':
+        return isWidgetVisible('all-branches') ? (
+          <div className="mb-4">
+            <BranchRollCallCard tick={tick} rowClass={rowClass} />
+          </div>
+        ) : null;
       case 'daily-sales':
         return isWidgetVisible('daily-sales') ? (
           <div className="mb-4">
@@ -798,7 +809,7 @@ const TradingDashboard = () => {
                 key={widget.id}
                 className={
                   'min-w-0 *:h-full *:mb-0 ' +
-                  (['daily-sales', 'daily-purchase', 'monthly-purchase-sales'].includes(widget.id)
+                  (['all-branches', 'daily-sales', 'daily-purchase', 'monthly-purchase-sales'].includes(widget.id)
                     ? 'col-span-full'
                     : widget.id === 'money-asleep'
                       ? // Two cards wide only where there are surely two columns

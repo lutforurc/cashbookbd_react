@@ -28,6 +28,7 @@ import {
 } from './dashboardRange';
 import { CardTitle, DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
 import RangeCashCard from './RangeCashCard';
+import BranchRollCallCard from './BranchRollCallCard';
 
 /*
  * ⚠️ ONE ITEM PER TILE, NOT ONE PER ROW. The four KPI tiles sit in one band, and
@@ -37,6 +38,8 @@ import RangeCashCard from './RangeCashCard';
  * DEFAULT_TILES.
  */
 const NORMAL_DASHBOARD_WIDGETS: DashboardWidget[] = [
+  // Head office only -- filtered out for everyone else below.
+  { id: 'all-branches', title: 'All Branches' },
   { id: 'kpi-sales', title: 'Today Sales' },
   { id: 'kpi-purchase', title: 'Today Purchase' },
   { id: 'kpi-newCustomers', title: 'New Customers' },
@@ -107,7 +110,7 @@ const ComputerAccessories = () => {
     reset,
   } = useDashboardCustomization(
     `cashbook-normal-dashboard:${me?.id || 'user'}:${branchId || 'branch'}`,
-    NORMAL_DASHBOARD_WIDGETS,
+    NORMAL_DASHBOARD_WIDGETS.filter((w) => w.id !== 'all-branches' || view.isHeadOffice),
     {
       dashboardKey: 'normal',
       branchId,
@@ -178,6 +181,13 @@ const ComputerAccessories = () => {
         {visibleWidgets.map((widget) => {
             const tile = DEFAULT_TILES.find(tile => widget.id === `kpi-${tile.key}`);
             if (tile) return <KpiRow key={widget.id} embedded kpis={summaryData?.kpis} isLoading={summary?.isLoading} tiles={[tile]} />;
+            if (widget.id === 'all-branches') {
+              return (
+                <div className="col-span-full min-w-0" key={widget.id}>
+                  <BranchRollCallCard tick={tick} rowClass={listRowClass} />
+                </div>
+              );
+            }
             if (widget.id === 'summary') {
               return <BalanceSummaryCard key={widget.id} rowClass={cardRowClass} href={links.cashBook} />;
             }

@@ -36,6 +36,7 @@ import {
   useViewBranch,
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
+import BranchRollCallCard from './BranchRollCallCard';
 import { CardTitle, DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
 
 /**
@@ -77,6 +78,8 @@ import { CardTitle, DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
  * rest keep their band name as their id, so only the two tile rows change.
  */
 const HOTEL_DASHBOARD_WIDGETS: DashboardWidget[] = [
+  // Head office only -- filtered out for everyone else below.
+  { id: 'all-branches', title: 'All Branches' },
   { id: 'tonight-inhouse', title: 'In the Building' },
   { id: 'tonight-arrivals', title: 'Arriving' },
   { id: 'tonight-departures', title: 'Leaving' },
@@ -209,7 +212,7 @@ const HotelDashboard = () => {
     reset,
   } = useDashboardCustomization(
     `cashbook-hotel-dashboard:${me?.id || 'user'}:${branchId || 'branch'}`,
-    HOTEL_DASHBOARD_WIDGETS,
+    HOTEL_DASHBOARD_WIDGETS.filter((w) => w.id !== 'all-branches' || view.isHeadOffice),
     {
       dashboardKey: 'hotel',
       branchId,
@@ -680,6 +683,12 @@ const HotelDashboard = () => {
             </div>
           </div>
         ) : null;
+      case 'all-branches':
+        return isWidgetVisible('all-branches') ? (
+          <div className="mb-4">
+            <BranchRollCallCard tick={tick} rowClass={rowClass} />
+          </div>
+        ) : null;
       case 'balance-range':
         return isWidgetVisible('balance-range') ? (
           <RangeCashCard cash={cash} rowClass={rowClass} href={links.cashBook} />
@@ -736,7 +745,9 @@ const HotelDashboard = () => {
                 key={widget.id}
                 className={
                   'min-w-0 *:h-full *:mb-0 ' +
-                  (['nights', 'room-types', 'takings', 'balance'].includes(widget.id)
+                  widget.id === 'all-branches'
+                    ? 'col-span-full'
+                    : (['nights', 'room-types', 'takings', 'balance'].includes(widget.id)
                     ? 'xl:col-span-2'
                     : '')
                 }

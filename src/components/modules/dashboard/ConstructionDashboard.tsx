@@ -49,6 +49,7 @@ import {
   useViewBranch,
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
+import BranchRollCallCard from './BranchRollCallCard';
 import { CardTitle, DASHBOARD_FADE } from './dashboardKit';
 import { Button } from '../../../pages/UiElements/CustomButtons';
 
@@ -61,6 +62,8 @@ import { Button } from '../../../pages/UiElements/CustomButtons';
  * panel and the row cannot drift apart. Everything else keeps the id it had.
  */
 const CONSTRUCTION_DASHBOARD_WIDGETS: DashboardWidget[] = [
+  // Head office only -- filtered out for everyone else below.
+  { id: 'all-branches', title: 'All Branches' },
   { id: 'kpi-purchase', title: 'Today Purchase' },
   { id: 'kpi-vouchers', title: 'Today Vouchers' },
   { id: 'summary', title: 'Balance Summary' },
@@ -139,7 +142,7 @@ const ConstructionDashboard = () => {
     reset,
   } = useDashboardCustomization(
     `cashbook-construction-dashboard:${me?.id || 'user'}:${viewBranchId || 'branch'}`,
-    CONSTRUCTION_DASHBOARD_WIDGETS,
+    CONSTRUCTION_DASHBOARD_WIDGETS.filter((w) => w.id !== 'all-branches' || view.isHeadOffice),
     {
       dashboardKey: 'construction',
       branchId: viewBranchId,
@@ -338,6 +341,11 @@ const ConstructionDashboard = () => {
         aria-busy={dashboard.isLoading}
         className={`mt-4 ${DASHBOARD_COLUMNS} items-start ${dashboardGapClass} ${DASHBOARD_FADE} ${dashboard.isLoading ? 'opacity-60' : ''}`}
       >
+        {isWidgetVisible('all-branches') ? (
+          <div className="col-span-full min-w-0" style={{ order: widgetOrder('all-branches') }}>
+            <BranchRollCallCard tick={tick} rowClass={listRowClass} />
+          </div>
+        ) : null}
         {orderedWidgets.filter(widget => isWidgetVisible(widget.id)).map(widget => {
           const tile = CONSTRUCTION_TILES.find(tile => widget.id === `kpi-${tile.key}`);
           if (!tile) return null;
