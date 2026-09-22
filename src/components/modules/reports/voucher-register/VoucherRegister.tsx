@@ -183,12 +183,20 @@ const VoucherRegister = ({ user }: any) => {
 
   const months: any[] = report?.months ?? [];
 
-  // A cash register has no quantities; the column only appears when one
+  // A cash register has no quantities; the qty columns only appear when one
   // month moved stock.
-  const hasQty = months.some((m: any) => Number(m.qty));
+  const hasQty = months.some((m: any) => Number(m.purchase_qty) || Number(m.sales_qty));
 
   const count = (n: any) => (Number(n) ? String(n) : '');
   const money = (n: any) => (Number(n) ? thousandSeparator(Number(n)) : '');
+
+  const right = (key: string, header: string, cell: (row: any) => any, width = 'w-32') => ({
+    key,
+    header,
+    headerClass: 'text-right',
+    cellClass: `${width} text-right`,
+    render: cell,
+  });
 
   const columns = [
     {
@@ -206,38 +214,15 @@ const VoucherRegister = ({ user }: any) => {
         </span>
       ),
     },
-    {
-      key: 'total',
-      header: 'Total Vouchers',
-      headerClass: 'text-right',
-      cellClass: 'w-40 text-right',
-      render: (row: any) => count(row.total),
-    },
-    {
-      key: 'cancelled',
-      header: '(cancelled)',
-      headerClass: 'text-right',
-      cellClass: 'w-32 text-right',
-      render: (row: any) => count(row.cancelled),
-    },
-    {
-      key: 'amount',
-      header: 'Total Amount',
-      headerClass: 'text-right',
-      cellClass: 'w-40 text-right',
-      render: (row: any) => money(row.amount),
-    },
+    right('total', 'Total Vouchers', (row) => count(row.total), 'w-36'),
     ...(hasQty
       ? [
-          {
-            key: 'qty',
-            header: 'Total Qty',
-            headerClass: 'text-right',
-            cellClass: 'w-32 text-right',
-            render: (row: any) => money(row.qty),
-          },
+          right('purchase_qty', 'Total Purchase Qty', (row) => money(row.purchase_qty), 'w-40'),
+          right('sales_qty', 'Total Sales Qty', (row) => money(row.sales_qty), 'w-36'),
         ]
       : []),
+    right('amount', 'Total Amount', (row) => money(row.amount), 'w-40'),
+    right('cancelled', '(cancelled)', (row) => count(row.cancelled)),
   ];
 
   const voucherColumns = [
@@ -294,14 +279,8 @@ const VoucherRegister = ({ user }: any) => {
             colSpan: columns.length,
           },
         ],
-        [
-          { label: 'Sl No.' },
-          { label: 'Particulars' },
-          { label: 'Total Vouchers', className: 'text-right' },
-          { label: '(cancelled)', className: 'text-right' },
-          { label: 'Total Amount', className: 'text-right' },
-          ...(hasQty ? [{ label: 'Total Qty', className: 'text-right' }] : []),
-        ],
+        // The column headings, in the columns' own order.
+        columns.map((c) => ({ label: c.header, className: c.headerClass })),
       ]
     : [];
 
@@ -309,10 +288,11 @@ const VoucherRegister = ({ user }: any) => {
     ? [
         [
           { label: 'Total', className: 'text-right font-semibold', colSpan: 2 },
-          { label: count(report.grand?.total), className: 'text-right font-semibold' },
-          { label: count(report.grand?.cancelled), className: 'text-right font-semibold' },
-          { label: money(report.grand?.amount), className: 'text-right font-semibold' },
-          ...(hasQty ? [{ label: money(report.grand?.qty), className: 'text-right font-semibold' }] : []),
+          // One cell per counted column, in the columns' own order.
+          ...columns.slice(2).map((c) => ({
+            label: c.render(report.grand ?? {}),
+            className: 'text-right font-semibold',
+          })),
         ],
       ]
     : [];
