@@ -231,6 +231,10 @@ const VoucherRegister = ({ user }: any) => {
         ]
       : []),
     right('amount', 'Total Amount', (row) => money(row.amount), 'w-40'),
+    // The cash that moved with the month's vouchers, the Cash Book's own
+    // reading: the cash head's debit in, its credit out.
+    right('received', 'Total Received', (row) => money(row.received), 'w-36'),
+    right('payment', 'Total Payment', (row) => money(row.payment), 'w-36'),
     right('cancelled', '(cancelled)', (row) => count(row.cancelled)),
   ];
 

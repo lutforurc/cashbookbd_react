@@ -14,6 +14,9 @@ export type ReportQuery = {
   from: Date | null;
   to: Date | null;
   branch: number | null;
+  /** The product a product-wise report was opened on, and what to call it in the box. */
+  product: number | null;
+  productName: string;
   /** True where the address bar carried a date at all -- the signal to run. */
   asked: boolean;
 };
@@ -31,6 +34,8 @@ export const useReportQuery = (): ReportQuery => {
     from,
     to,
     branch: Number(params.get('branch')) || null,
+    product: Number(params.get('product')) || null,
+    productName: params.get('product_name') ?? '',
     asked: Boolean(from || to),
   };
 };
@@ -38,12 +43,20 @@ export const useReportQuery = (): ReportQuery => {
 /** The address a card links to: the report, with the dates and branch it was showing. */
 export const reportUrl = (
   path: string,
-  query: { from?: string | null; to?: string | null; branch?: number | string | null },
+  query: {
+    from?: string | null;
+    to?: string | null;
+    branch?: number | string | null;
+    product?: number | string | null;
+    productName?: string | null;
+  },
 ) => {
   const params = new URLSearchParams();
   if (query.from) params.set('from', query.from);
   if (query.to) params.set('to', query.to);
   if (query.branch) params.set('branch', String(query.branch));
+  if (query.product) params.set('product', String(query.product));
+  if (query.productName) params.set('product_name', query.productName);
   const text = params.toString();
   return text ? `${path}?${text}` : path;
 };

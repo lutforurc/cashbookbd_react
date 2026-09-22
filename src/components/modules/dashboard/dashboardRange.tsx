@@ -276,6 +276,9 @@ export const reportLinks = (branchId: number | string | null | undefined, from: 
   dueList: reportUrl(ROUTES.report_due_list, { to, branch: branchId }),
   salesLedger: reportUrl(ROUTES.sales_ledger, { from, to, branch: branchId }),
   purchaseLedger: reportUrl(ROUTES.purchase_ledger, { from, to, branch: branchId }),
+  /** One product's own ledger -- a row of a top-products list. */
+  productLedger: (product: number | string | null | undefined, name?: string | null) =>
+    reportUrl(ROUTES.product_ledger_data, { from, to, branch: branchId, product, productName: name }),
 });
 
 /** "1 Sep 2026 to 22 Sep 2026 · updated 11:32 AM", for a page's subtitle. */

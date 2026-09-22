@@ -51,6 +51,7 @@ import {
 import RangeCashCard from './RangeCashCard';
 import BranchRollCallCard from './BranchRollCallCard';
 import { CardTitle, DASHBOARD_FADE } from './dashboardKit';
+import { Link } from 'react-router-dom';
 import { Button } from '../../../pages/UiElements/CustomButtons';
 
 /*
@@ -544,11 +545,13 @@ const ConstructionDashboard = () => {
                             <span className="text-sm font-medium tabular-nums text-sky-500/70 dark:text-sky-300/60">
                               {String(index + 1).padStart(2, '0')}
                             </span>
-                            <span
-                              className={`min-w-0 flex-1 truncate font-bold text-slate-700 dark:text-slate-100 ${fontClass}`}
+                            <Link
+                              to={links.productLedger(item.product_id, item.name)}
+                              title="Open this product's ledger"
+                              className={`min-w-0 flex-1 truncate font-bold text-slate-700 hover:underline dark:text-slate-100 ${fontClass}`}
                             >
                               {item.name}
-                            </span>
+                            </Link>
                             <span
                               className={`shrink-0 text-right font-bold tabular-nums text-yellow-500 dark:text-yellow-300 ${fontClass}`}
                             >

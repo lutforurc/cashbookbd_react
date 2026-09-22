@@ -14,6 +14,7 @@ import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import Table from '../../../utils/others/Table';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
+import { useReportQuery } from '../../../utils/hooks/useReportQuery';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import ProductLedgerDataPrint from './ProductLedgerDataPrint';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
@@ -107,6 +108,9 @@ const ProductLedgerData = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  // What the address bar asked for, and whether it has been answered once.
+  const query = useReportQuery();
+  const answered = useRef(false);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
@@ -125,6 +129,22 @@ const ProductLedgerData = (user: any) => {
       const [day, month, year] = protectedData.transactionDate.split('/');
       setStartDate(new Date(Number(year), Number(month) - 1, 1));
       setEndDate(new Date(Number(year), Number(month) - 1, Number(day)));
+    }
+
+    // The address bar wins: a dashboard's top-products row links here with
+    // the product, range and branch it was showing, and the ledger runs
+    // itself on them rather than opening on an empty product box.
+    if (query.asked && query.product && !answered.current) {
+      answered.current = true;
+      const branch = query.branch ?? Number(user?.user?.branch_id) ?? null;
+      const from = query.from ?? query.to ?? startDate;
+      const to = query.to ?? from;
+      setBranchId(branch);
+      setLedgerId(query.product);
+      setSelectedLedgerOption({ value: query.product, label: query.productName || `#${query.product}` });
+      setStartDate(from);
+      setEndDate(to);
+      void run(branch, query.product, from, to);
     }
   }, [branchDdlData?.protectedData]);
 
@@ -192,8 +212,15 @@ const ProductLedgerData = (user: any) => {
 
   const selectedProductName = selectedLedgerOption?.label?.trim() || '';
 
-  const runReport = async () => {
-    if (!branchId || !ledgerId || !startDate || !endDate) {
+  // Taken as arguments rather than read from state, so the address-bar run
+  // above can ask with the values it has only just asked React to set.
+  const run = async (
+    branch: number | null,
+    ledger: number | null,
+    start: Date | null,
+    end: Date | null,
+  ) => {
+    if (!branch || !ledger || !start || !end) {
       setError('Please select branch, item / product and date range.');
       return;
     }
@@ -202,10 +229,10 @@ const ProductLedgerData = (user: any) => {
     setError('');
 
     try {
-      const startDateValue = encodeURIComponent(dayjs(startDate).format('DD/MM/YYYY'));
-      const endDateValue = encodeURIComponent(dayjs(endDate).format('DD/MM/YYYY'));
+      const startDateValue = encodeURIComponent(dayjs(start).format('DD/MM/YYYY'));
+      const endDateValue = encodeURIComponent(dayjs(end).format('DD/MM/YYYY'));
       const response = await httpService.get(
-        `${API_REPORT_PRODUCT_LEDGER_DATA_URL}?branch_id=${branchId}&ledger_id=${ledgerId}&startdate=${startDateValue}&enddate=${endDateValue}`,
+        `${API_REPORT_PRODUCT_LEDGER_DATA_URL}?branch_id=${branch}&ledger_id=${ledger}&startdate=${startDateValue}&enddate=${endDateValue}`,
       );
 
       const payload = response?.data;
@@ -226,6 +253,8 @@ const ProductLedgerData = (user: any) => {
       setButtonLoading(false);
     }
   };
+
+  const runReport = () => run(branchId, ledgerId, startDate, endDate);
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,

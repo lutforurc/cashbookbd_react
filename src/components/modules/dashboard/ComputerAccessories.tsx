@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDashboard, getDashboardSummary } from './dashboardSlice';
 import KpiRow, { KpiHeading, DEFAULT_TILES } from './KpiRow';
@@ -285,12 +286,13 @@ const ComputerAccessories = () => {
                               <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
                                 {String(index + 1).padStart(2, '0')}
                               </span>
-                              <span
-                                className={`min-w-0 truncate font-semibold ${fontClass}`}
-                                title={item.name}
+                              <Link
+                                to={links.productLedger(item.product_id, item.name)}
+                                className={`min-w-0 truncate font-semibold hover:underline ${fontClass}`}
+                                title="Open this product's ledger"
                               >
                                 {item.name}
-                              </span>
+                              </Link>
                               <span className={`text-right font-bold tabular-nums text-sky-600 dark:text-sky-300 ${fontClass}`}>
                                 {thousandSeparator(Number(item.qty))}
                               </span>
@@ -369,12 +371,13 @@ const ComputerAccessories = () => {
                               <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
                                 {String(index + 1).padStart(2, '0')}
                               </span>
-                              <span
-                                className={`min-w-0 truncate font-semibold ${fontClass}`}
-                                title={item.name}
+                              <Link
+                                to={links.productLedger(item.product_id, item.name)}
+                                className={`min-w-0 truncate font-semibold hover:underline ${fontClass}`}
+                                title="Open this product's ledger"
                               >
                                 {item.name}
-                              </span>
+                              </Link>
                               <span className={`text-right font-bold tabular-nums text-amber-600 dark:text-amber-300 ${fontClass}`}>
                                 {thousandSeparator(Number(item.qty))}
                               </span>

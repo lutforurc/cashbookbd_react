@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import {
   FaBalanceScale,
   FaBoxes,
@@ -345,9 +346,14 @@ const TradingDashboard = () => {
               <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
                 {String(index + 1).padStart(2, '0')}
               </span>
-              <p className="min-w-0 truncate font-semibold text-slate-700 dark:text-slate-100">
+              {/* The product's own ledger, on this branch and range. */}
+              <Link
+                to={links.productLedger(row.id, row.name)}
+                title="Open this product's ledger"
+                className="min-w-0 truncate font-semibold text-slate-700 hover:underline dark:text-slate-100"
+              >
                 {row.name}
-              </p>
+              </Link>
               <span className="shrink-0 whitespace-nowrap text-right text-[11px] tabular-nums text-slate-400">
                 {Number(row.qty ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}{' '}
                 {verb}
@@ -651,9 +657,13 @@ const TradingDashboard = () => {
                     {String(index + 1).padStart(2, '0')}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-slate-700 dark:text-slate-100">
+                    <Link
+                      to={links.productLedger(row.id, row.name)}
+                      title="Open this product's ledger"
+                      className="block truncate font-semibold text-slate-700 hover:underline dark:text-slate-100"
+                    >
                       {row.name}
-                    </p>
+                    </Link>
                     <p className="truncate text-[11px] text-slate-400">
                       {money(row.sales)} sold · {money(row.cogs)} cost
                     </p>
