@@ -166,9 +166,11 @@ const dashboardReducer = (state = dashboardData, action: any) => {
         summary: { ...state.summary, isLoading: false, errors: action.payload },
       };
     case DASHBOARD_DATA_PENDING:
+      // The figures already on screen stay there until the new ones land.
+      // Wiping them here made every card vanish and reappear on each refresh
+      // and branch change -- the "jump" -- for nothing anyone could read.
       return {
         ...state,
-        data: {},
         errors: null,
         isLoading: true,
       };

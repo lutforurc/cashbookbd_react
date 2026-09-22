@@ -35,7 +35,7 @@ import {
   useViewBranch,
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
-import { DASHBOARD_GRID } from './dashboardKit';
+import { DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
 
 /**
  * The dashboard a hotel opens the morning on.
@@ -230,10 +230,14 @@ const HotelDashboard = () => {
     dispatch(getDashboard(branchId));
   }, [dispatch, tick, branchId]);
 
+  // A read in flight: the cards stay up and dim until the performance lands.
+  const [busy, setBusy] = useState(false);
+
   useEffect(() => {
     if (!branchId) return;
 
     let alive = true;
+    setBusy(true);
 
     const today = asText(new Date());
     const { from: monthStart, to: rangeEnd } = range;
@@ -256,6 +260,8 @@ const HotelDashboard = () => {
         })
         .catch(() => {
           // Silence is the behaviour, not a swallowed bug — see the header.
+          // But the dimming lifts: a page left at 60% would read as still loading.
+          if (alive) setBusy(false);
         });
 
     settle(
@@ -264,6 +270,7 @@ const HotelDashboard = () => {
       }),
       (payload) => {
         setRun(payload);
+        setBusy(false);
         markRefreshed();
       },
     );
@@ -695,7 +702,7 @@ const HotelDashboard = () => {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <DashboardRangeBar range={range} view={view} onRefresh={refresh} busy={!run} />
+          <DashboardRangeBar range={range} view={view} onRefresh={refresh} busy={busy} />
           <DashboardCustomizeButton
             density={density}
             widgets={orderedWidgets}
@@ -715,7 +722,7 @@ const HotelDashboard = () => {
           Every card in a row stands as tall as the tallest; the cards' own
           mb-4 is taken off. The wide cards span two columns only from xl,
           where there are surely two to span. */}
-      <div className={`${DASHBOARD_GRID} ${gap}`}>
+      <div className={`${DASHBOARD_GRID} ${gap} ${DASHBOARD_FADE} ${busy ? 'opacity-60' : ''}`}>
         {orderedWidgets
           .filter((widget) => isWidgetVisible(widget.id))
           .map((widget) => {

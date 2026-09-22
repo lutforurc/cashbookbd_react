@@ -14,22 +14,24 @@ interface ChartData {
   series: { name: string; data: number[] }[];
 }
 
-const TransactionChart: React.FC = () => {
+// `branchId` is the branch the dashboard is about -- a head office looking at
+// a site; left out, the server draws the caller's own.
+const TransactionChart: React.FC<{ branchId?: number | string | null }> = ({ branchId }) => {
   const charts = useSelector((state) => state.charts);
   const currentBranch = useSelector((state) => state.branchList);
   const dispatch = useDispatch();
   const [colorMode, setColorMode] = useLocalStorage('color-theme', 'light');
   const [titleColor, setTitleColor] = useState(readToken('chart-text'));
-  
+
   const [chartData, setChartData] = useState<ChartData>({
     labels: [],
     series: [{ name: "Debit", data: [] }],
   });
 
   useEffect(() => {
-    dispatch(getBranchChart());
+    dispatch(getBranchChart(branchId ? { branch: branchId } : undefined));
     dispatch(userCurrentBranch());
-  }, [dispatch]);
+  }, [dispatch, branchId]);
   
   useEffect(() => {
     if (charts?.transactionChart?.data?.data) {

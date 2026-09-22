@@ -33,7 +33,7 @@ import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
-import { CARD, CARD_HEAD, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
+import { CARD, CARD_HEAD, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
 
 /**
  * The dashboard a trader opens the morning on: goods in, goods out, and what
@@ -780,7 +780,7 @@ const TradingDashboard = () => {
           foot on mt-auto, so the extra height opens between list and foot
           rather than under the foot. The cards' own mb-4 is taken off here:
           a full-height card plus a margin is taller than its cell. */}
-      <div className={`${DASHBOARD_GRID} ${gap}`}>
+      <div className={`${DASHBOARD_GRID} ${gap} ${DASHBOARD_FADE} ${settled ? '' : 'opacity-60'}`}>
         {orderedWidgets
           .filter((widget) => isWidgetVisible(widget.id))
           .map((widget) => {

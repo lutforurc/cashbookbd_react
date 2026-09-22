@@ -7,17 +7,38 @@ import ComputerAccessories from './ComputerAccessories';
 import HotelDashboard from './HotelDashboard';
 import RealEstateDashboard from './RealEstateDashboard';
 import TradingDashboard from './TradingDashboard';
+import { ViewBranchProvider, useViewBranch } from './dashboardRange';
 
+/**
+ * The page is chosen for the branch being LOOKED AT, not the one logged in.
+ *
+ * For everybody but a head office the two are the same branch. A head office
+ * picks a branch in the bar at the top and gets that branch's own page --
+ * the one its clerk opens -- with that branch's figures. The choice lives in
+ * ViewBranchProvider above this switch, so swapping the page does not lose it.
+ */
 function DashboardIndex() {
-      const dispatch = useDispatch();
-  const currentBranch = useSelector((state: any) => state.branchList.currentBranch);
+  return (
+    <ViewBranchProvider>
+      <DashboardPage />
+    </ViewBranchProvider>
+  );
+}
+
+function DashboardPage() {
+  const dispatch = useDispatch();
+  const ownBranch = useSelector((state: any) => state.branchList.currentBranch);
+  const view = useViewBranch();
+  const currentBranch = view.viewBranch;
 
   useEffect(() => {
-    if (!currentBranch?.business_type_id) {
+    if (!ownBranch?.business_type_id) {
       dispatch(userCurrentBranch());
     }
-  }, [dispatch, currentBranch?.business_type_id]);
+  }, [dispatch, ownBranch?.business_type_id]);
 
+  // Only before the FIRST branch is known. A branch change keeps the page up
+  // on the last branch until the new one lands -- see ViewBranchProvider.
   if (!currentBranch?.business_type_id) {
     return <Loader />;
   }

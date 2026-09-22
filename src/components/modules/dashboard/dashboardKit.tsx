@@ -41,6 +41,13 @@ export const share = (part: number, whole: number) =>
  */
 export const DASHBOARD_GRID = 'grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))]';
 
+/**
+ * How a page shows a read in flight: the cards stay where they are and dim,
+ * then come back up as the figures land. Add `opacity-60` while busy. Cards
+ * that vanished and reappeared read as the page jumping.
+ */
+export const DASHBOARD_FADE = 'transition-opacity duration-300';
+
 export const CARD =
   'flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 transition hover:shadow-md dark:bg-gray-800 dark:text-[rgb(var(--c-text))] dark:ring-gray-700';
 

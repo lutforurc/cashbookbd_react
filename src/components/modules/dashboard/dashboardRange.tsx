@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FaSyncAlt } from 'react-icons/fa';
 import dayjs from 'dayjs';
@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import httpService from '../../services/httpService';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
-import { API_DASHBOARD_CASH_BOOK_URL } from '../../services/apiRoutes';
+import { API_DASHBOARD_CASH_BOOK_URL, API_USER_CURRENT_BRANCH_URL } from '../../services/apiRoutes';
 import { Button } from '../../../pages/UiElements/CustomButtons';
 import { Select } from '../../utils/fields/FormControls';
 import InputDatePicker from '../../utils/fields/DatePicker';
@@ -82,16 +82,45 @@ export const useAutoRefresh = () => {
  * The branch a dashboard is ABOUT.
  *
  * For everybody it is their own branch. For a head office (branch_types_id
- * 1) it is whichever branch the dropdown says, every branch to choose from,
- * and each page hands that id to its reads -- the type of page does not
- * change, only whose figures are on it.
+ * 1) it is whichever branch the dropdown says, every branch to choose from
+ * -- and the page becomes THAT branch's page, the one its own clerk opens:
+ * a site gets the construction page, a shop the shop's. DashboardIndex reads
+ * `viewBranch` to pick the page, and every page hands `viewBranchId` to its
+ * reads.
+ *
+ * ⚠️ Held in a context above the pages, not in each page: choosing a branch
+ * can swap the page component out from under the dropdown, and state kept
+ * inside the page would go with it.
  */
-export const useViewBranch = () => {
+export type ViewBranch = {
+  /** The viewed branch's record, with the same flags user/current-branch gives the user's own. */
+  viewBranch: any;
+  viewBranchId: number | undefined;
+  viewBranchName: string;
+  isHeadOffice: boolean;
+  branches: any[];
+  chosen: string;
+  setChosen: (id: string) => void;
+  /** True while the chosen branch's record is on its way. */
+  loading: boolean;
+  /**
+   * False when a head office is looking at ANOTHER branch. Looking is all it
+   * may do there: a button that changes that branch's books (receiving a
+   * remittance, say) is drawn but not offered.
+   */
+  viewingOwn: boolean;
+};
+
+const ViewBranchContext = createContext<ViewBranch | null>(null);
+
+export const ViewBranchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const dispatch = useDispatch<any>();
   const currentBranch = useSelector((state: any) => state.branchList?.currentBranch);
   const branches: any[] = useSelector((state: any) => state.branchDdl?.protectedData?.data) ?? [];
   const isHeadOffice = Number(currentBranch?.branch_types_id) === 1;
   const [chosen, setChosen] = useState<string>('');
+  const [fetched, setFetched] = useState<{ id: number; branch: any } | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isHeadOffice && !branches.length) dispatch(getDdlProtectedBranch());
@@ -99,13 +128,67 @@ export const useViewBranch = () => {
 
   const viewBranchId: number | undefined =
     isHeadOffice && chosen ? Number(chosen) : currentBranch?.id;
-  const viewBranchName: string =
-    branches.find((b: any) => String(b?.id) === String(viewBranchId))?.name ?? currentBranch?.name ?? '';
+  const viewingOwn = !viewBranchId || String(viewBranchId) === String(currentBranch?.id);
 
-  return { viewBranchId, viewBranchName, isHeadOffice, branches, chosen, setChosen };
+  // The chosen branch's record -- its business type flags decide the page.
+  useEffect(() => {
+    if (viewingOwn || !viewBranchId) return undefined;
+    let alive = true;
+    setLoading(true);
+    httpService
+      .get(API_USER_CURRENT_BRANCH_URL, { params: { branch_id: viewBranchId } })
+      .then((response) => {
+        if (alive) setFetched({ id: viewBranchId, branch: response?.data?.data?.data ?? null });
+      })
+      .catch(() => {
+        if (alive) setFetched({ id: viewBranchId, branch: null });
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [viewBranchId, viewingOwn]);
+
+  // While the next branch's record is on its way the LAST one stays: the
+  // page keeps standing on it, and swaps -- if the type differs -- only once
+  // the new record has landed. Dropping to nothing in between unmounted the
+  // page to a spinner and every card jumped.
+  const viewBranch = viewingOwn ? currentBranch : (fetched?.branch ?? currentBranch);
+  const viewBranchName: string =
+    viewBranch?.name ??
+    branches.find((b: any) => String(b?.id) === String(viewBranchId))?.name ??
+    currentBranch?.name ??
+    '';
+
+  return (
+    <ViewBranchContext.Provider
+      value={{ viewBranch, viewBranchId, viewBranchName, isHeadOffice, branches, chosen, setChosen, loading, viewingOwn }}
+    >
+      {children}
+    </ViewBranchContext.Provider>
+  );
 };
 
-export type ViewBranch = ReturnType<typeof useViewBranch>;
+/** The view above, or -- outside DashboardIndex -- the user's own branch and nothing to choose. */
+export const useViewBranch = (): ViewBranch => {
+  const context = useContext(ViewBranchContext);
+  const currentBranch = useSelector((state: any) => state.branchList?.currentBranch);
+  return (
+    context ?? {
+      viewBranch: currentBranch,
+      viewBranchId: currentBranch?.id,
+      viewBranchName: currentBranch?.name ?? '',
+      isHeadOffice: false,
+      branches: [],
+      chosen: '',
+      setChosen: () => undefined,
+      loading: false,
+      viewingOwn: true,
+    }
+  );
+};
 
 export type CashBand = { from: string; to: string; received: number; payment: number; balance: number };
 

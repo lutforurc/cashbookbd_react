@@ -25,7 +25,7 @@ import {
   useDashboardRange,
   useViewBranch,
 } from './dashboardRange';
-import { DASHBOARD_GRID } from './dashboardKit';
+import { DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
 import RangeCashCard from './RangeCashCard';
 
 /*
@@ -55,10 +55,12 @@ const NORMAL_DASHBOARD_WIDGETS: DashboardWidget[] = [
 ];
 
 const ComputerAccessories = () => {
-  const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
   const me = useSelector((s: any) => s.auth?.me);
   const { purchaseSales } = useSelector((state) => state.charts);
   const dispatch = useDispatch();
+  // The branch on the page: the user's own, or the one a head office picked.
+  const view = useViewBranch();
+  const branchId = view.viewBranchId;
   const topProductsSales = purchaseSales?.data?.data?.topProductsSales || [];
   const topProductsPurchase = purchaseSales?.data?.data?.topProductsPurchase || [];
   const sum = (rows: any[], key: string) =>
@@ -103,12 +105,12 @@ const ComputerAccessories = () => {
     setDensity,
     reset,
   } = useDashboardCustomization(
-    `cashbook-normal-dashboard:${me?.id || 'user'}:${currentBranch?.id || 'branch'}`,
+    `cashbook-normal-dashboard:${me?.id || 'user'}:${branchId || 'branch'}`,
     NORMAL_DASHBOARD_WIDGETS,
     {
       dashboardKey: 'normal',
-      branchId: currentBranch?.id,
-      enabled: Boolean(me?.id && currentBranch?.id),
+      branchId,
+      enabled: Boolean(me?.id && branchId),
     },
   );
   const isCompact = density === 'compact';
@@ -128,9 +130,6 @@ const ComputerAccessories = () => {
   // re-read on a refresh.
   const range = useDashboardRange();
   const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
-  // The branch on the page: the user's own, or the one a head office picked.
-  const view = useViewBranch();
-  const branchId = view.viewBranchId;
   const cash = useCashBookRange(branchId, range.from, range.to, tick);
 
   useEffect(() => {
@@ -167,7 +166,7 @@ const ComputerAccessories = () => {
       {/* items-stretch, not items-start: every card in a row ends at the same
           line. Each card is a flex column with its footer on mt-auto, so the
           extra height goes to the body and the footers stay aligned too. */}
-      <div className={`${DASHBOARD_GRID} items-stretch ${dashboardGapClass} md:text-xs`}>
+      <div className={`${DASHBOARD_GRID} items-stretch ${dashboardGapClass} md:text-xs ${DASHBOARD_FADE} ${summary?.isLoading ? 'opacity-60' : ''}`}>
         {/* ⚠️ NO isLoading GATE OVER THE WHOLE GRID. It used to hold back every
             card until /dashboard/data came back, so a slow request, a failed
             one or a branch whose payload never arrived left the page blank

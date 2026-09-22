@@ -35,7 +35,7 @@ import RangeCashCard from './RangeCashCard';
 // money(), count(), share(), CARD, CARD_HEAD and Tile moved to the shared kit so
 // the trading dashboard cannot drift away from this one on how a taka is
 // written. Nothing here changed but where they are read from.
-import { CARD, CARD_HEAD, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
+import { CARD, CARD_HEAD, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
 
 /**
  * The dashboard a developer opens the morning on: flats, plots and parking.
@@ -649,7 +649,7 @@ const RealEstateDashboard = () => {
           mb-4 is taken off, since a full-height card plus a margin is taller
           than its cell. The wide cards span two columns only from xl, where
           there are surely two to span. */}
-      <div className={`${DASHBOARD_GRID} ${gap}`}>
+      <div className={`${DASHBOARD_GRID} ${gap} ${DASHBOARD_FADE} ${settled ? '' : 'opacity-60'}`}>
         {orderedWidgets
           .filter((widget) => isWidgetVisible(widget.id))
           .map((widget) => {

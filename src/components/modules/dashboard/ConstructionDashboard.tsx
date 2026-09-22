@@ -48,6 +48,7 @@ import {
   useViewBranch,
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
+import { DASHBOARD_FADE } from './dashboardKit';
 import { Button } from '../../../pages/UiElements/CustomButtons';
 
 /*
@@ -76,7 +77,6 @@ const ConstructionDashboard = () => {
   const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
   const me = useSelector((s: any) => s.auth?.me);
-  const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
   const protectedBranches = useSelector(
     (s: any) => s.branchDdl?.protectedData?.data || [],
   );
@@ -120,7 +120,9 @@ const ConstructionDashboard = () => {
     return dashboard?.data?.receiveDetails?.receivedDetails || {};
   }, [dashboard?.data?.receiveDetails?.receivedDetails]);
 
-  const isHeadOfficeBranch = currentBranch?.branch_types_id == 1;
+  // Of the branch being LOOKED AT: a head office viewing a site sees the
+  // site's own page, with the site's own remittance list and charts.
+  const isHeadOfficeBranch = Number(view.viewBranch?.branch_types_id) === 1;
   const hasReceiveDetails = Object.values(groupedReceiveDetails).some(
     (items): items is any[] => Array.isArray(items) && items.length > 0,
   );
@@ -133,12 +135,12 @@ const ConstructionDashboard = () => {
     setDensity,
     reset,
   } = useDashboardCustomization(
-    `cashbook-construction-dashboard:${me?.id || 'user'}:${currentBranch?.id || 'branch'}`,
+    `cashbook-construction-dashboard:${me?.id || 'user'}:${viewBranchId || 'branch'}`,
     CONSTRUCTION_DASHBOARD_WIDGETS,
     {
       dashboardKey: 'construction',
-      branchId: currentBranch?.id,
-      enabled: Boolean(me?.id && currentBranch?.id),
+      branchId: viewBranchId,
+      enabled: Boolean(me?.id && viewBranchId),
     },
   );
   /** The day's tiles, minus the ones switched off. One id per tile, `kpi-<key>`. */
@@ -326,16 +328,19 @@ const ConstructionDashboard = () => {
       {kpiTiles.length > 0 && <KpiHeading trxDate={summaryData?.trxDate} />}
 
 
+      {/* The skeleton only before the first figures; a re-read (refresh,
+          branch, range) keeps the cards up and dims them until it lands --
+          see DASHBOARD_FADE. */}
       <div
         aria-busy={dashboard.isLoading}
-        className={`mt-4 ${DASHBOARD_COLUMNS} items-start ${dashboardGapClass}`}
+        className={`mt-4 ${DASHBOARD_COLUMNS} items-start ${dashboardGapClass} ${DASHBOARD_FADE} ${dashboard.isLoading ? 'opacity-60' : ''}`}
       >
         {orderedWidgets.filter(widget => isWidgetVisible(widget.id)).map(widget => {
           const tile = CONSTRUCTION_TILES.find(tile => widget.id === `kpi-${tile.key}`);
           if (!tile) return null;
           return <div key={widget.id} className="min-w-0" style={{ order: widgetOrder(widget.id) }}><KpiRow embedded kpis={summaryData?.kpis} isLoading={summary?.isLoading} tiles={[tile]} /></div>;
         })}
-        {dashboard.isLoading == false ? (
+        {dashboard.isLoading == false || dashboard?.data?.branch ? (
           <>
             {dashboard.errors ? (
               <div
@@ -635,8 +640,12 @@ const ConstructionDashboard = () => {
                                   {thousandSeparator(item.debit)}
                                 </div>
                                 <div className="w-7 shrink-0 text-right text-sm">
+                                  {/* The receive button is offered only on
+                                      one's OWN branch. A head office looking
+                                      at a site sees the mark and cannot press
+                                      it: looking is all it may do there. */}
                                   {!isProcessed ? (
-                                    isHeadOfficeBranch ? (
+                                    isHeadOfficeBranch || !view.viewingOwn ? (
                                       <FaRightToBracket className="inline-block text-sm text-red-500" />
                                     ) : (
                                       <div
@@ -698,7 +707,7 @@ const ConstructionDashboard = () => {
         <div className="col-span-full min-w-0" style={{ order: widgetOrder('charts') }}>
           <div className=""></div>
           <div className="border-slate-200 pb-3 text-white pt-2">
-            {currentBranch.branch_types_id == 1 ? (
+            {isHeadOfficeBranch ? (
               <div className="grid grid-cols-1">
                 <div>
                   <HeadOfficePaymentChart />
@@ -707,7 +716,7 @@ const ConstructionDashboard = () => {
               </div>
             ) : (
               <>
-                <TransactionChart />
+                <TransactionChart branchId={viewBranchId} />
                 <CompareSingleItem />
               </>
             )}
