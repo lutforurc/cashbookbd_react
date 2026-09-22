@@ -25,13 +25,20 @@ type Props = {
  * pad at the top, the title, the range, the table, the foot. A year is at
  * most twelve rows, so it is one sheet and the browser keeps the breaks.
  */
-const VoucherRegisterPrint = React.forwardRef<HTMLDivElement, Props>(({ report, columns, fontSize = 10 }, ref) => {
+const VoucherRegisterPrint = React.forwardRef<HTMLDivElement, Props>(({ report, columns, fontSize = 9 }, ref) => {
   const months: any[] = report?.months ?? [];
-  const cell = (c: PrintColumn) => `border border-gray-900 px-2 py-1 ${c.cellClass ?? ''}`;
+
+  // ⚠️ The screen's widths (w-36, w-40 ...) are pixels sized for a wide
+  // monitor; nine of them side by side ran off the right edge of the sheet.
+  // Only the alignment is kept, and the table shares the paper out itself.
+  const align = (c: PrintColumn) => (c.cellClass ?? '').includes('text-right') ? 'text-right' : 'text-left';
+  const cell = (c: PrintColumn) => `border border-gray-900 px-1.5 py-1 ${align(c)}`;
 
   return (
     <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
-      <PrintStyles />
+      {/* Landscape: nine figure columns do not fit a portrait sheet at a
+          size anybody can read, and the register is a wide paper anyway. */}
+      <PrintStyles orientation="landscape" />
 
       <div className="print-page">
         <PadPrinting />
@@ -54,7 +61,7 @@ const VoucherRegisterPrint = React.forwardRef<HTMLDivElement, Props>(({ report, 
           <thead className="bg-gray-100">
             <tr>
               {columns.map((c) => (
-                <th key={c.key} className={`border border-gray-900 px-2 py-2 ${c.cellClass ?? ''} ${c.headerClass ?? ''}`}>
+                <th key={c.key} className={`border border-gray-900 px-1.5 py-1.5 ${align(c)}`}>
                   {c.header}
                 </th>
               ))}

@@ -261,13 +261,10 @@ const VoucherRegister = ({ user }: any) => {
       ),
     },
     { key: 'particulars', header: 'Particulars' },
-    {
-      key: 'amount',
-      header: 'Amount',
-      headerClass: 'text-right',
-      cellClass: 'w-32 text-right',
-      render: (row: any) => (Number(row.amount) ? thousandSeparator(Number(row.amount)) : ''),
-    },
+    // The same three figures as the month row, per voucher, in the same order.
+    right('received', 'Received', (row) => money(row.received)),
+    right('payment', 'Payment', (row) => money(row.payment)),
+    right('amount', 'Amount', (row) => money(row.amount)),
     {
       key: 'status',
       header: '',
