@@ -29,6 +29,7 @@ import httpService from '../../../services/httpService';
 import {
   API_CHART_OF_ACCOUNTS_DDL_L4_URL,
   API_ORDERS_DDL_URL,
+  API_ORDERS_EDIT_URL,
   API_TRADING_COMBINED_EDIT_URL,
   API_TRADING_COMBINED_STORE_URL,
   API_TRADING_COMBINED_SUGGESTIONS_URL,
@@ -91,7 +92,12 @@ const isSameOrderProduct = (
 ) =>
   first.id && second.id
     ? first.id === second.id
-    : normalizeLookupText(first.name) === normalizeLookupText(second.name);
+    : Boolean(normalizeLookupText(first.name)) &&
+      normalizeLookupText(first.name) === normalizeLookupText(second.name);
+
+type OrderProduct = { id: string; name: string };
+const ordersHaveCommonProduct = (first: OrderProduct[], second: OrderProduct[]) =>
+  first.some((product) => second.some((other) => isSameOrderProduct(product, other)));
 
 const PRODUCT_MISMATCH_MESSAGE =
   'Purchase Order and Sales Order are for different products. Change or clear one of the orders.';
@@ -167,13 +173,11 @@ const TradingCombinedEntry = () => {
   const [partyDraftName, setPartyDraftName] = useState('');
   const [editingCombinedNumber, setEditingCombinedNumber] = useState('');
   /**
-   * The product each order is for. Kept here because an order only says what it
-   * is for at the moment it is picked -- inside the handler's response -- and
-   * the two of them can only be compared once the second one arrives.
+   * Keep every order line: the search label may only describe the first product.
    */
   const [orderProducts, setOrderProducts] = useState<{
-    purchase: { id: string; name: string } | null;
-    sales: { id: string; name: string } | null;
+    purchase: OrderProduct[] | null;
+    sales: OrderProduct[] | null;
   }>({ purchase: null, sales: null });
   const settings = useSelector((state: any) => state.settings);
   const showCombinedInvoiceNote = toBooleanFlag(settings?.data?.branch?.combined_invoice_note);
@@ -538,6 +542,24 @@ const TradingCombinedEntry = () => {
    * dropdown's list for its id and unit -- the same lookup the Purchase Invoice
    * does off its orders. Anything the order does not name is left as it was.
    */
+  const loadOrderProducts = async (option: any): Promise<OrderProduct[] | null> => {
+    try {
+      const response = await httpService.get(`${API_ORDERS_EDIT_URL}${option.value}`);
+      const order = response?.data?.data?.data;
+      if (!response?.data?.success || !order) return null;
+      const items = Array.isArray(order.items) && order.items.length ? order.items : [order];
+      const products = items.map((item: any) => ({
+        id: String(item.product_id ?? item.product?.id ?? ''),
+        name: String(item.product_name ?? item.product?.name ?? ''),
+      })).filter((item: OrderProduct) => item.id || item.name);
+      return products.length ? products : null;
+    } catch (error) {
+      console.error('Failed to load order products:', error);
+      // An incomplete search label is not evidence of a product mismatch.
+      return null;
+    }
+  };
+
   const applyOrderProduct = async (orderOption: any) => {
     const productName =
       orderOption?.product_name ??
@@ -563,7 +585,7 @@ const TradingCombinedEntry = () => {
           ? response.payload.find(
             (item: any) =>
               normalizeLookupText(item?.label) === normalizeLookupText(productName),
-          ) ?? response.payload[0]
+          )
           : null;
 
         if (matchedProduct) {
@@ -591,8 +613,8 @@ const TradingCombinedEntry = () => {
   };
 
   const purchaseOrderHandler = async (option: any) => {
+    setOrderProducts((prev) => ({ ...prev, purchase: null }));
     if (!option) {
-      setOrderProducts((prev) => ({ ...prev, purchase: null }));
       setFormData((prev) => ({
         ...prev,
         purchaseOrderNumber: '',
@@ -692,8 +714,11 @@ const TradingCombinedEntry = () => {
       purchaseOrderText: option?.label || '',
     }));
 
-    const orderProduct = await applyOrderProduct(selectedOrderOption);
-    setOrderProducts((prev) => ({ ...prev, purchase: orderProduct }));
+    const [products] = await Promise.all([
+      loadOrderProducts(selectedOrderOption),
+      applyOrderProduct(selectedOrderOption),
+    ]);
+    setOrderProducts((prev) => ({ ...prev, purchase: products }));
 
     // Prefill Purchase Rate from the selected purchase order's Order Rate (label_5).
     const purchaseOrderRate = selectedOrderOption?.label_5;
@@ -703,8 +728,8 @@ const TradingCombinedEntry = () => {
   };
 
   const salesOrderHandler = async (option: any) => {
+    setOrderProducts((prev) => ({ ...prev, sales: null }));
     if (!option) {
-      setOrderProducts((prev) => ({ ...prev, sales: null }));
       setFormData((prev) => ({
         ...prev,
         salesOrderNumber: '',
@@ -803,8 +828,11 @@ const TradingCombinedEntry = () => {
       salesOrderText: option?.label || '',
     }));
 
-    const orderProduct = await applyOrderProduct(selectedOrderOption);
-    setOrderProducts((prev) => ({ ...prev, sales: orderProduct }));
+    const [products] = await Promise.all([
+      loadOrderProducts(selectedOrderOption),
+      applyOrderProduct(selectedOrderOption),
+    ]);
+    setOrderProducts((prev) => ({ ...prev, sales: products }));
 
     // Prefill Sales Rate from the selected sales order's Order Rate (label_5).
     const salesOrderRate = selectedOrderOption?.label_5;
@@ -814,16 +842,14 @@ const TradingCombinedEntry = () => {
   };
 
   /**
-   * One entry writes a purchase and a sale of the same goods, so the two orders
-   * have to be for one product. Said here the moment the second order arrives,
-   * so the clerk hears it while the entry is still being set up and not only at
-   * the end; handleSave refuses the save on the same condition.
+   * Multi-product orders are compatible when their product lists overlap.
+   * handleSave checks the same condition.
    */
   useEffect(() => {
     const { purchase, sales } = orderProducts;
     if (!purchase || !sales) return;
 
-    if (!isSameOrderProduct(purchase, sales)) {
+    if (!ordersHaveCommonProduct(purchase, sales)) {
       toast.info(PRODUCT_MISMATCH_MESSAGE);
     }
   }, [orderProducts]);
@@ -973,6 +999,9 @@ const TradingCombinedEntry = () => {
       setSelectedSupplierOption(null);
       setSelectedCustomerOption(null);
     }
+    if (!keepOrders) {
+      setOrderProducts({ purchase: null, sales: null });
+    }
     setVehicleSuggestions([]);
     setNoteSuggestions([]);
     setEditingCombinedNumber('');
@@ -991,14 +1020,12 @@ const TradingCombinedEntry = () => {
       focusField('customerAccount');
       return;
     }
-    // The two orders say what is being bought and sold; when they disagree the
-    // entry has no single product to write on both legs, so it is not saved.
-    // Clearing an order releases this, exactly as it releases the party boxes.
+    // Compare every order line, including products beyond the first line.
     const { purchase: purchaseOrderProduct, sales: salesOrderProduct } = orderProducts;
     if (
       purchaseOrderProduct &&
       salesOrderProduct &&
-      !isSameOrderProduct(purchaseOrderProduct, salesOrderProduct)
+      !ordersHaveCommonProduct(purchaseOrderProduct, salesOrderProduct)
     ) {
       toast.info(PRODUCT_MISMATCH_MESSAGE);
       focusField('purchaseOrderNumber');
