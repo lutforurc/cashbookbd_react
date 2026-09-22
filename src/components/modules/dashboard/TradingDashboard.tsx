@@ -98,6 +98,8 @@ const TRADING_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'dues-payable', title: 'Payable Ageing' },
   { id: 'dues-net', title: 'Net Position' },
   { id: 'top-profit', title: 'What Made the Money' },
+  { id: 'top-sales', title: 'Top Sales Products' },
+  { id: 'top-purchase', title: 'Top Purchase Products' },
   { id: 'monthly-purchase-sales', title: 'Monthly Purchase Sales Chart' },
 ];
 
@@ -255,6 +257,10 @@ const TradingDashboard = () => {
   const profit = payload?.profit;
   const dues = payload?.dues;
   const top: any[] = Array.isArray(payload?.top) ? payload.top : [];
+  const topSales: any[] = Array.isArray(payload?.top_sales) ? payload.top_sales : [];
+  const topPurchase: any[] = Array.isArray(payload?.top_purchase)
+    ? payload.top_purchase
+    : [];
 
   const dead: any[] = Array.isArray(stock?.dead) ? stock.dead : [];
   const deadDays = Number(stock?.dead_days ?? 60);
@@ -282,6 +288,67 @@ const TradingDashboard = () => {
    * more was billed than arrived, which is the direction that costs money.
    */
   const variance = Number(profit?.variance || 0);
+
+  /*
+   * The two lists drawn in UNITS — what moves fastest across the counter and
+   * what is bought most. Same card as "What Made the Money" but the sort is
+   * quantity and the money is the second column; that card's header says why
+   * the two must not be read as the same question.
+   */
+  const unitsCard = (
+    id: string,
+    title: string,
+    rows: any[],
+    verb: string,
+    tone: string,
+  ): React.ReactNode => {
+    if (!isWidgetVisible(id) || rows.length === 0) return null;
+    const total = listedValue(rows, 'amount');
+    return (
+      <div className={`mb-4 ${CARD}`}>
+        <div className={CARD_HEAD}>
+          <span className="truncate">{title}</span>
+          <span className="shrink-0 text-[11px] font-normal text-slate-400">
+            by quantity
+          </span>
+        </div>
+
+        <ul className="divide-y divide-slate-100 dark:divide-gray-700">
+          {rows.map((row, index) => (
+            <li
+              key={row.id}
+              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto_auto] items-center gap-2 ${rowClass} text-[12px] transition hover:bg-slate-50 dark:hover:bg-gray-700/50`}
+            >
+              <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <p className="min-w-0 truncate font-semibold text-slate-700 dark:text-slate-100">
+                {row.name}
+              </p>
+              <span className="shrink-0 whitespace-nowrap text-right text-[11px] tabular-nums text-slate-400">
+                {Number(row.qty ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}{' '}
+                {verb}
+              </span>
+              <span
+                className={`w-24 shrink-0 text-right font-bold tabular-nums ${tone}`}
+              >
+                {money(row.amount)}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <div
+          className={`mt-auto flex items-center justify-between border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] dark:bg-gray-700/50`}
+        >
+          <span className="text-slate-500 dark:text-slate-300">
+            Top {rows.length} · this month
+          </span>
+          <span className={`font-bold tabular-nums ${tone}`}>{money(total)}</span>
+        </div>
+      </div>
+    );
+  };
 
   const renderWidget = (id: string): React.ReactNode => {
     const tile = TRADING_TILES.find((tile) => id === `kpi-${tile.key}`);
@@ -611,6 +678,22 @@ const TradingDashboard = () => {
             </div>
           </div>
         ) : null;
+      case 'top-sales':
+        return unitsCard(
+          'top-sales',
+          'Top Sales Products',
+          topSales,
+          'sold',
+          'text-emerald-600 dark:text-emerald-400',
+        );
+      case 'top-purchase':
+        return unitsCard(
+          'top-purchase',
+          'Top Purchase Products',
+          topPurchase,
+          'bought',
+          'text-primary dark:text-secondary',
+        );
       case 'monthly-purchase-sales':
         return isWidgetVisible('monthly-purchase-sales') ? (
           <div className="mb-4">
@@ -672,7 +755,9 @@ const TradingDashboard = () => {
                 className={
                   widget.id === 'monthly-purchase-sales'
                     ? 'min-w-0 col-span-full'
-                    : ['money-asleep', 'top-profit'].includes(widget.id)
+                    : ['money-asleep', 'top-profit', 'top-sales', 'top-purchase'].includes(
+                          widget.id,
+                        )
                       ? 'min-w-0 md:col-span-2'
                       : 'min-w-0'
                 }
