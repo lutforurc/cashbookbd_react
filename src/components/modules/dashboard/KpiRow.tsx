@@ -2,6 +2,7 @@ import React from 'react';
 import { FaArrowDown, FaArrowUp, FaMinus } from 'react-icons/fa';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import Sparkline from './Sparkline';
+import { DASHBOARD_GRID } from './dashboardKit';
 
 interface KpiValue {
   value: number;
@@ -40,15 +41,13 @@ interface KpiRowProps {
 }
 
 /**
- * Deliberately identical to the widget grid in ComputerAccessories.
+ * Deliberately identical to the widget grid the band sits above.
  *
  * The two grids sit directly on top of each other, so any difference in column
- * count or gutter leaves the tiles straddling the card edges below them. They
- * have to be changed together. ConstructionDashboard uses an auto-fit track
- * instead and passes its own class.
+ * count or gutter leaves the tiles straddling the card edges below them --
+ * which is why it is the one shared constant rather than a copy.
  */
-const DEFAULT_COLUMNS =
-  'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+const DEFAULT_COLUMNS = DASHBOARD_GRID;
 
 /**
  * Fixed order, fixed hue per tile.

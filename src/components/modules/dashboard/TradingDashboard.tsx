@@ -10,15 +10,21 @@ import {
 } from 'react-icons/fa';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
+import {
+  DashboardRangeBar,
+  rangeCaption,
+  useAutoRefresh,
+  useDashboardRange,
+} from './dashboardRange';
 import httpService from '../../services/httpService';
 import { hasPermission } from '../../utils/permissionChecker';
-import { formatDayMonthYear } from '../../utils/utils-functions/formatDate';
 import { API_TRADING_DASHBOARD_URL } from '../../services/apiRoutes';
 import { getDashboard, getDashboardSummary } from './dashboardSlice';
 import { getMonthlyPurchaseSales } from './chartSlice';
 import KpiRow, { KpiHeading, TRADING_TILES } from './KpiRow';
 import DueAgingCard from './DueAgingCard';
 import BalanceSummaryCard from './BalanceSummaryCard';
+import RangeCashCard from './RangeCashCard';
 import MonthlyPurchaseSalesChart from './MonthlyPurchaseSalesChart';
 import DailySalesChart from './DailySalesChart';
 import DailyPurchaseChart from './DailyPurchaseChart';
@@ -26,7 +32,7 @@ import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
-import { CARD, CARD_HEAD, Tile, count, money, share } from './dashboardKit';
+import { CARD, CARD_HEAD, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
 
 /**
  * The dashboard a trader opens the morning on: goods in, goods out, and what
@@ -96,6 +102,7 @@ const TRADING_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'profit-gross', title: 'Gross Profit' },
   { id: 'profit-margin', title: 'Margin' },
   { id: 'dues-balance', title: 'Cash Book' },
+  { id: 'dues-balance-range', title: 'Cash Book (Range)' },
   { id: 'dues-receivable', title: 'Receivable Ageing' },
   { id: 'dues-payable', title: 'Payable Ageing' },
   { id: 'dues-net', title: 'Net Position' },
@@ -106,14 +113,6 @@ const TRADING_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'daily-purchase', title: 'Daily Purchase Chart' },
   { id: 'monthly-purchase-sales', title: 'Monthly Purchase Sales Chart' },
 ];
-
-const asText = (date: Date) => {
-  // Local parts, never toISOString(): which vouchers fall inside "this month"
-  // is a calendar question at the desk, and going through UTC moves the
-  // boundary a day for half the world — and takes a month's vouchers with it.
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  return `${date.getFullYear()}-${month}-${String(date.getDate()).padStart(2, '0')}`;
-};
 
 /**
  * A quantity, not a count.
@@ -212,11 +211,16 @@ const TradingDashboard = () => {
   const gap = isCompact ? 'gap-3' : 'gap-4';
   const rowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
 
+  // The range the month-figures are read over, and the refresh. The server
+  // takes any range up to a year (MAX_DAYS), so this page never knows the rule.
+  const range = useDashboardRange();
+  const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
+
   useEffect(() => {
     dispatch(getDashboard()); // the cash-book card's figures
     dispatch(getDashboardSummary());
-    dispatch(getMonthlyPurchaseSales());
-  }, [dispatch]);
+    dispatch(getMonthlyPurchaseSales({ from: range.from, to: range.to }));
+  }, [dispatch, tick, range.from, range.to]);
 
   useEffect(() => {
     if (!branchId) return;
@@ -224,9 +228,7 @@ const TradingDashboard = () => {
     let alive = true;
     setSettled(false);
 
-    const now = new Date();
-    const today = asText(now);
-    const monthStart = asText(new Date(now.getFullYear(), now.getMonth(), 1));
+    const { from: monthStart, to: today } = range;
 
     /*
      * One read, because the server is where the pieces are made to agree: the
@@ -244,6 +246,7 @@ const TradingDashboard = () => {
         if (!alive) return;
         setPayload(response?.data?.data?.data ?? null);
         setSettled(true);
+        markRefreshed();
       })
       .catch(() => {
         if (alive) {
@@ -255,7 +258,7 @@ const TradingDashboard = () => {
     return () => {
       alive = false;
     };
-  }, [branchId]);
+  }, [branchId, range.from, range.to, tick]);
 
   const stock = payload?.stock;
   const profit = payload?.profit;
@@ -574,6 +577,10 @@ const TradingDashboard = () => {
             <BalanceSummaryCard rowClass={rowClass} />
           ) : null)
         );
+      case 'dues-balance-range':
+        return isWidgetVisible('dues-balance-range') ? (
+          <RangeCashCard cash={payload?.cash} rowClass={rowClass} />
+        ) : null;
       case 'dues-receivable':
         return (
           dues &&
@@ -738,13 +745,14 @@ const TradingDashboard = () => {
           </h1>
           <p className="text-xs text-slate-400">
             {payload?.from && payload?.to
-              ? `This month so far · ${formatDayMonthYear(payload.from)} to ${formatDayMonthYear(
-                  payload.to,
-                )}`
+              ? rangeCaption(payload.from, payload.to, refreshedAt)
               : 'Reading the godown…'}
           </p>
         </div>
-        <DashboardCustomizeButton
+
+        <div className="flex flex-wrap items-center gap-2">
+          <DashboardRangeBar range={range} onRefresh={refresh} busy={!settled} />
+          <DashboardCustomizeButton
           density={density}
           widgets={orderedWidgets}
           isWidgetVisible={isWidgetVisible}
@@ -753,6 +761,7 @@ const TradingDashboard = () => {
           onDensityChange={setDensity}
           onReset={reset}
         />
+        </div>
       </div>
 
       {/* ------------------------------------------------------------ */}
@@ -768,7 +777,7 @@ const TradingDashboard = () => {
           foot on mt-auto, so the extra height opens between list and foot
           rather than under the foot. The cards' own mb-4 is taken off here:
           a full-height card plus a margin is taller than its cell. */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 ${gap}`}>
+      <div className={`${DASHBOARD_GRID} ${gap}`}>
         {orderedWidgets
           .filter((widget) => isWidgetVisible(widget.id))
           .map((widget) => {
@@ -782,7 +791,9 @@ const TradingDashboard = () => {
                   (['daily-sales', 'daily-purchase', 'monthly-purchase-sales'].includes(widget.id)
                     ? 'col-span-full'
                     : widget.id === 'money-asleep'
-                      ? 'md:col-span-2'
+                      ? // Two cards wide only where there are surely two columns
+                        // to span: a span on a one-column grid overflows it.
+                        'xl:col-span-2'
                       : '')
                 }
               >

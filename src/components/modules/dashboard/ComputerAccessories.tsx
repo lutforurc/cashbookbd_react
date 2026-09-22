@@ -17,6 +17,15 @@ import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
+import {
+  DashboardRangeBar,
+  rangeCaption,
+  useAutoRefresh,
+  useCashBookRange,
+  useDashboardRange,
+} from './dashboardRange';
+import { DASHBOARD_GRID } from './dashboardKit';
+import RangeCashCard from './RangeCashCard';
 
 /*
  * ⚠️ ONE ITEM PER TILE, NOT ONE PER ROW. The four KPI tiles sit in one band, and
@@ -31,6 +40,7 @@ const NORMAL_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'kpi-newCustomers', title: 'New Customers' },
   { id: 'kpi-vouchers', title: 'Today Vouchers' },
   { id: 'summary', title: 'Balance Summary' },
+  { id: 'summary-range', title: 'Cash Book (Range)' },
   { id: 'due-aging', title: 'Receivable Ageing' },
   { id: 'payable-aging', title: 'Payable Ageing' },
   { id: 'low-stock', title: 'Low Stock' },
@@ -112,26 +122,39 @@ const ComputerAccessories = () => {
   const summary = useSelector((s: any) => s.dashboard?.summary);
   const summaryData = summary?.data;
 
+  // The range windows the two daily charts; today's tiles, the ageing, the
+  // godown and the two top lists are windowed by their own rules and only
+  // re-read on a refresh.
+  const range = useDashboardRange();
+  const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
+  const cash = useCashBookRange(currentBranch?.id, range.from, range.to, tick);
+
   useEffect(() => {
     dispatch(getDashboard());
-    dispatch(getMonthlyPurchaseSales());
     dispatch(getDashboardSummary());
-  }, []);
- 
+  }, [dispatch, tick]);
+
+  useEffect(() => {
+    (dispatch(getMonthlyPurchaseSales({ from: range.from, to: range.to })) as any).finally(markRefreshed);
+  }, [dispatch, tick, range.from, range.to]);
 
   return (
     <div>
       <HelmetTitle title="Dashboard" />
-      <div className="mb-4">
-        <DashboardCustomizeButton
-          density={density}
-          widgets={orderedWidgets}
-          isWidgetVisible={isWidgetVisible}
-          onToggleWidget={toggleWidget}
-          onMoveWidget={moveWidget}
-          onDensityChange={setDensity}
-          onReset={reset}
-        />
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-slate-400">{rangeCaption(range.from, range.to, refreshedAt)}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <DashboardRangeBar range={range} onRefresh={refresh} busy={Boolean(summary?.isLoading)} />
+          <DashboardCustomizeButton
+            density={density}
+            widgets={orderedWidgets}
+            isWidgetVisible={isWidgetVisible}
+            onToggleWidget={toggleWidget}
+            onMoveWidget={moveWidget}
+            onDensityChange={setDensity}
+            onReset={reset}
+          />
+        </div>
       </div>
 
       {kpiTiles.length > 0 && <KpiHeading trxDate={summaryData?.trxDate} />}
@@ -140,7 +163,7 @@ const ComputerAccessories = () => {
       {/* items-stretch, not items-start: every card in a row ends at the same
           line. Each card is a flex column with its footer on mt-auto, so the
           extra height goes to the body and the footers stay aligned too. */}
-      <div className={`grid grid-cols-1 items-stretch ${dashboardGapClass} md:grid-cols-2 md:text-xs lg:grid-cols-3 xl:grid-cols-4`}>
+      <div className={`${DASHBOARD_GRID} items-stretch ${dashboardGapClass} md:text-xs`}>
         {/* ⚠️ NO isLoading GATE OVER THE WHOLE GRID. It used to hold back every
             card until /dashboard/data came back, so a slow request, a failed
             one or a branch whose payload never arrived left the page blank
@@ -151,6 +174,9 @@ const ComputerAccessories = () => {
             if (tile) return <KpiRow key={widget.id} embedded kpis={summaryData?.kpis} isLoading={summary?.isLoading} tiles={[tile]} />;
             if (widget.id === 'summary') {
               return <BalanceSummaryCard key={widget.id} rowClass={cardRowClass} />;
+            }
+            if (widget.id === 'summary-range') {
+              return <RangeCashCard key={widget.id} cash={cash} rowClass={cardRowClass} />;
             }
 
             if (widget.id === 'due-aging') {

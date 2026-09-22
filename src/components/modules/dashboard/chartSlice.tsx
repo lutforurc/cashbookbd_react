@@ -33,10 +33,13 @@ export const getBranchChart = createAsyncThunk(
 ========================================= */
 export const getMonthlyPurchaseSales = createAsyncThunk(
   "getMonthlyPurchaseSales/fetch",
-  async (_, { rejectWithValue }) => {
+  // `from`/`to` window the two daily charts only; left out, the server draws
+  // the last month up to the transaction date as it always has.
+  async (params: { from?: string; to?: string } | undefined, { rejectWithValue }) => {
     try {
       const { data } = await httpService.get(
-        `${API_BRANCH_PURCHASE_SALES_CHART_URL}`
+        `${API_BRANCH_PURCHASE_SALES_CHART_URL}`,
+        { params: params?.from && params?.to ? params : undefined },
       );
       return data;
     } catch (error) {

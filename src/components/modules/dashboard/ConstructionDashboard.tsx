@@ -39,6 +39,14 @@ import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
+import {
+  DashboardRangeBar,
+  rangeCaption,
+  useAutoRefresh,
+  useCashBookRange,
+  useDashboardRange,
+} from './dashboardRange';
+import RangeCashCard from './RangeCashCard';
 import { Button } from '../../../pages/UiElements/CustomButtons';
 
 /*
@@ -53,6 +61,7 @@ const CONSTRUCTION_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'kpi-purchase', title: 'Today Purchase' },
   { id: 'kpi-vouchers', title: 'Today Vouchers' },
   { id: 'summary', title: 'Balance Summary' },
+  { id: 'summary-range', title: 'Cash Book (Range)' },
   { id: 'top-purchase', title: 'Top Purchase' },
   { id: 'receive-details', title: 'Receive Details' },
   { id: 'charts', title: 'Charts' },
@@ -83,13 +92,25 @@ const ConstructionDashboard = () => {
   const [totalDebit, setTotalDebit] = useState(0); // State to store the total sum of debits
   const [expandedBranchKey, setExpandedBranchKey] = useState<string | null>(null);
 
+  // The range drives the Cash Book (Range) card alone: none of this page's
+  // other reads take a date, and the chart has its own month box.
+  const range = useDashboardRange();
+  const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
+  const cash = useCashBookRange(currentBranch?.id, range.from, range.to, tick);
+
   useEffect(() => {
     dispatch(getDashboard());
     // dispatch(getBranchChart());
     dispatch(getHeadOfficeReceivedChart());
     dispatch(getDdlProtectedBranch());
     dispatch(getDashboardSummary());
-  }, []);
+  }, [tick]);
+
+  // getDashboard is a plain thunk with nothing to await; the slice's loading
+  // flag going down is when the page has its figures.
+  useEffect(() => {
+    if (dashboard?.isLoading === false) markRefreshed();
+  }, [dashboard?.isLoading]);
 
   const groupedReceiveDetails = useMemo(() => {
     return dashboard?.data?.receiveDetails?.receivedDetails || {};
@@ -283,16 +304,20 @@ const ConstructionDashboard = () => {
   return (
     <>
       <HelmetTitle title="Construction Dashboard" />
-      <div className="mt-6">
-        <DashboardCustomizeButton
-          density={density}
-          widgets={orderedWidgets}
-          isWidgetVisible={isWidgetVisible}
-          onToggleWidget={toggleWidget}
-          onMoveWidget={moveWidget}
-          onDensityChange={setDensity}
-          onReset={reset}
-        />
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-slate-400">{rangeCaption(range.from, range.to, refreshedAt)}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <DashboardRangeBar range={range} onRefresh={refresh} busy={Boolean(dashboard?.isLoading)} />
+          <DashboardCustomizeButton
+            density={density}
+            widgets={orderedWidgets}
+            isWidgetVisible={isWidgetVisible}
+            onToggleWidget={toggleWidget}
+            onMoveWidget={moveWidget}
+            onDensityChange={setDensity}
+            onReset={reset}
+          />
+        </div>
       </div>
       {kpiTiles.length > 0 && <KpiHeading trxDate={summaryData?.trxDate} />}
 
@@ -446,6 +471,13 @@ const ConstructionDashboard = () => {
                 </span>
               </div>
             </div>
+            ) : null}
+
+            {/* The same three figures over the chosen range, beside the today card. */}
+            {!dashboard.errors && isWidgetVisible('summary-range') && cash ? (
+              <div className={`min-w-0 ${dashboardCardHeightClass} *:h-full`} style={{ order: widgetOrder('summary-range') }}>
+                <RangeCashCard cash={cash} rowClass={summaryRowClass} />
+              </div>
             ) : null}
 
             {!dashboard.errors && isWidgetVisible('top-purchase') && dashboard?.data?.topProductsPurchase?.length > 0 && (

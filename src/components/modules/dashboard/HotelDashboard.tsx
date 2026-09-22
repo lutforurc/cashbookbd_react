@@ -15,7 +15,6 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import httpService from '../../services/httpService';
 import routes from '../../services/appRoutes';
-import { formatDayMonthYear } from '../../utils/utils-functions/formatDate';
 import {
   API_HOTEL_COLLECTION_URL,
   API_HOTEL_HOUSEKEEPING_URL,
@@ -27,6 +26,15 @@ import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
+import {
+  DashboardRangeBar,
+  rangeCaption,
+  useAutoRefresh,
+  useCashBookRange,
+  useDashboardRange,
+} from './dashboardRange';
+import RangeCashCard from './RangeCashCard';
+import { DASHBOARD_GRID } from './dashboardKit';
 
 /**
  * The dashboard a hotel opens the morning on.
@@ -80,6 +88,7 @@ const HOTEL_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'room-types', title: 'By Room Type' },
   { id: 'takings', title: 'Money Taken This Month' },
   { id: 'balance', title: 'Cash Book' },
+  { id: 'balance-range', title: 'Cash Book (Range)' },
 ];
 
 const asText = (date: Date) => {
@@ -208,18 +217,23 @@ const HotelDashboard = () => {
   const gap = isCompact ? 'gap-3' : 'gap-4';
   const rowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
 
+  // The range the performance and takings are read over, and the refresh.
+  // The register and the rooms are always today's, whatever the range.
+  const range = useDashboardRange();
+  const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
+  const cash = useCashBookRange(branchId, range.from, range.to, tick);
+
   useEffect(() => {
     dispatch(getDashboard());
-  }, [dispatch]);
+  }, [dispatch, tick]);
 
   useEffect(() => {
     if (!branchId) return;
 
     let alive = true;
 
-    const now = new Date();
-    const today = asText(now);
-    const monthStart = asText(new Date(now.getFullYear(), now.getMonth(), 1));
+    const today = asText(new Date());
+    const { from: monthStart, to: rangeEnd } = range;
 
     /*
      * Four reads, three permissions, and each lands on its own. Settled one at
@@ -243,9 +257,12 @@ const HotelDashboard = () => {
 
     settle(
       httpService.get(API_HOTEL_PERFORMANCE_URL, {
-        params: { from: monthStart, to: today, branch_id: branchId },
+        params: { from: monthStart, to: rangeEnd, branch_id: branchId },
       }),
-      setRun,
+      (payload) => {
+        setRun(payload);
+        markRefreshed();
+      },
     );
 
     settle(
@@ -264,7 +281,7 @@ const HotelDashboard = () => {
 
     settle(
       httpService.get(API_HOTEL_COLLECTION_URL, {
-        params: { from: monthStart, to: today, branch_id: branchId },
+        params: { from: monthStart, to: rangeEnd, branch_id: branchId },
       }),
       (payload) =>
         setTakings(
@@ -277,19 +294,20 @@ const HotelDashboard = () => {
     return () => {
       alive = false;
     };
-  }, [branchId]);
+  }, [branchId, range.from, range.to, tick]);
 
   const totals = run?.totals;
 
-  // The last night of the range IS tonight, because the range ends today. One
-  // read answers both questions rather than two that could drift apart.
-  const tonight = useMemo(
-    () =>
-      Array.isArray(run?.daily) && run.daily.length
-        ? run.daily[run.daily.length - 1]
-        : null,
-    [run],
-  );
+  // Tonight is the range's night dated today -- there when the range ends
+  // today, absent on Last month or a custom range that ends earlier, and then
+  // the tonight tiles say nothing rather than call last month's last night
+  // tonight. One read answers both questions rather than two that could drift.
+  const tonight = useMemo(() => {
+    const today = asText(new Date());
+    return Array.isArray(run?.daily)
+      ? run.daily.find((night: any) => String(night?.date) === today) ?? null
+      : null;
+  }, [run]);
 
   // The strip only reads as a shape if every bar is measured against the same
   // ceiling, and that ceiling is the property — not the fullest night in it.
@@ -649,6 +667,10 @@ const HotelDashboard = () => {
             </div>
           </div>
         ) : null;
+      case 'balance-range':
+        return isWidgetVisible('balance-range') ? (
+          <RangeCashCard cash={cash} rowClass={rowClass} />
+        ) : null;
       default:
         return null;
     }
@@ -665,27 +687,32 @@ const HotelDashboard = () => {
           </h1>
           <p className="text-xs text-slate-400">
             {run?.from && run?.to
-              ? `This month so far · ${formatDayMonthYear(run.from)} to ${formatDayMonthYear(run.to)}`
+              ? rangeCaption(run.from, run.to, refreshedAt)
               : 'Reading the property…'}
           </p>
         </div>
-        <DashboardCustomizeButton
-          density={density}
-          widgets={orderedWidgets}
-          isWidgetVisible={isWidgetVisible}
-          onToggleWidget={toggleWidget}
-          onMoveWidget={moveWidget}
-          onDensityChange={setDensity}
-          onReset={reset}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <DashboardRangeBar range={range} onRefresh={refresh} busy={!run} />
+          <DashboardCustomizeButton
+            density={density}
+            widgets={orderedWidgets}
+            isWidgetVisible={isWidgetVisible}
+            onToggleWidget={toggleWidget}
+            onMoveWidget={moveWidget}
+            onDensityChange={setDensity}
+            onReset={reset}
+          />
+        </div>
       </div>
 
       {/* ------------------------------------------------------------ */}
       {/* Tonight. The desk's band, and it comes first because at nine in
           the morning nobody is asking about the month. */}
-      <div
-        className={`grid grid-cols-1 items-start md:grid-cols-2 lg:grid-cols-4 ${gap}`}
-      >
+      {/* As many 18rem columns as the page has room for -- see DASHBOARD_GRID.
+          Every card in a row stands as tall as the tallest; the cards' own
+          mb-4 is taken off. The wide cards span two columns only from xl,
+          where there are surely two to span. */}
+      <div className={`${DASHBOARD_GRID} ${gap}`}>
         {orderedWidgets
           .filter((widget) => isWidgetVisible(widget.id))
           .map((widget) => {
@@ -695,11 +722,10 @@ const HotelDashboard = () => {
               <div
                 key={widget.id}
                 className={
-                  ['nights', 'room-types', 'takings', 'balance'].includes(
-                    widget.id,
-                  )
-                    ? 'min-w-0 md:col-span-2'
-                    : 'min-w-0'
+                  'min-w-0 *:h-full *:mb-0 ' +
+                  (['nights', 'room-types', 'takings', 'balance'].includes(widget.id)
+                    ? 'xl:col-span-2'
+                    : '')
                 }
               >
                 {content}

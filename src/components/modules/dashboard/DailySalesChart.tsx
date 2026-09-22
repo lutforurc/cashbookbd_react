@@ -68,8 +68,16 @@ const DailySalesChart = () => {
     },
   };
 
+  // Titled by the window the server drew, when it says which -- the dashboard
+  // can ask for a range now -- and by the old wording when it does not.
+  const { dailyFrom, dailyTo } = purchaseSales?.data?.data ?? {};
+  const title =
+    dailyFrom && dailyTo
+      ? `Daily Sales (${chartDate(dailyFrom)} – ${chartDate(dailyTo)})`
+      : 'Daily Sales (Last 1 Month)';
+
   return (
-    <ChartCard title="Daily Sales (Last 1 Month)">
+    <ChartCard title={title}>
       <ApexChart options={options} series={chartData.series} type="area" height={260} />
     </ChartCard>
   );

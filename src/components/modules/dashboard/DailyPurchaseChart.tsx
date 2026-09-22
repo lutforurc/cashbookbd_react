@@ -68,8 +68,15 @@ const DailyPurchaseChart = () => {
     },
   };
 
+  // Titled by the window the server drew, when it says which; see DailySalesChart.
+  const { dailyFrom, dailyTo } = purchaseSales?.data?.data ?? {};
+  const title =
+    dailyFrom && dailyTo
+      ? `Daily Purchase (${chartDate(dailyFrom)} – ${chartDate(dailyTo)})`
+      : 'Daily Purchase (Last 1 Month)';
+
   return (
-    <ChartCard title="Daily Purchase (Last 1 Month)">
+    <ChartCard title={title}>
       <ApexChart options={options} series={chartData.series} type="area" height={260} />
     </ChartCard>
   );

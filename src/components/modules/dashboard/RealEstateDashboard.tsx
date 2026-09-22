@@ -23,10 +23,18 @@ import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
+import {
+  DashboardRangeBar,
+  rangeCaption,
+  useAutoRefresh,
+  useCashBookRange,
+  useDashboardRange,
+} from './dashboardRange';
+import RangeCashCard from './RangeCashCard';
 // money(), count(), share(), CARD, CARD_HEAD and Tile moved to the shared kit so
 // the trading dashboard cannot drift away from this one on how a taka is
 // written. Nothing here changed but where they are read from.
-import { CARD, CARD_HEAD, Tile, count, money, share } from './dashboardKit';
+import { CARD, CARD_HEAD, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
 
 /**
  * The dashboard a developer opens the morning on: flats, plots and parking.
@@ -82,15 +90,9 @@ const REAL_ESTATE_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'collection', title: 'Money Taken This Month' },
   { id: 'installments', title: 'Installments' },
   { id: 'balance', title: 'Cash Book' },
+  { id: 'balance-range', title: 'Cash Book (Range)' },
 ];
 
-const asText = (date: Date) => {
-  // Local parts, never toISOString(): which receipts fall inside "this month"
-  // is a calendar question at the desk, and going through UTC moves the
-  // boundary a day for half the world — and takes a month's receipts with it.
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  return `${date.getFullYear()}-${month}-${String(date.getDate()).padStart(2, '0')}`;
-};
 
 const RealEstateDashboard = () => {
   const dispatch = useDispatch<any>();
@@ -135,9 +137,14 @@ const RealEstateDashboard = () => {
   const gap = isCompact ? 'gap-3' : 'gap-4';
   const rowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
 
+  // The range the period bands are read over, and the refresh.
+  const range = useDashboardRange();
+  const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
+  const cash = useCashBookRange(branchId, range.from, range.to, tick);
+
   useEffect(() => {
     dispatch(getDashboard());
-  }, [dispatch]);
+  }, [dispatch, tick]);
 
   useEffect(() => {
     if (!branchId) return;
@@ -145,9 +152,7 @@ const RealEstateDashboard = () => {
     let alive = true;
     setSettled(false);
 
-    const now = new Date();
-    const today = asText(now);
-    const monthStart = asText(new Date(now.getFullYear(), now.getMonth(), 1));
+    const { from: monthStart, to: today } = range;
 
     /*
      * One read, because the server is where the pieces are made to agree: the
@@ -167,6 +172,7 @@ const RealEstateDashboard = () => {
         if (!alive) return;
         setPayload(response?.data?.data?.data ?? null);
         setSettled(true);
+        markRefreshed();
       })
       .catch(() => {
         if (alive) {
@@ -178,7 +184,7 @@ const RealEstateDashboard = () => {
     return () => {
       alive = false;
     };
-  }, [branchId]);
+  }, [branchId, range.from, range.to, tick]);
 
   const inventory = payload?.inventory;
   const sales = payload?.sales;
@@ -595,6 +601,10 @@ const RealEstateDashboard = () => {
             </div>
           </div>
         ) : null;
+      case 'balance-range':
+        return isWidgetVisible('balance-range') ? (
+          <RangeCashCard cash={cash} rowClass={rowClass} />
+        ) : null;
       default:
         return null;
     }
@@ -611,28 +621,32 @@ const RealEstateDashboard = () => {
           </h1>
           <p className="text-xs text-slate-400">
             {payload?.from && payload?.to
-              ? `This month so far · ${formatDayMonthYear(payload.from)} to ${formatDayMonthYear(
-                  payload.to,
-                )}`
+              ? rangeCaption(payload.from, payload.to, refreshedAt)
               : 'Reading the estate…'}
           </p>
         </div>
-        <DashboardCustomizeButton
-          density={density}
-          widgets={orderedWidgets}
-          isWidgetVisible={isWidgetVisible}
-          onToggleWidget={toggleWidget}
-          onMoveWidget={moveWidget}
-          onDensityChange={setDensity}
-          onReset={reset}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <DashboardRangeBar range={range} onRefresh={refresh} busy={!settled} />
+          <DashboardCustomizeButton
+            density={density}
+            widgets={orderedWidgets}
+            isWidgetVisible={isWidgetVisible}
+            onToggleWidget={toggleWidget}
+            onMoveWidget={moveWidget}
+            onDensityChange={setDensity}
+            onReset={reset}
+          />
+        </div>
       </div>
 
       {/* ------------------------------------------------------------ */}
       {/* The sales book. Deliberately NOT this month's — see the header. */}
-      <div
-        className={`grid grid-cols-1 items-start md:grid-cols-2 lg:grid-cols-4 ${gap}`}
-      >
+      {/* As many 18rem columns as the page has room for -- see DASHBOARD_GRID.
+          Every card in a row stands as tall as the tallest; the cards' own
+          mb-4 is taken off, since a full-height card plus a margin is taller
+          than its cell. The wide cards span two columns only from xl, where
+          there are surely two to span. */}
+      <div className={`${DASHBOARD_GRID} ${gap}`}>
         {orderedWidgets
           .filter((widget) => isWidgetVisible(widget.id))
           .map((widget) => {
@@ -642,14 +656,10 @@ const RealEstateDashboard = () => {
               <div
                 key={widget.id}
                 className={
-                  [
-                    'projects',
-                    'collection',
-                    'installments',
-                    'balance',
-                  ].includes(widget.id)
-                    ? 'min-w-0 md:col-span-2'
-                    : 'min-w-0'
+                  'min-w-0 *:h-full *:mb-0 ' +
+                  (['projects', 'collection', 'installments', 'balance'].includes(widget.id)
+                    ? 'xl:col-span-2'
+                    : '')
                 }
               >
                 {content}

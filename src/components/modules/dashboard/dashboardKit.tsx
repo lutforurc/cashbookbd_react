@@ -33,6 +33,14 @@ export const count = (value: number | null | undefined) => String(Math.trunc(Num
 export const share = (part: number, whole: number) =>
   !whole ? 0 : Math.min(100, Math.max(0, Math.round((part / whole) * 100)));
 
+/**
+ * The card grid: as many columns as 18rem cards fit in the space the page
+ * actually has, not in the viewport. `lg:grid-cols-4` counted the sidebar as
+ * room and squeezed four cards into 190px each on a 1024px screen -- a name
+ * column of nothing beside a truncated figure. Construction had this right.
+ */
+export const DASHBOARD_GRID = 'grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))]';
+
 export const CARD =
   'flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 transition hover:shadow-md dark:bg-gray-800 dark:text-[rgb(var(--c-text))] dark:ring-gray-700';
 
