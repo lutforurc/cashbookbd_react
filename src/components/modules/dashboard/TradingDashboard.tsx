@@ -20,6 +20,8 @@ import KpiRow, { KpiHeading, TRADING_TILES } from './KpiRow';
 import DueAgingCard from './DueAgingCard';
 import BalanceSummaryCard from './BalanceSummaryCard';
 import MonthlyPurchaseSalesChart from './MonthlyPurchaseSalesChart';
+import DailySalesChart from './DailySalesChart';
+import DailyPurchaseChart from './DailyPurchaseChart';
 import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
@@ -100,6 +102,8 @@ const TRADING_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'top-profit', title: 'What Made the Money' },
   { id: 'top-sales', title: 'Top Sales Products' },
   { id: 'top-purchase', title: 'Top Purchase Products' },
+  { id: 'daily-sales', title: 'Daily Sales Chart' },
+  { id: 'daily-purchase', title: 'Daily Purchase Chart' },
   { id: 'monthly-purchase-sales', title: 'Monthly Purchase Sales Chart' },
 ];
 
@@ -301,9 +305,13 @@ const TradingDashboard = () => {
     rows: any[],
     verb: string,
     tone: string,
+    days: number,
   ): React.ReactNode => {
     if (!isWidgetVisible(id) || rows.length === 0) return null;
     const total = listedValue(rows, 'amount');
+    // The window the server actually counted -- the branch's own setting, not
+    // the page's month -- said in the foot so the list is not read as the month.
+    const window = days === 1 ? 'today' : `last ${days} days`;
     return (
       <div className={`mb-4 ${CARD}`}>
         <div className={CARD_HEAD}>
@@ -342,7 +350,7 @@ const TradingDashboard = () => {
           className={`mt-auto flex items-center justify-between border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] dark:bg-gray-700/50`}
         >
           <span className="text-slate-500 dark:text-slate-300">
-            Top {rows.length} · this month
+            Top {rows.length} · {window}
           </span>
           <span className={`font-bold tabular-nums ${tone}`}>{money(total)}</span>
         </div>
@@ -685,6 +693,7 @@ const TradingDashboard = () => {
           topSales,
           'sold',
           'text-emerald-600 dark:text-emerald-400',
+          Number(payload?.top_sales_days) || 1,
         );
       case 'top-purchase':
         return unitsCard(
@@ -693,7 +702,20 @@ const TradingDashboard = () => {
           topPurchase,
           'bought',
           'text-primary dark:text-secondary',
+          Number(payload?.top_purchase_days) || 1,
         );
+      case 'daily-sales':
+        return isWidgetVisible('daily-sales') ? (
+          <div className="mb-4">
+            <DailySalesChart />
+          </div>
+        ) : null;
+      case 'daily-purchase':
+        return isWidgetVisible('daily-purchase') ? (
+          <div className="mb-4">
+            <DailyPurchaseChart />
+          </div>
+        ) : null;
       case 'monthly-purchase-sales':
         return isWidgetVisible('monthly-purchase-sales') ? (
           <div className="mb-4">
@@ -757,7 +779,7 @@ const TradingDashboard = () => {
                 key={widget.id}
                 className={
                   'min-w-0 *:h-full *:mb-0 ' +
-                  (widget.id === 'monthly-purchase-sales'
+                  (['daily-sales', 'daily-purchase', 'monthly-purchase-sales'].includes(widget.id)
                     ? 'col-span-full'
                     : widget.id === 'money-asleep'
                       ? 'md:col-span-2'
