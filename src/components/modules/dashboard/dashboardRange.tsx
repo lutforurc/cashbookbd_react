@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { FaSyncAlt } from 'react-icons/fa';
 import dayjs from 'dayjs';
 
 import httpService from '../../services/httpService';
+import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
+import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { API_DASHBOARD_CASH_BOOK_URL } from '../../services/apiRoutes';
 import { Button } from '../../../pages/UiElements/CustomButtons';
 import { Select } from '../../utils/fields/FormControls';
@@ -75,6 +78,35 @@ export const useAutoRefresh = () => {
   };
 };
 
+/**
+ * The branch a dashboard is ABOUT.
+ *
+ * For everybody it is their own branch. For a head office (branch_types_id
+ * 1) it is whichever branch the dropdown says, every branch to choose from,
+ * and each page hands that id to its reads -- the type of page does not
+ * change, only whose figures are on it.
+ */
+export const useViewBranch = () => {
+  const dispatch = useDispatch<any>();
+  const currentBranch = useSelector((state: any) => state.branchList?.currentBranch);
+  const branches: any[] = useSelector((state: any) => state.branchDdl?.protectedData?.data) ?? [];
+  const isHeadOffice = Number(currentBranch?.branch_types_id) === 1;
+  const [chosen, setChosen] = useState<string>('');
+
+  useEffect(() => {
+    if (isHeadOffice && !branches.length) dispatch(getDdlProtectedBranch());
+  }, [dispatch, isHeadOffice, branches.length]);
+
+  const viewBranchId: number | undefined =
+    isHeadOffice && chosen ? Number(chosen) : currentBranch?.id;
+  const viewBranchName: string =
+    branches.find((b: any) => String(b?.id) === String(viewBranchId))?.name ?? currentBranch?.name ?? '';
+
+  return { viewBranchId, viewBranchName, isHeadOffice, branches, chosen, setChosen };
+};
+
+export type ViewBranch = ReturnType<typeof useViewBranch>;
+
 export type CashBand = { from: string; to: string; received: number; payment: number; balance: number };
 
 /**
@@ -124,10 +156,22 @@ export const rangeCaption = (from?: string, to?: string, refreshedAt?: Date | nu
  */
 export const DashboardRangeBar: React.FC<{
   range?: DashboardRange;
+  /** The head office's branch picker; anyone else sees nothing here. */
+  view?: ViewBranch;
   onRefresh: () => void;
   busy?: boolean;
-}> = ({ range, onRefresh, busy }) => (
+}> = ({ range, view, onRefresh, busy }) => (
   <div className="flex flex-wrap items-center gap-2">
+    {view?.isHeadOffice && view.branches.length ? (
+      <div className="w-44">
+        <BranchDropdown
+          branchDdl={view.branches}
+          value={view.viewBranchId == null ? '' : String(view.viewBranchId)}
+          onChange={(event) => view.setChosen(event.target.value)}
+          className="px-2 text-xs font-medium"
+        />
+      </div>
+    ) : null}
     {range ? (
       <Select
         value={range.preset}

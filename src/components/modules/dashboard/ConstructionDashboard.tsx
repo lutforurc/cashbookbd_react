@@ -45,6 +45,7 @@ import {
   useAutoRefresh,
   useCashBookRange,
   useDashboardRange,
+  useViewBranch,
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
 import { Button } from '../../../pages/UiElements/CustomButtons';
@@ -92,19 +93,22 @@ const ConstructionDashboard = () => {
   const [totalDebit, setTotalDebit] = useState(0); // State to store the total sum of debits
   const [expandedBranchKey, setExpandedBranchKey] = useState<string | null>(null);
 
-  // The range drives the Cash Book (Range) card alone: none of this page's
-  // other reads take a date, and the chart has its own month box.
+  // The range drives the Cash Book (Range) card and the remittance list
+  // ("Received / Payment Details from H/O"); the chart has its own month box.
   const range = useDashboardRange();
   const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
-  const cash = useCashBookRange(currentBranch?.id, range.from, range.to, tick);
+  // The branch on the page: the user's own, or the one a head office picked.
+  const view = useViewBranch();
+  const viewBranchId = view.viewBranchId;
+  const cash = useCashBookRange(viewBranchId, range.from, range.to, tick);
 
   useEffect(() => {
-    dispatch(getDashboard());
+    dispatch(getDashboard(viewBranchId, { from: range.from, to: range.to }));
     // dispatch(getBranchChart());
     dispatch(getHeadOfficeReceivedChart());
     dispatch(getDdlProtectedBranch());
-    dispatch(getDashboardSummary());
-  }, [tick]);
+    dispatch(getDashboardSummary(viewBranchId));
+  }, [tick, viewBranchId, range.from, range.to]);
 
   // getDashboard is a plain thunk with nothing to await; the slice's loading
   // flag going down is when the page has its figures.
@@ -307,7 +311,7 @@ const ConstructionDashboard = () => {
       <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-slate-400">{rangeCaption(range.from, range.to, refreshedAt)}</p>
         <div className="flex flex-wrap items-center gap-2">
-          <DashboardRangeBar range={range} onRefresh={refresh} busy={Boolean(dashboard?.isLoading)} />
+          <DashboardRangeBar range={range} view={view} onRefresh={refresh} busy={Boolean(dashboard?.isLoading)} />
           <DashboardCustomizeButton
             density={density}
             widgets={orderedWidgets}
@@ -351,7 +355,7 @@ const ConstructionDashboard = () => {
                 </p>
                 <Button
                   className="mt-5 inline-flex items-center gap-2 rounded-md bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
-                  onClick={() => dispatch(getDashboard())}
+                  onClick={() => dispatch(getDashboard(viewBranchId, { from: range.from, to: range.to }))}
                   type="button"
                 >
                   <FaRedoAlt className="text-xs" />

@@ -18,11 +18,19 @@ import {
   API_RECEIVED_REMITTANCE_URL,
 } from '../../services/apiRoutes';
 
-export const getDashboard = () => (dispatch: any) => {
+// `branchId` is the branch a head office is looking at; left out, the server
+// reads the caller's own. `range` windows the remittance list (Construction's
+// "Received / Payment Details from H/O"); left out, the calendar month.
+export const getDashboard =
+  (branchId?: number | string | null, range?: { from: string; to: string }) => (dispatch: any) => {
   dispatch({ type: DASHBOARD_DATA_PENDING });
 
+  const params: Record<string, any> = {};
+  if (branchId) params.branch_id = branchId;
+  if (range?.from && range?.to) Object.assign(params, range);
+
   httpService
-    .get(API_DASHBOARD_URL)
+    .get(API_DASHBOARD_URL, { params: Object.keys(params).length ? params : undefined })
     .then((res) => {
       let _data = res.data;
       if (_data.success) {
@@ -51,11 +59,11 @@ export const getDashboard = () => (dispatch: any) => {
  * KPI tiles, receivable ageing and low stock. One request rather than one per
  * tile — the server assembles and caches them together.
  */
-export const getDashboardSummary = () => (dispatch: any) => {
+export const getDashboardSummary = (branchId?: number | string | null) => (dispatch: any) => {
   dispatch({ type: DASHBOARD_SUMMARY_PENDING });
 
   httpService
-    .get(API_DASHBOARD_SUMMARY_URL)
+    .get(API_DASHBOARD_SUMMARY_URL, { params: branchId ? { branch_id: branchId } : undefined })
     .then((res) => {
       const _data = res.data;
       if (_data.success) {

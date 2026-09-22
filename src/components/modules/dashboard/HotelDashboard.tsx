@@ -32,6 +32,7 @@ import {
   useAutoRefresh,
   useCashBookRange,
   useDashboardRange,
+  useViewBranch,
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
 import { DASHBOARD_GRID } from './dashboardKit';
@@ -188,7 +189,9 @@ const HotelDashboard = () => {
   const dashboard = useSelector((state: any) => state.dashboard);
   const me = useSelector((state: any) => state.auth?.me);
 
-  const branchId = currentBranch?.id;
+  // The branch on the page: the user's own, or the one a head office picked.
+  const view = useViewBranch();
+  const branchId = view.viewBranchId;
 
   const [run, setRun] = useState<any>(null);
   const [counts, setCounts] = useState<any>(null);
@@ -224,8 +227,8 @@ const HotelDashboard = () => {
   const cash = useCashBookRange(branchId, range.from, range.to, tick);
 
   useEffect(() => {
-    dispatch(getDashboard());
-  }, [dispatch, tick]);
+    dispatch(getDashboard(branchId));
+  }, [dispatch, tick, branchId]);
 
   useEffect(() => {
     if (!branchId) return;
@@ -683,7 +686,7 @@ const HotelDashboard = () => {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
-            {currentBranch?.name || 'The property'}
+            {view.viewBranchName || 'The property'}
           </h1>
           <p className="text-xs text-slate-400">
             {run?.from && run?.to
@@ -692,7 +695,7 @@ const HotelDashboard = () => {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <DashboardRangeBar range={range} onRefresh={refresh} busy={!run} />
+          <DashboardRangeBar range={range} view={view} onRefresh={refresh} busy={!run} />
           <DashboardCustomizeButton
             density={density}
             widgets={orderedWidgets}

@@ -23,6 +23,7 @@ import {
   useAutoRefresh,
   useCashBookRange,
   useDashboardRange,
+  useViewBranch,
 } from './dashboardRange';
 import { DASHBOARD_GRID } from './dashboardKit';
 import RangeCashCard from './RangeCashCard';
@@ -127,16 +128,19 @@ const ComputerAccessories = () => {
   // re-read on a refresh.
   const range = useDashboardRange();
   const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
-  const cash = useCashBookRange(currentBranch?.id, range.from, range.to, tick);
+  // The branch on the page: the user's own, or the one a head office picked.
+  const view = useViewBranch();
+  const branchId = view.viewBranchId;
+  const cash = useCashBookRange(branchId, range.from, range.to, tick);
 
   useEffect(() => {
-    dispatch(getDashboard());
-    dispatch(getDashboardSummary());
-  }, [dispatch, tick]);
+    dispatch(getDashboard(branchId));
+    dispatch(getDashboardSummary(branchId));
+  }, [dispatch, tick, branchId]);
 
   useEffect(() => {
-    (dispatch(getMonthlyPurchaseSales({ from: range.from, to: range.to })) as any).finally(markRefreshed);
-  }, [dispatch, tick, range.from, range.to]);
+    (dispatch(getMonthlyPurchaseSales({ from: range.from, to: range.to, branch_id: branchId })) as any).finally(markRefreshed);
+  }, [dispatch, tick, range.from, range.to, branchId]);
 
   return (
     <div>
@@ -144,7 +148,7 @@ const ComputerAccessories = () => {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-slate-400">{rangeCaption(range.from, range.to, refreshedAt)}</p>
         <div className="flex flex-wrap items-center gap-2">
-          <DashboardRangeBar range={range} onRefresh={refresh} busy={Boolean(summary?.isLoading)} />
+          <DashboardRangeBar range={range} view={view} onRefresh={refresh} busy={Boolean(summary?.isLoading)} />
           <DashboardCustomizeButton
             density={density}
             widgets={orderedWidgets}

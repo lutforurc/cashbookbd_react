@@ -29,6 +29,7 @@ import {
   useAutoRefresh,
   useCashBookRange,
   useDashboardRange,
+  useViewBranch,
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
 // money(), count(), share(), CARD, CARD_HEAD and Tile moved to the shared kit so
@@ -104,7 +105,9 @@ const RealEstateDashboard = () => {
   const dashboard = useSelector((state: any) => state.dashboard);
   const me = useSelector((state: any) => state.auth?.me);
 
-  const branchId = currentBranch?.id;
+  // The branch on the page: the user's own, or the one a head office picked.
+  const view = useViewBranch();
+  const branchId = view.viewBranchId;
 
   const [payload, setPayload] = useState<any>(null);
   /**
@@ -143,8 +146,8 @@ const RealEstateDashboard = () => {
   const cash = useCashBookRange(branchId, range.from, range.to, tick);
 
   useEffect(() => {
-    dispatch(getDashboard());
-  }, [dispatch, tick]);
+    dispatch(getDashboard(branchId));
+  }, [dispatch, tick, branchId]);
 
   useEffect(() => {
     if (!branchId) return;
@@ -617,7 +620,7 @@ const RealEstateDashboard = () => {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
-            {currentBranch?.name || 'The estate'}
+            {payload?.branch?.name || currentBranch?.name || 'The estate'}
           </h1>
           <p className="text-xs text-slate-400">
             {payload?.from && payload?.to
@@ -626,7 +629,7 @@ const RealEstateDashboard = () => {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <DashboardRangeBar range={range} onRefresh={refresh} busy={!settled} />
+          <DashboardRangeBar range={range} view={view} onRefresh={refresh} busy={!settled} />
           <DashboardCustomizeButton
             density={density}
             widgets={orderedWidgets}

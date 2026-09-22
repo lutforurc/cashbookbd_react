@@ -15,6 +15,7 @@ import {
   rangeCaption,
   useAutoRefresh,
   useDashboardRange,
+  useViewBranch,
 } from './dashboardRange';
 import httpService from '../../services/httpService';
 import { hasPermission } from '../../utils/permissionChecker';
@@ -152,7 +153,9 @@ const TradingDashboard = () => {
     useSelector((state: any) => state.settings?.data?.permissions) ?? [];
 
   const summaryData = summary?.data;
-  const branchId = currentBranch?.id;
+  // The branch on the page: the user's own, or the one a head office picked.
+  const view = useViewBranch();
+  const branchId = view.viewBranchId;
 
   /*
    * ⚠️ THE GODOWN, THE MARGIN AND THE TOP TABLE ARE THE OWNER'S FIGURES. The
@@ -217,10 +220,10 @@ const TradingDashboard = () => {
   const { tick, refresh, refreshedAt, markRefreshed } = useAutoRefresh();
 
   useEffect(() => {
-    dispatch(getDashboard()); // the cash-book card's figures
-    dispatch(getDashboardSummary());
-    dispatch(getMonthlyPurchaseSales({ from: range.from, to: range.to }));
-  }, [dispatch, tick, range.from, range.to]);
+    dispatch(getDashboard(branchId)); // the cash-book card's figures
+    dispatch(getDashboardSummary(branchId));
+    dispatch(getMonthlyPurchaseSales({ from: range.from, to: range.to, branch_id: branchId }));
+  }, [dispatch, tick, range.from, range.to, branchId]);
 
   useEffect(() => {
     if (!branchId) return;
@@ -741,7 +744,7 @@ const TradingDashboard = () => {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
-            {currentBranch?.name || 'The trade'}
+            {payload?.branch?.name || currentBranch?.name || 'The trade'}
           </h1>
           <p className="text-xs text-slate-400">
             {payload?.from && payload?.to
@@ -751,7 +754,7 @@ const TradingDashboard = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <DashboardRangeBar range={range} onRefresh={refresh} busy={!settled} />
+          <DashboardRangeBar range={range} view={view} onRefresh={refresh} busy={!settled} />
           <DashboardCustomizeButton
           density={density}
           widgets={orderedWidgets}
