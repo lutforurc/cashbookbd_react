@@ -214,6 +214,10 @@ const ROUTES = {
   // their card, open the bill. Read-only, and nothing of it reaches the ledger.
   legacy_record: '/legacy/records',
 
+  // The same client's older install, one version further back. Its own screen
+  // over its own tables -- the two archives share nothing.
+  legacy_old_record: '/legacy/old-records',
+
   // Day Close
   day_close: '/admin/dayclose',
   day_jump: '/admin/jumpdate',

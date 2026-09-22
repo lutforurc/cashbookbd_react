@@ -43,6 +43,7 @@ import EditCategory from './components/modules/category/EditCategory';
 import ProductGroup from './components/modules/productgroup/ProductGroup';
 import PackSize from './components/modules/packsize/PackSize';
 import LegacyRecordSearch from './components/modules/legacy/LegacyRecordSearch';
+import LegacyOldRecordSearch from './components/modules/legacy/LegacyOldRecordSearch';
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import CashBookTwoColumn from './components/modules/reports/cash-book-two-column/CashBookTwoColumn';
 import VoucherRegister from './components/modules/reports/voucher-register/VoucherRegister';
@@ -556,6 +557,20 @@ function App() {
               }
             >
               <Route path={routes.legacy_record} element={<LegacyRecordSearch />} />
+            </Route>
+
+            {/* The same client's older install. Its own permission, so access
+                to one old system is not access to the other. */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['legacy.old.record.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.legacy_old_record} element={<LegacyOldRecordSearch />} />
             </Route>
 
             {/* Transactions */}

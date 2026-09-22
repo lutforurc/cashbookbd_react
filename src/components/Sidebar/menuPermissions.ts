@@ -170,7 +170,9 @@ export const MENU_PERMISSIONS = {
   // bill up at the counter is not bookkeeping, and whoever does it should not
   // need accounts rights to answer a customer. Granted to nobody when the patch
   // creates it, so the menu stays out of the way until somebody hands it out.
-  legacy: ['legacy.record.view'],
+  // Either key opens the group; each sub-item is then gated on its own, so a
+  // shop that only ever ran one of the two old systems sees only that one.
+  legacy: ['legacy.record.view', 'legacy.old.record.view'],
   reseller: ['reseller.dashboard.view'],
   subscription_history: ['subscription.view', 'subscription.history'],
   customer_dashboard: ['customer.dashboard'],

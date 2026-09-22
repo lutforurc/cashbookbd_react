@@ -93,6 +93,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
   // from Reports because it is a different system's records, not this one's.
   'legacy': [
     routes.legacy_record,
+    routes.legacy_old_record,
   ],
   'product_tracking': [
     routes.product_tracking_settings,

@@ -1193,3 +1193,10 @@ export const API_LEGACY_SOURCES_URL = `${API_BASE_URL}/legacy/sources`;
 export const API_LEGACY_PARTIES_URL = `${API_BASE_URL}/legacy/parties`;
 export const API_LEGACY_PARTY_URL = `${API_BASE_URL}/legacy/party`;
 export const API_LEGACY_INVOICE_URL = `${API_BASE_URL}/legacy/invoice`;
+
+// The same client's OLDER install -- its own tables behind its own prefix, so
+// the archive already in trial is never touched by work on this one.
+export const API_LEGACY_OLD_SOURCES_URL = `${API_BASE_URL}/legacy-old/sources`;
+export const API_LEGACY_OLD_PARTIES_URL = `${API_BASE_URL}/legacy-old/parties`;
+export const API_LEGACY_OLD_PARTY_URL = `${API_BASE_URL}/legacy-old/party`;
+export const API_LEGACY_OLD_INVOICE_URL = `${API_BASE_URL}/legacy-old/invoice`;

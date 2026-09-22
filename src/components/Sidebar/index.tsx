@@ -107,6 +107,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'legacy': [
     { id: 'legacy/records', title: "Old ERP Record" },
+    { id: 'legacy/old-records', title: "Old ERP Record (পুরনো ভার্সন)" },
   ],
   'product_tracking': [
     { id: 'product_tracking_settings', title: "Product Tracking" },
@@ -1663,11 +1664,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           ))}
 
-                          <li style={subSlot('legacy', 'legacy/records')}>
-                            <NavLink to={routes.legacy_record} className={subMenuLinkClass}>
-                              Old ERP Record
-                            </NavLink>
-                          </li>
+                          {/* Each old system on its own key. A shop that only
+                              ever ran one of them holds only that permission
+                              and sees only that line. */}
+                          {hasPermission(permissions, 'legacy.record.view') && (
+                            <li style={subSlot('legacy', 'legacy/records')}>
+                              <NavLink to={routes.legacy_record} className={subMenuLinkClass}>
+                                Old ERP Record
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'legacy.old.record.view') && (
+                            <li style={subSlot('legacy', 'legacy/old-records')}>
+                              <NavLink to={routes.legacy_old_record} className={subMenuLinkClass}>
+                                Old ERP Record (পুরনো ভার্সন)
+                              </NavLink>
+                            </li>
+                          )}
                         </ul>
                       </div>
                     </React.Fragment>
