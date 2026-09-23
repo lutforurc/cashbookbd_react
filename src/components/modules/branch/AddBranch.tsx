@@ -144,6 +144,8 @@ interface branchItem {
   product_tracking: boolean;
   company_scheme: boolean;
   company_scheme_due_days: NumberField;
+  /** '' = no fixed day (the days rule); '0'..'6' = Sunday..Saturday. */
+  company_scheme_due_weekday: string;
   /** Share of the property value the allotment letter asks for up front, as a percentage. */
   down_payment_percent: NumberField;
   /** What that share is taken on: 'total' or 'net_payable'. */
@@ -233,6 +235,16 @@ const defaultDownPaymentPercent = 30;
 const defaultDownPaymentBase = 'total';
 const defaultDelayChargePercent = 10;
 const defaultCompanySchemeDueDays = 30;
+const schemeDueWeekdays = [
+  { id: '', name: 'No fixed day (use days)' },
+  { id: '0', name: 'Sunday' },
+  { id: '1', name: 'Monday' },
+  { id: '2', name: 'Tuesday' },
+  { id: '3', name: 'Wednesday' },
+  { id: '4', name: 'Thursday' },
+  { id: '5', name: 'Friday' },
+  { id: '6', name: 'Saturday' },
+];
 
 /**
  * A saved choice as the form's own text. Unset metas come back false, so only
@@ -456,6 +468,7 @@ const AddBranch = () => {
     product_tracking: false,
     company_scheme: false,
     company_scheme_due_days: defaultCompanySchemeDueDays,
+    company_scheme_due_weekday: '',
     down_payment_percent: defaultDownPaymentPercent,
     down_payment_base: defaultDownPaymentBase,
     delay_charge_percent: defaultDelayChargePercent,
@@ -720,6 +733,7 @@ const AddBranch = () => {
         product_tracking: toBooleanFlag(b.product_tracking),
         company_scheme: toBooleanFlag(b.company_scheme),
         company_scheme_due_days: metaNumberOr(b.company_scheme_due_days, defaultCompanySchemeDueDays),
+        company_scheme_due_weekday: metaTextOr(b.company_scheme_due_weekday, ''),
         down_payment_percent: metaNumberOr(b.down_payment_percent, defaultDownPaymentPercent),
         down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
         delay_charge_percent: metaNumberOr(b.delay_charge_percent, defaultDelayChargePercent),
@@ -1716,6 +1730,22 @@ const AddBranch = () => {
                           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                             Days after the sale the brand is due to pay. The scheme sale
                             form offers this as its due date; it can still be changed there.
+                          </p>
+                        </div>
+                        <div>
+                          <DropdownCommon
+                            id="company_scheme_due_weekday"
+                            name={'company_scheme_due_weekday'}
+                            label="Scheme Due Weekday"
+                            onChange={handleOnSelectChange}
+                            value={formData?.company_scheme_due_weekday ?? ''}
+                            className="bg-transparent"
+                            data={schemeDueWeekdays}
+                          />
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            When the brand pays on a fixed day of the week, the due date
+                            becomes the first such day after the sale, and the days above
+                            are not used.
                           </p>
                         </div>
                       </div>

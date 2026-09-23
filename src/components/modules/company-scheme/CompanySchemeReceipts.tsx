@@ -20,6 +20,8 @@ import { isUserFeatureEnabled } from '../../utils/userFeatureSettings';
 import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import PrintFontInput from '../../utils/fields/PrintFontInput';
 import CompanySchemeReceiptsPrint from './CompanySchemeReceiptsPrint';
+import { useVoucherPrint } from '../vouchers';
+import { VoucherPrintRegistry } from '../vouchers/VoucherPrintRegistry';
 import { toReceiptsDocumentData } from './companySchemeDocumentData';
 import DocumentPrint from '../../utils/print-designer/DocumentPrint';
 import type { DocumentData } from '../../utils/print-designer/DocumentPrint';
@@ -27,6 +29,7 @@ import { normalizeTemplate } from '../../utils/print-designer/printTemplate';
 import type { PrintTemplate } from '../../utils/print-designer/printTemplate';
 
 type Receipt = {
+  voucher_id: number;
   vr_no: string;
   vr_date: string;
   method: 'cash' | 'bank';
@@ -71,6 +74,9 @@ const CompanySchemeReceipts = () => {
   const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(10);
   const printBespoke = useReactToPrint({ contentRef: printRef, documentTitle: 'Company Scheme Receipts' });
+  // One receipt voucher on its own paper, from its number in the table.
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   // The branch's own layout from the Print Designer, when one is saved. Set at
   // the click, printed once it is on the page, cleared after -- DueList's shape.
   const [designDoc, setDesignDoc] = useState<{ template: PrintTemplate; data: DocumentData } | null>(null);
@@ -153,6 +159,7 @@ const CompanySchemeReceipts = () => {
       key: `${receipt.vr_no}-${index}`,
       first: index === 0,
       sl: voucherIndex + 1,
+      voucher_id: receipt.voucher_id,
       vr_no: receipt.vr_no,
       vr_date: receipt.vr_date,
       method: receipt.method,
@@ -213,7 +220,13 @@ const CompanySchemeReceipts = () => {
       render: (row: any) =>
         row.first ? (
           <>
-            <div>{row.vr_no}</div>
+            <div
+              className="cursor-pointer hover:underline print:no-underline"
+              title="Print this voucher"
+              onClick={() => handleVoucherPrint({ mtm_id: row.voucher_id, vr_no: row.vr_no })}
+            >
+              {row.vr_no}
+            </div>
             <div className="text-xs uppercase text-gray-500">
               {row.method} · {thousandSeparator(row.voucher_amount)}
             </div>
@@ -408,6 +421,7 @@ const CompanySchemeReceipts = () => {
             fontSize={Number(fontSize)}
           />
           {designDoc ? <DocumentPrint ref={designDocRef} template={designDoc.template} data={designDoc.data} /> : null}
+          <VoucherPrintRegistry ref={voucherRegistryRef} rowsPerPage={Number(perPage)} fontSize={Number(fontSize)} />
         </div>
       </div>
     </div>

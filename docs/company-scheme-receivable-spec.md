@@ -67,13 +67,14 @@
 
 | টেবিল | কী রাখে |
 |---|---|
-| `company_scheme_receivables` | IMEI-প্রতি একটা সারি: `party_coa4_id` (কোম্পানি), `main_trx_id` (বিক্রয়), `product_id`, `imei`, `sale_price`, `original_amount`, `amount`, `due_date`, `is_deleted`। UNIQUE `(main_trx_id, imei)` |
+| `company_scheme_receivables` | IMEI-প্রতি একটা সারি: `party_coa4_id` (কোম্পানি), `main_trx_id` (বিক্রয়), `product_id`, `imei`, `sale_price`, `original_amount`, `amount`, `due_date`, `claimed_at` (claim sheet কোম্পানিকে কবে পাঠানো হয়েছে; null = পাঠানো হয়নি), `is_deleted`। UNIQUE `(main_trx_id, imei)`। আগে বানানো ডেটাবেসে `claimed_at` যোগ করতে `2026_09_23_company_scheme_claimed.sql`, অথবা patch কমান্ড (নিজে দেখে নেয়) |
 | `company_scheme_payments` | কোন রিসিভ ভাউচার (`main_trx_id`) কোন সারিতে (`receivable_id`) কত দিল |
 
 - ক্রেতার নাম, মোবাইল আর ঠিকানা থাকে আগে থেকে থাকা `inventory_sales_masters.name/mobile/address` কলামে। এর জন্য নতুন কলাম লাগেনি।
 - Branch Settings দুটো meta হিসেবে থাকে (মাইগ্রেশন লাগে না):
   - `company_scheme` — সুইচ
   - `company_scheme_due_days` — দিনের সংখ্যা, ডিফল্ট ৩০
+  - `company_scheme_due_weekday` — সপ্তাহের নির্দিষ্ট দিন (০ রবি … ৬ শনি); খালি মানে দিনের নিয়ম। থাকলে ডিফল্ট মেয়াদ হয় বিক্রির পর প্রথম সেই বার (বিক্রির দিনটা নিজে বাদ), আর দিনের সংখ্যা ব্যবহার হয় না। নিয়মটা এক জায়গায়: `CompanySchemeService::defaultDueDate()`; ফর্ম একই হিসাব করে। (২৩ সেপ্টেম্বর, মালিকের চাওয়ায়)
 
 ## ৫. বিক্রয়ের ফর্ম — Invoice → Sales
 
@@ -88,7 +89,7 @@
   | Company Scheme | স্কিমের বিক্রয় + IMEI-প্রতি পাওনা | `company-scheme/sale/*` |
 
 - **controller:** `CompanySchemeSaleController` (store, edit, update)। বিক্রয়টা তবু সাধারণ বিক্রয়ের মতোই লেখা হয় — স্টক কমে, Sales রিপোর্ট আর খাতায় আসে, একই ভাউচার নম্বর — কারণ controller আগের `SalesService`, `InventoryService` আর `AccountService` শুধু **ডাকে**।
-- **Company Scheme চালু করলে ঘর আসে:** Company Due Date (ডিফল্ট লেনদেনের তারিখ + Scheme Due Days), Buyer Name, Buyer Mobile, Buyer Address। পক্ষ-ঘরের লেবেল হয় "Company (scheme account)"।
+- **Company Scheme চালু করলে ঘর আসে:** Company Due Date (ডিফল্ট: Scheme Due Weekday থাকলে লেনদেনের তারিখের পর প্রথম সেই বার, নইলে লেনদেনের তারিখ + Scheme Due Days), Buyer Name, Buyer Mobile, Buyer Address। পক্ষ-ঘরের লেবেল হয় "Company (scheme account)"।
 - একটা স্কিম বিক্রয় সেভের পর সুইচ চালুই থাকে, পরের স্কিম বিক্রয়ের জন্য।
 
 **এডিট:** যেকোনো ইনভয়েস আগের মতো খোঁজা যায়। লোড হলে ফর্ম নিজেই দেখে নেয় সেটা স্কিমের কিনা (`sale/edit` শুধু স্কিম ইনভয়েসে সাড়া দেয়), আর সেই অনুযায়ী সুইচ বসায়। **এডিটের সময় Company Scheme সুইচ বদলানো যায় না** — নইলে কোম্পানির পাওনার সারি পড়ে থাকত বা তৈরিই হতো না। আপডেট যায় ইনভয়েসের নিজের ধরনের endpoint-এ। সাধারণ ইনভয়েস স্কিমের endpoint দিয়ে আপডেট করা যায় না।
@@ -125,10 +126,12 @@
 
 | Endpoint | অনুমতি | কাজ |
 |---|---|---|
-| `POST receivables` | `company.scheme.view` | পাওনার তালিকা। ফিল্টার: `party_coa4_id, branch_id, status (open/overdue/paid/all), search (IMEI/মোবাইল/নাম/ইনভয়েস), from/to_date`। প্রতি সারিতে paid, balance, days_overdue, status; সাথে totals |
+| `POST receivables` | `company.scheme.view` | পাওনার তালিকা। ফিল্টার: `party_coa4_id, branch_id, status (open/overdue/unclaimed/paid/all), search (IMEI/মোবাইল/নাম/ইনভয়েস), from/to_date`। প্রতি সারিতে paid, balance, days_overdue, claimed_at, status; সাথে totals |
 | `POST receive` | `company.scheme.receive` | `{party_coa4_id, method: cash/bank, bank_coa4_id, remarks, allocations[{receivable_id, amount}]}` |
 | `POST receipts` | `company.scheme.view` | তারিখ অনুযায়ী প্রতিটা রিসিভ ভাউচার আর তার IMEI লাইন |
 | `GET reconcile/{party}` | `company.scheme.view` | `{ledger_balance, open_total, difference}` |
+| `GET summary` | `company.scheme.view` | প্রতি কোম্পানির এক লাইন: খোলা IMEI সংখ্যা ও অঙ্ক, মেয়াদোত্তীর্ণ অঙ্ক, খাতার ব্যালেন্স, পার্থক্য। `branch_id` দিলে দুই দিকই সেই শাখার ভাউচারে সীমিত (Ledger রিপোর্ট যেভাবে শাখা পড়ে: `main_trx_master.branch_id`); না দিলে পুরো কোম্পানি। `reconcile`-ও একই `branch_id` মানে |
+| `POST mark` | `company.scheme.mark` | `{receivable_ids[], due_date?, claimed_at?}` — টিক দেওয়া সারির মেয়াদ বা claim তারিখ বসায়; `claimed_at: ''` claim ফিরিয়ে নেয়। কোনো posting ছোঁয় না |
 | `POST sale/store` | `sales.create` | স্কিম বিক্রয় সেভ — Electronics store-এর payload, সাথে `companySchemeData.dueDate` আর `name/mobile/address` |
 | `POST sale/edit` | `sales.edit` | `{invoiceNo}` — শুধু স্কিম ইনভয়েস; সাথে `due_date` |
 | `POST sale/update` | `sales.edit` | store-এর payload + `mtmId` |
@@ -151,8 +154,8 @@
 
 | স্ক্রিন | কাজ |
 |---|---|
-| **Receivable** (`/company-scheme/receivable`) | কোম্পানি, শাখা, অবস্থা আর খোঁজার ফিল্টার। কোম্পানি বাছলে উপরে মিল-যাচাই দেখায়। IMEI-এ টিক দিয়ে অঙ্ক বসানো যায় (ডিফল্ট পুরো বাকি), তারপর নগদ বা ব্যাংক বেছে Receive। প্রিন্ট করা যায় |
-| **Receipts** (`/company-scheme/receipts`) | তারিখ অনুযায়ী পরিশোধ: ভাউচার আর তার IMEI লাইন। প্রিন্ট করা যায় |
+| **Receivable** (`/company-scheme/receivable`) | কোম্পানি, শাখা, অবস্থা আর খোঁজার ফিল্টার। **কোম্পানি না বাছলে** উপরে কোম্পানি-ভিত্তিক সারাংশ (খোলা / মেয়াদোত্তীর্ণ / খাতা / পার্থক্য); কোনো লাইনে ক্লিক করলে সেই কোম্পানি বসে। কোম্পানি বাছলে মিল-যাচাই লাইন। IMEI-এ টিক দিয়ে অঙ্ক বসানো যায় (ডিফল্ট পুরো বাকি), অথবা **কোম্পানি যত দিয়েছে সেই মোট লিখে "Fill oldest first"** — মেয়াদের ক্রমে নিজে ভরে, পরে হাতে ঠিক করা যায়। তারপর নগদ বা ব্যাংক বেছে Receive; সেভের পর **Print** বোতামে সেই রিসিভ ভাউচার ছাপে (সাধারণ Cash Received কাগজ)। টিক দেওয়া সারির উপর **Set Due Date / Mark Claimed / Unclaim** (অনুমতি `company.scheme.mark`) — একটা তারিখ-ঘর থেকে, ইনভয়েস এডিট ছাড়া। সারাংশ আর মিল-যাচাই দুটোই শাখা-ফিল্টার মানে। Claimed কলাম দেখায় কবে পাঠানো হয়েছে। প্রিন্ট করা যায় |
+| **Receipts** (`/company-scheme/receipts`) | তারিখ অনুযায়ী পরিশোধ: ভাউচার আর তার IMEI লাইন। ভাউচার নম্বরে ক্লিক করলে সেই ভাউচার ছাপে। প্রিন্ট করা যায় |
 
 **দেখতে আর প্রিন্টে:** দুই রিপোর্টই Cash Book-এর মতো — ফিল্টার বাক্সে ঘর, আর Apply, Reset, Rows, Font ও Print বোতাম। টেবিল শেয়ার করা `Table` component দিয়ে, তাই "Columns" বোতাম দিয়ে কলাম লুকানো যায়। সব তারিখ dd/mm/yyyy।
 
@@ -167,7 +170,7 @@
 
 ## ৮. চালু করার ধাপ (প্রতিটা ডেটাবেসে)
 
-1. SQL চালান: `2026_09_23_company_scheme.sql`, অথবা `php artisan patch:add-unit-type`। patch কমান্ড দুটো অনুমতি (`company.scheme.view/receive`) তৈরি করে administrator-দের দেয়। বিক্রয়ের জন্য আগের `sales.create`/`sales.edit`-ই যথেষ্ট। অনুমতি **role-এ** দিতে হয় — user-কে সরাসরি দেওয়া অনুমতি এই কোডবেসে পড়া হয় না।
+1. SQL চালান: `2026_09_23_company_scheme.sql` (আগে চালানো থাকলে শুধু `2026_09_23_company_scheme_claimed.sql`), অথবা `php artisan patch:add-unit-type`। patch কমান্ড তিনটা অনুমতি (`company.scheme.view/receive/mark`) তৈরি করে administrator-দের দেয়। বিক্রয়ের জন্য আগের `sales.create`/`sales.edit`-ই যথেষ্ট। অনুমতি **role-এ** দিতে হয় — user-কে সরাসরি দেওয়া অনুমতি এই কোডবেসে পড়া হয় না।
 2. `php artisan route:clear` আর `config:clear`।
 3. Branch Setup-এ **Company Scheme?** চালু করুন, Scheme Due Days দিন।
 4. প্রতিটা কোম্পানির জন্য আলাদা স্কিম পক্ষ খুলুন (ক্রয়ের পক্ষ নয়)।
@@ -182,6 +185,8 @@ SQL না চালানো ডেটাবেসে স্কিমের ফ
 | কোম্পানি-প্রতি সেটিংস টেবিল | মেয়াদ Branch Settings-এ, আর স্কিম বিক্রয় নিজের ফর্মেই হয় | কোম্পানি-প্রতি আলাদা মেয়াদ লাগলে |
 | Excel ইমপোর্ট | পুরনো পাওনা এখন বইয়ের কোন খাতে আছে, সেই প্রশ্নের উত্তর এখনো আসেনি | পুরনো ডেটা আনতে হলে। তখন ইমপোর্টও একটা journal বানাবে (Dr স্কিম পক্ষ / Cr ব্যবহারকারীর বাছা খাত), যাতে মিল থাকে |
 | আলাদা স্টেটমেন্ট স্ক্রিন | Ledger-ই যথেষ্ট | — |
+| Receive-এ তারিখের ঘর | রিসিভ ভাউচার day-close-এর তারিখ নেয় | ব্যাংকে টাকা আগের দিনে ঢুকলে; `apiMainTransactionMaster()` তৃতীয় argument-এ তারিখ নেয়ই |
+| মিল-যাচাইয়ে দোষী ভাউচারের তালিকা | সারাংশে কোন কোম্পানিতে পার্থক্য তা দেখা যায়; কোন ভাউচার, তা Ledger-এ | পার্থক্য নিয়মিত হলে |
 | পুরনো স্ক্রিনে স্কিম ইনভয়েস এডিট/মোছা আটকানো | মালিক পুরনো কোনো ফাইল ছুঁতে না করেছেন | মিল-যাচাইয়ে পার্থক্য নিয়মিত দেখা দিলে |
 | সাধারণ ভাউচারে স্কিম পক্ষ আটকানো | আপাতত মিল-যাচাই দিয়ে ধরা পড়ে | ভুল নিয়মিত ঘটলে |
 

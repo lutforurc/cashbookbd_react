@@ -2,11 +2,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
-import { FiCheckSquare, FiDownload, FiRotateCcw } from 'react-icons/fi';
+import { FiCheckSquare, FiDownload, FiPrinter, FiRotateCcw } from 'react-icons/fi';
 import { FIELD_CHECKBOX } from '../../../theme/fieldStyles';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Loader from '../../../common/Loader';
 import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
+import InputDatePicker from '../../utils/fields/DatePicker';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
@@ -19,6 +20,8 @@ import {
   API_COMPANY_SCHEME_RECEIVABLES_URL,
   API_COMPANY_SCHEME_RECEIVE_URL,
   API_COMPANY_SCHEME_RECONCILE_URL,
+  API_COMPANY_SCHEME_SUMMARY_URL,
+  API_COMPANY_SCHEME_MARK_URL,
   API_PRINT_TEMPLATE_URL,
 } from '../../services/apiRoutes';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
@@ -31,6 +34,8 @@ import { isUserFeatureEnabled } from '../../utils/userFeatureSettings';
 import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import PrintFontInput from '../../utils/fields/PrintFontInput';
 import CompanySchemeReceivablePrint from './CompanySchemeReceivablePrint';
+import { useVoucherPrint } from '../vouchers';
+import { VoucherPrintRegistry } from '../vouchers/VoucherPrintRegistry';
 import { toReceivableDocumentData } from './companySchemeDocumentData';
 import DocumentPrint from '../../utils/print-designer/DocumentPrint';
 import type { DocumentData } from '../../utils/print-designer/DocumentPrint';
@@ -52,12 +57,30 @@ type Row = {
   paid: number;
   balance: number;
   due_date: string;
+  claimed_at: string | null;
   days_overdue: number;
   status: 'due' | 'partial' | 'paid';
 };
 
 type Totals = { count: number; amount: number; paid: number; balance: number };
 type Reconcile = { ledger_balance: number; open_total: number; difference: number };
+type Summary = {
+  party_coa4_id: number;
+  party_name: string | null;
+  count: number;
+  open_total: number;
+  overdue_total: number;
+  ledger_balance: number;
+  difference: number;
+};
+
+/** Local date. toISOString() converts to UTC, which in GMT+6 slipped a day back. */
+const toIsoDate = (value: any): string => {
+  if (!value) return '';
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 const money = (value: number) => (Number(value) ? thousandSeparator(Number(value)) : '-');
 const BANK_COA3 = 2;
@@ -65,6 +88,7 @@ const BANK_COA3 = 2;
 const STATUSES = [
   { id: 'open', name: 'Open (not fully paid)' },
   { id: 'overdue', name: 'Overdue' },
+  { id: 'unclaimed', name: 'Unclaimed (not sent to brand)' },
   { id: 'paid', name: 'Paid' },
   { id: 'all', name: 'All' },
 ];
@@ -86,6 +110,8 @@ const CompanySchemeReceivable = () => {
   const branchDdl = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
   const canReceive = hasPermission(settings?.data?.permissions, 'company.scheme.receive');
+  // Due date / claim date on ticked rows: its own key, no voucher behind it.
+  const canMark = hasPermission(settings?.data?.permissions, 'company.scheme.mark');
   // The user's own choice (Cash Book honours it too): filters in a menu, or inline.
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -93,6 +119,8 @@ const CompanySchemeReceivable = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [totals, setTotals] = useState<Totals | null>(null);
   const [reconcile, setReconcile] = useState<Reconcile | null>(null);
+  // Every brand on one line, shown while no company is chosen.
+  const [summary, setSummary] = useState<Summary[] | null>(null);
   const [loading, setLoading] = useState(false);
 
   const [branchId, setBranchId] = useState(0);
@@ -108,6 +136,15 @@ const CompanySchemeReceivable = () => {
   const [banks, setBanks] = useState<{ id: string; name: string }[]>([]);
   const [remarks, setRemarks] = useState('');
   const [receiving, setReceiving] = useState(false);
+  // A lump sum to spread over the open IMEIs, oldest due first.
+  const [fillAmount, setFillAmount] = useState('');
+  // The last receipt taken on this screen, for its voucher print.
+  const [lastReceipt, setLastReceipt] = useState<{ id: number; vr_no: string } | null>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  // The date a Set Due Date / Mark Claimed puts on the ticked rows.
+  const [markDate, setMarkDate] = useState<any>(new Date());
+  const [marking, setMarking] = useState(false);
 
   const printRef = useRef<HTMLDivElement>(null);
   // Print settings, as the Cash Book has them. Rows 0 = everything on one sheet.
@@ -181,13 +218,19 @@ const CompanySchemeReceivable = () => {
       .finally(() => setLoading(false));
 
     // The brand's ledger against its open IMEIs: they should agree to the paisa.
+    // Both follow the branch filter, as the Ledger report reads a branch.
+    const scope = { params: { branch_id: branchId || undefined } };
     if (partyId) {
       httpService
-        .get(`${API_COMPANY_SCHEME_RECONCILE_URL}/${partyId}`)
+        .get(`${API_COMPANY_SCHEME_RECONCILE_URL}/${partyId}`, scope)
         .then((res) => setReconcile(res?.data?.data?.data ?? null))
         .catch(() => setReconcile(null));
     } else {
       setReconcile(null);
+      httpService
+        .get(API_COMPANY_SCHEME_SUMMARY_URL, scope)
+        .then((res) => setSummary(res?.data?.data?.data?.rows ?? []))
+        .catch(() => setSummary(null));
     }
   };
 
@@ -198,6 +241,48 @@ const CompanySchemeReceivable = () => {
       else delete next[row.id];
       return next;
     });
+  };
+
+  /**
+   * Spread a lump sum over the listed IMEIs in the order they stand -- the
+   * API sorts by due date, so the oldest due fills first -- and stop when it
+   * runs out. The clerk then corrects any row the brand's statement disagrees on.
+   */
+  const fill = () => {
+    let left = Math.round((Number(fillAmount) || 0) * 100) / 100;
+    if (left <= 0) return toast.info('Enter the amount the brand paid.');
+    const next: Record<number, string> = {};
+    for (const row of rows ?? []) {
+      if (left <= 0) break;
+      if (row.balance <= 0) continue;
+      const take = Math.min(row.balance, left);
+      next[row.id] = String(take);
+      left = Math.round((left - take) * 100) / 100;
+    }
+    setPicked(next);
+    if (left > 0) toast.info(`${thousandSeparator(left)} is more than what is open here.`);
+  };
+
+  /** Due date or claim date on the ticked rows. No posting moves. */
+  const mark = (field: 'due_date' | 'claimed_at', clear = false) => {
+    const ids = Object.keys(picked).map(Number);
+    if (!ids.length) return toast.info('Tick at least one IMEI.');
+    const date = clear ? '' : toIsoDate(markDate);
+    if (!clear && !date) return toast.info('Pick a date.');
+
+    setMarking(true);
+    httpService
+      .post(API_COMPANY_SCHEME_MARK_URL, { receivable_ids: ids, [field]: date })
+      .then((res) => {
+        if (res?.data?.success) {
+          toast.success(res.data.message || 'Updated.');
+          load();
+        } else {
+          toast.info(res?.data?.message || res?.data?.error?.message || 'Not updated.');
+        }
+      })
+      .catch((e) => toast.error(e?.response?.data?.message ?? 'Not updated.'))
+      .finally(() => setMarking(false));
   };
 
   const pickedTotal = Object.values(picked).reduce((sum, v) => sum + (Number(v) || 0), 0);
@@ -226,7 +311,10 @@ const CompanySchemeReceivable = () => {
       .then((res) => {
         if (res?.data?.success) {
           toast.success(res.data.message || 'Received.');
+          const saved = res?.data?.data?.data;
+          if (saved?.id && saved?.vr_no) setLastReceipt({ id: Number(saved.id), vr_no: String(saved.vr_no) });
           setRemarks('');
+          setFillAmount('');
           load();
         } else {
           toast.info(res?.data?.message || res?.data?.error?.message || 'Not received.');
@@ -290,7 +378,9 @@ const CompanySchemeReceivable = () => {
     setRows(null);
     setTotals(null);
     setReconcile(null);
+    setSummary(null);
     setPicked({});
+    setFillAmount('');
     setFilterOpen(false);
   };
 
@@ -389,6 +479,13 @@ const CompanySchemeReceivable = () => {
       cellClass: 'text-right tabular-nums',
       render: (row: Row) =>
         row.days_overdue ? <span className="text-red-600">{row.days_overdue} d</span> : '-',
+    },
+    {
+      key: 'claimed_at',
+      header: 'Claimed',
+      headerClass: 'text-center',
+      cellClass: 'text-center whitespace-nowrap',
+      render: (row: Row) => (row.claimed_at ? formatDayMonthYear(row.claimed_at) : '-'),
     },
     ...(showPick
       ? [
@@ -574,6 +671,49 @@ const CompanySchemeReceivable = () => {
         </div>
       </div>
 
+      {!partyId && summary && summary.length > 0 ? (
+        <div className="mb-3 overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-stroke text-left dark:border-strokedark">
+                <th className="py-1 pr-2">Company</th>
+                <th className="py-1 pr-2 text-right">IMEIs</th>
+                <th className="py-1 pr-2 text-right">Open</th>
+                <th className="py-1 pr-2 text-right">Overdue</th>
+                <th className="py-1 pr-2 text-right">Ledger</th>
+                <th className="py-1 text-right">Difference</th>
+              </tr>
+            </thead>
+            <tbody>
+              {summary.map((s) => (
+                <tr
+                  key={s.party_coa4_id}
+                  className="cursor-pointer border-b border-stroke hover:bg-gray-50 dark:border-strokedark dark:hover:bg-meta-4"
+                  title="Open this company"
+                  onClick={() => {
+                    setPartyId(s.party_coa4_id);
+                    setPartyName(s.party_name ?? '');
+                  }}
+                >
+                  <td className="py-1 pr-2">{s.party_name}</td>
+                  <td className="py-1 pr-2 text-right tabular-nums">{s.count}</td>
+                  <td className="py-1 pr-2 text-right tabular-nums">{money(s.open_total)}</td>
+                  <td className="py-1 pr-2 text-right tabular-nums text-red-600">{money(s.overdue_total)}</td>
+                  <td className="py-1 pr-2 text-right tabular-nums">{money(s.ledger_balance)}</td>
+                  <td className={`py-1 text-right tabular-nums ${Math.abs(s.difference) >= 0.01 ? 'font-semibold text-amber-700' : ''}`}>
+                    {Math.abs(s.difference) >= 0.01 ? money(s.difference) : '0'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="mt-1 text-xs text-gray-500">
+            {branchId ? `${branchOptions.find((b) => b.id === String(branchId))?.name ?? 'This branch'} only` : 'All branches'}. Click a
+            company to open it, then press Apply.
+          </p>
+        </div>
+      ) : null}
+
       {reconcile ? (
         <p
           className={`mb-3 rounded-sm p-2 text-xs ${
@@ -618,47 +758,102 @@ const CompanySchemeReceivable = () => {
       </div>
 
       {showPick && rows && rows.length > 0 ? (
-        <div className="mt-4 grid grid-cols-1 items-end gap-3 md:grid-cols-5">
-          <DropdownCommon
-            id="method"
-            name="method"
-            label="Received In"
-            value={method}
-            onChange={(e) => setMethod(e.target.value)}
-            data={METHODS}
-          />
-          {method === 'bank' ? (
-            <DropdownCommon
-              id="bank"
-              name="bank"
-              label="Bank Account"
-              value={bankId}
-              onChange={(e) => setBankId(e.target.value)}
-              data={[{ id: '', name: 'Select Bank Account' }, ...banks]}
-            />
-          ) : (
-            <div />
-          )}
-          <div className="md:col-span-2">
+        <>
+          {/* A lump sum: fill the ticks oldest-due first, then correct by hand. */}
+          <div className="mt-4 grid grid-cols-1 items-end gap-3 md:grid-cols-5">
             <InputElement
-              id="remarks"
-              name="remarks"
-              value={remarks}
-              label="Remarks"
-              placeholder="Cheque no, reference..."
+              id="fill_amount"
+              name="fill_amount"
+              type="number"
+              min={0}
+              step="0.01"
+              value={fillAmount}
+              label="Amount the brand paid"
+              placeholder="Total, to spread oldest due first"
               className="w-full"
-              onChange={(e: any) => setRemarks(e.target.value)}
+              onChange={(e: any) => setFillAmount(e.target.value)}
             />
+            <ButtonLoading onClick={fill} buttonLoading={false} label="Fill oldest first" className="whitespace-nowrap" />
           </div>
-          <ButtonLoading
-            onClick={receive}
-            buttonLoading={receiving}
-            label={`Receive ${pickedCount ? thousandSeparator(pickedTotal) : ''}`}
-            className="whitespace-nowrap"
-            icon={<FiDownload className="text-lg ml-2 mr-2" />}
-          />
-        </div>
+
+          <div className="mt-3 grid grid-cols-1 items-end gap-3 md:grid-cols-5">
+            <DropdownCommon
+              id="method"
+              name="method"
+              label="Received In"
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
+              data={METHODS}
+            />
+            {method === 'bank' ? (
+              <DropdownCommon
+                id="bank"
+                name="bank"
+                label="Bank Account"
+                value={bankId}
+                onChange={(e) => setBankId(e.target.value)}
+                data={[{ id: '', name: 'Select Bank Account' }, ...banks]}
+              />
+            ) : (
+              <div />
+            )}
+            <div className="md:col-span-2">
+              <InputElement
+                id="remarks"
+                name="remarks"
+                value={remarks}
+                label="Remarks"
+                placeholder="Cheque no, reference..."
+                className="w-full"
+                onChange={(e: any) => setRemarks(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2">
+              <ButtonLoading
+                onClick={receive}
+                buttonLoading={receiving}
+                label={`Receive ${pickedCount ? thousandSeparator(pickedTotal) : ''}`}
+                className="whitespace-nowrap"
+                icon={<FiDownload className="text-lg ml-2 mr-2" />}
+              />
+              {lastReceipt ? (
+                <ButtonLoading
+                  onClick={() => handleVoucherPrint({ mtm_id: lastReceipt.id, vr_no: lastReceipt.vr_no })}
+                  buttonLoading={false}
+                  label={`Print ${lastReceipt.vr_no}`}
+                  className="whitespace-nowrap"
+                  icon={<FiPrinter className="text-lg ml-2 mr-2" />}
+                />
+              ) : null}
+            </div>
+          </div>
+
+          {/* The ticked rows' dates: the brand extending its terms, or the
+              claim sheet going out. Neither is an invoice edit. */}
+          {canMark ? (
+          <div className="mt-3 grid grid-cols-1 items-end gap-3 md:grid-cols-5">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Date for ticked IMEIs</label>
+              <InputDatePicker
+                setCurrentDate={setMarkDate}
+                className="font-medium text-sm w-full "
+                selectedDate={markDate}
+                setSelectedDate={setMarkDate}
+              />
+            </div>
+            <div className="flex flex-wrap gap-2 md:col-span-4">
+              <ButtonLoading onClick={() => mark('due_date')} buttonLoading={marking} label="Set Due Date" className="whitespace-nowrap" />
+              <ButtonLoading onClick={() => mark('claimed_at')} buttonLoading={marking} label="Mark Claimed" className="whitespace-nowrap" />
+              <ButtonLoading onClick={() => mark('claimed_at', true)} buttonLoading={marking} label="Unclaim" className="whitespace-nowrap" />
+            </div>
+          </div>
+          ) : null}
+        </>
       ) : null}
+
+      <div className="hidden">
+        <VoucherPrintRegistry ref={voucherRegistryRef} rowsPerPage={Number(perPage)} fontSize={Number(fontSize)} />
+      </div>
     </div>
   );
 };

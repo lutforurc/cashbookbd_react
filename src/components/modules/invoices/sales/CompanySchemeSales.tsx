@@ -1063,9 +1063,11 @@ const CompanySchemeSales = () => {
   };
 
   /**
-   * Company Scheme on: the due date starts at the day's transaction date plus
-   * the branch's Scheme Due Days, and can be changed. Installment Sale goes
-   * off -- an invoice is one or the other.
+   * Company Scheme on: the due date starts where Branch Setup says the brand
+   * pays -- the first Scheme Due Weekday after the day's transaction date when
+   * one is set, else that date plus Scheme Due Days (CompanySchemeService::
+   * defaultDueDate does the same) -- and can be changed. Installment Sale
+   * goes off -- an invoice is one or the other.
    */
   const handleCompanySchemeChange = (checked: boolean) => {
     setIsCompanyScheme(checked);
@@ -1074,7 +1076,10 @@ const CompanySchemeSales = () => {
       if (isInstallment) handleInstallmentChange(false);
       const base = parseApiDate(settings?.data?.trx_dt) ?? new Date();
       const days = Number(settings?.data?.branch?.company_scheme_due_days) || 30;
-      setSchemeDueDate(new Date(base.getFullYear(), base.getMonth(), base.getDate() + days));
+      const weekdayMeta = settings?.data?.branch?.company_scheme_due_weekday;
+      const weekday = weekdayMeta === null || weekdayMeta === undefined || weekdayMeta === '' ? NaN : Number(weekdayMeta);
+      const ahead = weekday >= 0 && weekday <= 6 ? (7 + weekday - base.getDay()) % 7 || 7 : days;
+      setSchemeDueDate(new Date(base.getFullYear(), base.getMonth(), base.getDate() + ahead));
     } else {
       setSchemeDueDate(null);
     }

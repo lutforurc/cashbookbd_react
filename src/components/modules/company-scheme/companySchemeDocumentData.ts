@@ -55,6 +55,7 @@ export const toReceivableDocumentData = ({
         balance: Number(row?.balance ?? 0),
         due_date: formatDayMonthYear(row?.due_date),
         overdue_days: Number(row?.days_overdue) > 0 ? `${row.days_overdue} d` : '',
+        claimed_at: row?.claimed_at ? formatDayMonthYear(row.claimed_at) : '',
       };
     }),
   };
