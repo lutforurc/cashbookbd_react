@@ -10,23 +10,19 @@ import { toast } from 'react-toastify';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { useDispatch, useSelector } from 'react-redux';
 import { userCurrentBranch } from '../../branch/branchSlice';
-import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
-import WarehouseDropdown from '../../../utils/utils-functions/WarehouseDropdown';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import Loader from '../../../../common/Loader';
-import { FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiShare, FiTrash2 } from 'react-icons/fi';
+import { FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiShare, FiTrash2 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
+import { FIELD_HEIGHT } from '../../../../theme/fieldStyles';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler';
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
 import { validateForm } from '../../../utils/utils-functions/validationUtils';
-import InputOnly from '../../../utils/fields/InputOnly';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
-import { hasPermission } from '../../../utils/permissionChecker';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { SalesType } from '../../../../common/dropdownData';
 import {
   electronicsSalesEdit,
   electronicsSalesStore,
@@ -158,7 +154,6 @@ const getCashReceivedDebit = (transaction: any): string => {
  * left behind (or never made).
  */
 const CompanySchemeSales = () => {
-  const warehouse = useSelector((s: any) => s.activeWarehouse);
   const sales = useSelector((s: any) => s.electronicsSales);
   const settings = useSelector((s: any) => s.settings);
   const dispatch = useDispatch();
@@ -168,7 +163,6 @@ const CompanySchemeSales = () => {
   // The invoice waiting on an answer, held with the question so Continue can
   // send exactly what was refused rather than whatever the form holds by then.
   const [stockWarning, setStockWarning] = useState<(StockShortage & { payload: any }) | null>(null);
-  const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [earlyPaymentDate, setEarlyPaymentDate] = useState<Date | null>(null);
   const [salesType, setSalesType] = useState('1');
@@ -178,7 +172,6 @@ const CompanySchemeSales = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateId, setUpdateId] = useState<any>(null);
   const [isUpdateButton, setIsUpdateButton] = useState(false);
-  const [permissions, setPermissions] = useState<any>([]);
   const [isInstallment, setIsInstallment] = useState(false);
   // Company Scheme: the brand pays the balance later, tracked IMEI by IMEI.
   const [isCompanyScheme, setIsCompanyScheme] = useState(false);
@@ -219,8 +212,6 @@ const CompanySchemeSales = () => {
   useEffect(() => {
     dispatch(userCurrentBranch());
     dispatch(getServiceList());
-    dispatch(getDdlWarehouse());
-    setPermissions(settings.data.permissions);
   }, []);
 
 
@@ -347,12 +338,6 @@ const CompanySchemeSales = () => {
     };
   }, [formData.notes]);
 
-  useEffect(() => {
-    if (warehouse?.data && warehouse?.data.length > 0) {
-      setWarehouseDdlData(warehouse?.data);
-    }
-  }, [warehouse?.data]);
-
   const customerAccountHandler = (option: any) => {
     const key = 'account';
     const accountName = 'accountName';
@@ -424,9 +409,6 @@ const CompanySchemeSales = () => {
     setShowCustomerModal(false);
   };
 
-  const handleSalesType = (e: any) => {
-    setSalesType(e.target.value);
-  };
 
   const searchInvoice = (searchValue?: string) => {
     const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
@@ -565,10 +547,6 @@ const CompanySchemeSales = () => {
 
 
 
-  const totalAmount = formData.products.reduce(
-    (sum, row) => sum + Number(row.qty) * Number(row.price),
-    0,
-  );
 
   const addProduct = () => {
     const isValid = validateProductData(productData);
@@ -680,7 +658,6 @@ const CompanySchemeSales = () => {
   const companySchemeProblem = (): string | null => {
     if (!isCompanyScheme) return null;
     if (Number(formData.account) === 17) return "Select the brand's scheme account, not Cash.";
-    if (!schemeDueDate) return 'Enter the Company Due Date.';
     if (!formData.name.trim() || !formData.mobile.trim()) return "Enter the buyer's name and mobile number.";
     if (formData.products.some((p) => splitSerials(p.serial_no).length === 0)) {
       return 'Every line of a Company Scheme sale needs its IMEI / serial number.';
@@ -696,7 +673,6 @@ const CompanySchemeSales = () => {
     isCompanyScheme
       ? {
           isCompanyScheme: true,
-          companySchemeData: { dueDate: toIsoDate(schemeDueDate) },
           name: formData.name.trim(),
           mobile: formData.mobile.trim(),
           address: formData.address.trim(),
@@ -932,10 +908,6 @@ const CompanySchemeSales = () => {
     else setIsUpdateButton(false);
   }, [sales.isEdit]);
 
-  const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setProductData({ ...productData, [e.target.name]: e.target.value });
-  };
-
   const editProductItem = (productId: number) => {
     const productIndex = formData.products.findIndex(
       (item) => item.id === productId,
@@ -1084,6 +1056,15 @@ const CompanySchemeSales = () => {
       setSchemeDueDate(null);
     }
   };
+
+  // What the invoice comes to -- lines, plus charges, less discount: the sum
+  // the Total Tk. line showed, now inside the Received Amount box.
+  const invoiceTotal =
+    formData.products.reduce((sum, row) => sum + Number(row.qty) * Number(row.price), 0) +
+    (Number(formData?.serviceCharge) || 0) +
+    (Number(formData?.tdsAmount) || 0) +
+    (Number(formData?.transportationAmt) || 0) -
+    (Number(formData?.discountAmt) || 0);
 
   /** Scheme invoices print with the buyer's own address; everything else as before. */
   const printInvoice = () => {
@@ -1333,15 +1314,18 @@ const CompanySchemeSales = () => {
             {isCompanyScheme && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div className="w-full">
-                  <label className="dark:text-[rgb(var(--c-text))] text-gray-900" htmlFor="">
-                    Company Due Date
-                  </label>
-                  <InputDatePicker
-                    setCurrentDate={(date: Date | null) => setSchemeDueDate(date)}
-                    className="font-medium text-sm w-full "
-                    selectedDate={schemeDueDate}
-                    setSelectedDate={setSchemeDueDate}
-                    placeholder="Select Due Date"
+                  {/* Shown, not edited: Branch Setup's rule decides it, the
+                      server computes it, and an exception is Set Due Date on
+                      the Receivable screen (owner, 2026-09-23). */}
+                  <InputElement
+                    id="companyDueDate"
+                    name="companyDueDate"
+                    label="Company Due Date"
+                    value={schemeDueDate ? formatDayMonthYear(toIsoDate(schemeDueDate)) : ''}
+                    placeholder="From Branch Setup"
+                    className="w-full"
+                    disabled
+                    onChange={() => undefined}
                   />
                 </div>
                 <InputElement
@@ -1375,16 +1359,27 @@ const CompanySchemeSales = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <InputElement
-                id="receivedAmt"
-                value={formData.receivedAmt ?? ""}
-                name="receivedAmt"
-                placeholder="Received Amount"
-                label="Received Amount"
-                className="py-1 text-right w-full"
-                onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
-              />
+              {/* The invoice's total sits inside this box, the way Enter Price
+                  shows its line total (owner, 2026-09-23) -- it took the place
+                  of the Total Tk. line. */}
+              <div className="block relative">
+                <InputElement
+                  id="receivedAmt"
+                  value={formData.receivedAmt ?? ""}
+                  name="receivedAmt"
+                  placeholder="Received Amount"
+                  label="Received / Total Amount"
+                  className="py-1 w-full"
+                  onChange={handleOnChange}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
+                />
+                {/* Pinned to the input itself -- the bottom of this box, one
+                    control high, centred -- not to a fixed top offset, which
+                    left it a few pixels low under this label. */}
+                <span className={`pointer-events-none absolute bottom-0 right-3 z-50 flex items-center ${FIELD_HEIGHT}`}>
+                  {thousandSeparator(invoiceTotal)}
+                </span>
+              </div>
               <InputElement
                 id="discountAmt"
                 value={formData.discountAmt ?? ""}
@@ -1463,63 +1458,24 @@ const CompanySchemeSales = () => {
           </div>
           {/* Installment Popup */}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
-            <div className="mt-4">
-              <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
-                Total Tk. {thousandSeparator((totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)))}  {Number(formData?.receivedAmt) > 0 ? `(${(totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)) - Number(formData?.receivedAmt)})` : ""}
-              </p>
-            </div>
-            {hasPermission(permissions, 'sales.edit') && (
-              <>
-                <div className="mt-2">
-                  <DropdownCommon
- id="saleType"
- name="saleType"
- onChange={handleSalesType}
- defaultValue={productData?.variance_type || ''}
- data={SalesType}
- className="w-full "
-                  />
-                </div>
-                <div className="relative">
-                  <div className="w-full -gap-2 mt-2">
-                    <InputOnly
-                      id="search"
-                      value={search}
-                      name="search"
-                      placeholder="Search Invoice"
-                      label=""
-                      className="py-1 w-full bg-white"
-                      onChange={(e) => setSearch(e.target.value)}
-                      onKeyDown={(e) => handleInputKeyDown(e, 'searchInvoice')}
-                    />
-                    <ButtonLoading
-                      id="searchInvoice"
-                      name="searchInvoice"
-                      onClick={searchInvoice}
-                      buttonLoading={buttonLoading}
-                      label=""
-                      className="whitespace-nowrap bg-transparent! text-center -mr-2 py-2 absolute right-0 top-2 pr-2! pl-2!"
-                      icon={
-                        <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg ml-2 mr-2" />
-                      }
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          {/* No total / sale type / Search Invoice row on this form (owner,
+              2026-09-23). An invoice is still opened for editing from Global
+              Search, Cash Book, Ledger and the other voucher lists:
+              useVoucherAutoEditSearch below runs searchInvoice for them. */}
         </div>
         <div className="">
           <div className="grid grid-cols-1 gap-y-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {/* No warehouse on this form (owner, 2026-09-23): a line goes out
+                with none, as on a branch that keeps no warehouses. An invoice
+                loaded for editing keeps the one it was saved with. */}
+            <div className="grid grid-cols-1 gap-2">
               <div>
                 <label htmlFor="">Select Product</label>
                 <ProductDropdown
                   id="product"
                   name="product"
                   onSelect={productSelectHandler}
-                  onKeyDown={(e) => handleInputKeyDown(e, 'warehouse')}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'serial_no')}
                   defaultValue={
                     productData.product_name && productData.product
                       ? {
@@ -1537,17 +1493,6 @@ const CompanySchemeSales = () => {
                       : null
                   }
                   className=''
-                />
-              </div>
-              <div>
-                <label htmlFor="">Select Warehouse</label>
-                {warehouse.isLoading === true ? <Loader /> : ''}
-                <WarehouseDropdown
- id="warehouse"
- onChange={handleWarehouseChange}
- className="w-60 font-medium text-sm p-2 "
- warehouseDdl={warehouseDdlData}
- defaultValue={productData?.warehouse || ''}
                 />
               </div>
             </div>
@@ -1586,7 +1531,7 @@ const CompanySchemeSales = () => {
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'price')}
                 />
-                <span className="absolute top-8 right-3 z-50">{unit}</span>
+                <span className={`pointer-events-none absolute bottom-0 right-3 z-50 flex items-center ${FIELD_HEIGHT}`}>{unit}</span>
               </div>
               <div className="block relative">
                 <InputElement
@@ -1599,7 +1544,7 @@ const CompanySchemeSales = () => {
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
                 />
-                <span className="absolute top-8 right-3 z-50">{lineTotal}</span>
+                <span className={`pointer-events-none absolute bottom-0 right-3 z-50 flex items-center ${FIELD_HEIGHT}`}>{lineTotal}</span>
               </div>
             </div>
             <div className="flex gap-x-1 gap-y-1">

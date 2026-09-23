@@ -173,7 +173,8 @@ const CompanySchemeReceivable = () => {
     httpService
       .get(`${API_COAL3_ID_BY_L4_URL}${BANK_COA3}`)
       .then((res) => {
-        const coal4 = res?.data?.data?.data?.coal4;
+        // foundData($coaLevel3->coal4s): the ledgers are the payload itself.
+        const coal4 = res?.data?.data?.data;
         const list = Array.isArray(coal4) ? coal4 : [];
         setBanks(list.map((b: any) => ({ id: String(b.id), name: b.name })));
       })

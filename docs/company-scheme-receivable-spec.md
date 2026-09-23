@@ -89,10 +89,13 @@
   | Company Scheme | স্কিমের বিক্রয় + IMEI-প্রতি পাওনা | `company-scheme/sale/*` |
 
 - **controller:** `CompanySchemeSaleController` (store, edit, update)। বিক্রয়টা তবু সাধারণ বিক্রয়ের মতোই লেখা হয় — স্টক কমে, Sales রিপোর্ট আর খাতায় আসে, একই ভাউচার নম্বর — কারণ controller আগের `SalesService`, `InventoryService` আর `AccountService` শুধু **ডাকে**।
-- **Company Scheme চালু করলে ঘর আসে:** Company Due Date (ডিফল্ট: Scheme Due Weekday থাকলে লেনদেনের তারিখের পর প্রথম সেই বার, নইলে লেনদেনের তারিখ + Scheme Due Days), Buyer Name, Buyer Mobile, Buyer Address। পক্ষ-ঘরের লেবেল হয় "Company (scheme account)"।
+- **Company Scheme চালু করলে ঘর আসে:** Company Due Date, Buyer Name, Buyer Mobile, Buyer Address। পক্ষ-ঘরের লেবেল হয় "Company (scheme account)"।
+- **Company Due Date শুধু দেখায়, বদলানো যায় না** (মালিকের সিদ্ধান্ত, ২৩ সেপ্টেম্বর)। নিয়ম Branch Setup-এ: Scheme Due Weekday থাকলে লেনদেনের তারিখের পর প্রথম সেই বার, নইলে লেনদেনের তারিখ + Scheme Due Days। ফর্ম যা দেখায় server নিজেও তাই হিসাব করে, ফর্মের পাঠানো তারিখ পড়েই না। ব্যতিক্রম (কোম্পানি সময় বাড়াল) — Receivable-এর Set Due Date। **ইনভয়েস এডিটে প্রতিটা সারির মেয়াদ যেমন আছে তেমন থাকে**, যাতে Set Due Date-এর বদল হারায় না; এডিটে নতুন IMEI যোগ হলে শুধু সেটা নিয়মের তারিখ পায়।
+- **ফর্ম থেকে যা সরানো হয়েছে** (মালিকের সিদ্ধান্ত, ২৩ সেপ্টেম্বর; দুই মোডেই): Total Tk. / বিক্রয়ের ধরন (Cash Sales) / Search Invoice-এর সারি, আর Select Warehouse। লাইন warehouse ছাড়া যায়; এডিটে খোলা পুরনো ইনভয়েস তার সেভ-করা warehouse রাখে।
+- **Received / Total Amount:** লেখা বাঁদিকে, আর ঘরের ভেতরে ডানদিকে ইনভয়েসের মোট (লাইন + চার্জ − ডিসকাউন্ট) — Enter Price-এর ভেতরে লাইন-মোট যেভাবে দেখায়। সরানো Total Tk. লাইনের জায়গা এটাই নিয়েছে।
 - একটা স্কিম বিক্রয় সেভের পর সুইচ চালুই থাকে, পরের স্কিম বিক্রয়ের জন্য।
 
-**এডিট:** যেকোনো ইনভয়েস আগের মতো খোঁজা যায়। লোড হলে ফর্ম নিজেই দেখে নেয় সেটা স্কিমের কিনা (`sale/edit` শুধু স্কিম ইনভয়েসে সাড়া দেয়), আর সেই অনুযায়ী সুইচ বসায়। **এডিটের সময় Company Scheme সুইচ বদলানো যায় না** — নইলে কোম্পানির পাওনার সারি পড়ে থাকত বা তৈরিই হতো না। আপডেট যায় ইনভয়েসের নিজের ধরনের endpoint-এ। সাধারণ ইনভয়েস স্কিমের endpoint দিয়ে আপডেট করা যায় না।
+**এডিট:** Search Invoice ঘর আর নেই। ইনভয়েস এডিটে খোলে Ledger, Cash Book, Bank Book, Sales Ledger-এর Edit বোতাম থেকে — এই ফর্মের `useVoucherAutoEditSearch` নম্বর ধরে নিজেই খোঁজে। লোড হলে ফর্ম নিজেই দেখে নেয় সেটা স্কিমের কিনা (`sale/edit` শুধু স্কিম ইনভয়েসে সাড়া দেয়), আর সেই অনুযায়ী সুইচ বসায়। **এডিটের সময় Company Scheme সুইচ বদলানো যায় না** — নইলে কোম্পানির পাওনার সারি পড়ে থাকত বা তৈরিই হতো না। আপডেট যায় ইনভয়েসের নিজের ধরনের endpoint-এ। সাধারণ ইনভয়েস স্কিমের endpoint দিয়ে আপডেট করা যায় না।
 
 **প্রিন্ট:** সাধারণ আর কিস্তির বিক্রয় আগের মতোই প্রিন্ট হয়। স্কিম ইনভয়েসের জন্য Electronics-এর প্রিন্ট endpoint ডাকা হয় ইনভয়েসের id দিয়ে, আর শাখার Sales Invoice লেআউটে ছাপে (`invoices/sales/CompanySchemeInvoicePrint.tsx`)। নাম, মোবাইল আর ঠিকানা — তিনটাই ক্রেতার। ঠিকানার বদলটা নতুন component-এর ভেতরেই, শেয়ার করা mapper-এ নয়।
 
@@ -109,7 +112,6 @@
 | পরিস্থিতি | কেন আটকায় |
 |---|---|
 | পক্ষ Cash (17) | স্কিমের পক্ষ কোম্পানির স্কিম খাতা হতে হবে |
-| Company Due Date নেই | মেয়াদ বাধ্যতামূলক |
 | নাম বা মোবাইল নেই | ক্রেতার পরিচয় বাধ্যতামূলক |
 | কোনো লাইনে IMEI নেই, বা IMEI-এর সংখ্যা ≠ qty | প্রতিটা ইউনিটের নিজের সারি লাগে |
 | একই IMEI দুবার | একই ফোন দুবার বিক্রি হতে পারে না |
@@ -132,7 +134,7 @@
 | `GET reconcile/{party}` | `company.scheme.view` | `{ledger_balance, open_total, difference}` |
 | `GET summary` | `company.scheme.view` | প্রতি কোম্পানির এক লাইন: খোলা IMEI সংখ্যা ও অঙ্ক, মেয়াদোত্তীর্ণ অঙ্ক, খাতার ব্যালেন্স, পার্থক্য। `branch_id` দিলে দুই দিকই সেই শাখার ভাউচারে সীমিত (Ledger রিপোর্ট যেভাবে শাখা পড়ে: `main_trx_master.branch_id`); না দিলে পুরো কোম্পানি। `reconcile`-ও একই `branch_id` মানে |
 | `POST mark` | `company.scheme.mark` | `{receivable_ids[], due_date?, claimed_at?}` — টিক দেওয়া সারির মেয়াদ বা claim তারিখ বসায়; `claimed_at: ''` claim ফিরিয়ে নেয়। কোনো posting ছোঁয় না |
-| `POST sale/store` | `sales.create` | স্কিম বিক্রয় সেভ — Electronics store-এর payload, সাথে `companySchemeData.dueDate` আর `name/mobile/address` |
+| `POST sale/store` | `sales.create` | স্কিম বিক্রয় সেভ — Electronics store-এর payload, সাথে `name/mobile/address`। মেয়াদ server নিজে হিসাব করে |
 | `POST sale/edit` | `sales.edit` | `{invoiceNo}` — শুধু স্কিম ইনভয়েস; সাথে `due_date` |
 | `POST sale/update` | `sales.edit` | store-এর payload + `mtmId` |
 
@@ -194,6 +196,7 @@ SQL না চালানো ডেটাবেসে স্কিমের ফ
 
 - **টাকা ভাগের যুক্তি:** `php company_scheme_split_check.php` (API রিপোর রুটে)। ১২টা যাচাই — ভাগ, রাউন্ডিং, চার্জ আর ডিসকাউন্ট, আর প্রতিটা অস্বীকৃতি।
 - **পুরো চক্র, আসল ডেটাবেসে:** `php company_scheme_flow_check.php rmrmultidb`। ২৪টা যাচাই — স্কিম ফর্মে বিক্রয়, পাওনা সারি, মিল, ব্যাংকে টাকা নেওয়া, এডিট, সাধারণ ইনভয়েস ফর্মে না খোলা, রিসিভ মোছা। সবকিছু একটা ট্রানজ্যাকশনে চলে আর শেষে rollback হয়, তাই ডেটাবেসে কিছুই থেকে যায় না। ২৩ সেপ্টেম্বর `rmrmultidb`-এ সব পাস।
+- **ব্রাউজারে, ২৩ সেপ্টেম্বর, `rmrmultidb`:** নিচের ১–৫ আর নতুন সবগুলো (সারাংশ + শাখা-ফিল্টার + লাইনে ক্লিক, Fill oldest first, ব্যাংকে Receive + ভাউচার Print, Receipts-এ নম্বরে ক্লিক, Set Due Date, Mark Claimed / Unclaim / Unclaimed ফিল্টার, Ledger-এর Edit দিয়ে খোলা, এডিটে সরানো মেয়াদ টিকে থাকা) পাস। একটা বাগ ধরা পড়ে ঠিক হয়েছে: Receivable-এ ব্যাংকের তালিকা সবসময় খালি আসত (API-র উত্তরের আকার ভুল পড়া হচ্ছিল), তাই UI থেকে ব্যাংকে Receive অসম্ভব ছিল। পরীক্ষার ডেটা পরে সরানো হয়েছে (ভাউচার অ্যাপের পথে মুছে status 2, স্কিম সারি মুছে, পক্ষ নিষ্ক্রিয়)।
 - **হাতে-কলমে, ডেভ ডেটাবেসে:**
   1. Invoice → Sales থেকে (শাখায় Company Scheme চালু) তিনটা IMEI দিয়ে একটা বিক্রয় সেভ করুন। মোট পাওনা ৪৭,৫০০ আসবে, আর মিল-যাচাইয়ে পার্থক্য ০।
   2. ইনভয়েস প্রিন্ট করুন। ক্রেতার নাম, মোবাইল আর ঠিকানা আসবে।
