@@ -7,7 +7,6 @@ import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import ROUTES from '../../services/appRoutes';
 import InputElement from '../../utils/fields/InputElement';
-import Link from '../../utils/others/Link';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import SmsTemplatePreviewModal from './SmsTemplatePreviewModal';
 import {
@@ -306,10 +305,13 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
             />
           ) : null}
 
-          <Link to={ROUTES.sms_template_list} className="h-10 whitespace-nowrap">
-            <FiHome className="mr-2 text-white text-lg" />
-            Back to List
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate(ROUTES.sms_template_list)}
+            buttonLoading={false}
+            label="Back to List"
+            className="whitespace-nowrap text-center mr-0"
+            icon={<FiHome className="text-lg ml-2 mr-2" />}
+          />
         </div>
       </form>
 

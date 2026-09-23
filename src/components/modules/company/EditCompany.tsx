@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { FIELD_FILE_BUTTON } from '../../../theme/fieldStyles';
-import { FiSave } from 'react-icons/fi';
+import { FiSave, FiArrowLeft } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -12,7 +12,6 @@ import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import Link from '../../utils/others/Link';
 import { editCompany, updateCompany } from './companySlice';
 import { Input, Textarea } from '../../utils/fields/FormControls';
 
@@ -348,9 +347,13 @@ const EditCompany = () => {
             type="submit"
             className="whitespace-nowrap mr-2 py-1.5"
           />
-          <Link to="/company/company-list" className="text-nowrap py-1.5">
-            Go to back
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/company/company-list')}
+            buttonLoading={false}
+            label="Go to back"
+            className="whitespace-nowrap text-center mr-0"
+            icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+          />
         </div>
       </form>
     </div>

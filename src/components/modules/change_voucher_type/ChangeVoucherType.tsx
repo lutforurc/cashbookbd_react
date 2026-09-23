@@ -4,7 +4,6 @@ import { toast } from 'react-toastify';
 import { FaCheckDouble, FaHouse, FaArrowLeft, FaArrowsTurnToDots  } from 'react-icons/fa6';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import Link from '../../utils/others/Link';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
@@ -159,10 +158,13 @@ const ChangeVoucherType = () => {
             className="whitespace-nowrap text-center mr-0"
             icon={<FaArrowsTurnToDots className="text-lg ml-2 mr-2" />}
           />
-          <Link to="/admin/dayclose" className="text-nowrap justify-center mr-0 h-8">
-            <FaArrowLeft className="text-white text-lg ml-2 mr-2" />
-            <span className="hidden md:block">Back</span>
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/admin/dayclose')}
+            buttonLoading={false}
+            label="Back"
+            className="whitespace-nowrap text-center mr-0"
+            icon={<FaArrowLeft className="text-lg ml-2 mr-2" />}
+          />
           <ButtonLoading
             onClick={() => navigate('/dashboard')}
             buttonLoading={false}

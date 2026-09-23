@@ -3,7 +3,6 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 
 import { FaCheckDouble, FaHouse } from 'react-icons/fa6';
-import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { toast } from 'react-toastify';
@@ -138,13 +137,13 @@ const VoucherApproval = () => {
             className="whitespace-nowrap text-center mr-0"
             icon={<FiCheckSquare className="text-lg ml-2 mr-2" />}
           />
-          <Link
-            to="/admin/remove-approval"
-            className="text-nowrap justify-center mr-0 h-8"
-          >
-            <FaArrowLeft className="text-white text-lg ml-2  mr-2" />
-            <span className="hidden md:block">{'Back'}</span>
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/admin/remove-approval')}
+            buttonLoading={false}
+            label="Back"
+            className="whitespace-nowrap text-center mr-0"
+            icon={<FaArrowLeft className="text-lg ml-2 mr-2" />}
+          />
           <ButtonLoading
             onClick={() => navigate('/dashboard')}
             buttonLoading={false}

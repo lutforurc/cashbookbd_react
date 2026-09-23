@@ -3,10 +3,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import routes from '../../services/appRoutes';
 import { fetchCurrentSubscription } from './subscriptionSlice';
-import Link from '../../utils/others/Link';
 import { formatDayMonthYear } from '../../utils/utils-functions/formatDate';
+import { useNavigate } from 'react-router-dom';
+import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { FiPlus } from 'react-icons/fi';
 
 const MySubscription: React.FC = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch<any>();
   const { current, loadingCurrent } = useSelector((state: any) => state.subscription);
 
@@ -123,24 +126,25 @@ const MySubscription: React.FC = () => {
             <div className="mt-5 space-y-3">
               {/* Renewal is nearly always for the plan already held, so it is
                   named in the link and the payment form opens with it chosen. */}
-              <Link
-                to={`${routes.subscription_payment_submit}?plan_id=${current.plan_id}`}
-                className="flex w-full items-center justify-center whitespace-nowrap p-3 h-10"
-              >
-                Submit Payment
-              </Link>
-              <Link
-                to={routes.subscription_billing_history}
-                className="flex w-full items-center justify-center whitespace-nowrap p-3 h-10"
-              >
-                Billing History
-              </Link>
-              <Link
-                to={routes.subscription_pricing}
-                className="flex w-full items-center justify-center whitespace-nowrap p-3 h-10"
-              >
-                Compare Plans
-              </Link>
+              <ButtonLoading
+                onClick={() => navigate(`${routes.subscription_payment_submit}?plan_id=${current.plan_id}`)}
+                buttonLoading={false}
+                label="Submit Payment"
+                className="whitespace-nowrap text-center mr-0 w-full"
+                icon={<FiPlus className="text-lg ml-2 mr-2" />}
+              />
+              <ButtonLoading
+                onClick={() => navigate(routes.subscription_billing_history)}
+                buttonLoading={false}
+                label="Billing History"
+                className="whitespace-nowrap text-center mr-0 w-full"
+              />
+              <ButtonLoading
+                onClick={() => navigate(routes.subscription_pricing)}
+                buttonLoading={false}
+                label="Compare Plans"
+                className="whitespace-nowrap text-center mr-0 w-full"
+              />
             </div>
           </div>
         </div>
@@ -160,24 +164,25 @@ const MySubscription: React.FC = () => {
               Choose a plan and submit your payment for admin approval.
             </p>
             <div className="mt-5 space-y-3">
-              <Link
-                to={routes.subscription_pricing}
-                className="flex w-full items-center justify-center whitespace-nowrap p-3 h-10"
-              >
-                View Plans
-              </Link>
-              <Link
-                to={routes.subscription_payment_submit}
-                className="flex w-full items-center justify-center whitespace-nowrap p-3"
-              >
-                Submit Payment
-              </Link>
-              <Link
-                to={routes.subscription_billing_history}
-                className="flex w-full items-center justify-center whitespace-nowrap p-3"
-              >
-                Billing History
-              </Link>
+              <ButtonLoading
+                onClick={() => navigate(routes.subscription_pricing)}
+                buttonLoading={false}
+                label="View Plans"
+                className="whitespace-nowrap text-center mr-0 w-full"
+              />
+              <ButtonLoading
+                onClick={() => navigate(routes.subscription_payment_submit)}
+                buttonLoading={false}
+                label="Submit Payment"
+                className="whitespace-nowrap text-center mr-0 w-full"
+                icon={<FiPlus className="text-lg ml-2 mr-2" />}
+              />
+              <ButtonLoading
+                onClick={() => navigate(routes.subscription_billing_history)}
+                buttonLoading={false}
+                label="Billing History"
+                className="whitespace-nowrap text-center mr-0 w-full"
+              />
             </div>
           </div>
         </div>

@@ -20,7 +20,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../common/Loader';
-import Link from '../../utils/others/Link';
 import { getBranchSettings, getSettings } from '../settings/settingsSlice';
 import { toast } from 'react-toastify';
 import {
@@ -2266,12 +2265,13 @@ const AddBranch = () => {
                     <span className="mr-1 whitespace-nowrap text-xs font-medium text-gray-500 dark:text-gray-400">
                       Step {currentStep + 1} of {steps.length}
                     </span>
-                    <Link
-                      to="/branch/branch-list"
-                      className="inline-flex items-center whitespace-nowrap rounded border border-[rgb(var(--c-border))] px-3 py-1.5 text-sm text-gray-600 transition hover:border-blue-400 hover:text-blue-500 dark:text-gray-300"
-                    >
-                      <FiArrowLeft className="mr-2" /> Back
-                    </Link>
+                    <ButtonLoading
+                      onClick={() => navigate('/branch/branch-list')}
+                      buttonLoading={false}
+                      label="Back"
+                      className="whitespace-nowrap text-center mr-0"
+                      icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+                    />
                     <ButtonLoading
                       onClick={() => {
                         if (padHeaderPreview.startsWith('blob:')) {

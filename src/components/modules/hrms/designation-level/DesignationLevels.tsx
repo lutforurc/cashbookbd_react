@@ -6,16 +6,17 @@ import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import ROUTES from '../../../services/appRoutes';
 import SearchInput from '../../../utils/fields/SearchInput';
-import Link from '../../../utils/others/Link';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
 import ActionButtons from '../../../utils/fields/ActionButton';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import { deleteDesignationLevel, fetchDesignationLevels } from './designationLevelSlice';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiEdit2, FiPlus } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 const DesignationLevels = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch<any>();
   const designationLevelState = useSelector((state: any) => state.designationLevel);
 
@@ -129,12 +130,14 @@ const DesignationLevels = () => {
       cellClass: 'text-center',
       render: (row: any) => (
         <div className="flex items-center justify-center gap-2">
-          <Link
-            to={`${ROUTES.hrms_designation_level_edit_base}/${row.id}`}
-            className="px-2 py-1 text-xs"
-          >
-            Edit
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate(`${ROUTES.hrms_designation_level_edit_base}/${row.id}`)}
+            buttonLoading={false}
+            label="Edit"
+            size="sm"
+            className="h-7! whitespace-nowrap text-center mr-0"
+            icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+          />
           <ActionButtons
             row={row}
             showDelete={true}
@@ -164,9 +167,13 @@ const DesignationLevels = () => {
           />
         </div>
 
-        <Link to={ROUTES.hrms_designation_level_create} className="text-nowrap">
-          New Level
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate(ROUTES.hrms_designation_level_create)}
+          buttonLoading={false}
+          label="New Level"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiPlus className="text-lg ml-2 mr-2" />}
+        />
       </div>
 
       <div className="relative overflow-x-auto">

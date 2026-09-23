@@ -18,7 +18,6 @@ import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
 import resolveOrderParty from '../../../utils/utils-functions/resolveOrderParty';
 import InputElement from '../../../utils/fields/InputElement';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
-import Link from '../../../utils/others/Link';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { toast } from 'react-toastify';
 import { toastRefusal } from '../../../utils/refusalToast';

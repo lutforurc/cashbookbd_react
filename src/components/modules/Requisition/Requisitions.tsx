@@ -8,8 +8,7 @@ import SearchInput from '../../utils/fields/SearchInput';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
-import Link from '../../utils/others/Link';
-import { FiBook, FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiEdit2, FiSearch, FiTrash2, FiPlus } from 'react-icons/fi';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getOrders } from '../orders/ordersSlice';
@@ -18,8 +17,10 @@ import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { getRequisitions } from './requisitionSlice';
 import { formatDate } from '../../utils/utils-functions/formatDate';
+import { useNavigate } from 'react-router-dom';
 
 const Requisitions = (user: any) => {
+  const navigate = useNavigate();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const requisitionData = useSelector((state) => state.requisition);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -241,9 +242,13 @@ const Requisitions = (user: any) => {
             icon={<FiSearch />}
             className="whitespace-nowrap"
           />
-          <Link to="/requisition/create" className="text-nowrap ml-2">
-            New Requisition
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/requisition/create')}
+            buttonLoading={false}
+            label="New Requisition"
+            className="whitespace-nowrap text-center mr-0 ml-2"
+            icon={<FiPlus className="text-lg ml-2 mr-2" />}
+          />
         </div>
       </div>
 

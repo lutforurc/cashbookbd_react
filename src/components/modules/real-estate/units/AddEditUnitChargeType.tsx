@@ -7,7 +7,6 @@ import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputElement from "../../../utils/fields/InputElement";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
-import Link from "../../../utils/others/Link";
 import { toast } from "react-toastify";
 import { fetchUnitChargeType, storeUnitChargeType, updateUnitChargeType } from "./unitSlice";
 import routes from "../../../services/appRoutes";
@@ -174,12 +173,13 @@ const AddEditUnitChargeType = () => {
           className="p-2"
         />
 
-        <Link 
-          to={(routes as any).real_estate_unit_types_list} 
-          className="flex items-center justify-center"
-        >
-          <FiArrowLeft className="mr-2!" /> Back
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate((routes as any).real_estate_unit_types_list)}
+          buttonLoading={false}
+          label="Back"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+        />
       </div>
     </>
   );

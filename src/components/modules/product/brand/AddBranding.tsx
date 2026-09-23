@@ -7,14 +7,13 @@ import React, { useEffect, useState } from 'react';
 // import Loader from '../../../common/Loader';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FiSave } from 'react-icons/fi';
+import { FiSave, FiArrowLeft } from 'react-icons/fi';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
-import Link from '../../../utils/others/Link';
 import { editBrand, saveBrand, updateBrand } from './brandSlice';
 import ROUTES from '../../../services/appRoutes';
 
@@ -207,9 +206,13 @@ const AddBranding = () => {
           />
         )}
 
-        <Link to={ROUTES.brand_list} className="text-nowrap py-1.5">
-          Go to back
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate(ROUTES.brand_list)}
+          buttonLoading={false}
+          label="Go to back"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+        />
       </div>
     </div>
   );

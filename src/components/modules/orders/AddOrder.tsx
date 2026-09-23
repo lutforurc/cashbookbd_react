@@ -11,7 +11,6 @@ import InputDatePicker from '../../utils/fields/DatePicker'
 import dayjs from 'dayjs';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons'
 import { FiHome, FiRefreshCcw, FiSave } from 'react-icons/fi'
-import Link from '../../utils/others/Link'
 import { editOrder, storeOrder, updateOrder } from './ordersSlice'
 import OrderTypes from '../../utils/utils-functions/OrderTypes'
 import { toast } from 'react-toastify'
@@ -989,10 +988,13 @@ const AddOrder = (user: any) => {
                     className="whitespace-nowrap text-center mr-0 p-2"
                     icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
                 />
-                <Link to="/order/order-list" className="text-nowrap justify-center mr-0 p-2">
-                    <FiHome className="text-white text-lg ml-2  mr-2" />
-                    <span className='hidden md:block'>{'Back'}</span>
-                </Link>
+                <ButtonLoading
+                  onClick={() => navigate('/order/order-list')}
+                  buttonLoading={false}
+                  label="Back"
+                  className="whitespace-nowrap text-center mr-0"
+                  icon={<FiHome className="text-lg ml-2 mr-2" />}
+                />
             </div>
         </div>
     )

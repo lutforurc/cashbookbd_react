@@ -8,7 +8,6 @@ import { ButtonLoading, ROW_ACTION_BUTTON_CLASS } from "../../../pages/UiElement
 import Loader from "../../../common/Loader";
 import Pagination from "../../utils/utils-functions/Pagination";
 import Table from "../../utils/others/Table";
-import Link from "../../utils/others/Link";
 import { deleteCustomer, deleteCustomerOpening, getCustomer, updateCustomerFromUI } from "./customerSlice";
 import InputElement from "../../utils/fields/InputElement";
 import { toast } from "react-toastify";
@@ -715,10 +714,13 @@ const CustomerSupplier = () => {
           />
         </div>
 
-        <Link to="/customer-supplier/create" className="text-nowrap">
-          { <FiPlus className="inline mr-1" /> }
-          Add Customer
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate('/customer-supplier/create')}
+          buttonLoading={false}
+          label="Add Customer"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiPlus className="text-lg ml-2 mr-2" />}
+        />
       </div>
 
       {/* Table Section */}

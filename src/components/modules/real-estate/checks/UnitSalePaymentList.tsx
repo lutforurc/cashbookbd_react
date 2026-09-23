@@ -9,7 +9,6 @@ import Loader from "../../../../common/Loader";
 import InputElement from "../../../utils/fields/InputElement";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
-import Link from "../../../utils/others/Link";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { unitSalePaymentsList } from "./unitSalePaymentsSlice";

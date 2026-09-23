@@ -8,7 +8,6 @@ import Loader from "../../../../common/Loader";
 import InputElement from "../../../utils/fields/InputElement";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
-import Link from "../../../utils/others/Link";
 
 /* ================= CONSTANTS ================= */
 
@@ -433,9 +432,13 @@ const ChequeUpdate = () => {
                         icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
                     />
 
-                    <Link to="/real-estate/cheque-register" className="text-nowrap justify-center mr-0 P-2">
-                        <FiArrowLeft className="mr-2" /> Back
-                    </Link>
+                    <ButtonLoading
+                      onClick={() => navigate('/real-estate/cheque-register')}
+                      buttonLoading={false}
+                      label="Back"
+                      className="whitespace-nowrap text-center mr-0"
+                      icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+                    />
                 </div>
             </div>
         </>

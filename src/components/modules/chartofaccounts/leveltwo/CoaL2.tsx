@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiBook, FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiEdit2, FiSearch, FiTrash2, FiPlus } from 'react-icons/fi';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -9,9 +9,10 @@ import Table from '../../../utils/others/Table';
 import Loader from '../../../../common/Loader';
 import { getCoal2 } from './coal2Sliders';
 import SearchInput from '../../../utils/fields/SearchInput';
-import Link from '../../../utils/others/Link';
+import { useNavigate } from 'react-router-dom';
 
 const CoaL2 = () => {
+    const navigate = useNavigate();
     const coal2 = useSelector((state) => state.coal2);
     const dispatch = useDispatch();
     const [search, setSearchValue] = useState('');
@@ -121,9 +122,13 @@ const CoaL2 = () => {
                          icon={<FiSearch size={15} />}
                     />
                 </div>
-                <Link to="/category/create" className="text-nowrap hidden">
-                    New COA L2
-                </Link>
+                <ButtonLoading
+                  onClick={() => navigate('/category/create')}
+                  buttonLoading={false}
+                  label="New COA L2"
+                  className="whitespace-nowrap text-center mr-0 hidden"
+                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                />
             </div>
             <div className="relative overflow-x-auto overflow-y-hidden">
                 {coal2.isLoading == true ? <Loader /> : null}

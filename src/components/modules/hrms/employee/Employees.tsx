@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import SelectOption from '../../../utils/utils-functions/SelectOption'; 
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
-import Link from '../../../utils/others/Link';
 import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
@@ -457,9 +456,12 @@ const Employees = ({ user }: any) => {
             label=""
             className="ml-1 mr-1"
           />
-          <Link to="/hrms/employee/add" className="text-nowrap">
-            (+) Employee
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/hrms/employee/add')}
+            buttonLoading={false}
+            label="Employee"
+            className="whitespace-nowrap text-center mr-0"
+          />
         </div>
       </div>
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import Link from '../../../utils/others/Link';
 import { FiSave, FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import InputElement from '../../../utils/fields/InputElement';
@@ -506,9 +505,13 @@ const EmployeeEdit = ({ user }: any) => {
             className="whitespace-nowrap text-center mr-0"
             icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
-          <Link to="/hrms/employees" className="h-8">
-            <FiArrowLeft className="mr-2" /> Back
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/hrms/employees')}
+            buttonLoading={false}
+            label="Back"
+            className="whitespace-nowrap text-center mr-0"
+            icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+          />
         </div>
       </div>
     </>

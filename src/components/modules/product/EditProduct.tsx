@@ -3,7 +3,6 @@ import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCategoryDdl } from '../category/categorySlice';
 import Loader from '../../../common/Loader';
@@ -12,6 +11,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { warrantyType } from '../../utils/fields/DataConstant';
 import { editProduct, updateProduct } from './productSlice';
 import { isBranchSettingOn } from '../../utils/userFeatureSettings';
+import { FiArrowLeft } from 'react-icons/fi';
 
 const parseWarrantyDetails = (warrantyDays: unknown, fallbackType?: unknown) => {
   if (warrantyDays && typeof warrantyDays === 'object' && !Array.isArray(warrantyDays)) {
@@ -313,9 +313,13 @@ const EditProduct = () => {
           label="Update"
           className="whitespace-nowrap mr-2 py-1.5"
         />
-        <Link to="/product/product-list" className="text-nowrap py-1.5">
-          Go to back
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate('/product/product-list')}
+          buttonLoading={false}
+          label="Go to back"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+        />
       </div>
     </div>
   );

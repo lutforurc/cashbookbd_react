@@ -7,7 +7,6 @@ import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputElement from "../../../utils/fields/InputElement";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
-import Link from "../../../utils/others/Link";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import { toast } from "react-toastify";
 import { status } from "../../../utils/fields/DataConstant";
@@ -270,12 +269,13 @@ const AddEditUnit = () => {
           icon={<FiRefreshCcw className="mr-2 text-lg" />}
         />
 
-        <Link
-          to={`/real-estate/unit/list`}
-          className="flex items-center justify-center"
-        >
-          <FiArrowLeft className="mr-2" /> Back
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate(`/real-estate/unit/list`)}
+          buttonLoading={false}
+          label="Back"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+        />
       </div>
     </>
   );

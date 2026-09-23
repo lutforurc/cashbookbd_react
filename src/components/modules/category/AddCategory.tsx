@@ -3,7 +3,6 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { FiHome, FiSave } from 'react-icons/fi';
-import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
@@ -11,6 +10,7 @@ import * as Yup from 'yup';
 import { storeDayClose } from '../settings/settingsSlice'; // ✅ Make sure this path is correct
 import { storeCategory } from './categorySlice';
 import { setTime } from 'react-datepicker/dist/date_utils';
+import { useNavigate } from 'react-router-dom';
 
 interface CategoryFormValues {
   category_name: string;
@@ -18,6 +18,7 @@ interface CategoryFormValues {
 }
 
 const AddCategory: React.FC = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isLoading } = useSelector((state: any) => state.settings); // Adjust typing as needed
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
@@ -104,13 +105,13 @@ const AddCategory: React.FC = () => {
             icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
 
-          <Link
-            to="/category/category-list"
-            className="flex items-center text-nowrap justify-center mr-0 h-8"
-          >
-            <FiHome className="text-white text-lg ml-2 mr-2" />
-            <span className="hidden md:block">Back</span>
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/category/category-list')}
+            buttonLoading={false}
+            label="Back"
+            className="whitespace-nowrap text-center mr-0"
+            icon={<FiHome className="text-lg ml-2 mr-2" />}
+          />
         </div>
       </form>
     </>

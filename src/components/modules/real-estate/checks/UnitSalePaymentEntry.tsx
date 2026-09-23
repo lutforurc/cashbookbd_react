@@ -8,7 +8,6 @@ import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputElement from "../../../utils/fields/InputElement";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
-import Link from "../../../utils/others/Link";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { CHEQUE_STATUSES, ENTRY_STATUSES, PAYMENT_MODES, PAYMENT_TYPES } from "./checkContents";
@@ -553,9 +552,13 @@ export default function UnitSalePaymentEntry() {
               label="Reset"
               className=""
             />
-            <Link to={LIST_PATH} className="h-8 p-2">
-              <FiArrowLeft className="mr-2" /> Back
-            </Link>
+            <ButtonLoading
+              onClick={() => navigate(LIST_PATH)}
+              buttonLoading={false}
+              label="Back"
+              className="whitespace-nowrap text-center mr-0"
+              icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+            />
           </div>
         </div>
 
@@ -885,9 +888,13 @@ export default function UnitSalePaymentEntry() {
               icon={<FiSave className="text-lg ml-2 mr-2" />}
             />
 
-            <Link to={LIST_PATH} className="h-9 p-2">
-              <FiArrowLeft className="mr-2" /> Cancel
-            </Link>
+            <ButtonLoading
+              onClick={() => navigate(LIST_PATH)}
+              buttonLoading={false}
+              label="Cancel"
+              className="whitespace-nowrap text-center mr-0"
+              icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+            />
           </div>
         </div>
       </form>

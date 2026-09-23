@@ -6,14 +6,13 @@ import { toast } from 'react-toastify';
 import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import SearchInput from '../../../utils/fields/SearchInput';
-import Link from '../../../utils/others/Link';
 import Table from '../../../utils/others/Table';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import ROUTES from '../../../services/appRoutes';
 import { fetchProductUnits } from './unitSlice';
-import { FiPlus, FiSearch } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiEdit2 } from 'react-icons/fi';
 
 const ProductUnits = () => {
   const dispatch = useDispatch<any>();
@@ -106,9 +105,14 @@ const ProductUnits = () => {
       key: 'action',
       header: 'Action',
       render: (row: any) => (
-        <Link to={`/product-unit/unit-edit/${row.id}`} className="px-2 py-1 text-xs">
-          Edit
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate(`/product-unit/unit-edit/${row.id}`)}
+          buttonLoading={false}
+          label="Edit"
+          size="sm"
+          className="h-7! whitespace-nowrap text-center mr-0"
+          icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+        />
       ),
     },
   ];

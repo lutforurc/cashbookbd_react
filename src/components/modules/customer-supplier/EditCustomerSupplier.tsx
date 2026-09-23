@@ -13,8 +13,7 @@ import {
   FiPlus,
   FiRefreshCcw,
   FiSave,
-  FiTrash2,
-} from "react-icons/fi";
+  FiTrash2, FiArrowLeft } from "react-icons/fi";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import HelmetTitle from "../../utils/others/HelmetTitle";
@@ -32,7 +31,6 @@ import InputDatePicker from "../../utils/fields/DatePicker";
 import PhotoInput from "../../utils/fields/PhotoInput";
 import { getDdlArea } from "../area/areaSlice";
 import { ButtonLoading } from "../../../pages/UiElements/CustomButtons";
-import Link from "../../utils/others/Link";
 import { toast } from "react-toastify";
 import { getSettings } from "../settings/settingsSlice";
 import {
@@ -430,9 +428,13 @@ const EditCustomerSupplier = () => {
       <div className="flex justify-between mb-1">
         <div />
         {/* Back to the list where it was left, not to the top of it. */}
-        <Link to={returnTo} className="pt-2 pb-2">
-          Customer List
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate(returnTo)}
+          buttonLoading={false}
+          label="Customer List"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+        />
       </div>
 
       <FormikProvider value={formik}>

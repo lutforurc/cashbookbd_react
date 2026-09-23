@@ -8,7 +8,6 @@ import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import ROUTES from '../../../services/appRoutes';
 import InputElement from '../../../utils/fields/InputElement';
-import Link from '../../../utils/others/Link';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import {
   clearDesignationLevelEditData,
@@ -155,13 +154,13 @@ const AddDesignationLevel = () => {
                 />
               )}
 
-              <Link
-                to={ROUTES.hrms_designation_level_list}
-                className="mr-0 justify-center whitespace-nowrap p-2"
-              >
-                <FiHome className="ml-2 mr-2 text-lg text-white" />
-                <span>Back</span>
-              </Link>
+              <ButtonLoading
+                onClick={() => navigate(ROUTES.hrms_designation_level_list)}
+                buttonLoading={false}
+                label="Back"
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiHome className="text-lg ml-2 mr-2" />}
+              />
             </div>
           </div>
         </div>

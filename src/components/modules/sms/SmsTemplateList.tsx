@@ -8,7 +8,6 @@ import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import ROUTES from '../../services/appRoutes';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import Link from '../../utils/others/Link';
 import Table from '../../utils/others/Table';
 import Pagination from '../../utils/utils-functions/Pagination';
 import SelectOption from '../../utils/utils-functions/SelectOption';
@@ -267,10 +266,13 @@ const SmsTemplateList = () => {
         </div>
 
         {canEditTemplate ? (
-          <Link to={ROUTES.sms_template_create} className="h-9 whitespace-nowrap">
-            <FiPlus className="mr-2 text-white text-lg" />
-            New Template
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate(ROUTES.sms_template_create)}
+            buttonLoading={false}
+            label="New Template"
+            className="whitespace-nowrap text-center mr-0"
+            icon={<FiPlus className="text-lg ml-2 mr-2" />}
+          />
         ) : null}
       </div>
 

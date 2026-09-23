@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FieldArray, useFormik, FormikProvider } from 'formik';
 import * as Yup from 'yup';
-import { FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
+import { FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2, FiArrowLeft } from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
@@ -12,7 +12,6 @@ import { ClientType, nomineeRelationType, relationType, sexType, TrueFalse } fro
 import DdlDynamicMultiline from '../../utils/utils-functions/DdlDynamicMultiline';
 import { getDdlArea } from '../area/areaSlice';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import Link from '../../utils/others/Link';
 import { storeCustomer } from './customerSlice';
 import { toast } from 'react-toastify';
 import InputDatePicker from '../../utils/fields/DatePicker';
@@ -409,9 +408,13 @@ const AddCustomerSupplier = () => {
       <HelmetTitle title={'Add Customers'} />
       <div className="flex justify-between mb-1">
         <div />
-        <Link to="/customer-supplier/list" className="pt-2 pb-2">
-          Customer List
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate('/customer-supplier/list')}
+          buttonLoading={false}
+          label="Customer List"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+        />
       </div>
       <FormikProvider value={formik}>
         <form className="customer-form" onSubmit={formik.handleSubmit} autoComplete="off">

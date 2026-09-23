@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FiSave } from 'react-icons/fi';
+import { FiSave, FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,7 +9,6 @@ import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import InputElement from '../../../utils/fields/InputElement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import Link from '../../../utils/others/Link';
 import ROUTES from '../../../services/appRoutes';
 import {
   clearProductUnitEditData,
@@ -179,9 +178,13 @@ const AddProductUnit = () => {
           />
         )}
 
-        <Link to={ROUTES.product_unit_list} className="text-nowrap py-1.5">
-          Go to back
-        </Link>
+        <ButtonLoading
+          onClick={() => navigate(ROUTES.product_unit_list)}
+          buttonLoading={false}
+          label="Go to back"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+        />
       </div>
     </div>
   );

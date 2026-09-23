@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import HelmetTitle from '../../utils/others/HelmetTitle' 
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { FiHome, FiSave } from 'react-icons/fi';
-import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { storeDayClose } from './daycloseSlice';
 import { toast } from 'react-toastify';
@@ -129,10 +128,13 @@ const JumpDate = () => {
                     />
                    
 
-                     <Link to="/admin/dayclose" className="text-nowrap justify-center mr-0 h-8">
-                        <FaArrowLeft className="text-white text-lg ml-2  mr-2" />
-                        <span className='hidden md:block'>{'Back'}</span>
-                    </Link>
+                     <ButtonLoading
+                       onClick={() => navigate('/admin/dayclose')}
+                       buttonLoading={false}
+                       label="Back"
+                       className="whitespace-nowrap text-center mr-0"
+                       icon={<FaArrowLeft className="text-lg ml-2 mr-2" />}
+                     />
                      <ButtonLoading
                        onClick={() => navigate('/dashboard')}
                        buttonLoading={false}

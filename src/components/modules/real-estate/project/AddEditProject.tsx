@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FiSave, FiRefreshCcw, FiArrowLeft } from 'react-icons/fi';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -8,7 +8,6 @@ import Loader from '../../../../common/Loader';
 import InputElement from '../../../utils/fields/InputElement';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
-import Link from '../../../utils/others/Link';
 import { status } from '../../../utils/fields/DataConstant';
 
 import { ProjectItem } from './types';
@@ -23,6 +22,7 @@ import { projectStore, projectEdit, projectUpdate } from './projectSlice';
 import { toast } from 'react-toastify';
 
 const AddEditProject = (user: any) => {
+    const navigate = useNavigate();
     const dispatch = useDispatch<any>();
     const { id, areaId } = useParams();
     const projectState = useSelector((state: any) => state.realEstateProjects);
@@ -316,12 +316,13 @@ const AddEditProject = (user: any) => {
                     label="Reset"
                     icon={<FiRefreshCcw className="ml-2 text-lg" />}
                 />
-                <Link
-                    to={`/real-estate/project-list`}
-                    className="flex items-center justify-center"
-                >
-                    <FiArrowLeft className="mr-2" /> Back
-                </Link>
+                <ButtonLoading
+                  onClick={() => navigate(`/real-estate/project-list`)}
+                  buttonLoading={false}
+                  label="Back"
+                  className="whitespace-nowrap text-center mr-0"
+                  icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+                />
             </div>
         </>
     );

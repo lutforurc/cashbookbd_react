@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiBook, FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiEdit2, FiSearch, FiTrash2, FiPlus } from 'react-icons/fi';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -9,7 +9,6 @@ import Table from '../../../utils/others/Table';
 import Loader from '../../../../common/Loader';
 import { getCoal3 } from './coal3Sliders';
 import SearchInput from '../../../utils/fields/SearchInput';
-import Link from '../../../utils/others/Link';
 import routes from '../../../services/appRoutes';
 import { useNavigate } from 'react-router-dom';
 
@@ -159,9 +158,13 @@ const CoaL3: React.FC = () => {
                          icon={<FiSearch size={15} />}
                     />
                 </div>
-                <Link to={routes.coal3_add} className="text-nowrap">
-                    New COA L3
-                </Link>
+                <ButtonLoading
+                  onClick={() => navigate(routes.coal3_add)}
+                  buttonLoading={false}
+                  label="New COA L3"
+                  className="whitespace-nowrap text-center mr-0"
+                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                />
             </div>
             <div className="relative overflow-x-auto overflow-y-hidden">
                 {coal3.isLoading == true ? <Loader /> : null}

@@ -10,9 +10,11 @@ import Loader from '../../../common/Loader';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Table from '../../utils/others/Table';
-import Link from '../../utils/others/Link';
+import { useNavigate } from 'react-router-dom';
+import { FiPlus } from 'react-icons/fi';
 
 const Requisition = (user: any) => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const requisition = useSelector((state) => state.requisition);
@@ -222,9 +224,13 @@ const Requisition = (user: any) => {
             />
           </div>
           <div className="mt-2 md:mt-6">
-            <Link to="/requisition/create" className="text-nowrap h-8 w-full flex justify-center">
-              <span>New Requisition</span>
-            </Link>
+            <ButtonLoading
+              onClick={() => navigate('/requisition/create')}
+              buttonLoading={false}
+              label="New Requisition"
+              className="whitespace-nowrap text-center mr-0 w-full"
+              icon={<FiPlus className="text-lg ml-2 mr-2" />}
+            />
           </div>
         </div>
       </div>

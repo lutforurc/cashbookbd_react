@@ -6,7 +6,6 @@ import { toast } from 'react-toastify';
 import { FaHouse, FaArrowLeft, FaArrowsTurnToDots } from 'react-icons/fa6';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import Link from '../../utils/others/Link';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
@@ -18,8 +17,10 @@ import { changeVoucherDate } from './changeVoucherDateSlice';
 import { VOUCHER_TYPES } from '../../constant/constant/variables';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { FiArrowLeft, FiCheckSquare, FiHome } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 const ChangeDate = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { me } = useSelector((state: any) => state.auth);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -216,20 +217,20 @@ const ChangeDate = () => {
                     <FiCheckSquare className="text-white text-lg ml-2 mr-2" />
                   }
                 />
-                <Link
-                  to="/admin/dayclose"
-                  className="text-nowrap justify-center mr-0 h-8"
-                >
-                  <FiArrowLeft className="text-white text-lg ml-2 mr-2" />
-                  <span className="hidden md:block">Back</span>
-                </Link>
-                <Link
-                  to="/dashboard"
-                  className="text-nowrap justify-center mr-0 h-8"
-                >
-                  <FiHome className="text-white text-lg ml-2 mr-2" />
-                  <span className="hidden md:block">Home</span>
-                </Link>
+                <ButtonLoading
+                  onClick={() => navigate('/admin/dayclose')}
+                  buttonLoading={false}
+                  label="Back"
+                  className="whitespace-nowrap text-center mr-0"
+                  icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+                />
+                <ButtonLoading
+                  onClick={() => navigate('/dashboard')}
+                  buttonLoading={false}
+                  label="Home"
+                  className="whitespace-nowrap text-center mr-0"
+                  icon={<FiHome className="text-lg ml-2 mr-2" />}
+                />
               </div>
             </div>
           </Form>

@@ -10,8 +10,7 @@ import SearchInput from '../../utils/fields/SearchInput';
 import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
-import Link from '../../utils/others/Link';
-import { FiCheckSquare, FiEye, FiFilter, FiPrinter, FiRefreshCw, FiX } from 'react-icons/fi';
+import { FiCheckSquare, FiEye, FiFilter, FiPrinter, FiRefreshCw, FiX, FiPlus } from 'react-icons/fi';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import OrdersPrint from './OrdersPrint';
@@ -1574,9 +1573,13 @@ const Orders = () => {
                 className="shrink-0 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
               />
               <div className="shrink-0">
-                <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto h-9">
-                  New Order
-                </Link>
+                <ButtonLoading
+                  onClick={() => navigate('/orders/add-order')}
+                  buttonLoading={false}
+                  label="New Order"
+                  className="whitespace-nowrap text-center mr-0 self-start xl:self-auto"
+                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                />
               </div>
             </div>
           </div>
@@ -1616,9 +1619,13 @@ const Orders = () => {
                 />
               </div>
               <div className="ml-auto shrink-0">
-                <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto h-9">
-                  New Order
-                </Link>
+                <ButtonLoading
+                  onClick={() => navigate('/orders/add-order')}
+                  buttonLoading={false}
+                  label="New Order"
+                  className="whitespace-nowrap text-center mr-0 self-start xl:self-auto"
+                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                />
               </div>
             </>
           )}
