@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -20,11 +20,13 @@ import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import SelectWeightVariance from '../../../utils/utils-functions/SelectWeightVariance';
 import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
 import Loader from '../../../../common/Loader';
-import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, IconButton } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { userCurrentBranch } from '../../branch/branchSlice';
 import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
+import SeparateNotesModal from './SeparateNotesModal';
+import NotesApplyToStrip, { NotesApplyTo } from './NotesApplyToStrip';
 import httpService from '../../../services/httpService';
 import {
   API_CHART_OF_ACCOUNTS_DDL_L4_URL,
@@ -67,7 +69,6 @@ interface CombinedProduct {
 
 type SuggestionField = 'vehicle_no' | 'notes';
 type PartyTarget = 'supplier' | 'customer';
-type NotesApplyTo = 'purchase' | 'sales' | 'both';
 
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)
@@ -149,6 +150,9 @@ const initialFormData = {
   salesDiscountAmt: '',
   vehicleNumber: '',
   notes: '',
+  // Separate mode: each leg its own words. Empty otherwise.
+  purchaseNotes: '',
+  salesNotes: '',
   notesApplyTo: 'both' as NotesApplyTo,
   trackedProductId: null as number | null,
   products: [] as CombinedProduct[],
@@ -172,6 +176,10 @@ const TradingCombinedEntry = () => {
   const [partyTarget, setPartyTarget] = useState<PartyTarget>('supplier');
   const [partyDraftName, setPartyDraftName] = useState('');
   const [editingCombinedNumber, setEditingCombinedNumber] = useState('');
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  // Where the strip stood before Separate was chosen, for a Cancel that
+  // leaves both boxes empty.
+  const [notesModeBeforeSeparate, setNotesModeBeforeSeparate] = useState<NotesApplyTo>('both');
   /**
    * Keep every order line: the search label may only describe the first product.
    */
@@ -254,6 +262,8 @@ const TradingCombinedEntry = () => {
           salesDiscountAmt: String(editData.salesDiscountAmt ?? ''),
           vehicleNumber: editData.vehicleNumber || '',
           notes: editData.notes || '',
+          purchaseNotes: editData.purchaseNotes || '',
+          salesNotes: editData.salesNotes || '',
           notesApplyTo: editData.notesApplyTo || editData.notes_apply_to || 'both',
           trackedProductId: editData.trackedProductId ? Number(editData.trackedProductId) : null,
           products: Array.isArray(editData.products) ? editData.products : [],
@@ -267,41 +277,40 @@ const TradingCombinedEntry = () => {
     void fetchCombinedEntry();
   }, [location.state, navigate]);
 
+  // Earlier entries' own words for a box, or nothing for an empty query.
+  // Shared with the Separate Notes popup, which asks for its two boxes.
+  const loadSuggestions = useCallback(async (field: SuggestionField, query: string): Promise<string[]> => {
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) return [];
+
+    try {
+      const response = await httpService.get(API_TRADING_COMBINED_SUGGESTIONS_URL, {
+        params: { field, q: trimmedQuery },
+      });
+      return normalizeSuggestionItems(response?.data?.data?.data);
+    } catch (error) {
+      return [];
+    }
+  }, []);
+  const loadNoteSuggestions = useCallback(
+    (query: string) => loadSuggestions('notes', query),
+    [loadSuggestions],
+  );
+
   useEffect(() => {
-    const fetchSuggestions = async (
-      field: SuggestionField,
-      query: string,
-      setter: React.Dispatch<React.SetStateAction<string[]>>,
-    ) => {
-      const trimmedQuery = query.trim();
-      if (!trimmedQuery) {
-        setter([]);
-        return;
-      }
-
-      try {
-        const response = await httpService.get(API_TRADING_COMBINED_SUGGESTIONS_URL, {
-          params: { field, q: trimmedQuery },
-        });
-        setter(normalizeSuggestionItems(response?.data?.data?.data));
-      } catch (error) {
-        setter([]);
-      }
-    };
-
     const vehicleTimer = window.setTimeout(() => {
-      void fetchSuggestions('vehicle_no', formData.vehicleNumber, setVehicleSuggestions);
+      void loadSuggestions('vehicle_no', formData.vehicleNumber).then(setVehicleSuggestions);
     }, 250);
 
     const notesTimer = window.setTimeout(() => {
-      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+      void loadSuggestions('notes', formData.notes).then(setNoteSuggestions);
     }, 250);
 
     return () => {
       window.clearTimeout(vehicleTimer);
       window.clearTimeout(notesTimer);
     };
-  }, [formData.vehicleNumber, formData.notes]);
+  }, [formData.vehicleNumber, formData.notes, loadSuggestions]);
 
   // One entry, two parties, and tracking is configured per party -- so the
   // dropdown offers both sides' products and the server decides which leg each
@@ -513,10 +522,55 @@ const TradingCombinedEntry = () => {
   };
 
   const handleNotesApplyToChange = (notesApplyTo: NotesApplyTo) => {
+    if (notesApplyTo === 'separate') {
+      if (formData.notesApplyTo !== 'separate') setNotesModeBeforeSeparate(formData.notesApplyTo);
+      // The single note is the starting point for both boxes, so what was
+      // typed is not lost when the two legs part ways.
+      setFormData((prev) => ({
+        ...prev,
+        notesApplyTo: 'separate',
+        purchaseNotes: prev.notesApplyTo === 'separate' ? prev.purchaseNotes : prev.notes,
+        salesNotes: prev.notesApplyTo === 'separate' ? prev.salesNotes : prev.notes,
+      }));
+      setShowNotesModal(true);
+      return;
+    }
+
+    // Back to one box from Separate: one of the two notes has to go.
+    if (formData.notesApplyTo === 'separate') {
+      const purchase = formData.purchaseNotes.trim();
+      const sales = formData.salesNotes.trim();
+      if (purchase && sales && purchase !== sales) {
+        toast.info(`Kept the Purchase note; the Sales note ("${sales}") was dropped.`);
+      }
+      setFormData((prev) => ({
+        ...prev,
+        notesApplyTo,
+        notes: purchase || sales,
+        purchaseNotes: '',
+        salesNotes: '',
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       notesApplyTo,
     }));
+  };
+
+  const handleSeparateNotesSave = (purchaseNotes: string, salesNotes: string) => {
+    setFormData((prev) => ({ ...prev, purchaseNotes, salesNotes }));
+    setShowNotesModal(false);
+    focusField('product', 150);
+  };
+
+  const handleSeparateNotesCancel = () => {
+    setShowNotesModal(false);
+    // Nothing written on either leg: Separate was not meant, go back.
+    if (!formData.purchaseNotes.trim() && !formData.salesNotes.trim()) {
+      setFormData((prev) => ({ ...prev, notesApplyTo: notesModeBeforeSeparate }));
+    }
   };
 
   const handleVehicleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -1042,6 +1096,15 @@ const TradingCombinedEntry = () => {
 
     setSaveButtonLoading(true);
 
+    const notesApplyTo = showCombinedInvoiceNote ? formData.notesApplyTo || 'both' : 'both';
+    const legNotes =
+      notesApplyTo === 'separate'
+        ? { purchaseNotes: formData.purchaseNotes || null, salesNotes: formData.salesNotes || null }
+        : {
+            purchaseNotes: notesApplyTo !== 'sales' ? formData.notes || null : null,
+            salesNotes: notesApplyTo !== 'purchase' ? formData.notes || null : null,
+          };
+
     try {
       const payload = {
         supplierAccount: formData.supplierAccount,
@@ -1059,6 +1122,9 @@ const TradingCombinedEntry = () => {
         vehicleNumber: formData.vehicleNumber || null,
         notes: formData.notes || null,
         notesApplyTo: showCombinedInvoiceNote ? formData.notesApplyTo || 'both' : 'both',
+        // Each leg's own note, which is what the server writes; the two
+        // lines above are kept for its older reading of one note.
+        ...legNotes,
         trackedProductId: formData.trackedProductId,
         products: formData.products,
         ...(editingCombinedNumber ? { combined_number: editingCombinedNumber } : {}),
@@ -1261,51 +1327,51 @@ const TradingCombinedEntry = () => {
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')}
               />
               <div>
-                {/* Wraps rather than clips. The column is a third of the form
-                    wide, and the label plus the three-way strip do not always fit
-                    on one line -- flex-wrap drops the strip under the label rather
-                    than letting overflow-hidden eat "Sales". */}
-                <div className="mb-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                {/* @container: below 270px the strip shows icons (NotesApplyToStrip),
+                    so label and strip share the line in a third of the form. */}
+                <div className="@container mb-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
                   <label htmlFor="notes" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                     Notes
                   </label>
 
                   {showCombinedInvoiceNote && (
-                    <div className="inline-flex h-5 shrink-0 overflow-hidden rounded border border-slate-500 bg-slate-100 text-[10px] font-semibold leading-none dark:border-slate-600 dark:bg-slate-800">
-                      {[
-                        { value: 'both', label: 'Both' },
-                        { value: 'purchase', label: 'Purchase' },
-                        { value: 'sales', label: 'Sales' }
-                      ].map((item) => (
-                        <Button
-                          key={item.value}
-                          type="button"
-                          onClick={() => handleNotesApplyToChange(item.value as NotesApplyTo)}
-                          // h-full!, because this strip is 20px and a button now
-                          // stands at the shared control height unless it says
-                          // otherwise -- see BUTTON_HEIGHT in theme/buttonStyles.
-                          className={`h-full! shrink-0 whitespace-nowrap px-1.5 transition ${formData.notesApplyTo === item.value
-                              ? 'bg-blue-600 text-white'
-                              : 'text-slate-700 hover:bg-slate-200 dark:text-slate-200 dark:hover:bg-slate-700'
-                            }`}
-                        >
-                          {item.label}
-                        </Button>
-                      ))}
-                    </div>
+                    <NotesApplyToStrip value={formData.notesApplyTo} onChange={handleNotesApplyToChange} />
                   )}
                 </div>
-                <Input
-                  id="notes"
-                  value={formData.notes}
-                  name="notes"
-                  placeholder="Notes"
-                  list="combined-notes-suggestions"
-                  autoComplete="off"
-                  onChange={handleFormChange}
-                  onKeyDown={(e) => handleInputKeyDown(e, 'product')}
-                  className={fieldClass(undefined, 'w-full')}
-                />
+                {formData.notesApplyTo === 'separate' ? (
+                  /* Both notes in one line, read here and edited in the popup. */
+                  <div className="relative">
+                    <Input
+                      id="notes"
+                      value={`P: ${formData.purchaseNotes || '-'} | S: ${formData.salesNotes || '-'}`}
+                      name="notes"
+                      readOnly
+                      title={`Purchase: ${formData.purchaseNotes || '-'}\nSales: ${formData.salesNotes || '-'}`}
+                      onFocus={() => setShowNotesModal(true)}
+                      onKeyDown={(e) => handleInputKeyDown(e, 'product')}
+                      className={fieldClass(undefined, 'w-full cursor-pointer pr-9')}
+                    />
+                    <IconButton
+                      icon={<FiEdit2 className="h-4 w-4" />}
+                      title="Edit the two notes"
+                      tone="primary"
+                      onClick={() => setShowNotesModal(true)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2"
+                    />
+                  </div>
+                ) : (
+                  <Input
+                    id="notes"
+                    value={formData.notes}
+                    name="notes"
+                    placeholder="Notes"
+                    list="combined-notes-suggestions"
+                    autoComplete="off"
+                    onChange={handleFormChange}
+                    onKeyDown={(e) => handleInputKeyDown(e, 'product')}
+                    className={fieldClass(undefined, 'w-full')}
+                  />
+                )}
               </div>
               <datalist id="combined-notes-suggestions">
                 {noteSuggestions.map((item) => (
@@ -1583,6 +1649,14 @@ const TradingCombinedEntry = () => {
         </div>
       </div>
 
+      <SeparateNotesModal
+        isOpen={showNotesModal}
+        purchaseNotes={formData.purchaseNotes}
+        salesNotes={formData.salesNotes}
+        fetchSuggestions={loadNoteSuggestions}
+        onSave={handleSeparateNotesSave}
+        onCancel={handleSeparateNotesCancel}
+      />
       <QuickCustomerModal
         isOpen={showPartyModal}
         onClose={closePartyModal}
