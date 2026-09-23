@@ -757,6 +757,122 @@ export const ORDER_TRANSACTION_SAMPLE: DocumentData = {
 };
 
 /** Which sample the preview draws for the paper being designed. *//**
+ * Company Scheme Receivable: three IMEIs one brand owes for -- one paid in
+ * part, one overdue -- so every column and the foot have something to show.
+ */
+export const COMPANY_SCHEME_RECEIVABLE_SAMPLE: DocumentData = {
+  basic: {
+    company_name: 'Samsung - Scheme',
+    status_label: 'Open (not fully paid)',
+    as_on_date: '23/09/2026',
+    imei_count: 3,
+    branch_name: 'Head Office',
+  },
+  products: [
+    {
+      sl: 1,
+      invoice_lines: ['3-260900001', '02/08/2026'],
+      invoice_no: '3-260900001',
+      sale_date: '02/08/2026',
+      imei: '356789101112131',
+      product_name: 'Galaxy A15',
+      buyer_lines: ['Rahim Uddin', '01711223344'],
+      buyer_name: 'Rahim Uddin',
+      buyer_mobile: '01711223344',
+      company_name: 'Samsung - Scheme',
+      amount: 14000,
+      received: 0,
+      balance: 14000,
+      due_date: '01/09/2026',
+      overdue_days: '22 d',
+    },
+    {
+      sl: 2,
+      invoice_lines: ['3-260900014', '10/09/2026'],
+      invoice_no: '3-260900014',
+      sale_date: '10/09/2026',
+      imei: '356789101112148',
+      product_name: 'Galaxy A25',
+      buyer_lines: ['Karim Hossain', '01811556677'],
+      buyer_name: 'Karim Hossain',
+      buyer_mobile: '01811556677',
+      company_name: 'Samsung - Scheme',
+      amount: 15500,
+      received: 5000,
+      balance: 10500,
+      due_date: '10/10/2026',
+      overdue_days: '',
+    },
+    {
+      sl: 3,
+      invoice_lines: ['3-260900021', '15/09/2026'],
+      invoice_no: '3-260900021',
+      sale_date: '15/09/2026',
+      imei: '356789101112155',
+      product_name: 'Galaxy M35',
+      buyer_lines: ['Salma Begum', '01911889900'],
+      buyer_name: 'Salma Begum',
+      buyer_mobile: '01911889900',
+      company_name: 'Samsung - Scheme',
+      amount: 18000,
+      received: 0,
+      balance: 18000,
+      due_date: '15/10/2026',
+      overdue_days: '',
+    },
+  ],
+};
+
+/** Company Scheme Receipts: one bank receipt over two IMEIs, one cash over one. */
+export const COMPANY_SCHEME_RECEIPTS_SAMPLE: DocumentData = {
+  basic: {
+    report_period: '01/09/2026 to 23/09/2026',
+    company_name: 'Samsung - Scheme',
+    voucher_count: 2,
+    imei_count: 3,
+    branch_name: 'Head Office',
+  },
+  products: [
+    {
+      sl: 1,
+      voucher_lines: ['1-260900003', '12/09/2026', 'BANK'],
+      vr_no: '1-260900003',
+      vr_date: '12/09/2026',
+      method: 'BANK',
+      company_name: 'Samsung - Scheme',
+      imei: '356789101112131',
+      product_name: 'Galaxy A15',
+      invoice_no: '3-260900001',
+      amount: 14000,
+    },
+    {
+      sl: '',
+      voucher_lines: [],
+      vr_no: '',
+      vr_date: '',
+      method: '',
+      company_name: '',
+      imei: '356789101112148',
+      product_name: 'Galaxy A25',
+      invoice_no: '3-260900014',
+      amount: 15500,
+    },
+    {
+      sl: 2,
+      voucher_lines: ['1-260900009', '20/09/2026', 'CASH'],
+      vr_no: '1-260900009',
+      vr_date: '20/09/2026',
+      method: 'CASH',
+      company_name: 'Samsung - Scheme',
+      imei: '356789101112155',
+      product_name: 'Galaxy M35',
+      invoice_no: '3-260900021',
+      amount: 5000,
+    },
+  ],
+};
+
+/**
  * The document the designer previews against.
  *
  * ⚠️ It has to be the right KIND of document. An order laid out against a
@@ -773,6 +889,8 @@ export const sampleFor = (docType: string): DocumentData => {
   if (docType === 'sales_ledger' || docType === 'purchase_ledger') return LEDGER_SAMPLE;
   if (docType === 'ledger_details') return LEDGER_DETAILS_SAMPLE;
   if (docType === 'due_list') return DUE_LIST_SAMPLE;
+  if (docType === 'company_scheme_receivable') return COMPANY_SCHEME_RECEIVABLE_SAMPLE;
+  if (docType === 'company_scheme_receipts') return COMPANY_SCHEME_RECEIPTS_SAMPLE;
   if (docType === 'order_transaction') return ORDER_TRANSACTION_SAMPLE;
   return SAMPLE_DOCUMENT;
 };

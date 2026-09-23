@@ -142,6 +142,8 @@ interface branchItem {
   multi_product_order: boolean;
   /** Whether the cash forms ask which product a receipt or payment was for. */
   product_tracking: boolean;
+  company_scheme: boolean;
+  company_scheme_due_days: NumberField;
   /** Share of the property value the allotment letter asks for up front, as a percentage. */
   down_payment_percent: NumberField;
   /** What that share is taken on: 'total' or 'net_payable'. */
@@ -230,6 +232,7 @@ const defaultPreprintedPadHeight = 150;
 const defaultDownPaymentPercent = 30;
 const defaultDownPaymentBase = 'total';
 const defaultDelayChargePercent = 10;
+const defaultCompanySchemeDueDays = 30;
 
 /**
  * A saved choice as the form's own text. Unset metas come back false, so only
@@ -451,6 +454,8 @@ const AddBranch = () => {
     show_voucher_image: false,
     multi_product_order: false,
     product_tracking: false,
+    company_scheme: false,
+    company_scheme_due_days: defaultCompanySchemeDueDays,
     down_payment_percent: defaultDownPaymentPercent,
     down_payment_base: defaultDownPaymentBase,
     delay_charge_percent: defaultDelayChargePercent,
@@ -713,6 +718,8 @@ const AddBranch = () => {
         show_voucher_image: toBooleanFlag(b.show_voucher_image),
         multi_product_order: toBooleanFlag(b.multi_product_order),
         product_tracking: toBooleanFlag(b.product_tracking),
+        company_scheme: toBooleanFlag(b.company_scheme),
+        company_scheme_due_days: metaNumberOr(b.company_scheme_due_days, defaultCompanySchemeDueDays),
         down_payment_percent: metaNumberOr(b.down_payment_percent, defaultDownPaymentPercent),
         down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
         delay_charge_percent: metaNumberOr(b.delay_charge_percent, defaultDelayChargePercent),
@@ -1684,7 +1691,35 @@ const AddBranch = () => {
                         checked={Boolean(formData.product_tracking)}
                         onChange={(checked) => handleToggleFieldChange('product_tracking', checked)}
                       />
+                      <FormToggleField
+                        label="Company Scheme?"
+                        description="Invoice -> Sales opens the Company Scheme sale form on an electronics branch: the brand pays the balance later, and what it still owes is tracked IMEI by IMEI."
+                        checked={Boolean(formData.company_scheme)}
+                        onChange={(checked) => handleToggleFieldChange('company_scheme', checked)}
+                      />
                     </div>
+                    {formData.company_scheme && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <div>
+                          <InputElement
+                            id="company_scheme_due_days"
+                            value={formData.company_scheme_due_days ?? ''}
+                            name="company_scheme_due_days"
+                            type="number"
+                            min={0}
+                            step="1"
+                            placeholder={'Enter Days'}
+                            label={'Scheme Due Days'}
+                            className={''}
+                            onChange={handleOnNumberChange}
+                          />
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Days after the sale the brand is due to pay. The scheme sale
+                            form offers this as its due date; it can still be changed there.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
 

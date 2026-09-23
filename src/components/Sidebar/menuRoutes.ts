@@ -100,6 +100,10 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.product_financial_statement,
     routes.product_tracking_summary,
   ],
+  'company_scheme': [
+    routes.company_scheme_receivable,
+    routes.company_scheme_receipts,
+  ],
   'requisition': [
     routes.requisition,
     routes.requisition_create,

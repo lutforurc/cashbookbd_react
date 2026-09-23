@@ -114,6 +114,10 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'product_financial_statement', title: "Product Statement" },
     { id: 'product_tracking_summary', title: "Product Receivable \/ Payable" },
   ],
+  'company_scheme': [
+    { id: 'company_scheme_receivable', title: "Receivable" },
+    { id: 'company_scheme_receipts', title: "Receipts" },
+  ],
   'requisition': [
     { id: 'requisition', title: "Requisitions" },
     { id: 'requisition_create', title: "Create" },
@@ -250,6 +254,7 @@ export const SIDEBAR_MENUS = [
   { id: 'branch-transfer', title: 'Branch Transfer' },
   { id: 'reports', title: 'Reports' },
   { id: 'product_tracking', title: 'Product Tracking' },
+  { id: 'company_scheme', title: 'Company Scheme' },
   { id: 'requisition', title: 'Requisition' },
   { id: 'real-estate', title: 'Real Estate' },
   { id: 'hotel', title: 'Hotel' },
@@ -1771,6 +1776,83 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Receivable & Payable
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
+
+              {/* Company Scheme: what each brand still owes, IMEI by IMEI,
+                  and the brand's payments against it. */}
+              {hasMenuPermission(permissions, 'company_scheme') && (
+                <SidebarLinkGroup
+                  activeCondition={isMenuActive('company_scheme', pathname)}
+                  menuId="company_scheme"
+                  style={menuSlot('company_scheme')}
+                  open={openMenu === 'company_scheme'}
+                  handleClick={() => handleMenuClick('company_scheme')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('company_scheme', pathname) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiTag />
+                        Company Scheme
+                        <FiChevronRight
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
+                            }`}
+                        />
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('company_scheme').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
+                          {hasPermission(permissions, 'company.scheme.view') && (
+                            <li style={subSlot('company_scheme', 'company_scheme_receivable')}>
+                              <NavLink
+                                to={routes.company_scheme_receivable}
+                                className={subMenuLinkClass}
+                              >
+                                Receivable
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'company.scheme.view') && (
+                            <li style={subSlot('company_scheme', 'company_scheme_receipts')}>
+                              <NavLink
+                                to={routes.company_scheme_receipts}
+                                className={subMenuLinkClass}
+                              >
+                                Receipts
                               </NavLink>
                             </li>
                           )}

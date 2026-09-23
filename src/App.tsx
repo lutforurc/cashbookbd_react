@@ -29,6 +29,8 @@ import PrintTemplateDesigner from './components/modules/settings/print-designer/
 import ProductTrackingSettings from './components/modules/product-tracking/ProductTrackingSettings';
 import ProductFinancialStatement from './components/modules/product-tracking/ProductFinancialStatement';
 import ProductTrackingSummary from './components/modules/product-tracking/ProductTrackingSummary';
+import CompanySchemeReceivable from './components/modules/company-scheme/CompanySchemeReceivable';
+import CompanySchemeReceipts from './components/modules/company-scheme/CompanySchemeReceipts';
 import AddUser from './components/modules/user/AddUser';
 import Product from './components/modules/product/Product';
 import LowStockProducts from './components/modules/product/LowStockProducts';
@@ -470,6 +472,10 @@ function App() {
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.tracking.report.view']} loading={permissionsLoading} />}>
                 <Route path={routes.product_financial_statement} element={<ProductFinancialStatement />} />
                 <Route path={routes.product_tracking_summary} element={<ProductTrackingSummary />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['company.scheme.view']} loading={permissionsLoading} />}>
+                <Route path={routes.company_scheme_receivable} element={<CompanySchemeReceivable />} />
+                <Route path={routes.company_scheme_receipts} element={<CompanySchemeReceipts />} />
               </Route>
 	            <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view', 'user.view']} loading={permissionsLoading} />}>
 	              <Route path={routes.user_list} element={<UserList />} />

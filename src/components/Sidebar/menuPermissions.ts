@@ -53,6 +53,8 @@ export const MENU_PERMISSIONS = {
     'product.tracking.settings.view',
     'product.tracking.report.view',
   ],
+  // Company scheme: the receivable lists. The sale itself is Invoice -> Sales.
+  company_scheme: ['company.scheme.view'],
   products: ['products.view'],
   admin: [
     'check.register.view',

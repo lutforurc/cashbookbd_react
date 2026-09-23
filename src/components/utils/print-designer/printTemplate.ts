@@ -47,7 +47,9 @@ export type DocType =
   | 'purchase_ledger'
   | 'ledger_details'
   | 'due_list'
-  | 'order_transaction';
+  | 'order_transaction'
+  | 'company_scheme_receivable'
+  | 'company_scheme_receipts';
 
 /**
  * The papers the designer offers, in the order it offers them.
@@ -111,6 +113,16 @@ export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
     id: 'order_transaction',
     name: 'Order With Transaction',
     hint: 'One order, every voucher against it, and the balance carried down.',
+  },
+  {
+    id: 'company_scheme_receivable',
+    name: 'Company Scheme Receivable',
+    hint: 'What each brand still owes, IMEI by IMEI, with the due date and days overdue.',
+  },
+  {
+    id: 'company_scheme_receipts',
+    name: 'Company Scheme Receipts',
+    hint: 'What the brands paid: each receipt voucher and the IMEIs it paid for.',
   },
 ];
 
@@ -1410,6 +1422,86 @@ export const DUE_LIST_LINE_FIELDS: FieldDef[] = [
 ];
 
 /**
+ * Company Scheme Receivable: what each brand still owes, one row per IMEI.
+ *
+ * Its own catalogue, as the Due List has one: most of the challan's keys would
+ * resolve here to a nought that reads as a figure. What is here is what
+ * companySchemeDocumentData fills.
+ *
+ * ⚠️ `amount`, `received` and `balance` keep the names every other catalogue
+ * gives them (a column's label on the paper is the layout's own anyway), and
+ * they foot through DocumentPrint's existing total_amount / total_received /
+ * total_balance -- nothing in the renderer had to learn about this paper.
+ */
+export const COMPANY_SCHEME_RECEIVABLE_INFO_FIELDS: FieldDef[] = [
+  { key: 'company_name', name: 'Company', group: 'voucher' },
+  { key: 'status_label', name: 'Status', group: 'voucher' },
+  { key: 'as_on_date', name: 'As On', group: 'voucher' },
+  { key: 'imei_count', name: 'Number of IMEIs', group: 'total', numeric: true },
+  { key: 'total_amount', name: 'Total Amount', group: 'total', numeric: true },
+  { key: 'total_received', name: 'Total Received', group: 'total', numeric: true },
+  { key: 'total_balance', name: 'Total Balance', group: 'total', numeric: true },
+  { key: 'branch_name', name: 'Branch', group: 'voucher' },
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+  { key: 'blank', name: 'Blank line', group: 'manual' },
+];
+
+/** A receivable row: one IMEI on a scheme invoice, and where its money stands. */
+export const COMPANY_SCHEME_RECEIVABLE_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  { key: 'invoice_lines', name: 'Invoice (no., date)', group: 'line' },
+  { key: 'invoice_no', name: 'Invoice No.', group: 'line' },
+  { key: 'sale_date', name: 'Sale Date', group: 'line' },
+  { key: 'imei', name: 'IMEI', group: 'line' },
+  { key: 'product_name', name: 'Product Name', group: 'line' },
+  { key: 'buyer_lines', name: 'Buyer (name, mobile)', group: 'line' },
+  { key: 'buyer_name', name: 'Buyer Name', group: 'line' },
+  { key: 'buyer_mobile', name: 'Buyer Mobile', group: 'line' },
+  { key: 'company_name', name: 'Company', group: 'line' },
+  { key: 'amount', name: 'Amount', group: 'line', numeric: true },
+  { key: 'received', name: 'Received', group: 'line', numeric: true },
+  { key: 'balance', name: 'Balance', group: 'line', numeric: true },
+  { key: 'due_date', name: 'Due Date', group: 'line' },
+  { key: 'overdue_days', name: 'Days Overdue', group: 'line' },
+  // Several facts in one cell, one under another -- "{imei}", then
+  // "{product_name}", then "{buyer_name}" -- as the tenant writes the pattern.
+  { key: 'own_format', name: 'Own format (any facts)', group: 'line' },
+];
+
+/** Company Scheme Receipts: each receipt voucher from a brand, IMEI by IMEI. */
+export const COMPANY_SCHEME_RECEIPTS_INFO_FIELDS: FieldDef[] = [
+  { key: 'report_period', name: 'Report Period', group: 'voucher' },
+  { key: 'company_name', name: 'Company', group: 'voucher' },
+  { key: 'voucher_count', name: 'Number of Vouchers', group: 'total', numeric: true },
+  { key: 'imei_count', name: 'Number of IMEIs', group: 'total', numeric: true },
+  { key: 'total_amount', name: 'Total Amount', group: 'total', numeric: true },
+  { key: 'branch_name', name: 'Branch', group: 'voucher' },
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+  { key: 'blank', name: 'Blank line', group: 'manual' },
+];
+
+/**
+ * A receipts row: one IMEI a voucher paid. The voucher's own facts
+ * (`voucher_lines`, `company_name`, `sl`) stand on its first IMEI only, as on
+ * the screen -- the lines under it read as belonging to it.
+ */
+export const COMPANY_SCHEME_RECEIPTS_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  { key: 'voucher_lines', name: 'Voucher (no., date, cash/bank)', group: 'line' },
+  { key: 'vr_no', name: 'Voucher No', group: 'line' },
+  { key: 'vr_date', name: 'Date', group: 'line' },
+  { key: 'method', name: 'Paid By', group: 'line' },
+  { key: 'company_name', name: 'Company', group: 'line' },
+  { key: 'imei', name: 'IMEI', group: 'line' },
+  { key: 'product_name', name: 'Product Name', group: 'line' },
+  { key: 'invoice_no', name: 'Invoice No.', group: 'line' },
+  { key: 'amount', name: 'Amount', group: 'line', numeric: true },
+  { key: 'own_format', name: 'Own format (any facts)', group: 'line' },
+];
+
+/**
  * Order With Transaction: one order, and every voucher raised against it.
  *
  * The order's own facts take the ORDER catalogue's keys (order_for, order_rate,
@@ -1493,6 +1585,8 @@ export const fieldsFor = (docType: DocType): FieldDef[] => {
   // nought that reads as a figure. See the note on LEDGER_DETAILS_INFO_FIELDS.
   if (docType === 'ledger_details') return LEDGER_DETAILS_INFO_FIELDS;
   if (docType === 'due_list') return DUE_LIST_INFO_FIELDS;
+  if (docType === 'company_scheme_receivable') return COMPANY_SCHEME_RECEIVABLE_INFO_FIELDS;
+  if (docType === 'company_scheme_receipts') return COMPANY_SCHEME_RECEIPTS_INFO_FIELDS;
   if (docType === 'order_transaction') return ORDER_TRANSACTION_INFO_FIELDS;
   if (docType === 'sales_order') return ORDER_FIELD_CATALOG;
   if (docType === 'hotel_bill') return HOTEL_BILL_FIELDS;
@@ -1526,6 +1620,8 @@ export const lineFieldsFor = (docType: DocType): FieldDef[] => {
   if (isLedger(docType)) return LEDGER_LINE_FIELDS;
   if (docType === 'ledger_details') return LEDGER_DETAILS_LINE_FIELDS;
   if (docType === 'due_list') return DUE_LIST_LINE_FIELDS;
+  if (docType === 'company_scheme_receivable') return COMPANY_SCHEME_RECEIVABLE_LINE_FIELDS;
+  if (docType === 'company_scheme_receipts') return COMPANY_SCHEME_RECEIPTS_LINE_FIELDS;
   if (docType === 'order_transaction') return ORDER_TRANSACTION_LINE_FIELDS;
   if (docType === 'sales_order') return ORDER_LINE_FIELDS;
   if (docType === 'hotel_bill') return HOTEL_BILL_LINE_FIELDS;
@@ -1593,6 +1689,11 @@ const byKey = (list: FieldDef[]) =>
  * asks them without knowing which document it is drawing.
  */
 const ALL_INFO_BY_KEY = byKey([
+  // ⚠️ FIRST, not last: the last definition of a key names it everywhere, and
+  // these two share total_amount, as_on_date, branch_name ... with papers that
+  // came before them. First, they add their own keys and rename nothing.
+  ...COMPANY_SCHEME_RECEIVABLE_INFO_FIELDS,
+  ...COMPANY_SCHEME_RECEIPTS_INFO_FIELDS,
   ...FIELD_CATALOG,
   ...ORDER_FIELD_CATALOG,
   ...HOTEL_BILL_FIELDS,
@@ -1609,7 +1710,7 @@ const ALL_INFO_BY_KEY = byKey([
   ...ORDER_TRANSACTION_INFO_FIELDS,
 ]);
 
-const ALL_LINE_BY_KEY = byKey([...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS, ...PURCHASE_INVOICE_LINE_FIELDS, ...LEDGER_LINE_FIELDS, ...LEDGER_DETAILS_LINE_FIELDS, ...DUE_LIST_LINE_FIELDS, ...ORDER_TRANSACTION_LINE_FIELDS]);
+const ALL_LINE_BY_KEY = byKey([...COMPANY_SCHEME_RECEIVABLE_LINE_FIELDS, ...COMPANY_SCHEME_RECEIPTS_LINE_FIELDS, ...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS, ...PURCHASE_INVOICE_LINE_FIELDS, ...LEDGER_LINE_FIELDS, ...LEDGER_DETAILS_LINE_FIELDS, ...DUE_LIST_LINE_FIELDS, ...ORDER_TRANSACTION_LINE_FIELDS]);
 
 /** The catalogue's own name for a field, or the key itself if it is unknown. */
 export const fieldName = (key: string) =>
@@ -2975,6 +3076,167 @@ export const ORDER_TRANSACTION_PRESETS: PresetDef[] = [
   },
 ];
 
+/**
+ * Company Scheme Receivable as the screen's own print draws it: invoice, then
+ * the phone and its buyer stacked in one Details cell (an own_format column),
+ * then where the money stands and when it was due. Portrait, eight columns.
+ *
+ * ⚠️ Stacked rather than a column each: IMEI, product, buyer and mobile side by
+ * side left each a sliver of the page, and an IMEI broke one digit to a line.
+ */
+const companySchemeReceivablePaper = (): PrintTemplate => ({
+  version: 1,
+  docType: 'company_scheme_receivable',
+  orientation: 'portrait',
+  pageSize: 'a4',
+  fontSize: 9,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Company Scheme Receivable',
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'company_name', label: 'Company' },
+        { field: 'as_on_date', label: 'As On' },
+        { field: 'status_label', label: 'Status' },
+        { field: 'branch_name', label: 'Branch', hideIfEmpty: true },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      totalRow: true,
+      totalRowLabel: 'Total',
+      columns: [
+        { field: 'sl', label: '#', width: 4, align: 'center' },
+        { field: 'invoice_lines', label: 'Invoice', width: 11, align: 'center' },
+        {
+          field: 'own_format',
+          label: 'Details',
+          width: 34,
+          align: 'left',
+          pattern: '{imei}\n{product_name}\n{buyer_name}\n{buyer_mobile}',
+        },
+        { field: 'amount', label: 'Receivable', width: 11, align: 'right', valign: 'middle' },
+        { field: 'received', label: 'Received', width: 11, align: 'right', valign: 'middle' },
+        { field: 'balance', label: 'Balance', width: 11, align: 'right', valign: 'middle' },
+        { field: 'due_date', label: 'Due Date', width: 10, align: 'center', valign: 'middle' },
+        { field: 'overdue_days', label: 'Overdue', width: 8, align: 'right', valign: 'middle' },
+      ],
+    }),
+  ],
+});
+
+/**
+ * Company Scheme Receipts as the screen's own print draws it: one row per IMEI,
+ * the voucher's number, date and cash/bank on its first IMEI, and the IMEI with
+ * its product and invoice stacked in one Details cell. Portrait, five columns.
+ */
+const companySchemeReceiptsPaper = (): PrintTemplate => ({
+  version: 1,
+  docType: 'company_scheme_receipts',
+  orientation: 'portrait',
+  pageSize: 'a4',
+  fontSize: 9,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Company Scheme Receipts',
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'report_period', label: 'Report Date' },
+        { field: 'company_name', label: 'Company' },
+        { field: 'branch_name', label: 'Branch', hideIfEmpty: true },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      totalRow: true,
+      totalRowLabel: 'Total',
+      columns: [
+        { field: 'sl', label: '#', width: 5, align: 'center' },
+        { field: 'voucher_lines', label: 'Vr No', width: 15, align: 'center' },
+        { field: 'company_name', label: 'Company', width: 22, align: 'left' },
+        {
+          field: 'own_format',
+          label: 'Details',
+          width: 42,
+          align: 'left',
+          pattern: '{imei}\n{product_name}\n{invoice_no}',
+        },
+        { field: 'amount', label: 'Amount', width: 16, align: 'right', valign: 'middle' },
+      ],
+    }),
+  ],
+});
+
+export const COMPANY_SCHEME_RECEIVABLE_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Company Scheme Receivable',
+    hint: 'Invoice, IMEI, buyer, and what the brand still owes on each.',
+    build: companySchemeReceivablePaper,
+  },
+];
+
+export const COMPANY_SCHEME_RECEIPTS_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Company Scheme Receipts',
+    hint: 'Each receipt voucher from a brand, with the IMEIs it paid for.',
+    build: companySchemeReceiptsPaper,
+  },
+];
+
 export const DUE_LIST_PRESETS: PresetDef[] = [
   {
     id: 'standard',
@@ -3061,6 +3323,8 @@ export const presetsFor = (docType: DocType): PresetDef[] => {
   if (docType === 'purchase_ledger') return PURCHASE_LEDGER_PRESETS;
   if (docType === 'ledger_details') return LEDGER_DETAILS_PRESETS;
   if (docType === 'due_list') return DUE_LIST_PRESETS;
+  if (docType === 'company_scheme_receivable') return COMPANY_SCHEME_RECEIVABLE_PRESETS;
+  if (docType === 'company_scheme_receipts') return COMPANY_SCHEME_RECEIPTS_PRESETS;
   if (docType === 'order_transaction') return ORDER_TRANSACTION_PRESETS;
   if (docType === 'sales_order') return ORDER_PRESETS;
   if (docType === 'hotel_bill') return HOTEL_BILL_PRESETS;
@@ -3073,6 +3337,8 @@ export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTempla
   if (docType === 'purchase_ledger') return ledgerHeading('purchase_ledger', 'Purchase Ledger');
   if (docType === 'ledger_details') return ledgerStatement();
   if (docType === 'due_list') return dueListPaper();
+  if (docType === 'company_scheme_receivable') return companySchemeReceivablePaper();
+  if (docType === 'company_scheme_receipts') return companySchemeReceiptsPaper();
   if (docType === 'order_transaction') return orderTransactionPaper();
   if (docType === 'sales_order') return standardOrder();
   if (docType === 'hotel_bill') return hotelBill();

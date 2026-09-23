@@ -1200,3 +1200,12 @@ export const API_LEGACY_OLD_SOURCES_URL = `${API_BASE_URL}/legacy-old/sources`;
 export const API_LEGACY_OLD_PARTIES_URL = `${API_BASE_URL}/legacy-old/parties`;
 export const API_LEGACY_OLD_PARTY_URL = `${API_BASE_URL}/legacy-old/party`;
 export const API_LEGACY_OLD_INVOICE_URL = `${API_BASE_URL}/legacy-old/invoice`;
+
+// Company scheme: what each brand still owes IMEI by IMEI, and its payments.
+export const API_COMPANY_SCHEME_RECEIVABLES_URL = `${API_BASE_URL}/company-scheme/receivables`;
+export const API_COMPANY_SCHEME_RECEIVE_URL = `${API_BASE_URL}/company-scheme/receive`;
+export const API_COMPANY_SCHEME_RECEIPTS_URL = `${API_BASE_URL}/company-scheme/receipts`;
+export const API_COMPANY_SCHEME_RECONCILE_URL = `${API_BASE_URL}/company-scheme/reconcile`;
+export const API_COMPANY_SCHEME_SALE_STORE_URL = `${API_BASE_URL}/company-scheme/sale/store`;
+export const API_COMPANY_SCHEME_SALE_EDIT_URL = `${API_BASE_URL}/company-scheme/sale/edit`;
+export const API_COMPANY_SCHEME_SALE_UPDATE_URL = `${API_BASE_URL}/company-scheme/sale/update`;

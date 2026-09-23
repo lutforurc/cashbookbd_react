@@ -95,6 +95,10 @@ const ROUTES = {
   product_financial_statement: '/reports/product-financial-statement',
   product_tracking_summary: '/reports/product-receivable-payable',
 
+  // Company scheme: what each brand still owes, IMEI by IMEI.
+  company_scheme_receivable: '/company-scheme/receivable',
+  company_scheme_receipts: '/company-scheme/receipts',
+
   // Branch routes
   branch_list: '/branch/branch-list',
   branch_add: '/branch/add-branch',
