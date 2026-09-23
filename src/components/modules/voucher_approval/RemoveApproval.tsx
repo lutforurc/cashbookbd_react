@@ -27,6 +27,7 @@ const RemoveApproval = () => {
   // const voucherApprove = useSelector((state: any) => state.voucherApproval);
   // const [currentDate, setCurrentDate] = useState<string>('');
   // const [nextDate, setNextDate] = useState<string>('');
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   // const [startDate, setStartDate] = useState<Date | null>(null);
   // const [endDate, setEndDate] = useState<Date | null>(null);
@@ -144,10 +145,13 @@ const RemoveApproval = () => {
             <FaArrowLeft className="text-white text-lg ml-2  mr-2" /> 
             <span className="hidden md:block">{'Back'}</span>
           </Link>
-          <Link to="/dashboard" className="text-nowrap justify-center mr-0 h-8">
-            <FaHouse className="text-white text-lg ml-2  mr-2" />
-            <span className="hidden md:block">{'Home'}</span>
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/dashboard')}
+            buttonLoading={false}
+            label="Home"
+            className="whitespace-nowrap text-center mr-0"
+            icon={<FaHouse className="text-lg ml-2 mr-2" />}
+          />
         </div>
       </div>
     </>

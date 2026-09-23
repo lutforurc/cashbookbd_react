@@ -14,6 +14,7 @@ import { getSettings } from '../settings/settingsSlice';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { changeVoucherTypeStore, getVoucherTypes } from './changeVoucherTypeSlice';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
+import { useNavigate } from 'react-router-dom';
 
 interface VoucherTypeItems {
   id: string | number;
@@ -23,6 +24,7 @@ interface VoucherTypeItems {
 }
 
 const ChangeVoucherType = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { me } = useSelector((state: any) => state.auth);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -161,10 +163,13 @@ const ChangeVoucherType = () => {
             <FaArrowLeft className="text-white text-lg ml-2 mr-2" />
             <span className="hidden md:block">Back</span>
           </Link>
-          <Link to="/dashboard" className="text-nowrap justify-center mr-0 h-8">
-            <FaHouse className="text-white text-lg ml-2 mr-2" />
-            <span className="hidden md:block">Home</span>
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/dashboard')}
+            buttonLoading={false}
+            label="Home"
+            className="whitespace-nowrap text-center mr-0"
+            icon={<FaHouse className="text-lg ml-2 mr-2" />}
+          />
         </div>
       </div>
     </>

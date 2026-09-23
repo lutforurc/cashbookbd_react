@@ -9,7 +9,6 @@ import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
-import Link from '../../../utils/others/Link';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import WarehouseDropdown from '../../../utils/utils-functions/WarehouseDropdown';
 import InputDatePicker from '../../../utils/fields/DatePicker';
@@ -25,6 +24,7 @@ import {
   API_TRADING_SALES_SUGGESTIONS_URL,
   API_SALES_RETURN_STORE_URL,
 } from '../../../services/apiRoutes';
+import { useNavigate } from 'react-router-dom';
 
 interface Product {
   id: number;
@@ -69,6 +69,7 @@ const initialFormData: FormData = {
 
 const GeneralBusinessSalesReturn = () => {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -491,12 +492,16 @@ const GeneralBusinessSalesReturn = () => {
                 onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
               />
             </div>
-            <div className="grid grid-cols-4 gap-x-1 gap-y-1">
+            {/* @container: below the width responsiveLabel names the buttons show
+                their icons alone, the words having been clipped in a half-width
+                panel. */}
+            <div className="@container grid grid-cols-4 gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editProduct}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
@@ -506,6 +511,7 @@ const GeneralBusinessSalesReturn = () => {
                   onClick={addProduct}
                   buttonLoading={buttonLoading}
                   label="Add New"
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiPlus className="text-lg ml-2 mr-2" />}
                 />
@@ -514,6 +520,7 @@ const GeneralBusinessSalesReturn = () => {
                 onClick={handleSave}
                 buttonLoading={buttonLoading}
                 label="Save"
+                responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiSave className="text-lg ml-2 mr-2" />}
               />
@@ -521,13 +528,18 @@ const GeneralBusinessSalesReturn = () => {
                 onClick={resetForm}
                 buttonLoading={buttonLoading}
                 label="Reset"
+                responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiRefreshCcw className="text-lg ml-2 mr-2 h-8" />}
               />
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0  h-8">
-                <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">{'Home'}</span>
-              </Link>
+              <ButtonLoading
+                onClick={() => navigate('/dashboard')}
+                buttonLoading={false}
+                label="Home"
+                responsiveLabel="xl"
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiHome className="text-lg ml-2 mr-2" />}
+              />
             </div>
           </div>
         </div>

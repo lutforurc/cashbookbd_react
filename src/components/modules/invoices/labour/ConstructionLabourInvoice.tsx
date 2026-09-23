@@ -4,7 +4,6 @@ import DdlMultiline from "../../../utils/utils-functions/DdlMultiline";
 import InputElement from "../../../utils/fields/InputElement";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import { toast } from "react-toastify";
-import Link from "../../../utils/others/Link";
 import { useDispatch, useSelector } from "react-redux";
 import { getDdlWarehouse } from "../../warehouse/ddlWarehouseSlider";
 import Loader from "../../../../common/Loader";
@@ -37,6 +36,7 @@ import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { voucherTypes } from "../../../utils/fields/DataConstant";
 import useCtrlS from "../../../utils/hooks/useCtrlS";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import { useNavigate } from 'react-router-dom';
 
 /* -------------------------
    Types
@@ -139,6 +139,7 @@ const findVoucherNo = (value: any): string => {
 ------------------------- */
 function ConstructionLabourInvoice(): JSX.Element {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const labourInvoice = useSelector((s: any) => s.labourInvoice);
   const settings = useSelector((s: any) => s.settings);
@@ -673,12 +674,16 @@ function ConstructionLabourInvoice(): JSX.Element {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-x-1 gap-y-1">
+            {/* @container: below 42rem of row the buttons show their icons alone
+                (responsiveLabel), the words having been clipped in a half-width
+                panel. */}
+            <div className="@container grid grid-cols-4 gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editProductSave}
                   buttonLoading={false}
                   label="Update"
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
@@ -688,6 +693,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   onClick={addProduct}
                   buttonLoading={false}
                   label="Add New"
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiPlus className="text-lg ml-2 mr-2" />}
                   onKeyDown={(e) => {
@@ -708,6 +714,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   onClick={handleInvoiceUpdate}
                   buttonLoading={false}
                   label="Update"
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit className="text-lg ml-2 mr-2" />}
                 />
@@ -716,6 +723,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   onClick={handleInvoiceSave}
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? "Saving..." : "Save"}
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-lg ml-2 mr-2" />}
                 />
@@ -725,14 +733,19 @@ function ConstructionLabourInvoice(): JSX.Element {
                 onClick={resetForm}
                 buttonLoading={false}
                 label="Reset"
+                responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
               />
 
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">Home</span>
-              </Link>
+              <ButtonLoading
+                onClick={() => navigate('/dashboard')}
+                buttonLoading={false}
+                label="Home"
+                responsiveLabel="xl"
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiHome className="text-lg ml-2 mr-2" />}
+              />
             </div>
           </div>
         </div>

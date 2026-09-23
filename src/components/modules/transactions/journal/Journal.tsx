@@ -8,7 +8,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import { clearJournalState, saveJournalPayment } from './journalSlice';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
-import Link from '../../../utils/others/Link';
+import { useNavigate } from 'react-router-dom';
 
 interface FormData {
     payer_code: string;
@@ -40,6 +40,7 @@ const initialFormData: FormData = {
 };
 
 const Journal = () => {
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const journal = useSelector((state: any) => state.journal);
     const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -266,10 +267,13 @@ const Journal = () => {
                                         className="whitespace-nowrap text-center mr-0 w-full"
                                         icon={<FiSave className="text-lg ml-2 mr-2" />}
                                     />                                    
-                                    <Link to="/dashboard" className="text-nowrap justify-center mr-0 h-9 w-full">
-                                        <FiHome className="text-white text-lg ml-2  mr-2" />
-                                        <span className="hidden md:block">{'Home'}</span>
-                                    </Link>
+                                    <ButtonLoading
+                                      onClick={() => navigate('/dashboard')}
+                                      buttonLoading={false}
+                                      label="Home"
+                                      className="whitespace-nowrap text-center mr-0"
+                                      icon={<FiHome className="text-lg ml-2 mr-2" />}
+                                    />
                                 </div>
                             </div>
                         </div>

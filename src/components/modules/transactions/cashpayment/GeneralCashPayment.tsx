@@ -496,12 +496,16 @@ const GeneralCashPayment = () => {
               }
               onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')}
             />
-            <div className="grid grid-cols-1 gap-1 sm:grid-cols-3">
+            {/* @container: below 42rem of row the buttons show their icons alone
+                (responsiveLabel), the words having been clipped in a half-width
+                panel. */}
+            <div className="@container grid grid-cols-1 gap-1 sm:grid-cols-3">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editPaymentVoucher}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={
                     <FiEdit2 className="text-white text-lg ml-2 mr-2 h-5" />
@@ -514,6 +518,7 @@ const GeneralCashPayment = () => {
                   onClick={handleAdd}
                   buttonLoading={buttonLoading}
                   label="Add New"
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiPlus className="text-lg ml-2 mr-2 h-5" />}
                   onKeyDown={(e) => {
@@ -533,6 +538,7 @@ const GeneralCashPayment = () => {
                   onClick={handleInvoiceUpdate}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit className="text-lg ml-2 mr-2" />}
                 />
@@ -542,6 +548,7 @@ const GeneralCashPayment = () => {
                   onClick={handleCashPaymentSave}
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-lg ml-2 mr-2" />}
                 />
@@ -551,6 +558,7 @@ const GeneralCashPayment = () => {
                 onClick={handleHome}
                 buttonLoading={saveButtonLoading}
                 label={`Home`}
+                responsiveLabel="lg"
                 className="whitespace-nowrap text-center mr-0 p-2"
                 icon={
                   <FiHome className="text-white text-lg ml-2  mr-2 " />

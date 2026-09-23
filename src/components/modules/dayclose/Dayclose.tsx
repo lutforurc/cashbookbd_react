@@ -3,7 +3,6 @@ import HelmetTitle from '../../utils/others/HelmetTitle'
 import InputElement from '../../utils/fields/InputElement'
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { FiHome, FiSave } from 'react-icons/fi';
-import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { storeDayClose } from './daycloseSlice';
 import { toast } from 'react-toastify';
@@ -132,10 +131,13 @@ const Dayclose = () => {
                         icon={<FaPersonSkating className="text-lg ml-2 mr-2" />}
                     /> 
                     )}
-                    <Link to="/dashboard" className="text-nowrap justify-center mr-0 h-8">
-                        <FiHome className="text-white text-lg ml-2  mr-2" />
-                        <span className='hidden md:block'>{'Home'}</span>
-                    </Link>
+                    <ButtonLoading
+                      onClick={() => navigate('/dashboard')}
+                      buttonLoading={false}
+                      label="Home"
+                      className="whitespace-nowrap text-center mr-0"
+                      icon={<FiHome className="text-lg ml-2 mr-2" />}
+                    />
                     
                 </div>
             </div>

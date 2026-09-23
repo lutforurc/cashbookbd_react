@@ -2,6 +2,9 @@ import React from 'react';
 import { FiArrowRightCircle, FiCheck, FiPrinter } from 'react-icons/fi';
 import { BUTTON_BASE, BUTTON_HEIGHT, BUTTON_VARIANT, ButtonVariant } from '../../theme/buttonStyles';
 
+/** The row width below which a responsive label gives way to its icon. */
+export type ResponsiveLabelAt = 'lg' | 'xl' | '2xl';
+
 // Define the props for the Button component
 interface ButtonProps {
   id?: string;
@@ -15,11 +18,14 @@ interface ButtonProps {
   icon?: React.ReactNode;
   onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void; // ✅ FIXED
   /**
-   * Drops to the icon alone when the row is narrower than 42rem. The row must
-   * carry `@container`. For button rows that sit in a half-width column, where
-   * the labels stop fitting long before the screen is small.
+   * Drops to the icon alone when the row is narrower than a container width:
+   * `true` is 42rem (`@2xl`, a row of five), `'xl'` 36rem (a row of four),
+   * `'lg'` 32rem (a row of three). The row must carry `@container`. For button
+   * rows that sit in a half-width column, where the labels stop fitting long
+   * before the screen is small -- and stop needing to go at a width that
+   * depends on how many buttons share the row.
    */
-  responsiveLabel?: boolean;
+  responsiveLabel?: boolean | ResponsiveLabelAt;
   /**
    * A button inside a table row has to be shorter than one under a form. The
    * padding and the type size are chosen here rather than passed in through
@@ -207,16 +213,24 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
 
   // Without a label on show, the button only has to hold its icon — and the
   // name it lost is worth keeping as a tooltip.
-  // `@2xl` is the row's own width (42rem), not the screen's: the row must be a
-  // `@container`. It was `xl:`, the viewport, and a sidebar left the row half
-  // as wide as the screen said -- labels showed and the row wrapped anyway.
-  // Icon alone, the button keeps the 52px an icon-only PrintButton has.
+  // The width is the row's own (a `@container`), not the screen's: it was
+  // `xl:`, the viewport, and a sidebar left the row half as wide as the screen
+  // said -- labels showed and the row wrapped anyway. Written out per size
+  // rather than built from a string, because tailwind only emits a class it
+  // can read in the source. Icon alone, the button keeps the 52px an
+  // icon-only PrintButton has.
+  const at: ResponsiveLabelAt | null = responsiveLabel === true ? '2xl' : responsiveLabel || null;
+  const RESPONSIVE = {
+    lg: { sm: 'px-1.5 @lg:px-2 py-1', md: 'min-w-13 px-2 @lg:px-5', label: 'hidden @lg:inline', icon: '@lg:mr-2' },
+    xl: { sm: 'px-1.5 @xl:px-2 py-1', md: 'min-w-13 px-2 @xl:px-5', label: 'hidden @xl:inline', icon: '@xl:mr-2' },
+    '2xl': { sm: 'px-1.5 @2xl:px-2 py-1', md: 'min-w-13 px-2 @2xl:px-5', label: 'hidden @2xl:inline', icon: '@2xl:mr-2' },
+  } as const;
   const paddingClass = isSmall
-    ? (responsiveLabel ? 'px-1.5 @2xl:px-2 py-1' : 'px-2 py-1')
-    : (responsiveLabel ? 'min-w-13 px-2 @2xl:px-5' : 'px-5');
+    ? (at ? RESPONSIVE[at].sm : 'px-2 py-1')
+    : (at ? RESPONSIVE[at].md : 'px-5');
   const textClass = isSmall ? 'text-xs' : 'text-sm';
-  const labelClass = responsiveLabel ? 'hidden @2xl:inline' : '';
-  const iconSpacing = hasLabel ? (responsiveLabel ? '@2xl:mr-2' : 'mr-2') : '';
+  const labelClass = at ? RESPONSIVE[at].label : '';
+  const iconSpacing = hasLabel ? (at ? RESPONSIVE[at].icon : 'mr-2') : '';
 
   return (
     <button
@@ -277,7 +291,7 @@ type PrintButtonProps = {
   disabled?: boolean;
   /** Passed straight through to ButtonLoading -- see ButtonProps above. */
   size?: 'sm' | 'md';
-  responsiveLabel?: boolean;
+  responsiveLabel?: boolean | ResponsiveLabelAt;
   title?: string;
 };
 

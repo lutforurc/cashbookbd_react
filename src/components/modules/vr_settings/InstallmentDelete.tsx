@@ -6,13 +6,14 @@ import {
   DeleteButton,
 } from '../../../pages/UiElements/CustomButtons';
 import { FiHome, FiSave, FiTrash2, FiX } from 'react-icons/fi';
-import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { getSettings } from '../settings/settingsSlice';
 import { deleteInstallment, deleteVoucher } from './voucherSettingsSlice';
+import { useNavigate } from 'react-router-dom';
 
 const InstallmentDelete = () => {
+  const navigate = useNavigate();
   const settings = useSelector((s) => s.settings);
   const dispatch = useDispatch();
 
@@ -108,10 +109,13 @@ const InstallmentDelete = () => {
             icon={<FiTrash2 className="dark:text-red-700 text-lg ml-2 mr-2" />}
           />
 
-          <Link to="/dashboard" className="text-nowrap justify-center h-8">
-            <FiHome className="text-white text-lg ml-2 mr-2" />
-            <span className="hidden md:block">Home</span>
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/dashboard')}
+            buttonLoading={false}
+            label="Home"
+            className="whitespace-nowrap text-center mr-0"
+            icon={<FiHome className="text-lg ml-2 mr-2" />}
+          />
         </div>
       </div>
 

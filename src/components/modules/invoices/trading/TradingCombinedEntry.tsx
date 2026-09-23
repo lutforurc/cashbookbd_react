@@ -1269,8 +1269,10 @@ const TradingCombinedEntry = () => {
             </div>
             {/* items-end: the Amount and Notes headers carry a switch and a
                 strip that wrap under the label in a narrow column, and the
-                three boxes must stay level whatever the headers do. */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                three boxes must stay level whatever the headers do. The Notes
+                column is a quarter wider: its strip, icons only, is 114px and
+                has to sit beside the word Notes in a third of the form. */}
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.25fr] gap-2 items-end">
               <div>
                 <div className="mb-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
                   <label htmlFor="amount" className='whitespace-nowrap text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>Amount Tk.</label>
@@ -1529,12 +1531,16 @@ const TradingCombinedEntry = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-1 gap-y-1 mt-2">
+            {/* @container: below 42rem of row the four show their icons alone
+                (responsiveLabel), the words having been clipped in a half-width
+                panel. */}
+            <div className="@container grid grid-cols-2 sm:grid-cols-4 gap-x-1 gap-y-1 mt-2">
               <ButtonLoading
                 id="addProduct"
                 onClick={addProduct}
                 buttonLoading={buttonLoading}
                 label={editingProductId ? 'Update Item' : 'Add New'}
+                responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0 py-1.5"
                 icon={
                   editingProductId ? (
@@ -1548,6 +1554,7 @@ const TradingCombinedEntry = () => {
                 onClick={handleSave}
                 buttonLoading={saveButtonLoading}
                 label={saveButtonLoading ? 'Saving...' : editingCombinedNumber ? 'Update' : 'Save'}
+                responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiSave className="text-lg ml-2 mr-2" />}
                 disabled={saveButtonLoading}
@@ -1556,6 +1563,7 @@ const TradingCombinedEntry = () => {
                 onClick={resetForm}
                 buttonLoading={buttonLoading}
                 label="Reset"
+                responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
               />
@@ -1563,6 +1571,7 @@ const TradingCombinedEntry = () => {
                 onClick={() => navigate('/dashboard')}
                 buttonLoading={false}
                 label="Home"
+                responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiHome className="text-lg ml-2 mr-2" />}
               />

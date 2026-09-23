@@ -1323,7 +1323,7 @@ const ElectronicsBusinessSales = () => {
                   onClick={editProduct}
                   buttonLoading={buttonLoading}
                   label="Update"
-                  responsiveLabel
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
@@ -1333,7 +1333,7 @@ const ElectronicsBusinessSales = () => {
                   onClick={addProduct}
                   buttonLoading={buttonLoading}
                   label="Add New"
-                  responsiveLabel
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiPlus className="text-lg ml-2 mr-2" />}
                   onKeyDown={(e) => {
@@ -1353,7 +1353,7 @@ const ElectronicsBusinessSales = () => {
                   onClick={handleInvoiceUpdate}
                   buttonLoading={updateButtonLoading}
                   label={updateButtonLoading ? 'Updating...' : 'Update'}
-                  responsiveLabel
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit className="text-lg ml-2 mr-2" />}
                   disabled={updateButtonLoading}
@@ -1363,7 +1363,7 @@ const ElectronicsBusinessSales = () => {
                   onClick={handleInvoiceSave}
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
-                  responsiveLabel
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-lg ml-2 mr-2" />}
                   disabled={saveButtonLoading}
@@ -1374,7 +1374,7 @@ const ElectronicsBusinessSales = () => {
                 onClick={resetProducts}
                 buttonLoading={buttonLoading}
                 label="Reset"
-                responsiveLabel
+                responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
               />
@@ -1412,7 +1412,7 @@ const ElectronicsBusinessSales = () => {
                     })
                   }
                   label="Print"
-                  responsiveLabel
+                  responsiveLabel="xl"
                 />
               </div>
             </div>

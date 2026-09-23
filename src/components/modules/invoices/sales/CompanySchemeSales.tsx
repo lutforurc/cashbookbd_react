@@ -1553,7 +1553,7 @@ const CompanySchemeSales = () => {
                   onClick={editProduct}
                   buttonLoading={buttonLoading}
                   label="Update"
-                  responsiveLabel
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
@@ -1563,7 +1563,7 @@ const CompanySchemeSales = () => {
                   onClick={addProduct}
                   buttonLoading={buttonLoading}
                   label="Add New"
-                  responsiveLabel
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiPlus className="text-lg ml-2 mr-2" />}
                   onKeyDown={(e) => {
@@ -1583,7 +1583,7 @@ const CompanySchemeSales = () => {
                   onClick={handleInvoiceUpdate}
                   buttonLoading={updateButtonLoading}
                   label={updateButtonLoading ? 'Updating...' : 'Update'}
-                  responsiveLabel
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit className="text-lg ml-2 mr-2" />}
                   disabled={updateButtonLoading}
@@ -1593,7 +1593,7 @@ const CompanySchemeSales = () => {
                   onClick={handleInvoiceSave}
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
-                  responsiveLabel
+                  responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-lg ml-2 mr-2" />}
                   disabled={saveButtonLoading}
@@ -1604,7 +1604,7 @@ const CompanySchemeSales = () => {
                 onClick={resetProducts}
                 buttonLoading={buttonLoading}
                 label="Reset"
-                responsiveLabel
+                responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
               />
@@ -1637,7 +1637,7 @@ const CompanySchemeSales = () => {
                 <PrintButton
                   onClick={printInvoice}
                   label="Print"
-                  responsiveLabel
+                  responsiveLabel="xl"
                 />
               </div>
             </div>

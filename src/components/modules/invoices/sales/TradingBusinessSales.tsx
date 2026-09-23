@@ -4,7 +4,6 @@ import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { toast } from 'react-toastify';
-import Link from '../../../utils/others/Link';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { useDispatch, useSelector } from 'react-redux';
 import { userCurrentBranch } from '../../branch/branchSlice';
@@ -62,6 +61,7 @@ import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import StockShortageModal, {
   StockShortage,
 } from '../../../utils/components/StockShortageModal';
+import { useNavigate } from 'react-router-dom';
 
 interface Product {
   id: number;
@@ -117,6 +117,7 @@ const getCashReceivedDebit = (transaction: any): string => {
 };
 
 const TradingBusinessSales = () => {
+  const navigate = useNavigate();
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const sales = useSelector((s: any) => s.trasingSales);
   const userPermissions = useSelector((s: any) => s.settings?.data?.permissions || []);
@@ -1701,10 +1702,14 @@ const TradingBusinessSales = () => {
                 icon={<FiPrinter className="text-lg ml-2 mr-2" />}
               />
 
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden @2xl:block">{'Home'}</span>
-              </Link>
+              <ButtonLoading
+                onClick={() => navigate('/dashboard')}
+                buttonLoading={false}
+                label="Home"
+                responsiveLabel
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiHome className="text-lg ml-2 mr-2" />}
+              />
             </div>
           </div>
         </div>

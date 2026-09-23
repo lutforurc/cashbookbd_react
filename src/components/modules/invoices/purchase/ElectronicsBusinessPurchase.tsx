@@ -4,7 +4,6 @@ import DdlMultiline from '../../../utils/utils-functions/DdlMultiline.tsx';
 import InputElement from '../../../utils/fields/InputElement.tsx';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons.tsx';
 import { toast } from 'react-toastify';
-import Link from '../../../utils/others/Link.tsx';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown.tsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { userCurrentBranch } from '../../branch/branchSlice.tsx';
@@ -41,6 +40,7 @@ import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSea
 import { getPurchaseTypeForVoucher } from '../../../utils/utils-functions/voucherEditNavigation';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { Textarea } from '../../../utils/fields/FormControls';
+import { useNavigate } from 'react-router-dom';
 
 interface Product {
   id: number;
@@ -66,6 +66,7 @@ const normalizeSuggestionItems = (items: any) =>
     : [];
 
 const ElectronicsBusinessPurchase = () => {
+  const navigate = useNavigate();
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const purchase = useSelector((s: any) => s.electronicsPurchase);
   const settings = useSelector((s: any) => s.settings);
@@ -965,10 +966,13 @@ const ElectronicsBusinessPurchase = () => {
               className="whitespace-nowrap text-center mr-0 py-1.5"
               icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
             />
-            <Link to="/dashboard" className="text-nowrap justify-center mr-0 h-9 py-1.5">
-              <FiHome className="text-white text-lg ml-2  mr-2" />
-              <span className="hidden md:block">{'Home'}</span>
-            </Link>
+            <ButtonLoading
+              onClick={() => navigate('/dashboard')}
+              buttonLoading={false}
+              label="Home"
+              className="whitespace-nowrap text-center mr-0"
+              icon={<FiHome className="text-lg ml-2 mr-2" />}
+            />
           </div>
         </div>
       </div>

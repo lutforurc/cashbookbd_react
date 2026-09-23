@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import Link from '../../../utils/others/Link';
 import { FiHome, FiSave } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import InputElement from '../../../utils/fields/InputElement';
@@ -15,6 +14,7 @@ import { fetchEmployeeSettings, storeEmployee } from './employeeSlice';
 import { fetchAttendancePolicies, fetchAttendanceShifts } from '../attendance/attendanceSlice';
 import dayjs from 'dayjs';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { useNavigate } from 'react-router-dom';
 
 const employmentTypes = [
   { id: 'monthly', name: 'Monthly Employee' },
@@ -64,6 +64,7 @@ class EmployeeFormModel {
 }
 
 const EmployeeCreate = ({ user }: any) => {
+  const navigate = useNavigate();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const employeeSettings = useSelector((state: any) => state.employees);
   const attendance = useSelector((state: any) => state.attendance);
@@ -511,9 +512,13 @@ const EmployeeCreate = ({ user }: any) => {
             className="whitespace-nowrap text-center mr-0"
             icon={<FiSave className="text-lg ml-2 mr-2" />}
           />
-          <Link to="/dashboard" className="h-8">
-            <FiHome className="mr-2" /> Home
-          </Link>
+          <ButtonLoading
+            onClick={() => navigate('/dashboard')}
+            buttonLoading={false}
+            label="Home"
+            className="whitespace-nowrap text-center mr-0"
+            icon={<FiHome className="text-lg ml-2 mr-2" />}
+          />
         </div>
       </div>
 

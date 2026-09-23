@@ -861,11 +861,15 @@ const BankReceived = () => {
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-x-1 gap-y-1">
+            {/* @container: below 42rem of row the buttons show their icons alone
+                (responsiveLabel), the words having been clipped in a half-width
+                panel. */}
+            <div className="@container grid grid-cols-3 gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editReceivedVoucher}
                   label="Update"
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0 p-2"
                   icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
@@ -886,6 +890,7 @@ const BankReceived = () => {
                   }}
                   buttonLoading={buttonLoading}
                   label={buttonLoading ? 'Loading...' : 'Add New'}
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0 p-2"
                   icon={
                     <FiPlus className="text-white text-lg ml-2 mr-2 " />
@@ -898,6 +903,7 @@ const BankReceived = () => {
                   onClick={handleBankReceivedUpdate}
                   buttonLoading={updatingLoading}
                   label={updatingLoading ? 'Updating...' : 'Update'}
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0 p-2"
                   icon={
                     <FiEdit2 className="text-white text-lg ml-2  mr-2 " />
@@ -909,6 +915,7 @@ const BankReceived = () => {
                   onClick={handleSave}
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0 p-2"
                   icon={
                     <FiSave className="text-white text-lg ml-2  mr-2 " />
@@ -921,6 +928,7 @@ const BankReceived = () => {
                 onClick={handleHome}
                 buttonLoading={saveButtonLoading}
                 label={`Home`}
+                responsiveLabel="lg"
                 className="whitespace-nowrap text-center mr-0 p-2"
                 icon={
                   <FiHome className="text-white text-lg ml-2  mr-2 " />

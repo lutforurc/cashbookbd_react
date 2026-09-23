@@ -9,7 +9,6 @@ import InputOnly from '../../../utils/fields/InputOnly';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import InputElement from '../../../utils/fields/InputElement';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
-import Link from '../../../utils/others/Link';
 import { toast } from 'react-toastify';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
 import {
@@ -19,6 +18,7 @@ import {
   employeeLoanSearch,
   employeeLoanUpdate,
 } from './employeeLoanSlice';
+import { useNavigate } from 'react-router-dom';
 
 interface LoanPayload {
   id: string | number;
@@ -35,6 +35,7 @@ interface LoanEditInfo {
 }
 
 const EmployeeLoan = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
 
@@ -315,10 +316,13 @@ const EmployeeLoan = () => {
                     icon={<FiSave className="text-lg ml-2 mr-2" />}
                   />
 
-                  <Link to="/dashboard" className="text-nowrap justify-center mr-0 p-2">
-                    <FiHome className="text-white text-lg ml-2 mr-2 " />
-                    <span>Home</span>
-                  </Link>
+                  <ButtonLoading
+                    onClick={() => navigate('/dashboard')}
+                    buttonLoading={false}
+                    label="Home"
+                    className="whitespace-nowrap text-center mr-0"
+                    icon={<FiHome className="text-lg ml-2 mr-2" />}
+                  />
                 </div>
               </div>
             </div>

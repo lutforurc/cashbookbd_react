@@ -24,9 +24,9 @@ import InputDatePicker from '../../utils/fields/DatePicker';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import InputOnly from '../../utils/fields/InputOnly';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import Link from '../../utils/others/Link';
 import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionItemsDropdown';
 import { requisitionStore } from './requisitionSlice';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -43,6 +43,7 @@ interface Product {
 }
 
 const RequisitionForm = () => {
+  const navigate = useNavigate();
   const purchase = useSelector((s: any) => s.constructionPurchase);
   const settings = useSelector((s: any) => s.settings);
   const dispatch = useDispatch<any>();
@@ -641,10 +642,13 @@ const RequisitionForm = () => {
                   <FiRefreshCcw className="text-white text-lg ml-2  mr-2" />
                 }
               />
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">{'Home'}</span>
-              </Link>
+              <ButtonLoading
+                onClick={() => navigate('/dashboard')}
+                buttonLoading={false}
+                label="Home"
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiHome className="text-lg ml-2 mr-2" />}
+              />
             </div>
           </div>
         </div>

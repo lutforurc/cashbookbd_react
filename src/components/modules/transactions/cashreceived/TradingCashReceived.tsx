@@ -591,12 +591,16 @@ const TradingCashReceived = () => {
               onChange={handleOnChange}
               onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')} //
             />
-            <div className="grid grid-cols-3 gap-x-1 gap-y-1">
+            {/* @container: below 42rem of row the buttons show their icons alone
+                (responsiveLabel), the words having been clipped in a half-width
+                panel. */}
+            <div className="@container grid grid-cols-3 gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editReceivedVoucher}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
@@ -617,6 +621,7 @@ const TradingCashReceived = () => {
                   }}
                   buttonLoading={buttonLoading}
                   label="Add New"
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiPlus className="text-lg ml-2 mr-2" />}
                 />
@@ -627,6 +632,7 @@ const TradingCashReceived = () => {
                   onClick={handleInvoiceUpdate}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
@@ -635,6 +641,7 @@ const TradingCashReceived = () => {
                   onClick={handleCashReceivedSave}
                   buttonLoading={buttonLoading}
                   label="Save"
+                  responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-lg ml-2 mr-2" />}
                 />
@@ -644,6 +651,7 @@ const TradingCashReceived = () => {
                 onClick={handleHome}
                 // buttonLoading={saveButtonLoading}
                 label={`Home`}
+                responsiveLabel="lg"
                 className="whitespace-nowrap text-center mr-0 p-2"
                 icon={
                   <FiHome className="text-white text-lg ml-2  mr-2 " />

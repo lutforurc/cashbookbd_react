@@ -3,14 +3,15 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
 import { Button, ButtonLoading, DeleteButton } from '../../../pages/UiElements/CustomButtons';
 import { FiHome, FiSave, FiTrash2, FiX } from 'react-icons/fi';
-import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { getSettings } from '../settings/settingsSlice';
 import { deleteVoucher } from './voucherSettingsSlice';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
+import { useNavigate } from 'react-router-dom';
 
 const VoucherDelete = () => {
+  const navigate = useNavigate();
   const settings = useSelector((s) => s.settings);
   const dispatch = useDispatch();
 
@@ -152,10 +153,13 @@ const VoucherDelete = () => {
                 icon={<FiTrash2 className="ml-2 mr-2 text-lg text-red-400" />}
               />
 
-              <Link to="/dashboard" className="h-10 justify-center text-nowrap">
-                <FiHome className="ml-2 mr-2 text-lg text-white" />
-                <span className="hidden md:block">Home</span>
-              </Link>
+              <ButtonLoading
+                onClick={() => navigate('/dashboard')}
+                buttonLoading={false}
+                label="Home"
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiHome className="text-lg ml-2 mr-2" />}
+              />
             </div>
           </div>
         </div>
