@@ -1458,7 +1458,7 @@ const TradingBusinessPurchase = () => {
                 <span className="absolute top-8 right-3 z-50">{lineTotal}</span>
               </div>
             </div>
-            <div className="grid grid-cols-5 gap-x-1 gap-y-1">
+            <div className="@container grid grid-cols-5 gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editProduct}
@@ -1532,7 +1532,7 @@ const TradingBusinessPurchase = () => {
 
               <Link to="/dashboard" className="text-nowrap justify-center mr-0">
                 <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden xl:block">{'Home'}</span>
+                <span className="hidden @2xl:block">{'Home'}</span>
               </Link>
             </div>
           </div>

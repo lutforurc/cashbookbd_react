@@ -21,7 +21,7 @@ import ConnectedMemberPrint, {
   summarizeRows,
   toNumber,
 } from './ConnectedMemberPrint';
-import { Select } from '../../../utils/fields/FormControls';
+import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 
 const parseTransactionDate = (value?: string | null) => {
   if (!value) return new Date();
@@ -147,72 +147,80 @@ const ConnectedMember = (user: any) => {
     }));
   };
 
-  const controlClass =
-    'h-9 w-full rounded-none border border-slate-600 bg-transparent px-3 text-sm font-bold text-slate-950 outline-none focus:border-slate-400 dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-text))] dark:focus:border-slate-300';
-  const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-[rgb(var(--c-text))]';
-
   return (
-    <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-[rgb(var(--c-text))]">
+    <div className="">
       <HelmetTitle title="Connected Member" />
-      <div className="mb-3 grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(320px,1fr)_minmax(220px,0.45fr)_minmax(220px,0.45fr)_auto]">
-          <div>
-            <label className={labelClass}>Select Project</label>
-            <Select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>
-              <option value="">Select Project</option>
-              {branchOptions.map((branch: any) => (
-                <option key={branch.id} value={branch.id}>{branch.name}</option>
-              ))}
-            </Select>
+      <div className="py-3">
+        {/* Laid out as Cash Book is (owner, 2026-09-23): the same branch
+            dropdown, labels and date boxes, the buttons to their right, and
+            the buttons dropping below the fields on a narrow screen. */}
+        <div className="flex flex-wrap items-end gap-3">
+          {/* The two wrappers are FilterMenuShell's inline pair, copied so the
+              fields measure exactly as Cash Book's without that screen's
+              filter-menu setting coming along. */}
+          <div className="min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none">
+          <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Project</label>
+              {branchDdlData?.isLoading ? <Loader /> : null}
+              <BranchDropdown
+                defaultValue={user?.user?.branch_id ? String(user.user.branch_id) : undefined}
+                value={branchId}
+                onChange={(event) => setBranchId(event.target.value)}
+                className="w-full font-medium text-sm p-2"
+                branchDdl={branchOptions}
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+              <InputDatePicker
+                setCurrentDate={setStartDate}
+                className="font-medium text-sm w-full"
+                selectedDate={startDate}
+                setSelectedDate={setStartDate}
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+              <InputDatePicker
+                setCurrentDate={setEndDate}
+                className="font-medium text-sm w-full"
+                selectedDate={endDate}
+                setSelectedDate={setEndDate}
+              />
+            </div>
+          </div>
           </div>
 
-          <div>
-            <label className={labelClass}>Start Date</label>
-            <InputDatePicker
- selectedDate={startDate}
- setSelectedDate={setStartDate}
- setCurrentDate={setStartDate}
- className="border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
-            />
+          <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto max-md:ml-0 max-md:w-full xl:ml-auto">
+            <ButtonLoading onClick={handleLoad} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="px-6" />
+            <ButtonLoading onClick={handleReset} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="px-4" />
+            <div>
+              <PrintRowsInput
+                id="connected-member-rows"
+                name="connected-member-rows"
+                label=""
+                value={String(rowsPerPage)}
+                onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 0)}
+                type="text"
+                className="font-medium text-sm w-20! text-center"
+              />
+            </div>
+            <div>
+              <PrintFontInput
+                id="connected-member-font"
+                name="connected-member-font"
+                label=""
+                value={String(fontSize)}
+                onChange={(event: any) => setFontSize(Number(event.target.value) || 12)}
+                type="text"
+                className="font-medium text-sm w-20! text-center"
+              />
+            </div>
+            <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={groups.length === 0} />
           </div>
-
-          <div>
-            <label className={labelClass}>End Date</label>
-            <InputDatePicker
- selectedDate={endDate}
- setSelectedDate={setEndDate}
- setCurrentDate={setEndDate}
- className="border! border-slate-600! bg-transparent px-3 text-sm font-bold dark:border-[rgb(var(--c-gray-600))]! dark:bg-[rgb(var(--c-boxdark))]!"
-            />
-          </div>
-
-        <div className="grid min-w-max grid-cols-[auto_auto_72px_72px_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
-          <ButtonLoading onClick={handleLoad} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="px-5" />
-          <ButtonLoading onClick={handleReset} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="px-4" />
-          <div>
-            <label htmlFor="connected-member-rows" className={labelClass}>Rows</label>
-            <PrintRowsInput
-              id="connected-member-rows"
-              name="connected-member-rows"
-              label=""
-              value={String(rowsPerPage)}
-              onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 0)}
-              type="text"
-              className="w-full! rounded-none text-center text-sm font-bold"
-            />
-          </div>
-          <div>
-            <label htmlFor="connected-member-font" className={labelClass}>Font</label>
-            <PrintFontInput
-              id="connected-member-font"
-              name="connected-member-font"
-              label=""
-              value={String(fontSize)}
-              onChange={(event: any) => setFontSize(Number(event.target.value) || 12)}
-              type="text"
-              className="w-full! rounded-none text-center text-sm font-bold"
-            />
-          </div>
-          <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={groups.length === 0} />
         </div>
       </div>
 

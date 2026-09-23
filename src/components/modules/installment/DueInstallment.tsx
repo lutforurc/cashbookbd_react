@@ -17,6 +17,7 @@ import StatusIcon from '../../utils/utils-functions/StatusIcon';
 import InputElement from '../../utils/fields/InputElement';
 import PrintFontInput from '../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../utils/fields/PrintRowsInput';
+import { FIELD_HEIGHT } from '../../../theme/fieldStyles';
 import InstallmentModal from './InstallmentModal';
 import { Tooltip } from 'antd';
 import { Popover } from '@headlessui/react';
@@ -320,92 +321,104 @@ const DueInstallment = (user: any) => {
     return acc + (isNaN(value) ? 0 : value);
   }, 0);
 
+  // Cash Book's label, so the two screens read alike.
+  const filterLabel = 'mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200';
+
   return (
     <>
       <div>
         <HelmetTitle title="Due Installments" />
-        <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-12">
-          <div className="min-w-0 md:col-span-3">
-            <label>Select Branch</label>
-            {branchDdlData.isLoading && <Loader />}
-            <BranchDropdown
-              defaultValue={user?.user?.branch_id}
-              onChange={handleBranchChange}
-              className="w-full font-medium text-sm p-1.5"
-              branchDdl={dropdownData}
-            />
-          </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:col-span-3">
-            <div className="min-w-0">
-              <label>Start Date</label>
+        {/* One wrapping row (owner, 2026-09-23): the fields stretch to fill it
+            and the small boxes and Print follow the last field, so a screen
+            that fits three fields per line gets Status beside the toolbar on
+            the next -- not Status alone with the toolbar under it. */}
+        <div className="py-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="min-w-[300px] flex-1">
+              <label className={filterLabel}>Select Branch</label>
+              {branchDdlData.isLoading && <Loader />}
+              <BranchDropdown
+                defaultValue={user?.user?.branch_id}
+                onChange={handleBranchChange}
+                className="w-full font-medium text-sm p-2"
+                branchDdl={dropdownData}
+              />
+            </div>
+
+            <div className="min-w-[180px] flex-1">
+              <label className={filterLabel}>Start Date</label>
               <InputDatePicker
- setCurrentDate={setStartDate}
- className="font-medium text-sm w-full "
- selectedDate={startDate}
- setSelectedDate={setStartDate}
+                setCurrentDate={setStartDate}
+                className="font-medium text-sm w-full"
+                selectedDate={startDate}
+                setSelectedDate={setStartDate}
               />
             </div>
-            <div className="min-w-0">
-              <label>End Date</label>
+
+            <div className="min-w-[180px] flex-1">
+              <label className={filterLabel}>End Date</label>
               <InputDatePicker
- setCurrentDate={setEndDate}
- className="font-medium text-sm w-full "
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+                setCurrentDate={setEndDate}
+                className="font-medium text-sm w-full"
+                selectedDate={endDate}
+                setSelectedDate={setEndDate}
               />
             </div>
-          </div>
-          <div className="min-w-0 md:col-span-2">
-            <DropdownCommon
- id="business_type_id"
- name={'business_type_id'}
- label="Select Status"
- onChange={handleOnStatusChange}
- defaultValue={''}
- className="bg-transparent"
- data={InstallmentStatus}
-            />
-          </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 md:col-span-2">
-            <InputElement
- id="upcoming_days"
- value={upComingDays?.toString() || ''}
- name="upcoming_days"
- placeholder="Upcoming"
- label="Soon"
- className="w-full bg-transparent"
- onChange={handleUpcomingChange}
-            />
-            <PrintRowsInput
- id="page_size"
- value={pageSize?.toString() || ''}  // ensure string
- name="page_size"
- placeholder="Rows"
- label="Rows"
- className="bg-transparent w-full"
- onChange={handlePageSizeChange}
-            />
-            <PrintFontInput
- id="fontSize"
- name="fontSize"
- label="Font"
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type='text'
- className="font-medium text-sm w-full"
-            />
-          </div>
-          <div className="min-w-0 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between md:col-span-2 md:self-end">
-            <div className="w-full sm:w-auto">
-              <PrintButton onClick={handlePrint} variant="default"
- className='mt-0 w-full sm:w-auto' />
-            </div>
-            <div className="min-w-0 w-full sm:w-auto flex justify-start sm:justify-end">
-              <ToggleSwitch
-                label="Show All"
-                checked={!dueOnly}
-                onChange={handleDueToggle}
+
+            <div className="min-w-[180px] flex-1">
+              {/* Its own label, so it sits like the three beside it. */}
+              <label htmlFor="business_type_id" className={filterLabel}>Select Status</label>
+              <DropdownCommon
+                id="business_type_id"
+                name={'business_type_id'}
+                onChange={handleOnStatusChange}
+                defaultValue={''}
+                className="bg-transparent"
+                data={InstallmentStatus}
               />
+            </div>
+
+            <div className="grid min-w-max grid-cols-[minmax(88px,0.45fr)_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto_auto] items-end gap-2 overflow-x-auto max-md:ml-0 max-md:w-full xl:ml-auto">
+              <div>
+                <label htmlFor="upcoming_days" className={filterLabel}>Soon</label>
+                <InputElement
+                  id="upcoming_days"
+                  value={upComingDays?.toString() || ''}
+                  name="upcoming_days"
+                  placeholder="Days"
+                  label=""
+                  className="font-medium text-sm w-20! text-center"
+                  onChange={handleUpcomingChange}
+                />
+              </div>
+              <div>
+                <label htmlFor="page_size" className={filterLabel}>Rows</label>
+                <PrintRowsInput
+                  id="page_size"
+                  name="page_size"
+                  label=""
+                  value={pageSize?.toString() || ''}
+                  onChange={handlePageSizeChange}
+                  type="text"
+                  className="font-medium text-sm w-20! text-center"
+                />
+              </div>
+              <div>
+                <label htmlFor="fontSize" className={filterLabel}>Font</label>
+                <PrintFontInput
+                  id="fontSize"
+                  name="fontSize"
+                  label=""
+                  value={fontSize.toString()}
+                  onChange={handleFontSizeChange}
+                  type="text"
+                  className="font-medium text-sm w-20! text-center"
+                />
+              </div>
+              <PrintButton onClick={handlePrint} label="Print" className="px-6" />
+              <div className={`flex items-center ${FIELD_HEIGHT}`}>
+                <ToggleSwitch label="Show All" checked={!dueOnly} onChange={handleDueToggle} />
+              </div>
             </div>
           </div>
         </div>

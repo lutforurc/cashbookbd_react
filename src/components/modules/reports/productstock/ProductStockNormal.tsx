@@ -567,7 +567,7 @@ const ProductStockNormal = ({ user }: any) => {
                       <PrintButton
                         onClick={handlePrint}
                         label="Print"
-                        className="pt-[0.45rem] pb-[0.45rem] px-4 sm:px-6"
+                        className="px-4 sm:px-6"
                       />
                     </div>
                   )}
@@ -624,7 +624,7 @@ const ProductStockNormal = ({ user }: any) => {
             <PrintButton
               onClick={handlePrint}
               label="Print"
-              className="pt-[0.45rem] pb-[0.45rem] px-4 sm:px-6"
+              className="px-4 sm:px-6"
             />
           </div>
         </div>

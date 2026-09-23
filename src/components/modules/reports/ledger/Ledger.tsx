@@ -605,85 +605,79 @@ const Ledger = (user: any) => {
     : [...(dropdownData ?? [])];
 
 
-  return (
-    <div className="">
-      <HelmetTitle title={'Ledger'} />
-      <div className="py-3">
-        <div className="flex flex-wrap items-end gap-3">
-          <FilterMenuShell
-            enabled={useFilterMenuEnabled}
-            isOpen={filterOpen}
-            onToggle={() => setFilterOpen((prev) => !prev)}
-            menuWidthClassName="w-[min(92vw,340px)]"
-            inlineClassName="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]"
-          >
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
-              {branchDdlData.isLoading == true ? <Loader /> : ''}
-              <BranchDropdown
+  // The four filter fields, drawn inline or inside the filter menu.
+  const filterFields = (
+    <>
+      <div className="min-w-[260px] flex-1">
+        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+        {branchDdlData.isLoading == true ? <Loader /> : ''}
+        <BranchDropdown
  defaultValue={user?.user?.branch_id}
  value={branchId == null ? '' : String(branchId)}
  onChange={handleBranchChange}
  className="w-full font-medium text-sm p-2 "
  branchDdl={branchOptions}
-              />
-            </div>
+        />
+      </div>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Ledger</label>
-              <DdlMultiline
+      <div className="min-w-[260px] flex-1">
+        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Ledger</label>
+        <DdlMultiline
  onSelect={selectedLedgerOptionHandler}
  value={selectedLedgerOption}
  acType={''}
  className=""
-              />
-            </div>
+        />
+      </div>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
-              <InputDatePicker
+      <div className="min-w-[180px] flex-1">
+        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+        <InputDatePicker
  setCurrentDate={handleStartDate}
  className="font-medium text-sm w-full "
  selectedDate={startDate}
  setSelectedDate={setStartDate}
-              />
-            </div>
+        />
+      </div>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
-              <InputDatePicker
+      <div className="min-w-[180px] flex-1">
+        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+        <InputDatePicker
  setCurrentDate={handleEndDate}
  className="font-medium text-sm w-full "
  selectedDate={endDate}
  setSelectedDate={setEndDate}
-              />
-            </div>
+        />
+      </div>
+    </>
+  );
 
-            <div className={`flex gap-2 pt-1 ${useFilterMenuEnabled ? 'justify-end md:col-span-2 xl:col-span-4' : 'hidden'}`}>
-              <ButtonLoading
-                onClick={handleActionButtonClick}
-                buttonLoading={buttonLoading}
-                label="Apply" 
-                className="px-6"
-                icon={<FiCheckSquare />}
-              />
-              <ButtonLoading
-                onClick={handleResetFilters}
-                buttonLoading={false}
-                label="Reset" 
-                icon={<FiRotateCcw />}
-                className="px-4"
-              />
-            </div>
-
-            {!useFilterMenuEnabled && (
-              <div className="hidden items-end gap-2 xl:max-[1880px]:col-span-3 xl:max-[1880px]:flex xl:max-[1880px]:justify-end min-[1881px]:hidden">
+  return (
+    <div className="">
+      <HelmetTitle title={'Ledger'} />
+      <div className="py-3">
+        {/* One wrapping row (owner, 2026-09-23): the fields stretch to fill
+            it and the toolbar follows the last one, so a screen that fits
+            three fields per line gets End Date beside the toolbar on the
+            next -- not End Date alone with the toolbar under it. The fields
+            are written once and go inside the filter menu when that setting
+            is on. */}
+        <div className="flex flex-wrap items-end gap-3">
+          {useFilterMenuEnabled ? (
+            <FilterMenuShell
+              enabled
+              isOpen={filterOpen}
+              onToggle={() => setFilterOpen((prev) => !prev)}
+              menuWidthClassName="w-[min(92vw,340px)]"
+            >
+              {filterFields}
+              <div className="flex justify-end gap-2 pt-1">
                 <ButtonLoading
                   onClick={handleActionButtonClick}
                   buttonLoading={buttonLoading}
                   label="Apply"
-                  icon={<FiCheckSquare />}
                   className="px-6"
+                  icon={<FiCheckSquare />}
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
@@ -692,33 +686,11 @@ const Ledger = (user: any) => {
                   icon={<FiRotateCcw />}
                   className="px-4"
                 />
-                <PrintRowsInput
- id="perPageInline"
- name="perPageInline"
- label="Rows"
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type='text'
- className="font-medium text-sm w-20! text-center"
-                />
-                <PrintFontInput
- id="fontSizeInline"
- name="fontSizeInline"
- label="Font"
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type='text'
- className="font-medium text-sm w-20! text-center"
-                />
-                <PrintButton
-                  onClick={handlePrint}
-                  label="Print"
-                  className="px-6"
-                  disabled={!Array.isArray(tableData) || tableData.length === 0}
-                />
               </div>
-            )}
-          </FilterMenuShell>
+            </FilterMenuShell>
+          ) : (
+            filterFields
+          )}
 
           {useFilterMenuEnabled ? (
             <div className="ml-auto flex items-end gap-2">
@@ -728,22 +700,22 @@ const Ledger = (user: any) => {
                 </div>
               ) : null}
               <PrintRowsInput
- id="perPage"
- name="perPage"
- label=""
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type='text'
- className="font-medium text-sm w-20! text-center"
+                id="perPage"
+                name="perPage"
+                label=""
+                value={perPage.toString()}
+                onChange={handlePerPageChange}
+                type='text'
+                className="font-medium text-sm w-20! text-center"
               />
               <PrintFontInput
- id="fontSize"
- name="fontSize"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type='text'
- className="font-medium text-sm w-20! text-center"
+                id="fontSize"
+                name="fontSize"
+                label=""
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type='text'
+                className="font-medium text-sm w-20! text-center"
               />
               <PrintButton
                 onClick={handlePrint}
@@ -753,49 +725,45 @@ const Ledger = (user: any) => {
               />
             </div>
           ) : (
-            <div className="flex w-full flex-wrap items-end justify-between gap-3 xl:ml-auto xl:w-auto xl:flex-nowrap xl:max-[1880px]:hidden">
-              <div className="flex flex-wrap items-end gap-2">
-                <ButtonLoading
-                  onClick={handleActionButtonClick}
-                  buttonLoading={buttonLoading}
-                  label="Apply"
-                  icon={<FiCheckSquare />}
-                  className="px-6"
-                />
-                <ButtonLoading
-                  onClick={handleResetFilters}
-                  buttonLoading={false}
-                  label="Reset"
-                  icon={<FiRotateCcw />}
-                  className="px-4"
-                />
-              </div>
-              <div className="flex flex-nowrap items-end gap-2">
-                <PrintRowsInput
- id="perPage"
- name="perPage"
- label="Rows"
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type='text'
- className="font-medium text-sm w-20! text-center"
-                />
-                <PrintFontInput
- id="fontSize"
- name="fontSize"
- label="Font"
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type='text'
- className="font-medium text-sm w-20! text-center"
-                />
-                <PrintButton
-                  onClick={handlePrint}
-                  label="Print"
-                  className="px-6"
-                  disabled={!Array.isArray(tableData) || tableData.length === 0}
-                />
-              </div>
+            <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto max-md:ml-0 max-md:w-full xl:ml-auto">
+              <ButtonLoading
+                onClick={handleActionButtonClick}
+                buttonLoading={buttonLoading}
+                label="Apply"
+                icon={<FiCheckSquare />}
+                className="px-6"
+              />
+              <ButtonLoading
+                onClick={handleResetFilters}
+                buttonLoading={false}
+                label="Reset"
+                icon={<FiRotateCcw />}
+                className="px-4"
+              />
+              <PrintRowsInput
+                id="perPage"
+                name="perPage"
+                label="Rows"
+                value={perPage.toString()}
+                onChange={handlePerPageChange}
+                type='text'
+                className="font-medium text-sm w-20! text-center"
+              />
+              <PrintFontInput
+                id="fontSize"
+                name="fontSize"
+                label="Font"
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type='text'
+                className="font-medium text-sm w-20! text-center"
+              />
+              <PrintButton
+                onClick={handlePrint}
+                label="Print"
+                className="px-6"
+                disabled={!Array.isArray(tableData) || tableData.length === 0}
+              />
             </div>
           )}
         </div>

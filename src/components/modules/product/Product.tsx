@@ -724,7 +724,7 @@ const Product = (user: any) => {
  className="font-medium text-sm w-12!"
               />
             </div>
-            <PrintButton onClick={handlePrint} label="Print" className="ml-2 pt-[0.45rem] pb-[0.45rem]" />
+            <PrintButton onClick={handlePrint} label="Print" className="ml-2" />
 
             {/* Beside Print, at Print's own size, rather than in a cell of
                 its own beside a full-width filter group -- that cell was a

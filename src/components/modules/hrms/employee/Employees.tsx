@@ -438,7 +438,7 @@ const Employees = ({ user }: any) => {
  value={perPage.toString()}
  onChange={handlePerPageChange}
  type='text'
- className="font-medium text-sm w-12"
+ className="font-medium text-sm w-12!"
             />
           </div>
           <div className="">
@@ -449,7 +449,7 @@ const Employees = ({ user }: any) => {
  value={fontSize.toString()}
  onChange={handleFontSizeChange}
  type='text'
- className="font-medium text-sm w-12"
+ className="font-medium text-sm w-12!"
             />
           </div>
           <PrintButton

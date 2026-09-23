@@ -1256,7 +1256,6 @@ const SalesLedger = (user: any) => {
                           onClick={handlePrint}
                           label=""
                           title="Print"
-                          className="px-2"
                           disabled={!Array.isArray(tableData) || tableData.length === 0}
                         />
                       </>
@@ -1376,7 +1375,6 @@ const SalesLedger = (user: any) => {
               <PrintButton
                 onClick={handlePrint}
                 label=""
-                className="px-6"
                 disabled={!Array.isArray(tableData) || tableData.length === 0}
               />
             </div>

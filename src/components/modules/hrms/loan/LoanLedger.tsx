@@ -288,7 +288,7 @@ const LoanLedger = (user: any) => {
  value={perPage.toString()}
  onChange={handlePerPageChange}
  type='text'
- className="font-medium text-sm w-16"
+ className="font-medium text-sm w-16!"
               />
             </div>
             <div>
@@ -299,7 +299,7 @@ const LoanLedger = (user: any) => {
  value={fontSize.toString()}
  onChange={handleFontSizeChange}
  type='text'
- className="font-medium text-sm w-16"
+ className="font-medium text-sm w-16!"
               />
             </div>
             <ButtonLoading
@@ -312,7 +312,6 @@ const LoanLedger = (user: any) => {
             <PrintButton
               onClick={handlePrint}
               label=""
-              className="px-3"
             />
           </div>
         </div>

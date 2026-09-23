@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
+import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
 
@@ -17,11 +18,10 @@ import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { useReactToPrint } from "react-to-print";
 import dayjs from "dayjs";
-import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
+import { FiCheckSquare, FiRotateCcw } from "react-icons/fi";
 
 import DateWisePrint from "./DateWisePrint";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
-import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 const DateWiseData = (user: any) => {
   const dispatch = useDispatch<any>();
@@ -260,114 +260,111 @@ const DateWiseData = (user: any) => {
     documentTitle: "Datewise Total",
   });
 
+  // The three filter fields, drawn inline or inside the filter menu.
+  const filterFields = (
+    <>
+      <div className="min-w-[260px] flex-1">
+        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+        {branchDdlData.isLoading ? <Loader /> : ""}
+        <BranchDropdown
+          onChange={(e) => setBranchId(e.target.value)}
+          value={branchId == null ? "" : String(branchId)}
+          branchDdl={dropdownData}
+          className="w-full font-medium text-sm p-2"
+        />
+      </div>
+
+      <div className="min-w-[180px] flex-1">
+        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+        <InputDatePicker
+ selectedDate={startDate}
+ setSelectedDate={setStartDate}
+ setCurrentDate={setStartDate}
+ className="font-medium text-sm w-full"
+        />
+      </div>
+
+      <div className="min-w-[180px] flex-1">
+        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+        <InputDatePicker
+ selectedDate={endDate}
+ setSelectedDate={setEndDate}
+ setCurrentDate={setEndDate}
+ className="font-medium text-sm w-full"
+        />
+      </div>
+    </>
+  );
+
   return (
     <div>
       <HelmetTitle title={"Datewise Total"} />
 
       <div className="px-0 py-3">
+        {/* One wrapping row (owner, 2026-09-23): the fields stretch to fill
+            it and one toolbar follows them, Cash Book's -- Apply and Reset
+            were a group of their own at the left with Rows, Font and Print
+            at the right, a line split in two. The filter menu is the shared
+            FilterMenuShell now, not a copy of it. */}
         <div className="flex flex-wrap items-end gap-3">
-          <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none"}>
-            {useFilterMenuEnabled && (
-              <Button
-                type="button"
-                onClick={() => setFilterOpen((prev) => !prev)}
-                className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
- filterOpen
- ?"border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300":"border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"}`}
-                title="Open filters"
-                aria-label="Open filters"
-              >
-                <FiFilter size={16} />
-              </Button>
-            )}
-
-            {(useFilterMenuEnabled ? filterOpen : true) && (
-              <div
-                className={
-                  useFilterMenuEnabled
-                    ? "absolute left-0 top-full z-1000 mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800"
-                    : "w-full"
-                }
-              >
-                <div
-                  className={
-                    useFilterMenuEnabled
-                      ? "space-y-3"
-                      : "grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(220px,1.4fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]"
-                  }
-                >
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
-                    {branchDdlData.isLoading ? <Loader /> : ""}
-                    <BranchDropdown
-                      onChange={(e) => setBranchId(e.target.value)}
-                      value={branchId == null ? "" : String(branchId)}
-                      branchDdl={dropdownData}
-                      className="w-full p-2 text-sm h-10"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
-                    <InputDatePicker
- selectedDate={startDate}
- setSelectedDate={setStartDate}
- setCurrentDate={setStartDate}
- className="w-full text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
-                    <InputDatePicker
- selectedDate={endDate}
- setSelectedDate={setEndDate}
- setCurrentDate={setEndDate}
- className="w-full text-sm"
-                    />
-                  </div>
-
-                  <div
-                    className={`flex gap-2 pt-1 ${
-                      useFilterMenuEnabled
-                        ? "justify-end"
-                        : "justify-start self-end"
-                    } ${useFilterMenuEnabled ? "" : "hidden"}`}
-                  >
-                    <ButtonLoading
-                      onClick={handleRun}
-                      buttonLoading={dateWiseTotal.isLoading}
-                      label="Apply"
-                      icon={<FiCheckSquare />}
-                      className="px-6"
-                    />
-                    <ButtonLoading
-                      onClick={handleResetFilters}
-                      buttonLoading={false}
-                      label="Reset"
-                      icon={<FiRotateCcw />}
-                      className="px-4"
-                    />
-                  </div>
-                </div>
+          {useFilterMenuEnabled ? (
+            <FilterMenuShell
+              enabled
+              isOpen={filterOpen}
+              onToggle={() => setFilterOpen((prev) => !prev)}
+              menuWidthClassName="w-[min(92vw,320px)]"
+            >
+              {filterFields}
+              <div className="flex justify-end gap-2 pt-1">
+                <ButtonLoading
+                  onClick={handleRun}
+                  buttonLoading={dateWiseTotal.isLoading}
+                  label="Apply"
+                  icon={<FiCheckSquare />}
+                  className="px-6"
+                />
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  label="Reset"
+                  icon={<FiRotateCcw />}
+                  className="px-4"
+                />
               </div>
-            )}
-          </div>
+            </FilterMenuShell>
+          ) : (
+            filterFields
+          )}
 
-          <div
-            className={`${
-              useFilterMenuEnabled
-                ? "hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300"
-                : "hidden"
-            }`}
-          >
-            Use the filter
-          </div>
-
-          {!useFilterMenuEnabled && <div className="hidden max-md:block max-md:basis-full" />}
-
-          {!useFilterMenuEnabled && (
-            <div className="flex shrink-0 flex-nowrap items-end gap-2">
+          {useFilterMenuEnabled ? (
+            <div className="ml-auto flex items-end gap-2">
+              <PrintRowsInput
+                id="perPage"
+                name="perPage"
+                label="Rows"
+                value={perPage.toString()}
+                onChange={(e) => setPerPage(Number(e.target.value))}
+                type="text"
+                className="w-20! text-sm text-center"
+              />
+              <PrintFontInput
+                id="fontSize"
+                name="fontSize"
+                label="Font"
+                value={fontSize.toString()}
+                onChange={(e) => setFontSize(Number(e.target.value))}
+                type="text"
+                className="w-20! text-sm text-center"
+              />
+              <PrintButton
+                onClick={handlePrint}
+                label="Print"
+                className="px-6"
+                disabled={!Array.isArray(tableData) || tableData.length === 0}
+              />
+            </div>
+          ) : (
+            <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto max-md:ml-0 max-md:w-full xl:ml-auto">
               <ButtonLoading
                 onClick={handleRun}
                 buttonLoading={dateWiseTotal.isLoading}
@@ -382,35 +379,32 @@ const DateWiseData = (user: any) => {
                 icon={<FiRotateCcw />}
                 className="px-4"
               />
+              <PrintRowsInput
+                id="perPage"
+                name="perPage"
+                label="Rows"
+                value={perPage.toString()}
+                onChange={(e) => setPerPage(Number(e.target.value))}
+                type="text"
+                className="w-20! text-sm text-center"
+              />
+              <PrintFontInput
+                id="fontSize"
+                name="fontSize"
+                label="Font"
+                value={fontSize.toString()}
+                onChange={(e) => setFontSize(Number(e.target.value))}
+                type="text"
+                className="w-20! text-sm text-center"
+              />
+              <PrintButton
+                onClick={handlePrint}
+                label="Print"
+                className="px-6"
+                disabled={!Array.isArray(tableData) || tableData.length === 0}
+              />
             </div>
           )}
-
-          <div className="ml-auto flex shrink-0 flex-nowrap items-end gap-2">
-            <PrintRowsInput
-              id="perPage"
-              name="perPage"
-              label="Rows"
-              value={perPage.toString()}
-              onChange={(e) => setPerPage(Number(e.target.value))}
-              type="text"
-              className="w-20! text-sm text-center"
-            />
-            <PrintFontInput
-              id="fontSize"
-              name="fontSize"
-              label="Font"
-              value={fontSize.toString()}
-              onChange={(e) => setFontSize(Number(e.target.value))}
-              type="text"
-              className="w-20! text-sm text-center"
-            />
-            <PrintButton
-              onClick={handlePrint}
-              label="Print"
-              className="px-6"
-              disabled={!Array.isArray(tableData) || tableData.length === 0}
-            />
-          </div>
         </div>
       </div>
 

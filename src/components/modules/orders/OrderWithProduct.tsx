@@ -932,7 +932,7 @@ const OrderWithProduct = ({
               </div>
               <PrintButton
                 onClick={handlePrint}
-                className="min-w-[52px] justify-center bg-meta-4 px-0 hover:bg-graydark focus:bg-graydark"
+                className="bg-meta-4 hover:bg-graydark focus:bg-graydark"
                 label=""
               />
             </div>

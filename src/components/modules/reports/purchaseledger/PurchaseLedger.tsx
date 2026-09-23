@@ -1090,7 +1090,6 @@ const PurchaseLedger = (user: any) => {
                           onClick={handlePrint}
                           label=""
                           title="Print"
-                          className="px-2"
                           disabled={!Array.isArray(tableData) || tableData.length === 0}
                         />
                       </>

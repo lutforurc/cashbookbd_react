@@ -555,7 +555,7 @@ const ProductStock = ({ user }: any) => {
  type="text"
  className="w-16! text-sm text-center sm:w-20!"
                       />
-                      <PrintButton onClick={handlePrint} label="" className="px-4 sm:px-6" />
+                      <PrintButton onClick={handlePrint} label="" />
                     </div>
                   )}
                 </div>
@@ -605,7 +605,7 @@ const ProductStock = ({ user }: any) => {
  type="text"
  className="w-16! text-sm text-center sm:w-20!"
             />
-            <PrintButton onClick={handlePrint} label="" className="px-4 sm:px-6" />
+            <PrintButton onClick={handlePrint} label="" />
           </div>
         </div>
       </div>

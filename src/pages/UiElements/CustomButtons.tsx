@@ -15,8 +15,9 @@ interface ButtonProps {
   icon?: React.ReactNode;
   onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void; // ✅ FIXED
   /**
-   * Drops to the icon alone below xl. For button rows that sit in a half-width
-   * column, where the labels stop fitting long before the screen is small.
+   * Drops to the icon alone when the row is narrower than 42rem. The row must
+   * carry `@container`. For button rows that sit in a half-width column, where
+   * the labels stop fitting long before the screen is small.
    */
   responsiveLabel?: boolean;
   /**
@@ -206,12 +207,16 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
 
   // Without a label on show, the button only has to hold its icon — and the
   // name it lost is worth keeping as a tooltip.
+  // `@2xl` is the row's own width (42rem), not the screen's: the row must be a
+  // `@container`. It was `xl:`, the viewport, and a sidebar left the row half
+  // as wide as the screen said -- labels showed and the row wrapped anyway.
+  // Icon alone, the button keeps the 52px an icon-only PrintButton has.
   const paddingClass = isSmall
-    ? (responsiveLabel ? 'px-1.5 xl:px-2 py-1' : 'px-2 py-1')
-    : (responsiveLabel ? 'px-2 xl:px-5' : 'px-5');
+    ? (responsiveLabel ? 'px-1.5 @2xl:px-2 py-1' : 'px-2 py-1')
+    : (responsiveLabel ? 'min-w-13 px-2 @2xl:px-5' : 'px-5');
   const textClass = isSmall ? 'text-xs' : 'text-sm';
-  const labelClass = responsiveLabel ? 'hidden xl:inline' : '';
-  const iconSpacing = hasLabel ? (responsiveLabel ? 'xl:mr-2' : 'mr-2') : '';
+  const labelClass = responsiveLabel ? 'hidden @2xl:inline' : '';
+  const iconSpacing = hasLabel ? (responsiveLabel ? '@2xl:mr-2' : 'mr-2') : '';
 
   return (
     <button
@@ -314,7 +319,11 @@ export const PrintButton: React.FC<PrintButtonProps> = ({
     size={size}
     responsiveLabel={responsiveLabel}
     title={title}
-    className={`disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+    // With no label the button is 52px wide with the icon centred: wider than
+    // a square, which the owner found too small beside the Rows and Font boxes,
+    // narrower than the 60px the label padding gave a 20px icon. The screens
+    // each used to guess a px- for this, none of them the same.
+    className={`${label.trim() ? '' : 'min-w-13 px-0!'} disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
   />
 );
 

@@ -1317,12 +1317,13 @@ const ElectronicsBusinessSales = () => {
                 <span className="absolute top-8 right-3 z-50">{lineTotal}</span>
               </div>
             </div>
-            <div className="flex gap-x-1 gap-y-1">
+            <div className="@container flex flex-wrap gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editProduct}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
                 />
@@ -1332,6 +1333,7 @@ const ElectronicsBusinessSales = () => {
                   onClick={addProduct}
                   buttonLoading={buttonLoading}
                   label="Add New"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiPlus className="text-lg ml-2 mr-2" />}
                   onKeyDown={(e) => {
@@ -1351,6 +1353,7 @@ const ElectronicsBusinessSales = () => {
                   onClick={handleInvoiceUpdate}
                   buttonLoading={updateButtonLoading}
                   label={updateButtonLoading ? 'Updating...' : 'Update'}
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit className="text-lg ml-2 mr-2" />}
                   disabled={updateButtonLoading}
@@ -1360,6 +1363,7 @@ const ElectronicsBusinessSales = () => {
                   onClick={handleInvoiceSave}
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-lg ml-2 mr-2" />}
                   disabled={saveButtonLoading}
@@ -1370,10 +1374,11 @@ const ElectronicsBusinessSales = () => {
                 onClick={resetProducts}
                 buttonLoading={buttonLoading}
                 label="Reset"
+                responsiveLabel
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
               />
-              <div className="flex w-full">
+              <div className="flex shrink-0 ml-auto">
                 <div className="mr-2">
                   <PrintRowsInput
  id="perPage"
@@ -1383,7 +1388,7 @@ const ElectronicsBusinessSales = () => {
  value={perPage.toString()}
  onChange={handlePerPageChange}
  type='text'
- className="font-medium text-sm w-12"
+ className="font-medium text-sm w-12!"
                   />
                 </div>
                 <div className="mr-2">
@@ -1395,7 +1400,7 @@ const ElectronicsBusinessSales = () => {
  value={fontSize.toString()}
  onChange={handleFontSizeChange}
  type='text'
- className="font-medium text-sm w-12"
+ className="font-medium text-sm w-12!"
                   />
                 </div>
 
@@ -1406,8 +1411,8 @@ const ElectronicsBusinessSales = () => {
                       mtm_id: sales.data.id,
                     })
                   }
-                  label=""
-                  className="pt-[0.45rem] pb-[0.45rem]"
+                  label="Print"
+                  responsiveLabel
                 />
               </div>
             </div>
