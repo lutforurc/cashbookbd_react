@@ -15,11 +15,11 @@ import {
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
+import { fieldClass } from '../../../../theme/fieldStyles';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import SelectWeightVariance from '../../../utils/utils-functions/SelectWeightVariance';
 import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
 import Loader from '../../../../common/Loader';
-import Link from '../../../utils/others/Link';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { userCurrentBranch } from '../../branch/branchSlice';
@@ -1201,11 +1201,14 @@ const TradingCombinedEntry = () => {
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            {/* items-end: the Amount and Notes headers carry a switch and a
+                strip that wrap under the label in a narrow column, and the
+                three boxes must stay level whatever the headers do. */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
               <div>
-                <div className="mb-1 flex items-center justify-between gap-2">
-                  <label htmlFor="amount" className='text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>Amount Tk.</label>
-                  <div className="flex items-center gap-2">
+                <div className="mb-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                  <label htmlFor="amount" className='whitespace-nowrap text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>Amount Tk.</label>
+                  <div className="flex shrink-0 items-center gap-2">
                     <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
                       <span className='font-semibold'> {formData.onlySalesPosting ? 'Sales' : 'Both'}</span>
                     </span>
@@ -1253,7 +1256,7 @@ const TradingCombinedEntry = () => {
                 type="number"
                 placeholder="Discount Amount"
                 label="Discount Amount"
-                className="py-1 mt-1"
+                className="py-1"
                 onChange={handleFormChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')}
               />
@@ -1301,7 +1304,7 @@ const TradingCombinedEntry = () => {
                   autoComplete="off"
                   onChange={handleFormChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'product')}
-                  className="w-full form-input rounded-xs border bg-white px-3 py-1 text-gray-600 outline-none focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-transparent dark:text-[rgb(var(--c-text))] dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+                  className={fieldClass(undefined, 'w-full')}
                 />
               </div>
               <datalist id="combined-notes-suggestions">
@@ -1490,10 +1493,13 @@ const TradingCombinedEntry = () => {
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
               />
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2 mr-2" />
-                <span className="hidden md:block">Home</span>
-              </Link>
+              <ButtonLoading
+                onClick={() => navigate('/dashboard')}
+                buttonLoading={false}
+                label="Home"
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiHome className="text-lg ml-2 mr-2" />}
+              />
             </div>
           </div>
         </div>
