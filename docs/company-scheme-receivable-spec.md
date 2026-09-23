@@ -1,0 +1,338 @@
+# কোম্পানি স্কিম বিক্রয় ও নিকট পাওনা ব্যবস্থাপনা — স্পেসিফিকেশন
+
+**তারিখ:** ২৩ সেপ্টেম্বর ২০২৬
+**অবস্থা:** পরামর্শ / নকশা — বাস্তবায়ন শুরু হয়নি
+**নথির উদ্দেশ্য:** ব্যাকএন্ড ডেভেলপারের জন্য ডেটাবেস স্কিমা ও API চুক্তি
+
+---
+
+## ১. কেন এই কাজ
+
+সিস্টেমে বর্তমানে বিক্রয়ের তিনটি ধরন — `Cash Sales`, `Partial Cash Sales`, `Due Sales` — এবং একটি কিস্তি মডিউল আছে। কিন্তু এগুলো সবই **ক্রেতার কাছে** পাওনা ট্র্যাক করে।
+
+এই ব্যবসার প্রয়োজন এর উল্টো দিকের পাওনা:
+
+- কোম্পানি (ব্র্যান্ড/সরবরাহকারী) পণ্য দেয়, সফটওয়্যার ব্যবহারকারী বিক্রি করেন
+- ক্রেতা নগদ অংশ দেয় (যেমন ২০,০০০-এর মধ্যে ৬,০০০)
+- বাকি ১৪,০০০ নির্দিষ্ট দিন পর **কোম্পানি** ব্যবহারকারীর ব্যাংক হিসাবে বা নগদে পরিশোধ করে
+
+অর্থাৎ প্রতিটি বিক্রীত IMEI-এর বিপরীতে **কোম্পানির নিকট পাওনা** তৈরি হয়, যা বিল-ভিত্তিক পরিশোধে কমতে থাকে। বর্তমানে এর কোনো ট্র্যাকিং নেই।
+
+### যে চারটি প্রশ্নের উত্তর দিতে হবে
+
+1. কোম্পানির নিকট এখন কত টাকা পাওয়া আছে
+2. আজকে কোন কোন IMEI/বিলের বিপরীতে কত টাকা পরিশোধ পেল
+3. কোন কোন IMEI-এর টাকা এখনও পাওয়া আছে
+4. এজিং, স্টেটমেন্ট, প্রিন্ট
+
+---
+
+## ২. সুপারিশকৃত মডেল
+
+### ২.১ "কোম্পানি" = চার্ট অব অ্যাকাউন্টসের একটি পক্ষ
+
+সিস্টেমে ইতিমধ্যেই `product-tracking` মডিউল আছে, যা একটি পণ্য + শাখার জন্য একটি `coa4_id` পক্ষের বিপরীতে bill ও cash ট্র্যাক করে।
+
+**কোমানিকে নতুন সত্তা বানানোর দরকার নেই** — চার্ট অব অ্যাকাউন্টসের একটি Level-4 পক্ষ (`acType=3`) হিসেবে যোগ করলেই হবে। তাহলে এন্ট্রিগুলো স্বয়ংক্রিয়ভাবে Trial Balance ও Balance Sheet-এ যাবে, যা আলাদা টেবিলে রাখলে কখনোই মিলত না।
+
+ফ্রন্টএন্ডে কোম্পানি বাছাই হবে বিদ্যমান `<DdlMultiline acType={'3'} />` নিয়ন্ত্রণ দিয়ে — যেটি এখন ক্রেতা বাছাইতেই ব্যবহৃত হয়।
+
+### ২.২ পাওনা থাকবে প্রতি IMEI-এ এক লাইন
+
+চারটি রিপোর্টই IMEI-কেন্দ্রিক। তাই মডেলের মূল একক `IMEI`, ইনভয়েস নয় — এক ইনভয়েসে ২০টি IMEI থাকলে ২০টি পাওনা লাইন হবে।
+
+### ২.৩ পরিশোধের অঙ্ক দুই স্তরে — `expected` ও `agreed`
+
+কোম্পানি পরে চূড়ান্ত অঙ্ক জানায়, তাই শুরুর হিসাব মুছে ফেলা যাবে না:
+
+- `expected_amount` = বিক্রয়মূল্য − ক্রেতার নগদ (সিস্টেম নিজে বসায়)
+- `agreed_amount` = কোম্পানি যে অঙ্ক জানায় (পরে বসে, পরিবর্তনযোগ্য)
+- পার্থক্য সমন্বয় খাতায় যাবে
+
+### ২.৪ পেমেন্ট এলোকেশন টেবিল — আসল চাবি
+
+কোম্পানি প্রায়ই একসাথে অনেক IMEI-এর টাকা এক পেমেন্টে দেয়। তাই তিনটি স্তর লাগবে:
+
+```
+company_receivables            → প্রতি IMEI-এর পাওনা বিল
+company_settlements            → কোম্পানি থেকে পাওয়া একেকটি পেমেন্ট
+company_settlement_allocations → কোন পেমেন্ট কোন IMEI-এ কত
+```
+
+তৃতীয় টেবিলটিই "কোন কোন বিলের বিপরীতে পেমেন্ট" প্রশ্নের উত্তর দেয় এবং আংশিক পরিশোধ সম্ভব করে।
+
+---
+
+## ৩. কাজের উদাহরণ
+
+| IMEI | বিক্রয়মূল্য | নগদ | কোম্পানি পরিশোধ করবে | মেয়াদ |
+|---|---|---|---|---|
+| 12131313131313 | ২০,০০০ | ৬,০০০ | ১৪,০০০ | sale_date + 30 |
+| 121313131465464 | ২২,০০০ | ৬,৫০০ | ১৫,৫০০ | sale_date + 30 |
+| 121314546565464 | ২৫,০০০ | ৭,০০০ | ১৮,০০০ | sale_date + 30 |
+
+**মোট পাওনা ৪৭,৫০০**
+
+কোম্পানি ৩০,০০০ দিলে: প্রথম দুটি সম্পূর্ণ মিটবে (১৪,০০০ + ১৫,৫০০ = ২৯,৫০০), তৃতীয়টিতে ৫০০ বসবে → **অবশিষ্ট ১৭,৫০০**
+
+---
+
+## ৪. ডেটাবেস টেবিল (৫টি)
+
+### ৪.১ `company_receivables` — প্রতি IMEI-এর পাওনা
+
+```sql
+id                BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+branch_id         BIGINT UNSIGNED NOT NULL,
+company_coa4_id   BIGINT UNSIGNED NOT NULL,  -- ব্র্যান্ড/সরবরাহকারী পক্ষ
+customer_coa4_id  BIGINT UNSIGNED NULL,      -- শেষ ক্রেতা
+invoice_id        BIGINT UNSIGNED NULL,      -- Electronics বিক্রয় ইনভয়েস
+invoice_no        VARCHAR(50)  NULL,
+item_id           BIGINT UNSIGNED NOT NULL,
+imei              VARCHAR(20)  NOT NULL,
+sale_date         DATE         NOT NULL,
+sale_price        DECIMAL(15,2) NOT NULL,             -- 20000
+customer_cash     DECIMAL(15,2) NOT NULL DEFAULT 0,   -- 6000
+expected_amount   DECIMAL(15,2) NOT NULL,             -- sale_price - customer_cash = 14000
+agreed_amount     DECIMAL(15,2) NULL,                 -- কোম্পানি পরে যা জানায়
+settled_amount    DECIMAL(15,2) NOT NULL DEFAULT 0,
+due_date          DATE          NOT NULL,             -- sale_date + N
+status            ENUM('pending','partial','settled','on_hold','cancelled') DEFAULT 'pending',
+source            ENUM('sale','import','manual') DEFAULT 'sale',
+remarks           TEXT NULL,
+created_by BIGINT UNSIGNED NULL,
+updated_by BIGINT UNSIGNED NULL,
+created_at TIMESTAMP NULL,
+updated_at TIMESTAMP NULL,
+
+INDEX idx_outstanding (company_coa4_id, status, due_date),
+INDEX idx_imei (imei),
+INDEX idx_invoice (invoice_id)
+```
+
+> **বাকি** = `COALESCE(agreed_amount, expected_amount) − settled_amount`
+
+### ৪.২ `company_settlements` — কোম্পানি থেকে পাওয়া একেকটি পেমেন্ট
+
+```sql
+id                BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+branch_id         BIGINT UNSIGNED NOT NULL,
+company_coa4_id   BIGINT UNSIGNED NOT NULL,
+payment_date      DATE NOT NULL,
+amount            DECIMAL(15,2) NOT NULL,
+payment_method    ENUM('cash','bank','cheque','adjustment') NOT NULL,
+deposit_coa4_id   BIGINT UNSIGNED NULL,   -- টাকা যে নগদ/ব্যাংক খাতে ঢুকল
+reference_no      VARCHAR(100) NULL,      -- চেক নম্বর / ট্রানজ্যাকশন আইডি
+voucher_master_id BIGINT UNSIGNED NULL,   -- যে রিসিভ ভাউচার তৈরি হলো
+remarks           TEXT NULL,
+status            ENUM('posted','cancelled') DEFAULT 'posted',
+created_by BIGINT UNSIGNED NULL,
+created_at TIMESTAMP NULL,
+updated_at TIMESTAMP NULL
+```
+
+### ৪.৩ `company_settlement_allocations` — কোন পেমেন্ট কোন IMEI-এ কত
+
+```sql
+id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+settlement_id   BIGINT UNSIGNED NOT NULL,
+receivable_id   BIGINT UNSIGNED NOT NULL,
+amount          DECIMAL(15,2) NOT NULL,
+
+UNIQUE KEY uniq_alloc (settlement_id, receivable_id),
+FOREIGN KEY (settlement_id) REFERENCES company_settlements(id) ON DELETE CASCADE,
+FOREIGN KEY (receivable_id) REFERENCES company_receivables(id)
+```
+
+### ৪.৪ `company_scheme_settings` — কোম্পানি-প্রতি মেয়াদ (N দিন)
+
+```sql
+id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+company_coa4_id  BIGINT UNSIGNED NOT NULL,
+branch_id        BIGINT UNSIGNED NULL,   -- NULL = সব শাখায় প্রযোজ্য
+due_days         SMALLINT UNSIGNED NOT NULL DEFAULT 30,
+is_active        TINYINT(1) NOT NULL DEFAULT 1,
+UNIQUE KEY uniq_company_branch (company_coa4_id, branch_id)
+```
+
+### ৪.৫ `company_receivable_adjustments` — `agreed_amount` বদলের ইতিহাস
+
+```sql
+id             BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+receivable_id  BIGINT UNSIGNED NOT NULL,
+old_amount     DECIMAL(15,2) NULL,
+new_amount     DECIMAL(15,2) NOT NULL,
+reason         VARCHAR(255) NULL,
+adjusted_by    BIGINT UNSIGNED NULL,
+created_at     TIMESTAMP NULL
+```
+
+---
+
+## ৫. অলঙ্ঘনীয় নিয়ম (সার্ভারে জোর করে মানাতে হবে)
+
+1. `settled_amount` সবসময় = ওই পাওনার সব allocation-এর যোগফল
+2. `settled_amount ≤ COALESCE(agreed_amount, expected_amount)` — বেশি পরিশোধ বসানো যাবে না
+3. `status` উপরোক্ত অঙ্ক থেকেই নিজে ঠিক হবে — ০ = `pending`, আংশিক = `partial`, পূর্ণ = `settled`
+4. **একটি ট্রানজ্যাকশনে** settlement + allocations + ভাউচার — একটাও ব্যর্থ হলে কিছুই সেভ হবে না
+5. একটি settlement-এর allocations-এর যোগফল = `settlement.amount`
+6. বাতিল settlement-এ কোনো allocation থাকবে না
+7. একই settlement-এ একই IMEI দুইবার আসবে না (UNIQUE key এ আটকাবে)
+
+---
+
+## ৬. API এন্ডপয়েন্ট (৯টি)
+
+**ভিত্তি:** `{host}/api/company-scheme`
+**Auth:** বিদ্যমান Sanctum
+**Response খাম:** `{ "success": true, "data": { "data": [...], "meta": {...} } }`
+**ত্রুটি:** `{ "success": false, "error": { "message": "..." } }`
+
+| # | এন্ডপয়েন্ট | ইনপুট | আউটপুট |
+|---|---|---|---|
+| ১ | `GET /receivables` | `branch_id, company_coa4_id, imei, status, from_date, to_date, page, per_page` | `id, imei, item_name, company, customer, invoice_no, sale_date, sale_price, customer_cash, expected_amount, agreed_amount, settled_amount, balance, due_date, days_overdue, status` + `meta.totals` |
+| ২ | `GET /receivables/due` | উপরের + মেয়াদী ফিল্টার | উপরের + `aging_bucket` (`0-30`, `31-60`, `61-90`, `90+`) ও বাকেট-ভিত্তিক যোগফল |
+| ৩ | `POST /receivables/adjust` | `{ receivable_id, agreed_amount, reason }` | adjustment সারি লেখে, `agreed_amount` ও `status` হালনাগাদ |
+| ৪ | `GET /settlements/open-receivables` | `company_coa4_id, branch_id, as_of_date` | পুরনো আগে সাজানো — এলোকেশন স্ক্রিনের জন্য |
+| ৫ | `POST /settlements/store` | §৬.২ দেখুন | `{ settlement_id, voucher_no, allocations }` |
+| ৬ | `GET /settlements/daily` | `from_date, to_date, company_coa4_id, branch_id` | settlement + তার allocation লাইন (কোন IMEI, কত) |
+| ৭ | `GET /statement/{coa4Id}` | `from_date, to_date` | `opening_balance, rows[{date, particulars, debit, credit, balance, type}], closing_balance` |
+| ৮ | `GET/POST /settings` | `{ company_coa4_id, branch_id, due_days, is_active }` | তালিকা / upsert |
+| ৯ | `POST /import` | Excel + `company_coa4_id, branch_id` | `{ inserted, skipped, errors[{row, message}] }` |
+
+### ৬.১ এন্ডপয়েন্ট ৩ — `adjust` এর নিয়ম
+
+`agreed_amount < settled_amount` হলে আটকাতে হবে:
+
+> "এই IMEI-এর ইতিমধ্যে ৫,০০০ টাকা পরিশোধ হয়ে গেছে; তার কম অঙ্ক বসানো যাবে না।"
+
+### ৬.২ এন্ডপয়েন্ট ৫ — `settlements/store` (সবচেয়ে গুরুত্বপূর্ণ)
+
+```json
+{
+  "company_coa4_id": 123,
+  "branch_id": 4,
+  "payment_date": "2026-09-23",
+  "amount": 30000,
+  "payment_method": "bank",
+  "deposit_coa4_id": 55,
+  "reference_no": "CHQ-8842",
+  "remarks": "",
+  "allocations": [
+    { "receivable_id": 901, "amount": 14000 },
+    { "receivable_id": 902, "amount": 15500 },
+    { "receivable_id": 903, "amount": 500 }
+  ]
+}
+```
+
+**যাচাই:**
+
+- allocations-এর যোগফল = `amount`
+- সব পাওনা একই কোম্পানির
+- প্রতি লাইন তার নিজের বাকির চেয়ে বেশি নয়
+- একই পাওনা একাধিকবার নেই
+
+**প্রভাব (এক ট্রানজ্যাকশনে):**
+
+1. `company_settlements` সারি তৈরি
+2. `company_settlement_allocations` সারি তৈরি
+3. প্রতি পাওনার `settled_amount` ও `status` হালনাগাদ
+4. **নগদ/ব্যাংক রিসিভ ভাউচার** তৈরি
+
+### ৬.৩ এন্ডপয়েন্ট ৯ — Excel ইমপোর্টের কলাম
+
+`IMEI` · `Item/Model` · `Sale Date` · `Sale Price` · `Customer Cash` · `Company Amount` · `Due Date` *(না থাকলে হিসাব হবে)* · `Invoice No` · `Customer Name`
+
+`?dry_run=1` থাকলে কিছুই সেভ না করে শুধু কী হবে তা দেখাবে — ব্যবহারকারী মিলিয়ে দেখে তারপর চূড়ান্ত করবেন।
+
+---
+
+## ৭. বিক্রয়ের সাথে সংযোগ
+
+`POST /electronics/sales/store` — ইনভয়েসে কোম্পানি স্কিম লাইন থাকলে **একই ট্রানজ্যাকশনে** `company_receivables` সারি তৈরি হবে। আলাদা করে কিছু যোগ করতে হবে না।
+
+---
+
+## ৮. ফ্রন্টএন্ড পরিধি (এই রিপোতে যা বানানো হবে)
+
+নতুন মডিউল: `src/components/modules/company-settlement/`
+
+| ফাইল | কাজ |
+|---|---|
+| `companySettlementSlice.tsx` | Redux Toolkit slice |
+| `CompanyReceivable.tsx` | রিপোর্ট ১ — কোম্পানির নিকট পাওনা (IMEI-ভিত্তিক) |
+| `CompanyPaymentEntry.tsx` | পেমেন্ট এন্ট্রি + এলোকেশন |
+| `CompanySettlementDaily.tsx` | রিপোর্ট ২ — তারিখ-ভিত্তিক পরিশোধ |
+| `CompanyReceivableDue.tsx` | রিপোর্ট ৩ — মেয়াদী/এজিং |
+| `CompanyStatement.tsx` | রিপোর্ট ৪ — কোম্পানি স্টেটমেন্ট |
+| `companySchemeConfig.tsx` | কোম্পানি-প্রতি মেয়াদ-দিন সেটিংস |
+
+পরিবর্তন হবে: `apiRoutes.tsx` · `appRoutes.tsx` · `App.tsx` · `store.tsx` · `menuRoutes.ts` · `menuPermissions.ts` · `dropdownData.tsx` · `ElectronicsBusinessSales.tsx`
+
+**পুনর্ব্যবহারযোগ্য বিদ্যমান উপাদান:**
+
+- `DdlMultiline` (`acType='3'`) — পক্ষ ড্রপডাউন
+- `BranchDropdown` + `getDdlProtectedBranch` — শাখা
+- `InputDatePicker` · `Input` · `Select` — `utils/fields/`
+- `ButtonLoading` · `thousandSeparator` · `Loader` · `HelmetTitle`
+- `httpService` · `RequirePermission`
+- `useReactToPrint` / `useVoucherPrint` — প্রিন্ট
+
+**নমুনা টেমপ্লেট:** `src/components/modules/product-tracking/ProductTrackingSummary.tsx` — একই ঘরানার পাওনা রিপোর্ট (ফিল্টার সারি → টেবিল → প্রিন্ট)। নতুন স্ক্রিনগুলো এর গঠন অনুসরণ করবে।
+
+**তারিখের সতর্কতা:** `toISOString()` ব্যবহার করা যাবে না — GMT+6 এ এক দিন পিছিয়ে যায়। বিদ্যমান `toIsoDate()` হেল্পার কপি করতে হবে।
+
+**কোড কমেন্ট:** নতুন ফাইলে ইংরেজি কমেন্ট — কোডবেসের প্রচলিত রীতি।
+
+---
+
+## ৯. কাজের ধাপ
+
+| ধাপ | কাজ |
+|---|---|
+| **০** | ডেটাবেস স্কিমা ও API চুক্তি চূড়ান্ত — **এই নথি** |
+| **১** | কোম্পানিকে পক্ষ হিসেবে যোগ · Electronics Sales-এ কোম্পানি স্কিম · রিপোর্ট ১ · Excel ইমপোর্ট |
+| **২** | পেমেন্ট এন্ট্রি + এলোকেশন · নগদ/ব্যাংক ভাউচার · রিপোর্ট ২ ও ৩ |
+| **৩** | `agreed_amount` সংশোধন · রিপোর্ট ৪ (স্টেটমেন্ট) · প্রিন্ট |
+
+---
+
+## ১০. সিদ্ধান্ত হয়ে গেছে
+
+| বিষয় | সিদ্ধান্ত |
+|---|---|
+| সম্পর্ক | পরিস্থিতি-নির্ভর — কোথাও ক্রয়, কোথাও কনসাইনমেন্ট। উভয় অবস্থাতেই কাজ করবে এমন মডেল |
+| পরিশোধের অঙ্ক | কোম্পানি চূড়ান্ত অঙ্ক জানায় → `expected` ও `agreed` দুটোই থাকবে |
+| মেয়াদ | বিক্রয় তারিখ + N দিন (কোম্পানি-প্রতি সেটিংস) |
+| স্ক্রিন | আলাদা নতুন মডিউল `company-settlement` |
+| পুরনো ডেটা | Excel ইমপোর্ট লাগবে |
+| পেমেন্ট | বাস্তব নগদ/ব্যাংক ভাউচার তৈরি হবে — হিসাবের বইয়ের সাথে মিলবে |
+
+---
+
+## ১১. ঝুঁকি ও খোলা বিষয়
+
+**চুক্তির আগে ঠিক করা দরকার:**
+
+1. **একাধিক প্রতিষ্ঠান একই ডেটাবেসে, না আলাদা?** — বর্তমানে প্রতিটি প্রতিষ্ঠানের আলাদা হোস্ট (`accounts.kps.cashbookbd.com` ইত্যাদি)। আলাদা হলে টেবিলে `company_id` লাগবে না, একই হলে লাগবে।
+2. **কোম্পানির সাথে ক্রয়ের হিসাব** — পণ্য কিনে নেওয়ার সময় সেই দেনা এই মডিউলে আসবে, নাকি বিদ্যমান Purchase-এই থাকবে?
+3. **কমিশন/চার্জ** — কোম্পানি অঙ্ক জানানোর সময় কমিশন কাটলে সেটি কোন খাতে বসবে — কম প্রাপ্তি, নাকি খরচ?
+
+**অন্যান্য ঝুঁকি:**
+
+- **ব্যাকএন্ড ব্যতীত কিছুই চলবে না** — এই রিপোতে শুধু ফ্রন্টএন্ড; API আলাদা Laravel রিপোতে তৈরি করতে হবে
+- **একই IMEI একাধিকবার** — রিটার্ন বা পুনঃবিক্রয় হলে পাওনা কীভাবে কমবে/বাড়বে
+- **ইমপোর্টের মিল** — পুরনো Excel-এর মোট পাওনা আর নতুন সিস্টেমের হিসাব মিলিয়ে দেখতে হবে; না মিললে সমন্বয় এন্ট্রি লাগবে
+
+---
+
+## ১২. যাচাই (বাস্তবায়নের পর)
+
+1. একটি Electronics বিক্রয় করুন — কোম্পানি স্কিম বেছে, §৩-এর তিনটি IMEI দিয়ে
+2. রিপোর্ট ১ দেখুন — মোট পাওনা **৪৭,৫০০** দেখানো উচিত
+3. ৩০,০০০ টাকার একটি পেমেন্ট যোগ করুন — প্রথম দুটি IMEI পূর্ণ মিটবে, তৃতীয়টিতে ৫০০ বসবে
+4. রিপোর্ট ২ দেখুন — সেই তারিখে কোন কোন IMEI, কত
+5. রিপোর্ট ১ আবার — অবশিষ্ট **১৭,৫০০**
+6. মেয়াদ তারিখ বদলে রিপোর্ট ৩-এ এজিং যাচাই করুন
+7. Accounts-এ রিসিভ ভাউচার তৈরি হয়েছে কিনা এবং Trial Balance মিলছে কিনা দেখুন
