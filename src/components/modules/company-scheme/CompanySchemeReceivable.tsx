@@ -51,13 +51,11 @@ type Row = {
   product_name: string | null;
   buyer_name: string | null;
   buyer_mobile: string | null;
-  sale_price: number;
-  original_amount: number;
+  sale_price: number | null;
   amount: number;
   paid: number;
   balance: number;
   due_date: string;
-  claimed_at: string | null;
   days_overdue: number;
   status: 'due' | 'partial' | 'paid';
 };
@@ -88,7 +86,6 @@ const BANK_COA3 = 2;
 const STATUSES = [
   { id: 'open', name: 'Open (not fully paid)' },
   { id: 'overdue', name: 'Overdue' },
-  { id: 'unclaimed', name: 'Unclaimed (not sent to brand)' },
   { id: 'paid', name: 'Paid' },
   { id: 'all', name: 'All' },
 ];
@@ -264,16 +261,16 @@ const CompanySchemeReceivable = () => {
     if (left > 0) toast.info(`${thousandSeparator(left)} is more than what is open here.`);
   };
 
-  /** Due date or claim date on the ticked rows. No posting moves. */
-  const mark = (field: 'due_date' | 'claimed_at', clear = false) => {
+  /** Change the due date on the ticked rows. No posting moves. */
+  const mark = () => {
     const ids = Object.keys(picked).map(Number);
     if (!ids.length) return toast.info('Tick at least one IMEI.');
-    const date = clear ? '' : toIsoDate(markDate);
-    if (!clear && !date) return toast.info('Pick a date.');
+    const date = toIsoDate(markDate);
+    if (!date) return toast.info('Pick a date.');
 
     setMarking(true);
     httpService
-      .post(API_COMPANY_SCHEME_MARK_URL, { receivable_ids: ids, [field]: date })
+      .post(API_COMPANY_SCHEME_MARK_URL, { receivable_ids: ids, due_date: date })
       .then((res) => {
         if (res?.data?.success) {
           toast.success(res.data.message || 'Updated.');
@@ -436,21 +433,14 @@ const CompanySchemeReceivable = () => {
       header: 'Sale Price',
       headerClass: 'text-right',
       cellClass: 'text-right tabular-nums',
-      render: (row: Row) => money(row.sale_price),
+      render: (row: Row) => (row.sale_price === null ? '-' : money(row.sale_price)),
     },
     {
       key: 'amount',
       header: 'Receivable',
       headerClass: 'text-right',
       cellClass: 'text-right tabular-nums',
-      render: (row: Row) => (
-        <>
-          <div>{money(row.amount)}</div>
-          {Math.abs(row.amount - row.original_amount) >= 0.01 ? (
-            <div className="text-xs text-gray-500">was {money(row.original_amount)}</div>
-          ) : null}
-        </>
-      ),
+      render: (row: Row) => money(row.amount),
     },
     {
       key: 'paid',
@@ -480,13 +470,6 @@ const CompanySchemeReceivable = () => {
       cellClass: 'text-right tabular-nums',
       render: (row: Row) =>
         row.days_overdue ? <span className="text-red-600">{row.days_overdue} d</span> : '-',
-    },
-    {
-      key: 'claimed_at',
-      header: 'Claimed',
-      headerClass: 'text-center',
-      cellClass: 'text-center whitespace-nowrap',
-      render: (row: Row) => (row.claimed_at ? formatDayMonthYear(row.claimed_at) : '-'),
     },
     ...(showPick
       ? [
@@ -829,8 +812,7 @@ const CompanySchemeReceivable = () => {
             </div>
           </div>
 
-          {/* The ticked rows' dates: the brand extending its terms, or the
-              claim sheet going out. Neither is an invoice edit. */}
+          {/* Extend the ticked rows' due dates without editing the invoice. */}
           {canMark ? (
           <div className="mt-3 grid grid-cols-1 items-end gap-3 md:grid-cols-5">
             <div>
@@ -843,9 +825,7 @@ const CompanySchemeReceivable = () => {
               />
             </div>
             <div className="flex flex-wrap gap-2 md:col-span-4">
-              <ButtonLoading onClick={() => mark('due_date')} buttonLoading={marking} label="Set Due Date" className="whitespace-nowrap" />
-              <ButtonLoading onClick={() => mark('claimed_at')} buttonLoading={marking} label="Mark Claimed" className="whitespace-nowrap" />
-              <ButtonLoading onClick={() => mark('claimed_at', true)} buttonLoading={marking} label="Unclaim" className="whitespace-nowrap" />
+              <ButtonLoading onClick={mark} buttonLoading={marking} label="Set Due Date" className="whitespace-nowrap" />
             </div>
           </div>
           ) : null}

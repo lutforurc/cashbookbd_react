@@ -1,7 +1,18 @@
 # Company Scheme — কোম্পানির নিকট IMEI-ভিত্তিক পাওনা
 
-**তারিখ:** ২৩ সেপ্টেম্বর ২০২৬
-**অবস্থা:** বানানো হয়েছে (সংস্করণ ৬)। SQL চালানো হয়েছে শুধু লোকাল `rmrmultidb`-এ।
+**তারিখ:** ২৪ সেপ্টেম্বর ২০২৬
+**অবস্থা:** আপডেট করা schema অনুযায়ী backend ও UI সংশোধিত; `stagingdatabase`-এ transaction rollback সহ save/edit/receive/delete/restore যাচাই পাস।
+
+## ২৪ সেপ্টেম্বর: নতুন schema-র বর্তমান আচরণ
+
+এই অংশ নিচের ২৩ সেপ্টেম্বরের নকশার পরিবর্তিত তথ্যগুলোর স্থলাভিষিক্ত।
+
+- `company_scheme_receivables.customer_id` হলো invoice-এর scheme account-এর COA level-4 ID; API-তে আগের `party_coa4_id` নাম অপরিবর্তিত।
+- `status = 0` সক্রিয় সারি, `status = 2` invoice edit-এ সরানো IMEI। সরানো সারি ও receipt history রাখা হয়; IMEI আবার যোগ করলে একই সারি সক্রিয় হয়। Invoice চালু আছে কি না, তা আগের মতো `main_trx_master.status = 1` দিয়ে নির্ধারিত।
+- `paid_amount` এবং `due_amount` sale/edit/receive ও receipt delete/restore-এ আপডেট হয়। হিসাবের মূল উৎস চালু receipt voucher-এর payment rows; রিপোর্টও সেখান থেকে হিসাব করে।
+- Product ও sale price invoice details থেকে সঠিক IMEI token মিলিয়ে নেওয়া হয়। Receivable table-এ `party_coa4_id`, `product_id`, `sale_price`, `original_amount`, `is_deleted`, `created_by`, `claimed_at` আর ব্যবহার হয় না।
+- Claim date, Mark Claimed, Unclaim, Unclaimed filter ও আগের receivable amount দেখানোর সুবিধা বাদ গেছে। Set Due Date আগের মতো আছে।
+- **বর্তমান SQL ও `patch:add-unit-type` idempotent নয়:** scheme table দুটো drop করে পুনরায় তৈরি করে। এই সংশোধনের জন্য সেগুলো চালানো হয়নি; আপডেট করা database-এ backend ও frontend deploy করতে হবে। নিচের পুরনো setup নির্দেশনা অনুসরণ করে SQL আবার চালাবেন না।
 
 > **সংশোধনের ইতিহাস**
 > **সংস্করণ ৬ (২৩ সেপ্টেম্বর ২০২৬)** — মালিকের নির্দেশে স্কিমের বিক্রয় এখন **নিজের ফর্ম আর নিজের controller-এ**। Electronics Sales ফর্ম, তার controller আর প্রিন্টের mapper আগের অবস্থায় ফেরত দেওয়া হয়েছে; ভাউচার মোছার পাহারাও সরানো হয়েছে। পুরনো কোনো ফাইলে হাত নেই (§৫)।

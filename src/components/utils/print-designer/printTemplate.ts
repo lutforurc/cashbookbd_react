@@ -1464,7 +1464,6 @@ export const COMPANY_SCHEME_RECEIVABLE_LINE_FIELDS: FieldDef[] = [
   { key: 'balance', name: 'Balance', group: 'line', numeric: true },
   { key: 'due_date', name: 'Due Date', group: 'line' },
   { key: 'overdue_days', name: 'Days Overdue', group: 'line' },
-  { key: 'claimed_at', name: 'Claimed On', group: 'line' },
   // Several facts in one cell, one under another -- "{imei}", then
   // "{product_name}", then "{buyer_name}" -- as the tenant writes the pattern.
   { key: 'own_format', name: 'Own format (any facts)', group: 'line' },
