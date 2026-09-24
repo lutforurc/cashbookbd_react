@@ -266,6 +266,21 @@ export const API_MATERIAL_ISSUE_LIST_URL = `${API_BASE_URL}/material-issue/list`
 export const API_MATERIAL_ISSUE_DETAILS_URL = `${API_BASE_URL}/material-issue/details`;
 export const API_MATERIAL_ISSUE_STORE_URL = `${API_BASE_URL}/material-issue/store`;
 
+// Product Out Routes (নষ্ট / হারানো মাল)
+// Nothing moves stock on these calls except `destroy` -- a write-off's stock
+// is posted when it is approved, in the Approval Center.
+export const API_PRODUCT_OUT_LIST_URL = `${API_BASE_URL}/product-out/list`;
+export const API_PRODUCT_OUT_DETAILS_URL = `${API_BASE_URL}/product-out/details`;
+export const API_PRODUCT_OUT_STORE_URL = `${API_BASE_URL}/product-out/store`;
+export const API_PRODUCT_OUT_DESTROY_URL = `${API_BASE_URL}/product-out/destroy`;
+export const API_PRODUCT_OUT_REPORT_URL = `${API_BASE_URL}/product-out/report`;
+// Answers cust_party_infos.id, which is what pom.party_id points at.
+export const API_PRODUCT_OUT_PARTY_URL = `${API_BASE_URL}/product-out/party`;
+export const API_PRODUCT_OUT_REASON_LIST_URL = `${API_BASE_URL}/product-out/reason/list`;
+export const API_PRODUCT_OUT_REASON_STORE_URL = `${API_BASE_URL}/product-out/reason/store`;
+export const API_PRODUCT_OUT_REASON_UPDATE_URL = `${API_BASE_URL}/product-out/reason/update`;
+export const API_PRODUCT_OUT_REASON_DESTROY_URL = `${API_BASE_URL}/product-out/reason/destroy`;
+
 // Chart of Accounts
 // COAL1
 export const API_COAL1_LIST_URL = `${API_BASE_URL}/coal1/coal1-list`;

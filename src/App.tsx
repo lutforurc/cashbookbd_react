@@ -232,6 +232,9 @@ import BranchTransferListReport from './components/modules/reports/branch-transf
 import BranchReceiveListReport from './components/modules/reports/branch-receive-list/BranchReceiveListReport';
 import BranchStockReport from './components/modules/reports/branch-stock-report/BranchStockReport';
 import MaterialIssue from './components/modules/material-issue/MaterialIssue';
+import ProductOut from './components/modules/product-out/ProductOut';
+import ProductOutReason from './components/modules/product-out/ProductOutReason';
+import ProductOutReport from './components/modules/product-out/ProductOutReport';
 import SendSms from './components/modules/sms/SendSms';
 import SmsTemplateList from './components/modules/sms/SmsTemplateList';
 import SmsTemplateCreate from './components/modules/sms/SmsTemplateCreate';
@@ -908,6 +911,13 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['material.issue.create', 'inventory.issue.create', 'purchase.create']} loading={permissionsLoading} />}>
               <Route path={routes.material_issue} element={<MaterialIssue />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.create']} loading={permissionsLoading} />}>
+              <Route path={routes.product_out} element={<ProductOut />} />
+              <Route path={routes.product_out_report} element={<ProductOutReport />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.reason.manage']} loading={permissionsLoading} />}>
+              <Route path={routes.product_out_reason} element={<ProductOutReason />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.create', 'inventory.received.create', 'product.received.create']} loading={permissionsLoading} />}>
               <Route path={routes.branch_received} element={<WarehouseReceived />} />

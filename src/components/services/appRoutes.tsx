@@ -78,6 +78,9 @@ const ROUTES = {
   branch_transfer: '/inventory/branch-transfer',
   branch_received: '/inventory/branch-received',
   material_issue: '/inventory/material-issue',
+  product_out: '/inventory/product-out',
+  product_out_reason: '/inventory/product-out/reasons',
+  product_out_report: '/inventory/product-out/register',
 
   journal: '/accounts/journal',
 
