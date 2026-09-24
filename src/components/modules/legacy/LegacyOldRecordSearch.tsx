@@ -43,12 +43,75 @@ import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
  * across the flip would be a confident, wrong number. The caption on the card
  * says so, so nobody reads the columns as today's bookkeeping.
  */
+
+/** How many rows one request may bring back. The page-size picker's "All" sends
+ * the same number, so the server is known to honour it. */
+const WHOLE_SET_PER_PAGE = 1000;
+
+/**
+ * The balance column added up over a set of parties: the negative half, the
+ * positive half, and the two against each other.
+ *
+ * ⚠️ ONLY EVER CALLED WITH THE WHOLE MATCHING SET. Handed one page of a paged
+ * list it returns a smaller number that still looks like a total, which is the
+ * one thing this screen must not put on screen.
+ */
+const splitBalance = (list: any[]) => {
+  let negative = 0;
+  let positive = 0;
+
+  for (const row of list) {
+    const value = Number(row?.balance) || 0;
+    if (value > 0) positive += value;
+    else negative += value;
+  }
+
+  // `negative` keeps its own sign. The figures below take the magnitude and the
+  // label carries the minus, so it reads the same either way the server sent it.
+  return { negative, positive, net: positive + negative };
+};
+
 const LegacyOldRecordSearch = () => {
   const [term, setTerm] = useState("");
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState<any[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  /**
+   * How the balance column splits into its negative and positive halves, over
+   * EVERY party the search matches -- not over the page on screen.
+   *
+   * ⚠️ THE LIST IS PAGED, so `rows` is one page and never the set. Two things
+   * can answer this: `serverTotals`, which the API sends beside the page where
+   * it is built to, and `computedTotals`, added up below from a second call
+   * that asks for every match at once. Where the API answers, it wins and the
+   * second call is never made.
+   *
+   * ⚠️ AND THE SECOND CALL IS ONLY BELIEVED WHEN IT PROVES ITSELF WHOLE. A
+   * server that caps `per_page` hands back a prefix and calls it the answer --
+   * a smaller total that still looks like a total, with nothing to show it is
+   * short. One page back means every match came back; more than one, and the
+   * figures are left off altogether rather than shown short.
+   *
+   * ⚠️ THE SIGN IS THE OLD SYSTEM'S OWN. Its convention was reversed around
+   * mid-2022 (see the note at the head of this file), so for a party whose last
+   * entry predates the flip, positive and negative may read the wrong way round.
+   * The line under the figures says so.
+   */
+  const [serverTotals, setServerTotals] = useState<{
+    negative: number;
+    positive: number;
+    net?: number;
+  } | null>(null);
+
+  const [computedTotals, setComputedTotals] = useState<{
+    negative: number;
+    positive: number;
+    net?: number;
+  } | null>(null);
+
+  const totals = serverTotals ?? computedTotals;
 
   const [sources, setSources] = useState<{ id: string; name: string }[]>([]);
   const [source, setSource] = useState("");
@@ -96,8 +159,10 @@ const LegacyOldRecordSearch = () => {
 
       setRows(list);
       setTotalPages(data.rows?.last_page ?? 1);
+      setServerTotals(data.totals ?? null);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Could not read the old record");
+      setServerTotals(null);
     } finally {
       setLoading(false);
     }
@@ -106,6 +171,56 @@ const LegacyOldRecordSearch = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  /**
+   * The whole matching set, fetched once per search purely to add it up.
+   *
+   * ⚠️ DEBOUNCED, and apart from `load` on purpose. `load` runs on every
+   * keystroke and again on every page turn; this answers only to the search
+   * term and the source, so turning a page does not drag a thousand rows over
+   * the wire to arrive at a number that had not changed.
+   *
+   * ⚠️ THE `last_page` CHECK IS THE WHOLE POINT of this call, not a detail: it
+   * is how we know the server gave us the set rather than the first slice of
+   * it. See the note on `computedTotals` above.
+   */
+  useEffect(() => {
+    // The API already answered; do not ask for it twice.
+    if (serverTotals) return;
+
+    let cancelled = false;
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await httpService.get(API_LEGACY_OLD_PARTIES_URL, {
+          params: {
+            q: term.trim(),
+            page: 1,
+            per_page: WHOLE_SET_PER_PAGE,
+            source: source || undefined,
+          },
+        });
+
+        const data = res?.data?.data?.data ?? res?.data?.data ?? {};
+        if (cancelled) return;
+
+        if (data.totals) {
+          setServerTotals(data.totals);
+        } else if ((data.rows?.last_page ?? 1) > 1) {
+          setComputedTotals(null);
+        } else {
+          setComputedTotals(splitBalance(data.rows?.data ?? []));
+        }
+      } catch {
+        if (!cancelled) setComputedTotals(null);
+      }
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [term, source, serverTotals]);
 
   const openCard = async (party: any) => {
     setCardLoading(true);
@@ -297,13 +412,82 @@ const LegacyOldRecordSearch = () => {
 
   // ------------------------------------------------------------------ search
 
+  // The server may send the negative half as a signed sum or as a magnitude.
+  // The label carries the minus either way, so take the magnitude and the
+  // figure reads the same whichever it was sent as.
+  const negativeTotal = Math.abs(Number(totals?.negative) || 0);
+  const positiveTotal = Number(totals?.positive) || 0;
+  const netTotal =
+    totals?.net != null ? Number(totals.net) : positiveTotal - negativeTotal;
+
+  // Nothing to stand on with no matches: with the search finding nobody the
+  // three figures would all be a bare dash, which reads as a broken strip
+  // rather than as an empty result. The table below already says it found none.
+  const showTotals = !!totals && rows.length > 0;
+
   return (
     <div className="p-4">
       <div className="mb-4">
-        <h1 className="text-lg font-semibold">পুরনো ভার্সনের ERP-র রেকর্ড</h1>
-        <p className="text-sm dark:text-white text-gray-600">
-          কাস্টমারের নাম বা মোবাইল নম্বর দিয়ে খুঁজুন।
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-lg font-semibold">পুরনো ভার্সনের ERP-র রেকর্ড</h1>
+            <p className="text-sm dark:text-white text-gray-600">
+              কাস্টমারের নাম বা মোবাইল নম্বর দিয়ে খুঁজুন।
+            </p>
+          </div>
+
+          {/* The balance column's +/− split, over every party the search
+              matched. Beside the heading rather than in a footer row: these
+              three describe the whole set, which is what the heading announces,
+              and a footer would sit under নাম/ঠিকানা/মোবাইল columns that have no
+              heading for them.
+
+              No red or green on the two halves. Which sign means owing is the
+              old system's own convention, not ours, and the line underneath
+              says as much -- colouring one side red would assert what we do
+              not know. */}
+          {showTotals ? (
+            <div className="flex flex-wrap justify-end gap-x-6 gap-y-2 text-right">
+              <div>
+                <div className="text-xs text-gray-600 dark:text-gray-300">
+                  (−) ব্যালেন্স — মোট
+                </div>
+                <div className="text-lg font-semibold tabular-nums">
+                  {thousandSeparator(negativeTotal)}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs text-gray-600 dark:text-gray-300">
+                  (+) ব্যালেন্স — মোট
+                </div>
+                <div className="text-lg font-semibold tabular-nums">
+                  {thousandSeparator(positiveTotal)}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs text-gray-600 dark:text-gray-300">
+                  নিট ((+) − (−))
+                </div>
+                <div className="text-lg font-semibold tabular-nums">
+                  {thousandSeparator(netTotal)}
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {/* The same caveat the party card carries, for the same reason: the old
+            system flipped its sign convention part-way through, and a party
+            whose last entry predates that flip reads the other way. */}
+        {showTotals ? (
+          <p className="mt-2 text-xs text-gray-500">
+            ⚠️ পুরনো সিস্টেমের নিজের চিহ্ন অনুযায়ী — ২০২২ সালের মাঝামাঝি চিহ্নের
+            রীতি উল্টে যাওয়ায় যেসব পার্টির শেষ লেনদেন তার আগের, তাদের (+) ও (−)
+            পাশ উল্টো পড়তে পারে। খাতার সাথে মিলিয়ে দেখে নিন।
+          </p>
+        ) : null}
       </div>
 
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end">
