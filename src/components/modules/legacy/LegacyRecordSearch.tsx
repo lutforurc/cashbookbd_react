@@ -23,6 +23,7 @@ import { money } from "../hotel/setupHelpers";
 import LegacyInvoicePrint, { LegacyInvoice } from "./LegacyInvoicePrint";
 import { formatDate } from "../../utils/utils-functions/formatDate";
 import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
+import HelmetTitle from "../../utils/others/HelmetTitle";
 
 /**
  * The archive of an old Old ERP the client migrated off.
@@ -166,6 +167,7 @@ const LegacyRecordSearch = () => {
   if (bill) {
     return (
       <div className="p-4">
+        <HelmetTitle title='Old Record - Information' />
         <div className="mb-3 flex items-center justify-between">
           <div>
             <button
@@ -201,6 +203,7 @@ const LegacyRecordSearch = () => {
 
     return (
       <div className="p-4">
+        <HelmetTitle title='Old Record - Information' />
         <button
           type="button"
           onClick={() => setCard(null)}
@@ -233,10 +236,10 @@ const LegacyRecordSearch = () => {
             </div>
           </div>
 
-          <p className="mt-3 border-t pt-2 text-xs ">
+          {/* <p className="mt-3 border-t pt-2 text-xs ">
             পুরনো সিস্টেমের রেকর্ড — এখানে কোনো হিসাব হয় না, খাতায় কিছু পোস্ট হয় না।
             বিলের লাইনে ক্লিক করলে বিলটা খুলবে।
-          </p>
+          </p> */}
         </div>
 
         <div className="rounded border border-gray-300">
@@ -306,6 +309,7 @@ const LegacyRecordSearch = () => {
 
   return (
     <div className="p-4">
+      <HelmetTitle title='Old Record - Information' />
       <div className="mb-4">
         <h1 className="text-lg font-semibold">পুরনো ERP-র রেকর্ড</h1>
         <p className="text-sm dark:text-white text-gray-600">

@@ -23,6 +23,7 @@ import { money } from "../hotel/setupHelpers";
 import LegacyOldInvoicePrint, { LegacyOldInvoice } from "./LegacyOldInvoicePrint";
 import { formatDate } from "../../utils/utils-functions/formatDate";
 import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
+import HelmetTitle from "../../utils/others/HelmetTitle";
 
 /**
  * The archive of the client's OLDER ERP install -- the one they ran before the
@@ -265,6 +266,7 @@ const LegacyOldRecordSearch = () => {
   if (bill) {
     return (
       <div className="p-4">
+        <HelmetTitle title='Old Record - Bill' />
         <div className="mb-3 flex items-center justify-between">
           <div>
             <button
@@ -337,14 +339,14 @@ const LegacyOldRecordSearch = () => {
           {/* The flip, said plainly. Without this line somebody totals the two
               columns in their head and gets a number the old system never
               agreed with. */}
-          <p className="mt-3 border-t pt-2 text-xs">
+          {/* <p className="mt-3 border-t pt-2 text-xs">
             পুরনো ভার্সনের রেকর্ড — এখানে কোনো হিসাব হয় না, খাতায় কিছু পোস্ট হয় না।
             বিলের লাইনে ক্লিক করলে বিলটা খুলবে।
             <br />
             ⚠️ পুরনো সফটওয়্যারটি ২০২২ সালের মাঝামাঝি ডেবিট-ক্রেডিট উল্টে দিয়েছিল —
             তাই আগের বিক্রি ডেবিট ঘরে, পরের বিক্রি ক্রেডিট ঘরে বসে আছে। ঘরদুটো
             পুরনো সিস্টেম যেমন ছাপিয়েছিল ঠিক তেমনই দেখানো হচ্ছে, যোগ করা হয়নি।
-          </p>
+          </p> */}
         </div>
 
         <div className="rounded border border-gray-300">
@@ -427,6 +429,7 @@ const LegacyOldRecordSearch = () => {
 
   return (
     <div className="p-4">
+      <HelmetTitle title='Old Record - Information' />
       <div className="mb-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -481,13 +484,13 @@ const LegacyOldRecordSearch = () => {
         {/* The same caveat the party card carries, for the same reason: the old
             system flipped its sign convention part-way through, and a party
             whose last entry predates that flip reads the other way. */}
-        {showTotals ? (
+        {/* {showTotals ? (
           <p className="mt-2 text-xs text-gray-500">
             ⚠️ পুরনো সিস্টেমের নিজের চিহ্ন অনুযায়ী — ২০২২ সালের মাঝামাঝি চিহ্নের
             রীতি উল্টে যাওয়ায় যেসব পার্টির শেষ লেনদেন তার আগের, তাদের (+) ও (−)
             পাশ উল্টো পড়তে পারে। খাতার সাথে মিলিয়ে দেখে নিন।
           </p>
-        ) : null}
+        ) : null} */}
       </div>
 
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end">
