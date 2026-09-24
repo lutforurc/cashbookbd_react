@@ -44,6 +44,7 @@ import type { PrintTemplate } from '../../utils/print-designer/printTemplate';
 
 type Row = {
   id: number;
+  main_trx_id: number;
   imei: string;
   party_name: string | null;
   invoice_no: string;
@@ -410,7 +411,16 @@ const CompanySchemeReceivable = () => {
       cellClass: 'whitespace-nowrap',
       render: (row: Row) => (
         <>
-          <div>{row.invoice_no}</div>
+          <button
+            type="button"
+            className="cursor-pointer text-left hover:underline focus-visible:underline"
+            title="View invoice"
+            onClick={() =>
+              handleVoucherPrint({ mtm_id: row.main_trx_id, vr_no: row.invoice_no })
+            }
+          >
+            {row.invoice_no}
+          </button>
           <div className="text-xs text-gray-500">{formatDayMonthYear(row.sale_date)}</div>
         </>
       ),
