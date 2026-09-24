@@ -425,8 +425,19 @@ const CompanySchemeReceivable = () => {
         </>
       ),
     },
-    { key: 'imei', header: 'IMEI', cellClass: 'whitespace-nowrap font-medium' },
-    { key: 'product_name', header: 'Product' },
+    {
+      key: 'buyer_name',
+      header: 'Product / IMEI',
+      cellClass: 'whitespace-nowrap',
+      render: (row: Row) => (
+        <>
+          <div>{row.product_name}</div>
+          <div className="text-xs text-gray-500">{row.imei}</div>
+        </>
+      ),
+    },
+    // { key: 'imei', header: 'IMEI', cellClass: 'whitespace-nowrap font-medium' },
+    // { key: 'product_name', header: 'Product' },
     {
       key: 'buyer_name',
       header: 'Buyer',
