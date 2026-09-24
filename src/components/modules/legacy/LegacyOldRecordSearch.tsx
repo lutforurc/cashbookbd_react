@@ -117,6 +117,17 @@ const LegacyOldRecordSearch = () => {
   const [sources, setSources] = useState<{ id: string; name: string }[]>([]);
   const [source, setSource] = useState("");
 
+  /**
+   * Which book to search -- both, only customers, or only suppliers.
+   *
+   * ⚠️ BLANK MEANS BOTH, and it is sent as no parameter at all rather than as an
+   * empty one, so the API's own default decides. The two books share one table
+   * and one id space, and a name can sit in both (the shop sells to some of the
+   * people it buys from), so "both" is the honest default and the ধরন column is
+   * what tells them apart.
+   */
+  const [partyType, setPartyType] = useState("");
+
   useEffect(() => {
     httpService
       .get(API_LEGACY_OLD_SOURCES_URL)
@@ -152,7 +163,13 @@ const LegacyOldRecordSearch = () => {
 
     try {
       const res = await httpService.get(API_LEGACY_OLD_PARTIES_URL, {
-        params: { q: term.trim(), page, per_page: perPage, source: source || undefined },
+        params: {
+          q: term.trim(),
+          page,
+          per_page: perPage,
+          source: source || undefined,
+          party_type: partyType || undefined,
+        },
       });
 
       const data = res?.data?.data?.data ?? res?.data?.data ?? {};
@@ -167,7 +184,7 @@ const LegacyOldRecordSearch = () => {
     } finally {
       setLoading(false);
     }
-  }, [term, page, perPage, source]);
+  }, [term, page, perPage, source, partyType]);
 
   useEffect(() => {
     load();
@@ -178,8 +195,8 @@ const LegacyOldRecordSearch = () => {
    *
    * ⚠️ DEBOUNCED, and apart from `load` on purpose. `load` runs on every
    * keystroke and again on every page turn; this answers only to the search
-   * term and the source, so turning a page does not drag a thousand rows over
-   * the wire to arrive at a number that had not changed.
+   * term, the source and the ধরন picker, so turning a page does not drag a
+   * thousand rows over the wire to arrive at a number that had not changed.
    *
    * ⚠️ THE `last_page` CHECK IS THE WHOLE POINT of this call, not a detail: it
    * is how we know the server gave us the set rather than the first slice of
@@ -199,6 +216,7 @@ const LegacyOldRecordSearch = () => {
             page: 1,
             per_page: WHOLE_SET_PER_PAGE,
             source: source || undefined,
+            party_type: partyType || undefined,
           },
         });
 
@@ -221,7 +239,7 @@ const LegacyOldRecordSearch = () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [term, source, serverTotals]);
+  }, [term, source, partyType, serverTotals]);
 
   const openCard = async (party: any) => {
     setCardLoading(true);
@@ -289,7 +307,11 @@ const LegacyOldRecordSearch = () => {
         </div>
 
         <div className="overflow-hidden rounded border border-gray-300">
-          <LegacyOldInvoicePrint ref={printRef} invoice={bill} />
+          <LegacyOldInvoicePrint
+            ref={printRef}
+            invoice={bill}
+            title={bill?.doc_type === "purchase" ? "PURCHASE INVOICE" : "BILL INVOICE"}
+          />
         </div>
       </div>
     );
@@ -319,7 +341,9 @@ const LegacyOldRecordSearch = () => {
                 {card.party?.phone ? ` — ${card.party.phone}` : ""}
               </div>
               <div className="mt-1 text-xs">
-                পুরনো সিস্টেমের আইডি {card.party?.legacy_id}
+                পুরনো সিস্টেমের{" "}
+                {card.party?.party_type === "supplier" ? "সাপ্লায়ার" : "কাস্টমার"}{" "}
+                আইডি {card.party?.legacy_id}
               </div>
             </div>
 
@@ -435,7 +459,7 @@ const LegacyOldRecordSearch = () => {
           <div>
             <h1 className="text-lg font-semibold">পুরনো ভার্সনের ERP-র রেকর্ড</h1>
             <p className="text-sm dark:text-white text-gray-600">
-              কাস্টমারের নাম বা মোবাইল নম্বর দিয়ে খুঁজুন।
+              কাস্টমার বা সাপ্লায়ারের নাম, মোবাইল নম্বর দিয়ে খুঁজুন।
             </p>
           </div>
 
@@ -524,6 +548,25 @@ const LegacyOldRecordSearch = () => {
           </div>
         ) : null}
 
+        <div className="w-full sm:w-40">
+          <DropdownCommon
+            id="legacy-old-party-type"
+            name="party_type"
+            label="ধরন"
+            className="w-full"
+            data={[
+              { id: "", name: "-- সব --" },
+              { id: "customer", name: "কাস্টমার" },
+              { id: "supplier", name: "সাপ্লায়ার" },
+            ]}
+            value={partyType}
+            onChange={(e: any) => {
+              setPartyType(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+
         <div className="w-full">
           <SearchInput
             search={term}
@@ -555,6 +598,15 @@ const LegacyOldRecordSearch = () => {
                 render: (_row: any, index: number) => (page - 1) * perPage + index + 1,
               },
               { key: "name", header: "নাম" },
+              /* Both books are in this one list now, and a name alone does not
+                 say which one you are opening -- the shop sells to some
+                 customers and buys from some suppliers under the same name. */
+              {
+                key: "party_type",
+                header: "ধরন",
+                render: (row: any) =>
+                  row.party_type === "supplier" ? "সাপ্লায়ার" : "কাস্টমার",
+              },
               ...(sources.length > 1
                 ? [
                     {
@@ -599,7 +651,7 @@ const LegacyOldRecordSearch = () => {
               loading
                 ? "আনা হচ্ছে…"
                 : term.trim() === ""
-                  ? "পুরনো ভার্সনের কোনো কাস্টমার এখনো আনা হয়নি"
+                  ? "পুরনো ভার্সনের কোনো কাস্টমার বা সাপ্লায়ার এখনো আনা হয়নি"
                   : "এই নামে বা নম্বরে কাউকে পাওয়া যায়নি"
             }
           />
