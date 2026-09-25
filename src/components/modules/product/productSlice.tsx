@@ -227,10 +227,17 @@ export const updateProduct = (data: any, callback: any) => (dispatch: any) => {
       }
     })
     .catch((er) => {
+      const message = er?.response?.data?.message || 'Something went wrong.';
       dispatch({
         type: PRODUCT_UPDATE_ERROR,
-        payload: 'Something went wrong.',
+        payload: message,
       });
+      // A refusal (a code or a name already taken) arrives as a 400, which
+      // lands here -- so the caller is told, rather than left to assume it
+      // saved.
+      if ('function' === typeof callback) {
+        callback({ success: false, message });
+      }
     });
 };
 

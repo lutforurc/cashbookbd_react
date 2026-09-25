@@ -14,6 +14,10 @@ interface OptionType {
   label_3?: string;
   label_4?: string;
   label_5?: string;
+  /** The product's own code. Several products may share a name and differ
+      only by this, so it is shown beside the name -- never folded into
+      `label`, which the Excel imports match against as a plain name. */
+  code?: string;
 }
 
 interface DropdownProps {
@@ -111,6 +115,7 @@ const ProductDropdown: React.FC<DropdownProps> = ({
             label_3: item.label_3,
             label_4: item.label_4,
             label_5: item.label_5,
+            code: item.code || '',
           }));
           callback(formattedOptions);
         } else {
@@ -260,6 +265,11 @@ const ProductDropdown: React.FC<DropdownProps> = ({
           <div>
             <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
               {option.label}
+              {option.code ? (
+                <span className="ml-1 font-mono text-xs text-gray-500 dark:text-gray-400">
+                  [{option.code}]
+                </span>
+              ) : null}
             </div>
             {isSelected && (
               <div className="additional-info">

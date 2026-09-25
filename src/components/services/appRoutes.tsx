@@ -194,6 +194,7 @@ const ROUTES = {
   product_warehouse_difference: '/product/warehouse-difference',
   product_create: '/product/add-product',
   product_edit: '/product/edit/:id',
+  product_opening_import: '/product/opening-import',
   product_store: '/product/store',
 
 

@@ -39,6 +39,7 @@ import SlowMovingProducts from './components/modules/product/SlowMovingProducts'
 import WarehouseDifferenceProducts from './components/modules/product/WarehouseDifferenceProducts';
 import DateWiseData from './components/modules/reports/datewisedata/DateWiseData';
 import AddProduct from './components/modules/product/AddProduct';
+import ProductOpeningImport from './components/modules/product/ProductOpeningImport';
 import Category from './components/modules/category/Category';
 import AddCategory from './components/modules/category/AddCategory';
 import EditCategory from './components/modules/category/EditCategory';
@@ -922,6 +923,12 @@ function App() {
               <Route path={routes.brand_list} element={<Brands />} />
               <Route path={routes.product_unit_create} element={<AddProductUnit />} />
               <Route path={routes.product_unit_edit} element={<AddProductUnit />} />
+            </Route>
+            {/* product.opening.edit, or products.edit -- the permission it is
+                seeded from, since the patch creates it without granting it.
+                The server accepts the same two. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.opening.edit', 'products.edit']} loading={permissionsLoading} />}>
+              <Route path={routes.product_opening_import} element={<ProductOpeningImport />} />
             </Route>
             {/* The stock reports and the unit list are offered by the sidebar on
                 a permission of their own. They are guarded one screen at a time

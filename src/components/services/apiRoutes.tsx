@@ -461,6 +461,9 @@ export const API_PRODUCT_CHECK = `${API_BASE_URL}/product/product-check`;
 export const API_PRODUCT_UPDATE_BY_RATE_URL = `${API_BASE_URL}/product/update-qty-rate`;
 // Drops the opening stock and sends its voucher to the trash.
 export const API_PRODUCT_OPENING_DELETE_URL = `${API_BASE_URL}/product/opening/delete`;
+// Opening stock from an Excel sheet: check every row, then save one per call.
+export const API_PRODUCT_OPENING_IMPORT_CHECK_URL = `${API_BASE_URL}/product/opening-import/check`;
+export const API_PRODUCT_OPENING_IMPORT_ROW_URL = `${API_BASE_URL}/product/opening-import/row`;
 export const API_PRODUCT_DELETE_URL = `${API_BASE_URL}/product/delete`;
 
 

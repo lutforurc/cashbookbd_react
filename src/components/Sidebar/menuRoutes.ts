@@ -158,6 +158,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     '/brand/brand-list',
     '/category/category-list',
     '/product/product-list',
+    routes.product_opening_import,
     routes.product_low_stock,
     routes.product_negative_stock,
     routes.product_slow_moving,

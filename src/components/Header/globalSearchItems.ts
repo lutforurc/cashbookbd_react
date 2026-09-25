@@ -57,6 +57,7 @@ const globalSearchItems: GlobalSearchItem[] = [
 
   { title: 'Product List', path: routes.product_list, group: 'Products', permissions: ['products.view'] },
   { title: 'Add Product', path: routes.product_create, group: 'Products', permissions: ['products.view'], keywords: ['new product', 'create product'] },
+  { title: 'Product Opening Import', path: routes.product_opening_import, group: 'Products', permissions: ['product.opening.edit', 'products.edit'], keywords: ['opening stock', 'excel', 'import', 'upload'] },
   { title: 'Low Stock Products', path: routes.product_low_stock, group: 'Products', permissions: ['products.view'] },
   { title: 'Negative Stock Products', path: routes.product_negative_stock, group: 'Products', permissions: ['products.view'] },
   { title: 'Slow Moving Products', path: routes.product_slow_moving, group: 'Products', permissions: ['products.view'] },
