@@ -1,4 +1,5 @@
 import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
+import numberToWords from '../../../utils/utils-functions/numberToWords';
 
 /**
  * The rich, relation-laden payload `electronics/sales/invoice-print` answers
@@ -86,7 +87,10 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
       net_amount: netAmount,
       received_amount: receivedAmount,
       due_amount: netAmount - receivedAmount,
-      amount_words: data?.inword || '',
+      // From net_amount here rather than the server's `inword`, which leaves
+      // out carrying outward (coa4 198) and so could disagree with the Net line
+      // printed right above it.
+      amount_words: netAmount ? `${numberToWords(netAmount)} Only` : '',
     },
     products: details.map((row: any, index: number) => ({
       sl: index + 1,

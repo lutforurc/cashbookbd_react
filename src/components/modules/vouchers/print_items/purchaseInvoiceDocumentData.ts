@@ -1,4 +1,5 @@
 import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
+import numberToWords from '../../../utils/utils-functions/numberToWords';
 
 /**
  * The rich payload `electronics/sales/invoice-print` answers with, reshaped
@@ -75,7 +76,10 @@ export const toPurchaseInvoiceDocumentData = (data: any): DocumentData => {
       net_amount: netAmount,
       paid_amount: paidAmount,
       due_amount: Math.max(netAmount - paidAmount, 0),
-      amount_words: data?.inword || purchaseMaster?.inword || '',
+      // Same fallback as PurchaseInvoicePrintBase's own paper: the Net, never
+      // the lines before the discount.
+      amount_words:
+        data?.inword || purchaseMaster?.inword || (netAmount ? `${numberToWords(netAmount)} Only` : ''),
     },
     products: details.map((row: any, index: number) => ({
       sl: index + 1,

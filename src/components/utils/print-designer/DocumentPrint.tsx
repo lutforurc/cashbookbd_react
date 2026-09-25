@@ -450,6 +450,12 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         case 'line_count':
           return String(totals.line_count);
         case 'amount_words':
+          // ⚠️ An invoice spells its NET -- after the installment charge, the
+          // other charges and the discount -- and only its own adapter knows
+          // that figure, so it sends the words ready-made. Spelling the lines
+          // here printed 19,460 in words under a Net of 21,350. A challan or an
+          // order sends none and spells the sum of its lines, as before.
+          if (!blank(basic?.amount_words)) return String(basic.amount_words);
           return totals.total_amount ? `${numberToWords(totals.total_amount)} Only` : '';
         default: {
           // A total, if the key names one -- total_qty and total_bag as before,
