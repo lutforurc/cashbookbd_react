@@ -158,6 +158,10 @@ const GeneralBusinessSalesReturn = () => {
       product: option?.value || 0,
       product_name: option?.label || '',
       unit: option?.label_5 || '',
+      // The dropdown carries the sales price (label_4) beside the name, as the
+      // sales invoices read it. `|| ''` because Number(null) is 0, and a
+      // product with no price yet should leave the box empty, not read 0.
+      price: Number(option?.label_4) || '',
     }));
   };
 

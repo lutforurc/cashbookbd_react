@@ -204,6 +204,7 @@ const GeneralBusinessSales = () => {
     const key = 'product'; // Set the desired key dynamically
     const accountName = 'product_name'; // Set the desired key dynamically
     const unit = 'unit'; // Set the desired key dynamically
+    const price = 'price'; // Set the desired key dynamically
     setUnit(option.label_5);
 
     setProductData({
@@ -211,6 +212,10 @@ const GeneralBusinessSales = () => {
       [key]: option.value,
       [accountName]: option.label,
       [unit]: option.label_5,
+      // The dropdown carries the sales price (label_4) beside the name, as the
+      // other sales invoices read it. `|| ''` because Number(null) is 0, and a
+      // product with no price yet should leave the box empty, not read 0.
+      [price]: Number(option?.label_4) || '',
     });
   };
 
