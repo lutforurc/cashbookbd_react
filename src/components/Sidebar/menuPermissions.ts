@@ -119,6 +119,9 @@ export const MENU_PERMISSIONS = {
     // Bank Opening lives in this menu but answers to a permission of its own, so
     // whoever holds only that one still gets the menu it sits in.
     'bank.opening.view',
+    // Same for the customer opening import, one level down.
+    'party.opening.view',
+    'party.opening.edit',
   ],
   chart_of_accounts: [
     'coa.l1.view',

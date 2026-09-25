@@ -236,6 +236,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'customer-supplier': [
     { id: 'customer-supplier/list', title: "Customers" },
+    { id: 'customer_opening_import', title: "Opening Import" },
     { id: 'coal1/coal1-list', title: "CoA L1" },
     { id: 'coal2/coal2-list', title: "CoA L2" },
     { id: 'coal3/coal3-list', title: "CoA L3" },
@@ -3528,6 +3529,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   className={subMenuLinkClass}
                                 >
                                   Customers
+                                </NavLink>
+                              </li>
+                            )}
+                            {(hasPermission(permissions, 'party.opening.edit') ||
+                              hasPermission(permissions, 'cs.edit')) && (
+                              <li style={subSlot('customer-supplier', 'customer_opening_import')}>
+                                <NavLink
+                                  to={routes.customer_opening_import}
+                                  className={subMenuLinkClass}
+                                >
+                                  Opening Import
                                 </NavLink>
                               </li>
                             )}

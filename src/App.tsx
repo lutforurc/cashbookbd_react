@@ -188,6 +188,7 @@ import Brands from './components/modules/product/brand/Brands';
 import AddProductUnit from './components/modules/product/unit/AddProductUnit';
 import ProductUnits from './components/modules/product/unit/ProductUnits';
 import EditCustomerSupplier from './components/modules/customer-supplier/EditCustomerSupplier';
+import CustomerOpeningImport from './components/modules/customer-supplier/CustomerOpeningImport';
 import UnitSalePage from './components/modules/real-estate/sales/UnitSalePage';
 import ProjectExpense from './components/modules/real-estate/project-expense/ProjectExpense';
 import ProjectIncome from './components/modules/real-estate/project-income/ProjectIncome';
@@ -418,6 +419,12 @@ function App() {
                 <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />
                 <Route path={routes.supplier_customer_add} element={<AddCustomerSupplier />} />
                 <Route path={routes.supplier_customer_edit} element={<EditCustomerSupplier />} />
+              </Route>
+              {/* party.opening.edit, or cs.edit -- the permission it is seeded
+                  from, since the patch creates it without granting it. The
+                  server accepts the same two. */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['party.opening.edit', 'cs.edit']} loading={permissionsLoading} />}>
+                <Route path={routes.customer_opening_import} element={<CustomerOpeningImport />} />
               </Route>
 
               {/* UI demo — superadmin ('*') only via a sentinel permission nobody is granted */}

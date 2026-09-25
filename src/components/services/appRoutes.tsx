@@ -280,7 +280,8 @@ const ROUTES = {
   // Customer and Supplier Routes
   supplier_customer_list: '/customer-supplier/list',
   supplier_customer_add: '/customer-supplier/create',
-  supplier_customer_edit: '/customer-supplier/edit/:id', 
+  supplier_customer_edit: '/customer-supplier/edit/:id',
+  customer_opening_import: '/customer/opening-import',
 
   customer_dashboard: '/customer-dashboard',
 

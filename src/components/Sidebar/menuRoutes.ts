@@ -245,6 +245,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
   ],
   'customer-supplier': [
     '/customer-supplier/list',
+    routes.customer_opening_import,
     '/coal1/coal1-list',
     '/coal2/coal2-list',
     '/coal3/coal3-list',
