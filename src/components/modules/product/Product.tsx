@@ -422,14 +422,18 @@ const Product = (user: any) => {
     {
       key: 'serial_no',
       header: 'IMEI / Serial',
+      // A width in cellClass, not headerClass: that is the one the Table puts
+      // on the <col>, and a table-fixed takes its column widths from there.
+      // The Product column carries none on purpose -- it takes the rest.
+      cellClass: 'w-40',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
         return (
           <Textarea
- className={`${FIELD_TEXTAREA} w-full px-3 py-1 resize-none`}
- placeholder="IMEI Number"
- value={editedRows[row.product_id]?.serial_no ?? row.serial_no ?? ''}
- onChange={(e) => handleProductInputChange(row.product_id, 'serial_no', e.target.value)}
+            className={`${FIELD_TEXTAREA} w-full px-3 py-1 resize-none`}
+            placeholder="IMEI Number"
+            value={editedRows[row.product_id]?.serial_no ?? row.serial_no ?? ''}
+            onChange={(e) => handleProductInputChange(row.product_id, 'serial_no', e.target.value)}
             onBlur={() => handleSerialBlur(row)}
           />
         );
@@ -439,13 +443,13 @@ const Product = (user: any) => {
       key: 'qty',
       header: 'Qty',
       headerClass: 'text-center',
-      cellClass: 'text-right',
+      cellClass: 'text-right w-24',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
         return (
           <InputElement
             type="number"
-            className="text-right w-20"
+            className="text-right w-16"
             placeholder="Qty"
             value={editedRows[row.product_id]?.qty ?? row.qty ?? row.openingbalance ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'qty', e.target.value)}
@@ -458,14 +462,14 @@ const Product = (user: any) => {
       key: 'rate',
       header: 'Rate',
       headerClass: 'text-center',
-      cellClass: 'text-right',
+      cellClass: 'text-right w-28',
       render: (row: any) => {
-        if (isGroupRow(row)) return ''; 
+        if (isGroupRow(row)) return '';
         return (
           <InputElement
             type="number"
             placeholder="Rate"
-            className="text-right w-24" 
+            className="text-right w-20"
             value={editedRows[row.product_id]?.rate ?? row.purchase ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'rate', e.target.value)}
           // Ã¢Å“â€¦ onBlur removed (auto-save Ã Â¦Â¬Ã Â¦Â¨Ã Â§ÂÃ Â¦Â§)
@@ -477,30 +481,30 @@ const Product = (user: any) => {
       key: 'save',
       header: 'Action',
       headerClass: 'text-center',
-      cellClass: 'text-center',
+      cellClass: 'text-center w-36',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
 
         const dirty = isRowDirty(row);
 
+        // Icon alone, with the word kept as a tooltip. Three buttons carrying
+        // "Save", "Cancel" and "Delete" across the row came to some 220px, and
+        // took that width off the product name beside them.
         return (
           <div className="flex flex-col items-center gap-1">
-            <div className="flex justify-center gap-2">
-              <ButtonLoading icon={<FiCheckSquare className="" />} className='py-1 px-2' label='Save' type="button" disabled={!dirty} onClick={() => handleSaveRow(row)} />
-              <ButtonLoading icon={
-                <>
-                <FiCheckSquare className="" />
-                </>
-              } className='py-1 px-2' label='Cancel' type="button" disabled={!editedRows[row.product_id]} onClick={() => handleCancelRow(row)} />
+            <div className="flex justify-center gap-1">
+              <ButtonLoading icon={<FiCheckSquare />} title="Save" label="" className='py-1 px-2' type="button" disabled={!dirty} onClick={() => handleSaveRow(row)} />
+              <ButtonLoading icon={<FiX />} title="Cancel" label="" className='py-1 px-2' type="button" disabled={!editedRows[row.product_id]} onClick={() => handleCancelRow(row)} />
 
               {/* Only where there is a voucher to delete. A product with no
                   opening stock has nothing to offer here. */}
               {row.opening_vr_no && canDeleteVoucher && (
                 <ButtonLoading
                   icon={<FiTrash2 />}
+                  title="Delete opening stock"
+                  label=""
                   variant="danger"
                   className="py-1 px-2"
-                  label="Delete"
                   type="button"
                   buttonLoading={openingDeleteLoading && openingDeleteRow?.product_id === row.product_id}
                   disabled={openingDeleteLoading}
@@ -525,13 +529,75 @@ const Product = (user: any) => {
     },
   ];
 
+  // One reading of the branch's opening switch, so the four places below cannot
+  // drift apart the way `settings?.data?.branch?.is_opening == 1` and
+  // isBranchSettingOn() had.
+  const openingOn = isBranchSettingOn(settings, 'is_opening');
+
+  // Opening stock is entered rate by rate, and that group above brings its own
+  // Save and Delete. So on a branch with opening on, these stand down rather
+  // than print a second "Action" heading over the first.
+  const priceActionColumns = [
+    {
+      key: 'purchase',
+      header: 'P. Price',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => {
+        if (isGroupRow(row)) return '';
+        return row.purchase > 0 ? thousandSeparator(row.purchase) : '-';
+      },
+    },
+    {
+      key: 'sales',
+      header: 'S. Price',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => {
+        if (isGroupRow(row)) return '';
+        return row.sales > 0 ? thousandSeparator(row.sales) : '-';
+      },
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => {
+        if (isGroupRow(row)) return '';
+        return (
+          <div className="flex justify-center items-center gap-2">
+            {/* All three as Button, the way Category List does it: two bare
+                icons beside one Button (which stands a control-height tall)
+                sat higher than the bin. The clock stands where a book icon
+                that did nothing used to. */}
+            <Button
+              type="button"
+              title="Change log"
+              className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+              onClick={() => handleShowHistory(row)}
+            >
+              <FiClock size={15} />
+            </Button>
+            <Button type="button" onClick={() => handleProductEdit(row)} className="text-blue-500" title="Edit">
+              <FiEdit2 className="cursor-pointer" />
+            </Button>
+            <Button type="button" onClick={() => setDeleteRow(row)} className="text-red-500" title="Delete">
+              <FiTrash2 className="cursor-pointer" />
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
+
   const columns = useMemo(() => {
     return [
       {
         key: 'serial',
         header: 'Sl',
         headerClass: 'text-center',
-        cellClass: 'text-center',
+        cellClass: 'text-center w-14',
         render: (row: any) => (isGroupRow(row) ? '' : row.serial),
       },
       {
@@ -548,78 +614,36 @@ const Product = (user: any) => {
           }
           return (
             <div>
-              <div className="text-sm text-gray-500">{row.brand && <>{row.brand}. </>}</div>
-              <div>{row.name}</div>
+              <div className="text-sm text-gray-500">{row.brand && <> Brand: {row.brand} </>}</div>
+              <div>{row.code && <>{row.code} - </>} {row.name}</div>
             </div>
           );
         },
       },
       // Read as text, '0' is true and its negation is false -- which is why the
       // Category column was missing from every branch that has opening off.
-      !isBranchSettingOn(settings, 'is_opening') && {
-        key: 'category',
-        header: 'Category',
-        render: (row: any) => (isGroupRow(row) ? '' : row.category),
-      },
+      // ⚠️ Spread, never `cond && {...}`: a guard that fails leaves a `false`
+      // in this array, and the table gives a false its own heading, cell and
+      // col -- one blank column, sat to the left of Unit.
+      ...(!openingOn
+        ? [
+            {
+              key: 'category',
+              header: 'Category',
+              cellClass: 'w-32',
+              render: (row: any) => (isGroupRow(row) ? '' : row.category),
+            },
+          ]
+        : []),
       {
         key: 'unit',
         header: 'Unit',
+        cellClass: 'w-24',
         render: (row: any) => (isGroupRow(row) ? '' : row.unit),
       },
-      ...(settings?.data?.branch?.is_opening == 1 ? serialQtyRateColumns : []),
-      {
-        key: 'purchase',
-        header: 'P. Price',
-        headerClass: 'text-right',
-        cellClass: 'text-right',
-        render: (row: any) => {
-          if (isGroupRow(row)) return '';
-          return row.purchase > 0 ? thousandSeparator(row.purchase) : '-';
-        },
-      },
-      {
-        key: 'sales',
-        header: 'S. Price',
-        headerClass: 'text-right',
-        cellClass: 'text-right',
-        render: (row: any) => {
-          if (isGroupRow(row)) return '';
-          return row.sales > 0 ? thousandSeparator(row.sales) : '-';
-        },
-      },
-      {
-        key: 'action',
-        header: 'Action',
-        headerClass: 'text-center',
-        cellClass: 'text-center',
-        render: (row: any) => {
-          if (isGroupRow(row)) return '';
-          return (
-            <div className="flex justify-center items-center gap-2">
-              {/* All three as Button, the way Category List does it: two bare
-                  icons beside one Button (which stands a control-height tall)
-                  sat higher than the bin. The clock stands where a book icon
-                  that did nothing used to. */}
-              <Button
-                type="button"
-                title="Change log"
-                className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
-                onClick={() => handleShowHistory(row)}
-              >
-                <FiClock size={15} />
-              </Button>
-              <Button type="button" onClick={() => handleProductEdit(row)} className="text-blue-500" title="Edit">
-                <FiEdit2 className="cursor-pointer" />
-              </Button>
-              <Button type="button" onClick={() => setDeleteRow(row)} className="text-red-500" title="Delete">
-                <FiTrash2 className="cursor-pointer" />
-              </Button>
-            </div>
-          );
-        },
-      },
+      ...(openingOn ? serialQtyRateColumns : priceActionColumns),
     ];
-  }, [settings, editedRows, openingDeleteRow, openingDeleteLoading, canDeleteVoucher]);
+  }, [settings, editedRows, openingDeleteRow, openingDeleteLoading, canDeleteVoucher, openingOn]);
 
   /* ================= RENDER ================= */
   const optionsWithAll = [
@@ -663,9 +687,9 @@ const Product = (user: any) => {
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap lg:items-center">
           <div className="w-full ">
             <CategoryDropdown
- onChange={handleBrandChange}
- className="w-full text-sm !"
- categoryDdl={brandOptions}
+              onChange={handleBrandChange}
+              className="w-full text-sm !"
+              categoryDdl={brandOptions}
             />
           </div>
 
@@ -674,9 +698,9 @@ const Product = (user: any) => {
               <Loader />
             ) : (
               <CategoryDropdown
- onChange={handleCategoryChange}
- className="w-full text-sm !"
- categoryDdl={optionsWithAll}
+                onChange={handleCategoryChange}
+                className="w-full text-sm !"
+                categoryDdl={optionsWithAll}
               />
             )}
           </div>
@@ -697,31 +721,31 @@ const Product = (user: any) => {
             <div className="w-full sm:w-64">
               <SearchInput className="w-full! " search={search} setSearchValue={setSearchValue} />
             </div>
-            <ButtonLoading label="Search" icon={<FiSearch className="text-gray-500" />}  onClick={handleSearchButton} className="w-full sm:w-auto" />
+            <ButtonLoading label="Search" icon={<FiSearch className="text-gray-500" />} onClick={handleSearchButton} className="w-full sm:w-auto" />
           </div>
 
           <div className="flex w-full items-center">
             <div className="mr-2">
               <PrintRowsInput
- id="perPage"
- name="perPage"
- label=""
- value={rowsPerPage.toString()}
- onChange={handlePerPageChange}
- type="text"
- className="font-medium text-sm w-12!"
+                id="perPage"
+                name="perPage"
+                label=""
+                value={rowsPerPage.toString()}
+                onChange={handlePerPageChange}
+                type="text"
+                className="font-medium text-sm w-12!"
               />
             </div>
 
             <div className="mr-2">
               <PrintFontInput
- id="fontSize"
- name="fontSize"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-12!"
+                id="fontSize"
+                name="fontSize"
+                label=""
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type="text"
+                className="font-medium text-sm w-12!"
               />
             </div>
             <PrintButton onClick={handlePrint} label="Print" className="ml-2" />
