@@ -98,7 +98,21 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
     const getProductName = (r: RowAny) =>
       (r?.product_name ?? r?.name ?? "-").toString();
 
+    const getCode = (r: RowAny) => (r?.code ?? "").toString().trim();
+
     const getUnit = (r: RowAny) => (r?.unit ?? "Nos").toString();
+
+    /**
+     * The Code column is printed only where the stock on this report carries
+     * codes.
+     *
+     * ⚠️ The loaded rows decide, not a branch setting: where no product has a
+     * code the column is not printed at all, and where the API does not send
+     * one (a database the code patch has not reached) every row reads exactly
+     * as it did before. Every colSpan in this file counts off this one number.
+     */
+    const showCode = flatRows.some((r) => getCode(r) !== "");
+    const colCount = showCode ? 6 : 5;
 
     const getQty = (r: RowAny) => r?.stock ?? r?.qty ?? 0;
     const getRate = (r: RowAny) => r?.rate ?? r?.avg_rate ?? 0;
@@ -288,7 +302,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         return (
           <tr className="avoid-break bg-gray-50">
             <td
-              colSpan={5}
+              colSpan={colCount}
               style={{ fontSize: fs }}
               className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} font-bold`}
             >
@@ -302,7 +316,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         return (
           <tr className="avoid-break">
             <td
-              colSpan={5}
+              colSpan={colCount}
               style={{ fontSize: fs }}
               className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} font-semibold`}
             >
@@ -330,6 +344,15 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
             >
               {r.idx}
             </td>
+
+            {showCode ? (
+              <td
+                style={{ fontSize: fs }}
+                className={`border border-gray-900 px-2 ${cellPy}`}
+              >
+                {getCode(row)}
+              </td>
+            ) : null}
 
             <td
               style={{ fontSize: fs }}
@@ -366,7 +389,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         return (
           <tr className="avoid-break font-bold bg-gray-50">
             <td
-              colSpan={2}
+              colSpan={colCount - 3}
               style={{ fontSize: fs }}
               className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
             >
@@ -396,7 +419,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         return (
           <tr className="avoid-break font-bold">
             <td
-              colSpan={2}
+              colSpan={colCount - 3}
               style={{ fontSize: fs }}
               className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
             >
@@ -426,7 +449,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       return (
         <tr className="avoid-break font-bold">
           <td
-            colSpan={2}
+            colSpan={colCount - 3}
             style={{ fontSize: fs }}
             className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
           >
@@ -487,6 +510,14 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
                     >
                       SL. NO
                     </th>
+                    {showCode ? (
+                      <th
+                        style={{ fontSize: fs }}
+                        className={`border border-gray-900 px-2 ${cellPy} w-[100px] text-left`}
+                      >
+                        Code
+                      </th>
+                    ) : null}
                     <th
                       style={{ fontSize: fs }}
                       className={`border border-gray-900 px-2 ${cellPy} text-left`}

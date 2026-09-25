@@ -64,6 +64,7 @@ const rowBrand = (row: StockRow) =>
   firstName(row?.brand, row?.brand_name, row?.__brandKey) || "Others";
 
 const rowProduct = (row: StockRow) => String(row?.product_name ?? row?.name ?? "-");
+const rowCode = (row: StockRow) => String(row?.code ?? "").trim();
 const rowUnit = (row: StockRow) => String(row?.unit ?? row?.unit_name ?? "Nos");
 const rowQty = (row: StockRow) => row?.stock ?? row?.qty ?? row?.product_in ?? 0;
 const rowRate = (row: StockRow) => row?.rate ?? row?.avg_rate ?? 0;
@@ -202,6 +203,18 @@ const ClosingStockReport = ({ user }: any) => {
 
   const grandTotal = useMemo(() => groups.reduce((sum, group) => sum + group.total, 0), [groups]);
 
+  /**
+   * The Code column exists only where the stock on the report carries codes.
+   *
+   * ⚠️ It is the LOADED ROWS that decide, not a branch setting: half a company's
+   * products have no code, and a column of empty boxes down the report -- under
+   * a heading promising a code -- is worse than no column. The spans below all
+   * count off this one number, so the bands and the totals cannot end up a
+   * column wider than the lines between them.
+   */
+  const showCode = useMemo(() => rows.some((row) => rowCode(row) !== ""), [rows]);
+  const columnCount = showCode ? 7 : 6;
+
   const handleLoad = async () => {
     if (!branchId) {
       setError("Branch select korun");
@@ -316,20 +329,20 @@ const ClosingStockReport = ({ user }: any) => {
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
             <InputDatePicker
- setCurrentDate={setStartDate}
- className="font-medium text-sm w-full min-w-[220px]"
- selectedDate={startDate}
- setSelectedDate={setStartDate}
+              setCurrentDate={setStartDate}
+              className="font-medium text-sm w-full min-w-[220px]"
+              selectedDate={startDate}
+              setSelectedDate={setStartDate}
             />
           </div>
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
             <InputDatePicker
- setCurrentDate={setEndDate}
- className="font-medium text-sm w-full min-w-[220px]"
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+              setCurrentDate={setEndDate}
+              className="font-medium text-sm w-full min-w-[220px]"
+              selectedDate={endDate}
+              setSelectedDate={setEndDate}
             />
           </div>
 
@@ -383,7 +396,10 @@ const ClosingStockReport = ({ user }: any) => {
           <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300">
             <tr>
               <th className={`w-[80px] px-3 py-3 text-center font-semibold ${CELL}`}>Sl. No</th>
-              <th className={`px-3 py-3 text-center font-semibold ${CELL}`}>Product Details</th>
+              {showCode ? (
+                <th className={`w-[110px] px-3 py-3 font-semibold ${CELL}`}>Code</th>
+              ) : null}
+              <th className={`px-3 py-3 font-semibold ${CELL}`}>Product Details</th>
               <th className={`w-[90px] px-3 py-3 text-center font-semibold ${CELL}`}>Unit</th>
               <th className={`w-[120px] px-3 py-3 text-right font-semibold ${CELL}`}>Stock Qty</th>
               <th className={`w-[130px] px-3 py-3 text-right font-semibold ${CELL}`}>Rate (Tk.)</th>
@@ -402,25 +418,27 @@ const ClosingStockReport = ({ user }: any) => {
                       as it was filed, and shouting it back adds nothing a
                       heavier weight and a grey ground do not already say. */}
                   <tr key={`${group.band}-header`} className={`bg-slate-100 font-semibold text-slate-900 dark:bg-slate-900/60 dark:text-slate-100 ${CELL}`}>
-                    <td colSpan={6} className="px-3 py-2">{group.band}</td>
+                    <td colSpan={columnCount} className="px-3 py-2">{group.band}</td>
                   </tr>
                   {group.categories.map((categoryGroup) => (
                     <Fragment key={categoryGroup.category}>
                       {groupByBrand ? (
                         <tr className="bg-slate-50 font-medium text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
-                          <td colSpan={6} className={`px-6 py-2 ${CELL}`}>{categoryGroup.category}</td>
+                          <td colSpan={columnCount} className={`px-6 py-2 ${CELL}`}>{categoryGroup.category}</td>
                         </tr>
                       ) : null}
                       {categoryGroup.rows.map((row, index) => (
                         <tr
                           key={`${group.band}-${categoryGroup.category}-${index}`}
-                          className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${
-                            index > 0 && row?.prodct_detls_id === categoryGroup.rows[index - 1]?.prodct_detls_id
+                          className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${index > 0 && row?.prodct_detls_id === categoryGroup.rows[index - 1]?.prodct_detls_id
                               ? "bg-cyan-50 dark:bg-cyan-950/20"
                               : ""
-                          }`}
+                            }`}
                         >
                           <td className={`px-3 py-2 text-center ${CELL}`}>{index + 1}</td>
+                          {showCode ? (
+                            <td className={`truncate px-3 py-2 ${CELL}`}>{rowCode(row)}</td>
+                          ) : null}
                           <td className={`truncate px-3 py-2 ${CELL}`}>{rowProduct(row)}</td>
                           <td className={`px-3 py-2 text-center ${CELL}`}>{rowUnit(row)}</td>
                           <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowQty(row))}</td>
@@ -431,21 +449,21 @@ const ClosingStockReport = ({ user }: any) => {
                     </Fragment>
                   ))}
                   <tr key={`${group.band}-total`} className="bg-slate-50 font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
-                    <td colSpan={5} className={`px-3 py-3 text-right ${CELL}`}>{group.band} Total Tk.</td>
+                    <td colSpan={columnCount - 1} className={`px-3 py-3 text-right ${CELL}`}>{group.band} Total Tk.</td>
                     <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(group.total)}</td>
                   </tr>
                 </Fragment>
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="py-4 text-center text-gray-500 dark:text-gray-400">No data found</td>
+                <td colSpan={columnCount} className="py-4 text-center text-gray-500 dark:text-gray-400">No data found</td>
               </tr>
             )}
           </tbody>
           {groups.length ? (
             <tfoot className="bg-slate-50 text-sm font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
               <tr>
-                <td colSpan={5} className={`px-3 py-3 text-right ${CELL}`}>Grand Total</td>
+                <td colSpan={columnCount - 1} className={`px-3 py-3 text-right ${CELL}`}>Grand Total</td>
                 <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(grandTotal)}</td>
               </tr>
             </tfoot>
