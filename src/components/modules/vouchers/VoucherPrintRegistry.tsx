@@ -100,14 +100,37 @@ export const VoucherPrintRegistry = forwardRef(
     const cashReceivedRef = useRef<HTMLDivElement | null>(null);
     const purchaseRef = useRef<HTMLDivElement | null>(null);
 
-    /* 👉 ACTIVE REF (KEY FIX) */
-    const activePrintRef = useRef<HTMLDivElement | null>(null);
+    /* 👉 WHICH PRINT COMPONENT WAS ASKED FOR (KEY FIX)
+     *
+     * ⚠️ THE REF, NOT THE NODE IT HAPPENED TO BE SHOWING. This held the DOM
+     * node the click found, and that is why the first print of a sale came out
+     * reading "No invoice data" while the second was perfect. These components
+     * stand a placeholder div on the page until their payload arrives and then
+     * render the real paper in its place -- two different element types, so
+     * React throws the placeholder away and mounts a new node. react-to-print
+     * clones what it is handed, and it was being handed the throwaway: the
+     * sale's data arrived and went into the store, and the paper still showed
+     * the node it had replaced. By the second press the placeholder was long
+     * gone, the node the click found was the real one, and it stayed.
+     *
+     * Reading the ref's .current when the print actually starts gets the node
+     * on the page at that moment. All four types share the one variable
+     * because only one of them is ever being printed -- the switch says which.
+     */
+    const activeRef = useRef<React.RefObject<HTMLDivElement | null> | null>(null);
 
     /* ================= PRINT HANDLER ================= */
+    /**
+     * ⚠️ No `contentRef`, deliberately. It is read when the hook is built and
+     * would hand back the node captured at click time; the callback form is
+     * read when the print runs. Same reason as activeRef above.
+     */
     const printVoucherDoc = useReactToPrint({
-      contentRef: activePrintRef,
       documentTitle: 'Voucher Print',
     });
+
+    const printActive = () =>
+      printVoucherDoc(() => activeRef.current?.current ?? null);
 
     /* ================= PUBLIC METHOD ================= */
     useImperativeHandle(ref, () => ({
@@ -134,7 +157,7 @@ export const VoucherPrintRegistry = forwardRef(
         switch (voucherType) {
           /* ================= CASH PAYMENT ================= */
           case '1':
-            activePrintRef.current = cashReceivedRef.current;
+            activeRef.current = cashReceivedRef;
 
             dispatch(
               electronicsSalesPrint(
@@ -143,7 +166,7 @@ export const VoucherPrintRegistry = forwardRef(
                   if (message) {
                     toast.error(message);
                   } else {
-                    setTimeout(printVoucherDoc, 300);
+                    setTimeout(printActive, 300);
                   }
                 }
               )
@@ -151,7 +174,7 @@ export const VoucherPrintRegistry = forwardRef(
             break;
           /* ================= CASH PAYMENT ================= */
           case '2':
-            activePrintRef.current = cashPaymentRef.current;
+            activeRef.current = cashPaymentRef;
 
             dispatch(
               electronicsSalesPrint(
@@ -160,7 +183,7 @@ export const VoucherPrintRegistry = forwardRef(
                   if (message) {
                     toast.error(message);
                   } else {
-                    setTimeout(printVoucherDoc, 300);
+                    setTimeout(printActive, 300);
                   }
                 }
               )
@@ -185,7 +208,7 @@ export const VoucherPrintRegistry = forwardRef(
            */
           case '3':
           case '10':
-            activePrintRef.current = salesRef.current;
+            activeRef.current = salesRef;
 
             dispatch(
               electronicsSalesPrint(
@@ -194,7 +217,7 @@ export const VoucherPrintRegistry = forwardRef(
                   if (message) {
                     toast.error(message);
                   } else {
-                    setTimeout(printVoucherDoc, 300);
+                    setTimeout(printActive, 300);
                   }
                 }
               )
@@ -205,7 +228,7 @@ export const VoucherPrintRegistry = forwardRef(
           /** 4 is a cash purchase, 9 a credit one -- one paper, as above. */
           case '4':
           case '9':
-            activePrintRef.current = purchaseRef.current;
+            activeRef.current = purchaseRef;
             dispatch(
               electronicsSalesPrint(
                 printPayload,
@@ -213,7 +236,7 @@ export const VoucherPrintRegistry = forwardRef(
                   if (message) {
                     toast.error(message);
                   } else {
-                    setTimeout(printVoucherDoc, 300);
+                    setTimeout(printActive, 300);
                   }
                 }
               )
