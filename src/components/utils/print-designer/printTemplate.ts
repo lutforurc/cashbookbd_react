@@ -49,7 +49,9 @@ export type DocType =
   | 'due_list'
   | 'order_transaction'
   | 'company_scheme_receivable'
-  | 'company_scheme_receipts';
+  | 'company_scheme_receipts'
+  | 'product_stock'
+  | 'stock_details';
 
 /**
  * The papers the designer offers, in the order it offers them.
@@ -123,6 +125,16 @@ export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
     id: 'company_scheme_receipts',
     name: 'Company Scheme Receipts',
     hint: 'What the brands paid: each receipt voucher and the IMEIs it paid for.',
+  },
+  {
+    id: 'product_stock',
+    name: 'Product Stock',
+    hint: 'What is in hand: opening, what came in, what went out, and where it stands.',
+  },
+  {
+    id: 'stock_details',
+    name: 'Stock Details',
+    hint: 'The same stocktake with each product’s rate and value beside it.',
   },
 ];
 
@@ -1571,6 +1583,138 @@ export const ORDER_TRANSACTION_LINE_FIELDS: FieldDef[] = [
   { key: 'running_balance', name: 'Balance', group: 'line', numeric: true },
 ];
 
+/* ------------------------------------------------------------------ */
+/* The two stock reports                                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The product's own facts, offered to BOTH stock papers as composed columns.
+ *
+ * ⚠️ THE TWO ARRANGEMENTS THE OWNER ASKED FOR ARE THESE THREE COLUMNS, and no
+ * new mechanism was written for them. `product_flat` writes the facts on one
+ * line, `product_lines` writes them one under the other, and `own_format` lets
+ * a tenant say any facts at all in their own words -- the same three the sales
+ * invoice already offers, resolved by the same composeProduct().
+ *
+ * A tenant switches arrangements by swapping the column, which is also how the
+ * invoice does it: `product_flat` never stacks even where its pattern breaks a
+ * line, and `product_lines` always does.
+ *
+ * ⚠️ The pattern reads the row's keys VERBATIM, with no aliasing, so each
+ * adapter has to lay `brand`, `category`, `group`, `product_name`, `code` and
+ * `unit` flat on every row it builds. The server sends the two reports under
+ * different names (`brand_name`/`cat_name` on one, `brand`/`category`/`group`
+ * on the other); the adapters are where those become the one set of names.
+ */
+const STOCK_PRODUCT_COLUMNS: FieldDef[] = [
+  { key: 'product_name', name: 'Product Name', group: 'line' },
+  { key: 'code', name: 'Code', group: 'line' },
+  { key: 'brand', name: 'Brand', group: 'line' },
+  { key: 'category', name: 'Category', group: 'line' },
+  { key: 'group', name: 'Group', group: 'line' },
+  { key: 'unit', name: 'Unit', group: 'line' },
+  { key: 'product_flat', name: 'Product — one line (own format)', group: 'line' },
+  { key: 'product_lines', name: 'Product — stacked (own format)', group: 'line' },
+  { key: 'own_format', name: 'Own format (any facts)', group: 'line' },
+];
+
+/**
+ * The facts both stock papers share in their heading: which period, which
+ * branch, and which brand and category the report was narrowed to.
+ *
+ * ⚠️ `report_brand` AND `report_category` ARE NEW KEYS, not `brand`/`category`.
+ * Those two name a PRODUCT's own facts on the line catalogue, and a heading key
+ * of the same name would be one word meaning two things in one flat map -- which
+ * is what the ledgers avoid by calling their filter `ledger_product` rather than
+ * `product`.
+ *
+ * ⚠️ `report_group` IS NOT HERE, and Stock Details adds it below. The stocktake
+ * has no Group filter to report -- ReportsController::productStockData never
+ * looks at one -- and offering a heading field that can only ever print blank
+ * is how a tenant ends up with "Group :" and nothing after it on their paper.
+ */
+const STOCK_INFO_FIELDS: FieldDef[] = [
+  { key: 'report_range', name: 'Report Date', group: 'voucher' },
+  { key: 'report_brand', name: 'Brand (filter)', group: 'product' },
+  { key: 'report_category', name: 'Category (filter)', group: 'product' },
+  { key: 'branch_name', name: 'Branch', group: 'voucher' },
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+  { key: 'blank', name: 'Blank line', group: 'manual' },
+];
+
+/**
+ * Product Stock: what is in hand, product by product.
+ *
+ * Its own catalogue rather than the challan's, for the reason every report here
+ * has one: this paper's rows carry no `qty`, no `amount` and no `received`, so a
+ * total the challan's catalogue offered would print a silent nought across a
+ * stocktake somebody is counting against.
+ *
+ * ⚠️ `opening`, `stock_in` and `stock_out` are keys NO other paper has, which is
+ * what lets DocumentPrint foot them for this one paper alone -- see the totals
+ * map there, which had to name them because the Grand Total row reads that map
+ * directly. `balance` and `qty` keep the names every other catalogue gives them
+ * and foot through the entries those already have.
+ */
+export const PRODUCT_STOCK_INFO_FIELDS: FieldDef[] = [
+  ...STOCK_INFO_FIELDS,
+
+  { key: 'total_opening', name: 'Total Opening', group: 'total', numeric: true },
+  { key: 'total_stock_in', name: 'Total Stock In', group: 'total', numeric: true },
+  { key: 'total_stock_out', name: 'Total Stock Out', group: 'total', numeric: true },
+  { key: 'total_balance', name: 'Total Balance', group: 'total', numeric: true },
+  { key: 'line_count', name: 'Number of Products', group: 'total', numeric: true },
+];
+
+/** One product on a stocktake: what it opened at, moved, and stands at. */
+export const PRODUCT_STOCK_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  ...STOCK_PRODUCT_COLUMNS,
+  { key: 'opening', name: 'Opening', group: 'line', numeric: true },
+  { key: 'stock_in', name: 'Stock In', group: 'line', numeric: true },
+  { key: 'stock_out', name: 'Stock Out', group: 'line', numeric: true },
+  { key: 'balance', name: 'Balance', group: 'line', numeric: true },
+];
+
+/**
+ * Stock Details: the same stocktake, valued.
+ *
+ * ⚠️ `qty`, `price` and `amount` KEEP THE NAMES THE RENDERER ALREADY FOOTS --
+ * `total_qty` adds up `qty` and `total_amount` adds up `amount`. Naming the
+ * value column `total_stock` (the server's own word for it) would have footed
+ * as a blank cell unless the totals map learned a fourth entry, and it is the
+ * same figure either way.
+ *
+ * ⚠️ The adapter must set `amount` from the server's `total_stock`, NEVER from
+ * `qty * price`. The server takes the purchase percentage off that value, so a
+ * paper footing the multiplication would disagree with the screen it was
+ * printed from.
+ */
+export const STOCK_DETAILS_INFO_FIELDS: FieldDef[] = [
+  { key: 'as_on_date', name: 'As On', group: 'voucher' },
+  ...STOCK_INFO_FIELDS,
+  // This report alone of the two takes a Group filter, so it alone offers one.
+  { key: 'report_group', name: 'Group (filter)', group: 'product' },
+
+  { key: 'total_qty', name: 'Total Quantity', group: 'total', numeric: true },
+  { key: 'total_amount', name: 'Total Value', group: 'total', numeric: true },
+  { key: 'line_count', name: 'Number of Products', group: 'total', numeric: true },
+];
+
+/** One product on a valued stocktake. */
+export const STOCK_DETAILS_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  ...STOCK_PRODUCT_COLUMNS,
+  { key: 'qty', name: 'Stock Quantity', group: 'line', numeric: true },
+  { key: 'price', name: 'Rate', group: 'line', numeric: true, format: 'money' },
+  { key: 'amount', name: 'Value', group: 'line', numeric: true, format: 'money' },
+  // The purchase percentage the server took off the value -- offered so a
+  // tenant can show their working. Not footed: a column of rates added up is
+  // nonsense, and `total_purchase_pct` is deliberately not in the totals map.
+  { key: 'purchase_pct', name: 'Purchase %', group: 'line', numeric: true, format: 'percent' },
+];
+
 const isLedger = (docType: DocType) =>
   docType === 'sales_ledger' || docType === 'purchase_ledger';
 
@@ -1579,6 +1723,8 @@ export const fieldsFor = (docType: DocType): FieldDef[] => {
   // The ledger's three own keys first, then the challan's whole catalogue under
   // them -- branch, print time, blank lines, the totals. A heading is a heading
   // on any paper, and one definition of each is the point of the flat maps.
+  if (docType === 'product_stock') return PRODUCT_STOCK_INFO_FIELDS;
+  if (docType === 'stock_details') return STOCK_DETAILS_INFO_FIELDS;
   if (isLedger(docType)) return [...LEDGER_INFO_FIELDS, ...FIELD_CATALOG];
   // Alone among the papers here: its catalogue is not the challan's with a few
   // keys on top, because most of the challan's keys resolve on this report to a
@@ -1617,6 +1763,11 @@ export const lineFieldsFor = (docType: DocType): FieldDef[] => {
   // Its own list, not the challan's: a ledger row is a voucher, not a product,
   // and offering product name, unit and bag on it would be four fields the
   // adapter has nothing to put in.
+  // A stock row is a product, not a voucher, and carries the figures a
+  // stocktake reads rather than a sale's. Two lists rather than one because
+  // what a stocktake shows and what it values are two different questions.
+  if (docType === 'product_stock') return PRODUCT_STOCK_LINE_FIELDS;
+  if (docType === 'stock_details') return STOCK_DETAILS_LINE_FIELDS;
   if (isLedger(docType)) return LEDGER_LINE_FIELDS;
   if (docType === 'ledger_details') return LEDGER_DETAILS_LINE_FIELDS;
   if (docType === 'due_list') return DUE_LIST_LINE_FIELDS;
@@ -1694,6 +1845,12 @@ const ALL_INFO_BY_KEY = byKey([
   // came before them. First, they add their own keys and rename nothing.
   ...COMPANY_SCHEME_RECEIVABLE_INFO_FIELDS,
   ...COMPANY_SCHEME_RECEIPTS_INFO_FIELDS,
+  // The two stock papers, first for the same reason: they share total_amount,
+  // as_on_date, branch_name, report_range, line_count and total_balance with
+  // papers already in this list, and all they have to add is the three opening
+  // / stock-in / stock-out totals.
+  ...PRODUCT_STOCK_INFO_FIELDS,
+  ...STOCK_DETAILS_INFO_FIELDS,
   ...FIELD_CATALOG,
   ...ORDER_FIELD_CATALOG,
   ...HOTEL_BILL_FIELDS,
@@ -1710,7 +1867,13 @@ const ALL_INFO_BY_KEY = byKey([
   ...ORDER_TRANSACTION_INFO_FIELDS,
 ]);
 
-const ALL_LINE_BY_KEY = byKey([...COMPANY_SCHEME_RECEIVABLE_LINE_FIELDS, ...COMPANY_SCHEME_RECEIPTS_LINE_FIELDS, ...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS, ...PURCHASE_INVOICE_LINE_FIELDS, ...LEDGER_LINE_FIELDS, ...LEDGER_DETAILS_LINE_FIELDS, ...DUE_LIST_LINE_FIELDS, ...ORDER_TRANSACTION_LINE_FIELDS]);
+const ALL_LINE_BY_KEY = byKey([
+  // First for the reason the info map above is: they share product_name, code,
+  // brand, category, group, unit, qty, price, amount and balance with the
+  // invoice catalogues, and add only opening / stock_in / stock_out / purchase_pct.
+  ...PRODUCT_STOCK_LINE_FIELDS,
+  ...STOCK_DETAILS_LINE_FIELDS,
+  ...COMPANY_SCHEME_RECEIVABLE_LINE_FIELDS, ...COMPANY_SCHEME_RECEIPTS_LINE_FIELDS, ...LINE_FIELDS, ...ORDER_LINE_FIELDS, ...HOTEL_BILL_LINE_FIELDS, ...SALES_INVOICE_LINE_FIELDS, ...PURCHASE_INVOICE_LINE_FIELDS, ...LEDGER_LINE_FIELDS, ...LEDGER_DETAILS_LINE_FIELDS, ...DUE_LIST_LINE_FIELDS, ...ORDER_TRANSACTION_LINE_FIELDS]);
 
 /** The catalogue's own name for a field, or the key itself if it is unknown. */
 export const fieldName = (key: string) =>
@@ -2980,6 +3143,159 @@ const dueListPaper = (): PrintTemplate => ({
 });
 
 /**
+ * Product Stock as the bespoke paper (StockBookPrintNormal.tsx) draws it: one
+ * row per product, its name beside the four figures the stocktake reads.
+ *
+ * ⚠️ THE PRODUCT CELL IS `product_flat` HERE, AND THAT IS ONE OF THE TWO
+ * ARRANGEMENTS THE OWNER ASKED FOR. `product_lines` writes the same facts down
+ * the cell instead of across it, and `own_format` lets a tenant say any facts in
+ * their own words; all three sit in the line catalogue of BOTH stock papers, so
+ * swapping one for another is a drag in the designer and no new mechanism was
+ * built for any of it.
+ *
+ * A stocktake is one line per product -- a stacked cell would make every row
+ * three deep and halve what fits on the sheet -- so this paper starts flat and
+ * the tenant stacks it if their paper says so.
+ */
+const productStockPaper = (): PrintTemplate => ({
+  version: 1,
+  docType: 'product_stock',
+  orientation: 'portrait',
+  pageSize: 'a4',
+  fontSize: 9,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Product Stock',
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'report_range', label: 'Report Date' },
+        { field: 'branch_name', label: 'Branch', hideIfEmpty: true },
+        { field: 'report_brand', label: 'Brand', hideIfEmpty: true },
+        { field: 'report_category', label: 'Category', hideIfEmpty: true },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      totalRow: true,
+      totalRowLabel: 'Total',
+      columns: [
+        { field: 'sl', label: 'Sl', width: 5, align: 'center', valign: 'middle' },
+        {
+          field: 'product_flat',
+          label: 'Product Name',
+          width: 37,
+          align: 'left',
+          pattern: '{brand} {product_name} [({code})]',
+        },
+        { field: 'unit', label: 'Unit', width: 8, align: 'center', valign: 'middle' },
+        { field: 'opening', label: 'Opening', width: 12, align: 'right', valign: 'middle' },
+        { field: 'stock_in', label: 'Stock In', width: 12, align: 'right', valign: 'middle' },
+        { field: 'stock_out', label: 'Stock Out', width: 13, align: 'right', valign: 'middle' },
+        { field: 'balance', label: 'Balance', width: 13, align: 'right', valign: 'middle' },
+      ],
+    }),
+  ],
+});
+
+/**
+ * Stock Details as ItemDetailsPrint.tsx draws it: the code in a column of its
+ * own, the name beside it, the rate and the value past that.
+ *
+ * ⚠️ THE CODE IS ITS OWN COLUMN, NOT PART OF THE PRODUCT CELL, because that is
+ * how both the screen and the paper it replaces already read -- and because the
+ * code column is conditional there (it appears only where the loaded stock
+ * carries codes at all). A tenant who would rather see the product written as a
+ * block can swap in `product_lines`, which is in this paper's line catalogue
+ * along with `product_flat` and `own_format`.
+ */
+const stockDetailsPaper = (): PrintTemplate => ({
+  version: 1,
+  docType: 'stock_details',
+  orientation: 'portrait',
+  pageSize: 'a4',
+  fontSize: 9,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Stock Details',
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'report_range', label: 'Report Date' },
+        { field: 'branch_name', label: 'Branch', hideIfEmpty: true },
+        { field: 'report_brand', label: 'Brand', hideIfEmpty: true },
+        { field: 'report_category', label: 'Category', hideIfEmpty: true },
+        { field: 'report_group', label: 'Group', hideIfEmpty: true },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      totalRow: true,
+      totalRowLabel: 'Total',
+      columns: [
+        { field: 'sl', label: 'Sl', width: 5, align: 'center', valign: 'middle' },
+        { field: 'code', label: 'Code', width: 12, align: 'left', valign: 'middle' },
+        { field: 'product_name', label: 'Product Details', width: 31, align: 'left' },
+        { field: 'unit', label: 'Unit', width: 9, align: 'center', valign: 'middle' },
+        { field: 'qty', label: 'Stock Qty', width: 14, align: 'right', valign: 'middle' },
+        { field: 'price', label: 'Rate', width: 14, align: 'right', valign: 'middle' },
+        { field: 'amount', label: 'Value', width: 15, align: 'right', valign: 'middle' },
+      ],
+    }),
+  ],
+});
+
+/**
  * Order With Transaction as the bespoke sheet (OrderWithProductPrint.tsx)
  * draws it: the order's facts in two columns, the vouchers under them, and
  * the balance carried down. Landscape, as it has always printed.
@@ -3246,6 +3562,24 @@ export const DUE_LIST_PRESETS: PresetDef[] = [
   },
 ];
 
+export const PRODUCT_STOCK_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Product Stock',
+    hint: 'One row per product, the name on one line beside opening, in, out and balance.',
+    build: productStockPaper,
+  },
+];
+
+export const STOCK_DETAILS_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Stock Details',
+    hint: 'One row per product, its code and name beside the rate and the value.',
+    build: stockDetailsPaper,
+  },
+];
+
 export const LEDGER_DETAILS_PRESETS: PresetDef[] = [
   {
     id: 'standard',
@@ -3323,6 +3657,8 @@ export const presetsFor = (docType: DocType): PresetDef[] => {
   if (docType === 'purchase_ledger') return PURCHASE_LEDGER_PRESETS;
   if (docType === 'ledger_details') return LEDGER_DETAILS_PRESETS;
   if (docType === 'due_list') return DUE_LIST_PRESETS;
+  if (docType === 'product_stock') return PRODUCT_STOCK_PRESETS;
+  if (docType === 'stock_details') return STOCK_DETAILS_PRESETS;
   if (docType === 'company_scheme_receivable') return COMPANY_SCHEME_RECEIVABLE_PRESETS;
   if (docType === 'company_scheme_receipts') return COMPANY_SCHEME_RECEIPTS_PRESETS;
   if (docType === 'order_transaction') return ORDER_TRANSACTION_PRESETS;
@@ -3337,6 +3673,8 @@ export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTempla
   if (docType === 'purchase_ledger') return ledgerHeading('purchase_ledger', 'Purchase Ledger');
   if (docType === 'ledger_details') return ledgerStatement();
   if (docType === 'due_list') return dueListPaper();
+  if (docType === 'product_stock') return productStockPaper();
+  if (docType === 'stock_details') return stockDetailsPaper();
   if (docType === 'company_scheme_receivable') return companySchemeReceivablePaper();
   if (docType === 'company_scheme_receipts') return companySchemeReceiptsPaper();
   if (docType === 'order_transaction') return orderTransactionPaper();

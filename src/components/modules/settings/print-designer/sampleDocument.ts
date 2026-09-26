@@ -873,6 +873,179 @@ export const COMPANY_SCHEME_RECEIPTS_SAMPLE: DocumentData = {
 };
 
 /**
+ * Product Stock as the designer previews it: one row per product, what came in
+ * and what went out and where it stands.
+ *
+ * ⚠️ `code` AND `group` ARE PRESENT BUT EMPTY, and that is not an oversight --
+ * the report itself carries neither (see ReportsController::productStockData,
+ * which selects product_name, cat_name, brand_name and unit and stops). The
+ * adapter still lays the keys down, blank, so a layout is the same shape on
+ * either paper; the sample does the same, and shows `{code}` dropping out of the
+ * composed pattern exactly as it will on a real page. A sample that invented a
+ * code would have a tenant design a column that prints nothing and call it a bug.
+ *
+ * ⚠️ EVERY PRODUCT FACT IS FLAT ON THE ROW -- `brand`, `category`,
+ * `product_name`, `unit` -- because that is what a composed pattern reads,
+ * verbatim by key. The adapter lays the server's own `brand_name`/`cat_name` out
+ * under these names, and a sample that kept the server's names would preview a
+ * product cell with the tokens silently taken out of it.
+ *
+ * The four figures agree with each other -- each balance is its opening plus
+ * what came in less what went out -- because the paper foots all four and a
+ * reader runs a finger down them.
+ */
+export const PRODUCT_STOCK_SAMPLE: DocumentData = {
+  basic: {
+    report_range: '01/09/2026 to 20/09/2026',
+    report_brand: 'Walton',
+    report_category: 'Electronics',
+    branch_name: 'Head Office',
+  },
+  products: [
+    {
+      id: 1,
+      sl: 1,
+      brand: 'Walton',
+      category: 'Electronics',
+      product_name: 'Refrigerator 316 Ltr',
+      unit: 'Pcs',
+      code: '',
+      group: '',
+      opening: 12,
+      stock_in: 30,
+      stock_out: 22,
+      balance: 20,
+    },
+    {
+      id: 2,
+      sl: 2,
+      brand: 'Walton',
+      category: 'Electronics',
+      product_name: 'LED Television 43"',
+      unit: 'Pcs',
+      code: '',
+      group: '',
+      opening: 8,
+      stock_in: 15,
+      stock_out: 6,
+      balance: 17,
+    },
+    {
+      id: 3,
+      sl: 3,
+      brand: 'Singer',
+      category: 'Home Appliance',
+      product_name: 'Rice Cooker 2.8 Ltr',
+      unit: 'Pcs',
+      code: '',
+      group: '',
+      opening: 25,
+      stock_in: 0,
+      stock_out: 9,
+      balance: 16,
+    },
+    {
+      id: 4,
+      sl: 4,
+      brand: 'Singer',
+      category: 'Home Appliance',
+      product_name: 'Ceiling Fan 56"',
+      unit: 'Pcs',
+      code: '',
+      group: '',
+      opening: 40,
+      stock_in: 60,
+      stock_out: 55,
+      balance: 45,
+    },
+  ],
+};
+
+/**
+ * Stock Details as the designer previews it: the same stocktake with each
+ * product's rate and value beside it.
+ *
+ * ⚠️ A SECOND SAMPLE RATHER THAN A SHARED ONE, unlike the two ledgers. Those
+ * differ only in which columns a layout prints; these two carry different FACTS
+ * -- this one has a rate and a value and no opening or movement, the other the
+ * reverse -- so one sample would misdescribe whichever paper it was not written
+ * for. It is the same reason Stock Details has a catalogue of its own.
+ *
+ * ⚠️ `amount` IS THE SERVER'S `total_stock`, NOT `qty * price`. The report takes
+ * the layer's purchase percentage off before it values anything, so a sample
+ * (and an adapter) that multiplied the two would preview a figure the paper
+ * never prints. `purchase_pct` is carried so a layout can say what was deducted.
+ */
+export const STOCK_DETAILS_SAMPLE: DocumentData = {
+  basic: {
+    as_on_date: '20/09/2026',
+    report_range: '01/09/2026 to 20/09/2026',
+    report_brand: 'Walton',
+    report_category: 'Electronics',
+    report_group: 'Home Appliance',
+    branch_name: 'Head Office',
+  },
+  products: [
+    {
+      id: 1,
+      sl: 1,
+      brand: 'Walton',
+      category: 'Electronics',
+      group: 'Home Appliance',
+      product_name: 'Refrigerator 316 Ltr',
+      code: 'WRT-316',
+      unit: 'Pcs',
+      qty: 20,
+      price: 48500,
+      amount: 945750,
+      purchase_pct: 2.5,
+    },
+    {
+      id: 2,
+      sl: 2,
+      brand: 'Walton',
+      category: 'Electronics',
+      group: 'Home Appliance',
+      product_name: 'LED Television 43"',
+      code: 'WLT-43S',
+      unit: 'Pcs',
+      qty: 17,
+      price: 41200,
+      amount: 682890,
+      purchase_pct: 2.5,
+    },
+    {
+      id: 3,
+      sl: 3,
+      brand: 'Singer',
+      category: 'Home Appliance',
+      group: 'Kitchen',
+      product_name: 'Rice Cooker 2.8 Ltr',
+      code: 'SGR-RC28',
+      unit: 'Pcs',
+      qty: 16,
+      price: 3450,
+      amount: 54372,
+      purchase_pct: 1.5,
+    },
+    {
+      id: 4,
+      sl: 4,
+      brand: 'Singer',
+      category: 'Home Appliance',
+      group: 'Kitchen',
+      product_name: 'Ceiling Fan 56"',
+      code: 'SGR-CF56',
+      unit: 'Pcs',
+      qty: 45,
+      price: 3980,
+      amount: 176413,
+      purchase_pct: 1.5,
+    },
+  ],
+};
+
+/**
  * The document the designer previews against.
  *
  * ⚠️ It has to be the right KIND of document. An order laid out against a
@@ -887,6 +1060,8 @@ export const sampleFor = (docType: string): DocumentData => {
   if (docType === 'sales_invoice') return SALES_INVOICE_SAMPLE;
   if (docType === 'purchase_invoice') return PURCHASE_INVOICE_SAMPLE;
   if (docType === 'sales_ledger' || docType === 'purchase_ledger') return LEDGER_SAMPLE;
+  if (docType === 'product_stock') return PRODUCT_STOCK_SAMPLE;
+  if (docType === 'stock_details') return STOCK_DETAILS_SAMPLE;
   if (docType === 'ledger_details') return LEDGER_DETAILS_SAMPLE;
   if (docType === 'due_list') return DUE_LIST_SAMPLE;
   if (docType === 'company_scheme_receivable') return COMPANY_SCHEME_RECEIVABLE_SAMPLE;

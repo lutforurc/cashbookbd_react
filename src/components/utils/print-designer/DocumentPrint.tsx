@@ -326,6 +326,27 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       total_age_31_60: rows.reduce((sum, row) => sum + num(row?.age_31_60), 0),
       total_age_61_90: rows.reduce((sum, row) => sum + num(row?.age_61_90), 0),
       total_age_90_plus: rows.reduce((sum, row) => sum + num(row?.age_90_plus), 0),
+
+      /**
+       * The Product Stock paper's three middle columns. Here for exactly the
+       * reason the two above and the six before them are: the Grand Total row
+       * reads this map directly and not the generic rule below it, so a column
+       * of openings would foot as a blank cell.
+       *
+       * ⚠️ THE GENERIC RULE WOULD ALREADY SUM THESE for the totals BAND --
+       * `opening` is a numeric line field, so `total_opening` resolves. What it
+       * cannot do is feed the foot row, which is the whole point of a stocktake:
+       * the four columns a reader runs a finger down are the ones that have to
+       * come to something at the bottom.
+       *
+       * Nothing else offers a column of any of these three names, so no other
+       * paper can ask for these totals and no paper's data carries the keys.
+       * `total_balance` is NOT repeated here -- it is already above, summing
+       * the `balance` column this paper shares with the ledgers.
+       */
+      total_opening: rows.reduce((sum, row) => sum + num(row?.opening), 0),
+      total_stock_in: rows.reduce((sum, row) => sum + num(row?.stock_in), 0),
+      total_stock_out: rows.reduce((sum, row) => sum + num(row?.stock_out), 0),
     };
 
     /**

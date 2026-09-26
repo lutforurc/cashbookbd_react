@@ -21,6 +21,14 @@ import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { fetchBrandDdl } from '../../product/brand/brandSlice';
 import StockBookPrintNormal from './StockBookPrintNormal';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import httpService from '../../../services/httpService';
+import { API_PRINT_TEMPLATE_URL } from '../../../services/apiRoutes';
+import { usePrintBranch } from '../../../utils/utils-functions/printBranch';
+import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
+import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
+import { normalizeTemplate } from '../../../utils/print-designer/printTemplate';
+import type { PrintTemplate } from '../../../utils/print-designer/printTemplate';
+import { toProductStockDocumentData } from './productStockDocumentData';
 
 // ======================
 // ✅ Category-wise helper
@@ -152,10 +160,102 @@ const ProductStockNormal = ({ user }: any) => {
     }
   };
 
-  const handlePrint = useReactToPrint({
+  // The sheet this screen printed before there was a designer to print it from,
+  // and still the one it prints unless the branch has saved a layout -- see
+  // handlePrint below.
+  const printBespoke = useReactToPrint({
     contentRef: printRef,
     documentTitle: 'Product Stock',
   });
+
+  const printBranch = usePrintBranch();
+
+  // The report about to be printed through a saved layout, held with its data
+  // and cleared afterwards so a second print cannot go out carrying the first
+  // one's rows.
+  const [stockDoc, setStockDoc] = useState<{
+    template: PrintTemplate;
+    data: DocumentData;
+  } | null>(null);
+
+  const stockPrintRef = useRef<HTMLDivElement>(null);
+  const printStockDoc = useReactToPrint({
+    contentRef: stockPrintRef,
+    documentTitle: 'Product Stock',
+    onAfterPrint: () => setStockDoc(null),
+  });
+
+  /**
+   * Prints once the designed sheet is actually on the page.
+   *
+   * react-to-print copies what is in the DOM at the moment it is called, so
+   * calling it in the same breath as setStockDoc would copy the previous paper
+   * -- or nothing at all on the first one. An effect runs after React has
+   * committed, and the short wait after that is for the letterhead image.
+   */
+  useEffect(() => {
+    if (!stockDoc) return undefined;
+    const timer = setTimeout(() => printStockDoc(), 250);
+    return () => clearTimeout(timer);
+  }, [stockDoc]);
+
+  /**
+   * Print: the branch's own layout where it has saved one, and the sheet this
+   * screen has always printed where it has not.
+   *
+   * ⚠️ THE LAYOUT IS FETCHED AT THE CLICK, not when the screen loaded -- somebody
+   * who has just changed a column in the designer and come straight back should
+   * not have to reload first. And EVERY FAILURE FALLS THROUGH TO THE OLD PAPER:
+   * no layout saved, a server a patch behind, a dropped connection. The report
+   * is what somebody came here for; the arrangement is on top of it.
+   *
+   * ⚠️ THIS SCREEN SAVES AND PRINTS THE SAME `product_stock` PAPER as
+   * ProductStock.tsx. The two are the two groupings of one report -- by brand and
+   * category, or by category alone -- and a tenant who designed one of them means
+   * both. The grouping itself is the bespoke papers' doing and has no equivalent
+   * in a designed table, which is flat by design.
+   */
+  const handlePrint = async () => {
+    if (!Array.isArray(tableData) || tableData.length === 0) {
+      printBespoke();
+      return;
+    }
+
+    let layout: any = null;
+
+    try {
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/product_stock`, {
+        params: { branch_id: branchId ?? settings?.data?.branch?.id },
+      });
+      layout = response?.data?.data?.data?.layout ?? null;
+    } catch {
+      layout = null;
+    }
+
+    if (!layout) {
+      printBespoke();
+      return;
+    }
+
+    const template = normalizeTemplate(layout, 'product_stock');
+
+    setStockDoc({
+      template: { ...template, rowsPerPage: Number(perPage), fontSize: Number(fontSize) },
+      data: toProductStockDocumentData({
+        // The sentinel rows are dropped by the adapter itself -- it is the one
+        // that has to know they are not products.
+        rows: tableData,
+        startDate,
+        endDate,
+        brandName: brandId ? selectedBrandName : '',
+        categoryName: categoryId ? selectedCategoryName : '',
+        branch: printBranch,
+        branchName: dropdownData.find(
+          (entry: any) => String(entry?.id) === String(branchId),
+        )?.name,
+      }),
+    });
+  };
 
   // ✅ stock data -> convert to category-wise rows
   useEffect(() => {
@@ -645,6 +745,17 @@ const ProductStockNormal = ({ user }: any) => {
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
           />
+
+          {/* Mounted only while a designed sheet is being printed. Left standing
+              it would draw a whole document on every render of a screen that
+              re-renders on every keystroke. */}
+          {stockDoc ? (
+            <DocumentPrint
+              ref={stockPrintRef}
+              template={stockDoc.template}
+              data={stockDoc.data}
+            />
+          ) : null}
         </div>
       </div>
     </div>
