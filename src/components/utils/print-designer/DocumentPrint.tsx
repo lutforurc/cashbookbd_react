@@ -281,7 +281,13 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
        * what the last row of a running column already reads.
        */
       total_due: totalAmount - totalReceived,
-      line_count: rows.length,
+      /**
+       * ⚠️ A HEADING IS NOT A LINE. A stock report carries the brand and the
+       * category it is grouped by as rows of their own among the products (see
+       * the heading branch in the table below), and counting those would report
+       * four products on a page that printed two.
+       */
+      line_count: rows.filter((row: any) => !row?.__heading).length,
 
       /**
        * The two a ledger foots, and the only entries here that exist for one
@@ -1138,6 +1144,37 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           ) : null}
           <tbody>
             {pageRows.map((row, rowIndex) => {
+              /**
+               * A GROUP HEADING -- the brand, or the category, that the rows
+               * beneath it belong to.
+               *
+               * ⚠️ A ROW OF ITS OWN, ONE CELL ACROSS THE TABLE, and it comes
+               * from the DATA rather than from a setting here: the report is
+               * grouped by brand and category on the screen already (a branch
+               * turns that on at Edit Branch -> "Stock: Brand->Category->Item"),
+               * and the adapter hands those heading rows through instead of
+               * dropping them. So a branch that lists its stock straight gets no
+               * headings on the paper either, with nothing to configure twice.
+               *
+               * Left and bold, no figures: there is nothing to align and nothing
+               * to add up. The Grand Total row is NOT among these -- the table's
+               * own foot prints it, and a second one would count everything
+               * twice.
+               */
+              const heading = String(row?.__heading ?? '').trim();
+              if (heading) {
+                return (
+                  <tr key={row?.id ?? rowIndex} className="avoid-break">
+                    <td
+                      colSpan={columns.length}
+                      className={`${border} px-1 py-0.5 font-bold`}
+                    >
+                      {heading}
+                    </td>
+                  </tr>
+                );
+              }
+
               /**
                * A money row -- a receipt or a payment against this order, not a
                * delivery.

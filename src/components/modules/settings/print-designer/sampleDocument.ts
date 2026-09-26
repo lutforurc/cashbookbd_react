@@ -876,13 +876,13 @@ export const COMPANY_SCHEME_RECEIPTS_SAMPLE: DocumentData = {
  * Product Stock as the designer previews it: one row per product, what came in
  * and what went out and where it stands.
  *
- * ⚠️ `code` AND `group` ARE PRESENT BUT EMPTY, and that is not an oversight --
- * the report itself carries neither (see ReportsController::productStockData,
- * which selects product_name, cat_name, brand_name and unit and stops). The
- * adapter still lays the keys down, blank, so a layout is the same shape on
- * either paper; the sample does the same, and shows `{code}` dropping out of the
- * composed pattern exactly as it will on a real page. A sample that invented a
- * code would have a tenant design a column that prints nothing and call it a bug.
+ * ⚠️ `code` IS FILLED AND `group` IS EMPTY, which is what the report answers.
+ * The code comes from ReportsController::productStockData (guarded -- older
+ * databases have no such column, and there a `{code}` in a pattern prints blank,
+ * which the sample cannot show both ways). `group` is not in the report's answer
+ * at all: it is laid down blank so a layout is the same shape on either paper,
+ * and a tenant who asks for it sees it drop out of a composed pattern here
+ * exactly as it will on a real page.
  *
  * ⚠️ EVERY PRODUCT FACT IS FLAT ON THE ROW -- `brand`, `category`,
  * `product_name`, `unit` -- because that is what a composed pattern reads,
@@ -902,6 +902,17 @@ export const PRODUCT_STOCK_SAMPLE: DocumentData = {
     branch_name: 'Head Office',
   },
   products: [
+    /**
+     * ⚠️ THE HEADING ROWS ARE PART OF THE SAMPLE. A branch that groups its stock
+     * by brand and category prints these as rows of their own, one cell across
+     * the table -- brand first, then its category as `brand → category` -- and a
+     * sample without them would show a tenant a flat page and then print a
+     * grouped one. Which headings a real page carries is settled by the screen,
+     * not here: see
+     * toProductStockDocumentData.
+     */
+    { id: 'brand-1', __heading: 'Walton' },
+    { id: 'cat-1', __heading: 'Walton → Electronics' },
     {
       id: 1,
       sl: 1,
@@ -930,6 +941,8 @@ export const PRODUCT_STOCK_SAMPLE: DocumentData = {
       stock_out: 6,
       balance: 17,
     },
+    { id: 'brand-2', __heading: 'Singer' },
+    { id: 'cat-2', __heading: 'Singer → Home Appliance' },
     {
       id: 3,
       sl: 3,

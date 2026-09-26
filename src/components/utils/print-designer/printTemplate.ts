@@ -3214,7 +3214,13 @@ const productStockPaper = (): PrintTemplate => ({
           // Code in front of the name, as the screen and the old sheet print it.
           // ⚠️ Bracketed so a database without a code loses the separator too --
           // an unbracketed `{code} - ` would leave every row reading " - Name".
-          pattern: '{brand} [{code} - ]{product_name}',
+          //
+          // ⚠️ AND NO `{brand}`: the brand is a heading row of its own above the
+          // group now (see the __heading branch in DocumentPrint), so a pattern
+          // that named it too would print it twice -- once over the group and
+          // again on every line in it. A branch that lists its stock straight
+          // still groups by category, and can add `{brand}` back here.
+          pattern: '[{code} - ]{product_name}',
         },
         { field: 'unit', label: 'Unit', width: 8, align: 'center', valign: 'middle' },
         { field: 'opening', label: 'Opening', width: 12, align: 'right', valign: 'middle' },

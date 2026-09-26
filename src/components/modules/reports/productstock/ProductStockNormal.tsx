@@ -242,8 +242,8 @@ const ProductStockNormal = ({ user }: any) => {
     setStockDoc({
       template: { ...template, rowsPerPage: Number(perPage), fontSize: Number(fontSize) },
       data: toProductStockDocumentData({
-        // The sentinel rows are dropped by the adapter itself -- it is the one
-        // that has to know they are not products.
+        // Sentinels and all: the adapter turns the group headings into heading
+        // rows and drops the Grand Total, which the table foots itself.
         rows: tableData,
         startDate,
         endDate,

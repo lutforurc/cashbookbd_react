@@ -7,16 +7,18 @@ import type { PrintBranch } from '../../../utils/utils-functions/printBranch';
  *
  * The bespoke paper (StockBookPrint.tsx) knows these columns by hard-coded name
  * and builds a Brand heading and a Category heading over each group. This hands
- * the same facts over flat instead, so a tenant can arrange them: one row per
- * product, no headings, the brand and the category as ordinary columns they can
- * put wherever they like -- or leave out.
+ * the same facts over, each product on a row the tenant can arrange, and the
+ * headings the screen already grouped it by as heading rows of their own.
  *
- * ⚠️ THE SENTINEL ROWS ARE DROPPED HERE. What the screen holds is the report's
- * rows with `__type: 'BRAND' | 'CAT' | 'GRAND_TOTAL'` entries woven between them
- * (see buildBrandCategoryRows), and those are headings, not products. Passed
- * through, the Brand row would print as a product with no figures and the Grand
- * Total row as a product called "Grand Total" -- and DocumentPrint works its own
- * foot out from these rows, so it would count the total twice.
+ * ⚠️ THE SENTINEL ROWS COME THROUGH AS HEADINGS, EXCEPT THE GRAND TOTAL. What
+ * the screen holds is the report's rows with `__type: 'BRAND' | 'CAT' | 'GROUP'
+ * | 'GRAND_TOTAL'` entries woven between them (see buildBrandCategoryRows and
+ * buildCategoryWiseRows), and the first three are headings, not products. They
+ * are turned into `__heading` rows, which DocumentPrint draws as one cell across
+ * the table -- so the paper groups exactly as the screen behind it does. The
+ * Grand Total row is still dropped: DocumentPrint works its own foot out from
+ * these rows, so passing it through would print it as a product called "Grand
+ * Total" and count every figure twice.
  *
  * ⚠️ `brand` AND `category` ARE THE SERVER'S `brand_name` AND `cat_name`, renamed.
  * A composed product pattern reads a token by the row's own key, verbatim, so
@@ -60,23 +62,59 @@ export const toProductStockDocumentData = ({
   branch,
   branchName,
 }: ProductStockDocumentOptions): DocumentData => {
-  const list = (Array.isArray(rows) ? rows : []).filter((row) => !row?.__type);
+  const source = Array.isArray(rows) ? rows : [];
 
-  const products = list.map((row) => ({
-    sl: row?.sl_number,
-    sl_number: row?.sl_number,
-    product_id: row?.product_id,
-    product_name: text(row?.product_name),
-    brand: text(row?.brand_name),
-    category: text(row?.cat_name),
-    group: '',
-    code: text(row?.code),
-    unit: text(row?.unit),
-    opening: num(row?.opening),
-    stock_in: num(row?.stock_in),
-    stock_out: num(row?.stock_out),
-    balance: num(row?.balance),
-  }));
+  /**
+   * ⚠️ THE GROUP HEADINGS ARE HANDED THROUGH, THE GRAND TOTAL ROW IS NOT.
+   *
+   * How this report is grouped is not decided here -- the screen has already
+   * decided it. A branch that turns on Edit Branch -> "Stock: Brand->Category->
+   * Item" gets brand and category rows woven among its products by
+   * buildBrandCategoryRows, and one that does not gets category rows from
+   * buildCategoryWiseRows. Passing those rows on is what makes this paper print
+   * the same grouping as the screen behind it, with no second setting to keep in
+   * step.
+   *
+   * ⚠️ Their NAME comes out of the fact each row is built around, and a category
+   * heading says which brand it sits under -- `ATI → Tiles`, the arrow the screen
+   * and the bespoke sheet both draw there (ProductStock.tsx prints exactly that).
+   * A category row from the straight-listing branch carries no brand, so it
+   * comes out as its own name alone.
+   *
+   * ⚠️ AND THE GRAND TOTAL IS STILL DROPPED. DocumentPrint works its own foot
+   * out from these rows, so a Grand Total row passed through would print as a
+   * product called "Grand Total" and count every figure twice.
+   */
+  const products: any[] = [];
+
+  for (const row of source) {
+    if (row?.__type === 'GRAND_TOTAL') continue;
+
+    if (row?.__type) {
+      const heading =
+        row.__type === 'BRAND'
+          ? text(row.brand_name)
+          : [text(row.brand_name), text(row.cat_name)].filter(Boolean).join(' → ');
+      if (heading) products.push({ __heading: heading });
+      continue;
+    }
+
+    products.push({
+      sl: row?.sl_number,
+      sl_number: row?.sl_number,
+      product_id: row?.product_id,
+      product_name: text(row?.product_name),
+      brand: text(row?.brand_name),
+      category: text(row?.cat_name),
+      group: '',
+      code: text(row?.code),
+      unit: text(row?.unit),
+      opening: num(row?.opening),
+      stock_in: num(row?.stock_in),
+      stock_out: num(row?.stock_out),
+      balance: num(row?.balance),
+    });
+  }
 
   const from = startDate ? dayjs(startDate).format('DD/MM/YYYY') : '';
   const to = endDate ? dayjs(endDate).format('DD/MM/YYYY') : '';
