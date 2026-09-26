@@ -38,10 +38,11 @@ const SHEET_HEADINGS = [
   'mobile',
   'customer_number',
   'address',
+  'ledger_page',
   'opening',
 ];
 
-type Field = 'name' | 'type' | 'mobile' | 'customer_number' | 'address' | 'opening';
+type Field = 'name' | 'type' | 'mobile' | 'customer_number' | 'address' | 'ledger_page' | 'opening';
 
 const FIELDS: { key: Field; header: string; className: string; numeric?: boolean }[] = [
   { key: 'name', header: 'Name', className: 'min-w-56' },
@@ -49,6 +50,9 @@ const FIELDS: { key: Field; header: string; className: string; numeric?: boolean
   { key: 'mobile', header: 'Mobile', className: 'min-w-28' },
   { key: 'customer_number', header: 'Customer No.', className: 'min-w-28' },
   { key: 'address', header: 'Address', className: 'min-w-56' },
+  // Wide enough for the shape the owner's book writes them in, "Page # 01,
+  // Ledger # 12" -- a narrower box hides most of it behind the cursor.
+  { key: 'ledger_page', header: 'Ledger Page', className: 'min-w-44' },
   { key: 'opening', header: 'Opening', className: 'min-w-24 text-right', numeric: true },
 ];
 
@@ -63,6 +67,7 @@ const HEADING_ALIASES: Record<Field, string[]> = {
   mobile: ['mobile', 'phone', 'contactnumber', 'contactno', 'cell'],
   customer_number: ['customernumber', 'customerno', 'idfrcode', 'code', 'accountcode', 'ledgercode'],
   address: ['address', 'manualaddress', 'location'],
+  ledger_page: ['ledgerpage', 'ledgerpageno', 'ledgerpagenumber', 'ledger', 'page'],
   opening: ['opening', 'openingbalance', 'balance', 'due', 'previousdue'],
 };
 
@@ -178,10 +183,12 @@ const CustomerOpeningImport = () => {
     const worksheet = XLSX.utils.aoa_to_sheet([
       SHEET_HEADINGS,
       // One row the owner can read over before typing their own: the first
-      // three columns are what a customer is matched by, the last is the figure.
-      ['1', 'Rahim Traders', 'Customer', '01711223344', 'C-001', 'Mirpur, Dhaka', '15000'],
+      // three columns are what a customer is matched by, the last is the
+      // figure, and the page is the one the paper ledger has them on —
+      // written the way the owner's book writes it, so the shape is plain.
+      ['1', 'Rahim Traders', 'Customer', '01711223344', 'C-001', 'Mirpur, Dhaka', 'Page # 01, Ledger # 12', '15000'],
     ]);
-    worksheet['!cols'] = [8, 32, 22, 18, 18, 32, 14].map((wch) => ({ wch }));
+    worksheet['!cols'] = [8, 32, 22, 18, 18, 32, 24, 14].map((wch) => ({ wch }));
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Customer Opening');
     XLSX.writeFile(workbook, 'customer-opening-import-format.xlsx');
@@ -340,9 +347,11 @@ const CustomerOpeningImport = () => {
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <p className="max-w-2xl text-sm text-gray-600 dark:text-gray-300">
             A row is matched by its customer number, else by its mobile, else by its exact name. A
-            name the books do not have is made into a customer — type, mobile and address are used
-            for that. Only the opening is written on a customer that already exists. A positive
-            opening is what the customer owes; enter a minus when the books owe them.
+            name the books do not have is made into a customer — type, mobile, address and ledger
+            page are used for that. On a customer that already exists only the opening and the
+            ledger page are written; leave the ledger page blank to keep the page the list has.
+            Write the page as your book has it, e.g. "Page # 01, Ledger # 12". A positive opening
+            is what the customer owes; enter a minus when the books owe them.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <ButtonLoading
