@@ -4,7 +4,7 @@ import { FiBook, FiCheckSquare, FiClock, FiEdit2, FiPlus, FiPlusSquare, FiPrinte
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import SearchInput from "../../utils/fields/SearchInput";
-import { ButtonLoading, ROW_ACTION_BUTTON_CLASS } from "../../../pages/UiElements/CustomButtons";
+import { ButtonLoading } from "../../../pages/UiElements/CustomButtons";
 import Loader from "../../../common/Loader";
 import Pagination from "../../utils/utils-functions/Pagination";
 import Table from "../../utils/others/Table";
@@ -19,6 +19,7 @@ import { API_CUSTOMER_HISTORY_URL, API_CUSTOMER_PROFILE_PDF_URL } from "../../se
 import routes from "../../services/appRoutes";
 import { formatMobile, useMobileFormat } from "../../utils/utils-functions/mobileFormat";
 import { Button } from '../../../pages/UiElements/CustomButtons';
+import { isBranchSettingOn } from "../../utils/userFeatureSettings";
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -97,7 +98,10 @@ const CustomerSupplier = () => {
   const tableData = Array.isArray(customerPageData?.data) ? customerPageData.data : [];
 		  const totalRecords = Number(customerPageData?.total || customers?.total || 0);
 		  const totalPages = Math.max(1, Number(customerPageData?.last_page || Math.ceil(totalRecords / perPage) || 1));
-		  const isOpeningEnabled = settings?.data?.branch?.is_opening == 1;
+	  // One reading of the branch's opening switch, so the two places below cannot
+	  // drift apart the way `settings?.data?.branch?.is_opening == 1` and
+	  // isBranchSettingOn() had on the Product list.
+	  const openingOn = isBranchSettingOn(settings, 'is_opening');
   const canEditCustomer = hasPermission(settings?.data?.permissions, 'cs.edit');
   const canDeleteCustomer = hasPermission(settings?.data?.permissions, 'cs.delete');
   // Deleting an opening balance deletes a voucher, so it answers to the voucher
@@ -430,87 +434,98 @@ const CustomerSupplier = () => {
   };
 
 
-  const isOpeningColumns = [
-      {
-      key: 'openingbalance',
-      header: 'Opening',
-      headerClass: 'text-left',
-      cellClass: 'text-center',
-      render: (row: any) => (
-        <div className="flex flex-col items-end gap-0.5">
-          <InputElement
-            type="number"   // 🔥 FIX HERE
-            placeholder="Opening"
-            value={editedRows[row.id]?.openingbalance ?? row.openingbalance ?? ""}
-            className="text-right w-20"
-            onChange={(e) =>
-              handleInputChange(row.id, "openingbalance", e.target.value)
-            }
-          />
+  // The figure the branch is here to enter. It stands at the end of the row with
+  // its own Save/Cancel/Delete next to it (`openingActionColumn` below), so the
+  // eyes travel from the box to the button that saves it without crossing the
+  // address and the mobile number.
+  const openingFigureColumn = {
+    key: 'openingbalance',
+    header: 'Opening',
+    headerClass: 'text-right w-40',
+    cellClass: 'text-center',
+    render: (row: any) => (
+      <div className="flex flex-col items-end gap-0.5">
+        <InputElement
+          type="number"   // 🔥 FIX HERE
+          placeholder="Opening"
+          value={editedRows[row.id]?.openingbalance ?? row.openingbalance ?? ""}
+          className="text-right w-20"
+          onChange={(e) =>
+            handleInputChange(row.id, "openingbalance", e.target.value)
+          }
+        />
 
-          {/* The voucher this figure sits on. Without it the balance is a
-              number nobody can trace; with it the ledger is one click away. */}
-          {row.opening_vr_no && (
-            <Button
-              type="button"
-              title={`Journal voucher ${row.opening_vr_no} — open ledger`}
-              onClick={() => handleOpenLedger(row)}
-              className="font-mono text-[10px] leading-tight text-blue-600 hover:underline dark:text-blue-400"
-            >
-              {row.opening_vr_no}
-            </Button>
-          )}
-        </div>
-      ),
-    },
-    {
-      // Beside the field they act on. At the far right of the row the clerk had
-      // to cross every other column to save the figure just typed, and on a
-      // narrow screen scroll to reach it at all.
+        {/* The voucher this figure sits on. Without it the balance is a
+            number nobody can trace; with it the ledger is one click away. */}
+        {row.opening_vr_no && (
+          <Button
+            type="button"
+            title={`Journal voucher ${row.opening_vr_no} — open ledger`}
+            onClick={() => handleOpenLedger(row)}
+            className="font-mono text-[10px] leading-tight text-blue-600 hover:underline dark:text-blue-400"
+          >
+            {row.opening_vr_no}
+          </Button>
+        )}
+      </div>
+    ),
+  };
+
+  /**
+   * The Opening group's own Save/Cancel/Delete, headed "Action" and standing
+   * last in the row like every other list's. It took the place of the two
+   * columns that sat here before: the customer's own actions stand down while
+   * opening is on (see the filter under `columns`), so one "Action" heading is
+   * all the row ever carries.
+   */
+  const openingActionColumn = {
       key: 'opening_action',
-      header: '',
+      header: 'Action',
       headerClass: 'text-center',
       // The table lays out fixed and honours no `width` of its own, so a column
-      // left without one takes an equal share of the page. Held to what the
-      // three buttons need, the rest goes back to the columns that carry text.
-      cellClass: 'text-center w-72',
+      // left without one takes an equal share of the page. Icons need far less
+      // than three labelled buttons did; the rest goes back to the columns that
+      // carry text.
+      cellClass: 'text-center w-32',
       render: (row: any) => {
         const dirty = isRowDirty(row);
 
+        // Icon alone, the word kept as a tooltip -- the Product list writes this
+        // same trio that way. "Save", "Cancel" and "Delete" spelled out came to
+        // some 220px, all of it taken off the customer's own name.
         return (
-          // Three slots of equal width, always three. Delete comes and goes as
-          // opening balances are saved and removed; were its slot to go with
-          // it, the other two would slide sideways row by row.
-          <div className="grid grid-cols-3 items-center gap-1.5">
+          <div className="flex items-center justify-center gap-1">
             <ButtonLoading
-              className={ROW_ACTION_BUTTON_CLASS}
-              size="sm"
-              label="Save"
+              icon={<FiCheckSquare />}
+              title="Save"
+              label=""
+              className="py-1 px-2"
               type="button"
               disabled={!dirty}
               onClick={() => handleSaveRow(row)}
-              icon={<FiCheckSquare size={14} />}
             />
             <ButtonLoading
-              icon={<FiX size={14} />}
-              className={ROW_ACTION_BUTTON_CLASS}
-              size="sm"
-              label="Cancel"
+              icon={<FiX />}
+              title="Cancel"
+              label=""
+              className="py-1 px-2 mr-3"
               type="button"
               disabled={!editedRows[row.id]}
               onClick={() => handleCancelRow(row)}
             />
 
-            {/* Only where there is a voucher to delete. A row that never had an
-                opening balance has nothing to offer here, and saying so by
-                leaving the button out reads faster than grey-ing it. */}
-            <div>
+            {/* Only where there is a voucher to delete, but its slot is held
+                either way so Save and Cancel do not slide sideways row by row.
+                A row that never had an opening balance says so by the bin being
+                absent, which reads faster than a greyed one. */}
+            <div className="flex w-9 shrink-0 justify-center">
               {row.opening_vr_no && canDeleteVoucher ? (
                 <ButtonLoading
-                  icon={<FiTrash2 size={14} />}
-                  className={`${ROW_ACTION_BUTTON_CLASS} bg-red-600 hover:bg-red-700`}
-                  size="sm"
-                  label="Delete"
+                  icon={<FiTrash2 />}
+                  title="Delete opening balance"
+                  label=""
+                  variant="danger"
+                  className="py-1 px-2 mr-2"
                   type="button"
                   buttonLoading={deletingOpeningId === row.id}
                   disabled={deletingOpeningId === row.id}
@@ -521,15 +536,14 @@ const CustomerSupplier = () => {
           </div>
         );
       },
-    },
-  ]
+  };
 
   const columns = [
     {
       key: 'serial',
       header: 'Sl. No.',
       headerClass: 'text-center',
-      cellClass: 'text-center',
+      cellClass: 'text-center w-20',
     },
     {
       key: "name",
@@ -544,8 +558,6 @@ const CustomerSupplier = () => {
         </>
       )
     },
-  
-	    ...(isOpeningEnabled ? isOpeningColumns : []),
 
     {
       key: "manual_address",
@@ -588,7 +600,7 @@ const CustomerSupplier = () => {
       headerClass: 'text-center', 
       render: (row: any) => {
 	        return (
-	        <div className="flex justify-center items-center gap-2">
+	        <div className="flex justify-center items-center gap-2 ">
 	          {/* Save and Cancel used to sit here; they now travel with the
 	              Opening column, next to the field they belong to. */}
 
@@ -683,7 +695,22 @@ const CustomerSupplier = () => {
         </div>
       )},
     },
-  ];
+    // ⚠️ Spread, never `openingOn && {...}`: a guard that fails leaves a `false`
+    // in this array, and the table gives a false its own heading, cell and col.
+    // The figure first, its buttons next: the two belong together at the end of
+    // the row, after the name and the contacts the sheet is being filled in for.
+    ...(openingOn ? [openingFigureColumn, openingActionColumn] : []),
+  ]
+    // While the branch is still in opening, the list is a work sheet: the name,
+    // the figure, where they live and how to reach them. So the columns that
+    // carry no opening work stand down -- National ID, the ledger page, and the
+    // customer's own actions, which `openingActionColumn` above takes the place
+    // of. The Product list drops its price/action group for the same reason
+    // rather than head two groups "Action".
+    .filter(
+      (column: any) =>
+        !(openingOn && ['national_id', 'ledger_page', 'action'].includes(column.key)),
+    );
 
   return (
     <div>
