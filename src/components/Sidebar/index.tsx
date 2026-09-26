@@ -1677,7 +1677,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'legacy.record.view') && (
                             <li style={subSlot('legacy', 'legacy/records')}>
                               <NavLink to={routes.legacy_record} className={subMenuLinkClass}>
-                                Old ERP Record
+                                Old ERP Record 1
                               </NavLink>
                             </li>
                           )}
@@ -1685,7 +1685,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'legacy.old.record.view') && (
                             <li style={subSlot('legacy', 'legacy/old-records')}>
                               <NavLink to={routes.legacy_old_record} className={subMenuLinkClass}>
-                                Old ERP Record (পুরনো ভার্সন)
+                                Old ERP Record 2
                               </NavLink>
                             </li>
                           )}
