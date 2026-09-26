@@ -20,10 +20,14 @@ import type { PrintBranch } from '../../../utils/utils-functions/printBranch';
  *
  * ⚠️ `brand` AND `category` ARE THE SERVER'S `brand_name` AND `cat_name`, renamed.
  * A composed product pattern reads a token by the row's own key, verbatim, so
- * the catalogue's `{brand}` finds nothing under the server's name. `code` and
- * `group` are not in this report's answer at all: they are deliberately left off
- * rather than invented, so a layout asking for one prints blank on every page,
- * which is the truth about this report.
+ * the catalogue's `{brand}` finds nothing under the server's name.
+ *
+ * ⚠️ `code` COMES FROM THE SERVER NOW, `group` STILL DOES NOT. The report's
+ * query carries the product code (guarded -- older databases have no such
+ * column, in which case it answers an empty string and a `{code}` in a pattern
+ * prints blank, which is the truth there). `group` is a different matter: it is
+ * not in this report's answer at all, and it is deliberately left off rather
+ * than invented, so a layout asking for it prints blank on every page.
  */
 export type ProductStockDocumentOptions = {
   rows: any[];
@@ -66,7 +70,7 @@ export const toProductStockDocumentData = ({
     brand: text(row?.brand_name),
     category: text(row?.cat_name),
     group: '',
-    code: '',
+    code: text(row?.code),
     unit: text(row?.unit),
     opening: num(row?.opening),
     stock_in: num(row?.stock_in),
