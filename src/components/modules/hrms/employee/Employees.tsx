@@ -64,7 +64,7 @@ const Employees = ({ user }: any) => {
   const list = employees?.employeeSettings?.data?.data || [];
 
   setDesignation(list?.designation || []);
-  setDesignationLevel(list?.designationLevels || []); // âœ… THIS LINE
+  setDesignationLevel(list?.designationLevels || []); // ✅ THIS LINE
   setDdlDesignation(list?.designation || []);
   setDdlDesignationLevel(list?.designationLevels || []);
 }, [employees?.employeeSettings]);
@@ -168,7 +168,7 @@ const Employees = ({ user }: any) => {
       .unwrap()
       .then((res) => {
         if (res?.message) {
-          toast.success(res.message); // âœ… SUCCESS MESSAGE
+          toast.success(res.message); // ✅ SUCCESS MESSAGE
         }
       })
       .catch((err) => {
@@ -208,7 +208,7 @@ const Employees = ({ user }: any) => {
           }
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              e.currentTarget.blur(); // ðŸ”¥ Enter = Save
+              e.currentTarget.blur(); // 🔥 Enter = Save
             }
           }}
         />
@@ -281,7 +281,7 @@ const Employees = ({ user }: any) => {
             }
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                e.currentTarget.blur(); // ðŸ”¥ Enter = Save
+                e.currentTarget.blur(); // 🔥 Enter = Save
               }
             }}
           />

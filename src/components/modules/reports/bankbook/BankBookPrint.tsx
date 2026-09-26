@@ -227,7 +227,7 @@ const BankBookPrint = React.forwardRef<HTMLDivElement, Props>(
                   </tbody>
                 </table>
 
-                {/* ðŸ‘‡ Force break after each page except the last */}
+                {/* 👇 Force break after each page except the last */}
               </div>
               <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
 

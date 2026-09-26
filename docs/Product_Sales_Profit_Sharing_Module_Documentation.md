@@ -76,17 +76,17 @@ Net Product Sales-এ line discount এবং line-attributed invoice discount �
 
 | বিবরণ | টাকা |
 |---|---:|
-| Net sales | ৳৫,০০০ |
-| COGS ও অনুমোদিত allocated cost | ৳৪,০০০ |
-| **Realized profit** | **৳১,০০০** |
+| Net sales | ৫,০০০ |
+| COGS ও অনুমোদিত allocated cost | ৪,০০০ |
+| **Realized profit** | **১,০০০** |
 
 | প্রাপক | লাভের হার | পরিমাণ |
 |---|---:|---:|
-| Buyer cashback | ১০% | ৳১০০ |
-| Level 1 sponsor | ৮% | ৳৮০ |
-| Level 2 | ৪% | ৳৪০ |
-| Level 3 | ২% | ৳২০ |
-| Company retained profit | ৭৬% | ৳৭৬০ |
+| Buyer cashback | ১০% | ১০০ |
+| Level 1 sponsor | ৮% | ৮০ |
+| Level 2 | ৪% | ৪০ |
+| Level 3 | ২% | ২০ |
+| Company retained profit | ৭৬% | ৭৬০ |
 
 ## ৫. End-to-End Workflow
 

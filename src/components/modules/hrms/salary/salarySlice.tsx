@@ -61,7 +61,7 @@ interface SalaryGenerateRequest {
   level_ids?: number[]; 
   designation_id?: number;
   month_id: string;
-  employees: SalaryRow[]; // âœ… à¦…à¦¬à¦¶à§à¦¯à¦‡ à¦à¦–à¦¾à¦¨à§‡
+  employees: SalaryRow[]; // ✅ অবশ্যই এখানে
   group?: any;
   salary_sheet_type?: string;
 }
@@ -95,7 +95,7 @@ export const salaryView = createAsyncThunk<
       const res = await httpService.post(API_SALARY_VIEW_URL, payload);
 
       if (res.data?.success === true) {
-        return res.data; // âœ… object return
+        return res.data; // ✅ object return
       }
 
       return rejectWithValue(res.data?.message || "No salary data found");
@@ -119,7 +119,7 @@ export const salarySheetPrint = createAsyncThunk<
     try {
       const res = await httpService.post(API_SALARY_SHEET_PRINT_URL, payload);
 
-      // âœ… Laravel returns data directly
+      // ✅ Laravel returns data directly
       return res.data;
 
     } catch (error: any) {

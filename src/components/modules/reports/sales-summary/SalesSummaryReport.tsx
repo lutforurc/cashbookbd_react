@@ -25,7 +25,7 @@ import { Button } from '../../../../pages/UiElements/CustomButtons';
 const cell = "border border-stroke px-3 py-2 dark:border-strokedark";
 
 /**
- * The buyer, and under them what they bought â€” all in the one cell.
+ * The buyer, and under them what they bought — all in the one cell.
  *
  * Name, phone, then two lines per sale: where it is, and which one it is. A
  * buyer with two flats gets two pairs rather than a second row, so the amount

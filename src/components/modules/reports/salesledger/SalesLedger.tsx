@@ -168,11 +168,11 @@ const SalesLedger = (user: any) => {
     data: DocumentData;
   } | null>(null);
 
-  // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Rows + Font controls (like your screenshot)
+  // ✅ Rows + Font controls (like your screenshot)
   const [rowsPerPage, setRowsPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(10);
 
-  // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Print
+  // ✅ Print
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
   const restoredFilterRef = useRef(false);
@@ -340,7 +340,7 @@ const SalesLedger = (user: any) => {
       if (Array.isArray(ledgerData?.data)) {
         setTableData(ledgerData.data);
       } else {
-        setTableData([]); // ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¥ CLEAR OLD DATA
+        setTableData([]); // 🔥 CLEAR OLD DATA
       }
     }
   }, [ledgerData.isLoading, ledgerData.data]);
@@ -1209,7 +1209,7 @@ const SalesLedger = (user: any) => {
                     </div>
                   )}
 
-                  {/* ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Rows + Font + Run + Print (like your screenshot) */}
+                  {/* ✅ Rows + Font + Run + Print (like your screenshot) */}
                   <div
                     className={`${useFilterMenuEnabled
                       ? 'flex flex-wrap justify-end gap-2'

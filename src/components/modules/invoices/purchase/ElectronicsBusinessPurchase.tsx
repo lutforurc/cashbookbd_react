@@ -310,7 +310,7 @@ const ElectronicsBusinessPurchase = () => {
       warehouse: detail.godown_id ? detail.godown_id.toString() : '',
     }));
 
-    // 2) accountName à¦¬à§‡à¦° à¦•à¦°à¦¾ (supplier name)
+    // 2) accountName বের করা (supplier name)
     let accountName = '-';
     const supplierId = trx.purchase_master?.supplier_id;
 

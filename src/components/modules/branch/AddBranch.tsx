@@ -211,7 +211,7 @@ const buildBranchFormData = (data: branchItem, file: File | null) => {
 const toBooleanFlag = (value: unknown) => value == 1 || value === '1' || value === true;
 
 /**
- * What the allotment letter signs off with when a branch has saved nothing â€”
+ * What the allotment letter signs off with when a branch has saved nothing —
  * seeded into the editor so it can be reworded rather than typed from scratch.
  * Kept in step with the fallback in pdf/allotment-letter.blade.php.
  */
@@ -285,7 +285,7 @@ const spellHours = (value: string): string => {
  * A stored 'YYYY-MM-DD' as a date on the calendar.
  *
  * Read out by hand rather than handed to `new Date`, which reads that shape as
- * UTC midnight â€” east of Greenwich that is still the day before, and the picker
+ * UTC midnight — east of Greenwich that is still the day before, and the picker
  * would open on it.
  */
 const parseIsoDate = (value: string): Date | null => {
@@ -332,7 +332,7 @@ const AddBranch = () => {
    * next setting brings its own permission, and the step should appear for
    * anyone who can reach at least one of the things on it.
    *
-   * Hiding it is only tidiness â€” anyone reading the bundle can see the test.
+   * Hiding it is only tidiness — anyone reading the bundle can see the test.
    * The permission is what decides: BranchController drops each platform
    * setting from the save for a caller who lacks its permission, so a request
    * posted straight at the endpoint changes nothing.
@@ -680,7 +680,7 @@ const AddBranch = () => {
         dashboard_due_soon_days:
           b.dashboard_due_soon_days != null ? b.dashboard_due_soon_days : 0,
 
-        // ðŸ”‘ CHECKBOX FIX
+        // 🔑 CHECKBOX FIX
         is_opening: toBooleanFlag(b.is_opening),
         have_is_guaranter: toBooleanFlag(b.have_is_guaranter),
         have_customer_nominee: toBooleanFlag(b.have_customer_nominee),
@@ -839,7 +839,7 @@ const AddBranch = () => {
   };
 
   /**
-   * The picker deals in dates, the meta in text. Cleared, it saves nothing â€”
+   * The picker deals in dates, the meta in text. Cleared, it saves nothing —
    * which is what makes each letter offer the day it is issued.
    */
   const handleRefDateChange = (date: Date | null) => {
@@ -881,7 +881,7 @@ const AddBranch = () => {
         setButtonLoading(false);
         if (res?.success) {
           toast.success(res?.message || 'Branch updated successfully');
-          // Several of these switches (multi-product orders, voucher image, â€¦)
+          // Several of these switches (multi-product orders, voucher image, …)
           // are read from the session settings, which are otherwise only loaded
           // at login. Refetch them so a saved switch takes effect at once
           // instead of after the next sign-in.
@@ -1582,7 +1582,7 @@ const AddBranch = () => {
                               printed as it stands. Leave empty to show numbers exactly as entered.
                               {formData.mobile_number_format ? (
                                 <span className="mt-0.5 block">
-                                  01973190490 â†’{' '}
+                                  01973190490 →{' '}
                                   <span className="font-semibold text-primary">
                                     {formatMobile('01973190490', formData.mobile_number_format)}
                                   </span>
@@ -1835,7 +1835,7 @@ const AddBranch = () => {
                           onChange={handleOnChange}
                         />
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          Offered as written when a letter is issued â€” nothing is
+                          Offered as written when a letter is issued — nothing is
                           added to it. Left blank, the letter falls back to the
                           project's initials. The clerk issuing a letter finishes
                           or replaces it against the register.
@@ -1854,7 +1854,7 @@ const AddBranch = () => {
                         />
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                           The date letters are dated with. Left blank, each letter
-                          is offered the day it is issued â€” which is the safer of
+                          is offered the day it is issued — which is the safer of
                           the two, since a date set here stays until it is changed.
                         </p>
                       </div>
@@ -2191,7 +2191,7 @@ const AddBranch = () => {
                   </>
                 )}
 
-                {/* SaaS Setup â€” the platform operator's own step. Guarded on the
+                {/* SaaS Setup — the platform operator's own step. Guarded on the
                   index rather than a number, so it stays right if a step is
                   ever added above it. */}
                 {SAAS_STEP >= 0 && currentStep === SAAS_STEP && (
@@ -2201,7 +2201,7 @@ const AddBranch = () => {
                     </h4>
                     <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
                       What happens when someone signs up for a new company. These
-                      belong to the branch that runs the platform â€” setting them on
+                      belong to the branch that runs the platform — setting them on
                       a customer's branch does nothing.
                     </p>
 

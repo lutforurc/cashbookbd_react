@@ -132,7 +132,7 @@ const ProductStock = ({ user }: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
-  const [brandId, setBrandId] = useState<string | null>(''); // null Ã Â¦Â¹Ã Â¦Â¤Ã Â§â€¡ Ã Â¦ÂªÃ Â¦Â¾Ã Â¦Â°Ã Â¦Â¬Ã Â§â€¡
+  const [brandId, setBrandId] = useState<string | null>(''); // null হতে পারবে
 
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(0);
@@ -192,7 +192,7 @@ const ProductStock = ({ user }: any) => {
   };
 
   const handleBrandChange = (selectedOption: any) => {
-    setBrandId(selectedOption?.value ?? null); // "" Ã Â¦ÂÃ Â¦Â° Ã Â¦Â¬Ã Â¦Â¦Ã Â¦Â²Ã Â§â€¡ null
+    setBrandId(selectedOption?.value ?? null); // "" এর বদলে null
   };
 
   const handleCategoryChange = (selectedOption: any) => {
@@ -226,10 +226,10 @@ const ProductStock = ({ user }: any) => {
     const startD = dayjs(startDate).format('YYYY-MM-DD');
     const endD = dayjs(endDate).format('YYYY-MM-DD');
 
-    // Ã Â¦Â¡Ã Â¦Â¿Ã Â¦Â¬Ã Â¦Â¾Ã Â¦â€”Ã Â§â€¡Ã Â¦Â° Ã Â¦Å“Ã Â¦Â¨Ã Â§ÂÃ Â¦Â¯ Ã Â¦Â¦Ã Â§â€¡Ã Â¦â€“Ã Â¦Â¤Ã Â§â€¡ Ã Â¦ÂªÃ Â¦Â¾Ã Â¦Â°Ã Â§â€¡Ã Â¦Â¨
+    // ডিবাগের জন্য দেখতে পারেন
     console.log('Sending payload:', {
       branchId,
-      brandId,           // Ã Â¦ÂÃ Â¦â€“Ã Â¦Â¨ null Ã Â¦Â¹Ã Â¦Â²Ã Â§â€¡ null-Ã Â¦â€¡ Ã Â¦Â¯Ã Â¦Â¾Ã Â¦Â¬Ã Â§â€¡
+      brandId,           // এখন null হলে null-ই যাবে
       categoryId,
       search,
       startDate: startD,
@@ -239,7 +239,7 @@ const ProductStock = ({ user }: any) => {
     dispatch(
       getProductStock({
         branchId: branchId || null,
-        brandId: brandId,           // null Ã Â¦ÂªÃ Â¦Â¾Ã Â¦Â Ã Â¦Â¾Ã Â¦Â²Ã Â§â€¡ Ã Â¦Â¬Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â¦â€¢Ã Â¦ÂÃ Â¦Â¨Ã Â§ÂÃ Â¦Â¡Ã Â§â€¡ Ã Â¦Â¸Ã Â¦Â¬ Ã Â¦Â¬Ã Â§ÂÃ Â¦Â°Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â¦Â¨Ã Â§ÂÃ Â¦Â¡ Ã Â¦â€ Ã Â¦Â¸Ã Â¦Â¬Ã Â§â€¡ (Ã Â¦â€ Ã Â¦Â¶Ã Â¦Â¾ Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦Â¯Ã Â¦Â¾Ã Â¦Â¯Ã Â¦Â¼)
+        brandId: brandId,           // null পাঠালে ব্যাকএন্ডে সব ব্র্যান্ড আসবে (আশা করা যায়)
         categoryId,
         search: search || undefined,
         startDate: startD,

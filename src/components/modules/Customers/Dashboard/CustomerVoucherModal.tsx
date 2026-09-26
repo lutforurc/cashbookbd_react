@@ -15,7 +15,7 @@ type Props = {
   onClose: () => void;
 };
 
-// Amount â†’ English words (mirrors the admin cash-voucher print).
+// Amount → English words (mirrors the admin cash-voucher print).
 const numberToWords = (num: number): string => {
   if (!num || num === 0) return 'Zero Taka Only';
   const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
@@ -115,7 +115,7 @@ const CustomerVoucherModal: React.FC<Props> = ({ mtmId, onClose }) => {
         </div>
 
         <div className="max-h-[80vh] overflow-y-auto p-3">
-          {loading && <p className="py-8 text-center text-gray-500">Loadingâ€¦</p>}
+          {loading && <p className="py-8 text-center text-gray-500">Loading…</p>}
           {error && <p className="py-8 text-center text-red-600">{error}</p>}
 
           {!loading && !error && isInvoice && (

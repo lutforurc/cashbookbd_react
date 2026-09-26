@@ -78,7 +78,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
   const [perPage, setPerPage] = useState<number | string>(10);
   const [searchLoading, setSearchLoading] = useState(false);
   const [printingId, setPrintingId] = useState<number | string | null>(null);
-  // One challan compared at a time â€” two open at once and it stops being clear
+  // One challan compared at a time — two open at once and it stops being clear
   // which set of figures belongs to which voucher.
   const [comparedTransferId, setComparedTransferId] = useState<number | null>(null);
   const [comparison, setComparison] = useState<any | null>(null);
@@ -509,7 +509,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
         }}
       />
 
-      {/* Hidden â€” react-to-print pulls from this ref on demand. */}
+      {/* Hidden — react-to-print pulls from this ref on demand. */}
       <div className="hidden">
         <ChallanPrint
           ref={printRef}

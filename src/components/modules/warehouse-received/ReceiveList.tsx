@@ -337,7 +337,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
         )}
       </div>
 
-      {/* Hidden â€” react-to-print pulls from this ref on demand. */}
+      {/* Hidden — react-to-print pulls from this ref on demand. */}
       <div className="hidden">
         <ChallanPrint
           ref={printRef}

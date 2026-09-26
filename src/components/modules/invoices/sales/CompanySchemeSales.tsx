@@ -1250,7 +1250,7 @@ const CompanySchemeSales = () => {
  className="font-medium text-sm w-full "
  selectedDate={startDate}
  setSelectedDate={setStartDate}
- placeholderText="Select Start Date" // Ã Â¦Â«Ã Â¦Â¾Ã Â¦ÂÃ Â¦â€¢Ã Â¦Â¾ Ã Â¦Â¥Ã Â¦Â¾Ã Â¦â€¢Ã Â¦Â²Ã Â§â€¡ Ã Â¦ÂªÃ Â§ÂÃ Â¦Â²Ã Â§â€¡Ã Â¦Â¸Ã Â¦Â¹Ã Â§â€¹Ã Â¦Â²Ã Â§ÂÃ Â¦Â¡Ã Â¦Â¾Ã Â¦Â° Ã Â¦Â¦Ã Â§â€¡Ã Â¦â€“Ã Â¦Â¾Ã Â¦Â¬Ã Â§â€¡
+ placeholderText="Select Start Date" // ফাঁকা থাকলে প্লেসহোল্ডার দেখাবে
                           />
                         </div>
 

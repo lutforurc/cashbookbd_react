@@ -114,7 +114,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
       return received;
     };
 
-    // Ã¢Å“â€¦ Dynamic font for long product names (no ellipsis, no cut)
+    // ✅ Dynamic font for long product names (no ellipsis, no cut)
     const getProductFs = (name: string, baseFs: number) => {
       const len = (name || "").trim().length;
 

@@ -186,7 +186,7 @@ const BranchTransferReport = ({ user }: any) => {
 
   const rangeLabel =
     startDate && endDate
-      ? `${dayjs(startDate).format('DD/MM/YYYY')} â€” ${dayjs(endDate).format('DD/MM/YYYY')}`
+      ? `${dayjs(startDate).format('DD/MM/YYYY')} — ${dayjs(endDate).format('DD/MM/YYYY')}`
       : '';
 
   return (

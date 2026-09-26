@@ -64,7 +64,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         ? 26
         : 22;
 
-    // âœ… API map flatten: report.data = { BRAND: [..], "": [..] }
+    // ✅ API map flatten: report.data = { BRAND: [..], "": [..] }
     const flatRows: RowAny[] = useMemo(() => {
       // Accept the API envelope, its data wrapper, a brand map, or flat rows.
       for (const data of [report, report?.data, report?.data?.data, report?.data?.data?.data]) {
@@ -127,7 +127,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       return toNum(getQty(r)) * toNum(getRate(r));
     };
 
-    // âœ… group: brand -> category -> items
+    // ✅ group: brand -> category -> items
     const grouped = useMemo(() => {
       const map = new Map<string, Map<string, RowAny[]>>();
 
@@ -150,7 +150,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       }));
     }, [flatRows, groupByBrand]);
 
-    // âœ… RenderRow list (linear) â€” Category Total à¦¶à§‡à¦·à§‡ Brand Total
+    // ✅ RenderRow list (linear) — Category Total শেষে Brand Total
     const renderRows: RenderRow[] = useMemo(() => {
       const out: RenderRow[] = [];
       let grand = 0;
@@ -193,7 +193,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           });
         });
 
-        // âœ… Brand Total after all Category Totals
+        // ✅ Brand Total after all Category Totals
         if (groupByBrand) out.push({
           type: "brandTotal",
           brand: g.brand,
@@ -215,7 +215,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       return out;
     }, [grouped, groupByBrand]);
 
-    // âœ… Pagination: rp rows à¦ªà¦°à§‡ page break + header repeat
+    // ✅ Pagination: rp rows পরে page break + header repeat
     const pages: RenderRow[][] = useMemo(() => {
       if (rp <= 0) return [renderRows];
       const pages: RenderRow[][] = [];
@@ -254,7 +254,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           pushPage();
         }
 
-        // item à¦¶à§‡à¦·à§‡ catTotal/brandTotal à¦•à§‡ à¦à¦•à¦¾ à¦¨à¦¾ à¦«à§‡à¦²à¦¤à§‡ à¦šà¦¾à¦‡à¦²à§‡
+        // item শেষে catTotal/brandTotal কে একা না ফেলতে চাইলে
         if (
           page.length > 0 &&
           r.type === "item" &&
@@ -269,7 +269,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           pushPage();
         }
 
-        // new page à¦¶à§à¦°à§ à¦¹à¦²à§‡ item/catTotal à¦¹à¦²à§‡ brand+category repeat
+        // new page শুরু হলে item/catTotal হলে brand+category repeat
         if (page.length === 0 && (r.type === "item" || r.type === "catTotal")) {
           addContextHeaders(r.brand, r.category);
 
@@ -279,7 +279,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           }
         }
 
-        // new page à¦¶à§à¦°à§ à¦¹à¦²à§‡ brandTotal à¦¹à¦²à§‡ brand repeat
+        // new page শুরু হলে brandTotal হলে brand repeat
         if (page.length === 0 && r.type === "brandTotal") {
           addBrandHeader(r.brand);
 

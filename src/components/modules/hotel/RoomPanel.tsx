@@ -48,7 +48,7 @@ const RoomPanel: React.FC<RoomPanelProps> = ({ summary, detail, onClose, onChang
   /**
    * ⚠️ A HALL IS MEASURED IN CHAIRS AND SOLD BY THE SITTING. Everything
    * below was written for rooms, and a hall opened here read "Whole room only
-   * · ৳15,000.00 / night · Beds 0" -- three statements, all of them false
+   * · 15,000.00 / night · Beds 0" -- three statements, all of them false
    * about a community centre. The kind comes from the server, never guessed
    * from a bed count of nought: a room whose beds are not set up yet has the
    * same nought and is a different problem.
@@ -78,7 +78,7 @@ const RoomPanel: React.FC<RoomPanelProps> = ({ summary, detail, onClose, onChang
       value:
         summary.rent === null
           ? '—'
-          : `৳${money(summary.rent)} / ${isHall ? 'sitting' : 'night'}`,
+          : `${money(summary.rent)} / ${isHall ? 'sitting' : 'night'}`,
     },
     ...(summary.seat_rent_min !== null
       ? [
@@ -86,8 +86,8 @@ const RoomPanel: React.FC<RoomPanelProps> = ({ summary, detail, onClose, onChang
             label: 'Per bed',
             value:
               summary.seat_rent_min === summary.seat_rent_max
-                ? `৳${money(summary.seat_rent_min)} / night`
-                : `৳${money(summary.seat_rent_min)} – ${money(summary.seat_rent_max)} / night`,
+                ? `${money(summary.seat_rent_min)} / night`
+                : `${money(summary.seat_rent_min)} – ${money(summary.seat_rent_max)} / night`,
           },
         ]
       : []),
@@ -177,7 +177,7 @@ const RoomPanel: React.FC<RoomPanelProps> = ({ summary, detail, onClose, onChang
             A rule down the middle, because without one the two columns run
             together. Each fact is a label pushed left and its value pushed
             right, so two of them side by side read as four things in a row --
-            and "Whole room ... ৳3,500" sits next to "Beds ... 2" with nothing
+            and "Whole room ... 3,500" sits next to "Beds ... 2" with nothing
             saying which value belongs to which label.
 
             The columns are split here rather than left to the grid to flow,

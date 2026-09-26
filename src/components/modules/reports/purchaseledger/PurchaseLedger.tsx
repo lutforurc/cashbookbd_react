@@ -632,7 +632,7 @@ const PurchaseLedger = (user: any) => {
           (detail: any) => detail?.coa4_id === 40,
         )?.credit;
 
-        // value format ÃƒÂ Ã‚Â¦Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¦Ã‚Â°ÃƒÂ Ã‚Â¦Ã‚Â¾ ÃƒÂ Ã‚Â¦Ã‚ÂÃƒÂ Ã‚Â¦Ã‚Â¬ÃƒÂ Ã‚Â¦Ã¢â‚¬Å¡ default
+        // value format করা এবং default
         // Show the discount only when there is one; otherwise leave the cell blank.
         const displayValue = creditValue ? thousandSeparator(creditValue) : '';
 
@@ -655,7 +655,7 @@ const PurchaseLedger = (user: any) => {
           (detail: any) => detail?.coa4_id === 17,
         )?.credit;
 
-        // value format ÃƒÂ Ã‚Â¦Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¦Ã‚Â°ÃƒÂ Ã‚Â¦Ã‚Â¾ ÃƒÂ Ã‚Â¦Ã‚ÂÃƒÂ Ã‚Â¦Ã‚Â¬ÃƒÂ Ã‚Â¦Ã¢â‚¬Å¡ default
+        // value format করা এবং default
         const displayValue = creditValue
           ? thousandSeparator(creditValue)
           : '-';
@@ -679,7 +679,7 @@ const PurchaseLedger = (user: any) => {
           return Number.isFinite(n) ? n : 0;
         };
 
-        // Purchase total = sum of (rate Ã— qty) across details (matches Total column).
+        // Purchase total = sum of (rate × qty) across details (matches Total column).
         const total = Array.isArray(row?.purchase_master?.details)
           ? row.purchase_master.details.reduce(
               (s: number, d: any) => s + parseNumber(d?.purchase_price) * parseNumber(d?.quantity),

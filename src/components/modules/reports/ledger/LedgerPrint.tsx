@@ -158,7 +158,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
               <div className="mb-4">
                 <h1 className="text-2xl font-bold text-center">{title}</h1>
                 <div className="mt-1 grid grid-cols-2 gap-1 text-xs">
-                  {/* à¦¬à¦¾à¦® à¦ªà¦¾à¦¶ */}
+                  {/* বাম পাশ */}
                   <div>
                     <span className="block font-semibold">
                       <span>Name: {coal4?.name} {ledgerCode && <span className=''>Ledger Name: ({ledgerCode})</span>}</span>
@@ -175,7 +175,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                     )}
                   </div>
 
-                  {/* à¦¡à¦¾à¦¨ à¦ªà¦¾à¦¶ */}
+                  {/* ডান পাশ */}
                   <div className="text-right">
                     <span className="font-semibold">Report Date:</span>{' '}
                     {startDate || '-'} to {endDate || '-'}

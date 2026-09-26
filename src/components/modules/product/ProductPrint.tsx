@@ -33,7 +33,7 @@ type Props = {
   showQtyRate?: boolean; // default false
 };
 
-// âœ… No Subtotal / Grand Total
+// ✅ No Subtotal / Grand Total
 type PrintRow =
   | { __type: 'CAT_HEADER'; category: string }
   | ({ __type: 'ITEM' } & ProductRow);
@@ -75,14 +75,14 @@ const ProductPrint = React.forwardRef<HTMLDivElement, Props>(
     const printableRows: PrintRow[] = useMemo(() => {
       const rowsArr: ProductRow[] = Array.isArray(rows) ? rows : [];
 
-      // âœ… sort: category first, then product name
+      // ✅ sort: category first, then product name
       const sorted = [...rowsArr].sort((a, b) => {
         const c1 = String(a.category || '').localeCompare(String(b.category || ''));
         if (c1 !== 0) return c1;
         return String(a.name || '').localeCompare(String(b.name || ''));
       });
 
-      // âœ… group by category
+      // ✅ group by category
       const map = new Map<string, ProductRow[]>();
       for (const r of sorted) {
         const key = (r.category || 'Uncategorized').trim() || 'Uncategorized';

@@ -214,7 +214,7 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
                   </tbody>
                 </table>
 
-                {/* ðŸ‘‡ Force break after each page except the last */}
+                {/* 👇 Force break after each page except the last */}
               </div>
               {/* ⚠️ PINNED ONLY WHEN THE REPORT DID NOT CUT ITS OWN PAGES. The
                   Rows box starts at 0 (see CashBook.tsx's perPage state), which

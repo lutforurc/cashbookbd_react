@@ -47,7 +47,7 @@ interface PaymentItem {
   bankPaymentAccountName: string;
   paymentAccount: string;
   paymentAccountName: string;
-  transactionList?: TransactionList[]; // âœ… object â†’ array
+  transactionList?: TransactionList[]; // ✅ object → array
 
   // The order this voucher answers to, if any. It belongs to the VOUCHER and
   // not to a row -- acc_transaction_master.order_no is one column, and the API
@@ -133,8 +133,8 @@ const BankPayment = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentItem | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // âœ… new
-  const searchingRef = useRef(false); // âœ… guard against concurrent searches
+  const [isLoading, setIsLoading] = useState(false); // ✅ new
+  const searchingRef = useRef(false); // ✅ guard against concurrent searches
   const [updateTransactionId, setUpdateTransactionId] = useState<number | null>(
     null,
   );
@@ -277,7 +277,7 @@ const BankPayment = () => {
       const mapped = mapPaymentData(response);
       setPaymentData(mapped);
       setTableData([mapped]);
-      setFormData({ ...mapped, transactionList: [] }); // âœ… Payment set à¦•à¦°à§à¦¨, transactionList à¦–à¦¾à¦²à¦¿ à¦°à¦¾à¦–à§à¦¨ (fields à¦«à¦¾à¦à¦•à¦¾)
+      setFormData({ ...mapped, transactionList: [] }); // ✅ Payment set করুন, transactionList খালি রাখুন (fields ফাঁকা)
       setIsUpdating(false);
       setIsUpdateButton(true);
 
@@ -289,7 +289,7 @@ const BankPayment = () => {
       toast.error(error?.message || 'Error searching invoice.');
       console.error('Error searching invoice:', error);
     } finally {
-      setIsLoading(false);   // âœ… hide Loader
+      setIsLoading(false);   // ✅ hide Loader
       searchingRef.current = false;
     }
   };
@@ -383,7 +383,7 @@ const BankPayment = () => {
           transactionList: [transactionToEdit],
         });
         setUpdateTransactionId(id);
-        setTimeout(() => document.getElementById('account')?.focus(), 100); // Optional: focus account-à¦
+        setTimeout(() => document.getElementById('account')?.focus(), 100); // Optional: focus account-এ
         setIsUpdating(true); // Update mode on
         toast.info('Transaction loaded for editing.'); // Optional: user feedback
       } else {
@@ -394,7 +394,7 @@ const BankPayment = () => {
     [tableData, formData],
   );
 
-  // âœ… Implement editPaymentVoucher like the example (local update)
+  // ✅ Implement editPaymentVoucher like the example (local update)
 
   const editPaymentVoucher = () => {
     if (updateTransactionId == null) {
@@ -444,7 +444,7 @@ const BankPayment = () => {
     setTableData(updatedTableData);
     setIsUpdating(false);
 
-    // âœ… Reset: header-à¦à¦° id/mtmId/receiver
+    // ✅ Reset: header-এর id/mtmId/receiver
     setFormData(prev => ({
       ...initialPaymentItem,
       id: prev?.id as any,
@@ -528,10 +528,10 @@ const BankPayment = () => {
         toast.success(voucherText, { toastId: `bank-payment-success-${voucherText}` });
       }
 
-      // âœ… Clear table
+      // ✅ Clear table
       setTableData([]);
 
-      // âœ… Reset form but keep account fields
+      // ✅ Reset form but keep account fields
       setFormData({
         ...initialPaymentItem,
         bankPaymentAccount: formData.bankPaymentAccount,
@@ -566,7 +566,7 @@ const BankPayment = () => {
     setUpdatingLoading(true);
     setIsLoading(true);
 
-    // âœ… Validation
+    // ✅ Validation
     const transactions = tableData.flatMap((item) => item.transactionList || []);
     if (!transactions.length) {
       toast.warning('No transactions to update.');
@@ -605,7 +605,7 @@ const BankPayment = () => {
       };
 
 
-      // âœ… API call or redux dispatch
+      // ✅ API call or redux dispatch
       const response = await dispatch(updateBankPayment(payload)).unwrap();
 
 
@@ -626,7 +626,7 @@ const BankPayment = () => {
       setPaymentData(null);
 
     } catch (error: any) {
-      console.error('âŒ Error updating transaction:', error);
+      console.error('❌ Error updating transaction:', error);
       toast.error(error?.message || 'Failed to update transaction.');
     } finally {
       setIsLoading(false);
@@ -748,7 +748,7 @@ const BankPayment = () => {
                   name="account"
                   placeholder="Select Transaction Account"
                   isDisabled={isAccountLockedByOrder}
-                  onSelect={transactionAccountHandler} // âœ… à¦ªà§à¦°à§‹à¦¨à§‹ handler à¦¬à¦¾à¦¦
+                  onSelect={transactionAccountHandler} // ✅ পুরোনো handler বাদ
                   value={
                     formData.transactionList &&
                       formData.transactionList[0]?.account

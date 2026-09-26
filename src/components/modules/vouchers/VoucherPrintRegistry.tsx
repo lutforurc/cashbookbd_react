@@ -100,7 +100,7 @@ export const VoucherPrintRegistry = forwardRef(
     const cashReceivedRef = useRef<HTMLDivElement | null>(null);
     const purchaseRef = useRef<HTMLDivElement | null>(null);
 
-    /* ðŸ‘‰ ACTIVE REF (KEY FIX) */
+    /* 👉 ACTIVE REF (KEY FIX) */
     const activePrintRef = useRef<HTMLDivElement | null>(null);
 
     /* ================= PRINT HANDLER ================= */

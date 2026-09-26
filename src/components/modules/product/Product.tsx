@@ -54,16 +54,16 @@ const buildCategoryWiseRows = (rows: any[]) => {
   return out;
 };
 
-// Ã¢Å“â€¦ API response Ã Â¦â€¢Ã Â§â€¡ flat rows Ã Â¦Â normalize Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¬Ã Â§â€¡ (paginate vs showAll)
+// ✅ API response কে flat rows এ normalize করবে (paginate vs showAll)
 const normalizeProductRows = (apiState: any) => {
   const raw = apiState?.data?.data;
 
-  // Ã¢Å“â€¦ flat paginate response
+  // ✅ flat paginate response
   if (Array.isArray(raw) && raw.length > 0 && !raw[0]?.items) {
     return raw;
   }
 
-  // Ã¢Å“â€¦ grouped showAll response: [{category, items:[]}, ...]
+  // ✅ grouped showAll response: [{category, items:[]}, ...]
   if (Array.isArray(raw) && raw.length > 0 && Array.isArray(raw[0]?.items)) {
     const flat: any[] = [];
     raw.forEach((group: any) => {
@@ -85,7 +85,7 @@ const Product = (user: any) => {
   const navigate = useNavigate();
 
   const [search, setSearchValue] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState(''); // Ã¢Å“â€¦ Search Ã Â¦Å¡Ã Â¦Â¾Ã Â¦ÂªÃ Â¦Â²Ã Â§â€¡ apply Ã Â¦Â¹Ã Â¦Â¬Ã Â§â€¡
+  const [appliedSearch, setAppliedSearch] = useState(''); // ✅ Search চাপলে apply হবে
 
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
@@ -93,7 +93,7 @@ const Product = (user: any) => {
   const [totalPages, setTotalPages] = useState(0);
 
   const [tableData, setTableData] = useState<any[]>([]);
-  const [editedRows, setEditedRows] = useState<Record<string, any>>({}); // Ã¢Å“â€¦ product_id hash string
+  const [editedRows, setEditedRows] = useState<Record<string, any>>({}); // ✅ product_id hash string
 
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
@@ -179,7 +179,7 @@ const Product = (user: any) => {
     dispatch(getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any);
   }, [page, perPage, categoryId, brandId, appliedSearch]);
 
-  /* Ã¢Å“â€¦ Ã Â¦ÂÃ Â¦â€“Ã Â¦Â¾Ã Â¦Â¨Ã Â§â€¡ per_page=0 (showAll) + paginate Ã Â¦Â¦Ã Â§ÂÃ Â¦Å¸Ã Â§â€¹Ã Â¦â€¡ handle Ã Â¦Â¹Ã Â¦Â¬Ã Â§â€¡ */
+  /* ✅ এখানে per_page=0 (showAll) + paginate দুটোই handle হবে */
   useEffect(() => {
     if (!product?.data) return;
 
@@ -263,7 +263,7 @@ const Product = (user: any) => {
     );
   };
 
-  // Ã¢Å“â€¦ Save button click Ã Â¦Â API update Ã Â¦Â¹Ã Â¦Â¬Ã Â§â€¡
+  // ✅ Save button click এ API update হবে
   const handleSaveRow = async (row: any) => {
     if (isGroupRow(row)) return;
 
@@ -308,7 +308,7 @@ const Product = (user: any) => {
           })
         );
 
-        // Ã¢Å“â€¦ save Ã Â¦Â¹Ã Â¦Â²Ã Â§â€¡ draft clear
+        // ✅ save হলে draft clear
         setEditedRows((prev) => {
           const copy = { ...prev };
           delete copy[row.product_id];
@@ -322,7 +322,7 @@ const Product = (user: any) => {
     }
   };
 
-  // Ã¢Å“â€¦ Cancel/Reset draft
+  // ✅ Cancel/Reset draft
   const handleCancelRow = (row: any) => {
     if (isGroupRow(row)) return;
 
@@ -453,7 +453,7 @@ const Product = (user: any) => {
             placeholder="Qty"
             value={editedRows[row.product_id]?.qty ?? row.qty ?? row.openingbalance ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'qty', e.target.value)}
-          // Ã¢Å“â€¦ onBlur removed (auto-save Ã Â¦Â¬Ã Â¦Â¨Ã Â§ÂÃ Â¦Â§)
+          // ✅ onBlur removed (auto-save বন্ধ)
           />
         );
       },
@@ -472,7 +472,7 @@ const Product = (user: any) => {
             className="text-right w-20"
             value={editedRows[row.product_id]?.rate ?? row.purchase ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'rate', e.target.value)}
-          // Ã¢Å“â€¦ onBlur removed (auto-save Ã Â¦Â¬Ã Â¦Â¨Ã Â§ÂÃ Â¦Â§)
+          // ✅ onBlur removed (auto-save বন্ধ)
           />
         );
       },
@@ -710,7 +710,7 @@ const Product = (user: any) => {
               <SelectOption
                 className="w-full! h-9"
                 onChange={(e: any) => {
-                  const v = Number(e.target.value); // Ã¢Å“â€¦ string -> number
+                  const v = Number(e.target.value); // ✅ string -> number
                   const next = Number.isFinite(v) ? v : 10;
                   setPerPage(next);
                   setPage(1);
@@ -774,7 +774,7 @@ const Product = (user: any) => {
         <div className="hidden">
           <ProductPrint
             ref={printRef}
-            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // Ã¢Å“â€¦ group row print Ã Â¦Â Ã Â¦Â¯Ã Â¦Â¾Ã Â¦Â¬Ã Â§â€¡ Ã Â¦Â¨Ã Â¦Â¾
+            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // ✅ group row print এ যাবে না
             title="Product List"
             rowsPerPage={Number(rowsPerPage)}
             fontSize={Number(fontSize)}
@@ -887,7 +887,7 @@ const Product = (user: any) => {
                 <span className="font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   {openingDeleteRow.qty ?? openingDeleteRow.openingbalance ?? 0}
                 </span>
-                {' Â· '}Voucher{' '}
+                {' · '}Voucher{' '}
                 <span className="font-mono font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   {openingDeleteRow.opening_vr_no}
                 </span>

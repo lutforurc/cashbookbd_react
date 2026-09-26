@@ -56,7 +56,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
         ? rows.filter((row: any) => row?.__type !== 'GRAND_TOTAL')
         : [];
 
-      // âœ… Sort by Brand -> Category -> Product
+      // ✅ Sort by Brand -> Category -> Product
       const sorted = [...rowsArr].sort((a, b) => {
         const b1 = String(a.brand_name || '').localeCompare(String(b.brand_name || ''));
         if (b1 !== 0) return b1;
@@ -67,7 +67,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
         return String(a.product_name || '').localeCompare(String(b.product_name || ''));
       });
 
-      // âœ… Group by Brand
+      // ✅ Group by Brand
       const brandMap = new Map<string, StockRow[]>();
       for (const r of sorted) {
         const brandKey = (r.brand_name || 'Unknown Brand').trim() || 'Unknown Brand';
@@ -77,7 +77,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
 
       const out: PrintRow[] = [];
 
-      // âœ… grand totals
+      // ✅ grand totals
       let gOpening = 0;
       let gIn = 0;
       let gOut = 0;
@@ -86,7 +86,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
       for (const [brand, brandItems] of brandMap.entries()) {
         out.push({ __type: 'BRAND_HEADER', brand_name: brand });
 
-        // âœ… group inside brand by Category
+        // ✅ group inside brand by Category
         const catMap = new Map<string, StockRow[]>();
         for (const it of brandItems) {
           const catKey = (it.cat_name || 'Uncategorized').trim() || 'Uncategorized';
@@ -102,7 +102,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
         for (const [cat, items] of catMap.entries()) {
           out.push({ __type: 'CAT_HEADER', brand_name: brand, cat_name: cat });
 
-          // âœ… serial reset per category (inside brand)
+          // ✅ serial reset per category (inside brand)
           let serial = 1;
 
           let tOpening = 0;
@@ -124,7 +124,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
             out.push({
               __type: 'ITEM',
               ...it,
-              sl_number: serial++, // âœ… override
+              sl_number: serial++, // ✅ override
               balance,
             });
           }
@@ -139,14 +139,14 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
             balance: tBal,
           });
 
-          // âœ… add into brand total
+          // ✅ add into brand total
           bOpening += tOpening;
           bIn += tIn;
           bOut += tOut;
           bBal += tBal;
         }
 
-        // âœ… brand total
+        // ✅ brand total
         out.push({
           __type: 'BRAND_TOTAL',
           brand_name: brand,
@@ -156,7 +156,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
           balance: bBal,
         });
 
-        // âœ… add into grand total
+        // ✅ add into grand total
         gOpening += bOpening;
         gIn += bIn;
         gOut += bOut;
@@ -316,7 +316,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                         );
                       }
 
-                      // âœ… ITEM row
+                      // ✅ ITEM row
                       return (
                         <tr key={idx} className="avoid-break align-top">
                           <td style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 text-center">
