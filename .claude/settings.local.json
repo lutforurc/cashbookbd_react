@@ -15,7 +15,8 @@
       "Read(//c//**)",
       "Read(//f//**)",
       "Bash(npx tsc *)",
-      "Read(//f/All_Database/www/cashbook_api/app/Console/Commands/**)"
+      "Read(//f/All_Database/www/cashbook_api/app/Console/Commands/**)",
+      "Bash(rtk proxy *)"
     ],
     "additionalDirectories": [
       "F:\\All_Database\\www\\cashbook_api\\config",
