@@ -35,6 +35,7 @@ import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import {
   buildVoucherAutoEditState,
   getCombinedVoucherOpenState,
+  getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
@@ -283,7 +284,7 @@ const BankBook = (user: any) => {
       return;
     }
 
-    const voucherNo = String(row?.vr_no || '').trim();
+    const voucherNo = getEditableVoucherNo(row);
 
     /**
      * ⚠️ The bank screens, unless this row is the till talking to the bank.

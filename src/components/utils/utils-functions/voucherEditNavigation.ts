@@ -85,6 +85,21 @@ export const getVoucherTypePrefix = (
   return normalizedVoucherNo.split('-')[0]?.trim() || '';
 };
 
+/**
+ * The voucher a report row's Edit button should open.
+ *
+ * Not always the row's own. A tiles-and-sanitary receipt collects the money and
+ * a second voucher -- a 5- journal -- writes off the discount it allowed; the
+ * two are one event, and the Ledger lists the journal's own party line. Left to
+ * the prefix, Edit there opened the journal screen, where half of an event can
+ * be changed without the other. The server names the receipt on such a row
+ * (`edit_vr_no`), so the desk lands on the screen that owns the pair.
+ *
+ * Absent -- every other voucher, and an older server -- the row edits itself.
+ */
+export const getEditableVoucherNo = (row: any): string =>
+  String(row?.edit_vr_no || '').trim() || String(row?.vr_no || '').trim();
+
 export const getVoucherEditTarget = (
   vrNo: string | number | null | undefined,
   options?: { bank?: boolean },

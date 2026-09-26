@@ -39,6 +39,7 @@ import { hasPermission } from '../../../utils/permissionChecker';
 import {
   buildVoucherAutoEditState,
   getCombinedVoucherOpenState,
+  getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { useRemoveVoucherApproval } from '../../vouchers';
@@ -390,7 +391,7 @@ const Ledger = (user: any) => {
       return;
     }
 
-    const voucherNo = String(row?.vr_no || '').trim();
+    const voucherNo = getEditableVoucherNo(row);
     const editTarget = getVoucherEditTarget(voucherNo);
     const editState = buildVoucherAutoEditState(voucherNo);
 

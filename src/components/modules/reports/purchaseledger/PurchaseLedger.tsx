@@ -51,6 +51,7 @@ import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import {
   buildVoucherAutoEditState,
   getCombinedVoucherOpenState,
+  getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { formatBdShortDate } from '../../../utils/utils-functions/formatDate';
@@ -352,7 +353,7 @@ const PurchaseLedger = (user: any) => {
       return;
     }
 
-    const voucherNo = String(row?.vr_no || '').trim();
+    const voucherNo = getEditableVoucherNo(row);
     const editTarget = getVoucherEditTarget(voucherNo);
     const editState = buildVoucherAutoEditState(voucherNo);
 

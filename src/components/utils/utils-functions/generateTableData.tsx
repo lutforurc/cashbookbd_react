@@ -6,6 +6,8 @@ export interface TableRow {
   mid: number | string;
   mtm_id?: number | string;
   combined_number?: string | null;
+  /** The voucher Edit should open, when the server names a different one. */
+  edit_vr_no?: string | null;
   vr_no: string;
   name: string;
   remarks: string | null;
@@ -54,6 +56,12 @@ export const generateTableData = (data: any): TableRow[] => {
   mid: trx.mid || '',
   mtm_id: trx.mtm_id || trx.mid || '',
   combined_number: trx.combined_number || null,
+  // ⚠️ This mapper is a whitelist -- a column the server sends but is not named
+  // here is silently gone by the time the table (and its Edit button) sees the
+  // row. A tiles receipt's discount journal is edited on the receipt's screen,
+  // and the server says so in edit_vr_no; without this line Edit falls back to
+  // the row's own 5- number and opens the Journal Entry form instead.
+  edit_vr_no: trx.edit_vr_no || null,
   vr_no: trx.vr_no,
   name: trx.name, // এখন coa_l4 relation লোড হচ্ছে না, তাই placeholder
   remarks: trx.remarks || '-',

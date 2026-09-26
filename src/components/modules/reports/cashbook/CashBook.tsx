@@ -37,6 +37,7 @@ import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import {
   buildVoucherAutoEditState,
   getCombinedVoucherOpenState,
+  getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
@@ -347,7 +348,7 @@ const CashBook = (user: any) => {
       return;
     }
 
-    const voucherNo = String(row?.vr_no || '').trim();
+    const voucherNo = getEditableVoucherNo(row);
     const editTarget = getVoucherEditTarget(voucherNo);
     const editState = buildVoucherAutoEditState(voucherNo);
 

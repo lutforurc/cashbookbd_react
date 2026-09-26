@@ -29,6 +29,7 @@ import { hasPermission } from '../../../utils/permissionChecker';
 import {
   buildVoucherAutoEditState,
   getCombinedVoucherOpenState,
+  getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import {
@@ -382,7 +383,7 @@ const CashBookTwoColumn = ({ user }: any) => {
      * each row instead; absent, it falls back to the cash screens rather than
      * guessing.
      */
-    const voucherNo = String(row?.vr_no || '').trim();
+    const voucherNo = getEditableVoucherNo(row);
     const openOnBankScreen = row?.is_bank_voucher === true;
     const editTarget = getVoucherEditTarget(voucherNo, { bank: openOnBankScreen });
     const editState = buildVoucherAutoEditState(voucherNo, { bank: openOnBankScreen });
