@@ -91,11 +91,19 @@ export const toProductStockDocumentData = ({
     if (row?.__type === 'GRAND_TOTAL') continue;
 
     if (row?.__type) {
+      const brand = text(row.brand_name);
       const heading =
-        row.__type === 'BRAND'
-          ? text(row.brand_name)
-          : [text(row.brand_name), text(row.cat_name)].filter(Boolean).join(' → ');
-      if (heading) products.push({ __heading: heading });
+        row.__type === 'BRAND' ? brand : [brand, text(row.cat_name)].filter(Boolean).join(' → ');
+
+      /**
+       * ⚠️ ONE STEP IN, AND ONLY WHERE THERE IS SOMETHING TO SIT UNDER. On the
+       * grouped branch a category hangs off its brand (depth 1); on the
+       * straight-listing branch there is no brand, so its category stands at the
+       * margin like the brand would. See the heading branch in DocumentPrint.
+       */
+      if (heading) {
+        products.push({ __heading: heading, __depth: row.__type === 'CAT' && brand ? 1 : 0 });
+      }
       continue;
     }
 

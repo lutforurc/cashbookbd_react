@@ -1160,14 +1160,23 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                * to add up. The Grand Total row is NOT among these -- the table's
                * own foot prints it, and a second one would count everything
                * twice.
+               *
+               * ⚠️ AND IT STEPS IN BY `__depth`. A brand heading stands at the
+               * margin and its category under it one step in, so the nesting the
+               * report is grouped by is visible at a glance -- the same fact the
+               * category heading spells out in words ("ATI" + arrow + "Tiles").
+               * The step is the SAME for every paper: a heading that carries no
+               * depth sits where headings have always sat.
                */
               const heading = String(row?.__heading ?? '').trim();
               if (heading) {
+                const depth = Math.max(0, Number(row?.__depth) || 0);
                 return (
                   <tr key={row?.id ?? rowIndex} className="avoid-break">
                     <td
                       colSpan={columns.length}
                       className={`${border} px-1 py-0.5 font-bold`}
+                      style={depth ? { paddingLeft: 4 + depth * 14 } : undefined}
                     >
                       {heading}
                     </td>

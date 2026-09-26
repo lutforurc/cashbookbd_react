@@ -905,14 +905,15 @@ export const PRODUCT_STOCK_SAMPLE: DocumentData = {
     /**
      * ⚠️ THE HEADING ROWS ARE PART OF THE SAMPLE. A branch that groups its stock
      * by brand and category prints these as rows of their own, one cell across
-     * the table -- brand first, then its category as `brand → category` -- and a
+     * the table -- brand at the margin, then its category one step in as
+     * `brand → category` (`__depth`) -- and a
      * sample without them would show a tenant a flat page and then print a
      * grouped one. Which headings a real page carries is settled by the screen,
      * not here: see
      * toProductStockDocumentData.
      */
     { id: 'brand-1', __heading: 'Walton' },
-    { id: 'cat-1', __heading: 'Walton → Electronics' },
+    { id: 'cat-1', __heading: 'Walton → Electronics', __depth: 1 },
     {
       id: 1,
       sl: 1,
@@ -942,7 +943,7 @@ export const PRODUCT_STOCK_SAMPLE: DocumentData = {
       balance: 17,
     },
     { id: 'brand-2', __heading: 'Singer' },
-    { id: 'cat-2', __heading: 'Singer → Home Appliance' },
+    { id: 'cat-2', __heading: 'Singer → Home Appliance', __depth: 1 },
     {
       id: 3,
       sl: 3,
