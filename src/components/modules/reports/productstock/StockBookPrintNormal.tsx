@@ -9,6 +9,8 @@ type StockRow = {
   brand_name?: string;
   cat_name?: string;
   product_name?: string;
+  /** Absent on databases the product-code column has not reached. */
+  code?: string;
   opening?: number;
   stock_in?: number;
   stock_out?: number;
@@ -233,6 +235,7 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                             <span style={{ fontSize: fs }}  className="block">
                               {row.brand_name && <span className="text-xs text-gray-900">{row.brand_name} </span>}
+                              {row.code && <span className="text-xs text-gray-900">{row.code} - </span>}
                               {row.product_name && <span className="text-xs text-gray-900">{row.product_name}</span>}
                             </span>
                           </td>

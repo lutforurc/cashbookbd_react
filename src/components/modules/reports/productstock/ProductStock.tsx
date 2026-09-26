@@ -376,16 +376,25 @@ const ProductStock = ({ user }: any) => {
         if (isBrandRow(row)) {
           return <div className="font-bold py-1">{row.brand_name}</div>;
         }
+       
         if (isCatRow(row)) {
           return (
             <div className="inline-flex items-center gap-1 whitespace-nowrap py-1 font-semibold">
               <span className="font-semibold">{row.brand_name}</span>
               <FiArrowRight className="shrink-0 text-gray-900 dark:text-gray-100" />
+              
               <span>{row.cat_name}</span>
             </div>
           );
         }
-        return <div>{row.product_name}</div>;
+        // The code in front of the name, and only the name where there is no
+        // code -- a lone dash reads as a product with a missing name.
+        return (
+          <div>
+            {row.code ? `${row.code} - ` : ''}
+            {row.product_name}
+          </div>
+        );
       },
     },
     {

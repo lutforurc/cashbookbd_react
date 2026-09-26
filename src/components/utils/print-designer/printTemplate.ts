@@ -3211,7 +3211,10 @@ const productStockPaper = (): PrintTemplate => ({
           label: 'Product Name',
           width: 37,
           align: 'left',
-          pattern: '{brand} {product_name} [({code})]',
+          // Code in front of the name, as the screen and the old sheet print it.
+          // ⚠️ Bracketed so a database without a code loses the separator too --
+          // an unbracketed `{code} - ` would leave every row reading " - Name".
+          pattern: '{brand} [{code} - ]{product_name}',
         },
         { field: 'unit', label: 'Unit', width: 8, align: 'center', valign: 'middle' },
         { field: 'opening', label: 'Opening', width: 12, align: 'right', valign: 'middle' },

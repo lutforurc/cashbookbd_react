@@ -369,6 +369,9 @@ const ProductStockNormal = ({ user }: any) => {
           <>
             <div>
               {row.brand_name && <span className="">{row.brand_name} </span>}
+              {/* The code in front of the name, and only the name where there
+                  is no code -- a lone dash reads as a product with no name. */}
+              {row.code ? `${row.code} - ` : ''}
               {row.product_name}
             </div>
           </>

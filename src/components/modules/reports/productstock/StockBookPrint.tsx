@@ -11,6 +11,8 @@ type StockRow = {
   brand_name?: string;
   cat_name?: string;
   product_name?: string;
+  /** Absent on databases the product-code column has not reached. */
+  code?: string;
   opening?: number;
   stock_in?: number;
   stock_out?: number;
@@ -328,6 +330,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                             className="border border-gray-500 px-2 py-0 align-middle"
                           >
                             <span style={{ fontSize: fs, borderWidth: '0.5px' }} className="text-xs text-gray-900 leading-tight">
+                              {row.code ? `${row.code} - ` : ''}
                               {(row.product_name) || ''}
                             </span>
                           </td>
