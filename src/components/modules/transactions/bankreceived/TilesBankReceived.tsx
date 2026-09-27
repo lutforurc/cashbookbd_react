@@ -6,25 +6,21 @@ import {
   FiHome,
   FiPlus,
   FiSave,
-  FiSearch,
   FiTrash2,
 } from 'react-icons/fi';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
-import { hasPermission } from '../../../utils/permissionChecker';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
-import useOrderFieldEnabled from '../../../utils/hooks/useOrderFieldEnabled';
 import useRemarkSuggestions from '../../../utils/hooks/useRemarkSuggestions';
 import { useDispatch, useSelector } from 'react-redux';
-import InputOnly from '../../../utils/fields/InputOnly';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
-import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
-import resolveOrderParty from '../../../utils/utils-functions/resolveOrderParty';
 import InputElement from '../../../utils/fields/InputElement';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 import { editBankReceived, saveBankReceived, updateBankReceived } from './bankReceivedSlice';
+import httpService from '../../../services/httpService';
+import { API_TILES_PREVIOUS_BALANCE_URL } from '../../../services/apiRoutes';
 import { toast } from 'react-toastify';
 import { toastRefusal } from '../../../utils/refusalToast';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
@@ -55,13 +51,18 @@ interface ReceivedItem {
   receiverAccountName: string;
   transactionList?: TransactionList[]; // ✅ object → array
 
-  // The order this voucher answers to, if any. It belongs to the VOUCHER and
-  // not to a row -- acc_transaction_master.order_no is one column, and the API
-  // reads purchaseOrderNumber off the top level of the payload rather than off
-  // the transactions array. The text is carried beside the id only so the box
-  // can show the number a person recognises.
-  purchaseOrderNumber?: string;
-  purchaseOrderText?: string;
+  // ⚠️ NOTHING ABOUT AN ORDER HERE. This screen is offered no order box (see
+  // the render), so the payload never carries purchaseOrderNumber -- and the
+  // bank update path reads an absent order as "clear it", which is right: a
+  // tiles shop's bank receipt answers to no order.
+
+  // Tiles and Sanitary only, and the VOUCHER's figures rather than a row's --
+  // the same two the cash screen calls its Discount and its Manual Voucher
+  // Number, and they ride at the top level of the payload exactly as the order
+  // does. Nothing reads a missing one as a zero on the way in: an absent key
+  // leaves what the voucher already carries alone, and an empty one clears it.
+  discount?: number | string;
+  instrumentNo?: string;
 }
 
 const initialReceivedItem: ReceivedItem = {
@@ -72,14 +73,13 @@ const initialReceivedItem: ReceivedItem = {
   receiverAccount: '',
   receiverAccountName: '',
   transactionList: [],
-  purchaseOrderNumber: '',
-  purchaseOrderText: '',
+  discount: '',
+  instrumentNo: '',
 };
 
-const BankReceived = () => {
+const TilesBankReceived = () => {
   const prevDataRef = useRef(null);
   const dispatch = useDispatch();
-  const settings = useSelector((s: any) => s.settings);
   const coal3 = useSelector((s: any) => s.coal3);
   const [search, setSearch] = useState('');
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -144,6 +144,10 @@ const BankReceived = () => {
     null,
   );
   const [isUpdateButton, setIsUpdateButton] = useState(false);
+  // What the party already owes this branch, fetched when the account is
+  // picked. Display only -- it never reaches the server and is not a column
+  // anywhere; the cash screen keeps the same figure the same way.
+  const [previousBalance, setPreviousBalance] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -172,74 +176,40 @@ const BankReceived = () => {
   }, [coal3]);
 
   /**
-   * While an order is chosen, the transaction account is the order's own party
-   * and cannot be changed here.
+   * What the party owed on the day this voucher is being written, straight off
+   * the ledger -- the figure the cash screen shows beside the amount, and the
+   * reason the clerk can see what is still outstanding after this collection.
    *
-   * Without this the two could be saved disagreeing -- money moved against one
-   * order but posted to another party's ledger -- and neither the order's due
-   * nor the ledger would say which of them was right. The cash screens hold the
-   * same rule.
-   *
-   * The account itself has to be filled for the lock to apply, not just the
-   * order: resolveOrderParty() deliberately returns a name with no id when the
-   * order's party cannot be matched exactly, and locking an empty box would be
-   * a dead end with nothing the operator could do but start over.
+   * ⚠️ The cash screen's own endpoint, reused as it stands: it answers for a
+   * party, and nothing in it is about cash. A bank receipt collects from the
+   * same party the cash one would.
    */
-  /**
-   * The order box only where the cash screens have one -- a Trading branch. On
-   * a General or head-office branch Cash Received offers no order, so neither
-   * does this.
-   */
-  const orderFieldEnabled = useOrderFieldEnabled();
-
-  const isAccountLockedByOrder = Boolean(
-    orderFieldEnabled &&
-      formData.purchaseOrderNumber &&
-      formData.transactionList?.[0]?.account,
-  );
-
-  /**
-   * Picking an order also says who the money is for.
-   *
-   * The same as the cash screens: the order number already names the party, so
-   * the account box fills itself rather than asking for the name a second time.
-   * Clearing the order leaves the account alone -- it may have been chosen on
-   * purpose by then.
-   */
-  const selectedOrderOptionHandler = async (option: any) => {
-    if (!option) {
-      setFormData((prevState) => ({
-        ...prevState,
-        purchaseOrderNumber: '',
-        purchaseOrderText: '',
-      }));
+  const loadPreviousBalance = async (account: string | number) => {
+    if (!account) {
       return;
     }
-
-    const party = await resolveOrderParty(option);
-    const current = formData.transactionList?.[0];
-
-    setFormData((prevState) => ({
-      ...prevState,
-      purchaseOrderNumber: option?.value || '',
-      purchaseOrderText: option?.label || '',
-      // The row is rebuilt whole, as transactionAccountHandler does, so every
-      // field already typed has to be carried over by hand or it is lost.
-      ...(party.name
-        ? {
-            transactionList: [
-              {
-                id: current?.id || Date.now(),
-                account: party.id ? String(party.id) : '',
-                accountName: party.name,
-                remarks: current?.remarks || '',
-                amount: current?.amount || 0,
-                trackedProductId: current?.trackedProductId ?? null,
-              },
-            ],
-          }
-        : {}),
-    }));
+    try {
+      const response = await httpService.get(API_TILES_PREVIOUS_BALANCE_URL, {
+        params: { account },
+      });
+      const balance = Number(response?.data?.data?.data?.balance ?? 0);
+      setPreviousBalance(balance);
+      // Nothing owing -> nothing to prefill; the desk types what it collected.
+      // Written onto the transaction row, where this screen keeps its amount,
+      // rather than onto the header as the cash screen does.
+      setFormData((prev) => {
+        const current = prev.transactionList?.[0];
+        if (!current) {
+          return prev;
+        }
+        return {
+          ...prev,
+          transactionList: [{ ...current, amount: balance > 0 ? balance : '' }],
+        };
+      });
+    } catch (error) {
+      setPreviousBalance(0);
+    }
   };
 
   const transactionAccountHandler = (option: any) => {
@@ -267,6 +237,10 @@ const BankReceived = () => {
         },
       ],
     });
+
+    // Asked for the party just chosen. Runs after the row above: React applies
+    // both updaters in order, so this one's amount wins.
+    void loadPreviousBalance(option.value);
   };
 
 
@@ -321,11 +295,13 @@ const BankReceived = () => {
     return {
       id: data.id,
       mtmId: data.mtmId,
-      // ⚠️ The id is what the ledger stores; the number is what a person reads.
-      // Both are needed, or the box comes back empty on an edit -- and an empty
-      // box saved again takes the order off the voucher without saying so.
-      purchaseOrderNumber: data.acc_transaction_master?.[0]?.order_no?.toString() || '',
-      purchaseOrderText: data.acc_transaction_master?.[0]?.order_number || '',
+      // The voucher's own two figures, on the mtm itself and not on a row: a
+      // bank edit answers with ONE MainTransactionMaster, where the cash
+      // screen's answers with a list whose row 0 carries them. The instrument
+      // number is a plain column and arrives unbidden; the discount is the sum
+      // of the twin journal's legs, which the server has to attach.
+      discount: Number(data.discount) > 0 ? String(data.discount) : '',
+      instrumentNo: data.manual_voucher_no ?? '',
       bankReceivedAccount: lastDetail?.coa4_id?.toString() || '',
       bankReceivedAccountName: lastDetail?.coa_l4?.name || '',
       receiverAccount: '',
@@ -459,11 +435,6 @@ const BankReceived = () => {
       mtmId: prev?.mtmId as any,
       bankReceivedAccount: prev?.bankReceivedAccount,
       bankReceivedAccountName: prev?.bankReceivedAccountName,
-      // ⚠️ Carried over, not reset. Editing one ROW must not take the order off
-      // the VOUCHER -- the update sends whatever is in the form, so a wiped box
-      // here would clear order_no in the ledger without anybody asking for it.
-      purchaseOrderNumber: prev?.purchaseOrderNumber,
-      purchaseOrderText: prev?.purchaseOrderText,
     }));
 
     setUpdateTransactionId(null);
@@ -512,12 +483,11 @@ const BankReceived = () => {
     if (!transactions.length)
       return toast.warning('Add at least one transaction');
 
-    // ⚠️ The guard the update path has carried from the start, and the save path
-    // never did. The bank box starts on the placeholder option, whose id is '' --
-    // and an empty string arrives at the server as null (Laravel's
-    // ConvertEmptyStringsToNull), so the bank contra leg was inserted with
-    // coa4_id NULL and died on the desk's screen as
-    // "1048 Column 'coa4_id' cannot be null" (2026-09-27).
+    // ⚠️ The same guard the update path has carried from the start. The bank box
+    // starts on the placeholder option, whose id is '' -- and an empty string
+    // arrives at the server as null (Laravel's ConvertEmptyStringsToNull), so the
+    // bank contra leg was inserted with coa4_id NULL and died as
+    // "1048 Column 'coa4_id' cannot be null" on the desk's screen (2026-09-27).
     if (!formData.bankReceivedAccount) {
       toast.warning('Please select Receiver Bank Account.');
       return;
@@ -532,10 +502,16 @@ const BankReceived = () => {
         bankReceivedAccount: formData.bankReceivedAccount,
         bankReceivedAccountName: formData.bankReceivedAccountName,
         transactions,
-        // One column on the voucher, not a field on a row --
-        // acc_transaction_master.order_no, which BankServices reads off the
-        // top level of this payload.
-        purchaseOrderNumber: formData.purchaseOrderNumber || null,
+        // No purchaseOrderNumber: this screen offers no order box, and the
+        // bank path reads an absent order as "none" (clearing order_no on an
+        // update), which is what a tiles shop's bank receipt answers to.
+        // Tiles and Sanitary, and read off the top level of the payload -- they
+        // belong to the voucher, not to a row. ⚠️ Both are sent on every save,
+        // empty ones included -- the server reads an ABSENT key as "leave what
+        // the voucher already carries alone", so a blank instrument number
+        // could never be cleared without this.
+        discount: Number(formData.discount) || 0,
+        manual_voucher_no: formData.instrumentNo ?? '',
       };
       const response = await dispatch(saveBankReceived(payload)).unwrap();
 
@@ -557,6 +533,9 @@ const BankReceived = () => {
         bankReceivedAccount: formData.bankReceivedAccount,
         bankReceivedAccountName: formData.bankReceivedAccountName,
       });
+      // The party is gone with the rows, so the balance shown beside them goes
+      // too -- it is about whoever was about to pay, not about the voucher.
+      setPreviousBalance(0);
 
     } catch (error: any) {
       toastRefusal(typeof error === 'string' ? error : error?.message || 'Something went wrong while saving.');
@@ -575,10 +554,12 @@ const BankReceived = () => {
   };
 
 
-  // ⚠️ No effect toasting `bankReceived.error` here. Every rejection that
-  // reaches the slice is already spoken for by whoever asked -- the search's
-  // own catch, the save's, the update's -- so the effect said the same
-  // sentence a second time, one toast away. Same fix as TilesBankReceived.
+  // ⚠️ No effect toasting `bankReceived.error` here. Every rejection the slice
+  // records was already spoken for by whoever asked -- the search's own catch,
+  // the save's, the update's -- so the effect said the same sentence a second
+  // time, one toast away: the owner saw two "Request failed with status code
+  // 404" toasts at once (2026-09-27). The slice still records the error;
+  // nothing reads it.
 
   const handleBankReceivedUpdate = async () => {
 
@@ -605,10 +586,19 @@ const BankReceived = () => {
         mtmId: formData.mtmId,
         bankReceivedAccount: formData.bankReceivedAccount,
         bankReceivedAccountName: formData.bankReceivedAccountName,
-        // Sent on every update, empty included: the server clears order_no
-        // when it is absent, which is how an order taken off a voucher here
-        // actually leaves the ledger.
-        purchaseOrderNumber: formData.purchaseOrderNumber || null,
+        // No purchaseOrderNumber, on purpose: this screen has no order box, and
+        // the bank path reads an absent order as "none" -- so an order_no left
+        // on the voucher by another screen is cleared here rather than kept
+        // alive out of sight.
+        // ⚠️ AND THESE TWO, for the very reason the note below gives about
+        // trackedProductId: this projection lists every key it sends, and the
+        // server treats an absent one as "leave it alone". Leaving them out
+        // would not keep a typed discount -- it would freeze the old one in
+        // place, and a discount struck out on this screen could never be
+        // retired. An empty instrument number clears it; a 0 retires the
+        // journal.
+        discount: Number(formData.discount) || 0,
+        manual_voucher_no: formData.instrumentNo ?? '',
         // This projection lists every key it sends, and an update rewrites the
         // voucher's product mappings from scratch. Dropping trackedProductId
         // here would not leave the saved product alone -- it would erase it.
@@ -640,12 +630,17 @@ const BankReceived = () => {
         bankReceivedAccount: prev.bankReceivedAccount,
         bankReceivedAccountName: prev.bankReceivedAccountName,
       }));
-      setIsUpdateButton(false); // update close button 
+      setIsUpdateButton(false); // update close button
       setReceivedData(null);
+      setPreviousBalance(0);
 
     } catch (error: any) {
       console.error('❌ Error updating transaction:', error);
-      toast.error(error?.message || 'Failed to update transaction.');
+      // ⚠️ toastRefusal, not toast.error: a refusal comes back as success:false
+      // and the sentence in it is meant for the desk -- the discount journal is
+      // already signed off, the chart holds no discount head. The same call
+      // handleSave's catch makes.
+      toastRefusal(typeof error === 'string' ? error : error?.message || 'Failed to update transaction.');
     } finally {
       setIsLoading(false);
       setUpdatingLoading(false);
@@ -660,11 +655,17 @@ const BankReceived = () => {
     return handleSave();
   });
 
+  // The arithmetic the desk does in its head: what was owing, what came in,
+  // what was written off, what is left.
+  const discountValue = Number(formData.discount) || 0;
+  const amountValue = Number(formData.transactionList?.[0]?.amount) || 0;
+  const currentBalance = previousBalance - amountValue - discountValue;
+
 
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Bank Received" screen="bank-received" />
+        <HelmetTitle title="Bank Received" screen="bank-received.tiles" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         {isLoading && <Loader />}
@@ -674,72 +675,13 @@ const BankReceived = () => {
                 fields below them, which the grid spaces. They used to carry
                 their own mb-4 / mt-6 and drifted out of step with the form. */}
             <div className="w-full space-y-2">
-              <div className="flex w-full items-end">
-                {hasPermission(
-                  settings.data.permissions,
-                  'cash.received.edit',
-                ) && (
-                    <>
-                      <div className="min-w-0 flex-1">
-                        <label htmlFor="search">
-                          Search Bank Received Voucher
-                        </label>
-                        <InputOnly
-                          id="search"
-                          value={search}
-                          name="search"
-                          placeholder="Search Bank Received Voucher"
-                          label=""
-                          className="py-1 w-full"
-                          onChange={(e) => setSearch(e.target.value)}
-                        />
-                      </div>
-                      {/* No gap, and -ml-px so the two borders sit on one line
-                          -- the box and its button read as one control. */}
-                      <ButtonLoading
-                        onClick={searchTransaction}
-                        buttonLoading={buttonLoading}
-                        label=" "
-                        className="-ml-px w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                        icon={<FiSearch className="text-lg ml-2" />}
-                      />
-                    </>
-                  )}
-              </div>
-              {/* ⚠️ The order names the party, so choosing one fills the
-                  account below in and locks it. Saved on the VOUCHER
-                  (acc_transaction_master.order_no), not on a row -- one bank
-                  voucher answers to one order, the same as the cash screens.
-
-                  Offered only where the cash screens offer it -- a Trading
-                  branch -- so the two sides of the same voucher do not
-                  disagree about whether an order may be named. */}
-              {orderFieldEnabled ? (
-                <div className="relative">
-                  <label htmlFor="">Select Order (Optional) </label>
-                  <OrderDropdown
-                    /* Sales only: money coming in answers to a sale. */
-                    orderType="2"
-                    onSelect={selectedOrderOptionHandler}
-                    defaultValue={
-                      formData.purchaseOrderNumber
-                        ? {
-                            value: formData.purchaseOrderNumber,
-                            label: formData.purchaseOrderText,
-                          }
-                        : null
-                    }
-                    value={
-                      formData.purchaseOrderNumber
-                        ? {
-                            value: formData.purchaseOrderNumber,
-                            label: formData.purchaseOrderText,
-                          }
-                        : null
-                    }
-                  />
-                </div>
-              ) : null}
+              {/* ⚠️ No search box and no order box here, on the owner's word
+                  (2026-09-27). The ledger's Edit link still opens a voucher --
+                  useVoucherAutoEditSearch() runs the same searchTransaction()
+                  off the navigation state, so nothing needed the box to work.
+                  An order is not part of this screen's work at all: the bank
+                  receipt answers to no order, so the payload never names one
+                  and the server clears any order_no it finds. */}
               <div className="">
                 <label htmlFor="">Bank Received Account</label>
                 <CategoryDropdown
@@ -757,7 +699,6 @@ const BankReceived = () => {
  name="account"
  className=""
  placeholder="Select Transaction Account"
- isDisabled={isAccountLockedByOrder}
  onSelect={transactionAccountHandler} // ✅ পুরোনো handler বাদ
  value={
  formData.transactionList &&
@@ -777,12 +718,6 @@ const BankReceived = () => {
                     }
                   }}
                 />
-                {isAccountLockedByOrder && (
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    The order names the party, so this cannot be changed here.
-                    Clear the order above to choose another account.
-                  </p>
-                )}
               </div>
 
               <InputElement
@@ -816,6 +751,18 @@ const BankReceived = () => {
                   <option key={item} value={item} />
                 ))}
               </datalist>
+              {/* What the party already owes, as at the branch's own day. Shown
+                  only once asked for -- a party the ledger says nothing about
+                  shows no line at all, rather than a bare 0. */}
+              {previousBalance > 0 ? (
+                <div className="flex items-center justify-between border border-gray-300 px-2 py-1 text-sm dark:border-gray-600">
+                  <span>Previous Balance</span>
+                  <span className="font-semibold">
+                    {thousandSeparator(previousBalance)}
+                  </span>
+                </div>
+              ) : null}
+
               <InputElement
                 id="amount"
                 value={String(formData.transactionList?.[0]?.amount || '')}
@@ -838,6 +785,56 @@ const BankReceived = () => {
                     transactionList: [updated],
                   });
                 }}
+                onKeyDown={(e) => handleInputKeyDown(e, 'discount')}
+              />
+              <div>
+                <InputElement
+                  id="discount"
+                  value={formData.discount ?? ''}
+                  name="discount"
+                  type="number"
+                  placeholder="Enter Discount"
+                  label="Discount (Tk.)"
+                  className=""
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      discount: e.target.value,
+                    }))
+                  }
+                  onKeyDown={(e) => handleInputKeyDown(e, 'manual_voucher_no')}
+                />
+                {/* The arithmetic the desk does in its head: what was owing, what
+                    came in, what was written off, what is left. The first line
+                    says which three figures are being subtracted; the second is
+                    this voucher's own numbers. */}
+                {previousBalance > 0 ? (
+                  <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-300">
+                    <div>Current Balance = Previous Balance − Amount (Tk.) − Discount (Tk.)</div>
+                    <div>
+                      {thousandSeparator(previousBalance)} − {thousandSeparator(amountValue)} −{' '}
+                      {thousandSeparator(discountValue)} ={' '}
+                      <span className="font-semibold">{thousandSeparator(currentBalance)}</span>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              {/* The bank's own number -- cheque, RTGS or slip. Same column the
+                  cash screen writes its manual voucher number into: the shop's
+                  own number beside the system's. */}
+              <InputElement
+                id="manual_voucher_no"
+                value={formData.instrumentNo ?? ''}
+                name="manual_voucher_no"
+                placeholder="Enter Cheque / Instrument No"
+                label="Cheque / Instrument No"
+                className=""
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    instrumentNo: e.target.value,
+                  }))
+                }
                 onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')}
               />
               {/* Renders nothing when no product is tracked, so the form stays
@@ -1042,4 +1039,4 @@ const BankReceived = () => {
   );
 };
 
-export default BankReceived;
+export default TilesBankReceived;

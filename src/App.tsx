@@ -65,7 +65,7 @@ import CatWiseInOut from './components/modules/reports/catwiseinout/CatWiseInOut
 import EditUser from './components/modules/user/EditUser';
 import PurchaseLedger from './components/modules/reports/purchaseledger/PurchaseLedger';
 import SalesLedger from './components/modules/reports/salesledger/SalesLedger';
-import BankReceived from './components/modules/transactions/bankreceived/BankReceived';
+import BankReceivedIndex from './components/modules/transactions/bankreceived/BankReceivedIndex';
 import BankPayment from './components/modules/transactions/bankpayment/BankPayment';
 import Journal from './components/modules/transactions/journal/Journal';
 import Dayclose from './components/modules/dayclose/Dayclose';
@@ -595,7 +595,7 @@ function App() {
               <Route path={routes.cash_payment} element={<CashPaymentIndex />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.received.create']} loading={permissionsLoading} />}>
-              <Route path={routes.bank_receive} element={<BankReceived />} />
+              <Route path={routes.bank_receive} element={<BankReceivedIndex />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.payment.create']} loading={permissionsLoading} />}>
               <Route path={routes.bank_payment} element={<BankPayment />} />
