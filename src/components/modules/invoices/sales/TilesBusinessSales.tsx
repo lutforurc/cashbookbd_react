@@ -33,7 +33,10 @@ import QuickCustomerModal from './QuickCustomerModal';
 import ReferrerPickerModal from './ReferrerPickerModal';
 import ToggleSwitch from '../../../utils/utils-functions/ToggleSwitch';
 import httpService from '../../../services/httpService';
-import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import {
+  API_TILES_PREVIOUS_BALANCE_URL,
+  API_TRADING_SALES_SUGGESTIONS_URL,
+} from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { getSalesTypeForVoucher } from '../../../utils/utils-functions/voucherEditNavigation';
 import StockShortageModal, {
@@ -99,6 +102,16 @@ const TilesBusinessSales = () => {
   const sales = useSelector((s: any) => s.electronicsSales);
   const settings = useSelector((s: any) => s.settings);
   const dispatch = useDispatch();
+
+  /**
+   * What this branch calls its four handwritten figures -- set on the branch's
+   * Invoice Setup and read here. ⚠️ THE FALLBACK LIVES HERE AND NOWHERE ELSE:
+   * the server stores only what the branch typed, so a blank setting means the
+   * standard name, and clearing one in the branch form gets you back to it.
+   */
+  const fieldLabel = (key: string, fallback: string) =>
+    settings?.data?.branch?.[key] || fallback;
+
   const [buttonLoading, setButtonLoading] = useState(false);
   const [updateButtonLoading, setUpdateButtonLoading] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
@@ -125,6 +138,9 @@ const TilesBusinessSales = () => {
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
+  // What the chosen party already owed this branch before the bill being
+  // written. Zero means nothing owing, or a cash sale -- see loadPreviousBalance.
+  const [previousBalance, setPreviousBalance] = useState(0);
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -227,6 +243,34 @@ const TilesBusinessSales = () => {
     ).toFixed(0);
   };
 
+  /**
+   * What the party owed this branch before this bill -- the figure the invoice
+   * shows above Total Tk. It is the party's own debit minus credit as at the
+   * branch's transaction date, so a bill already saved sits inside it; on an
+   * edit the bill's own id goes along, and the server leaves that one out, or
+   * the bill would count itself and its amount would show up twice.
+   *
+   * ⚠️ THE CASH HEAD IS NOT A PARTY. Account 17's balance is the drawer, not a
+   * due, so a cash sale asks for nothing and carries nothing into the total.
+   */
+  const loadPreviousBalance = (account: string | number, excludeMtmId = '') => {
+    if (!account || Number(account) === 17) {
+      setPreviousBalance(0);
+      return;
+    }
+
+    httpService
+      .get(API_TILES_PREVIOUS_BALANCE_URL, {
+        params: { account, exclude_mtm_id: excludeMtmId },
+      })
+      .then((response: any) =>
+        setPreviousBalance(Number(response?.data?.data?.data?.balance ?? 0)),
+      )
+      // A figure that could not be read is not a figure to total up. Zero here
+      // is honest: the bill then shows only what this screen knows about.
+      .catch(() => setPreviousBalance(0));
+  };
+
   useEffect(() => {
     const fetchSuggestions = async (
       field: SalesSuggestionField,
@@ -286,6 +330,9 @@ const TilesBusinessSales = () => {
       // and General do it exactly this way.
       receivedAmt: isCashCustomer ? formData.receivedAmt : '',
     });
+
+    // A new bill has no id yet, so nothing is left out of the sum.
+    void loadPreviousBalance(option.value);
   };
 
   const productSelectHandler = (option: any) => {
@@ -435,6 +482,9 @@ const TilesBusinessSales = () => {
       };
       setFormData(updatedFormData);
       setIsReceivedAmtManuallyEdited(false);
+      // The bill's own id rides along: it is already in the ledger, and what it
+      // posted is not part of what the party owed before it.
+      void loadPreviousBalance(updatedFormData.account, sales.data.mtmId || '');
     }
   }, [sales.data.transaction]);
 
@@ -444,6 +494,29 @@ const TilesBusinessSales = () => {
     (sum, row) => sum + Number(row.qty) * Number(row.price),
     0,
   );
+
+  // The invoice's own Total Tk., kept as its four separate terms so the screen
+  // can show the arithmetic it is doing:
+  //   Total Tk. = Previous Balance + Current Invoice − Discount − Received Amount
+  // The bill here is the one before the discount -- discount is a term of the
+  // sum, not something already taken out of it.
+  const billAmount =
+    totalAmount +
+    (Number(formData.serviceCharge) || 0) +
+    (Number(formData.tdsAmount) || 0) +
+    (Number(formData.transportationAmt) || 0);
+  const discountAmount = Number(formData.discountAmt) || 0;
+  const receivedAmount = Number(formData.receivedAmt) || 0;
+  const totalTkAmount =
+    previousBalance + billAmount - discountAmount - receivedAmount;
+
+  // thousandSeparator draws a nought as '-', which inside the formula below
+  // reads as a minus sign -- so the one place that shows its working spells a
+  // nought out. Everywhere else keeps the dash it has always had.
+  const money = (value: number) => {
+    const shown = thousandSeparator(value);
+    return shown === '-' ? '0' : shown;
+  };
 
   const addProduct = () => {
     const isValid = validateProductData(productData);
@@ -690,6 +763,17 @@ const TilesBusinessSales = () => {
   };
 
   useEffect(() => {
+    // ⚠️ NEVER WHILE EDITING, and that guard is the whole point of this line.
+    // This rule decides what the customer is paying today, on a bill being
+    // written. A saved bill's figure is history -- it was read off the ledger
+    // when the invoice was opened, and running the rule over it again declared a
+    // bill that had been paid on the spot to have received nothing, blanking the
+    // box on screen before anything was touched. Trading has always skipped its
+    // own copy during an edit; this screen was copied without that guard.
+    if (isUpdateButton || sales.data.transaction) {
+      return;
+    }
+
     const isCashCustomer = Number(formData.account) === 17;
     const cashReceivedAmt = getInvoicePayableAmount();
 
@@ -724,6 +808,10 @@ const TilesBusinessSales = () => {
     formData.products,
     formData.receivedAmt,
     isReceivedAmtManuallyEdited,
+    // Both are what the guard at the top reads, so the effect has to see them
+    // change: the edit's own data arrives a tick after the screen mounts.
+    isUpdateButton,
+    sales.data.transaction,
   ]);
 
 
@@ -758,7 +846,7 @@ const TilesBusinessSales = () => {
         {sales.isLoading ? <Loader /> : null}
         <div className="self-start md:self-auto">
           <div className="grid grid-cols-1 gap-y-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-end">
               <div>
                 <label htmlFor="">Select Customer</label>
                 <div className="mt-1 flex items-start gap-1">
@@ -784,14 +872,32 @@ const TilesBusinessSales = () => {
                 </div>
               </div>
 
-              {/* Read while the bill is being written, so it sits in the empty
-                  half of the customer row rather than at the bottom of the
-                  form. mt-9 lines the figure up with the customer box on a wide
-                  screen, where a label sits above that box. */}
-              <div className="mt-2 md:mt-9">
-                <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
-                  Total Tk. {thousandSeparator((totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)))}  {Number(formData?.receivedAmt) > 0 ? `(${(totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)) - Number(formData?.receivedAmt)})` : ""}
-                </p>
+              {/* Who recommended this sale, in the empty half beside the customer
+                  box -- the customer never sees this screen, but whoever does is
+                  standing at the counter with them, so it is read alongside the
+                  name it belongs to.
+
+                  ⚠️ NOTHING BUT THE SWITCH SHOWS: the referrer's name lives in
+                  the popup and nowhere else on this screen, and the switch is
+                  left uncaptioned too (owner's word) -- any word beside it would
+                  give the thing away to whoever is reading over the shoulder.
+                  It keeps a name for screen readers, which say nothing aloud.
+
+                  ⚠️ IT ALWAYS OPENS THE POPUP, on or off. Flipping a switch to
+                  take a reference off would erase last week's account with one
+                  careless click and leave no sign it had gone. Taking one off is
+                  a choice inside the popup, where it is said out loud.
+
+                  ⚠️ Boxed to the theme's control height so it centres on the
+                  customer box beside it -- the height is a theme setting, so no
+                  fixed padding would line the two up on every theme. */}
+              <div className="flex h-[var(--control-height)] items-center">
+                <ToggleSwitch
+                  label=""
+                  ariaLabel="Reference"
+                  checked={!!formData.referrer_id}
+                  onChange={() => setShowReferrerModal(true)}
+                />
               </div>
             </div>
 
@@ -888,18 +994,24 @@ const TilesBusinessSales = () => {
 
             </div>
 
-            {/* The voucher half of the shop's own figures. The challan half is
-                in the right column, above the products. Neither reaches the
-                ledger: the voucher posts on vr_date under vr_no as it always
-                did. Both are optional -- Tiles and Sanitary's whole reason for
-                this screen. */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {/* The shop's own four figures, in one line at the lower left --
+                read together, because they are the two papers the goods went
+                out on and the counter's own two. The branch names them on its
+                Invoice Setup; a name left blank falls back to the standard one.
+                Neither reaches the ledger: the voucher posts on vr_date under
+                vr_no as it always did. All four are optional -- Tiles and
+                Sanitary's whole reason for this screen.
+
+                ⚠️ Four to a row inside a half-width column is tight, so the row
+                is bottom-aligned -- a name long enough to wrap would otherwise
+                lift its own box out of line with the other three. */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
               <InputElement
                 id="manual_voucher_no"
                 value={formData.manual_voucher_no ?? ""}
                 name="manual_voucher_no"
-                placeholder="Manual Voucher No"
-                label="Manual Voucher No"
+                placeholder={fieldLabel('manual_voucher_no_label', 'Memo No.')}
+                label={fieldLabel('manual_voucher_no_label', 'Memo No.')}
                 className="py-1 w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'manual_voucher_date')}
@@ -907,7 +1019,7 @@ const TilesBusinessSales = () => {
               <InputDatePicker
                 id="manual_voucher_date"
                 name="manual_voucher_date"
-                label="Manual Voucher Date"
+                label={fieldLabel('manual_voucher_date_label', 'Memo Date')}
                 className="font-medium text-sm w-full"
                 selectedDate={asDate(formData.manual_voucher_date)}
                 setSelectedDate={(date: Date | null) =>
@@ -915,42 +1027,12 @@ const TilesBusinessSales = () => {
                 }
                 setCurrentDate={() => undefined}
               />
-            </div>
-
-            {/* Who recommended this sale. ⚠️ THE SWITCH IS ALL THAT SHOWS: the
-                referrer's name lives in the popup and nowhere on this screen,
-                because the customer stands here and reads it. It says
-                "Reference" for the same reason -- an honest label would give
-                the whole thing away.
-
-                ⚠️ IT ALWAYS OPENS THE POPUP, on or off. Flipping a switch to
-                take a reference off would erase last week's account with one
-                careless click and leave no sign it had gone. Taking one off is
-                a choice inside the popup, where it is said out loud. */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-center pt-1">
-              <ToggleSwitch
-                label="Reference"
-                checked={!!formData.referrer_id}
-                onChange={() => setShowReferrerModal(true)}
-              />
-            </div>
-          </div>
-
-        </div>
-        <div className="">
-          <div className="grid grid-cols-1 gap-y-1">
-            {/* The challan half of the shop's own figures -- the paper the goods
-                went out on. Its twin, the manual voucher, is the left column's
-                last row. Neither reaches the ledger: the voucher posts on
-                vr_date under vr_no as it always did. Both are optional -- Tiles
-                and Sanitary's whole reason for this screen. */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <InputElement
                 id="manual_challan_no"
                 value={formData.manual_challan_no ?? ""}
                 name="manual_challan_no"
-                placeholder="Manual Challan No"
-                label="Manual Challan No"
+                placeholder={fieldLabel('manual_challan_no_label', 'Challan No')}
+                label={fieldLabel('manual_challan_no_label', 'Challan No')}
                 className="py-1 w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'manual_challan_date')}
@@ -958,7 +1040,7 @@ const TilesBusinessSales = () => {
               <InputDatePicker
                 id="manual_challan_date"
                 name="manual_challan_date"
-                label="Manual Challan Date"
+                label={fieldLabel('manual_challan_date_label', 'Challan Date')}
                 className="font-medium text-sm w-full"
                 selectedDate={asDate(formData.manual_challan_date)}
                 setSelectedDate={(date: Date | null) =>
@@ -967,6 +1049,12 @@ const TilesBusinessSales = () => {
                 setCurrentDate={() => undefined}
               />
             </div>
+
+          </div>
+
+        </div>
+        <div className="">
+          <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label htmlFor="">Select Product</label>
@@ -1133,6 +1221,30 @@ const TilesBusinessSales = () => {
                   responsiveLabel="xl"
                 />
               </div>
+            </div>
+
+            {/* Read while the bill is being written, so it stands under the
+                buttons rather than up beside the customer box. The formula is
+                written out and then worked through with the invoice's own four
+                numbers, because the answer alone does not say what was added to
+                what -- and a total that cannot be followed cannot be checked. */}
+            <div className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
+              {previousBalance > 0 ? (
+                <p>Previous Balance: {money(previousBalance)}</p>
+              ) : null}
+              <p className="text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
+                Total Tk. = Previous Balance + Current Invoice − Discount −
+                Received Amount
+              </p>
+              {/* The running figure, not the bill's own: what the party owes
+                  once this bill and whatever was taken are counted in. A cash
+                  sale carries nothing in -- the cash head is not a party -- so
+                  its received box is the whole bill and this lands on nought. */}
+              <p>
+                = {money(previousBalance)} + {money(billAmount)} −{' '}
+                {money(discountAmount)} − {money(receivedAmount)} ={' '}
+                <span className="text-base">{money(totalTkAmount)}</span>
+              </p>
             </div>
 
           </div>
