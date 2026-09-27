@@ -392,8 +392,17 @@ const Ledger = (user: any) => {
     }
 
     const voucherNo = getEditableVoucherNo(row);
-    const editTarget = getVoucherEditTarget(voucherNo);
-    const editState = buildVoucherAutoEditState(voucherNo);
+    /**
+     * ⚠️ The number cannot say which pair of screens. Its prefix is the voucher
+     * type -- 1 received, 2 paid -- so money banked on the Bank Received screen
+     * is numbered 1-... exactly as a cash receipt is, and the tiles pair's row
+     * names the receipt through `edit_vr_no` instead of being the receipt. The
+     * server reads the legs and marks the row; absent -- an older server -- it
+     * falls back to the cash screens rather than guessing.
+     */
+    const openOnBankScreen = row?.is_bank_voucher === true;
+    const editTarget = getVoucherEditTarget(voucherNo, { bank: openOnBankScreen });
+    const editState = buildVoucherAutoEditState(voucherNo, { bank: openOnBankScreen });
 
     if (!voucherNo || !editTarget || !editState) {
       toast.error('Edit route not found for this voucher.');
