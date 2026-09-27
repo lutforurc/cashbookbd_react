@@ -116,7 +116,6 @@ const TilesBusinessSales = () => {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
   const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
-  const previousReceivedBeforeCashRef = useRef('');
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
@@ -265,28 +264,18 @@ const TilesBusinessSales = () => {
   const customerAccountHandler = (option: any) => {
     const key = 'account';
     const accountName = 'accountName';
-    const previousAccount = Number(formData.account);
-    const nextAccount = Number(option?.value);
-    const isCashCustomer = nextAccount === 17;
-    let receivedAmt = formData.receivedAmt;
-
-    if (isCashCustomer) {
-      if (previousAccount !== 17) {
-        previousReceivedBeforeCashRef.current = formData.receivedAmt;
-      }
-      receivedAmt = getInvoicePayableAmount();
-    } else if (previousAccount === 17) {
-      receivedAmt = previousReceivedBeforeCashRef.current || formData.receivedAmt;
-    } else if (Number(formData.receivedAmt || 0) <= 0) {
-      receivedAmt = '0';
-    }
+    const isCashCustomer = Number(option?.value) === 17;
 
     setIsReceivedAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
-      receivedAmt,
+      // Kept for a cash customer -- the effect below then forces it onto the
+      // payable. Cleared for anyone else, because a credit sale has received
+      // nothing yet and the last customer's figure is not this one's. Trading
+      // and General do it exactly this way.
+      receivedAmt: isCashCustomer ? formData.receivedAmt : '',
     });
   };
 
@@ -433,7 +422,6 @@ const TilesBusinessSales = () => {
         manual_challan_date: sales.data.transaction.manual_challan_date || '',
       };
       setFormData(updatedFormData);
-      previousReceivedBeforeCashRef.current = updatedFormData.receivedAmt;
       setIsReceivedAmtManuallyEdited(false);
     }
   }, [sales.data.transaction]);
@@ -501,7 +489,10 @@ const TilesBusinessSales = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === 'receivedAmt') {
+    // Only a typed figure on a credit sale is the desk's own. For a cash
+    // customer the box is shut and the payable is the answer, so nothing the
+    // box could carry is allowed to look like a decision.
+    if (name === 'receivedAmt' && Number(formData.account) !== 17) {
       setIsReceivedAmtManuallyEdited(true);
     }
     setFormData((prevState) => ({
@@ -690,13 +681,27 @@ const TilesBusinessSales = () => {
     const isCashCustomer = Number(formData.account) === 17;
     const cashReceivedAmt = getInvoicePayableAmount();
 
-    if (isCashCustomer && !isReceivedAmtManuallyEdited) {
+    if (isCashCustomer) {
+      // Forced, not merely filled: a cash sale is settled in full, so a figure
+      // typed before the customer was chosen does not survive the choice, and
+      // no later edit can win either -- the flag is cleared on the way past.
       if (formData.receivedAmt !== cashReceivedAmt) {
         setFormData((prev) => ({
           ...prev,
           receivedAmt: cashReceivedAmt,
         }));
       }
+      if (isReceivedAmtManuallyEdited) {
+        setIsReceivedAmtManuallyEdited(false);
+      }
+    } else if (formData.account && !isReceivedAmtManuallyEdited && formData.receivedAmt !== '') {
+      // A credit sale has received nothing, and carrying the figure over from
+      // whichever customer was chosen before would post money the shop never
+      // took. The desk can type one in; that is what the flag above records.
+      setFormData((prev) => ({
+        ...prev,
+        receivedAmt: '',
+      }));
     }
   }, [
     formData.account,
@@ -785,6 +790,12 @@ const TilesBusinessSales = () => {
                 name="receivedAmt"
                 placeholder="Received Amount"
                 label="Received Amount"
+                // 17 is the Cash head. A cash sale is settled in full by
+                // definition, so the box is shut and the effect above keeps it
+                // on the payable. Trading and General disable theirs the same
+                // way; Electronics, which this screen was copied from, does
+                // not -- and that is the only reason it was missing here.
+                disabled={Number(formData.account) === 17}
                 className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
@@ -1177,26 +1188,15 @@ const TilesBusinessSales = () => {
         initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
             const isCashCustomer = Number(id) === 17;
-            const previousAccount = Number(formData.account);
-            let receivedAmt = formData.receivedAmt;
-
-            if (isCashCustomer) {
-              if (previousAccount !== 17) {
-                previousReceivedBeforeCashRef.current = formData.receivedAmt;
-              }
-              receivedAmt = getInvoicePayableAmount();
-            } else if (previousAccount === 17) {
-              receivedAmt = previousReceivedBeforeCashRef.current || formData.receivedAmt;
-            } else if (Number(formData.receivedAmt || 0) <= 0) {
-              receivedAmt = '0';
-            }
 
             setIsReceivedAmtManuallyEdited(false);
             setFormData((prev) => ({
               ...prev,
               account: id,
               accountName: name,
-              receivedAmt,
+              // Same rule as picking a customer from the dropdown: kept for
+              // cash (the effect forces it), cleared for anyone else.
+              receivedAmt: isCashCustomer ? prev.receivedAmt : '',
             }));
           }}
         />
