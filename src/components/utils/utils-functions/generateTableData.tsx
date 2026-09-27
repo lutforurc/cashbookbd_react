@@ -15,6 +15,13 @@ export interface TableRow {
   branch_name?: string | null;
   is_approved?: number | string;
   approved_by?: string | null;
+  /**
+   * Whether the voucher Edit will open was typed on a bank screen. Same trap as
+   * edit_vr_no below: the server sends it, the mapper is a whitelist, and a key
+   * not named here is gone before the Edit button looks at the row -- which sent
+   * every bank receipt on this Ledger to the Cash Received screen.
+   */
+  is_bank_voucher?: boolean;
   debit: number;
   credit: number;
   voucher_image: string | null;
@@ -68,6 +75,9 @@ export const generateTableData = (data: any): TableRow[] => {
   branch_id: String(trx.branch_id).padStart(4, '0'), // 4-digit format
   branch_name: trx.branch_name || '',
   is_approved: trx.is_approved ?? 0,
+  // `Boolean()` and not `=== true`: the server sends a real boolean today, but a
+  // 1 from anywhere else would have to fail silently for the desk to notice.
+  is_bank_voucher: Boolean(trx.is_bank_voucher),
   approved_by: trx.approved_by || null,
   debit: parseFloat(trx.debit || 0),
   credit: parseFloat(trx.credit || 0),
