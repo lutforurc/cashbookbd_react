@@ -72,6 +72,15 @@ interface branchItem {
   phone: string;
   notes: string;
   invoice_label: string;
+  /**
+   * What the sales invoice calls its four handwritten figures. Blank means the
+   * invoice shows the standard names, which is where the fallback lives -- see
+   * the sales invoice screen.
+   */
+  manual_voucher_no_label: string;
+  manual_voucher_date_label: string;
+  manual_challan_no_label: string;
+  manual_challan_date_label: string;
   decimal_places: number;
   dashboard_top_sales_days: number;
   dashboard_top_purchase_days: number;
@@ -398,6 +407,10 @@ const AddBranch = () => {
     phone: '',
     notes: '',
     invoice_label: '',
+    manual_voucher_no_label: '',
+    manual_voucher_date_label: '',
+    manual_challan_no_label: '',
+    manual_challan_date_label: '',
     decimal_places: 0,
     dashboard_top_sales_days: 0,
     dashboard_top_purchase_days: 0,
@@ -1328,6 +1341,55 @@ const AddBranch = () => {
                         placeholder={'Enter Decimal Places'}
                         label={'Decimal Places'}
                         description="How many digits after the point every amount is shown with. 0 rounds to whole Taka."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                    </div>
+
+                    {/* ⚠️ THE BRANCH NAMES THESE FOR ITSELF. Every counter calls
+                        the handwritten papers something of its own -- challan,
+                        gate pass, kacha bill -- so the four figures the sales
+                        invoice keeps are named here. Left blank the invoice
+                        falls back to the standard four names, which is where
+                        the fallback lives and the only place it is written. */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
+                      <InputElement
+                        id="manual_voucher_no_label"
+                        value={formData.manual_voucher_no_label || ''}
+                        name="manual_voucher_no_label"
+                        placeholder={'Memo No.'}
+                        label={'Memo No.'}
+                        description="What the sales invoice calls its handwritten voucher number. Blank shows Memo No."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="manual_voucher_date_label"
+                        value={formData.manual_voucher_date_label || ''}
+                        name="manual_voucher_date_label"
+                        placeholder={'Memo Date'}
+                        label={'Memo Date'}
+                        description="The same for the voucher's date. Blank shows Memo Date."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="manual_challan_no_label"
+                        value={formData.manual_challan_no_label || ''}
+                        name="manual_challan_no_label"
+                        placeholder={'Challan No'}
+                        label={'Challan No'}
+                        description="What the sales invoice calls the paper the goods went out on. Blank shows Challan No."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="manual_challan_date_label"
+                        value={formData.manual_challan_date_label || ''}
+                        name="manual_challan_date_label"
+                        placeholder={'Challan Date'}
+                        label={'Challan Date'}
+                        description="The same for the challan's date. Blank shows Challan Date."
                         className={''}
                         onChange={handleOnChange}
                       />
