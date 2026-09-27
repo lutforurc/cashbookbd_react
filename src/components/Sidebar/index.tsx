@@ -72,7 +72,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'reports/cashbook', title: "Cash Book" },
     { id: 'reports/cash-book-two-column', title: "Cash & Bank Book" },
     { id: 'reports/voucher-register', title: "Voucher Register" },
-    { id: 'reports/sales-referrer', title: "Sales Referrer" },
+    { id: 'reports/sales-referrer', title: "Referer" },
     { id: 'report_bankbook', title: "Bank Book" },
     { id: 'ageing_report', title: "Ageing" },
     { id: 'audit_trail', title: "Audit Trail" },
@@ -1266,7 +1266,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.report_referrer}
                                 className={subMenuLinkClass}
                               >
-                                Sales Referrer
+                                Referer
                               </NavLink>
                             </li>
                           )}

@@ -60,8 +60,9 @@ const parseApiDate = (said: any): Date | null => {
   return parts ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3])) : null;
 };
 
-/** What the "no referrer" row is called on screen and on paper. */
-const NOBODY = 'No referrer';
+// ⚠️ THERE IS NO "No referrer" ROW any more. The report carries only the bills
+// somebody brought -- the server inner-joins the referral -- so nothing here
+// has to name a row that names nobody.
 
 const SalesReferrer = ({ user }: any) => {
   const dispatch = useDispatch();
@@ -152,7 +153,7 @@ const SalesReferrer = ({ user }: any) => {
 
     setOpenId(id);
     setBills([]);
-    setOpenLabel(!id ? NOBODY : [row?.name, row?.mobile].filter(Boolean).join(' — '));
+    setOpenLabel([row?.name, row?.mobile].filter(Boolean).join(' — '));
     setLoadingBills(true);
 
     try {
@@ -185,7 +186,7 @@ const SalesReferrer = ({ user }: any) => {
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: 'Sales Referrer',
+    documentTitle: 'Referer',
   });
 
   const rows: any[] = report?.rows ?? [];
@@ -213,7 +214,7 @@ const SalesReferrer = ({ user }: any) => {
       header: 'Referrer',
       render: (row: any) => (
         <span className="cursor-pointer hover:underline">
-          {!Number(row.referrer_id) ? NOBODY : row.name || `#${row.referrer_id}`}
+          {row.name || `#${row.referrer_id}`}
         </span>
       ),
     },
@@ -239,8 +240,7 @@ const SalesReferrer = ({ user }: any) => {
   ];
 
   // The grand total is summed from the rows on screen rather than asked of the
-  // API: the "no referrer" row is part of it, and a second query could only
-  // disagree with the list above it.
+  // API: a second query could only disagree with the list above it.
   const grand = rows.reduce(
     (sum: any, row: any) => ({
       bills: Number(sum.bills) + Number(row.bills || 0),
@@ -250,21 +250,12 @@ const SalesReferrer = ({ user }: any) => {
     { bills: 0, total: 0, discount: 0 },
   );
 
+  // The "Who recommended a sale" caption and the date range used to ride above
+  // the headings as a row of their own; the owner read them as a line of the
+  // report and had them taken off. The range is not lost -- the two date boxes
+  // above the table say it -- and the paper says it on its own sheet.
   const headerRows = report
     ? [
-        [
-          {
-            label: (
-              <div className="text-center font-normal">
-                <div className="italic">Who recommended a sale</div>
-                <div>
-                  {dayjs(report.from).format('D-MMM-YYYY')} to {dayjs(report.to).format('D-MMM-YYYY')}
-                </div>
-              </div>
-            ),
-            colSpan: columns.length,
-          },
-        ],
         // headerRows REPLACES the column headings, so they are named here.
         columns.map((c) => ({ label: c.header, className: c.headerClass })),
       ]
@@ -286,7 +277,7 @@ const SalesReferrer = ({ user }: any) => {
 
   return (
     <div>
-      <HelmetTitle title="Sales Referrer" />
+      <HelmetTitle title="Referer" />
 
       <div className="mb-3 flex flex-wrap items-end gap-3">
         <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-4">

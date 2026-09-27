@@ -10,7 +10,7 @@ export type PrintColumn = {
   header: string;
   headerClass?: string;
   cellClass?: string;
-  render: (row: any) => any;
+  render?: (row: any) => any;
 };
 
 type Props = {
@@ -41,6 +41,23 @@ const SalesReferrerPrint = React.forwardRef<HTMLDivElement, Props>(
     const align = (c: PrintColumn) => ((c.cellClass ?? '').includes('text-right') ? 'text-right' : 'text-left');
     const cell = (c: PrintColumn) => `border border-gray-900 px-1.5 py-1 ${align(c)}`;
 
+    /**
+     * ⚠️ A COLUMN NEED NOT CARRY ITS OWN `render`. The screen's columns are the
+     * ones printed here, and a plain column -- Mobile, Voucher# -- names only a
+     * key; that is a shape the on-screen table accepts, falling back to
+     * `row[key]`. Calling `c.render(row)` regardless threw "c.render is not a
+     * function" on the first such column, and because this paper is always
+     * mounted (hidden) beside the table, the throw took the whole tree down:
+     * the reader saw a blank page rather than a blank cell. So the paper falls
+     * back exactly the way the table does.
+     *
+     * ⚠️ AND IT IS HANDED THE ROW'S PLACE, the way the table hands it over. A
+     * column that numbers its rows -- "Sl No." is `(_row, index) => index + 1` --
+     * read `undefined + 1` and put NaN on the paper when only the row was passed.
+     */
+    const value = (c: PrintColumn, row: any, index?: number) =>
+      (c.render ? c.render(row, index) : (row ?? {})[c.key]);
+
     const head = (list: PrintColumn[]) => (
       <thead className="bg-gray-100">
         <tr>
@@ -61,7 +78,7 @@ const SalesReferrerPrint = React.forwardRef<HTMLDivElement, Props>(
           <PadPrinting />
 
           <div className="mb-2">
-            <h1 className="text-2xl font-bold text-center">Sales Referrer</h1>
+            <h1 className="text-2xl font-bold text-center">Referer</h1>
             <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
               <div>
                 <span className="font-semibold">Report Date:</span>{' '}
@@ -74,11 +91,11 @@ const SalesReferrerPrint = React.forwardRef<HTMLDivElement, Props>(
           <table className="w-full table-fixed border-collapse" style={{ fontSize }}>
             {head(columns)}
             <tbody>
-              {rows.map((row) => (
+              {rows.map((row, rowIndex) => (
                 <tr key={row.referrer_id} className="avoid-break">
                   {columns.map((c) => (
                     <td key={c.key} className={cell(c)}>
-                      {c.render(row)}
+                      {value(c, row, rowIndex)}
                     </td>
                   ))}
                 </tr>
@@ -91,7 +108,7 @@ const SalesReferrerPrint = React.forwardRef<HTMLDivElement, Props>(
                 </td>
                 {columns.slice(2).map((c) => (
                   <td key={c.key} className={cell(c)}>
-                    {c.render(report?.grand ?? {})}
+                    {value(c, report?.grand ?? {})}
                   </td>
                 ))}
               </tr>
@@ -106,11 +123,11 @@ const SalesReferrerPrint = React.forwardRef<HTMLDivElement, Props>(
               <table className="w-full table-fixed border-collapse" style={{ fontSize }}>
                 {head(billColumns)}
                 <tbody>
-                  {bills.map((row) => (
+                  {bills.map((row, rowIndex) => (
                     <tr key={row.id} className="avoid-break">
                       {billColumns.map((c) => (
                         <td key={c.key} className={cell(c)}>
-                          {c.render(row)}
+                          {value(c, row, rowIndex)}
                         </td>
                       ))}
                     </tr>
