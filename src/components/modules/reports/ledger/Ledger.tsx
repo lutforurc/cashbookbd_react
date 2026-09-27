@@ -44,6 +44,7 @@ import {
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { useRemoveVoucherApproval } from '../../vouchers';
 import routes from '../../../services/appRoutes';
+import ToggleSwitch from '../../../utils/utils-functions/ToggleSwitch';
 
 const LEDGER_FILTER_STORAGE_KEY = 'ledger-filter-state';
 
@@ -53,6 +54,9 @@ type LedgerSavedFilters = {
   selectedLedgerOption?: { value: any; label: any } | null;
   startDate?: string | null;
   endDate?: string | null;
+  /** Newest voucher first. Kept with the filters: a customer who reads it that
+   *  way reads it that way every day. */
+  descending?: boolean;
 };
 
 const toNullableNumber = (value: unknown) => {
@@ -102,6 +106,7 @@ const Ledger = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [descending, setDescending] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const voucherRegistryRef = useRef<any>(null);
   const restoredFilterRef = useRef(false);
@@ -148,7 +153,7 @@ const Ledger = (user: any) => {
     setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
   }, []);
 
-  const saveLedgerFilters = () => {
+  const saveLedgerFilters = (overrides: Partial<LedgerSavedFilters> = {}) => {
     if (typeof window === 'undefined') return;
 
     const filters: LedgerSavedFilters = {
@@ -157,6 +162,8 @@ const Ledger = (user: any) => {
       selectedLedgerOption,
       startDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : null,
       endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : null,
+      descending,
+      ...overrides,
     };
 
     window.sessionStorage.setItem(
@@ -175,6 +182,7 @@ const Ledger = (user: any) => {
     setSelectedLedgerOption(savedFilters.selectedLedgerOption || null);
     setStartDate(parseStoredDate(savedFilters.startDate));
     setEndDate(parseStoredDate(savedFilters.endDate));
+    setDescending(Boolean(savedFilters.descending));
   }, []);
 
   /**
@@ -219,12 +227,14 @@ const Ledger = (user: any) => {
     }
 
     if (ledgerData && !(ledgerData.data?.data)) {
-      const tableRows = generateTableData(ledgerData.data);
+      const tableRows = generateTableData(ledgerData.data, descending);
       setTableData(tableRows);
     } else {
       setTableData([]); // safety fallback
     }
-  }, [ledgerData]);
+    // Flipping the switch re-lays the rows out of the answer already in hand, so
+    // the report does not have to be searched for again.
+  }, [ledgerData, descending]);
 
 
 
@@ -600,6 +610,22 @@ const Ledger = (user: any) => {
       setPerPage(10); // Reset if input is invalid
     }
   };
+  /**
+   * The same rows read the other way up.
+   *
+   * The customer asked for it as a choice rather than a change: some read a
+   * ledger oldest-first, some want the voucher they have just written on top,
+   * and both are the same report. Kept with the filters, because whichever way
+   * a customer reads it, they read it that way every day.
+   *
+   * Nothing is asked of the server: the rows are already here, so the list is
+   * only laid out again.
+   */
+  const handleDescendingChange = (checked: boolean) => {
+    setDescending(checked);
+    saveLedgerFilters({ descending: checked });
+  };
+
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
 
@@ -664,7 +690,16 @@ const Ledger = (user: any) => {
 
   return (
     <div className="">
-      <HelmetTitle title={'Ledger'} />
+      {/* The layout switch sits beside the heading, not down among the toolbar
+          fields: those carry captions of their own, and a switch among them
+          reads as if it labelled the field next to it. */}
+      <HelmetTitle title={'Ledger'}>
+        <ToggleSwitch
+          label="Descending"
+          checked={descending}
+          onChange={handleDescendingChange}
+        />
+      </HelmetTitle>
       <div className="py-3">
         {/* One wrapping row (owner, 2026-09-23): the fields stretch to fill
             it and the toolbar follows the last one, so a screen that fits
@@ -794,6 +829,7 @@ const Ledger = (user: any) => {
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
             showBranchName={branchId === null}
+            descending={descending}
           />
         </div>
       </div>

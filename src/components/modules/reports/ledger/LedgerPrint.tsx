@@ -29,6 +29,8 @@ export type Props = {
   rowsPerPage?: number; // default 8 (fits the provided layout)
   fontSize?: number; // default 9 (px)
   showBranchName?: boolean;
+  /** Newest voucher first, the way the screen is showing it. */
+  descending?: boolean;
 };
 
 type LedgerRowWithBalance = LedgerRow & {
@@ -81,14 +83,22 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
       rowsPerPage = 8,
       fontSize,
       showBranchName = false,
+      descending = false,
     },
     ref,
   ) => {
     // Safety: normalize rows
 
     const rowsArr: LedgerRow[] = Array.isArray(rows) ? rows : [];
+
+    // ⚠️ THE BALANCE IS WALKED OLDEST FIRST WHATEVER THE LAYOUT. The figure
+    // beside a row is the balance after that voucher, and that does not change
+    // because the paper is read the other way up -- so a descending report only
+    // turns the finished list round, it never walks it backwards.
+    const walkOrder = descending ? [...rowsArr].reverse() : rowsArr;
+
     let previousAmount = 0;
-    const rowsWithBalance: LedgerRowWithBalance[] = rowsArr.map((row) => {
+    const walked: LedgerRowWithBalance[] = walkOrder.map((row) => {
       if (SUMMARY_ROW_NAMES.has(String(row.name || ''))) {
         return {
           ...row,
@@ -105,6 +115,8 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
         runningBalance: previousAmount,
       };
     });
+
+    const rowsWithBalance = descending ? walked.reverse() : walked;
     const pages = chunkRows(rowsWithBalance, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 9;
     const partyInfo = coal4?.cust_party_infos || {};
@@ -124,31 +136,28 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
+        {/* PrintStyles carries every rule this page needs. A copy of the same
+            declarations used to stand here as well, and being later in the
+            document it won over the shared one -- the page then had 8mm of
+            padding under its content where every other report has none, which
+            lifted the foot line off the sheet by that much. */}
         <PrintStyles />
-        <style>{`
-          @media print {
-            .no-print { display: none !important; }
-            .page-break { page-break-after: always; }
-            .avoid-break { break-inside: avoid; }
-            .print-root { padding: 0 !important; }
-            .print-page { padding: 8mm !important; }
-
-            .print-page {
-              display: flex;
-              flex-direction: column;
-              min-height: var(--print-page-height);
-            }
-
-            h1, h2, h3 { margin-top: 0; }
-          }
-        `}</style>
 
         {pages.map((pageRows, pIdx) => {
-          // page totals
-          const pageDebit = sum(pageRows.map((r) => Number(r.debit || 0)));
-          const pageCredit = sum(pageRows.map((r) => Number(r.credit || 0)));
-          const lastBalanceRow = [...pageRows].reverse().find((row) => row.runningBalance !== undefined);
-          const pageClosingBalance = lastBalanceRow?.runningBalance ?? 0;
+          // ⚠️ VOUCHER ROWS ONLY. A descending report carries Range Total, Total
+          // and Balance at the top of its first page, and those three are sums
+          // themselves -- added into the page's own subtotal they would be
+          // counted twice, and a page subtotal larger than the report is worse
+          // than none. A row with a balance is a voucher (or Opening); the
+          // summary rows are the ones without.
+          const voucherRows = pageRows.filter((row) => row.runningBalance !== undefined);
+
+          const pageDebit = sum(voucherRows.map((r) => Number(r.debit || 0)));
+          const pageCredit = sum(voucherRows.map((r) => Number(r.credit || 0)));
+          // The figure the page closes on is the last voucher read on it -- which
+          // on a descending page is the newest one, at the top.
+          const pageClosingBalance =
+            (descending ? voucherRows[0] : voucherRows[voucherRows.length - 1])?.runningBalance ?? 0;
 
           return (
             <div key={pIdx} className="print-page">
@@ -339,13 +348,31 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                 </table>
               </div>
 
-              {/* Footer */}
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <div style={{ fontSize: fs }} className="font-semibold">
-                  {pIdx !== pages.length - 1 ? `Balance: ${thousandSeparator(pageClosingBalance)}` : ''}
+              {/* The carried-forward figure belongs with the page whose rows it
+                  sums, so it stays directly under the table. */}
+              {pIdx !== pages.length - 1 && (
+                <div style={{ fontSize: fs }} className="mt-2 font-semibold">
+                  Balance: {thousandSeparator(pageClosingBalance)}
                 </div>
-                <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
-              </div>
+              )}
+
+              {/* ⚠️ THE FOOT LINE IS A CHILD OF THE PAGE, NOT OF A WRAPPER. Its
+                  own `mt-auto` is what holds it at the foot of the sheet, and a
+                  div around it becomes the flex item instead -- the line then
+                  stands wherever the table happens to end.
+
+                  ⚠️ AND IT IS PINNED WHEN THE REPORT DID NOT CUT ITS OWN PAGES.
+                  The Rows box starts at 0, which makes the whole report one
+                  block and leaves the breaks to the browser; a line left in the
+                  flow then prints once, under the last row, on whichever sheet
+                  the table ends. Pinned, it is repainted at the foot of every
+                  sheet. Same rule and same reason as CashBookPrint. */}
+              <PrintFooter
+                fixed={pages.length === 1}
+                page={pIdx + 1}
+                total={pages.length}
+                fontSize={fs}
+              />
 
               {pIdx !== pages.length - 1 && <div className="page-break" />}
             </div>

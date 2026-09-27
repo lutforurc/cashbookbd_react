@@ -28,7 +28,7 @@ export interface TableRow {
   running_balance?: number | '';
 }
 
-export const generateTableData = (data: any): TableRow[] => {
+export const generateTableData = (data: any, descending = false): TableRow[] => {
 
   if (!data) return []; // safeguard if data is undefined
 
@@ -84,14 +84,26 @@ export const generateTableData = (data: any): TableRow[] => {
   voucher_image: trx.voucher_image || null,
 }));
 
+  // ⚠️ WALKED OLDEST FIRST WHATEVER THE LAYOUT: the figure beside a row is the
+  // balance after that voucher, and that does not change because the customer
+  // reads the list the other way up.
   let previousAmount = Number(openingRow.running_balance || 0);
   detailsRows.forEach((row) => {
     previousAmount = previousAmount + Number(row.debit || 0) - Number(row.credit || 0);
     row.running_balance = previousAmount;
   });
 
-  // Assign sequential sl_number
-  detailsRows.forEach((row, idx) => (row.sl_number = idx + 1));
+  /**
+   * Descending = the newest voucher first, read like a statement: the three
+   * summary rows on top, the vouchers newest to oldest under them, and Opening
+   * (the state before the period) left at the very end. Ascending is untouched
+   * -- Opening first, the summaries at the foot, as it has always been.
+   *
+   * The line numbers follow the order shown, so the list reads 1, 2, 3 from the
+   * top in either format.
+   */
+  const shownDetails = descending ? [...detailsRows].reverse() : detailsRows;
+  shownDetails.forEach((row, idx) => (row.sl_number = idx + 1));
 
   // Sum all debit
   const rangeDebit = detailsRows.reduce(
@@ -116,8 +128,9 @@ export const generateTableData = (data: any): TableRow[] => {
     running_balance: '',
   };
 
-  // Total & Balance
-  const allRows = [openingRow, ...detailsRows];
+  // Total & Balance. The sums below do not care which way the rows are shown,
+  // so this is the report as it would read oldest-first.
+  const allRows = [openingRow, ...shownDetails];
   const totalDebitSum = allRows.reduce((sum, row) => sum + row.debit, 0);
   const totalCreditSum = allRows.reduce((sum, row) => sum + row.credit, 0);
 
@@ -147,5 +160,10 @@ export const generateTableData = (data: any): TableRow[] => {
     running_balance: '',
   };
 
-  return [...allRows, rangeRow, totalRow, balanceRow];
+  // Descending is the ascending report stood on its head: the three summary
+  // rows turn round with everything else, so the closing Balance is the very
+  // first line and Range Total the last of them, above the vouchers.
+  return descending
+    ? [balanceRow, totalRow, rangeRow, ...shownDetails, openingRow]
+    : [...allRows, rangeRow, totalRow, balanceRow];
 };
