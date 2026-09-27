@@ -353,6 +353,11 @@ export const API_REPORT_DUE_LIST_URL = `${API_BASE_URL}/reports/duelist`;
 export const API_REPORT_CASH_BOOK_TWO_COLUMN_URL = `${API_BASE_URL}/reports/cash-book-two-column`;
 export const API_REPORT_VOUCHER_REGISTER_URL = `${API_BASE_URL}/reports/voucher-register`;
 export const API_REPORT_VOUCHER_REGISTER_VOUCHERS_URL = `${API_BASE_URL}/reports/voucher-register/vouchers`;
+// Who recommended a sale -- the totals, the bills behind one row, and the
+// referrer list the invoice popup picks from (kept on the report screen).
+export const API_REPORT_REFERRER_SALES_URL = `${API_BASE_URL}/reports/referrer-sales`;
+export const API_REPORT_REFERRER_BILLS_URL = `${API_BASE_URL}/reports/referrer-sales/bills`;
+export const API_REFERRERS_URL = `${API_BASE_URL}/referrers`;
 export const API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL = `${API_BASE_URL}/reports/ledger-with-product`;
 // Company & Product-wise financial tracking
 export const API_PRODUCT_TRACKING_SETTINGS_URL = `${API_BASE_URL}/product-tracking/settings`;

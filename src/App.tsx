@@ -50,6 +50,7 @@ import LegacyOldRecordSearch from './components/modules/legacy/LegacyOldRecordSe
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import CashBookTwoColumn from './components/modules/reports/cash-book-two-column/CashBookTwoColumn';
 import VoucherRegister from './components/modules/reports/voucher-register/VoucherRegister';
+import SalesReferrer from './components/modules/reports/sales-referrer/SalesReferrer';
 import BankBook from './components/modules/reports/bankbook/BankBook';
 import CashBankReceivedPayment from './components/modules/reports/cash-bank-received-payment/CashBankReceivedPayment';
 import Ledger from './components/modules/reports/ledger/Ledger';
@@ -973,6 +974,11 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.register']} loading={permissionsLoading} />}>
               <Route path={routes.report_voucher_register} element={<VoucherRegister user={me} />} />
+            </Route>
+            {/* Who recommended a sale. Its own permission, because the shop
+                keeps this list and the customer is never shown it. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.referrer']} loading={permissionsLoading} />}>
+              <Route path={routes.report_referrer} element={<SalesReferrer user={me} />} />
             </Route>
             {/* Each of these is offered by its own sidebar permission. Guarded
                 separately so 'bank.book' opens the bank book and nothing else. */}

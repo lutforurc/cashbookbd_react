@@ -44,6 +44,9 @@ export const MENU_PERMISSIONS = {
     'group.report',
     'mitch.match',
     'productwise.profit',
+    // The referrer report is only ever reached through this menu, so its own
+    // permission has to open the parent group too.
+    'sales.referrer',
   ],
   requisition: ['requisition.view', 'requisition.create', 'requisition.comparison'],
   // Opens on any of the three: the settings screen and the two reports each

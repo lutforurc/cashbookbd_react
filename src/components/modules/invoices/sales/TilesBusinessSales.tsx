@@ -30,6 +30,8 @@ import { getServiceList } from '../../settings/settingsSlice';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import QuickCustomerModal from './QuickCustomerModal';
+import ReferrerPickerModal from './ReferrerPickerModal';
+import ToggleSwitch from '../../../utils/utils-functions/ToggleSwitch';
 import httpService from '../../../services/httpService';
 import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
@@ -114,6 +116,7 @@ const TilesBusinessSales = () => {
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [showReferrerModal, setShowReferrerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
   const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
@@ -178,6 +181,11 @@ const TilesBusinessSales = () => {
     manual_voucher_date: string;
     manual_challan_no: string;
     manual_challan_date: string;
+    // Who recommended this sale -- the id alone. ⚠️ The name is deliberately
+    // never held in the form: the customer reads this screen, and the owner
+    // asked for the reference to be kept from them. It shows in the popup and
+    // nowhere else.
+    referrer_id: string;
   }
 
   const initialFormData = {
@@ -197,6 +205,7 @@ const TilesBusinessSales = () => {
     manual_voucher_date: '',
     manual_challan_no: '',
     manual_challan_date: '',
+    referrer_id: '',
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -420,6 +429,9 @@ const TilesBusinessSales = () => {
         manual_voucher_date: sales.data.transaction.manual_voucher_date || '',
         manual_challan_no: sales.data.transaction.manual_challan_no || '',
         manual_challan_date: sales.data.transaction.manual_challan_date || '',
+        // Read from the response's own key, not from the voucher model: the
+        // link lives on its own table, so nothing about it is on the voucher.
+        referrer_id: sales.data.referrer_id ? String(sales.data.referrer_id) : '',
       };
       setFormData(updatedFormData);
       setIsReceivedAmtManuallyEdited(false);
@@ -904,6 +916,24 @@ const TilesBusinessSales = () => {
                 setCurrentDate={() => undefined}
               />
             </div>
+
+            {/* Who recommended this sale. ⚠️ THE SWITCH IS ALL THAT SHOWS: the
+                referrer's name lives in the popup and nowhere on this screen,
+                because the customer stands here and reads it. It says
+                "Reference" for the same reason -- an honest label would give
+                the whole thing away.
+
+                ⚠️ IT ALWAYS OPENS THE POPUP, on or off. Flipping a switch to
+                take a reference off would erase last week's account with one
+                careless click and leave no sign it had gone. Taking one off is
+                a choice inside the popup, where it is said out loud. */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-center pt-1">
+              <ToggleSwitch
+                label="Reference"
+                checked={!!formData.referrer_id}
+                onChange={() => setShowReferrerModal(true)}
+              />
+            </div>
           </div>
 
         </div>
@@ -1214,6 +1244,13 @@ const TilesBusinessSales = () => {
           setStockWarning(null);
           if (pending) sendInvoice(pending.payload, true);
         }}
+      />
+
+      <ReferrerPickerModal
+        isOpen={showReferrerModal}
+        onClose={() => setShowReferrerModal(false)}
+        selectedId={formData.referrer_id}
+        onPick={(referrerId) => setFormData((prev) => ({ ...prev, referrer_id: referrerId }))}
       />
     </>
   );
