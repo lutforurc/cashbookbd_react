@@ -100,6 +100,17 @@ export const getCustomer = createAsyncThunk<PaginatedCustomerResponse, CustomerR
 export const storeCustomer = createAsyncThunk<any, StoreCustomerPayload, { rejectValue: ErrorResponse }>('customer/store', async (payload, { rejectWithValue }) => {
   try {
     const { data } = await httpService.post(API_STORE_CUSTOMER_URL, payload);
+
+    // A refusal (the plan's customer limit, a closed year) comes back as HTTP
+    // 200 with success:false. Returning it as-is would resolve unwrap(), so the
+    // form would show the refusal in a green "success" toast and clear itself
+    // while no customer had been saved.
+    if (data?.success === false) {
+      return rejectWithValue({
+        message: data?.error?.message || data?.message || 'Failed to store customer',
+      } as ErrorResponse);
+    }
+
     return data;
   } catch (error) {
     return rejectWithValue({ message: 'Failed to store customer' });
