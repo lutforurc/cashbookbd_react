@@ -72,6 +72,14 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
       notes: salesMaster?.notes || '',
       vr_no: data?.vr_no,
       vr_date: data?.vr_date,
+      // Raw 'YYYY-MM-DD', never reformatted here: the designer's date fields
+      // format them, and a 'DD/MM/YYYY' string is not a date dayjs can read.
+      // A trade that has none of these sends null, and the fields that carry
+      // hideIfEmpty then print nothing at all.
+      manual_voucher_no: data?.manual_voucher_no || '',
+      manual_voucher_date: data?.manual_voucher_date || '',
+      manual_challan_no: data?.manual_challan_no || '',
+      manual_challan_date: data?.manual_challan_date || '',
       order_number: salesMaster?.sales_order?.order_number || '',
       delivery_location: salesMaster?.sales_order?.delivery_location || '',
       vehicle_no: salesMaster?.vehicle_no || '',

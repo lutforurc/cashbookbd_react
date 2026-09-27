@@ -700,6 +700,11 @@ export const FIELD_CATALOG: FieldDef[] = [
   { key: 'vr_no', name: 'Invoice No', group: 'voucher' },
   { key: 'vr_date', name: 'Invoice Date', group: 'voucher' },
   { key: 'order_no', name: 'Order / PO No', group: 'voucher' },
+  // The paper challan the gate wrote by hand, printed on the paper the
+  // software prints. Null on every trade but Tiles and Sanitary -- see the
+  // note on the sales invoice catalogue.
+  { key: 'manual_challan_no', name: 'Manual Challan No', group: 'voucher' },
+  { key: 'manual_challan_date', name: 'Manual Challan Date', group: 'voucher', format: 'date' },
   { key: 'created_by', name: 'Sales By', group: 'voucher' },
   /**
    * Whoever is printing, from the session -- not from the voucher.
@@ -1101,6 +1106,14 @@ export const SALES_INVOICE_FIELD_CATALOG: FieldDef[] = [
   { key: 'order_number', name: 'Order Number', group: 'voucher' },
   { key: 'delivery_location', name: 'Delivery Location', group: 'voucher' },
   { key: 'vehicle_no', name: 'Vehicle No', group: 'transport' },
+  // The figures a Tiles and Sanitary shop writes beside the system's own --
+  // its khata voucher, and the delivery challan that went out with the goods.
+  // A trade with none of them sends null, which is what makes a hideIfEmpty
+  // field on another trade's bill print nothing.
+  { key: 'manual_voucher_no', name: 'Manual Voucher No', group: 'voucher' },
+  { key: 'manual_voucher_date', name: 'Manual Voucher Date', group: 'voucher', format: 'date' },
+  { key: 'manual_challan_no', name: 'Manual Challan No', group: 'voucher' },
+  { key: 'manual_challan_date', name: 'Manual Challan Date', group: 'voucher', format: 'date' },
   { key: 'created_by', name: 'Sales By', group: 'voucher' },
   { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   { key: 'branch_name', name: 'Branch', group: 'voucher' },
@@ -1947,6 +1960,10 @@ const standardChallan = (): PrintTemplate => ({
         { field: 'vr_date', label: 'Invoice Date' },
         { field: 'mobile', label: 'Mobile', hideIfEmpty: true },
         { field: 'order_no', label: 'Order No', hideIfEmpty: true },
+        // The handwritten challan's own number and date, for a Tiles and
+        // Sanitary branch. Both hide on every other trade.
+        { field: 'manual_challan_no', label: 'Challan No', hideIfEmpty: true },
+        { field: 'manual_challan_date', label: 'Challan Date', hideIfEmpty: true },
       ],
     }),
     band<InfoBand>({
@@ -2649,13 +2666,13 @@ const salesInvoice = (): PrintTemplate => ({
       columns: 2,
       layout: 'rows',
       boxed: false,
-      // Narrower than DEFAULT_LABEL_WIDTH (9em) -- this band's longest label
-      // is "Invoice No" at ten characters, and 9em was sized for a challan's
-      // "ড্রাইভারের নাম", not this one. At 9em, "Name"/"Date" sat inside a box
-      // wider than themselves and left a visible gap before their own colon.
-      // Caught in real-print review; the tenant can still widen it from here
-      // in the designer if their own labels run longer.
-      labelWidth: 6,
+      // This band was 6em wide, sized when its longest label was "Invoice No"
+      // and 9em felt too big for "Name"/"Date". Tiles and Sanitary's four
+      // figures changed the longest label -- "Manual Voucher Number" runs to
+      // twenty-one characters -- so it is back to DEFAULT_LABEL_WIDTH (9em).
+      // The four only show on a tiles bill; on every other trade the band
+      // keeps its old shape because the items are in it but hide.
+      labelWidth: DEFAULT_LABEL_WIDTH,
       rowPadding: DEFAULT_ROW_PADDING,
       rowGap: DEFAULT_ROW_GAP,
       items: [
@@ -2665,6 +2682,10 @@ const salesInvoice = (): PrintTemplate => ({
         { field: 'vr_date', label: 'Date' },
         { field: 'manual_address', label: 'Address', hideIfEmpty: true },
         { field: 'notes', label: 'Notes', hideIfEmpty: true },
+        { field: 'manual_voucher_no', label: 'Manual Voucher No', hideIfEmpty: true },
+        { field: 'manual_voucher_date', label: 'Manual Voucher Date', hideIfEmpty: true },
+        { field: 'manual_challan_no', label: 'Manual Challan No', hideIfEmpty: true },
+        { field: 'manual_challan_date', label: 'Manual Challan Date', hideIfEmpty: true },
       ],
     }),
     band<TableBand>({
