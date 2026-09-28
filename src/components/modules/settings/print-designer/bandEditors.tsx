@@ -18,6 +18,8 @@ import {
   TitleBand,
   TotalsBand,
   Valign,
+  RULE_FIELD,
+  RULE_SPACE,
   fieldName,
   fieldsFor,
   isNumericField,
@@ -188,13 +190,17 @@ export const FieldPicker: React.FC<{
   onPick: (key: string) => void;
   source?: 'info' | 'line';
   label?: string;
-}> = ({ onPick, source = 'info', label = 'Add a field' }) => {
+  /** Groups this band has no way to print, kept off its list. */
+  excludeGroups?: FieldGroup[];
+}> = ({ onPick, source = 'info', label = 'Add a field', excludeGroups }) => {
   const docType = useDocType();
   // ⚠️ The paper's OWN catalogue. A hotel money receipt offers no tax field and
   // no table column at all, and that absence is what stops a receipt turning
   // into a VAT invoice -- see HOTEL_RECEIPT_FIELDS. An order's list holds no
   // vehicle number and a challan's holds no order rate, for the same reason.
-  const catalog = source === 'line' ? lineFieldsFor(docType) : fieldsFor(docType);
+  const catalog = (source === 'line' ? lineFieldsFor(docType) : fieldsFor(docType)).filter(
+    (field) => !excludeGroups?.includes(field.group),
+  );
   const groups = catalog.reduce<Record<string, typeof catalog>>((map, field) => {
     (map[field.group] ||= []).push(field);
     return map;
@@ -427,42 +433,107 @@ const ItemList: React.FC<{
             {fieldName(item.field)}
           </span>
 
-          {/* The label is the whole point of the designer: what this tenant's
-              paper calls the field, in whatever language they print in. */}
-          <Input
-            value={item.label ?? ''}
-            draggable={false}
-            // A blank line has no name of its own to fall back on -- naming it
-            // is the entire reason it was added -- so it asks rather than
-            // offering the catalogue's word for "a line to write on".
-            placeholder={item.field === 'blank' ? 'Type the label…' : fieldName(item.field)}
-            onChange={(event) => {
-              const next = items.slice();
-              next[index] = { ...item, label: event.target.value };
-              onChange(next);
-            }}
-            className="min-w-0 flex-1 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1.5 py-0.5 text-sm outline-none dark:bg-boxdark"
-          />
+          {/* ⚠️ A rule is not a figure. It has no label to rename and nothing
+              that can be empty, so the only things left to say about it are how
+              it is drawn and how much paper it stands clear of.
 
-          {allowHideIfEmpty ? (
-            <Button
-              type="button"
-              draggable={false}
-              title={
-                item.hideIfEmpty
-                  ? 'Hidden when the voucher has nothing for it'
-                  : 'Always printed, blank if empty'
-              }
-              onClick={() => {
-                const next = items.slice();
-                next[index] = { ...item, hideIfEmpty: !item.hideIfEmpty };
-                onChange(next);
-              }}
-              className="rounded p-1 hover:bg-gray-100 dark:hover:bg-meta-4"
-            >
-              {item.hideIfEmpty ? <FiEyeOff /> : <FiEye />}
-            </Button>
-          ) : null}
+              The handle, the move buttons and the bin are the row's own, which
+              is the whole reason a rule is a row: it can be dragged to any
+              position among the totals, and it stays there. */}
+          {item.field === RULE_FIELD ? (
+            <div className="flex flex-1 flex-wrap items-end gap-2">
+              <div className="w-28 shrink-0">
+                <span className={SUB_LABEL}>Line</span>
+                <Select
+                  value={item.ruleStyle ?? 'solid'}
+                  draggable={false}
+                  onChange={(event) => {
+                    const next = items.slice();
+                    next[index] = {
+                      ...item,
+                      ruleStyle: event.target.value as 'solid' | 'dashed',
+                    };
+                    onChange(next);
+                  }}
+                  className={CONTROL}
+                >
+                  <option value="solid">Solid</option>
+                  <option value="dashed">Dashed</option>
+                </Select>
+              </div>
+
+              {/* Pixels rather than millimetres, unlike a Blank Space: this gap
+                  is between two lines of text and has to keep its proportion as
+                  the paper's text size changes, not stay a fixed distance on the
+                  sheet. */}
+              <div className="w-24 shrink-0">
+                <NumberBox
+                  label="Space above"
+                  value={item.ruleSpaceAbove ?? RULE_SPACE}
+                  min={0}
+                  max={60}
+                  onChange={(ruleSpaceAbove) => {
+                    const next = items.slice();
+                    next[index] = { ...item, ruleSpaceAbove };
+                    onChange(next);
+                  }}
+                />
+              </div>
+
+              <div className="w-24 shrink-0">
+                <NumberBox
+                  label="Space below"
+                  value={item.ruleSpaceBelow ?? RULE_SPACE}
+                  min={0}
+                  max={60}
+                  onChange={(ruleSpaceBelow) => {
+                    const next = items.slice();
+                    next[index] = { ...item, ruleSpaceBelow };
+                    onChange(next);
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* The label is the whole point of the designer: what this tenant's
+                  paper calls the field, in whatever language they print in. */}
+              <Input
+                value={item.label ?? ''}
+                draggable={false}
+                // A blank line has no name of its own to fall back on -- naming it
+                // is the entire reason it was added -- so it asks rather than
+                // offering the catalogue's word for "a line to write on".
+                placeholder={item.field === 'blank' ? 'Type the label…' : fieldName(item.field)}
+                onChange={(event) => {
+                  const next = items.slice();
+                  next[index] = { ...item, label: event.target.value };
+                  onChange(next);
+                }}
+                className="min-w-0 flex-1 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1.5 py-0.5 text-sm outline-none dark:bg-boxdark"
+              />
+
+              {allowHideIfEmpty ? (
+                <Button
+                  type="button"
+                  draggable={false}
+                  title={
+                    item.hideIfEmpty
+                      ? 'Hidden when the voucher has nothing for it'
+                      : 'Always printed, blank if empty'
+                  }
+                  onClick={() => {
+                    const next = items.slice();
+                    next[index] = { ...item, hideIfEmpty: !item.hideIfEmpty };
+                    onChange(next);
+                  }}
+                  className="rounded p-1 hover:bg-gray-100 dark:hover:bg-meta-4"
+                >
+                  {item.hideIfEmpty ? <FiEyeOff /> : <FiEye />}
+                </Button>
+              ) : null}
+            </>
+          )}
 
           <MoveButtons index={index} count={items.length} onMove={move} />
 
@@ -571,6 +642,10 @@ export const InfoBandEditor: React.FC<{
     <ItemList items={band.items} onChange={(items) => onChange({ ...band, items })} />
 
     <FieldPicker
+      // ⚠️ No lines here. This block prints every row as a label and a figure,
+      // and a rule has neither -- it would come out as the word "Line" followed
+      // by nothing. The totals block is where a rule can be drawn.
+      excludeGroups={['rule']}
       onPick={(field) =>
         onChange({
           ...band,

@@ -179,7 +179,29 @@ export type InfoItem = {
    * nothing to say would be a rule under nothing.
    */
   ruleAbove?: boolean;
+  /**
+   * ⚠️ ONLY THE `rule` FIELD READS THESE -- a line standing on its own in the
+   * totals block, added from the picker's "Line".
+   *
+   * `ruleAbove` above draws a rule tied to the figure under it, which is what a
+   * bill wants where a sum happens: move the line and the figure moves with it.
+   * A tenant who wants the rule somewhere else -- between two figures that are
+   * not a sum, or with more air than the row itself gives -- needs a rule that
+   * is a thing in its own right, and these are its three knobs.
+   */
+  ruleStyle?: 'solid' | 'dashed';
+  /** Pixels of paper between the rule and the line above it. */
+  ruleSpaceAbove?: number;
+  /** Pixels of paper between the rule and the line below it. */
+  ruleSpaceBelow?: number;
 };
+
+/** Pixels the rule stands clear of the lines around it, unless asked otherwise. */
+export const RULE_SPACE = 6;
+
+/** The pseudo-field that draws a rule of its own in the totals block. */
+export const RULE_FIELD = 'rule';
+
 
 /** One column of the product table. */
 export type TableColumn = {
@@ -619,6 +641,8 @@ export type FieldGroup =
   | 'product'
   | 'total'
   | 'manual'
+  /** A rule of its own, rather than a figure with a label. */
+  | 'rule'
   | 'line'
   /** The order's own terms -- what was agreed, and for how long. */
   | 'order'
@@ -665,6 +689,7 @@ export const FIELD_GROUP_NAMES: Record<FieldGroup, string> = {
   product: 'Products (as one line)',
   total: 'Totals',
   manual: 'Filled in by hand',
+  rule: 'Rules & lines',
   line: 'Product line',
   order: 'Order terms',
   guest: 'Guest',
@@ -752,6 +777,7 @@ export const FIELD_CATALOG: FieldDef[] = [
   // the label and somewhere to write. Add as many as the pad has, and name
   // each one on the row.
   { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
 
   // What it adds up to
   { key: 'total_qty', name: 'Total Quantity', group: 'total', numeric: true },
@@ -824,6 +850,7 @@ export const ORDER_FIELD_CATALOG: FieldDef[] = [
   { key: 'trx_quantity', name: 'Delivered Quantity', group: 'order', numeric: true },
 
   { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
 
   // What the deliveries add up to. total_qty and total_amount are the same two
   // the challan has; the other two are the order's own, and exist because its
@@ -930,6 +957,7 @@ const HOTEL_STAY_FIELDS: FieldDef[] = [
   // For the accountant's copy -- the ledger entry this paper corresponds to.
   { key: 'voucher_no', name: 'Voucher No', group: 'voucher' },
   { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
 ];
 
 /**
@@ -1122,6 +1150,7 @@ export const SALES_INVOICE_FIELD_CATALOG: FieldDef[] = [
   { key: 'printed_at', name: 'Print Time', group: 'voucher' },
 
   { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
 
   // What it adds up to
   { key: 'grand_total', name: 'Total', group: 'total', numeric: true, format: 'money' },
@@ -1138,6 +1167,15 @@ export const SALES_INVOICE_FIELD_CATALOG: FieldDef[] = [
   { key: 'net_amount', name: 'Net Total', group: 'total', numeric: true, format: 'money' },
   { key: 'received_amount', name: 'Received', group: 'total', numeric: true, format: 'money' },
   { key: 'due_amount', name: 'Due', group: 'total', numeric: true, format: 'money' },
+  // What the party owed BEFORE this bill, and what it owes once the bill is
+  // added to it. The rule a paper draws between the two is not a new property
+  // -- it is InfoItem.ruleAbove on the lower line, the same rule Net and Due
+  // already stand under. `previous_due` is the server's own figure (the
+  // party's balance before this voucher, the bill itself left out);
+  // `final_due` is previous_due + this bill's own due, the running outstanding
+  // the Tiles sales screen already totalled into its Total Tk.
+  { key: 'previous_due', name: 'Previous Due', group: 'total', numeric: true, format: 'money' },
+  { key: 'final_due', name: 'Final Due', group: 'total', numeric: true, format: 'money' },
   { key: 'amount_words', name: 'Amount In Words', group: 'total', format: 'words', from: 'net_amount' },
   { key: 'line_count', name: 'Number of Items', group: 'total', numeric: true },
 ];
@@ -1195,6 +1233,7 @@ export const PURCHASE_INVOICE_FIELD_CATALOG: FieldDef[] = [
   { key: 'printed_at', name: 'Print Time', group: 'voucher' },
 
   { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
 
   // What it adds up to
   { key: 'total_amount', name: 'Total', group: 'total', numeric: true, format: 'money' },
@@ -1345,6 +1384,7 @@ export const LEDGER_DETAILS_INFO_FIELDS: FieldDef[] = [
   { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   { key: 'printed_at', name: 'Print Time', group: 'voucher' },
   { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
 ];
 
 /**
@@ -1412,6 +1452,7 @@ export const DUE_LIST_INFO_FIELDS: FieldDef[] = [
   { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   { key: 'printed_at', name: 'Print Time', group: 'voucher' },
   { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
 ];
 
 /**
@@ -1470,6 +1511,7 @@ export const COMPANY_SCHEME_RECEIVABLE_INFO_FIELDS: FieldDef[] = [
   { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   { key: 'printed_at', name: 'Print Time', group: 'voucher' },
   { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
 ];
 
 /** A receivable row: one IMEI on a scheme invoice, and where its money stands. */
@@ -1505,6 +1547,7 @@ export const COMPANY_SCHEME_RECEIPTS_INFO_FIELDS: FieldDef[] = [
   { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   { key: 'printed_at', name: 'Print Time', group: 'voucher' },
   { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
 ];
 
 /**
@@ -1566,6 +1609,7 @@ export const ORDER_TRANSACTION_INFO_FIELDS: FieldDef[] = [
   { key: 'delivery_location', name: 'Delivery Location', group: 'order' },
 
   { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
 
   { key: 'total_qty', name: 'Total Quantity', group: 'total', numeric: true },
   { key: 'total_amount', name: 'Total Amount', group: 'total', numeric: true },
@@ -1654,6 +1698,7 @@ const STOCK_INFO_FIELDS: FieldDef[] = [
   { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   { key: 'printed_at', name: 'Print Time', group: 'voucher' },
   { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
 ];
 
 /**
@@ -2729,6 +2774,20 @@ const salesInvoice = (): PrintTemplate => ({
         { field: 'net_amount', label: 'Net Tk.', ruleAbove: true },
         { field: 'received_amount', label: 'Received Tk.' },
         { field: 'due_amount', label: 'Due Tk.', ruleAbove: true },
+        // The bill's own due, plus what the party already owed. `ruleAbove` on
+        // the lower line is the dash between the two -- the same way Net and
+        // Due are read as a sum. Both drop off a party that owed nothing
+        // before this bill: hideIfEmpty takes the nought, and hideIfEqualTo
+        // takes the case where Final Due and Due are the same figure, which
+        // would otherwise be the same line printed twice.
+        { field: 'previous_due', label: 'Previous Due Tk.', hideIfEmpty: true },
+        {
+          field: 'final_due',
+          label: 'Final Due Tk.',
+          hideIfEmpty: true,
+          ruleAbove: true,
+          hideIfEqualTo: 'due_amount',
+        },
       ],
     }),
     band<InstallmentBand>({
@@ -3752,6 +3811,19 @@ const infoItems = (value: any): InfoItem[] =>
           ? item.hideIfEqualTo
           : undefined,
       ruleAbove: Boolean(item.ruleAbove),
+      // A rule of its own. Solid is what the paper already does, so only the
+      // other one is remembered -- and the two gaps are kept only when they
+      // were stated, which leaves a line added before they existed at the
+      // renderer's own default rather than at a nought neither of us chose.
+      ruleStyle: item.ruleStyle === 'dashed' ? 'dashed' : undefined,
+      ruleSpaceAbove:
+        item.ruleSpaceAbove === undefined || item.ruleSpaceAbove === null
+          ? undefined
+          : bounded(item.ruleSpaceAbove, 0, 60, RULE_SPACE),
+      ruleSpaceBelow:
+        item.ruleSpaceBelow === undefined || item.ruleSpaceBelow === null
+          ? undefined
+          : bounded(item.ruleSpaceBelow, 0, 60, RULE_SPACE),
     }));
 
 const tableColumns = (value: any): TableColumn[] =>

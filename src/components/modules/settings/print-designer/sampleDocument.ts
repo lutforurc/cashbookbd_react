@@ -321,6 +321,11 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
     net_amount: 36120,
     received_amount: 7000,
     due_amount: 29120,
+    // A party that already owed 5,000 before this bill, so the designer's
+    // preview shows both lines and the rule between them. The real figure
+    // comes from the server (see previousDueOf); this is the sample's own.
+    previous_due: 5000,
+    final_due: 34120,
     amount_words: 'Thirty Six Thousand One Hundred And Twenty Taka Only',
     printed_by: 'Sample User',
   },

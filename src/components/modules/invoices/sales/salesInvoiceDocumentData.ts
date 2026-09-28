@@ -47,6 +47,14 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
   const discountAmount = discount ? Number(discount.debit) : 0;
   const receivedAmount = received ? Number(received.debit) : 0;
   const netAmount = grandTotal + tdsAmount + serviceChargeAmount + carryingOutwardAmount - discountAmount;
+  const dueAmount = netAmount - receivedAmount;
+
+  // What the party owed BEFORE this bill -- the server's own figure, summed
+  // from the party's ledger with this voucher left out. Absent on a server
+  // that predates the key, and on a cash customer, whose account is the drawer
+  // and not a due; both print nothing rather than a wrong nought (the
+  // catalogue's two due lines carry hideIfEmpty).
+  const previousDue = Number(data?.previous_due) || 0;
 
   const getWarranty = (warranty: any): string => {
     if (!warranty || typeof warranty !== 'object') return '';
@@ -94,7 +102,11 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
       discount_amount: discountAmount,
       net_amount: netAmount,
       received_amount: receivedAmount,
-      due_amount: netAmount - receivedAmount,
+      due_amount: dueAmount,
+      previous_due: previousDue,
+      // The running outstanding, the figure the Tiles sales screen totalled
+      // into its Total Tk.: what was already owed, plus what this bill leaves.
+      final_due: previousDue + dueAmount,
       // From net_amount here rather than the server's `inword`, which leaves
       // out carrying outward (coa4 198) and so could disagree with the Net line
       // printed right above it.

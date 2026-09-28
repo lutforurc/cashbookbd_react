@@ -18,6 +18,8 @@ import {
   InstallmentBand,
   NotesBand,
   PrintTemplate,
+  RULE_FIELD,
+  RULE_SPACE,
   SignatureBand,
   SpacerBand,
   TableBand,
@@ -419,6 +421,10 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         // it is a rule for somebody to write on. See FIELD_CATALOG.
         case 'blank':
           return '';
+        // A rule is drawn, not written: it answers with nothing, and the totals
+        // block draws it where the row would have been. See RULE_FIELD.
+        case 'rule':
+          return '';
         case 'product_names':
           return listOf((row) => row?.product_name);
         case 'product_categories':
@@ -733,8 +739,17 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       const repeats = (item: (typeof band.items)[number]) =>
         !!item.hideIfEqualTo && value(item.field) === value(item.hideIfEqualTo);
 
+      /**
+       * ⚠️ A RULE IS NEVER HIDDEN. Every other line here can be dropped for
+       * having nothing to say -- a nought, or the same figure as the line above
+       * it -- but a rule the tenant placed on the paper is not stating a figure,
+       * and a filter written for figures would take it away without a word.
+       */
+      const isRule = (item: (typeof band.items)[number]) => item.field === RULE_FIELD;
+
       const visible = band.items.filter(
-        (item) => !(item.hideIfEmpty && nothing(item.field)) && !repeats(item),
+        (item) =>
+          isRule(item) || (!(item.hideIfEmpty && nothing(item.field)) && !repeats(item)),
       );
       if (!visible.length) return null;
 
@@ -786,7 +801,11 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         // in pixels would not.
         const widest = Math.max(
           8,
-          ...visible.map((item) => caption(item.label, fieldName(item.field)).length),
+          ...visible
+            // A rule has no label to measure, and "Line" is not one of the words
+            // this column is being sized for.
+            .filter((item) => !isRule(item))
+            .map((item) => caption(item.label, fieldName(item.field)).length),
         );
 
         return {
@@ -815,12 +834,31 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       if (band.layout === 'inline') {
         return (
           <div className={`mb-2 flex flex-wrap gap-x-6 gap-y-1 ${side}`}>
-            {visible.map((item, index) => (
-              <span key={`${item.field}-${index}`}>
-                <b>{caption(item.label, fieldName(item.field))}:</b>{' '}
-                <b>{value(item.field)}</b>
-              </span>
-            ))}
+            {visible.map((item, index) =>
+              // Across one line a rule has nothing to rule off, so it stands up
+              // instead: what it separates is still told apart, and a blank
+              // space with a label on it is not printed.
+              isRule(item) ? (
+                <span
+                  key={`${item.field}-${index}`}
+                  aria-hidden
+                  className={
+                    item.ruleStyle === 'dashed'
+                      ? 'border-l border-dashed border-gray-400'
+                      : 'border-l border-gray-800'
+                  }
+                  style={{
+                    marginLeft: `${item.ruleSpaceAbove ?? RULE_SPACE}px`,
+                    marginRight: `${item.ruleSpaceBelow ?? RULE_SPACE}px`,
+                  }}
+                />
+              ) : (
+                <span key={`${item.field}-${index}`}>
+                  <b>{caption(item.label, fieldName(item.field))}:</b>{' '}
+                  <b>{value(item.field)}</b>
+                </span>
+              ),
+            )}
           </div>
         );
       }
@@ -849,6 +887,33 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
             ) : null}
             <tbody>
               {visible.map((item, index) => {
+                // ⚠️ A line of its own, drawn across the same columns the sums
+                // are ruled across: the empty column on the left stays empty,
+                // exactly as it does for ruleAbove below. Its two gaps are the
+                // only thing that tells it apart from a plain gap in the block.
+                if (isRule(item)) {
+                  return (
+                    <tr key={`${item.field}-${index}`}>
+                      {footedTo ? <td /> : null}
+                      <td
+                        colSpan={3}
+                        style={{
+                          paddingTop: `${item.ruleSpaceAbove ?? RULE_SPACE}px`,
+                          paddingBottom: `${item.ruleSpaceBelow ?? RULE_SPACE}px`,
+                        }}
+                      >
+                        <div
+                          className={
+                            item.ruleStyle === 'dashed'
+                              ? 'border-t border-dashed border-gray-400'
+                              : 'border-t border-gray-800'
+                          }
+                        />
+                      </td>
+                    </tr>
+                  );
+                }
+
                 // A rule where a sum happens -- above the gross, the net and
                 // the balance. Drawn on the cells rather than the row, which
                 // browsers ignore on a collapsed table; and never on the first
