@@ -22,6 +22,15 @@ export interface Column {
   header: React.ReactNode;
   headerClass?: string;
   cellClass?: string;
+  /**
+   * The column's share of the table, e.g. '80px' or '12%'. A bare number is
+   * read as pixels.
+   *
+   * Landed on the `<col>` rather than on the cells: the table is
+   * `table-fixed`, so one width per column is what decides the layout, and
+   * ninety-odd screens were already passing this before it was read.
+   */
+  width?: string | number;
   render?: (row: any, index: number) => React.ReactNode;
 }
 
@@ -322,7 +331,11 @@ const Table: React.FC<TableProps> = ({
         >
           <colgroup>
             {visibleColumns.map((col) => (
-              <col key={col.key} className={col.cellClass} />
+              <col
+                key={col.key}
+                className={col.cellClass}
+                style={col.width ? { width: col.width } : undefined}
+              />
             ))}
           </colgroup>
 

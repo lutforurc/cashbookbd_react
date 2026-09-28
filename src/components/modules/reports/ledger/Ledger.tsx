@@ -428,7 +428,7 @@ const Ledger = (user: any) => {
     {
       key: 'sl_number',
       header: 'Sl. No',
-      width: '100px',
+      width: '80px',
       headerClass: 'items-center text-center',
       cellClass: 'items-center text-center',
       render: (row: any) => (
@@ -439,12 +439,12 @@ const Ledger = (user: any) => {
       key: 'vr_date',
       header: 'Vr Date',
       render: (row: any) => <div className="">{row.vr_date && formatDate(row.vr_date)}</div>,
-      width: '80px',
+      width: '90px',
     },
     {
       key: 'vr_no',
-      header: 'Vr No',
-      width: '100px',
+      header: 'Vr No', 
+      width: '90px',
       render: (row: any) => (
         <div
           className="cursor-pointer hover:underline"
@@ -788,7 +788,7 @@ const Ledger = (user: any) => {
               <PrintRowsInput
                 id="perPage"
                 name="perPage"
-                label="Rows"
+                label=""
                 value={perPage.toString()}
                 onChange={handlePerPageChange}
                 type='text'
@@ -797,7 +797,7 @@ const Ledger = (user: any) => {
               <PrintFontInput
                 id="fontSize"
                 name="fontSize"
-                label="Font"
+                label=""
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
                 type='text'
