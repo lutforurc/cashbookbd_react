@@ -204,7 +204,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2 w-30 text-center"
+                        className="border border-gray-900 px-2 py-2 w-26 text-left"
                       >
                         Vr No
                       </th>
@@ -248,11 +248,11 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                             style={{ fontSize: fs }}
                             className="border border-gray-900 px-2 py-1 text-center leading-normal "
                           >
-                            <div className={`flex justify-center text-[${fs}px]`}>
+                            <div className={`flex text-left text-[${fs}px]`}>
                               {row?.vr_no ? row.vr_no : ''}
                             </div>
 
-                            <div className={`text-[${fs}px]`}>
+                            <div className={`text-left text-[${fs}px]`}>
                               {row?.vr_date && formatDate(dayjs(row?.vr_date).format('YYYY-MM-DD'))}
                               {/* { row?.vr_date } */}
                             </div>
