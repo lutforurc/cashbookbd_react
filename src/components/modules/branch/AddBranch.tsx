@@ -7,6 +7,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import {
   downPaymentBases,
+  ledgerDiscountSplit,
   moneySpellFormat,
   padPrintModes,
   printerSettings,
@@ -81,6 +82,12 @@ interface branchItem {
   manual_voucher_date_label: string;
   manual_challan_no_label: string;
   manual_challan_date_label: string;
+  /**
+   * How this branch's party ledger reads a bill that carries a discount.
+   * `''` is the report as it has always read; `'1'` shows the bill whole with
+   * the discount broken out beside it. Display only -- the books do not move.
+   */
+  ledger_discount_split: string;
   decimal_places: number;
   dashboard_top_sales_days: number;
   dashboard_top_purchase_days: number;
@@ -411,6 +418,7 @@ const AddBranch = () => {
     manual_voucher_date_label: '',
     manual_challan_no_label: '',
     manual_challan_date_label: '',
+    ledger_discount_split: '',
     decimal_places: 0,
     dashboard_top_sales_days: 0,
     dashboard_top_purchase_days: 0,
@@ -1394,6 +1402,29 @@ const AddBranch = () => {
                         onChange={handleOnChange}
                       />
                     </div>
+
+                    {/* ⚠️ HOW THE PARTY LEDGER READS A DISCOUNTED BILL, AND IT
+                        IS DECIDED HERE RATHER THAN ON THE REPORT. A branch
+                        answers once and every counter reads it the same way.
+                        Neither answer moves a figure: the party's line is
+                        posted net of the discount and the discount is its own
+                        leg on a head of its own, so the split is the same money
+                        told as full value plus concession instead of one net
+                        line. Balances, totals, Trial Balance and P&L are
+                        untouched. */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="ledger_discount_split"
+                        name={'ledger_discount_split'}
+                        label="Ledger: Discounted Bill"
+                        description="As it is now shows the party's line net of the discount -- one line a bill. The other shows the bill at full value with the discount as a line of its own on the opposite side."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.ledger_discount_split || ''}
+                        data={ledgerDiscountSplit}
+                      />
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       <InputElement
                         id="dashboard_top_sales_days"
