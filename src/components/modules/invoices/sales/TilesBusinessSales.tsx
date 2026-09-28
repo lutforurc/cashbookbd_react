@@ -364,6 +364,18 @@ const TilesBusinessSales = () => {
     setIsReceivedAmtManuallyEdited(false);
     // initialFormData carries the four manual figures as '', so they clear too.
     setFormData(initialFormData);
+
+    // ⚠️ THE PREVIOUS BALANCE BELONGS TO THE CUSTOMER THIS RESET JUST DROPPED.
+    // It is the last party's own ledger figure, and nothing on the empty form
+    // answers to it any more -- left standing it would be counted into the next
+    // bill's Total Tk. as though the new customer owed it. The receipt screen
+    // clears its own the same way when a voucher is stored.
+    setPreviousBalance(0);
+
+    // And the line the desk had half-typed goes with it, for the same reason:
+    // it is a draft of a bill that is no longer on screen. The warehouse stays
+    // -- one store all day -- exactly as it does between two lines of one bill.
+    clearProductEntry();
   };
 
   const openCustomerModal = (typedName = '') => {
@@ -518,9 +530,44 @@ const TilesBusinessSales = () => {
     return shown === '-' ? '0' : shown;
   };
 
+  /**
+   * Clears the three boxes the desk fills for one line -- product, quantity,
+   * price -- together with the two things that belonged to the line just
+   * stored: the unit shown in the quantity box and the running line total.
+   *
+   * The warehouse is deliberately kept. A bill is written against one store, so
+   * asking for it again on every line would be busywork, and the dropdown would
+   * have to be re-picked for no decision anybody actually makes per line.
+   */
+  const clearProductEntry = () => {
+    setProductData((prevState: any) => ({ warehouse: prevState.warehouse }));
+    setUnit(null);
+    setLineTotal(0);
+  };
+
+  /**
+   * One line per product. A second line of the same product is a typing slip at
+   * the counter, not a second sale, and the desk cannot tell the two apart by
+   * eye once the rows are printed.
+   *
+   * Keyed on the product's own id, so the same tiles at a second rate are
+   * refused too -- the rate is not what makes it a different line.
+   */
+  const isProductAlreadyAdded = (skipIndex: number | null = null) =>
+    formData.products.some(
+      (row: any, index: number) =>
+        index !== skipIndex && Number(row.product) === Number(productData.product),
+    );
+
   const addProduct = () => {
     const isValid = validateProductData(productData);
     if (!isValid) return;
+
+    if (isProductAlreadyAdded()) {
+      toast.info('This product is already added.');
+      return;
+    }
+
     const newProduct: Product = {
       ...productData,
       id: Date.now(),
@@ -535,11 +582,19 @@ const TilesBusinessSales = () => {
       ...prevFormData,
       products: [...prevFormData.products, newProduct],
     }));
+    clearProductEntry();
   };
 
   const editProduct = () => {
     const isValid = validateProductData(productData);
     if (!isValid) return;
+
+    // The same rule as adding, with the line being edited left out of the count
+    // -- otherwise changing only its rate would refuse itself.
+    if (isProductAlreadyAdded(updateId)) {
+      toast.info('This product is already added.');
+      return;
+    }
 
     const newItem: Product = {
       id: Date.now(),
@@ -561,6 +616,7 @@ const TilesBusinessSales = () => {
 
     setIsUpdating(false);
     setUpdateId(null);
+    clearProductEntry();
   };
 
   const handleDelete = (id: number) => {
@@ -588,20 +644,18 @@ const TilesBusinessSales = () => {
 
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const newValue = value ? parseFloat(value) : 0;
-    setProductData((prevState: any) => ({
-      ...prevState,
-      [name]: value,
-    }));
-    // Update product data state
-    setProductData((prevState: any) => {
-      const updatedProductData = { ...prevState, [name]: newValue };
 
-      // Calculate line total after updating product data
+    // The box keeps exactly what was typed. Parsing here is what stopped a
+    // decimal from ever being entered: the dot of a half-typed "26." reads back
+    // as 26, the box re-renders without it, and 26.22 can never be reached.
+    // Every reader of these two figures parses them itself -- the line total
+    // below, and addProduct / editProduct before the row is stored.
+    setProductData((prevState: any) => {
+      const updatedProductData = { ...prevState, [name]: value };
+
       const qty = parseFloat(updatedProductData.qty) || 0;
       const price = parseFloat(updatedProductData.price) || 0;
-      const newLineTotal = qty * price;
-      setLineTotal(newLineTotal); // Update lineTotal state here
+      setLineTotal(qty * price);
       return updatedProductData;
     });
   };
@@ -1224,27 +1278,43 @@ const TilesBusinessSales = () => {
             </div>
 
             {/* Read while the bill is being written, so it stands under the
-                buttons rather than up beside the customer box. The formula is
-                written out and then worked through with the invoice's own four
-                numbers, because the answer alone does not say what was added to
-                what -- and a total that cannot be followed cannot be checked. */}
-            <div className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
-              {previousBalance > 0 ? (
-                <p>Previous Balance: {money(previousBalance)}</p>
-              ) : null}
-              <p className="text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
-                Total Tk. = Previous Balance + Current Invoice − Discount −
-                Received Amount
-              </p>
-              {/* The running figure, not the bill's own: what the party owes
-                  once this bill and whatever was taken are counted in. A cash
-                  sale carries nothing in -- the cash head is not a party -- so
-                  its received box is the whole bill and this lands on nought. */}
-              <p>
-                = {money(previousBalance)} + {money(billAmount)} −{' '}
-                {money(discountAmount)} − {money(receivedAmount)} ={' '}
-                <span className="text-base">{money(totalTkAmount)}</span>
-              </p>
+                buttons rather than up beside the customer box.
+
+                One term to a line, the answer under a rule:
+                  Total Tk. = Previous Balance + Current Invoice − Discount −
+                              Received Amount
+                Written this way the sum can be followed term by term, which a
+                single worked-out figure cannot be -- and a total that cannot be
+                followed cannot be checked.
+
+                ⚠️ EVERY TERM SHOWS, nought included. A line that comes and goes
+                with its amount leaves the block a different height each time,
+                and a term that has vanished is the one the desk most wants to
+                see was counted.
+
+                The answer is the running figure, not the bill's own: what the
+                party owes once this bill and whatever was taken are counted in.
+                A cash sale carries nothing in -- the cash head is not a party --
+                so its received box is the whole bill and this lands on nought. */}
+            <div className="ml-auto w-full max-w-xs text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
+              {(
+                [
+                  ['Previous Balance', previousBalance],
+                  ['Current Invoice', billAmount],
+                  ['Discount', discountAmount],
+                  ['Received Amount', receivedAmount],
+                ] as [string, number][]
+              ).map(([label, amount]) => (
+                <div key={label} className="flex justify-between gap-4">
+                  <span>{label}</span>
+                  <span>{money(amount)}</span>
+                </div>
+              ))}
+              <div className="my-1 border-t border-gray-400" />
+              <div className="flex justify-between gap-4 text-base font-bold">
+                <span>Total Tk.</span>
+                <span>{money(totalTkAmount)}</span>
+              </div>
             </div>
 
           </div>
