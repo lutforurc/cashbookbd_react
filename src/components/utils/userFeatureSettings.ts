@@ -33,6 +33,19 @@ export const isBranchSettingOn = (settings: any, key: string): boolean =>
   settingOn(settings?.data?.branch?.[key]);
 
 /**
+ * What this branch calls one of its own figures, as typed on Branch Setup.
+ *
+ * ⚠️ THE FALLBACK LIVES AT THE CALL SITE. The server stores only what the branch
+ * typed, so a blank setting means the standard name -- and clearing one in the
+ * branch form gets you back to it.
+ */
+export const branchLabel = (
+  settings: any,
+  key: string,
+  fallback: string,
+): string => settings?.data?.branch?.[key] || fallback;
+
+/**
  * The books are locked up to the last closed year end -- spec §42.
  *
  * The server answers `books_locked_until` beside the current branch (the last

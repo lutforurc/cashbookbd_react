@@ -60,6 +60,7 @@ import { useVoucherPrint } from '../../vouchers';
 import TrackedProductField from '../../product-tracking/TrackedProductField';
 import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import { useNavigate } from 'react-router-dom';
+import { branchLabel } from '../../../utils/userFeatureSettings';
 interface Product {
   id: number;
   product: number;
@@ -74,6 +75,11 @@ interface Product {
 }
 
 type PurchaseSuggestionField = 'vehicle_no' | 'notes';
+
+// The two handwritten dates are held as text, the way the server sends them;
+// these are the pair the tiles sales screen uses for the same four figures.
+const asDate = (value: string) => (value ? dayjs(value).toDate() : null);
+const asText = (date: Date | null) => (date ? dayjs(date).format('YYYY-MM-DD') : '');
 
 const autofillHighlightClass =
   'border-blue-500 ring-1 ring-blue-500 bg-[rgb(var(--c-strokedark))] dark:bg-[rgb(var(--c-strokedark))]';
@@ -90,6 +96,13 @@ const TradingBusinessPurchase = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const purchase = useSelector((s: any) => s.tradingPurchase);
   const settings = useSelector((s: any) => s.settings);
+  // The shop's own four figures below belong to the Tiles and Sanitary trade --
+  // the same branch flag that picks the tiles sales screen. Every other trade
+  // gets the form it has always had.
+  const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
+  const isTilesBranch = Boolean(currentBranch?.is_tiles_and_sanitary);
+  const fieldLabel = (key: string, fallback: string) =>
+    branchLabel(settings, key, fallback);
   const dispatch = useDispatch<any>();
   const [buttonLoading, setButtonLoading] = useState(false);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
@@ -142,6 +155,15 @@ const TradingBusinessPurchase = () => {
     invoice_date: string;
     vehicleNumber: string;
     notes: string;
+    // The supplier's own memo number and date, and the delivery challan's pair
+    // -- the four figures a Tiles and Sanitary shop writes by hand on the
+    // paper, named on Branch Setup. The tiles sales screen carries the same
+    // four; the Ledger prints them in brackets after a row's name, so a
+    // purchase reads the way the sale beside it does.
+    manual_voucher_no: string;
+    manual_voucher_date: string;
+    manual_challan_no: string;
+    manual_challan_date: string;
     currentProduct: { index?: number } | null; // Initialize `currentProduct` with optional index
     searchInvoice: string;
     // The one product this whole invoice is against, chosen by hand. It is not
@@ -164,6 +186,10 @@ const TradingBusinessPurchase = () => {
     invoice_date: '',
     vehicleNumber: '',
     notes: '',
+    manual_voucher_no: '',
+    manual_voucher_date: '',
+    manual_challan_no: '',
+    manual_challan_date: '',
     currentProduct: null, // Initialize `currentProduct` as null
     searchInvoice: '',
     trackedProductId: null,
@@ -690,6 +716,13 @@ const TradingBusinessPurchase = () => {
           paymentAmt: purchase.data.transaction.purchase_master.netpayment.toString() || '',
           discountAmt: parseFloat(purchase.data.transaction.purchase_master.discount) || 0,
           notes: purchase.data.transaction.purchase_master.notes || '',
+          // On the voucher itself, not on the purchase master: the edit query
+          // returns the row whole, so they ride along. Absent on a database the
+          // patch has not reached, which reads as blank.
+          manual_voucher_no: purchase.data.transaction.manual_voucher_no || '',
+          manual_voucher_date: purchase.data.transaction.manual_voucher_date || '',
+          manual_challan_no: purchase.data.transaction.manual_challan_no || '',
+          manual_challan_date: purchase.data.transaction.manual_challan_date || '',
           // Sits beside mtmId on the edit response, not inside `transaction` --
           // it comes from the mapping table, not from the invoice itself. The
           // fallback matters: without it an untracked invoice pulled up after a
@@ -927,6 +960,12 @@ const TradingBusinessPurchase = () => {
             invoice_no: '',
             invoice_date: '',
             vehicleNumber: '',
+            // The four belong to the voucher just saved as much as its invoice
+            // number does, so the next supplier's paper starts clean.
+            manual_voucher_no: '',
+            manual_voucher_date: '',
+            manual_challan_no: '',
+            manual_challan_date: '',
             // This reset lists its fields by hand rather than going through
             // initialFormData, so the product has to be named here too or the
             // one picked on this invoice silently rides along to the next.
@@ -1172,11 +1211,24 @@ const TradingBusinessPurchase = () => {
                         : null
                     }
 	                    orderType="1"
-	                    onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')} // Pass the next field's ID
+	                    // The invoice row is the next box on every other trade; on
+	                    // this shop it is not on the screen, and the memo is.
+	                    onKeyDown={(e) => handleInputKeyDown(e, isTilesBranch ? 'manual_voucher_no' : 'invoice_no')}
 	                  />
 	                </div>
 	              </div>
             </div>
+            {/* ⚠️ THE SUPPLIER'S OWN PAPER, WHICH THIS SHOP DOES NOT KEEP. The
+                tiles and sanitary shop's four figures below take this row's
+                place: what the supplier's paper says is written as the memo and
+                the challan, and the vehicle is not asked for. Every other trade
+                still types the three -- the same branch flag that picks the
+                tiles sales screen decides.
+
+                The fields stay in the form's state and in the payload, so a
+                voucher pulled up for edit keeps whatever it already carries;
+                only the boxes are gone. */}
+            {!isTilesBranch && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div>
                 <InputElement
@@ -1222,6 +1274,68 @@ const TradingBusinessPurchase = () => {
                 ))}
               </datalist>
             </div>
+            )}
+
+            {/* The shop's own four figures, in one line: the supplier's memo
+                and the delivery challan that came with the goods, the pair the
+                supplier's paper carries. The branch names them on its Invoice
+                Setup; a name left blank falls back to the standard one. None of
+                the four reaches the posting -- the voucher still posts on
+                vr_date under vr_no -- and all four are optional.
+
+                ⚠️ Tiles and Sanitary only, by the same branch flag that picks
+                the tiles sales screen: every other trade gets the form it has
+                always had.
+
+                Four to a row is tight, so the row is bottom-aligned -- a name
+                long enough to wrap would otherwise lift its own box out of line
+                with the other three. */}
+            {isTilesBranch && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
+                <InputElement
+                  id="manual_voucher_no"
+                  value={formData.manual_voucher_no ?? ""}
+                  name="manual_voucher_no"
+                  placeholder={fieldLabel('manual_voucher_no_label', 'Memo No.')}
+                  label={fieldLabel('manual_voucher_no_label', 'Memo No.')}
+                  className="py-1 w-full"
+                  onChange={handleOnChange}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'manual_voucher_date')}
+                />
+                <InputDatePicker
+                  id="manual_voucher_date"
+                  name="manual_voucher_date"
+                  label={fieldLabel('manual_voucher_date_label', 'Memo Date')}
+                  className="font-medium text-sm w-full"
+                  selectedDate={asDate(formData.manual_voucher_date)}
+                  setSelectedDate={(date: Date | null) =>
+                    setFormData((prev) => ({ ...prev, manual_voucher_date: asText(date) }))
+                  }
+                  setCurrentDate={() => undefined}
+                />
+                <InputElement
+                  id="manual_challan_no"
+                  value={formData.manual_challan_no ?? ""}
+                  name="manual_challan_no"
+                  placeholder={fieldLabel('manual_challan_no_label', 'Challan No')}
+                  label={fieldLabel('manual_challan_no_label', 'Challan No')}
+                  className="py-1 w-full"
+                  onChange={handleOnChange}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'manual_challan_date')}
+                />
+                <InputDatePicker
+                  id="manual_challan_date"
+                  name="manual_challan_date"
+                  label={fieldLabel('manual_challan_date_label', 'Challan Date')}
+                  className="font-medium text-sm w-full"
+                  selectedDate={asDate(formData.manual_challan_date)}
+                  setSelectedDate={(date: Date | null) =>
+                    setFormData((prev) => ({ ...prev, manual_challan_date: asText(date) }))
+                  }
+                  setCurrentDate={() => undefined}
+                />
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
@@ -1273,6 +1387,15 @@ const TradingBusinessPurchase = () => {
               </div>
               {hasPermission(permissions, 'sales.edit') && (
                 <>
+                  {/* ⚠️ THE TYPE BOX BELONGS TO THE SEARCH BESIDE IT. What it
+                      says is only ever read by searchInvoice() below -- "look
+                      this number up as a paid purchase or as a due one" -- and
+                      on this shop there is no search box to press. The Ledger's
+                      Edit answers the same question from the number itself
+                      (getPurchaseTypeForVoucher in searchInvoice), which is how
+                      a voucher opened from the Purchase Ledger has always been
+                      resolved. Another trade, with its search box, keeps it. */}
+                  {!isTilesBranch && (
                   <div className="mt-2">
                     <DropdownCommon
  id="saleType"
@@ -1283,6 +1406,15 @@ const TradingBusinessPurchase = () => {
  className="w-full "
                     />
                   </div>
+                  )}
+                  {/* ⚠️ NO SEARCH BOX ON THE TILES AND SANITARY SHOP, AND THE
+                      VOUCHER STILL OPENS FOR EDIT. What the box did is pull a
+                      saved invoice up by its number; the desk gets there from
+                      the Ledger's own Edit button, which lands here carrying the
+                      number and is answered by useVoucherAutoEditSearch above --
+                      the search state and searchInvoice() are untouched, only
+                      the box is gone. Another trade keeps the box. */}
+                  {!isTilesBranch && (
                   <>
                     <div className="relative mt-2">
                       <div className="w-full ">
@@ -1310,6 +1442,7 @@ const TradingBusinessPurchase = () => {
                       />
                     </div>
                   </>
+                  )}
                 </>
               )}
             </div>

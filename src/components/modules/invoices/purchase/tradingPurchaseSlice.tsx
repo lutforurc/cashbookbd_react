@@ -40,6 +40,11 @@ interface formData {
   purchaseOrderText: string;
   vehicleNumber: string;
   notes: string;
+  // Tiles and Sanitary's own four figures -- blank on every other trade.
+  manual_voucher_no?: string;
+  manual_voucher_date?: string;
+  manual_challan_no?: string;
+  manual_challan_date?: string;
   products: Product[];
 }
 
