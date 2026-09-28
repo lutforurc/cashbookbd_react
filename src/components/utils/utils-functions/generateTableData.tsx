@@ -103,7 +103,16 @@ export const generateTableData = (data: any, descending = false): TableRow[] => 
    * top in either format.
    */
   const shownDetails = descending ? [...detailsRows].reverse() : detailsRows;
-  shownDetails.forEach((row, idx) => (row.sl_number = idx + 1));
+  // ⚠️ A LINE WITH NO VOUCHER OF ITS OWN GETS NO NUMBER, AND DOES NOT TAKE ONE.
+  // The discount a discounted bill is broken into rides along under it as a row
+  // of its own, with the number and the date left blank by the split in
+  // ReportsController, and the owner asked for the Sl. No. to read blank beside
+  // it as well. Counting it left a gap in the list -- 1, 2, 4 -- so the counter
+  // moves only for the rows that are a document.
+  let slNumber = 0;
+  shownDetails.forEach(
+    (row) => (row.sl_number = row.vr_no ? ++slNumber : ''),
+  );
 
   // Sum all debit
   const rangeDebit = detailsRows.reduce(
