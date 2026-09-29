@@ -256,14 +256,25 @@ const TilesBusinessPurchase = () => {
    * bill's own id goes along, and the server leaves that one out, or the bill
    * would count itself and its amount would show up twice.
    *
-   * ⚠️ `payable` IS WHY THIS SCREEN CAN READ IT AT ALL. A supplier is owed BY
-   * us, so the ledger runs the other way round from a customer's: read the
-   * customer's way the sum is negative at every date and the server's floor
-   * turns it into a permanent nought. The flag asks for our side of it.
+   * ⚠️ THE PARTY'S OWN BALANCE, THE ONE FIGURE EVERY SCREEN SHOWS. It used to
+   * ask with `payable: 1`, which read the ledger the supplier's way -- credit
+   * minus debit -- so the same party showed a positive balance on the sales
+   * screen and a negative one here. One rule now, for every invoice: debit
+   * minus credit, as the ledger itself keeps it.
+   *
+   * ⚠️ AND SO THE SIGN SAYS WHICH WAY THE ACCOUNT RUNS. A supplier we owe
+   * stands at a NEGATIVE balance -- here, on the sales screen, on their ledger,
+   * and on the bill's own Previous Due Tk. A negative Total Tk. under the rule
+   * below is that same figure, not a mistake.
    *
    * ⚠️ THE CASH HEAD IS NOT A PARTY. Account 17's balance is the drawer, not a
    * debt, so a cash purchase asks for nothing and carries nothing into the
    * total.
+   *
+   * ⚠️ `allow_negative` -- the balance WITH its sign. The server floors it at
+   * zero for the receipt box, where a credit is not an amount to collect; here
+   * the figure is a term of the bill's own total, and a floored credit made
+   * that total wrong by exactly the advance.
    */
   const loadPreviousBalance = (account: string | number, excludeMtmId = '') => {
     if (!account || Number(account) === 17) {
@@ -273,7 +284,7 @@ const TilesBusinessPurchase = () => {
 
     httpService
       .get(API_TILES_PREVIOUS_BALANCE_URL, {
-        params: { account, exclude_mtm_id: excludeMtmId, payable: 1 },
+        params: { account, exclude_mtm_id: excludeMtmId, allow_negative: 1 },
       })
       .then((response: any) =>
         setPreviousBalance(Number(response?.data?.data?.data?.balance ?? 0)),
@@ -522,14 +533,16 @@ const TilesBusinessPurchase = () => {
    * The four terms the block under the buttons shows, and the answer under the
    * rule:
    *
-   *   Total Tk. = Previous Balance + Current Invoice - Discount - Payment Amount
+   *   Total Tk. = Previous Balance - Current Invoice + Discount + Payment Amount
    *
    * 💡 THIS IS THE SUPPLIER'S LEDGER, TERM BY TERM. Saving credits the supplier
    * the bill net of discount and debits them whatever was paid, so the balance
-   * moves by exactly (Current Invoice - Discount - Payment) -- which is what
-   * this adds to the balance they already stood at. A cash purchase carries
-   * nothing in: the counter is not a party, so its payment box is the whole
-   * bill and the answer lands on nought.
+   * they stand at -- debit minus credit, the figure the Previous Balance line
+   * above is -- falls by exactly (Current Invoice - Discount - Payment), which
+   * is what this takes off it. A party already in debit with us, a buy-back
+   * from a customer say, starts positive and this adds to it. A cash purchase
+   * carries nothing in: the counter is not a party, so its payment box is the
+   * whole bill and the answer lands on nought.
    *
    * Purchase has no service charge, TDS or transportation to fold in, so the
    * Current Invoice term is the line total itself.
@@ -538,7 +551,7 @@ const TilesBusinessPurchase = () => {
   const discountAmount = Number(formData.discountAmt) || 0;
   const receivedAmount = Number(formData.paymentAmt) || 0;
   const totalTkAmount =
-    previousBalance + billAmount - discountAmount - receivedAmount;
+    previousBalance - billAmount + discountAmount + receivedAmount;
 
 
   const addProduct = () => {
@@ -1257,7 +1270,7 @@ const TilesBusinessPurchase = () => {
                 buttons rather than up beside the supplier box.
 
                 One term to a line, the answer under a rule:
-                  Total Tk. = Previous Balance + Current Invoice - Discount -
+                  Total Tk. = Previous Balance - Current Invoice + Discount +
                               Payment Amount
                 Written this way the sum can be followed term by term, which a
                 single worked-out figure cannot be -- and a total that cannot be

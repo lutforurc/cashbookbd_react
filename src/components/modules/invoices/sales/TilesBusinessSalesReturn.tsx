@@ -184,6 +184,11 @@ const TilesBusinessSalesReturn = () => {
    *
    * ⚠️ THE CASH HEAD IS NOT A PARTY. Account 17's balance is the drawer, not a
    * due, so a cash return asks for nothing and carries nothing into the total.
+   *
+   * ⚠️ `allow_negative` -- the balance WITH its sign. The server floors it at
+   * zero for the receipt box, where a credit is not an amount to collect; here
+   * the figure is a term of the return's own total, and a floored credit made
+   * that total wrong by exactly the advance.
    */
   const loadPreviousBalance = (account: string | number, excludeMtmId = '') => {
     if (!account || Number(account) === 17) {
@@ -193,7 +198,7 @@ const TilesBusinessSalesReturn = () => {
 
     httpService
       .get(API_TILES_PREVIOUS_BALANCE_URL, {
-        params: { account, exclude_mtm_id: excludeMtmId },
+        params: { account, exclude_mtm_id: excludeMtmId, allow_negative: 1 },
       })
       .then((response: any) =>
         setPreviousBalance(Number(response?.data?.data?.data?.balance ?? 0)),

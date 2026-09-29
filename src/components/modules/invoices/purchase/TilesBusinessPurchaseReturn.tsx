@@ -66,19 +66,20 @@ const normalizeSuggestionItems = (items: any) =>
  * A Purchase Return for a Tiles and Sanitary branch -- the purchase invoice's
  * twin, read the other way round, and the sales return's mirror.
  *
- * ⚠️ FOUR TERMS, AND THE FOURTH ONE IS ADDED.
- *   Total Tk. = Previous Balance − Current Invoice + Discount + Received Amount
- * The money moves the same way the goods did: the return takes the bill off
- * what we owe the supplier and puts back whatever they hand us, so a supplier
- * who refunds 200 leaves us owing MORE than one who refunds nothing. This is the
- * opposite sign to the invoice's own block, and the invoice is the thing this
- * screen was copied from, so it is the likeliest line here to be "corrected"
- * into a wrong one.
+ * ⚠️ FOUR TERMS, AND THE THIRD AND FOURTH TAKE MONEY OFF.
+ *   Total Tk. = Previous Balance + Current Invoice − Discount − Received Amount
+ * The money moves the same way the goods did: the return puts the bill back on
+ * the account and takes off whatever the supplier hands us, so a supplier who
+ * refunds 200 ends LOWER than one who refunds nothing. The purchase invoice's
+ * own block is this same expression with every sign turned round, and this
+ * screen was copied from that one -- so it is the likeliest line here to be
+ * "corrected" into a wrong one.
  *
- * ⚠️ PREVIOUS BALANCE ASKS FOR THE PAYABLE SIDE. A supplier is owed BY us, so
- * the customer's way of reading the ledger (debit − credit) is negative at every
- * date and the server's floor turns it into a permanent nought. `payable: 1`
- * asks for the other side.
+ * ⚠️ PREVIOUS BALANCE IS THE PARTY'S OWN FIGURE, read the ledger's way and no
+ * other: debit − credit, exactly what the purchase invoice and every sales
+ * screen reads, so one party has one balance wherever it is opened. A supplier
+ * we owe therefore stands at a NEGATIVE balance -- a fact about the account,
+ * not a figure the server floors to nought.
  *
  * Print goes through VoucherPrintRegistry's `12` case to the `purchase_return`
  * doc type -- its own paper, NOT the Purchase Invoice's, so a branch that
@@ -174,12 +175,17 @@ const TilesBusinessPurchaseReturn = () => {
   /**
    * What this branch owed the supplier before this return.
    *
-   * ⚠️ `payable: 1` -- see the note at the head of this file. Without it the
-   * figure is the customer's way of reading the same ledger and comes back
-   * nought every time.
+   * ⚠️ NO DIRECTION FLAG -- see the note at the head of this file. The balance
+   * is the party's own, the same figure the purchase invoice and every sales
+   * screen reads, so one party cannot show two balances.
    *
    * ⚠️ THE CASH HEAD IS NOT A PARTY. Account 17's balance is the drawer, not a
    * due, so a cash return asks for nothing and carries nothing into the total.
+   *
+   * ⚠️ `allow_negative` -- the balance WITH its sign. The server floors it at
+   * zero for the receipt box, where a credit is not an amount to collect; here
+   * the figure is a term of the return's own total, and a floored credit made
+   * that total wrong by exactly the advance.
    */
   const loadPreviousBalance = (account: string | number, excludeMtmId = '') => {
     if (!account || Number(account) === 17) {
@@ -189,7 +195,7 @@ const TilesBusinessPurchaseReturn = () => {
 
     httpService
       .get(API_TILES_PREVIOUS_BALANCE_URL, {
-        params: { account, exclude_mtm_id: excludeMtmId, payable: 1 },
+        params: { account, exclude_mtm_id: excludeMtmId, allow_negative: 1 },
       })
       .then((response: any) =>
         setPreviousBalance(Number(response?.data?.data?.data?.balance ?? 0)),
@@ -446,11 +452,11 @@ const TilesBusinessPurchaseReturn = () => {
 
   // The return's own Total Tk., kept as its four separate terms so the screen
   // can show the arithmetic it is doing:
-  //   Total Tk. = Previous Balance − Current Invoice + Discount + Received Amount
+  //   Total Tk. = Previous Balance + Current Invoice − Discount − Received Amount
   const billAmount = totalAmount;
   const discountAmount = Number(formData.discountAmt) || 0;
   const receivedAmount = Number(formData.paymentAmt) || 0;
-  const totalTkAmount = previousBalance - billAmount + discountAmount + receivedAmount;
+  const totalTkAmount = previousBalance + billAmount - discountAmount - receivedAmount;
 
   // thousandSeparator draws a nought as '-', which inside the formula below
   // reads as a minus sign -- so the one place that shows its working spells a
@@ -897,7 +903,7 @@ const TilesBusinessPurchaseReturn = () => {
             {/* Read while the return is being written.
 
                 One term to a line, the answer under a rule:
-                  Total Tk. = Previous Balance − Current Invoice + Discount +
+                  Total Tk. = Previous Balance + Current Invoice − Discount −
                               Received Amount
 
                 ⚠️ EVERY TERM SHOWS, nought included -- a line that comes and
