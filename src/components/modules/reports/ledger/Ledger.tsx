@@ -20,6 +20,11 @@ import { generateTableData } from '../../../utils/utils-functions/generateTableD
 import { formatDate } from '../../../utils/utils-functions/formatDate';
 import { useReactToPrint } from 'react-to-print';
 import LedgerPrint from './LedgerPrint';
+import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
+import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
+import { normalizeTemplate } from '../../../utils/print-designer/printTemplate';
+import type { PrintTemplate } from '../../../utils/print-designer/printTemplate';
+import { toLedgerDocumentData } from './ledgerDocumentData';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { getCoal4ById } from '../../chartofaccounts/levelfour/coal4Sliders';
@@ -32,7 +37,10 @@ import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import httpService from '../../../services/httpService';
-import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
+import {
+  API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL,
+  API_PRINT_TEMPLATE_URL,
+} from '../../../services/apiRoutes';
 import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { hasPermission } from '../../../utils/permissionChecker';
@@ -597,10 +605,106 @@ const Ledger = (user: any) => {
   };
 
 
-  const handlePrint = useReactToPrint({
+  const printBespoke = useReactToPrint({
     contentRef: printRef,
-    documentTitle: 'Due Report',
+    documentTitle: 'Ledger',
   });
+
+  // The report about to be printed through a saved layout, held with its data
+  // and cleared afterwards so a second print cannot go out carrying the first
+  // one's rows.
+  const [ledgerDoc, setLedgerDoc] = useState<{
+    template: PrintTemplate;
+    data: DocumentData;
+  } | null>(null);
+  const ledgerPrintRef = useRef<HTMLDivElement>(null);
+  const printLedgerDoc = useReactToPrint({
+    contentRef: ledgerPrintRef,
+    documentTitle: 'Ledger',
+    onAfterPrint: () => setLedgerDoc(null),
+  });
+
+  /**
+   * Prints once the report is actually on the page.
+   *
+   * react-to-print copies what is in the DOM the moment it is called, so
+   * calling it in the same breath as setLedgerDoc would copy nothing at all on
+   * the first print. An effect runs after React has committed, and the short
+   * wait after that is for the letterhead image, which PadPrinting loads rather
+   * than renders inline.
+   */
+  useEffect(() => {
+    if (!ledgerDoc) return undefined;
+    const timer = setTimeout(() => printLedgerDoc(), 250);
+    return () => clearTimeout(timer);
+  }, [ledgerDoc]);
+
+  /**
+   * Print: the branch's own Ledger layout where it has saved one, and the sheet
+   * this screen has always printed where it has not.
+   *
+   * ⚠️ THE LAYOUT IS FETCHED AT THE CLICK, not when the screen loaded. Somebody
+   * who has just changed a column in the designer and come straight back to the
+   * report to see it should not have to reload first.
+   *
+   * ⚠️ AND EVERY FAILURE FALLS THROUGH TO THE BESPOKE SHEET. No layout saved
+   * (the endpoint answers with null), a server a patch behind, a dropped
+   * connection -- all of them print LedgerPrint rather than an error or a blank
+   * page. The report is what somebody came here for; the arrangement is on top
+   * of it. The two knobs the screen still owns -- Rows per page and Font size --
+   * are applied over the layout; everything else is the layout's.
+   */
+  const handlePrint = async () => {
+    if (!Array.isArray(tableData) || tableData.length === 0) {
+      printBespoke();
+      return;
+    }
+
+    let layout: any = null;
+
+    try {
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/ledger`, {
+        params: { branch_id: branchId ?? settings?.data?.branch?.id },
+      });
+      layout = response?.data?.data?.data?.layout ?? null;
+    } catch {
+      layout = null;
+    }
+
+    if (!layout) {
+      printBespoke();
+      return;
+    }
+
+    const template = normalizeTemplate(layout, 'ledger');
+    const party = coal4?.coal4ById || {};
+    const partyInfo = party?.cust_party_infos || {};
+    const selectedBranch = (dropdownData ?? []).find(
+      (branch: any) => Number(branch?.id) === Number(branchId),
+    );
+
+    setLedgerDoc({
+      template: { ...template, rowsPerPage: Number(perPage), fontSize: Number(fontSize) },
+      data: toLedgerDocumentData({
+        rows: tableData,
+        startDate,
+        endDate,
+        accountName: party?.name ?? selectedLedgerOption?.label ?? '',
+        accountCode: partyInfo?.idfr_code ?? party?.idfr_code ?? '',
+        address:
+          partyInfo?.manual_address ??
+          party?.manual_address ??
+          partyInfo?.address ??
+          party?.address ??
+          '',
+        mobile: partyInfo?.mobile ?? party?.mobile ?? '',
+        branchName: selectedBranch?.name ?? '',
+        // Listing every branch at once -- the report only does that when no
+        // branch is chosen -- so each row has to say which book it came from.
+        showBranchName: branchId === null,
+      }),
+    });
+  };
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
@@ -831,6 +935,18 @@ const Ledger = (user: any) => {
             showBranchName={branchId === null}
             descending={descending}
           />
+
+          {/* Mounted only while the designed ledger is being printed. Left
+              standing it would draw a whole document on every render of a
+              screen that re-renders as the filters are typed in -- and there is
+              nothing to draw between prints anyway. */}
+          {ledgerDoc ? (
+            <DocumentPrint
+              ref={ledgerPrintRef}
+              template={ledgerDoc.template}
+              data={ledgerDoc.data}
+            />
+          ) : null}
         </div>
       </div>
 

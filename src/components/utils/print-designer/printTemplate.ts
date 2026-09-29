@@ -47,6 +47,7 @@ export type DocType =
   | 'purchase_return'
   | 'sales_ledger'
   | 'purchase_ledger'
+  | 'ledger'
   | 'ledger_details'
   | 'due_list'
   | 'order_transaction'
@@ -112,6 +113,11 @@ export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
     id: 'purchase_ledger',
     name: 'Purchase Ledger',
     hint: 'The report: many vouchers down one sheet, each with its own lines.',
+  },
+  {
+    id: 'ledger',
+    name: 'Ledger',
+    hint: 'The account ledger: one account, a line per voucher, debit against credit, and the balance carried down.',
   },
   {
     id: 'ledger_details',
@@ -287,13 +293,57 @@ export const PRODUCT_TOKENS: { key: string; name: string }[] = [
 export const DEFAULT_PRODUCT_PATTERN = '{brand}\n{category}\n{group}\n{product_name}\n{serial_no}';
 
 /**
+ * The facts a DESCRIPTION pattern may name -- the parts the ledger's own
+ * description is made of, offered one at a time so a shop may write that cell
+ * in its own words: "{name} [{remarks}]", or the stack below, or the name and
+ * the branch and nothing between them.
+ *
+ * These are the ADAPTER's row keys (ledgerDocumentData.ts), not catalogue line
+ * fields, and that is on purpose: the parts of a description are not columns of
+ * their own, and a key put in a catalogue is a key the flat by-key maps give to
+ * every paper that shares it.
+ */
+export const DESCRIPTION_TOKENS: { key: string; name: string }[] = [
+  { key: 'name', name: 'Entry Name' },
+  { key: 'remarks', name: 'Remarks' },
+  { key: 'branch_name', name: 'Branch' },
+];
+
+/** The description's parts, the ledger's own arrangement, one to a line. */
+export const DEFAULT_DESCRIPTION_PATTERN = '{name}\n{remarks}\n{branch_name}';
+
+/**
+ * What each composed column writes when the tenant has not written a pattern.
+ *
+ * ⚠️ ONE TABLE, because the designer SHOWS this default in its box and the
+ * renderer APPLIES it. Two copies of the same literal is a box promising one
+ * thing and a paper printing another -- and a column whose shown default names
+ * facts its own paper has not got (a product pattern on a ledger, a quantity on
+ * a cash book) prints an empty cell for ever with nothing on screen to say why.
+ */
+export const COMPOSED_DEFAULTS: Record<string, string> = {
+  product_flat: DEFAULT_PRODUCT_PATTERN,
+  product_lines: DEFAULT_PRODUCT_PATTERN,
+  own_format: '{qty} {unit}',
+  description_format: DEFAULT_DESCRIPTION_PATTERN,
+};
+
+/** The pattern a composed column actually prints: its own, or its paper's default. */
+export const composedPattern = (column: TableColumn): string =>
+  column.pattern?.trim() || COMPOSED_DEFAULTS[column.field] || DEFAULT_PRODUCT_PATTERN;
+
+/**
  * A column the renderer builds from its pattern rather than reads from one
  * key. The two product ones name the product's facts; `own_format` may name
- * ANY line field -- "{qty} / {unit}", "{product_name} @ {price}" -- and is
+ * ANY line field -- "{qty} / {unit}", "{product_name} @ {price}" -- and
+ * `description_format` names the parts of a ledger's description. Each is
  * stacked wherever its pattern breaks a line.
  */
 export const isComposedField = (key: string) =>
-  key === 'product_flat' || key === 'product_lines' || key === 'own_format';
+  key === 'product_flat' ||
+  key === 'product_lines' ||
+  key === 'own_format' ||
+  key === 'description_format';
 
 /**
  * One line of a pattern, written out for one row.
@@ -338,21 +388,21 @@ export const composeProduct = (
   write?: (key: string, raw: any) => string,
 ): string[] | null => {
   if (!isComposedField(column.field)) return null;
-  const pattern = column.pattern?.trim()
-    ? column.pattern
-    : column.field === 'own_format'
-      ? '{qty} {unit}'
-      : DEFAULT_PRODUCT_PATTERN;
-  return pattern
+  return composedPattern(column)
     .split('\n')
     .map((line) => resolvePattern(line, row, write))
     .filter(Boolean);
 };
 
-/** A composed column whose cell is a stack: the product one, or any pattern with a line break. */
+/**
+ * A composed column whose cell is a stack: the product one, or any pattern with
+ * a line break -- read off the pattern it will PRINT, not off the saved one, so
+ * a column left blank stacks the way its own default stacks.
+ */
 export const isStackedComposed = (column: TableColumn) =>
   column.field === 'product_lines' ||
-  (column.field === 'own_format' && (column.pattern ?? '').includes('\n'));
+  ((column.field === 'own_format' || column.field === 'description_format') &&
+    composedPattern(column).includes('\n'));
 
 export type SignatureItem = {
   /** The line under the rule -- "Received By", "ড্রাইভারের স্বাক্ষর". */
@@ -1425,7 +1475,7 @@ export const LEDGER_DETAILS_LINE_FIELDS: FieldDef[] = [
   { key: 'sl', name: 'Sl. No.', group: 'line' },
   { key: 'voucher_no', name: 'Voucher No', group: 'line' },
   { key: 'voucher_date', name: 'Voucher Date', group: 'line' },
-  { key: 'description_lines', name: 'Description', group: 'line' },
+  { key: 'description_lines', name: 'Description (multi line)', group: 'line' },
   { key: 'description_flat', name: 'Description (one line)', group: 'line' },
   { key: 'vehicle_no', name: 'Vehicle No.', group: 'line' },
   { key: 'pur_qty', name: 'Purchase Quantity', group: 'line', numeric: true },
@@ -1433,6 +1483,152 @@ export const LEDGER_DETAILS_LINE_FIELDS: FieldDef[] = [
   { key: 'rate', name: 'Rate', group: 'line', numeric: true },
   { key: 'pur_total', name: 'Purchase Value', group: 'line', numeric: true },
   { key: 'sal_total', name: 'Sales Value', group: 'line', numeric: true },
+  { key: 'debit', name: 'Debit', group: 'line', numeric: true },
+  { key: 'credit', name: 'Credit', group: 'line', numeric: true },
+  { key: 'running_balance', name: 'Balance', group: 'line', numeric: true },
+];
+
+/**
+ * The plain Ledger -- one COA account's own book, debit against credit.
+ *
+ * Held apart from Ledger Details: that paper is a PARTY's statement, bought
+ * against sold with a rate and a quantity on every voucher; this one is an
+ * ACCOUNT's ledger, which on a chart-of-accounts system is routinely a bank,
+ * a cash box or an expense head as often as it is a customer -- so it prints
+ * debit, credit and a balance and nothing that assumes a product was sold.
+ *
+ * ⚠️ NOTHING HERE IS OFFERED THAT THIS REPORT CANNOT FILL. The endpoint behind
+ * the screen (ReportsController::ledgerApi) answers with the account's own
+ * posted lines -- the account, the voucher, its date, the remark, the branch,
+ * debit, credit -- and joins no per-line inventory detail at all: whatever
+ * products a voucher carried reach the paper as TEXT, inside the description
+ * the server composes. So a product, brand, quantity, rate or amount column on
+ * this paper would be a button that prints an empty cell on every row for ever,
+ * and a trial of it costs a tenant the afternoon it takes to work out that the
+ * data is not there. They come back the day the server puts a voucher's own
+ * lines on these rows -- and that is this catalogue and the adapter together,
+ * not a column anybody may lay out today.
+ *
+ * The one-line / stacked choice lives on the DESCRIPTION, the only multi-part
+ * text this paper has, and it is offered THREE ways: `description_flat` as
+ * "Description (one line)", `description_lines` as "Description (multi line)",
+ * and `description_format` for a shop that wants to say which parts appear and
+ * in what order (see DESCRIPTION_TOKENS). Anywhere else a column's `subField`
+ * gives the same second line.
+ *
+ * ⚠️ THAT PARENTHESIS IS THE PICKER'S WORD, AND A COLUMN NEVER GIVEN A LABEL OF
+ * ITS OWN WEARS IT ON THE PAPER -- an unlabelled column is headed by the
+ * catalogue's name (DocumentPrint's `fieldName`). So the multi-line column
+ * arrives headed "Description (multi line)" until the label is typed in, which
+ * is where a paper's wording belongs anyway; the default layout below already
+ * labels its own. The Ledger Details catalogue says the same two words.
+ *
+ * ⚠️ EVERY KEY HERE IS ONE ANOTHER CATALOGUE ALREADY OWNS, on purpose -- the
+ * flat by-key maps answer by key alone, and a key meaning two things would
+ * rename a column on some other paper. What this paper needs a WORD for and
+ * does not share, the LAYOUT words itself (a column's own label), which is
+ * where wording belongs anyway.
+ */
+export const LEDGER_REPORT_INFO_FIELDS: FieldDef[] = [
+  // Which account the report is for.
+  { key: 'ledger_account', name: 'Account', group: 'party' },
+  { key: 'idfr_code', name: 'Account Code', group: 'party' },
+  { key: 'manual_address', name: 'Address', group: 'party' },
+  { key: 'mobile', name: 'Mobile', group: 'party' },
+
+  // What it was filtered to.
+  { key: 'report_range', name: 'Report Date', group: 'voucher' },
+
+  // The two ends of the report. Neither is a sum of the column below: Opening
+  // is where the account stood before the first row and Closing is where the
+  // running balance finished -- the server's own figures, read off the voucher
+  // rather than totalled, so they print the same on page one as on page nine.
+  { key: 'opening_balance', name: 'Opening Balance', group: 'total', numeric: true, format: 'money' },
+  { key: 'closing_balance', name: 'Closing Balance', group: 'total', numeric: true, format: 'money' },
+
+  // What the table comes to -- plain sums of the columns of the same name, read
+  // by the Grand Total row and by a totals band alike.
+  { key: 'total_debit', name: 'Total Debit', group: 'total', numeric: true },
+  { key: 'total_credit', name: 'Total Credit', group: 'total', numeric: true },
+
+  // The handful of generic keys every heading uses, worded as everywhere else.
+  { key: 'branch_name', name: 'Branch', group: 'voucher' },
+  { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
+  { key: 'printed_at', name: 'Print Time', group: 'voucher' },
+  { key: 'blank', name: 'Blank line', group: 'manual' },
+  { key: 'rule', name: 'Line', group: 'rule' },
+];
+
+/**
+ * One account-ledger row: one voucher, its own note, and the money on it.
+ *
+ * ⚠️ EVERY KEY BUT `description_format` IS SHARED WITH OTHER PAPERS, and
+ * deliberately: a voucher number is a voucher number, so the flat maps resolve
+ * them once and the renderer already formats each the right way. The composed
+ * one is the ledger's alone, because the parts it names are (DESCRIPTION_TOKENS
+ * -- the adapter's own row keys, which no other paper fills).
+ *
+ * ⚠️ `running_balance`, NEVER `balance`: this one is CARRIED DOWN the page, not
+ * summed. Naming it `balance` would make DocumentPrint's totals map add the
+ * column up and put a second, different, wrong figure under it; the report ends
+ * at the closing figure the totals band prints instead. Same rule, same reason
+ * as LEDGER_DETAILS_LINE_FIELDS.
+ */
+export const LEDGER_REPORT_LINE_FIELDS: FieldDef[] = [
+  { key: 'sl', name: 'Sl. No.', group: 'line' },
+  { key: 'voucher_no', name: 'Voucher No', group: 'line' },
+  { key: 'voucher_date', name: 'Voucher Date', group: 'line' },
+  { key: 'description_lines', name: 'Description (multi line)', group: 'line' },
+  { key: 'description_flat', name: 'Description (one line)', group: 'line' },
+  /**
+   * The description written to order -- which of its parts appear, in what
+   * order, and whether they stack.
+   *
+   * ⚠️ THE LEDGER'S OWN COMPOSED COLUMN, NOT `own_format`. That one offers
+   * every line field of the paper as a token, which here means the voucher
+   * number, the two figures and the description itself -- a column built out of
+   * the columns. What a shop arranging this cell wants is its PARTS (see
+   * DESCRIPTION_TOKENS), and its parts are what these tokens are. It is the
+   * same idea as the product patterns on the invoices, over the description
+   * rather than over a product.
+   */
+  { key: 'description_format', name: 'Description (own format)', group: 'line' },
+
+  // ⚠️ NO PRODUCT, BRAND, CATEGORY, CODE, QUANTITY, UNIT, RATE OR AMOUNT
+  // COLUMN, and none of the PRODUCT composed ones either (`product_flat` /
+  // `product_lines` / `own_format`). Not an oversight -- see the note on the
+  // catalogue above: a ledger row carries none of those facts, so every one of
+  // them would print an empty cell. A product composed column is the worst of
+  // them, because its default pattern names brand, category, group and serial,
+  // and a tenant would set a column up, print it, and find nothing on the paper
+  // and no reason why.
+
+  /**
+   * The Tiles & Sanitary trade's own numbers, typed on the voucher by hand.
+   *
+   * ⚠️ NOT THE SYSTEM'S. `voucher_no` above is the number the software gave the
+   * voucher; these two are what the shop wrote in its own khata -- the paper
+   * voucher and the paper delivery challan -- and they are the reason a Tiles
+   * ledger and its vouchers are reconcilable at all. Kept apart from
+   * `voucher_no` in name and in wording so no layout can confuse the two.
+   *
+   * ⚠️ THE DESCRIPTION ALREADY CARRIES THEM, so a column here says the same
+   * number twice. ReportsController appends both to the row's own name in
+   * brackets -- money collected against KBR 12331 reads "Cash (KBR 12331)" --
+   * for EVERY voucher type, which is where the desk finds a voucher by the
+   * number written on the paper. They are offered anyway for the branch that
+   * would rather read them in a column of their own, level with the debit and
+   * credit, than inside the account's own line; the two are the same figure and
+   * a layout wants one or the other, not both.
+   *
+   * Blank on a branch that keeps none (every trade but Tiles and Sanitary
+   * writes null), which prints an empty cell rather than a nought -- there is
+   * no number for this voucher, and nought is not a number.
+   */
+  { key: 'manual_voucher_no', name: 'Manual Voucher No', group: 'line' },
+  { key: 'manual_challan_no', name: 'Manual Challan No', group: 'line' },
+
+  // The money the account's own book turns on.
   { key: 'debit', name: 'Debit', group: 'line', numeric: true },
   { key: 'credit', name: 'Credit', group: 'line', numeric: true },
   { key: 'running_balance', name: 'Balance', group: 'line', numeric: true },
@@ -1800,6 +1996,9 @@ export const fieldsFor = (docType: DocType): FieldDef[] => {
   // keys on top, because most of the challan's keys resolve on this report to a
   // nought that reads as a figure. See the note on LEDGER_DETAILS_INFO_FIELDS.
   if (docType === 'ledger_details') return LEDGER_DETAILS_INFO_FIELDS;
+  // Its own catalogue for the same reason Ledger Details has one: most of the
+  // challan's keys resolve on this report to a nought that reads as a figure.
+  if (docType === 'ledger') return LEDGER_REPORT_INFO_FIELDS;
   if (docType === 'due_list') return DUE_LIST_INFO_FIELDS;
   if (docType === 'company_scheme_receivable') return COMPANY_SCHEME_RECEIVABLE_INFO_FIELDS;
   if (docType === 'company_scheme_receipts') return COMPANY_SCHEME_RECEIPTS_INFO_FIELDS;
@@ -1848,6 +2047,7 @@ export const lineFieldsFor = (docType: DocType): FieldDef[] => {
   if (docType === 'stock_details') return STOCK_DETAILS_LINE_FIELDS;
   if (isLedger(docType)) return LEDGER_LINE_FIELDS;
   if (docType === 'ledger_details') return LEDGER_DETAILS_LINE_FIELDS;
+  if (docType === 'ledger') return LEDGER_REPORT_LINE_FIELDS;
   if (docType === 'due_list') return DUE_LIST_LINE_FIELDS;
   if (docType === 'company_scheme_receivable') return COMPANY_SCHEME_RECEIVABLE_LINE_FIELDS;
   if (docType === 'company_scheme_receipts') return COMPANY_SCHEME_RECEIPTS_LINE_FIELDS;
@@ -1922,6 +2122,11 @@ const byKey = (list: FieldDef[]) =>
  * asks them without knowing which document it is drawing.
  */
 const ALL_INFO_BY_KEY = byKey([
+  // ⚠️ FIRST, not last, and it shares every key it has with a catalogue below --
+  // debit, credit, balance, and the voucher/party words all mean here what they
+  // mean everywhere. First, it names nothing and renames nothing; anything it
+  // did own alone would still be added.
+  ...LEDGER_REPORT_INFO_FIELDS,
   // ⚠️ FIRST, not last: the last definition of a key names it everywhere, and
   // these two share total_amount, as_on_date, branch_name ... with papers that
   // came before them. First, they add their own keys and rename nothing.
@@ -1950,6 +2155,10 @@ const ALL_INFO_BY_KEY = byKey([
 ]);
 
 const ALL_LINE_BY_KEY = byKey([
+  // First for the reason the info map above is: every key it has is shared --
+  // product, qty, rate, debit, credit, the balance -- so it adds nothing and
+  // renames nothing.
+  ...LEDGER_REPORT_LINE_FIELDS,
   // First for the reason the info map above is: they share product_name, code,
   // brand, category, group, unit, qty, price, amount and balance with the
   // invoice catalogues, and add only opening / stock_in / stock_out / purchase_pct.
@@ -3255,6 +3464,102 @@ const ledgerStatement = (): PrintTemplate => ({
 });
 
 /**
+ * The plain Ledger as the bespoke paper (LedgerPrint.tsx) has always drawn it:
+ * the account's own book, a line per voucher, debit against credit, and the
+ * balance carried down.
+ *
+ * ⚠️ WHAT THE BESPOKE SHEET DRAWS AS SUMMARY ROWS IS DRAWN HERE AS A TOTALS
+ * BAND INSTEAD -- Opening and Closing on labelled lines, the two column sums
+ * between them -- and the rows the table is handed are the VOUCHERS ONLY. The
+ * bespoke sheet lists Range Total, Total and Balance as rows of the table, and
+ * DocumentPrint's Grand Total foot adds up whatever rows it is given: handing
+ * it those three as well would count the period's movement twice and put a
+ * foot larger than the report on the page. The figures are all still here, each
+ * said once, and the layout may move any of them where it likes.
+ */
+const ledgerReport = (): PrintTemplate => ({
+  version: 1,
+  docType: 'ledger',
+  orientation: 'portrait',
+  pageSize: 'a4',
+  fontSize: 9,
+  rowsPerPage: 0,
+  marginLeft: MARGIN_LEFT,
+  marginRight: MARGIN_RIGHT,
+  showFooter: true,
+  bands: [
+    band<HeaderBand>({ id: 'header', type: 'header', show: true }),
+    band<TitleBand>({
+      id: 'title',
+      type: 'title',
+      show: true,
+      text: 'Ledger',
+      align: 'center',
+      scale: 1.5,
+      underline: false,
+    }),
+    band<InfoBand>({
+      id: 'info',
+      type: 'info',
+      show: true,
+      columns: 2,
+      layout: 'rows',
+      boxed: false,
+      labelWidth: DEFAULT_LABEL_WIDTH,
+      rowPadding: DEFAULT_ROW_PADDING,
+      rowGap: DEFAULT_ROW_GAP,
+      items: [
+        { field: 'ledger_account', label: 'Name' },
+        { field: 'report_range', label: 'Report Date' },
+        { field: 'idfr_code', label: 'Code', hideIfEmpty: true },
+        { field: 'mobile', label: 'Mobile', hideIfEmpty: true },
+        { field: 'manual_address', label: 'Address', hideIfEmpty: true },
+        { field: 'branch_name', label: 'Branch', hideIfEmpty: true },
+      ],
+    }),
+    band<TableBand>({
+      id: 'table',
+      type: 'table',
+      show: true,
+      bordered: true,
+      repeatHeader: true,
+      fillerRows: 0,
+      // The period's own movement, not the account's balance: the column sums
+      // of Debit and Credit, with nothing under the running Balance -- the
+      // renderer foots only what it is told to (see the totals map).
+      totalRow: true,
+      totalRowLabel: 'Total',
+      columns: [
+        { field: 'sl', label: '#', width: 5, align: 'center' },
+        // The voucher's number over its date, as the bespoke sheet prints it.
+        { field: 'voucher_no', label: 'Vr No', width: 12, align: 'left', subField: 'voucher_date' },
+        { field: 'description_lines', label: 'Description', width: 47, align: 'left' },
+        { field: 'debit', label: 'Debit', width: 12, align: 'right' },
+        { field: 'credit', label: 'Credit', width: 12, align: 'right' },
+        // A single figure against a description that may run to several lines
+        // reads better level with the middle of it than hanging from the top.
+        { field: 'running_balance', label: 'Balance', width: 12, align: 'right', valign: 'middle' },
+      ],
+    }),
+    band<TotalsBand>({
+      id: 'totals',
+      type: 'totals',
+      show: true,
+      align: 'right',
+      layout: 'rows',
+      items: [
+        { field: 'opening_balance', label: 'Opening Balance' },
+        { field: 'total_debit', label: 'Total Debit', hideIfEmpty: true },
+        { field: 'total_credit', label: 'Total Credit', hideIfEmpty: true },
+        // The rule under it is the reckoning: everything above is what leaves
+        // the account where it now stands.
+        { field: 'closing_balance', label: 'Closing Balance', ruleAbove: true },
+      ],
+    }),
+  ],
+});
+
+/**
  * The Due List as the bespoke paper (DueListPrint.tsx) has always drawn it:
  * party, area, the two sides of the balance, when they last paid, and the
  * four ages of what is owed. Portrait -- ten columns, but most of them a
@@ -3778,6 +4083,15 @@ export const LEDGER_DETAILS_PRESETS: PresetDef[] = [
   },
 ];
 
+export const LEDGER_REPORT_PRESETS: PresetDef[] = [
+  {
+    id: 'standard',
+    name: 'Standard Ledger',
+    hint: 'One account, a line per voucher, debit against credit and the balance carried down.',
+    build: ledgerReport,
+  },
+];
+
 export const CHALLAN_PRESETS: PresetDef[] = [
   {
     id: 'standard',
@@ -3845,6 +4159,7 @@ export const presetsFor = (docType: DocType): PresetDef[] => {
   if (docType === 'sales_ledger') return SALES_LEDGER_PRESETS;
   if (docType === 'purchase_ledger') return PURCHASE_LEDGER_PRESETS;
   if (docType === 'ledger_details') return LEDGER_DETAILS_PRESETS;
+  if (docType === 'ledger') return LEDGER_REPORT_PRESETS;
   if (docType === 'due_list') return DUE_LIST_PRESETS;
   if (docType === 'product_stock') return PRODUCT_STOCK_PRESETS;
   if (docType === 'stock_details') return STOCK_DETAILS_PRESETS;
@@ -3861,6 +4176,7 @@ export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTempla
   if (docType === 'sales_ledger') return ledgerHeading('sales_ledger', 'Sales Ledger');
   if (docType === 'purchase_ledger') return ledgerHeading('purchase_ledger', 'Purchase Ledger');
   if (docType === 'ledger_details') return ledgerStatement();
+  if (docType === 'ledger') return ledgerReport();
   if (docType === 'due_list') return dueListPaper();
   if (docType === 'product_stock') return productStockPaper();
   if (docType === 'stock_details') return stockDetailsPaper();

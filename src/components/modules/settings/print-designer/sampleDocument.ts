@@ -527,6 +527,11 @@ export const LEDGER_DETAILS_SAMPLE: DocumentData = {
     report_trx_type: 'All',
     opening_balance: 12000,
     closing_balance: 14700,
+    // The two column sums, for the reason the ledger's sample carries them:
+    // a totals line marked `hideIfEmpty` is measured against the voucher, not
+    // against the rows, so leaving them out hides the line from the preview.
+    total_debit: 32100,
+    total_credit: 29400,
     branch_name: 'Head Office',
   },
   products: [
@@ -593,6 +598,125 @@ export const LEDGER_DETAILS_SAMPLE: DocumentData = {
       debit: 12600,
       credit: 0,
       running_balance: 14700,
+    },
+  ],
+};
+
+/**
+ * The plain Ledger's sample: one account's book, a line per voucher.
+ *
+ * ⚠️ THE PRODUCT, QUANTITY AND RATE FIELDS ARE LEFT OFF ON PURPOSE, and that is
+ * the sample doing its job rather than a gap. The report this paper prints from
+ * (ReportsController::ledgerApi) answers with the account's own posted lines --
+ * debit, credit, a remark, a voucher -- and joins no inventory detail at all, so
+ * there is nothing to put there. A sample that filled a product cell with a name
+ * would have a tenant lay out a column that prints a live report blank, which is
+ * exactly the hole this file's header warns about; the same reason the receipt's
+ * sample carries no VAT line.
+ *
+ * ⚠️ THE RUNNING BALANCE IS CARRIED DOWN, not invented per row -- opening at
+ * 45,000, each row the one above it plus its debit less its credit, closing where
+ * it lands -- and Total Debit and Total Credit are the sums of the two columns,
+ * so a preview whose figures did not reconcile would have a tenant arranging
+ * columns around numbers they cannot check. Debit RAISES this balance; it is the
+ * account's own book, not a party statement's.
+ *
+ * ⚠️ THE TWO KHATA NUMBERS, unlike the product ones, ARE SHOWN. A Tiles and
+ * Sanitary branch does keep them -- on the voucher itself -- so a layout that
+ * names them has something real to preview against, and leaving them off some
+ * rows shows a tenant where they drop out. They are not put in the DEFAULT
+ * layout: on every other trade they are blank, and a column of blanks is the
+ * needless space the owner asked us to avoid.
+ */
+export const LEDGER_REPORT_SAMPLE: DocumentData = {
+  basic: {
+    ledger_account: 'Cash In Hand',
+    idfr_code: 'AC-1001',
+    manual_address: 'Head Office, 12 Station Road, Dhaka',
+    mobile: '01711223344',
+    report_range: '01/09/2026 to 20/09/2026',
+    opening_balance: 45000,
+    closing_balance: 19850,
+    // ⚠️ THE TWO COLUMN SUMS BELONG IN `basic`, even though the renderer works
+    // them out from the rows. A totals line marked `hideIfEmpty` is measured
+    // against the VOUCHER (`nothing()` reads basic), so with these two left out
+    // the preview would hide the Total Debit and Total Credit lines the real
+    // paper prints -- a tenant arranging a band around lines they cannot see.
+    total_debit: 12850,
+    total_credit: 38000,
+    branch_name: 'Head Office',
+  },
+  products: [
+    {
+      sl: 1,
+      voucher_no: '1-260900003',
+      voucher_date: '01/09/2026',
+      // ⚠️ THE PARTS AS WELL AS THE WHOLE. A Description (own format) column
+      // resolves its tokens off the ROW, so without these a pattern box the
+      // tenant has just filled in would preview blank on every row. The branch
+      // is carried on this row and the third only: on the real report it comes
+      // from the report listing every branch at once, and the other two show
+      // what a pattern does with a part a row has not got (its line drops out).
+      name: 'Payment to Supplier',
+      remarks: 'Against PO-2071',
+      branch_name: 'Head Office',
+      description_lines: ['Payment to Supplier', 'Against PO-2071'],
+      description_flat: 'Payment to Supplier Against PO-2071',
+      // The khata numbers a Tiles & Sanitary branch types by hand -- the paper
+      // voucher and the paper delivery challan. NOT the software's voucher_no
+      // above. Shown on this row and the third, and left off the second and
+      // fourth, so the preview shows both arrangements AND that a layout naming
+      // them prints nothing on a branch that keeps none.
+      manual_voucher_no: 'TV-2609-0114',
+      manual_challan_no: 'CH-M-9087',
+      debit: 12500,
+      credit: 0,
+      running_balance: 57500,
+    },
+    {
+      sl: 2,
+      voucher_no: '1-260900011',
+      voucher_date: '05/09/2026',
+      name: 'Cash Received',
+      remarks: 'Against CH-10041',
+      branch_name: '',
+      description_lines: ['Cash Received', 'Against CH-10041'],
+      description_flat: 'Cash Received Against CH-10041',
+      debit: 0,
+      credit: 20000,
+      running_balance: 37500,
+    },
+    {
+      sl: 3,
+      voucher_no: '2-260900004',
+      voucher_date: '09/09/2026',
+      // No remark on this one -- the report has none for a bank charge -- so a
+      // pattern naming {remarks} drops that line rather than printing a gap.
+      name: 'Bank Charge',
+      remarks: '',
+      branch_name: 'Head Office',
+      description_lines: ['Bank Charge'],
+      description_flat: 'Bank Charge',
+      // A khata voucher but no paper challan: the challan line must drop out
+      // rather than print an empty label beside it.
+      manual_voucher_no: 'BV-2609-0007',
+      manual_challan_no: '',
+      debit: 350,
+      credit: 0,
+      running_balance: 37850,
+    },
+    {
+      sl: 4,
+      voucher_no: '3-260900014',
+      voucher_date: '15/09/2026',
+      name: 'Sales Collection',
+      remarks: 'Counter sale',
+      branch_name: '',
+      description_lines: ['Sales Collection', 'Counter sale'],
+      description_flat: 'Sales Collection Counter sale',
+      debit: 0,
+      credit: 18000,
+      running_balance: 19850,
     },
   ],
 };
@@ -1104,6 +1228,7 @@ export const sampleFor = (docType: string): DocumentData => {
   if (docType === 'product_stock') return PRODUCT_STOCK_SAMPLE;
   if (docType === 'stock_details') return STOCK_DETAILS_SAMPLE;
   if (docType === 'ledger_details') return LEDGER_DETAILS_SAMPLE;
+  if (docType === 'ledger') return LEDGER_REPORT_SAMPLE;
   if (docType === 'due_list') return DUE_LIST_SAMPLE;
   if (docType === 'company_scheme_receivable') return COMPANY_SCHEME_RECEIVABLE_SAMPLE;
   if (docType === 'company_scheme_receipts') return COMPANY_SCHEME_RECEIPTS_SAMPLE;

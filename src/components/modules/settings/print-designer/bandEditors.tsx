@@ -24,8 +24,9 @@ import {
   fieldsFor,
   isNumericField,
   lineFieldsFor,
-  DEFAULT_PRODUCT_PATTERN,
+  DESCRIPTION_TOKENS,
   PRODUCT_TOKENS,
+  composedPattern,
   isComposedField,
 } from '../../../utils/print-designer/printTemplate';
 
@@ -899,27 +900,22 @@ export const TableBandEditor: React.FC<{
               ) : null}
             </div>
 
-            {/* HOW a composed column writes the product. Blank reads as the
-                default -- see tableColumns() -- so the box shows that rather
-                than standing empty; a one-line column shows it on one line. */}
+            {/* HOW a composed column writes its cell. Blank reads as this
+                paper's own default -- see composedPattern() -- so the box shows
+                that rather than standing empty; a one-line column shows it on
+                one line. */}
             {isComposedField(column.field) ? (
               <ComposedPattern
-                // own_format takes the textarea too: a line break in it is
-                // what makes the cell a stack.
+                // Everything but the flat product column takes the textarea: a
+                // line break in it is what makes the cell a stack.
                 stacked={column.field !== 'product_flat'}
-                pattern={
-                  column.pattern?.trim()
-                    ? column.pattern
-                    : column.field === 'own_format'
-                      ? '{qty} {unit}'
-                      : column.field === 'product_lines'
-                        ? DEFAULT_PRODUCT_PATTERN
-                        : DEFAULT_PRODUCT_PATTERN.replace(/\n/g, ' ')
-                }
+                pattern={composedPattern(column)}
                 tokens={
-                  column.field === 'own_format'
-                    ? lineFieldsFor(docType).filter((entry) => entry.key !== 'sl' && !isComposedField(entry.key))
-                    : PRODUCT_TOKENS
+                  column.field === 'description_format'
+                    ? DESCRIPTION_TOKENS
+                    : column.field === 'own_format'
+                      ? lineFieldsFor(docType).filter((entry) => entry.key !== 'sl' && !isComposedField(entry.key))
+                      : PRODUCT_TOKENS
                 }
                 onChange={(pattern) => update(index, { pattern })}
               />

@@ -22,6 +22,19 @@ export interface TableRow {
    * every bank receipt on this Ledger to the Cash Received screen.
    */
   is_bank_voucher?: boolean;
+  /**
+   * The Tiles & Sanitary trade's own numbers, typed on the voucher by hand.
+   *
+   * ⚠️ NOT the system's voucher number (`vr_no`) and not a system challan --
+   * these are what the shop wrote in its own khata, stored on the voucher
+   * itself (main_trx_master), so the report already knows the row that holds
+   * them. The endpoint selects them already, and the filled ones are read
+   * through here so a printed ledger may show them in a column of their own.
+   * (The server also folds each into `name`, in brackets -- see the note on
+   * the catalogue in printTemplate.ts.)
+   */
+  manual_voucher_no?: string | null;
+  manual_challan_no?: string | null;
   debit: number;
   credit: number;
   voucher_image: string | null;
@@ -79,6 +92,12 @@ export const generateTableData = (data: any, descending = false): TableRow[] => 
   // 1 from anywhere else would have to fail silently for the desk to notice.
   is_bank_voucher: Boolean(trx.is_bank_voucher),
   approved_by: trx.approved_by || null,
+  // ⚠️ This mapper is a whitelist -- a key the server sends but is not named
+  // here never reaches the row. The two hand-typed Tiles numbers are read
+  // through so the printed ledger can show them. See the note on the TableRow
+  // type.
+  manual_voucher_no: trx.manual_voucher_no ?? null,
+  manual_challan_no: trx.manual_challan_no ?? null,
   debit: parseFloat(trx.debit || 0),
   credit: parseFloat(trx.credit || 0),
   voucher_image: trx.voucher_image || null,

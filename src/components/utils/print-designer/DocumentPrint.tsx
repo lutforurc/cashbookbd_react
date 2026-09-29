@@ -1314,9 +1314,13 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                    * rows carry one and some do not would step up and down the
                    * page for nothing.
                    *
-                   * Smaller and lighter than the line above it: it is what the
-                   * room offers, read after the room has been found, not
-                   * alongside it.
+                   * ⚠️ READ AT THE SIZE OF THE LINE ABOVE IT. It was 0.80em --
+                   * a note on the line above, which is what the room line this
+                   * was built for is, and what a voucher's DATE under its
+                   * number is not: the date is half of what the cell says.
+                   * Owner's ruling, 2026-09-29, for every paper. A column that
+                   * wants its second line quiet again would need an option of
+                   * its own; there is none.
                    */
                   const sub = column.subField
                     ? String(cell(row, startIndex + rowIndex, column.subField) ?? '').trim()
@@ -1378,7 +1382,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                       {marked ? ' *' : ''}
 
                       {sub ? (
-                        <div className="text-[0.80em] leading-snug ">
+                        <div className="leading-snug">
                           {column.subInBrackets ? `(${sub})` : sub}
                         </div>
                       ) : null}
