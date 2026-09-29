@@ -25,6 +25,13 @@ const bool = (v: unknown, fallback = false): boolean => (typeof v === 'boolean' 
 function mediaSrc(ctx: SectionContext, id: unknown): string | null {
   const key = String(id ?? '');
   if (!key || key === 'null' || key === '0') return null;
+
+  // A URL (or a path on this host) IS the image. The section validator accepts
+  // either a media id or a URL -- master templates carry their pictures as URLs
+  // so they can be distributed as plain data -- so both must render here, not
+  // just the ids that happen to be in this site's media library.
+  if (/^(https?:\/\/|\/)/i.test(key)) return key;
+
   const path = ctx.media[key];
   return path ? mediaPathUrl(path) : null;
 }

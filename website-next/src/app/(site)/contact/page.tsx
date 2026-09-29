@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SectionRenderer } from '@/components/sections';
 import { absoluteUrl } from '@/lib/api';
-import { brandOf, pageTitle as composePageTitle } from '@/lib/brand';
+import { descriptionFor, pageHeading, siteBrand } from '@/lib/brand';
 import { getPage, getShell } from '@/lib/site-data';
 import { mediaUrl } from '@/lib/url';
 
@@ -14,11 +14,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const site = shell.data.site;
   const page = await getPage('contact');
-  const brand = brandOf(site.seo, page.ok ? page.data.page.seo : undefined, site.brand_fallback);
-  const title = page.ok ? composePageTitle(false, page.data.page.title, brand) : brand;
+  const brand = siteBrand(site.seo, site.brand_fallback);
+  const title = page.ok ? pageHeading(page.data.page, brand) : brand;
 
   return {
     title,
+    description: page.ok ? descriptionFor(site.seo, page.data.page.seo) : descriptionFor(site.seo, undefined),
     alternates: { canonical: await absoluteUrl('/contact') },
     openGraph: { type: 'website', siteName: brand, title },
     twitter: { card: 'summary_large_image' },

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import SiteLink from '@/components/site/SiteLink';
 import { absoluteUrl } from '@/lib/api';
-import { brandOf } from '@/lib/brand';
+import { siteBrand } from '@/lib/brand';
 import { getProduct, getShell } from '@/lib/site-data';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!shell.ok || !product.ok) return {};
 
   const site = shell.data.site;
-  const brand = brandOf(site.seo, undefined, site.brand_fallback);
+  const brand = siteBrand(site.seo, site.brand_fallback);
   const title = `${product.data.product.title} — ${brand}`;
 
   return {

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SectionRenderer } from '@/components/sections';
 import { absoluteUrl } from '@/lib/api';
-import { brandOf, mergeSeo } from '@/lib/brand';
+import { descriptionFor, mergeSeo, siteBrand } from '@/lib/brand';
 import { getHome, getShell } from '@/lib/site-data';
 import { mediaUrl } from '@/lib/url';
 
@@ -14,18 +14,21 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const home = await getHome();
   const site = shell.data.site;
-  const brand = brandOf(site.seo, home.ok ? home.data.page.seo : undefined, site.brand_fallback);
-  const seo = mergeSeo(site.seo, home.ok ? home.data.page.seo : undefined);
+  const pageSeo = home.ok ? home.data.page.seo : undefined;
+  // The home page carries the company's own name as its title.
+  const brand = siteBrand(site.seo, site.brand_fallback);
+  const description = descriptionFor(site.seo, pageSeo);
+  const seo = mergeSeo(site.seo, pageSeo);
 
   return {
     title: brand,
-    description: seo.description || undefined,
+    description,
     alternates: { canonical: await absoluteUrl('/') },
     openGraph: {
       type: 'website',
       siteName: brand,
       title: brand,
-      description: seo.description || undefined,
+      description,
       images: seo.og_image || site.logo_url ? [seo.og_image ?? mediaUrl(site.logo_url)!] : undefined,
     },
     twitter: { card: 'summary_large_image' },

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SectionRenderer } from '@/components/sections';
 import { absoluteUrl } from '@/lib/api';
-import { brandOf, mergeSeo, pageTitle as composePageTitle } from '@/lib/brand';
+import { descriptionFor, mergeSeo, pageHeading, siteBrand } from '@/lib/brand';
 import { getPage, getShell } from '@/lib/site-data';
 import { mediaUrl } from '@/lib/url';
 
@@ -17,19 +17,21 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!shell.ok || !page.ok) return {};
 
   const site = shell.data.site;
-  const brand = brandOf(site.seo, page.data.page.seo, site.brand_fallback);
-  const title = composePageTitle(false, page.data.page.title, brand);
+  // The site's name stays the site's name; the page adds its own in front.
+  const brand = siteBrand(site.seo, site.brand_fallback);
+  const title = pageHeading(page.data.page, brand);
+  const description = descriptionFor(site.seo, page.data.page.seo);
   const seo = mergeSeo(site.seo, page.data.page.seo);
 
   return {
     title,
-    description: seo.description || undefined,
+    description,
     alternates: { canonical: await absoluteUrl(`/${slug}`) },
     openGraph: {
       type: 'website',
       siteName: brand,
       title,
-      description: seo.description || undefined,
+      description,
       images: seo.og_image || site.logo_url ? [seo.og_image ?? mediaUrl(site.logo_url)!] : undefined,
     },
     twitter: { card: 'summary_large_image' },

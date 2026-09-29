@@ -31,3 +31,29 @@ export function pageTitle(isHome: boolean, pageTitle: string, brand: string): st
 export function mergeSeo(siteSeo: Seo, pageSeo: Seo | undefined): Seo {
   return { ...siteSeo, ...(pageSeo ?? {}) };
 }
+
+/**
+ * The site's own name, on its own.
+ *
+ * ⚠️ Deliberately NOT merged with the page's SEO title. The page's title is
+ * "About us"; the brand is "Meghna Retail & Electronics". Merging them made the
+ * brand change from page to page, so the header, og:site_name and the suffix of
+ * every <title> read "About us" — the company's name nowhere.
+ */
+export function siteBrand(siteSeo: Seo, fallback: string): string {
+  return brandOf(siteSeo, undefined, fallback);
+}
+
+/** "About us — Meghna Retail & Electronics", from the page's own title. */
+export function pageHeading(page: { title: string; seo?: Seo }, brand: string): string {
+  const own = (page.seo?.title ?? '').trim() || page.title;
+
+  return `${own} — ${brand}`;
+}
+
+/** The page's own description, and the site's only when the page has none. */
+export function descriptionFor(siteSeo: Seo, pageSeo: Seo | undefined): string | undefined {
+  const own = (pageSeo?.description ?? '').trim();
+
+  return (own || (siteSeo.description ?? '').trim()) || undefined;
+}
