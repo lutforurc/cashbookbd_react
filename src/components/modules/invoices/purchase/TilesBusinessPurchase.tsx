@@ -297,8 +297,26 @@ const TilesBusinessPurchase = () => {
   const supplierAccountHandler = (option: any) => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
-    const isCashSupplier = Number(option?.value) === 17;
     setIsPaymentAmtManuallyEdited(false);
+
+    // ⚠️ THE BOX CAN COME BACK EMPTY -- Backspace on a picked name does it, and
+    // `option` then arrives null. Reading `.value` off that threw, so the whole
+    // screen went down on one keystroke. Nothing here belongs to a party any
+    // more, so the party's balance and the payment against them go too, and the
+    // block under the buttons reads nought until a name is picked again.
+    if (!option) {
+      setFormData({
+        ...formData,
+        [key]: '',
+        [accountName]: '',
+        paymentAmt: '',
+        trackedProductId: null,
+      });
+      setPreviousBalance(0);
+      return;
+    }
+
+    const isCashSupplier = Number(option?.value) === 17;
     setFormData({
       ...formData,
       [key]: option.value,
@@ -553,9 +571,58 @@ const TilesBusinessPurchase = () => {
   const totalTkAmount =
     previousBalance - billAmount + discountAmount + receivedAmount;
 
+  /*
+   * ⚠️ NO PARTY, NO FIGURES. An empty supplier box means the bill on screen is
+   * against nobody: a running balance needs someone to run against, so every
+   * term reads nought until a name is picked -- and again after a save, which
+   * puts the form back to a blank bill.
+   */
+  const hasSupplier = Boolean(formData.account);
+  const panelTerms: [string, number][] = [
+    ['Previous Balance', hasSupplier ? previousBalance : 0],
+    ['Current Invoice', hasSupplier ? billAmount : 0],
+    ['Discount', hasSupplier ? discountAmount : 0],
+    ['Payment Amount', hasSupplier ? receivedAmount : 0],
+  ];
+  const panelTotal = hasSupplier ? totalTkAmount : 0;
+
+
+  /**
+   * Clears the three boxes the desk fills for one line -- product, quantity,
+   * price -- together with the two things that belonged to the line just
+   * stored: the unit shown in the quantity box and the running line total.
+   *
+   * The warehouse is deliberately kept. A bill is written against one store, so
+   * asking for it again on every line would be busywork, and the dropdown would
+   * have to be re-picked for no decision anybody actually makes per line.
+   */
+  const clearProductEntry = () => {
+    setProductData((prevState: any) => ({ warehouse: prevState.warehouse }));
+    setUnit(null);
+    setLineTotal(0);
+  };
+
+  /**
+   * One line per product. A second line of the same product is a typing slip at
+   * the counter, not a second purchase, and the desk cannot tell the two apart
+   * by eye once the rows are printed.
+   *
+   * Keyed on the product's own id, so the same goods at a second rate are
+   * refused too -- the rate is not what makes it a different line.
+   */
+  const isProductAlreadyAdded = (skipIndex: number | null = null) =>
+    formData.products.some(
+      (row: any, index: number) =>
+        index !== skipIndex && Number(row.product) === Number(productData.product),
+    );
 
   const addProduct = () => {
  if (!validateProductData(productData)) return;
+
+    if (isProductAlreadyAdded()) {
+      toast.info('This product is already added.');
+      return;
+    }
 
     // Generate a unique ID for the product
     const newProduct: Product = {
@@ -574,6 +641,8 @@ const TilesBusinessPurchase = () => {
       products: [...prevFormData.products, newProduct],
     }));
 
+    clearProductEntry();
+
     setTimeout(() => {
       const nextElement = document.getElementById('product');
       if (nextElement instanceof HTMLElement) {
@@ -585,6 +654,13 @@ const TilesBusinessPurchase = () => {
   const editProduct = () => {
     const isValid = validateProductData(productData);
     if (!isValid) return;
+
+    // The same rule as adding, with the line being edited left out of the count
+    // -- otherwise changing only its rate would refuse itself.
+    if (isProductAlreadyAdded(updateId)) {
+      toast.info('This product is already added.');
+      return;
+    }
 
     // let products = formData.products;
     let newItem: Product = {
@@ -606,6 +682,7 @@ const TilesBusinessPurchase = () => {
     }));
     setIsUpdating(false);
     setUpdateId(null);
+    clearProductEntry();
   };
 
   const handleDelete = (id: number) => {
@@ -756,11 +833,10 @@ const TilesBusinessPurchase = () => {
           setIsPaymentAmtManuallyEdited(false);
           setSaveButtonLoading(false);
 
-          // ⚠️ THE SUPPLIER STAYS ON THE FORM, AND THE BILL JUST SAVED IS NOW
-          // INSIDE THEIR BALANCE. Left as it was read before the save, the
-          // figure would be one bill out of date -- the sales screen carries
-          // that staleness; a payable read by the desk is worth the one request.
-          void loadPreviousBalance(formData.account);
+          // ⚠️ THE BILL JUST SAVED HAS LEFT THE SCREEN, SO ITS FIGURES GO WITH
+          // IT: the block reads nought until the supplier is picked again, and
+          // that pick is what re-reads their balance off the ledger.
+          setPreviousBalance(0);
         }, 1000);
       }),
     );
@@ -1287,14 +1363,7 @@ const TilesBusinessPurchase = () => {
                 the cash head is not a party -- so its payment box is the whole
                 bill and this lands on nought. */}
             <div className="ml-auto w-full max-w-xs text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
-              {(
-                [
-                  ['Previous Balance', previousBalance],
-                  ['Current Invoice', billAmount],
-                  ['Discount', discountAmount],
-                  ['Payment Amount', receivedAmount],
-                ] as [string, number][]
-              ).map(([label, amount]) => (
+              {panelTerms.map(([label, amount]) => (
                 <div key={label} className="flex justify-between gap-4">
                   <span>{label}</span>
                   <span>{money(amount)}</span>
@@ -1303,7 +1372,7 @@ const TilesBusinessPurchase = () => {
               <div className="my-1 border-t border-gray-400" />
               <div className="flex justify-between gap-4 text-base font-bold">
                 <span>Total Tk.</span>
-                <span>{money(totalTkAmount)}</span>
+                <span>{money(panelTotal)}</span>
               </div>
             </div>
           </div>
