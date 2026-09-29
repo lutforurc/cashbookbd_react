@@ -15,6 +15,11 @@ interface SearchObject {
    */
   label?: string;
   id?: string;
+  /**
+   * What the box is looking through, where that is not obvious from the screen.
+   * Left off, every existing caller keeps the plain "Search...".
+   */
+  placeholder?: string;
 }
 
 const SearchInput: React.FC<SearchObject> = ({
@@ -23,6 +28,7 @@ const SearchInput: React.FC<SearchObject> = ({
   className,
   label,
   id,
+  placeholder,
 }) => {
   const box = (
     <Input
@@ -30,7 +36,7 @@ const SearchInput: React.FC<SearchObject> = ({
       name={id}
       type="text"
       className={fieldClass(undefined, `w-50 ${className}`)}
-      placeholder="Search..."
+      placeholder={placeholder || 'Search...'}
       value={search}
       onChange={(e) => setSearchValue(e.target.value)} // Call the passed function
     />

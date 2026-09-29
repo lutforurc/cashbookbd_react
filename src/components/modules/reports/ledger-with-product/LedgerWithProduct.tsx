@@ -9,6 +9,7 @@ import Loader from '../../../../common/Loader';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
+import SearchInput from '../../../utils/fields/SearchInput';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
@@ -226,6 +227,49 @@ const LedgerWithProduct = (user: any) => {
     [rawRows, rawSummary],
   );
 
+  /**
+   * What the search looks through, and what it leaves alone.
+   *
+   * ⚠️ IT FILTERS ON SCREEN, IT DOES NOT ASK THE SERVER AGAIN. A report in
+   * flight takes the whole table off the screen (see the Action column's own
+   * note), so a search that re-ran it would blink every row out on each
+   * keystroke -- the very thing this screen was just cured of. One party's
+   * statement is a few hundred rows and is already in hand.
+   *
+   * What is searched is what is on the screen. The vehicle number is matched as
+   * it is PRINTED as well as as it is stored -- the column shows "DMT 20-2650"
+   * for a stored "DMT-20-2650" -- and so is the rate, which is printed with its
+   * thousands separators. Commas are dropped from both sides of the comparison
+   * so "1234.50" finds a printed "1,234.50" and either way round works.
+   *
+   * The running balances, the summary and the printed sheet all stay the
+   * statement's own -- a filter that renumbered them would put a balance on
+   * screen that belongs to no row.
+   */
+  const [search, setSearch] = useState('');
+
+  const visibleRows = useMemo(() => {
+    const term = search.trim().toLowerCase().replace(/,/g, '');
+
+    if (!term) return rows;
+
+    return rows.filter((row: any) =>
+      [
+        row?.vr_no,
+        row?.order_number,
+        row?.truck_no,
+        formatTransportationNumber(row?.truck_no || ''),
+        row?.rate,
+        thousandSeparator(Number(row?.rate || 0)),
+      ].some((value) =>
+        String(value ?? '')
+          .toLowerCase()
+          .replace(/,/g, '')
+          .includes(term),
+      ),
+    );
+  }, [rows, search]);
+
   const summary = useMemo(
     () => ({
       ...rawSummary,
@@ -358,6 +402,7 @@ const LedgerWithProduct = (user: any) => {
     setProductId(null);
     setSelectedProductOption(null);
     setTransactionType('');
+    setSearch('');
     dispatch(clearCustomerSupplierStatement());
     setFilterOpen(false);
   };
@@ -1077,7 +1122,7 @@ const LedgerWithProduct = (user: any) => {
                     className={
                       useFilterMenuEnabled
                         ? 'space-y-3'
-                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-6'
+                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-7'
                       }
                     >
                     <div>
@@ -1171,6 +1216,22 @@ const LedgerWithProduct = (user: any) => {
  setSelectedDate={setEndDate}
  setCurrentDate={setEndDate}
  className="font-medium text-sm w-full "
+                      />
+                    </div>
+
+                    {/* Narrows the rows already on screen -- Vr No., Order No.,
+                        Vehicle No. or Rate. Typing does not re-run the report,
+                        so the table never blinks. */}
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Search
+                      </label>
+                      <SearchInput
+                        id="statement-search"
+                        search={search}
+                        setSearchValue={setSearch}
+                        placeholder="Vr / Order / Vehicle No. / Rate"
+                        className="w-full font-medium text-sm"
                       />
                     </div>
 
@@ -1358,11 +1419,13 @@ const LedgerWithProduct = (user: any) => {
           <div className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-white shadow-default dark:bg-[rgb(var(--c-boxdark))]">
             <Table
               columns={columns}
-              data={rows}
+              data={visibleRows}
               noDataMessage={
-                hasTransactions
-                  ? 'No statement rows found'
-                  : 'No transactions found'
+                search.trim()
+                  ? 'No results found'
+                  : hasTransactions
+                    ? 'No statement rows found'
+                    : 'No transactions found'
               }
               // tableClassName="min-w-full table-fixed text-sm text-slate-700 dark:text-slate-100"
               // theadClassName="bg-slate-100 text-xs uppercase text-slate-700 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-slate-100"
