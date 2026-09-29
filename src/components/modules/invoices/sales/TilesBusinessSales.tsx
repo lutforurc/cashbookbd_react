@@ -352,11 +352,15 @@ const TilesBusinessSales = () => {
       [accountName]: option.label,
       [unit]: option.label_5,
       [price]: Number(option.label_4),
+      // The cost, kept beside the rate: the line may not be sold under it.
+      purchase_price: Number(option.label_3) || 0,
     });
 
     // After setting product data, recalculate line total
     const qty = parseFloat(productData.qty) || 0;
-    const priceValue = Number(option.label_3) || 0;
+    // The same figure the box was just filled with -- the sales price (label_4),
+    // not the cost sitting beside it in the dropdown.
+    const priceValue = Number(option.label_4) || 0;
     const newLineTotal = qty * priceValue;
 
     // Update the lineTotal state with the new value
@@ -564,6 +568,25 @@ const TilesBusinessSales = () => {
         index !== skipIndex && Number(row.product) === Number(productData.product),
     );
 
+  /**
+   * ⚠️ NOTHING GOES OUT UNDER WHAT IT COST. The dropdown carries each product's
+   * purchase price beside its name (label_3) and that figure rides along in
+   * productData while the line is being written, so the rate the desk types can
+   * be measured against it. Haggling the rate down is the desk's business;
+   * selling at a loss is not.
+   *
+   * A purchase price we do not have is not a refusal -- a line pulled back out
+   * of a saved invoice brings no cost with it, and a rule that cannot be
+   * checked must not stop the desk.
+   */
+  const refuseBelowPurchasePrice = () => {
+    const cost = Number(productData.purchase_price) || 0;
+    if (cost <= 0 || Number(productData.price) >= cost) return false;
+
+    toast.info(`Sales price cannot be below the purchase price (${cost}).`);
+    return true;
+  };
+
   const addProduct = () => {
     const isValid = validateProductData(productData);
     if (!isValid) return;
@@ -572,6 +595,8 @@ const TilesBusinessSales = () => {
       toast.info('This product is already added.');
       return;
     }
+
+    if (refuseBelowPurchasePrice()) return;
 
     const newProduct: Product = {
       ...productData,
@@ -600,6 +625,8 @@ const TilesBusinessSales = () => {
       toast.info('This product is already added.');
       return;
     }
+
+    if (refuseBelowPurchasePrice()) return;
 
     const newItem: Product = {
       id: Date.now(),
