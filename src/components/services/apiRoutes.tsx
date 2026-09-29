@@ -111,6 +111,13 @@ export const API_CSRF_COOKIES = `${API_REMOTE_URL}/sanctum/csrf-cookie`;
 export const API_BASE_URL = `${API_REMOTE_URL}/api`;
 export const API_PURCHASE_RETURN_STORE_URL = `${API_BASE_URL}/purchase-return/api-store`;
 export const API_SALES_RETURN_STORE_URL = `${API_BASE_URL}/sales-return/api-store`;
+// The edit lookup by Vr. No. and the correction that rebuilds the return in
+// place, both of them the general returns' own endpoints: a Tiles branch is a
+// branch, not a separate set of books.
+export const API_PURCHASE_RETURN_EDIT_URL = `${API_BASE_URL}/purchase-return/api-edit`;
+export const API_PURCHASE_RETURN_UPDATE_URL = `${API_BASE_URL}/purchase-return/api-update`;
+export const API_SALES_RETURN_EDIT_URL = `${API_BASE_URL}/sales-return/api-edit`;
+export const API_SALES_RETURN_UPDATE_URL = `${API_BASE_URL}/sales-return/api-update`;
 // export const API_BASE_URL = API_REMOTE_URL + '/api';
 export const API_LOGIN_URL = `${API_BASE_URL}/login`;
 export const API_FORGOT_PASSWORD_REQUEST_OTP_URL = `${API_BASE_URL}/forgot-password/request-otp`;

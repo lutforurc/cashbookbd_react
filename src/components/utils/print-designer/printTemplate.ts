@@ -43,6 +43,8 @@ export type DocType =
   | 'hotel_bill'
   | 'sales_invoice'
   | 'purchase_invoice'
+  | 'sales_return'
+  | 'purchase_return'
   | 'sales_ledger'
   | 'purchase_ledger'
   | 'ledger_details'
@@ -90,6 +92,16 @@ export const DOC_TYPES: { id: DocType; name: string; hint: string }[] = [
     id: 'purchase_invoice',
     name: 'Purchase Invoice',
     hint: 'What comes in with the goods, from the supplier.',
+  },
+  {
+    id: 'sales_return',
+    name: 'Sales Return',
+    hint: 'What the customer hands back, and what was refunded for it.',
+  },
+  {
+    id: 'purchase_return',
+    name: 'Purchase Return',
+    hint: 'What goes back to the supplier, and what was settled for it.',
   },
   {
     id: 'sales_ledger',
@@ -1797,6 +1809,14 @@ export const fieldsFor = (docType: DocType): FieldDef[] => {
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_FIELDS;
   if (docType === 'sales_invoice') return SALES_INVOICE_FIELD_CATALOG;
   if (docType === 'purchase_invoice') return PURCHASE_INVOICE_FIELD_CATALOG;
+  // ⚠️ The SAME catalogue objects, not copies. A return carries every field its
+  // invoice does and no field its invoice does not -- name, voucher no, date,
+  // the four totals, the amount in words -- so a copy would be a second list
+  // that drifts the first time somebody adds a key to the invoice. Spreading
+  // the same arrays into the two flat maps is what lets ALL_INFO_BY_KEY and
+  // ALL_LINE_BY_KEY stay untouched below.
+  if (docType === 'sales_return') return SALES_INVOICE_FIELD_CATALOG;
+  if (docType === 'purchase_return') return PURCHASE_INVOICE_FIELD_CATALOG;
   return FIELD_CATALOG;
 };
 
@@ -1839,6 +1859,10 @@ export const lineFieldsFor = (docType: DocType): FieldDef[] => {
   if (docType === 'hotel_money_receipt') return [];
   if (docType === 'sales_invoice') return SALES_INVOICE_LINE_FIELDS;
   if (docType === 'purchase_invoice') return PURCHASE_INVOICE_LINE_FIELDS;
+  // The invoice's own columns again -- see fieldsFor above for why these are
+  // the same arrays rather than copies.
+  if (docType === 'sales_return') return SALES_INVOICE_LINE_FIELDS;
+  if (docType === 'purchase_return') return PURCHASE_INVOICE_LINE_FIELDS;
   return LINE_FIELDS;
 };
 
@@ -2924,6 +2948,82 @@ const purchaseInvoice = (): PrintTemplate => ({
 });
 
 /**
+ * A RETURN paper, drawn from its invoice's.
+ *
+ * ⚠️ Derived rather than copied. A return and its invoice print the same
+ * document with two differences -- the title, and no installments -- so a
+ * second literal factory would be 140 lines that drift the first time somebody
+ * moves a band on the invoice. `ledgerHeading` parameterises the two ledgers
+ * the same way.
+ *
+ * ⚠️ The installments band is DROPPED, not hidden. A return is settled on the
+ * spot or carried on account, never financed; left in, it would print an
+ * "Installment Details" heading over nothing on every return the branch hands
+ * out.
+ */
+const returnPaper = (
+  source: PrintTemplate,
+  docType: DocType,
+  title: string,
+  /** What the return's own number is called. See the note below. */
+  voucherLabel: string,
+  /**
+   * What the money line is called -- and it is NOT the invoice's word.
+   *
+   * A sale's money line reads "Received Tk." because the shop takes it in, and
+   * a purchase's reads "Paid Tk." because the shop hands it over. A return moves
+   * that money back the other way, so the same figure has to arrive under the
+   * other word: the shop PAYS a sales return out, and RECEIVES a purchase
+   * return in. Carry the invoice's own word over and the paper tells the
+   * customer the opposite of what happened.
+   */
+  paymentLabel: string,
+): PrintTemplate => ({
+  ...source,
+  docType,
+  bands: source.bands
+    .filter((b) => b.type !== 'installments')
+    .map((b) => {
+      if (b.type === 'title') return { ...b, text: title };
+
+      /**
+       * ⚠️ The voucher's label too, not just the title. Inheriting the
+       * invoice's info band untouched would print "Invoice No" beside a
+       * "Sales Return" heading -- a return paper calling itself an invoice on
+       * the one line a customer reads first.
+       */
+      if (b.type === 'info') {
+        return {
+          ...b,
+          items: (b.items ?? []).map((item) =>
+            item.field === 'vr_no' ? { ...item, label: voucherLabel } : item,
+          ),
+        };
+      }
+
+      /**
+       * The money line, reworded. Only the LABEL moves: the field keeps the
+       * name its own invoice gave it (`received_amount` on the sales side,
+       * `paid_amount` on the purchase side), so it stays a field this doc
+       * type's catalogue knows and its money format still applies. See
+       * `paymentLabel` above.
+       */
+      if (b.type === 'totals') {
+        return {
+          ...b,
+          items: (b.items ?? []).map((item) =>
+            item.field === 'received_amount' || item.field === 'paid_amount'
+              ? { ...item, label: paymentLabel }
+              : item,
+          ),
+        };
+      }
+
+      return b;
+    }),
+});
+
+/**
  * The two ledgers -- built to match what SalesLedgerPrint.tsx and
  * PurchaseLedgerPrint.tsx print today: the report heading, then one row per
  * voucher with its product lines filling three cells beside it, and a Grand
@@ -3772,6 +3872,22 @@ export const defaultTemplate = (docType: DocType = 'sales_challan'): PrintTempla
   if (docType === 'hotel_money_receipt') return hotelReceipt();
   if (docType === 'sales_invoice') return salesInvoice();
   if (docType === 'purchase_invoice') return purchaseInvoice();
+  // Each keeps its own family's word for the number: the sales side has always
+  // said "Invoice No", so its return says "Return No"; the purchase side has
+  // always said "Voucher No", which is as true of a return as of a bill.
+  if (docType === 'sales_return') {
+    return returnPaper(salesInvoice(), 'sales_return', 'Sales Return', 'Return No', 'Paid Tk.');
+  }
+
+  if (docType === 'purchase_return') {
+    return returnPaper(
+      purchaseInvoice(),
+      'purchase_return',
+      'Purchase Return',
+      'Voucher No',
+      'Received Tk.',
+    );
+  }
   return standardChallan();
 };
 

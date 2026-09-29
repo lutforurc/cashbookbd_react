@@ -30,6 +30,11 @@ const VOUCHER_EDIT_TARGETS: Record<string, VoucherEditTarget> = {
   // And its opposite number: a sale nobody has paid for, numbered 10- rather
   // than 3-, edited on the sales screen like any other sale.
   '10': { route: routes.inv_sales, label: 'Credit Sales', prefix: '10' },
+  // The returns, numbered 12- and 13- -- see RETURN_VOUCHER_TYPE in the API's
+  // ReturnTransaction. Both open on the branch's own return screen: a Tiles
+  // branch is handed its own by the branch flag inside the general screen.
+  '12': { route: routes.inv_purchase_return, label: 'Purchase Return', prefix: '12' },
+  '13': { route: routes.inv_sales_return, label: 'Sales Return', prefix: '13' },
 };
 
 /**

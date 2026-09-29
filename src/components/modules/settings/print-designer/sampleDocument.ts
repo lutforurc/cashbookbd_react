@@ -1072,12 +1072,34 @@ export const STOCK_DETAILS_SAMPLE: DocumentData = {
  * concludes the fields do not work rather than that the sample is the wrong
  * one.
  */
+/**
+ * The two returns preview against their invoice's sample with the voucher
+ * number changed.
+ *
+ * ⚠️ Derived rather than written out. A return shows the same fields an
+ * invoice does -- which is exactly why `sampleFor` cannot send it to the
+ * challan below -- and only the number says which paper is on the screen. A
+ * second literal sample would be fifty lines of copied figures to keep in step
+ * with the invoice's.
+ */
+export const SALES_RETURN_SAMPLE: DocumentData = {
+  ...SALES_INVOICE_SAMPLE,
+  basic: { ...SALES_INVOICE_SAMPLE.basic, vr_no: '13-260900001' },
+};
+
+export const PURCHASE_RETURN_SAMPLE: DocumentData = {
+  ...PURCHASE_INVOICE_SAMPLE,
+  basic: { ...PURCHASE_INVOICE_SAMPLE.basic, vr_no: '12-260900001' },
+};
+
 export const sampleFor = (docType: string): DocumentData => {
   if (docType === 'sales_order') return SAMPLE_ORDER_DOCUMENT;
   if (docType === 'hotel_bill') return HOTEL_BILL_SAMPLE;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_SAMPLE;
   if (docType === 'sales_invoice') return SALES_INVOICE_SAMPLE;
   if (docType === 'purchase_invoice') return PURCHASE_INVOICE_SAMPLE;
+  if (docType === 'sales_return') return SALES_RETURN_SAMPLE;
+  if (docType === 'purchase_return') return PURCHASE_RETURN_SAMPLE;
   if (docType === 'sales_ledger' || docType === 'purchase_ledger') return LEDGER_SAMPLE;
   if (docType === 'product_stock') return PRODUCT_STOCK_SAMPLE;
   if (docType === 'stock_details') return STOCK_DETAILS_SAMPLE;

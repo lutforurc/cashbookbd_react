@@ -13,6 +13,7 @@ import ElectronicsSalesInvoicePrint from '../invoices/sales/ElectronicsSalesInvo
 import PurchaseInvoicePrint from './print_items/PurchaseInvoicePrint';
 import CashPaymentPrint from './print_items/CashPaymentPrint';
 import CashReceivedPrint from './print_items/CashReceivedPrint';
+import ReturnPrint from './print_items/ReturnPrint';
 
 type Props = {
   rowsPerPage: number;
@@ -99,6 +100,8 @@ export const VoucherPrintRegistry = forwardRef(
     const cashPaymentRef = useRef<HTMLDivElement | null>(null);
     const cashReceivedRef = useRef<HTMLDivElement | null>(null);
     const purchaseRef = useRef<HTMLDivElement | null>(null);
+    const salesReturnRef = useRef<HTMLDivElement | null>(null);
+    const purchaseReturnRef = useRef<HTMLDivElement | null>(null);
 
     /* 👉 WHICH PRINT COMPONENT WAS ASKED FOR (KEY FIX)
      *
@@ -154,40 +157,38 @@ export const VoucherPrintRegistry = forwardRef(
           ? rawVoucherType
           : String(parsedVoucherType);
 
-        switch (voucherType) {
-          /* ================= CASH PAYMENT ================= */
-          case '1':
-            activeRef.current = cashReceivedRef;
+        /**
+         * Fetch the voucher, then print whichever paper the switch named.
+         *
+         * One function rather than the same twelve lines under every case: the
+         * only thing that ever differed between them was the ref, and six
+         * copies of a 300ms delay is six places to forget to change it.
+         */
+        const printAs = (target: React.RefObject<HTMLDivElement | null>) => {
+          activeRef.current = target;
 
-            dispatch(
-              electronicsSalesPrint(
-                printPayload,
-                (message?: string) => {
-                  if (message) {
-                    toast.error(message);
-                  } else {
-                    setTimeout(printActive, 300);
-                  }
-                }
-              )
-            );
+          dispatch(
+            electronicsSalesPrint(printPayload, (message?: string) => {
+              if (message) {
+                toast.error(message);
+              } else {
+                // The delay is the store write landing; the paper is drawn
+                // from what the reducer put there a tick from now.
+                setTimeout(printActive, 300);
+              }
+            })
+          );
+        };
+
+        switch (voucherType) {
+          /* ================= CASH RECEIVED ================= */
+          case '1':
+            printAs(cashReceivedRef);
             break;
+
           /* ================= CASH PAYMENT ================= */
           case '2':
-            activeRef.current = cashPaymentRef;
-
-            dispatch(
-              electronicsSalesPrint(
-                printPayload,
-                (message?: string) => {
-                  if (message) {
-                    toast.error(message);
-                  } else {
-                    setTimeout(printActive, 300);
-                  }
-                }
-              )
-            );
+            printAs(cashPaymentRef);
             break;
 
           /* ================= SALES ================= */
@@ -208,39 +209,36 @@ export const VoucherPrintRegistry = forwardRef(
            */
           case '3':
           case '10':
-            activeRef.current = salesRef;
-
-            dispatch(
-              electronicsSalesPrint(
-                printPayload,
-                (message?: string) => {
-                  if (message) {
-                    toast.error(message);
-                  } else {
-                    setTimeout(printActive, 300);
-                  }
-                }
-              )
-            );
+            printAs(salesRef);
             break;
 
           /* ================= PURCHASE ================= */
           /** 4 is a cash purchase, 9 a credit one -- one paper, as above. */
           case '4':
           case '9':
-            activeRef.current = purchaseRef;
-            dispatch(
-              electronicsSalesPrint(
-                printPayload,
-                (message?: string) => {
-                  if (message) {
-                    toast.error(message);
-                  } else {
-                    setTimeout(printActive, 300);
-                  }
-                }
-              )
-            );
+            printAs(purchaseRef);
+            break;
+
+          /* ================= THE TWO RETURNS ================= */
+          /**
+           * 13 is a sales return, 12 a purchase return -- one paper each, and
+           * each its own rather than its invoice's. A return is a different
+           * document from the bill it reverses (see the doc comment on
+           * ReturnPrint), so the layout the branch saved for its Sales Invoice
+           * must not be the one its returns come out on.
+           *
+           * ⚠️ These were the prefix that made this switch answer "Unknown
+           * voucher type" on a voucher the ledgers had just listed. Both
+           * vouchers travel the SAME `electronics/sales/invoice-print` call as
+           * the invoices -- it resolves a voucher by its number and never asks
+           * what type it is.
+           */
+          case '13':
+            printAs(salesReturnRef);
+            break;
+
+          case '12':
+            printAs(purchaseReturnRef);
             break;
 
           default:
@@ -274,9 +272,27 @@ export const VoucherPrintRegistry = forwardRef(
           fontSize={fontSize}
         />
 
-        {/* PURCHASE (FUTURE) */}
+        {/* PURCHASE */}
         <PurchaseInvoicePrint
           ref={purchaseRef}
+          data={voucherData}
+          rowsPerPage={rowsPerPage}
+          fontSize={fontSize}
+        />
+
+        {/* SALES RETURN */}
+        <ReturnPrint
+          ref={salesReturnRef}
+          kind="sales_return"
+          data={voucherData}
+          rowsPerPage={rowsPerPage}
+          fontSize={fontSize}
+        />
+
+        {/* PURCHASE RETURN */}
+        <ReturnPrint
+          ref={purchaseReturnRef}
+          kind="purchase_return"
           data={voucherData}
           rowsPerPage={rowsPerPage}
           fontSize={fontSize}
