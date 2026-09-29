@@ -112,6 +112,57 @@ const downloadExcelHtml = (html: string, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+/**
+ * The filter panel, kept for the trip to a voucher's edit screen and back.
+ *
+ * ⚠️ PRESSING EDIT LEAVES THIS SCREEN rather than covering it, and coming back
+ * mounts it afresh. The statement is still on the page when it does -- the rows
+ * live in the store -- but every box in the panel starts empty, so the reader
+ * is shown rows they can no longer identify and cannot search for again. The
+ * plain Ledger keeps its filters the same way, in the tab.
+ */
+const LEDGER_PRODUCT_FILTER_KEY = 'ledger-with-product-filters';
+
+type SavedLedgerFilters = {
+  branchId?: number | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  partyId?: number | null;
+  partyLabel?: string | null;
+  productId?: number | null;
+  selectedProductOption?: { value: any; label: any } | null;
+  transactionType?: string | null;
+  search?: string | null;
+};
+
+const readSavedLedgerFilters = (): SavedLedgerFilters | null => {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(LEDGER_PRODUCT_FILTER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+/** A saved id comes back as a string from JSON; blank and null are not 0. */
+const toSavedNumber = (value: unknown) => {
+  if (value === null || value === undefined || value === '') return null;
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const parseSavedDate = (value?: string | null) => {
+  if (!value) return null;
+
+  const [year, month, day] = String(value).split('-').map(Number);
+  if (!year || !month || !day) return null;
+
+  return new Date(year, month - 1, day);
+};
+
 const LedgerWithProduct = (user: any) => {
   const dispatch = useDispatch();
   const highlightRules = useHighlightRules();
@@ -168,6 +219,12 @@ const LedgerWithProduct = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  // Set while the dates came back from the tab rather than from the server's
+  // transaction date, so the branch effect below leaves them alone.
+  const restoredDatesRef = useRef(false);
+  // The save effect runs once on mount, before the restore above has been
+  // rendered in -- writing then would store the empty panel over the saved one.
+  const skipFirstFilterSaveRef = useRef(true);
 
   const openMessageModal = (title: string, message: React.ReactNode) => {
     setModalTitle(title);
@@ -190,8 +247,22 @@ const LedgerWithProduct = (user: any) => {
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
     const userBranchId = Number(user?.user?.branch_id) || null;
-    setBranchId(userBranchId);
+    const saved = readSavedLedgerFilters();
+    const savedStartDate = parseSavedDate(saved?.startDate);
+    const savedEndDate = parseSavedDate(saved?.endDate);
+
+    restoredDatesRef.current = Boolean(savedStartDate && savedEndDate);
+
+    setBranchId(toSavedNumber(saved?.branchId) ?? userBranchId);
     setDefaultBranchId(userBranchId);
+    setPartyId(toSavedNumber(saved?.partyId));
+    setPartyLabel(saved?.partyLabel || '');
+    setProductId(toSavedNumber(saved?.productId));
+    setSelectedProductOption(saved?.selectedProductOption || null);
+    setTransactionType(saved?.transactionType || '');
+    setSearch(saved?.search || '');
+    setStartDate(savedStartDate);
+    setEndDate(savedEndDate);
   }, []);
 
   useEffect(() => {
@@ -210,8 +281,10 @@ const LedgerWithProduct = (user: any) => {
         Number(day),
       );
       const parsedStartDate = new Date(Number(year), Number(month) - 1, 1);
-      setStartDate(parsedStartDate);
-      setEndDate(parsedEndDate);
+      if (!restoredDatesRef.current) {
+        setStartDate(parsedStartDate);
+        setEndDate(parsedEndDate);
+      }
       setDefaultStartDate(parsedStartDate);
       setDefaultEndDate(parsedEndDate);
     }
@@ -242,9 +315,10 @@ const LedgerWithProduct = (user: any) => {
    * thousands separators. Commas are dropped from both sides of the comparison
    * so "1234.50" finds a printed "1,234.50" and either way round works.
    *
-   * The running balances, the summary and the printed sheet all stay the
-   * statement's own -- a filter that renumbered them would put a balance on
-   * screen that belongs to no row.
+   * The running balances and the summary stay the statement's own -- a filter
+   * that recomputed them would put a balance on screen that belongs to no row.
+   * The printed sheet follows the search, though: five rows on the screen and
+   * two hundred on the paper is the whole statement printed by mistake.
    */
   const [search, setSearch] = useState('');
 
@@ -269,6 +343,66 @@ const LedgerWithProduct = (user: any) => {
       ),
     );
   }, [rows, search]);
+
+  /**
+   * What the first column counts.
+   *
+   * ⚠️ THE NUMBER IS THE SERVER'S, WHICH IS WHY A SEARCH LOOKS SHUFFLED. The
+   * server numbers the statement it built -- 1, 2, 3 ... -- so the five rows a
+   * search leaves behind arrive numbered 3, 17, 22, 41, 60. While a search is
+   * on they are counted again from one, and while it is off nothing is touched:
+   * the opening row carries no number of its own, so counting it would shift
+   * every row below it by one on a statement nobody asked to change.
+   */
+  const numberedRows = useMemo(
+    () =>
+      search.trim()
+        ? visibleRows.map((row, index) => ({ ...row, sl_number: index + 1 }))
+        : rows,
+    [rows, visibleRows, search],
+  );
+
+  /**
+   * The panel is written to the tab's own storage on every change, so that
+   * coming back from a voucher's edit screen finds the boxes as they were. The
+   * statement itself is not stored: it is already in the store, and a box that
+   * disagrees with the rows under it is the thing this avoids.
+   */
+  useEffect(() => {
+    if (skipFirstFilterSaveRef.current) {
+      skipFirstFilterSaveRef.current = false;
+      return;
+    }
+
+    if (typeof window === 'undefined') return;
+
+    const filters: SavedLedgerFilters = {
+      branchId,
+      startDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : null,
+      endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : null,
+      partyId,
+      partyLabel,
+      productId,
+      selectedProductOption,
+      transactionType,
+      search,
+    };
+
+    window.sessionStorage.setItem(
+      LEDGER_PRODUCT_FILTER_KEY,
+      JSON.stringify(filters),
+    );
+  }, [
+    branchId,
+    startDate,
+    endDate,
+    partyId,
+    partyLabel,
+    productId,
+    selectedProductOption,
+    transactionType,
+    search,
+  ]);
 
   const summary = useMemo(
     () => ({
@@ -329,6 +463,17 @@ const LedgerWithProduct = (user: any) => {
 
   const hasLoaded = !!statementState?.data;
   const hasTransactions = rows.length > 1;
+
+  /**
+   * The ledger box's own selection, rebuilt from the two things kept for it.
+   * It exists because the box is told what to show rather than holding the
+   * choice itself -- without it a party that came back from a saved filter
+   * would load the right statement under an empty box.
+   */
+  const ledgerOption = useMemo(
+    () => (partyId ? { value: partyId, label: partyLabel } : null),
+    [partyId, partyLabel],
+  );
 
   const branchName = useMemo(() => {
     const selected = dropdownData.find(
@@ -582,7 +727,7 @@ const LedgerWithProduct = (user: any) => {
     setLedgerDoc({
       template: { ...template, rowsPerPage: effectiveRowsPerPage, fontSize: effectiveFontSize },
       data: toLedgerDetailsDocumentData({
-        rows,
+        rows: numberedRows,
         summary,
         partyName: party?.name || partyLabel,
         ledgerPage: party?.ledger_page,
@@ -1146,6 +1291,11 @@ const LedgerWithProduct = (user: any) => {
                       </label>
                       <DdlMultiline
                         key={ledgerSelectKey}
+                        // Held steady between renders: this dropdown resets
+                        // itself whenever the object it is given is a new one,
+                        // so a fresh literal here re-renders on every keystroke
+                        // in the search box beside it.
+                        value={ledgerOption}
                         onSelect={(option: any) => {
                           setPartyId(
                             option?.value ? Number(option.value) : null,
@@ -1419,7 +1569,7 @@ const LedgerWithProduct = (user: any) => {
           <div className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-white shadow-default dark:bg-[rgb(var(--c-boxdark))]">
             <Table
               columns={columns}
-              data={visibleRows}
+              data={numberedRows}
               noDataMessage={
                 search.trim()
                   ? 'No results found'
@@ -1445,7 +1595,7 @@ const LedgerWithProduct = (user: any) => {
       <div className="hidden">
         <div ref={printRef}>
           <LedgerWithProductPrint
-            rows={rows}
+            rows={numberedRows}
             branchName={branchName}
             partyName={party?.name || partyLabel}
             ledgerPage={party?.ledger_page}
