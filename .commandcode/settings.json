@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(npx --no-install tsc --version)",
+      "Shell(test:*)",
+      "Shell(npm:*)",
+      "powershell"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}
