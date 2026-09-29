@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 import httpService from '../../../services/httpService';
 import { API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL } from '../../../services/apiRoutes';
+import { getVoucherId } from '../../vouchers/useRemoveVoucherApproval';
 import type { LedgerWithProductReportData } from './ledgerWithProductTypes';
 
 type Params = {
@@ -66,6 +68,35 @@ const ledgerWithProductSlice = createSlice({
       state.error = null;
       state.data = null;
     },
+    /**
+     * One row's approval, changed where the row is kept.
+     *
+     * ⚠️ NOT THE WHOLE STATEMENT RE-FETCHED. Approving or un-approving used to
+     * run the report again, and this slice's loading flag takes the table off
+     * the screen while a report runs -- so the reader watched every other row
+     * disappear and come back to see one icon change, on a page they had
+     * scrolled to find that row in.
+     *
+     * The flag is the only thing either call changes, and the rows are already
+     * in hand. A fresh report replaces `data` wholesale, so nothing has to be
+     * undone: the next fetch is the authority again.
+     */
+    setRowApproval: (
+      state,
+      action: PayloadAction<{ voucherId: number; isApproved: boolean }>,
+    ) => {
+      const rows = state.data?.rows;
+
+      if (!Array.isArray(rows)) return;
+
+      const { voucherId, isApproved } = action.payload;
+
+      rows.forEach((row) => {
+        if (getVoucherId(row) === voucherId) {
+          row.is_approved = isApproved ? 1 : 0;
+        }
+      });
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -84,6 +115,7 @@ const ledgerWithProductSlice = createSlice({
   },
 });
 
-export const { clearCustomerSupplierStatement } = ledgerWithProductSlice.actions;
+export const { clearCustomerSupplierStatement, setRowApproval } =
+  ledgerWithProductSlice.actions;
 
 export default ledgerWithProductSlice.reducer;

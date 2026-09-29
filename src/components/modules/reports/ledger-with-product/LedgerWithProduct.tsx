@@ -1,5 +1,7 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
@@ -21,6 +23,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import {
   clearCustomerSupplierStatement,
   fetchCustomerSupplierStatement,
+  setRowApproval,
 } from './ledgerWithProductSlice';
 import LedgerWithProductPrint from './LedgerWithProductPrint';
 import { toLedgerDetailsDocumentData } from './ledgerDetailsDocumentData';
@@ -29,9 +32,23 @@ import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
 import { normalizeTemplate } from '../../../utils/print-designer/printTemplate';
 import type { PrintTemplate } from '../../../utils/print-designer/printTemplate';
 import httpService from '../../../services/httpService';
-import { API_PRINT_TEMPLATE_URL } from '../../../services/apiRoutes';
+import {
+  API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL,
+  API_PRINT_TEMPLATE_URL,
+} from '../../../services/apiRoutes';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
-import { useVoucherPrint } from '../../vouchers';
+import {
+  useRemoveVoucherApproval,
+  useVoucherPrint,
+  VoucherActionButtons,
+} from '../../vouchers';
+import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
+import { hasPermission } from '../../../utils/permissionChecker';
+import {
+  buildVoucherAutoEditState,
+  getEditableVoucherNo,
+  getVoucherEditTarget,
+} from '../../../utils/utils-functions/voucherEditNavigation';
 import { FiCheckSquare, FiDownload, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
@@ -103,6 +120,7 @@ const LedgerWithProduct = (user: any) => {
   );
   const settings = useSelector((state: any) => state.settings);
   const mobileFormat = useMobileFormat();
+  const navigate = useNavigate();
   const useFilterMenuEnabled = isUserFeatureEnabled(
     settings,
     'use_filter_parameter',
@@ -129,6 +147,20 @@ const LedgerWithProduct = (user: any) => {
   const [fontSize, setFontSize] = useState<string>('10');
   const [filterOpen, setFilterOpen] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [approvingId, setApprovingId] = useState<number | null>(null);
+  // The same four rights the plain Ledger's Action column reads: these are the
+  // same vouchers, listed for one party instead of one account at a time.
+  const userPermissions = settings?.data?.permissions || [];
+  const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
+  const canRemoveApproval = hasPermission(userPermissions, 'remove.approval');
+  const canEditVoucher = hasAnyPermission(userPermissions, [
+    'sales.edit',
+    'cash.received.edit',
+    'cash.payment.edit',
+    'purchase.edit',
+  ]);
+  const { removingApprovalId, removeVoucherApproval, getVoucherId } =
+    useRemoveVoucherApproval();
   const [modalTitle, setModalTitle] = useState('Notice');
   const [modalMessage, setModalMessage] = useState<React.ReactNode>('');
 
@@ -328,6 +360,88 @@ const LedgerWithProduct = (user: any) => {
     setTransactionType('');
     dispatch(clearCustomerSupplierStatement());
     setFilterOpen(false);
+  };
+
+  /**
+   * The row actions the plain Ledger offers, on the same vouchers.
+   *
+   * This statement lists one party's account -- the same rows the Ledger lists
+   * per account -- so a voucher that may be approved, un-approved or edited
+   * there may be here. Nothing new is invented for it: the approve endpoint,
+   * the remove-approval hook and the edit-navigation helpers are the ones the
+   * other five report screens already share.
+   *
+   * ⚠️ NEITHER OF THESE RE-RUNS THE REPORT. Both used to call handleRun(), and
+   * a report in flight takes the whole table off the screen (the loading gate
+   * below) -- so one icon changed and every other row vanished and came back.
+   * The flag is patched on its own row instead; the icons re-render from it,
+   * and the row the reader was looking at stays where it was.
+   */
+  const handleApproveClick = async (row: any) => {
+    const voucherId = getVoucherId(row);
+
+    if (!voucherId) {
+      toast.error('Approval id not found.');
+      return;
+    }
+
+    try {
+      setApprovingId(voucherId);
+      const response = await httpService.post(
+        `${API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL}/${voucherId}`,
+        {},
+      );
+      const result = response?.data;
+
+      if (result === '1' || result?.success) {
+        dispatch(setRowApproval({ voucherId, isApproved: true }));
+        toast.success('Voucher approved successfully.');
+        return;
+      }
+
+      if (result === '2') {
+        toast.error('Voucher not found.');
+        return;
+      }
+
+      toast.error(typeof result === 'string' ? result : 'Voucher approval failed.');
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || error?.message || 'Voucher approval failed.',
+      );
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleRemoveApprovalClick = async (row: any) => {
+    const voucherId = getVoucherId(row);
+
+    await removeVoucherApproval(row, {
+      onSuccess: () =>
+        dispatch(setRowApproval({ voucherId, isApproved: false })),
+    });
+  };
+
+  const handleEditVoucher = (row: any) => {
+    const voucherNo = getEditableVoucherNo(row);
+    /**
+     * ⚠️ The number cannot say which pair of screens -- its prefix is the
+     * voucher type, so money banked on the Bank Received screen is numbered
+     * 1-... exactly as a cash receipt is. This report does not mark the row
+     * yet, so the flag is false and the cash screens open, which is the same
+     * fallback the plain Ledger takes against a server that does not send it.
+     */
+    const openOnBankScreen = row?.is_bank_voucher === true;
+    const editTarget = getVoucherEditTarget(voucherNo, { bank: openOnBankScreen });
+    const editState = buildVoucherAutoEditState(voucherNo, { bank: openOnBankScreen });
+
+    if (!voucherNo || !editTarget || !editState) {
+      toast.error('Edit route not found for this voucher.');
+      return;
+    }
+
+    navigate(editTarget.route, { state: editState });
   };
 
   const selectedProduct = (option: any) => {
@@ -805,6 +919,36 @@ const LedgerWithProduct = (user: any) => {
       render: (row: any) => (
         <div>{thousandSeparator(row.running_balance ?? row.balance)}</div>
       ),
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => {
+        const voucherId = getVoucherId(row);
+        const isApproved = Number(row?.is_approved ?? 0) === 1;
+
+        return (
+          <VoucherActionButtons
+            row={row}
+            voucherId={voucherId}
+            isApproved={isApproved}
+            approvingId={approvingId}
+            removingApprovalId={removingApprovalId}
+            canShowApproveAction={canApproveCashbook && !!row?.vr_no && voucherId > 0}
+            canShowRemoveApprovalAction={
+              canRemoveApproval && !!row?.vr_no && voucherId > 0 && isApproved
+            }
+            canShowEditAction={canEditVoucher && !isApproved}
+            canEditVoucher={canEditVoucher}
+            confirmInline
+            onApprove={handleApproveClick}
+            onRemoveApproval={handleRemoveApprovalClick}
+            onEdit={handleEditVoucher}
+          />
+        );
+      },
     },
   ];
 
