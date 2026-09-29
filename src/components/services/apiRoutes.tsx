@@ -225,6 +225,12 @@ export const API_ADMIN_TUTORIAL_VIDEOS_URL = `${API_BASE_URL}/admin/tutorial-vid
 export const API_ADMIN_HIGHLIGHT_RULES_URL = `${API_BASE_URL}/admin/highlight-rules`;
 export const API_HIGHLIGHT_RULES_ACTIVE_URL = `${API_BASE_URL}/highlight-rules/active`;
 
+// Master website templates -- the company-website catalogue the platform owns.
+// ⚠️ PLATFORM ADMIN ONLY on the server (platform.admin), and reachable only
+// through the Admin menu here. A company selects one through the website
+// builder in the Next.js app, not through this endpoint.
+export const API_ADMIN_WEBSITE_TEMPLATES_URL = `${API_BASE_URL}/admin/website-templates`;
+
 // Role Routes
 export const API_ROLE_LIST_URL = `${API_BASE_URL}/role/role-list`;
 export const API_DDL_ROLE_LIST_URL = `${API_BASE_URL}/ddl/role/role-list`;

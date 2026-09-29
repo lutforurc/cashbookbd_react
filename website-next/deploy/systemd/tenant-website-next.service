@@ -1,0 +1,33 @@
+# Template for ONE tenant's Next.js website process.
+#
+#   cp tenant-website-next.service /etc/systemd/system/<tenant>-website-next.service
+#   # replace <USER>, <HOST>, <PORT> below
+#   systemctl daemon-reload
+#   systemctl enable --now <tenant>-website-next
+#
+# <USER>  the CloudPanel user, e.g. cashbookbdaftrading
+# <HOST>  the tenant host,       e.g. aft.cashbookbd.com
+# <PORT>  3100 + the tenant's offset from the deploy map
+#
+# One process per tenant install: it only ever reaches that tenant's own
+# Laravel (LARAVEL_INTERNAL_URL in the env file), so it only ever reads that
+# tenant's database. The multi-company install runs the same unit once and
+# serves every company subdomain by host.
+
+[Unit]
+Description=CashBookBD company website (Next.js) for <HOST>
+After=network.target
+
+[Service]
+Type=simple
+User=<USER>
+Group=<USER>
+WorkingDirectory=/home/<USER>/htdocs/<HOST>/website-next
+EnvironmentFile=/home/<USER>/htdocs/<HOST>/website-next/.env.production
+Environment=PORT=<PORT>
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

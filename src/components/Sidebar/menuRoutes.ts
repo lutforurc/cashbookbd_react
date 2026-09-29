@@ -191,6 +191,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.business_types,
     routes.inventory_systems,
     routes.tutorial_videos,
+    routes.website_templates,
     routes.highlight_rules,
     routes.roles,
     routes.add_role,

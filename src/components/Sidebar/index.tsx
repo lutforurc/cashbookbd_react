@@ -186,6 +186,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'business_types', title: "Business Types" },
     { id: 'inventory_systems', title: "Inventory Systems" },
     { id: 'tutorial_videos', title: "Tutorial Videos" },
+    { id: 'website_templates', title: "Website Templates" },
     { id: 'highlight_rules', title: "Highlight Rules" },
     { id: 'roles', title: "Roles" },
     { id: 'add_role', title: "Add Roles" },
@@ -324,6 +325,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   const isTopbar = mode === 'topbar';
   const [permissions, setPermissions] = useState<any>([]);
   const settings = useSelector((s: any) => s.settings);
+  // The API's own verdict on whether this account may use the platform tools
+  // (SettingsController sends it, from the same predicate PlatformAdmin
+  // enforces). The menu reads it instead of guessing from permissions, so a
+  // tenant user is never shown a platform screen the API would refuse.
+  const isPlatformAdmin = Boolean(settings?.data?.is_platform_admin);
   const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
   const companyName =
     settings?.data?.company?.name ||
@@ -2904,6 +2910,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
+                          {/* The master website templates the platform offers to
+                              every company.
+                              
+                              ⚠️ Gated on the SERVER'S platform-admin verdict,
+                              not on permissions: these routes are behind
+                              platform.admin, so a permission check here would
+                              show the menu to a tenant user who holds
+                              reseller.view and then refuse every call. The
+                              verdict comes from the same predicate the
+                              middleware uses, so the two cannot disagree. */}
+                          {isPlatformAdmin && (
+                            <li style={subSlot('admin', 'website_templates')}>
+                              <NavLink
+                                to={routes.website_templates}
+                                className={subMenuLinkClass}
+                              >
+                                Website Templates
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'highlight.rules') && (
                             <li style={subSlot('admin', 'highlight_rules')}>
                               <NavLink

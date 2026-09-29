@@ -251,6 +251,8 @@ import AdminInAppMessageForm from './components/modules/in-app-messages/AdminInA
 import BusinessType from './components/modules/business-type/BusinessType';
 import InventorySystem from './components/modules/inventory-system/InventorySystem';
 import TutorialVideos from './components/modules/tutorial-videos/TutorialVideos';
+import WebsiteTemplates from './components/modules/website-templates/WebsiteTemplates';
+import WebsiteTemplateEditor from './components/modules/website-templates/WebsiteTemplateEditor';
 import HighlightRules from './components/modules/highlight-rules/HighlightRules';
 import SubscriptionPlanList from './components/modules/subscription/SubscriptionPlanList';
 import SubscriptionPlanForm from './components/modules/subscription/SubscriptionPlanForm';
@@ -376,6 +378,11 @@ function App() {
                 <Route path={routes.business_types} element={<BusinessType />} />
                 <Route path={routes.inventory_systems} element={<InventorySystem />} />
                 <Route path={routes.tutorial_videos} element={<TutorialVideos />} />
+                {/* Master website templates (platform admin). The route guard is
+                    the same as its neighbours; the API's platform.admin
+                    middleware is what actually protects the data. */}
+                <Route path={routes.website_templates} element={<WebsiteTemplates />} />
+                <Route path={routes.website_template_editor} element={<WebsiteTemplateEditor />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['highlight.rules']} loading={permissionsLoading} />}>
                 <Route path={routes.highlight_rules} element={<HighlightRules />} />

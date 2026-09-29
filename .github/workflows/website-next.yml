@@ -1,0 +1,74 @@
+name: website-next
+
+# ⚠️ MANUAL ONLY. This workflow never runs on push, so it cannot deploy anything
+# by itself. It builds the Next.js website app and, when a tenant is chosen,
+# ships the standalone bundle and restarts that tenant's process.
+#
+# The plan is in website-next/deploy/README.md. Apply to staging first.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tenant:
+        description: 'Tenant key from the deploy map (leave empty to build only)'
+        required: false
+        default: ''
+      apply:
+        description: 'Ship and restart the tenant process (otherwise build only)'
+        required: false
+        default: 'false'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website-next
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: website-next/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Package standalone bundle
+        run: |
+          cp -r public .next/standalone/public
+          mkdir -p .next/standalone/.next
+          cp -r .next/static .next/standalone/.next/static
+          tar -czf website-next.tar.gz -C .next/standalone .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: website-next-standalone
+          path: website-next/website-next.tar.gz
+
+  deploy:
+    needs: build
+    if: ${{ github.event.inputs.tenant != '' && github.event.inputs.apply == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: website-next-standalone
+          path: .
+
+      # The tenant -> user/host/port/service map lives with the Laravel deployer
+      # (.scripts/production-deploy.sh) so both stay in one place. This step is
+      # intentionally a placeholder until that map is extended with the website
+      # entries and the DNS routing in deploy/README.md exists.
+      - name: Deploy to tenant
+        run: |
+          echo "Would ship website-next.tar.gz to the '${{ github.event.inputs.tenant }}' deployment dir,"
+          echo "extract, then: systemctl restart <tenant>-website-next && systemctl reload nginx"
+          echo "See website-next/deploy/README.md. Not enabled yet."

@@ -20,6 +20,10 @@ const ROUTES = {
   business_types: '/admin/business-types',
   inventory_systems: '/admin/inventory-systems',
   tutorial_videos: '/admin/tutorial-videos',
+  // Master website templates -- the platform's catalogue of company-website
+  // templates. Platform admins only (enforced by platform.admin on the API).
+  website_templates: '/admin/website-templates',
+  website_template_editor: '/admin/website-templates/:id',
   highlight_rules: '/admin/highlight-rules',
   reseller_dashboard: '/reseller/dashboard',
 
