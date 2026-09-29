@@ -322,12 +322,37 @@ const TradingDashboard = () => {
     tone: string,
     days: number,
     href: string,
+    /*
+     * ⚠️ THE FOOT IS THE TOTAL OF THE ROWS ABOVE IT, both figures, and both
+     * over the SAME products. The sales card says what its five lines sold and
+     * what those lines cost to buy; the purchase card says the same two things
+     * the other way round. The server counts the far figure over the product ids
+     * above -- drawing it from the other list would be five different products
+     * under one label. The branch windows the two lists separately, so a figure
+     * counted over other days carries those days with it: a foot naming one
+     * window while counting another is a number somebody buys stock on.
+     */
+    aside?: { verb: string; qty: number; amount: number; days: number },
   ): React.ReactNode => {
     if (!isWidgetVisible(id) || rows.length === 0) return null;
     const total = listedValue(rows, 'amount');
+    const qtyTotal = listedValue(rows, 'qty');
+    /*
+     * ⚠️ NOUGHT IS NOT A FIGURE. "0 bought 0" beside five lines that sold tells
+     * the reader nothing the five lines did not, and it is the ordinary case --
+     * a branch that bought none of its five best sellers this week. The far
+     * figure is left out rather than drawn as zero, as the variance tile on the
+     * profit band is. Either half alone is still worth saying: a return window
+     * can round the units to nought while the money does not.
+     */
+    const hasFigure = (qty: number, amount: number) =>
+      Number(qty) !== 0 || Number(amount) !== 0;
+    const units = (n: number) =>
+      Number(n ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
     // The window the server actually counted -- the branch's own setting, not
     // the page's month -- said in the foot so the list is not read as the month.
-    const window = days === 1 ? 'today' : `last ${days} days`;
+    const windowLabel = (d: number) => (d === 1 ? 'today' : `last ${d} days`);
+    const window = windowLabel(days);
     return (
       <div className={`mb-4 ${CARD}`}>
         <div className={CARD_HEAD}>
@@ -355,8 +380,7 @@ const TradingDashboard = () => {
                 {row.name}
               </Link>
               <span className="shrink-0 whitespace-nowrap text-right text-[11px] tabular-nums text-slate-400">
-                {Number(row.qty ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}{' '}
-                {verb}
+                {units(row.qty)} {verb}
               </span>
               <span
                 className={`w-24 shrink-0 text-right font-bold tabular-nums ${tone}`}
@@ -368,12 +392,36 @@ const TradingDashboard = () => {
         </ul>
 
         <div
-          className={`mt-auto flex items-center justify-between border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] dark:bg-gray-700/50`}
+          className={`mt-auto flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] dark:bg-gray-700/50`}
         >
           <span className="text-slate-500 dark:text-slate-300">
             Top {rows.length} · {window}
           </span>
-          <span className={`font-bold tabular-nums ${tone}`}>{money(total)}</span>
+          <span className="ml-auto flex flex-wrap items-baseline justify-end gap-x-3 gap-y-1">
+            {hasFigure(qtyTotal, total) ? (
+              <span className="flex items-baseline gap-1">
+                <span className="font-bold tabular-nums text-slate-500 dark:text-slate-300">
+                  {units(qtyTotal)}
+                </span>
+                <span className="text-[10px] font-medium text-slate-400">{verb}</span>
+                <span className={`font-bold tabular-nums ${tone}`}>{money(total)}</span>
+              </span>
+            ) : null}
+            {aside && hasFigure(aside.qty, aside.amount) ? (
+              <span className="flex items-baseline gap-1">
+                <span className="font-bold tabular-nums text-slate-500 dark:text-slate-300">
+                  {units(aside.qty)}
+                </span>
+                <span className="text-[10px] font-medium text-slate-400">
+                  {aside.verb}
+                  {aside.days !== days ? ` · ${windowLabel(aside.days)}` : ''}
+                </span>
+                <span className="font-bold tabular-nums text-primary dark:text-secondary">
+                  {money(aside.amount)}
+                </span>
+              </span>
+            ) : null}
+          </span>
         </div>
       </div>
     );
@@ -725,6 +773,17 @@ const TradingDashboard = () => {
           'text-emerald-600 dark:text-emerald-400',
           Number(payload?.top_sales_days) || 1,
           links.salesLedger,
+          // The purchase window, which falls back to the sales one server-side
+          // -- mirrored here so the label matches the figure.
+          {
+            verb: 'bought',
+            qty: Number(payload?.top_sales_bought?.qty) || 0,
+            amount: Number(payload?.top_sales_bought?.amount) || 0,
+            days:
+              Number(payload?.top_purchase_days) ||
+              Number(payload?.top_sales_days) ||
+              1,
+          },
         );
       case 'top-purchase':
         return unitsCard(
@@ -735,6 +794,12 @@ const TradingDashboard = () => {
           'text-primary dark:text-secondary',
           Number(payload?.top_purchase_days) || 1,
           links.purchaseLedger,
+          {
+            verb: 'sold',
+            qty: Number(payload?.top_purchase_sold?.qty) || 0,
+            amount: Number(payload?.top_purchase_sold?.amount) || 0,
+            days: Number(payload?.top_sales_days) || 1,
+          },
         );
       case 'all-branches':
         return isWidgetVisible('all-branches') ? (
