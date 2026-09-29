@@ -491,7 +491,6 @@ const PurchaseLedger = (user: any) => {
     {
       key: 'product_name',
       header: 'Product & Details',
-      width: '100px',
       cellClass: 'align-center',
       render: (row: any) => {
         const coaName = getRelevantCoaName(row);
@@ -591,7 +590,7 @@ const PurchaseLedger = (user: any) => {
           })}
         </div>
       ),
-      width: '100px',
+      width: '120px',
     },
 
     {
@@ -616,7 +615,7 @@ const PurchaseLedger = (user: any) => {
           })}
         </div>
       ),
-      width: '100px',
+      width: '130px',
     },
     {
       key: 'discount',
@@ -734,6 +733,8 @@ const PurchaseLedger = (user: any) => {
     {
       key: 'action',
       header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
       render: (row: any) => {
         const voucherId = Number(
           row?.mtm_id ??

@@ -985,6 +985,8 @@ const SalesLedger = (user: any) => {
     {
       key: 'action',
       header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
       render: (row: any) => {
         const voucherId = Number(
           row?.mtm_id ??
@@ -1064,7 +1066,7 @@ const SalesLedger = (user: any) => {
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
                 className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${filterOpen
- ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'}`}
+                  ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300' : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'}`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -1091,20 +1093,20 @@ const SalesLedger = (user: any) => {
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
                     {branchDdlData.isLoading == true ? <Loader /> : ''}
                     <BranchDropdown
- onChange={handleBranchChange}
- value={branchId == null ? '' : String(branchId)}
- className="w-full font-medium text-sm p-2 "
- branchDdl={dropdownData}
+                      onChange={handleBranchChange}
+                      value={branchId == null ? '' : String(branchId)}
+                      className="w-full font-medium text-sm p-2 "
+                      branchDdl={dropdownData}
                     />
                   </div>
 
                   <div className={useFilterMenuEnabled ? '' : 'order-2 min-w-0 min-[1180px]:col-span-1'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Account</label>
                     <DdlMultiline
- acType={''}
- onSelect={selectedLedgerOptionHandler}
- value={selectedLedgerOption}
- className=""
+                      acType={''}
+                      onSelect={selectedLedgerOptionHandler}
+                      value={selectedLedgerOption}
+                      className=""
                     />
                   </div>
 
@@ -1118,9 +1120,9 @@ const SalesLedger = (user: any) => {
                       {/* <FaRotateRight size={16} className="dark:text-[rgb(var(--c-text))]" /> */}
                     </div>
                     <ProductDropdown
- onSelect={selectedProduct}
- value={selectedProductOption}
- className="appearance-none "
+                      onSelect={selectedProduct}
+                      value={selectedProductOption}
+                      className="appearance-none "
                     />
                   </div>
 
@@ -1128,20 +1130,20 @@ const SalesLedger = (user: any) => {
                     <div className="min-w-0">
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                       <InputDatePicker
- setCurrentDate={handleStartDate}
- className="w-full font-medium text-sm "
- selectedDate={startDate}
- setSelectedDate={setStartDate}
+                        setCurrentDate={handleStartDate}
+                        className="w-full font-medium text-sm "
+                        selectedDate={startDate}
+                        setSelectedDate={setStartDate}
                       />
                     </div>
 
                     <div className="min-w-0">
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                       <InputDatePicker
- setCurrentDate={handleEndDate}
- className="w-full font-medium text-sm "
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+                        setCurrentDate={handleEndDate}
+                        className="w-full font-medium text-sm "
+                        selectedDate={endDate}
+                        setSelectedDate={setEndDate}
                       />
                     </div>
                   </div>
@@ -1150,9 +1152,9 @@ const SalesLedger = (user: any) => {
                       Search
                     </label>
                     <SearchInput
- search={search}
- setSearchValue={setSearchValue}
- className="w-full"
+                      search={search}
+                      setSearchValue={setSearchValue}
+                      className="w-full"
                     />
                   </div>
                   {!useFilterMenuEnabled && (
@@ -1160,10 +1162,10 @@ const SalesLedger = (user: any) => {
                       <div className="min-w-0 flex-[1.1]">
                         <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                         <InputDatePicker
- setCurrentDate={handleEndDate}
- className="w-full font-medium text-sm "
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+                          setCurrentDate={handleEndDate}
+                          className="w-full font-medium text-sm "
+                          selectedDate={endDate}
+                          setSelectedDate={setEndDate}
                         />
                       </div>
 
@@ -1183,22 +1185,22 @@ const SalesLedger = (user: any) => {
                           className="px-4"
                         />
                         <PrintRowsInput
- id="perPageInlineMd"
- name="perPageInlineMd"
- label=""
- value={rowsPerPage.toString()}
- onChange={handleRowsPerPageChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                          id="perPageInlineMd"
+                          name="perPageInlineMd"
+                          label=""
+                          value={rowsPerPage.toString()}
+                          onChange={handleRowsPerPageChange}
+                          type="text"
+                          className="font-medium text-sm w-20! text-center"
                         />
                         <PrintFontInput
- id="fontSizeInlineMd"
- name="fontSizeInlineMd"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                          id="fontSizeInlineMd"
+                          name="fontSizeInlineMd"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm w-20! text-center"
                         />
                         <PrintButton
                           onClick={handlePrint}
@@ -1234,22 +1236,22 @@ const SalesLedger = (user: any) => {
                     {!useFilterMenuEnabled && (
                       <>
                         <PrintRowsInput
- id="perPageInline"
- name="perPageInline"
- label=""
- value={rowsPerPage.toString()}
- onChange={handleRowsPerPageChange}
- type="text"
- className="font-medium text-sm w-14! text-center"
+                          id="perPageInline"
+                          name="perPageInline"
+                          label=""
+                          value={rowsPerPage.toString()}
+                          onChange={handleRowsPerPageChange}
+                          type="text"
+                          className="font-medium text-sm w-14! text-center"
                         />
                         <PrintFontInput
- id="fontSizeInline"
- name="fontSizeInline"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-14! text-center"
+                          id="fontSizeInline"
+                          name="fontSizeInline"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm w-14! text-center"
                         />
                         {/* Icon only, for want of room beside Apply and Reset --
                             hence the tooltip, which is all the name it has. */}
@@ -1268,20 +1270,20 @@ const SalesLedger = (user: any) => {
                       <div className="min-w-0 flex-[1.15]">
                         <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                         <InputDatePicker
- setCurrentDate={handleStartDate}
- className="w-full font-medium text-sm "
- selectedDate={startDate}
- setSelectedDate={setStartDate}
+                          setCurrentDate={handleStartDate}
+                          className="w-full font-medium text-sm "
+                          selectedDate={startDate}
+                          setSelectedDate={setStartDate}
                         />
                       </div>
 
                       <div className="min-w-0 flex-[1.15]">
                         <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                         <InputDatePicker
- setCurrentDate={handleEndDate}
- className="w-full font-medium text-sm "
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+                          setCurrentDate={handleEndDate}
+                          className="w-full font-medium text-sm "
+                          selectedDate={endDate}
+                          setSelectedDate={setEndDate}
                         />
                       </div>
 
@@ -1304,23 +1306,23 @@ const SalesLedger = (user: any) => {
 
                       <div className="ml-auto flex items-end gap-2 pt-6">
                         <PrintRowsInput
- id="perPageInline"
- name="perPageInline"
- label=""
- value={rowsPerPage.toString()}
- onChange={handleRowsPerPageChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                          id="perPageInline"
+                          name="perPageInline"
+                          label=""
+                          value={rowsPerPage.toString()}
+                          onChange={handleRowsPerPageChange}
+                          type="text"
+                          className="font-medium text-sm w-20! text-center"
                         />
 
                         <PrintFontInput
- id="fontSizeInline"
- name="fontSizeInline"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                          id="fontSizeInline"
+                          name="fontSizeInline"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm w-20! text-center"
                         />
 
                         <PrintButton
@@ -1354,23 +1356,23 @@ const SalesLedger = (user: any) => {
                 </div>
               ) : null}
               <PrintRowsInput
- id="perPage"
- name="perPage"
- label=""
- value={rowsPerPage.toString()}
- onChange={handleRowsPerPageChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                id="perPage"
+                name="perPage"
+                label=""
+                value={rowsPerPage.toString()}
+                onChange={handleRowsPerPageChange}
+                type="text"
+                className="font-medium text-sm w-20! text-center"
               />
 
               <PrintFontInput
- id="fontSize"
- name="fontSize"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                id="fontSize"
+                name="fontSize"
+                label=""
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type="text"
+                className="font-medium text-sm w-20! text-center"
               />
 
               <PrintButton
@@ -1397,28 +1399,28 @@ const SalesLedger = (user: any) => {
           footerRows={
             tableData.length > 0
               ? [
-                  [
-                    {
-                      colSpan: columns.length,
-                      label: (
-                        <div className="flex items-center justify-end space-x-8 whitespace-nowrap font-bold">
-                          <div>Grand Total</div>
-                          <div className="flex space-x-8">
-                            <div>
-                              Quantity: {thousandSeparator(totalQuantity)}
-                            </div>
-                            <div>Total: {thousandSeparator(totalPayment)}</div>
-                            <div>
-                              Discount: {thousandSeparator(totalDiscount)}
-                            </div>
-                            <div>Received: {thousandSeparator(grandTotal)}</div>
-                            <div>Balance: {thousandSeparator(totalBalance)}</div>
+                [
+                  {
+                    colSpan: columns.length,
+                    label: (
+                      <div className="flex items-center justify-end space-x-8 whitespace-nowrap font-bold">
+                        <div>Grand Total</div>
+                        <div className="flex space-x-8">
+                          <div>
+                            Quantity: {thousandSeparator(totalQuantity)}
                           </div>
+                          <div>Total: {thousandSeparator(totalPayment)}</div>
+                          <div>
+                            Discount: {thousandSeparator(totalDiscount)}
+                          </div>
+                          <div>Received: {thousandSeparator(grandTotal)}</div>
+                          <div>Balance: {thousandSeparator(totalBalance)}</div>
                         </div>
-                      ),
-                    },
-                  ],
-                ]
+                      </div>
+                    ),
+                  },
+                ],
+              ]
               : undefined
           }
         />
