@@ -28,8 +28,21 @@ import httpService from '../../../services/httpService';
 import { API_PRINT_TEMPLATE_URL } from '../../../services/apiRoutes';
 import { toDueListDocumentData } from './dueListDocumentData';
 import { useReportQuery } from '../../../utils/hooks/useReportQuery';
+import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
+import { ClientType } from '../../../utils/fields/DataConstant';
 
-
+/**
+ * The classifications Add Customers saves in `cust_party_infos.party_type_id`.
+ *
+ * ⚠️ The four values are that screen's own constant, read from it rather than
+ * copied, so the two screens cannot drift apart. The leading blank entry is
+ * this screen's "no filter" -- it is not a classification, and it is the only
+ * value the API rows never carry.
+ */
+const DUE_LIST_TYPE_FILTER = [
+  { id: '', name: 'All Types' },
+  ...ClientType.filter((entry) => entry.id !== ''),
+];
 
 const DueList = (user: any) => {
   const dispatch = useDispatch();
@@ -68,6 +81,9 @@ const DueList = (user: any) => {
   const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
+  // The selected classification -- a `cust_party_infos.party_type_id`, or ''
+  // for every party.
+  const [partyTypeId, setPartyTypeId] = useState<string>('');
   // What the address bar asked for, and whether it has been answered once.
   const query = useReportQuery();
   const answered = useRef(false);
@@ -84,9 +100,38 @@ const DueList = (user: any) => {
     setBranchId(user.user.branch_id);
   }, []);
 
+  // ⚠️ The rows sit two levels below `dueList.data`, and this is the one report
+  // where that is so. `apiDueList` passes `dueListData`'s own `foundData(...)`
+  // response back through `foundData(...)` again, so the body is doubly
+  // wrapped: the rows are at `res.data.data.data.original.data.data`. The slice
+  // stores that `.original`, which leaves them at `dueList.data.data.data` --
+  // the extra `.data` here is not a mistake.
   useEffect(() => {
     setTableData(dueList?.data?.data?.data);
   }, [dueList]);
+
+  /**
+   * What the table, the totals and the print all read.
+   *
+   * ⚠️ These are already the selected classification's rows. The server applied
+   * the filter inside the query and computed its totals over the same set, so
+   * nothing is cut on the screen -- the figures and the rows beside them cannot
+   * disagree about which parties they describe.
+   */
+  const displayRows = Array.isArray(tableData) ? tableData : [];
+
+  /**
+   * Changing the classification runs the report again on it.
+   *
+   * A new request rather than a re-sift of what is already in hand, so the
+   * totals come back right with the rows and "Supplier & Customer" (3) is its
+   * own answer rather than the union of Customer (1) and Supplier (2).
+   */
+  const handlePartyTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextType = e.target.value;
+    setPartyTypeId(nextType);
+    dispatch(getDueList({ branchId, endDate: dayjs(endDate).format('YYYY-MM-DD'), partyTypeId: nextType }));
+  };
 
 
   const handleBranchChange = (e: any) => {
@@ -99,8 +144,9 @@ const DueList = (user: any) => {
   const handleActionButtonClick = (e: any) => {
 
     const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
-    dispatch(getDueList({ branchId, endDate: endD }));
-    setTableData(dueList?.data?.data?.data);
+    // The classification rides along, so applying a branch or end-date change
+    // does not quietly drop back to "every party".
+    dispatch(getDueList({ branchId, endDate: endD, partyTypeId }));
     setFilterOpen(false);
   };
 
@@ -131,7 +177,7 @@ const DueList = (user: any) => {
 
       if (query.asked && !answered.current) {
         answered.current = true;
-        dispatch(getDueList({ branchId: branch, endDate: dayjs(asOn).format('YYYY-MM-DD') }));
+        dispatch(getDueList({ branchId: branch, endDate: dayjs(asOn).format('YYYY-MM-DD'), partyTypeId }));
       }
     } else {
     }
@@ -353,7 +399,7 @@ const DueList = (user: any) => {
    * -- falls through to the old paper.
    */
   const handlePrint = async () => {
-    const rows = Array.isArray(tableData) ? tableData : [];
+    const rows = Array.isArray(displayRows) ? displayRows : [];
     let layout: any = null;
 
     try {
@@ -425,7 +471,7 @@ const DueList = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? 'space-y-3'
-                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2'
+                      : 'grid grid-cols-1 items-end gap-3 sm:grid-cols-2 md:grid-cols-3'
                   }
                 >
                   <div>
@@ -446,6 +492,18 @@ const DueList = (user: any) => {
  className="w-full font-medium text-sm "
  selectedDate={endDate}
  setSelectedDate={setEndDate}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Client Type</label>
+                    <DropdownCommon
+ id="party_type_id"
+ name="party_type_id"
+ value={partyTypeId}
+ onChange={handlePartyTypeChange}
+ className="font-medium text-sm"
+ data={DUE_LIST_TYPE_FILTER}
                     />
                   </div>
 
@@ -535,7 +593,7 @@ const DueList = (user: any) => {
               onClick={handlePrint}
               label="Print"
               className="px-6"
-              disabled={!Array.isArray(tableData) || tableData.length === 0}
+              disabled={!Array.isArray(displayRows) || displayRows.length === 0}
             />
           </div>
         </div>
@@ -551,13 +609,21 @@ const DueList = (user: any) => {
 
       <div className='overflow-y-auto overflow-x-auto'>
         {dueList.isLoading && <Loader />}
-        <Table columns={columns} data={tableData || []} /> {/* Ensure data is always an array */}
+        <Table
+          // Keyed on the classification so switching it remounts the table on
+          // page one -- a reader who was on page 4 of "every party" does not
+          // land on page 4 of a shorter list.
+          key={partyTypeId}
+          columns={columns}
+          data={displayRows}
+          noDataMessage={partyTypeId ? 'No records for the selected classification.' : undefined}
+        />
 
         {/* === Hidden Print Component === */}
         <div className="hidden">
           <DueListPrint
             ref={printRef}
-            rows={tableData || []}
+            rows={displayRows}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Due List"
             rowsPerPage={Number(perPage)}

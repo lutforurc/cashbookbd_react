@@ -1654,6 +1654,11 @@ class ReportsController extends Controller
     private function dueListData(Request $request)
     {
         $branch_id = $request->branch_id;
+        // The classification filter -- a `cust_party_infos.party_type_id` as Add
+        // Customers saved it (1 Customer, 2 Supplier, 3 Supplier & Customer,
+        // 4 Advance). Empty/absent is "every party", which is not a value any
+        // row carries.
+        $partyTypeId = $request->party_type_id;
         if (request()->is('api/*')) {
             $endDate =  $request->enddate;
         } else {
@@ -1667,6 +1672,7 @@ class ReportsController extends Controller
                 'cpi.mobile',
                 'cpi.manual_address',
                 'cpi.area_id',
+                'cpi.party_type_id',
                 DB::raw('CASE WHEN cpi.idfr_code <> "" THEN CONCAT(cpi.name, " (", cpi.idfr_code, ")") ELSE cpi.name END as coa4_name'),
                 DB::raw('CASE WHEN SUM(atd.debit) - SUM(atd.credit) > 0 THEN SUM(atd.debit) - SUM(atd.credit) ELSE 0 END as debit'),
                 DB::raw('CASE WHEN SUM(atd.credit) - SUM(atd.debit) > 0 THEN SUM(atd.credit) - SUM(atd.debit) ELSE 0 END as credit')
@@ -1678,7 +1684,13 @@ class ReportsController extends Controller
             ->where('mtm.company_id', auth()->user()->company_id)
             ->where('mtm.branch_id', $branch_id)
             ->where('mtm.vr_date', '<=', $endDate)
-            ->groupBy('atd.coa4_id', 'cpi.id', 'cpi.name', 'cpi.manual_address', 'cpi.idfr_code', 'cpi.mobile', 'cpi.area_id');
+            // Applied here, inside the row source, so the SUM totals below and
+            // the running cumulative columns are computed over the selected
+            // classification only -- not over the whole branch and then cut.
+            ->when($partyTypeId !== null && $partyTypeId !== '', function ($query) use ($partyTypeId) {
+                $query->where('cpi.party_type_id', $partyTypeId);
+            })
+            ->groupBy('atd.coa4_id', 'cpi.id', 'cpi.name', 'cpi.manual_address', 'cpi.idfr_code', 'cpi.mobile', 'cpi.area_id', 'cpi.party_type_id');
 
         $results = DB::table(DB::raw('(' . $subQuery->toSql() . ') as a'))
             ->mergeBindings($subQuery)
@@ -1688,6 +1700,7 @@ class ReportsController extends Controller
                 DB::raw('REPLACE(a.coa4_name, "A/R", "") as coa4_name'),
                 'a.manual_address',
                 'a.area_id',
+                'a.party_type_id',
                 DB::raw('CASE WHEN a.mobile <> "" OR a.mobile IS NOT NULL THEN a.mobile ELSE "" END as mobile'),
                 'a.debit',
                 'a.credit'
@@ -1729,6 +1742,7 @@ class ReportsController extends Controller
                     'coa4_id'           => null,
                     'ledger_page'       => '',
                     'coa4_name'         => 'Total',
+                    'party_type_id'     => null,
                     'area_id'           => '',
                     'mobile'            => '',
                     'debit'             => $cumulativeDebit,

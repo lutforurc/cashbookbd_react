@@ -186,7 +186,7 @@ Paths are relative to `<host>/api`. Names match the sidebar.
 | Product In Out | GET | `reports/product-ledger-data` | `branch_id`, `ledger_id` *(= product id)*, `startdate`, `enddate` | `dd/MM/yyyy` | **raw** `{opening, details[]}` |
 | Date-wise In/Out | GET | `reports/in-out/date-wise/data` | `branch_id`, `ledger_id` *(= product id)*, `startdate`, `enddate`, `response_type=json` | `dd/MM/yyyy` | **raw** `{success, data[]}` · **returns HTML without `Accept: application/json`** |
 | Labour Ledger | POST | `reports/labour/ledger` | **`branchId`, `ledgerId`, `labourId`, `startDate`, `endDate`** | `yyyy-MM-dd` | **wrapped** nested `{branch: {group: rows[]}}` |
-| Due List | GET | `reports/duelist` | `branch_id`, `enddate` *(no start date)* | `yyyy-MM-dd` | **wrapped** · extra `.original` layer |
+| Due List | GET | `reports/duelist` | `branch_id`, `enddate` *(no start date)*, `party_type_id` *(1 Customer, 2 Supplier, 3 Supplier & Customer, 4 Advance; omit for all)* | `yyyy-MM-dd` | **wrapped** · extra `.original` layer |
 | Collection Sheet | POST | `somity-report/collection-sheet` | `branch_id`, `somity_id`, `month_year`, `type_id` *(1=opening)* | `MM/yyyy` | **raw** array · **verify separator, see below** |
 | Monthly Report | POST | `somity-report/monthly-report/data` | `branch_id`, `startdate`, `enddate` | `dd/MM/yyyy` | **raw** object keyed by date · **not concurrency-safe** |
 | Datewise Cash Total | GET | `reports/date-wise-total-data` | `branch_id`, `start_date`, `end_date` | `yyyy-MM-dd` | **wrapped** |
