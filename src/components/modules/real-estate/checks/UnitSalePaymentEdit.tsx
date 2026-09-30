@@ -86,10 +86,12 @@ const initialForm: FormState = {
 
 /* ================= HELPERS ================= */
 
-// Laravel date cast may return ISO UTC string; slice first 10 chars to avoid timezone shift
+// Laravel serialises a date cast as an ISO UTC instant for a Dhaka-midnight
+// calendar date (…T18:00:00Z), so slicing the first 10 chars reads the day
+// before and rewrites it a day early on the next save. Parse and format in the
+// local zone to recover the date that was actually stored.
 const toYmd = (v?: string | null): string => {
   if (!v) return "";
-  if (typeof v === "string" && v.length >= 10) return v.slice(0, 10);
 
   const d = dayjs(v);
   return d.isValid() ? d.format("YYYY-MM-DD") : "";
@@ -166,12 +168,18 @@ export default function UnitSalePaymentEdit() {
     [form.payment_mode]
   );
 
+  // ✅ Cheque Details section shown for both CHEQUE and BANK_TRANSFER
+  const showChequeDetails = useMemo(
+    () => ["CHEQUE", "BANK_TRANSFER"].includes(form.payment_mode),
+    [form.payment_mode]
+  );
+
   // ✅ NEW
   const isChequeBouncedOrCancelled = useMemo(
     () =>
-      isCheque &&
+      showChequeDetails &&
       ["BOUNCED", "CANCELLED"].includes(form.cheque_collect_status || ""),
-    [isCheque, form.cheque_collect_status]
+    [showChequeDetails, form.cheque_collect_status]
   );
 
   const setField = (name: keyof FormState, value: any) => {
@@ -251,9 +259,9 @@ export default function UnitSalePaymentEdit() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Cheque mode off হলে cheque-only fields clear
+  // Cheque / Bank Transfer mode off হলে cheque-only fields clear
   useEffect(() => {
-    if (!isCheque) {
+    if (!showChequeDetails) {
       setForm((prev) => ({
         ...prev,
         cheque_collect_status: "",
@@ -267,7 +275,7 @@ export default function UnitSalePaymentEdit() {
       setChequeCollectDateObj(null);
       setChequeBounceDateObj(null); // ✅ NEW
     }
-  }, [isCheque]);
+  }, [showChequeDetails]);
 
   // ✅ NEW: Bounce/Cancelled না হলে bounce fields clear
   useEffect(() => {
@@ -324,7 +332,8 @@ export default function UnitSalePaymentEdit() {
     //   return false;
     // }
 
-    if (isCheque) {
+    // ✅ same cheque rules apply to CHEQUE and BANK_TRANSFER
+    if (showChequeDetails) {
       if (!form.reference_no) {
         toast.warning("Cheque / Reference No is required for cheque payment");
         return false;
@@ -394,17 +403,23 @@ export default function UnitSalePaymentEdit() {
 
         coal4_id: needsBankReceivedAccount ? (form.coal4_id ? Number(form.coal4_id) : null) : null,
 
-        cheque_collect_status: isCheque ? form.cheque_collect_status || undefined : undefined,
-        cheque_deposit_due_date: isCheque ? form.cheque_deposit_due_date || undefined : undefined,
-        cheque_collect_date: isCheque ? form.cheque_collect_date || undefined : undefined,
+        cheque_collect_status: showChequeDetails
+          ? form.cheque_collect_status || undefined
+          : undefined,
+        cheque_deposit_due_date: showChequeDetails
+          ? form.cheque_deposit_due_date || undefined
+          : undefined,
+        cheque_collect_date: showChequeDetails
+          ? form.cheque_collect_date || undefined
+          : undefined,
 
         // ✅ NEW
         cheque_bounce_date:
-          isCheque && isChequeBouncedOrCancelled
+          showChequeDetails && isChequeBouncedOrCancelled
             ? form.cheque_bounce_date || undefined
             : undefined,
         cheque_return_reason:
-          isCheque && isChequeBouncedOrCancelled
+          showChequeDetails && isChequeBouncedOrCancelled
             ? form.cheque_return_reason || undefined
             : undefined,
 
@@ -632,8 +647,8 @@ export default function UnitSalePaymentEdit() {
             </div>
           </div>
 
-          {/* Cheque-specific fields */}
-          {isCheque ? (
+          {/* Cheque-specific fields (shown for CHEQUE and BANK_TRANSFER) */}
+          {showChequeDetails ? (
             <div className="mt-4 border-t border-gray-400 pt-3">
               <h3 className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 font-semibold">
                 Cheque Details

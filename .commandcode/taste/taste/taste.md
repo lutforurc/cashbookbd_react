@@ -8,4 +8,7 @@
 - Handle edge cases explicitly: missing/empty fields should not render empty labels or wasted space; guard against overlapping, truncated, or wrongly paginated text on multi-page reports; handle Bengali and English text, currency formatting, and empty-data states. Confidence: 0.7
 - Wants semantically distinct-but-similar fields (e.g. hand-entered manual voucher/challan numbers vs system-generated voucher numbers) kept clearly separate in names and labels so they can never be confused, and only surfaced when a real value exists. Confidence: 0.6
 - Task specs are written in Bengali (in a project/codebase that is otherwise in English). Confidence: 0.5
-- In the final response, provide a list of the changed files, instructions on how to use the new feature, and the results of build/test and manual verification. Confidence: 0.75
+- In the final response, provide a list of the changed files, instructions on how to use the new feature, and the results of build/test and manual verification. Confidence: 0.85
+- When extending an existing feature to a new option/mode, bring it to full parity with the analogous existing option (same fields, editing, validation, saving) while leaving the existing option's workflow intact. Confidence: 0.6
+- Editing a record that has accounting/ledger side effects must reconcile them: adjust the previously posted amount/account in place and keep repeated saves idempotent so nothing is ever double-posted. Confidence: 0.55
+ 
