@@ -117,16 +117,39 @@ export const toSalesLedgerDocumentData = ({
       0,
     );
 
+    // The cell's block, the bespoke print's own order: the account, then a
+    // product per line, then the voucher's note. Blank parts dropped, so an
+    // account-less or note-less voucher leaves no empty line box behind.
+    const block = [
+      coaName,
+      ...details.map(label),
+      String(row?.sales_master?.notes ?? '').trim(),
+    ].filter(Boolean);
+
     return {
       id: row?.id ?? row?.mtmid,
       sl: row?.sl_number,
       challan_no: row?.challan_no ?? '',
       challan_date: row?.challan_date ?? '',
       coa_name: coaName,
+      // The products alone, for the composed column's {products} token.
+      products: details.map(label),
 
       // The account, then the products, then the voucher's own note: exactly
-      // the block the bespoke print draws in this cell, as lines.
-      product_lines: [coaName, ...details.map(label), String(row?.sales_master?.notes ?? '')],
+      // the block the bespoke print draws in this cell, handed over three ways
+      // (LEDGER_LINE_FIELDS) -- as lines, as one line, and as the parts a
+      // pattern may arrange.
+      product_details_lines: block,
+      product_details_flat: block.join(' '),
+
+      // ⚠️ THE OLD NAME, KEPT FILLED. A layout saved before the ledger got its
+      // own Product & Details column still points at `product_lines`, whose
+      // composed pattern names the invoice's product facts and so composes to
+      // nothing on a ledger row. DocumentPrint draws the row's own lines
+      // wherever the pattern wrote nothing, so filling this too means such a
+      // layout prints its block instead of a blank cell -- migration or no
+      // migration. See retargetLedgerProductColumn in printTemplate.ts.
+      product_lines: block,
 
       qty_lines: perLine((detail) => thousandSeparator(num(detail?.quantity))),
       rate_lines: perLine((detail) =>

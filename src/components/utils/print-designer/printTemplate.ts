@@ -313,6 +313,31 @@ export const DESCRIPTION_TOKENS: { key: string; name: string }[] = [
 export const DEFAULT_DESCRIPTION_PATTERN = '{name}\n{remarks}\n{branch_name}';
 
 /**
+ * The parts a SALES / PURCHASE LEDGER's Product & Details cell is made of.
+ *
+ * The same idea as DESCRIPTION_TOKENS, over the other report: `coa_name` and
+ * `notes` are scalars the adapters fill, and `products` is the LIST of that
+ * voucher's product lines (salesLedgerDocumentData.ts). A pattern line that is
+ * `{products}` alone stands for the list, one entry to a line; written inline
+ * among other tokens it closes up onto that one line (see resolvePattern).
+ *
+ * ⚠️ NOT the invoice's PRODUCT_TOKENS. Brand, category, group, serial and the
+ * rest are facts a voucher's row carries, and a ledger row -- one whole voucher,
+ * many products -- has none of them. A product pattern here would print an
+ * empty cell on every row for ever, which is exactly the bug this replaces: the
+ * ledger's column used to be the composed `product_lines`, whose default named
+ * those very facts.
+ */
+export const LEDGER_PRODUCT_TOKENS: { key: string; name: string }[] = [
+  { key: 'coa_name', name: 'Account' },
+  { key: 'products', name: 'Products (one per line)' },
+  { key: 'notes', name: 'Notes' },
+];
+
+/** The ledger block, the adapter's own arrangement: account, products, note. */
+export const DEFAULT_LEDGER_PRODUCT_PATTERN = '{coa_name}\n{products}\n{notes}';
+
+/**
  * What each composed column writes when the tenant has not written a pattern.
  *
  * ⚠️ ONE TABLE, because the designer SHOWS this default in its box and the
@@ -326,6 +351,7 @@ export const COMPOSED_DEFAULTS: Record<string, string> = {
   product_lines: DEFAULT_PRODUCT_PATTERN,
   own_format: '{qty} {unit}',
   description_format: DEFAULT_DESCRIPTION_PATTERN,
+  product_details_format: DEFAULT_LEDGER_PRODUCT_PATTERN,
 };
 
 /** The pattern a composed column actually prints: its own, or its paper's default. */
@@ -343,7 +369,8 @@ export const isComposedField = (key: string) =>
   key === 'product_flat' ||
   key === 'product_lines' ||
   key === 'own_format' ||
-  key === 'description_format';
+  key === 'description_format' ||
+  key === 'product_details_format';
 
 /**
  * One line of a pattern, written out for one row.
@@ -364,7 +391,21 @@ export const resolvePattern = (
   // separates thousands in a figure, so "{qty}" reads 1,500 and not 1500.
   write: (key: string, raw: any) => string = (_key, raw) => String(raw ?? '').trim(),
 ): string => {
-  const valueOf = (key: string) => write(key.trim(), row?.[key.trim()]).trim();
+  // ⚠️ A token may hold a LIST -- a ledger voucher's products -- and inline it
+  // closes up onto one line, space-separated. The stacked case is composeProduct
+  // below, which lays the same list out one entry to a line.
+  const valueOf = (key: string) => {
+    const raw = row?.[key.trim()];
+
+    if (Array.isArray(raw)) {
+      return raw
+        .map((entry) => write(key.trim(), entry).trim())
+        .filter(Boolean)
+        .join(' ');
+    }
+
+    return write(key.trim(), raw).trim();
+  };
 
   const optional = line.replace(/\[([^[\]]*)\]/g, (_match, inside: string) => {
     const filled = [...inside.matchAll(/\{([^{}]+)\}/g)].some(([, key]) => valueOf(key) !== '');
@@ -388,10 +429,30 @@ export const composeProduct = (
   write?: (key: string, raw: any) => string,
 ): string[] | null => {
   if (!isComposedField(column.field)) return null;
-  return composedPattern(column)
-    .split('\n')
-    .map((line) => resolvePattern(line, row, write))
-    .filter(Boolean);
+
+  const out: string[] = [];
+
+  for (const line of composedPattern(column).split('\n')) {
+    // A line that is ONE token holding a LIST -- the ledger's `{products}` --
+    // stands for that list, one entry to a line, exactly as the adapter's own
+    // `product_details_lines` would print it. Any other token is a single value.
+    const solo = line.trim().match(/^\{([^{}]+)\}$/);
+    const token = solo ? solo[1].trim() : '';
+    const list = token ? row?.[token] : undefined;
+
+    if (token && Array.isArray(list)) {
+      list
+        .map((entry) => (write ? write(token, entry) : String(entry ?? '')).trim())
+        .filter(Boolean)
+        .forEach((entry) => out.push(entry));
+      continue;
+    }
+
+    const resolved = resolvePattern(line, row, write);
+    if (resolved) out.push(resolved);
+  }
+
+  return out;
 };
 
 /**
@@ -401,7 +462,9 @@ export const composeProduct = (
  */
 export const isStackedComposed = (column: TableColumn) =>
   column.field === 'product_lines' ||
-  ((column.field === 'own_format' || column.field === 'description_format') &&
+  ((column.field === 'own_format' ||
+    column.field === 'description_format' ||
+    column.field === 'product_details_format') &&
     composedPattern(column).includes('\n'));
 
 export type SignatureItem = {
@@ -1368,13 +1431,25 @@ export const LEDGER_INFO_FIELDS: FieldDef[] = [
  * `total_due` as amount less received, which is the right footing for a running
  * order balance and the wrong one for a ledger, where a discount comes off as
  * well. `total_balance` is a plain sum of this column.
+ *
+ * ⚠️ PRODUCT & DETAILS IS OFFERED THREE WAYS, and NONE of them is the invoice's
+ * composed `product_lines`. That key names the product's own facts (brand,
+ * category, serial) and is resolved by pattern off the row; a ledger row carries
+ * an ARRAY of ready-made lines instead, so a `product_lines` column on this
+ * paper composed to nothing and printed blank -- the bug this replaces. The
+ * three here are the same three the plain Ledger offers its Description:
+ * `product_details_lines` (the block, one entry per line), `product_details_flat`
+ * (the same block closed onto one line) and `product_details_format` (the
+ * tenant's own arrangement of {coa_name} / {products} / {notes}).
  */
 export const LEDGER_LINE_FIELDS: FieldDef[] = [
   { key: 'sl', name: 'Sl. No.', group: 'line' },
   { key: 'challan_no', name: 'Challan / Invoice No', group: 'line' },
   { key: 'challan_date', name: 'Date', group: 'line' },
   { key: 'coa_name', name: 'Account', group: 'line' },
-  { key: 'product_lines', name: 'Product & Details', group: 'line' },
+  { key: 'product_details_lines', name: 'Product & Details (multi line)', group: 'line' },
+  { key: 'product_details_flat', name: 'Product & Details (one line)', group: 'line' },
+  { key: 'product_details_format', name: 'Product & Details (own format)', group: 'line' },
   { key: 'qty_lines', name: 'Quantity (one per line)', group: 'line' },
   { key: 'rate_lines', name: 'Rate (one per line)', group: 'line' },
   { key: 'amount_lines', name: 'Amount (one per line)', group: 'line' },
@@ -3314,7 +3389,11 @@ const ledgerHeading = (docType: DocType, title: string): PrintTemplate => ({
           // always printed the second column.
           subField: 'challan_date',
         },
-        { field: 'product_lines', label: 'Product & Details', width: 33, align: 'left' },
+        // The voucher's block -- account, a product per line, its note -- written
+        // to the tenant's own pattern, so the cell is theirs to edit in the
+        // designer. NOT the invoice's composed `product_lines`, whose default
+        // names product facts a ledger row does not carry and so prints blank.
+        { field: 'product_details_format', label: 'Product & Details', width: 33, align: 'left' },
         // ⚠️ The three a voucher's own figures come in as lists, and the only
         // columns on this paper whose default is wrong. Every other cell here
         // holds one value and the renderer already centres it; these three hold
@@ -4361,6 +4440,33 @@ const tokenizeOrderCaptions = (bands: Band[]): void => {
 };
 
 /**
+ * A ledger layout saved while Product & Details was the composed
+ * `product_lines`.
+ *
+ * ⚠️ WHY A SAVED LAYOUT IS REWRITTEN. `product_lines` was added to the invoice
+ * designer's composed columns (brand / category / product_name / ...) after the
+ * two ledgers shipped, and a ledger row carries none of those facts -- it holds
+ * an ARRAY of ready-made lines under the same key. So a ledger layout saved
+ * before this fix, and the built-in default it was designed from, printed a
+ * blank Product & Details cell. Pointing that column at `product_details_format`
+ * -- the tenant's own pattern over the adapter's keys, which by default writes
+ * the same block -- restores the paper AND leaves the cell editable, which is
+ * where it should have been; the pattern, if one was set, belonged to the other
+ * field and goes with it.
+ */
+const retargetLedgerProductColumn = (bands: Band[]): void => {
+  bands.forEach((item) => {
+    if (item.type !== 'table') return;
+
+    item.columns = item.columns.map((column) =>
+      column.field === 'product_lines'
+        ? { ...column, field: 'product_details_format', pattern: undefined }
+        : column,
+    );
+  });
+};
+
+/**
  * A bill layout saved while the second line was the room type's alone.
  *
  * ⚠️ WHY A SAVED LAYOUT IS REWRITTEN. The description column's second line
@@ -4565,6 +4671,7 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
   // Safe to do in place: every band above was built here out of the saved JSON,
   // so nothing else is holding one.
   if (docType === 'sales_order') tokenizeOrderCaptions(bands);
+  if (isLedger(docType)) retargetLedgerProductColumn(bands);
   if (docType === 'hotel_bill') {
     retargetBillSubLine(bands);
     addBillAccountLine(bands);

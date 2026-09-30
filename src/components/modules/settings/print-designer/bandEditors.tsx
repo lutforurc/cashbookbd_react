@@ -26,6 +26,7 @@ import {
   lineFieldsFor,
   DESCRIPTION_TOKENS,
   PRODUCT_TOKENS,
+  LEDGER_PRODUCT_TOKENS,
   composedPattern,
   isComposedField,
 } from '../../../utils/print-designer/printTemplate';
@@ -913,9 +914,11 @@ export const TableBandEditor: React.FC<{
                 tokens={
                   column.field === 'description_format'
                     ? DESCRIPTION_TOKENS
-                    : column.field === 'own_format'
-                      ? lineFieldsFor(docType).filter((entry) => entry.key !== 'sl' && !isComposedField(entry.key))
-                      : PRODUCT_TOKENS
+                    : column.field === 'product_details_format'
+                      ? LEDGER_PRODUCT_TOKENS
+                      : column.field === 'own_format'
+                        ? lineFieldsFor(docType).filter((entry) => entry.key !== 'sl' && !isComposedField(entry.key))
+                        : PRODUCT_TOKENS
                 }
                 onChange={(pattern) => update(index, { pattern })}
               />

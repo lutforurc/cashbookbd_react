@@ -1343,9 +1343,26 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                     isNumericLineField(key) && !blank(raw) ? thousandSeparator(num(raw)) : String(raw ?? ''),
                   );
 
-                  // A column of lines, on a ledger -- see `lines` above.
+                  /**
+                   * A column of lines, on a ledger -- see `lines` above.
+                   *
+                   * ⚠️ THE ROW'S OWN LINES WIN WHERE THE PATTERN WROTE NOTHING.
+                   * A layout saved before the ledger got its own composed column
+                   * still points at `product_lines`, whose pattern names the
+                   * invoice's product facts (brand, category, serial) -- facts a
+                   * ledger row does not carry, so the pattern composes to
+                   * nothing and the cell printed blank. The adapter DOES put a
+                   * block of ready-made lines on the row, so where the composed
+                   * pattern came up empty the row's own lines are drawn instead.
+                   * A pattern that wrote something is never overridden, so this
+                   * is a floor rather than a preference.
+                   */
                   const stacked =
-                    composed && isStackedComposed(column) ? composed : lines(row, column.field);
+                    composed && composed.length
+                      ? isStackedComposed(column)
+                        ? composed
+                        : null
+                      : lines(row, column.field);
 
                   return (
                     <td
