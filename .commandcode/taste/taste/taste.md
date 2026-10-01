@@ -2,7 +2,7 @@
 - Do not stop after writing a plan — actually implement the change and complete the task end-to-end; declines plan mode and prefers the agent to go straight into exploration/implementation. Confidence: 0.85
 - Follow the project's existing patterns and conventions when implementing new features rather than introducing a different approach. Confidence: 0.75
 - Avoid breaking existing functionality; when adding/replacing a feature, keep any current related systems (e.g. existing print/PDF/export paths) working. Confidence: 0.7
-- Verify the work: run build/tests and do manual verification, and report the results. Confidence: 0.7
+- Verify the work: run build/tests and do manual verification, and report the results; for deployment-dependent features, verification must be done on the live/deployed application — local testing alone is not accepted as proof that something is fixed. Confidence: 0.85
 - Never invent or assume new calculation rules or data fields. If required data isn't present, investigate whether it can be safely derived from existing data; if it can't, report the limitation instead of displaying incorrect information. Confidence: 0.8
 - Reuse existing layout/setting mechanisms where possible (e.g. mirror the Sales Invoice template pattern for line layouts) instead of creating parallel systems. Confidence: 0.6
 - Handle edge cases explicitly: missing/empty fields should not render empty labels or wasted space; guard against overlapping, truncated, or wrongly paginated text on multi-page reports; handle Bengali and English text, currency formatting, and empty-data states. Confidence: 0.7
@@ -11,4 +11,6 @@
 - In the final response, provide a list of the changed files, instructions on how to use the new feature, and the results of build/test and manual verification. Confidence: 0.85
 - When extending an existing feature to a new option/mode, bring it to full parity with the analogous existing option (same fields, editing, validation, saving) while leaving the existing option's workflow intact. Confidence: 0.6
 - Editing a record that has accounting/ledger side effects must reconcile them: adjust the previously posted amount/account in place and keep repeated saves idempotent so nothing is ever double-posted. Confidence: 0.55
- 
+- When something works locally but not on the live server, expects a systematic local-vs-deployed diff rather than a code tweak: check that frontend build/route/menu changes are in the deployed artifact, the live frontend points at the correct backend API, backend routes/controllers are deployed, required DB menu/permission records exist for the user's role, and stale caches/assets aren't masking the change. Confidence: 0.75
+- Wants the exact root cause identified and reported separately from the fix: state the cause, the changes required, and what was actually verified, distinguishing verified facts from assumptions. Confidence: 0.8
+- Database/setup updates must be written to be re-runnable and must not duplicate records that already exist. Confidence: 0.7

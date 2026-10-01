@@ -68,7 +68,7 @@ class DailyAccountBook
     private const SIDES = [
         'receipt' => [
             ['key' => 'cash_sales',             'title' => 'CASH SALES',                     'in_total' => true],
-            ['key' => 'received_from_customer', 'title' => 'RECEIVED PAYMENT FROM CUSTOMER', 'in_total' => true],
+            ['key' => 'received_from_customer', 'title' => 'RECEIVED FROM CUSTOMER', 'in_total' => true],
             ['key' => 'received_from_supplier', 'title' => 'RECEIVED FROM SUPPLIER',         'in_total' => true],
             ['key' => 'contra_debit',           'title' => 'CASH DEBIT BY CONTRA VOUCHER',   'in_total' => true],
             ['key' => 'journal_debit',          'title' => 'CASH DEBIT BY JOURNAL VOUCHER',  'in_total' => true],
