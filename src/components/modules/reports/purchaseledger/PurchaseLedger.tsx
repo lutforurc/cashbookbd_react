@@ -19,6 +19,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import ImagePopup from '../../../utils/others/ImagePopup';
 import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
+import { ledgerProductLabel } from '../utils/ledgerProductLabel';
 import PurchaseLedgerPrint from './PurchaseLedgerPrint';
 import { useReactToPrint } from 'react-to-print';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
@@ -512,16 +513,11 @@ const PurchaseLedger = (user: any) => {
             {showProductDetails &&
               Array.isArray(row?.purchase_master?.details) &&
               row.purchase_master.details.length > 0 &&
-              row.purchase_master.details.map((detail: any, i: number) => {
-                const categoryName = detail?.product?.category?.name ?? "";
-                const productName = detail?.product?.name ?? "";
-                return (
-                  <div key={detail?.id ?? i} className="leading-normal">
-                    {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
-                    {productName}
-                  </div>
-                );
-              })}
+              row.purchase_master.details.map((detail: any, i: number) => (
+                <div key={detail?.id ?? i} className="leading-normal">
+                  {ledgerProductLabel(detail, String(stockReportType) === "1")}
+                </div>
+              ))}
             
             {row?.purchase_master?.notes && (
               <div className="text-green-500">

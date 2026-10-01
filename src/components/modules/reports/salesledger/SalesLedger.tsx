@@ -19,6 +19,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import ImagePopup from '../../../utils/others/ImagePopup';
 import SalesLedgerCalculator from '../../../utils/calculators/SalesLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
+import { ledgerProductLabel } from '../utils/ledgerProductLabel';
 import { useReactToPrint } from 'react-to-print';
 import SalesLedgerPrint from './SalesLedgerPrint';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
@@ -753,18 +754,11 @@ const SalesLedger = (user: any) => {
             {showProductDetails &&
               Array.isArray(details) &&
               details.length > 0 &&
-              details.map((detail: any, i: number) => {
-                const categoryName = detail?.product?.category?.name ?? '';
-                const productName = detail?.product?.name ?? '';
-                return (
-                  <div key={detail?.id ?? i} className="leading-normal">
-                    {String(stockReportType) === '1' && categoryName
-                      ? `${categoryName} `
-                      : ''}
-                    {productName}
-                  </div>
-                );
-              })}
+              details.map((detail: any, i: number) => (
+                <div key={detail?.id ?? i} className="leading-normal">
+                  {ledgerProductLabel(detail, String(stockReportType) === '1')}
+                </div>
+              ))}
             {detailText ? (
               <div className="text-green-500">
                 <span

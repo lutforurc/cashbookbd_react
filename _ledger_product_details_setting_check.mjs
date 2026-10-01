@@ -120,4 +120,27 @@ for (const { name, print } of PAIRS) {
   assert.ok(maps.length >= 4, `${name} Ledger print lost its numeric detail columns`);
 }
 
+/* -- the product label no longer repeats a category the name already carries - */
+
+const labelHelper = read('src/components/modules/reports/utils/ledgerProductLabel.ts');
+assert.ok(
+  /alreadyCarried/.test(labelHelper) && /toLowerCase\(\)/.test(labelHelper),
+  'the shared ledger product label helper lost its "do not repeat the category" rule',
+);
+
+for (const { name, screen, print, adapter } of PAIRS) {
+  assert.ok(
+    read(screen).includes('ledgerProductLabel'),
+    `${name} Ledger screen does not compose its product line through the shared label`,
+  );
+  assert.ok(
+    read(print).includes('ledgerProductLabel'),
+    `${name} Ledger print does not compose its product line through the shared label`,
+  );
+  assert.ok(
+    read(adapter).includes('ledgerProductLabel'),
+    `${name} document data does not compose its product line through the shared label`,
+  );
+}
+
 console.log('ok -- the ledger product-details switch is stored, loaded, and honoured on both ledgers and their paper');

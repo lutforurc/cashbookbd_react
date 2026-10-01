@@ -4,6 +4,7 @@ import type { PrintBranch } from '../../../utils/utils-functions/printBranch';
 import SalesLedgerCalculator from '../../../utils/calculators/SalesLedgerCalculator';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
+import { ledgerProductLabel } from '../utils/ledgerProductLabel';
 
 /**
  * A Sales Ledger report, in the shape the print designer draws.
@@ -105,12 +106,7 @@ export const toSalesLedgerDocumentData = ({
 
     const coaName = getRelevantCoaName(row) ?? '';
 
-    const label = (detail: any) => {
-      const category = String(detail?.product?.category?.name ?? '').trim();
-      const product = String(detail?.product?.name ?? '').trim();
-
-      return `${showCategory && category ? `${category} ` : ''}${product}`.trim();
-    };
+    const label = (detail: any) => ledgerProductLabel(detail, !!showCategory);
 
     // A dash rather than nothing, where the voucher has no lines to show --
     // which is what the paper this replaces has always printed in an empty

@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import PurchaseLedgerCalculator from "../../../utils/calculators/PurchaseLedgerCalculator";
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
+import { ledgerProductLabel } from "../utils/ledgerProductLabel";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from "../../../utils/utils-functions/PrintFooter";
@@ -225,18 +226,16 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                 {showProductDetails &&
                                   Array.isArray(details) && details.length > 0 &&
                                   details.map((detail: any, i: number) => {
-                                    const categoryName = detail?.product?.category?.name ?? "";
-                                    const productName = detail?.product?.name ?? "";
+                                    const label = ledgerProductLabel(detail, String(stockReportType) === "1");
 
                                     return (
                                       
                                         <div
                                           key={detail?.id ?? i}
                                           className="leading-normal whitespace-nowrap"
-                                          style={{ fontSize: getProductFs(`${categoryName} ${productName}`.trim(), fs) }}
+                                          style={{ fontSize: getProductFs(label, fs) }}
                                         >
-                                          {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
-                                          {productName}
+                                          {label}
                                         </div>
                                      
                                     );
@@ -255,9 +254,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                             >
                               {details.length
                                 ? details.map((detail: any, i: number) => {
-                                  const categoryName = detail?.product?.category?.name ?? "";
-                                  const productName = detail?.product?.name ?? "";
-                                  const label = `${categoryName} ${productName}`.trim();
+                                  const label = ledgerProductLabel(detail, String(stockReportType) === "1");
 
                                   return (
                                     <div
@@ -277,9 +274,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                             >
                               {details.length
                                 ? details.map((detail: any, i: number) => {
-                                  const categoryName = detail?.product?.category?.name ?? "";
-                                  const productName = detail?.product?.name ?? "";
-                                  const label = `${categoryName} ${productName}`.trim();
+                                  const label = ledgerProductLabel(detail, String(stockReportType) === "1");
 
                                   return (
                                     <div
@@ -301,9 +296,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                             >
                               {details.length
                                 ? details.map((detail: any, i: number) => {
-                                  const categoryName = detail?.product?.category?.name ?? "";
-                                  const productName = detail?.product?.name ?? "";
-                                  const label = `${categoryName} ${productName}`.trim();
+                                  const label = ledgerProductLabel(detail, String(stockReportType) === "1");
 
                                   return (
                                     <div

@@ -3,6 +3,7 @@ import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
 import type { PrintBranch } from '../../../utils/utils-functions/printBranch';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
+import { ledgerProductLabel } from '../utils/ledgerProductLabel';
 
 /**
  * A Purchase Ledger report, in the shape the print designer draws.
@@ -86,12 +87,7 @@ export const toPurchaseLedgerDocumentData = ({
 
     const coaName = getRelevantCoaName(row) ?? '';
 
-    const label = (detail: any) => {
-      const category = String(detail?.product?.category?.name ?? '').trim();
-      const product = String(detail?.product?.name ?? '').trim();
-
-      return `${showCategory && category ? `${category} ` : ''}${product}`.trim();
-    };
+    const label = (detail: any) => ledgerProductLabel(detail, !!showCategory);
 
     const perLine = (draw: (detail: any) => string) =>
       details.length ? details.map(draw) : ['-'];

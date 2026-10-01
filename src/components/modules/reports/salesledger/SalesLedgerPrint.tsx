@@ -7,6 +7,7 @@ import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import SalesLedgerCalculator from "../../../utils/calculators/SalesLedgerCalculator";
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
+import { ledgerProductLabel } from "../utils/ledgerProductLabel";
 import { formatDateUsdToBd, formatLongDateUsdToBd } from "../../../utils/utils-functions/formatDate";
 
 type Props = {
@@ -138,11 +139,8 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
       return 1.3;
     };
 
-    const makeLabel = (detail: any) => {
-      const categoryName = detail?.product?.category?.name ?? "";
-      const productName2 = detail?.product?.name ?? "";
-      return `${String(stockReportType) === "1" ? categoryName : ""} ${productName2}`.trim();
-    };
+    const makeLabel = (detail: any) =>
+      ledgerProductLabel(detail, String(stockReportType) === "1");
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
@@ -323,10 +321,6 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                   Array.isArray(details) &&
                                   details.length > 0 &&
                                   details.map((detail: any, i: number) => {
-                                    const categoryName =
-                                      detail?.product?.category?.name ?? "";
-                                    const productName2 =
-                                      detail?.product?.name ?? "";
                                     const label = makeLabel(detail);
 
                                     return (
@@ -340,11 +334,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                           ),
                                         }}
                                       >
-                                        {String(stockReportType) === "1" &&
-                                        categoryName
-                                          ? `${categoryName} `
-                                          : ""}
-                                        {productName2}
+                                        {label}
                                       </div>
                                     );
                                   })}
