@@ -228,7 +228,16 @@ export default function UnitSalePaymentEdit() {
         // ✅ normalize to string for dropdown value
         coal4_id: r?.coal4_id !== null && r?.coal4_id !== undefined ? String(r.coal4_id) : "",
 
-        cheque_collect_status: r?.cheque_collect_status ?? "",
+        // NOT_APPLICABLE is the server's own word for "this payment has no
+        // cheque to follow" -- a bank transfer's money is in the bank already.
+        // It is not one of the five statuses the dropdown offers, so loading it
+        // verbatim left the box blank and the form un-saveable. Left blank it
+        // means the same thing, and the server keeps the stored value when
+        // nothing is sent.
+        cheque_collect_status:
+          r?.cheque_collect_status === "NOT_APPLICABLE"
+            ? ""
+            : r?.cheque_collect_status ?? "",
         cheque_deposit_due_date: toYmd(r?.cheque_deposit_due_date),
         cheque_collect_date: toYmd(r?.cheque_collect_date),
 
@@ -342,7 +351,9 @@ export default function UnitSalePaymentEdit() {
         toast.warning("Bank name is required for cheque payment");
         return false;
       }
-      if (!form.cheque_collect_status) {
+      // A bank transfer has no cheque to track, so its status is the server's
+      // NOT_APPLICABLE and demanding one here only walled the form off.
+      if (isCheque && !form.cheque_collect_status) {
         toast.warning("Cheque status is required for cheque payment");
         return false;
       }
