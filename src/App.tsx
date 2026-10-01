@@ -49,6 +49,7 @@ import LegacyRecordSearch from './components/modules/legacy/LegacyRecordSearch';
 import LegacyOldRecordSearch from './components/modules/legacy/LegacyOldRecordSearch';
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import CashBookTwoColumn from './components/modules/reports/cash-book-two-column/CashBookTwoColumn';
+import DailyAccountBook from './components/modules/reports/daily-account-book/DailyAccountBook';
 import VoucherRegister from './components/modules/reports/voucher-register/VoucherRegister';
 import SalesReferrer from './components/modules/reports/sales-referrer/SalesReferrer';
 import BankBook from './components/modules/reports/bankbook/BankBook';
@@ -977,6 +978,13 @@ function App() {
               <Route
                 path={routes.report_cashbook_two_column}
                 element={<CashBookTwoColumn user={me} />}
+              />
+              {/* The day's paper day book: the same till read down two sides,
+                  with the bank and wallet balances beside it. Behind the same
+                  permission, because it is the cash book's own figures. */}
+              <Route
+                path={routes.report_daily_account_book}
+                element={<DailyAccountBook user={me} />}
               />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.register']} loading={permissionsLoading} />}>

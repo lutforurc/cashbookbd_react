@@ -147,6 +147,7 @@ const ROUTES = {
   report_ledger: '/reports/ledger',
   report_cashbook: '/reports/cashbook',
   report_cashbook_two_column: '/reports/cash-book-two-column',
+  report_daily_account_book: '/reports/daily-account-book',
   report_voucher_register: '/reports/voucher-register',
   report_referrer: '/reports/sales-referrer',
   report_bankbook: '/reports/bankbook',

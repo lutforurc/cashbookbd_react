@@ -53,6 +53,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
   'reports': [
     '/reports/cashbook',
     routes.report_cashbook_two_column,
+    routes.report_daily_account_book,
     routes.report_bankbook,
     routes.ageing_report,
     routes.audit_trail,

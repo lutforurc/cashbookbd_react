@@ -71,6 +71,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   'reports': [
     { id: 'reports/cashbook', title: "Cash Book" },
     { id: 'reports/cash-book-two-column', title: "Cash & Bank Book" },
+    { id: 'reports/daily-account-book', title: "Daily Account Book" },
     { id: 'reports/voucher-register', title: "Voucher Register" },
     { id: 'reports/sales-referrer', title: "Referer" },
     { id: 'report_bankbook', title: "Bank Book" },
@@ -1251,6 +1252,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Cash &amp; Bank Book
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'cashbook.view') && (
+                            <li style={subSlot('reports', 'reports/daily-account-book')}>
+                              <NavLink
+                                to={routes.report_daily_account_book}
+                                className={subMenuLinkClass}
+                              >
+                                Daily Account Book
                               </NavLink>
                             </li>
                           )}
