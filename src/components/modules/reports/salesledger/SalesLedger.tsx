@@ -122,6 +122,11 @@ const SalesLedger = (user: any) => {
   const ledgerData = useSelector((state: any) => state.salesLedger);
   const settings = useSelector((state: any) => state.settings);
   const stockReportType = settings?.data?.branch?.stock_report_type;
+  // Branch > Invoice Setup > "Show Product Information in Ledger Details".
+  // Unset reads as on -- a branch that predates the switch keeps its product
+  // lines. Only an explicit '0' hides them. Display only; no record changes.
+  const showProductDetails =
+    String(settings?.data?.branch?.ledger_show_product_details ?? '1') !== '0';
   const showVoucherImage = String(settings?.data?.branch?.show_voucher_image) === '1';
   const userPermissions = settings?.data?.permissions || [];
 
@@ -290,8 +295,9 @@ const SalesLedger = (user: any) => {
         branch: printBranch,
         branchName: dropdownData.find(
           (entry: any) => String(entry?.id) === String(branchId),
-        )?.name,
+          )?.name,
         showCategory: String(stockReportType) === '1',
+        showProductDetails,
       }),
     });
   };
@@ -741,7 +747,11 @@ const SalesLedger = (user: any) => {
               <div className="text-sm mt-1 font-semibold">{coaName}</div>
             )}
 
-            {Array.isArray(details) &&
+            {/* The product lines, only when the branch shows them. The account
+                above and the note below are the column's other content and
+                stay either way. */}
+            {showProductDetails &&
+              Array.isArray(details) &&
               details.length > 0 &&
               details.map((detail: any, i: number) => {
                 const categoryName = detail?.product?.category?.name ?? '';

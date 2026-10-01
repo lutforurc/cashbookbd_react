@@ -44,6 +44,13 @@ export type SalesLedgerDocumentOptions = {
   branchName?: string | null;
   /** settings.data.branch.stock_report_type === '1': prefix the category. */
   showCategory?: boolean;
+  /**
+   * Branch > Invoice Setup > "Show Product Information in Ledger Details".
+   * Undefined/false-y keeps the product lines (the report has always printed
+   * them); only an explicit `false` drops them from the cell's block, leaving
+   * the account and the note. The quantity/rate/total lines are untouched.
+   */
+  showProductDetails?: boolean;
 };
 
 const num = (value: any) => {
@@ -85,6 +92,7 @@ export const toSalesLedgerDocumentData = ({
   branch,
   branchName,
   showCategory,
+  showProductDetails,
 }: SalesLedgerDocumentOptions): DocumentData => {
   const list = Array.isArray(rows) ? rows : [];
   const from = dateText(startDate);
@@ -117,12 +125,17 @@ export const toSalesLedgerDocumentData = ({
       0,
     );
 
+    // The products alone, for the composed column's {products} token -- empty
+    // when the branch has switched product information off, so the cell keeps
+    // its account and its note and loses only the product lines.
+    const productLines = showProductDetails === false ? [] : details.map(label);
+
     // The cell's block, the bespoke print's own order: the account, then a
     // product per line, then the voucher's note. Blank parts dropped, so an
     // account-less or note-less voucher leaves no empty line box behind.
     const block = [
       coaName,
-      ...details.map(label),
+      ...productLines,
       String(row?.sales_master?.notes ?? '').trim(),
     ].filter(Boolean);
 
@@ -133,7 +146,7 @@ export const toSalesLedgerDocumentData = ({
       challan_date: row?.challan_date ?? '',
       coa_name: coaName,
       // The products alone, for the composed column's {products} token.
-      products: details.map(label),
+      products: productLines,
 
       // The account, then the products, then the voucher's own note: exactly
       // the block the bespoke print draws in this cell, handed over three ways

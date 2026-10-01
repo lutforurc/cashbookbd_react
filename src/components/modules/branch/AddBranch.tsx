@@ -88,6 +88,12 @@ interface branchItem {
    * the discount broken out beside it. Display only -- the books do not move.
    */
   ledger_discount_split: string;
+  /**
+   * Whether the Purchase and Sales ledgers print the product lines inside
+   * their Product & Details column. Off leaves the account and the voucher's
+   * note, and the quantity, rate and total columns untouched. Display only.
+   */
+  ledger_show_product_details: boolean;
   decimal_places: number;
   dashboard_top_sales_days: number;
   dashboard_top_purchase_days: number;
@@ -419,6 +425,8 @@ const AddBranch = () => {
     manual_challan_no_label: '',
     manual_challan_date_label: '',
     ledger_discount_split: '',
+    // On: every ledger has shown its product lines since the report existed.
+    ledger_show_product_details: true,
     decimal_places: 0,
     dashboard_top_sales_days: 0,
     dashboard_top_purchase_days: 0,
@@ -703,6 +711,13 @@ const AddBranch = () => {
 
         // 🔑 CHECKBOX FIX
         is_opening: toBooleanFlag(b.is_opening),
+        // The API answers 1 for a branch that has never been asked, since its
+        // ledgers have always printed the product lines. A key the server does
+        // not send at all (an install a version behind) is read the same way.
+        ledger_show_product_details:
+          b.ledger_show_product_details == null
+            ? true
+            : toBooleanFlag(b.ledger_show_product_details),
         have_is_guaranter: toBooleanFlag(b.have_is_guaranter),
         have_customer_nominee: toBooleanFlag(b.have_customer_nominee),
         report_zero_bal: toBooleanFlag(b.report_zero_bal),
@@ -1422,6 +1437,14 @@ const AddBranch = () => {
                         className="bg-transparent"
                         value={formData?.ledger_discount_split || ''}
                         data={ledgerDiscountSplit}
+                      />
+                      <FormToggleField
+                        label="Show Product Information in Ledger Details"
+                        description="Prints each product's name inside the Product & Details column of the Purchase and Sales ledgers. Off, the column still shows the account and the note, and the quantity, rate and total columns are untouched."
+                        checked={Boolean(formData.ledger_show_product_details)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('ledger_show_product_details', checked)
+                        }
                       />
                     </div>
 

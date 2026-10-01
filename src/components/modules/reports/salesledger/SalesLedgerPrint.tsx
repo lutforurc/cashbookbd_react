@@ -47,6 +47,11 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
   ) => {
     const settings = useSelector((state: any) => state.settings);
     const stockReportType = settings?.data?.branch?.stock_report_type;
+    // Branch > Invoice Setup > "Show Product Information in Ledger Details".
+    // Unset prints them, as the paper always has; only an explicit '0' hides
+    // the product lines. The account, the note and the numeric columns stay.
+    const showProductDetails =
+      String(settings?.data?.branch?.ledger_show_product_details ?? '1') !== '0';
 
     const rowsArr: any[] = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(rowsArr, rowsPerPage);
@@ -314,7 +319,8 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                   <div className="font-semibold">{coaName}</div>
                                 ) : null}
 
-                                {Array.isArray(details) &&
+                                {showProductDetails &&
+                                  Array.isArray(details) &&
                                   details.length > 0 &&
                                   details.map((detail: any, i: number) => {
                                     const categoryName =
