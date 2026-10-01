@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { FiBook, FiCheckSquare, FiClock, FiEdit2, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
+import DropdownCommon from "../../utils/utils-functions/DropdownCommon";
+import { ClientType } from "../../utils/fields/DataConstant";
 import SearchInput from "../../utils/fields/SearchInput";
 import { ButtonLoading } from "../../../pages/UiElements/CustomButtons";
 import Loader from "../../../common/Loader";
@@ -20,6 +22,20 @@ import routes from "../../services/appRoutes";
 import { formatMobile, useMobileFormat } from "../../utils/utils-functions/mobileFormat";
 import { Button } from '../../../pages/UiElements/CustomButtons';
 import { isBranchSettingOn } from "../../utils/userFeatureSettings";
+
+/**
+ * The classification filter, built from the same constant the Due List draws its
+ * own from -- so the two screens offer the same four types, and a fifth added to
+ * Add Customers appears on both without either being opened.
+ *
+ * ClientType's own blank entry says "Select Client Type", which reads as a
+ * prompt on a form. Here the empty value means EVERY party, and it is worded
+ * that way.
+ */
+const CUSTOMER_TYPE_FILTER = [
+  { id: '', name: 'All Types' },
+  ...ClientType.filter((entry) => entry.id !== ''),
+];
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -49,6 +65,11 @@ const CustomerSupplier = () => {
   const search = searchParams.get("search") ?? "";
   const page = readNumber("page", 1);
   const perPage = readNumber("per_page", 10);
+  // The classification rides in the address bar with the rest of the list's
+  // position. Held in state alone it would be dropped the moment the reader
+  // paged, searched or came back from an edit -- each of those rewrites the
+  // query string, and only what is written there survives them.
+  const partyTypeId = searchParams.get("party_type_id") ?? "";
 
   /** Writes one part of the list's position, leaving the others as they are. */
   const setListParams = (next: Record<string, string | number | null>) => {
@@ -75,6 +96,11 @@ const CustomerSupplier = () => {
   const setSearchValue = (value: string) => setListParams({ search: value, page: null });
   const setPage = (value: number) => setListParams({ page: value === 1 ? null : value });
   const setPerPage = (value: number) => setListParams({ per_page: value === 10 ? null : value, page: null });
+  // A new classification is a new list, so the page goes back to the first:
+  // page four of "every party" is not page four of the suppliers, and the
+  // shorter list would open past its own end.
+  const setPartyTypeId = (value: string) =>
+    setListParams({ party_type_id: value, page: null });
   const [editedRows, setEditedRows] = useState<Record<number, any>>({});
   const [buttonLoading, setButtonLoading] = useState(false);
   const [showGuarantorModal, setShowGuarantorModal] = useState(false);
@@ -120,23 +146,45 @@ const CustomerSupplier = () => {
     // One navigate, not a setSearchValue followed by a navigate that drops the
     // query string it had just written. The term goes into the address, the
     // page is left out (absent means the first), and the one-shot state that
-    // brought us here is cleared in the same step.
-    navigate(`${location.pathname}?search=${encodeURIComponent(customerSearch)}`, {
+    // brought us here is cleared in the same step. The classification is
+    // carried across -- arriving from the global search must not quietly widen
+    // the list back to every party.
+    const params = new URLSearchParams();
+    params.set("search", customerSearch);
+
+    if (partyTypeId) {
+      params.set("party_type_id", partyTypeId);
+    }
+
+    navigate(`${location.pathname}?${params.toString()}`, {
       replace: true,
       state: null,
     });
-  }, [location.pathname, location.state, navigate]);
+  }, [location.pathname, location.state, navigate, partyTypeId]);
 
 
 
   // 🔥 First API Call and on pagination change
   useEffect(() => {
-    dispatch(getCustomer({ page, per_page: perPage, search }));
-  }, [dispatch, page, perPage, search]);
+    dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId }));
+  }, [dispatch, page, perPage, search, partyTypeId]);
 
   // 🔥 Search Button
   const handleSearchButton = () => {
     setPage(1);
+  };
+
+  /**
+   * Choosing a classification asks the server again at once.
+   *
+   * ⚠️ THE NARROWING IS THE SERVER'S, not a sift over the ten rows in hand.
+   * Filtering here would answer one page of one type while the total and the
+   * page count still described every type, and the pages past the first would
+   * come back empty. The request goes out with the type, and the server cuts the
+   * set before it pages it.
+   */
+  const handlePartyTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPartyTypeId(e.target.value);
   };
 
 
@@ -202,7 +250,7 @@ const CustomerSupplier = () => {
             delete copy[row.id];
             return copy;
           });
-          dispatch(getCustomer({ page, per_page: perPage, search }));
+          dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId }));
           toast.success(res.message);
         } else {
           toast.info(res.message);
@@ -244,7 +292,7 @@ const CustomerSupplier = () => {
             }
             return copy;
           });
-          dispatch(getCustomer({ page, per_page: perPage, search }));
+          dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId }));
           toast.success(res.message);
         } else {
           toast.info(res?.message || "No changes were made.");
@@ -272,7 +320,7 @@ const CustomerSupplier = () => {
         // The typed-but-unsaved figure would otherwise sit in the box looking
         // like the balance survived.
         handleCancelRow(openingDeleteRow);
-        dispatch(getCustomer({ page, per_page: perPage, search }));
+        dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId }));
       })
       .catch((err) => {
         toast.error(err || 'Opening balance could not be deleted');
@@ -398,7 +446,7 @@ const CustomerSupplier = () => {
       .then((res) => {
         toast.success(res?.message || 'Customer deleted successfully');
         setDeleteConfirmRow(null);
-        dispatch(getCustomer({ page, per_page: perPage, search }));
+        dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId }));
       })
       .catch((err) => {
         toast.error(err || 'Customer delete failed');
@@ -720,7 +768,24 @@ const CustomerSupplier = () => {
 
       {/* Top Search Panel */}
       <div className="flex overflow-x-auto justify-between mb-1">
-        <div className="flex">
+        <div className="flex items-end">
+          {/* The classification, drawn and wired exactly as the Due List draws
+              its own: the same four values, the same field, the same wording on
+              the empty one. */}
+          <div className="mr-1 md:mr-2">
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Client Type
+            </label>
+            <DropdownCommon
+              id="party_type_id"
+              name="party_type_id"
+              value={partyTypeId}
+              onChange={handlePartyTypeChange}
+              className="font-medium text-sm"
+              data={CUSTOMER_TYPE_FILTER}
+            />
+          </div>
+
           <SelectOption
             onChange={handleSelectChange}
             className="mr-1 md:mr-2"
@@ -754,7 +819,16 @@ const CustomerSupplier = () => {
       <div className="relative overflow-x-auto overflow-y-hidden">
         {customers.loading && <Loader />}
 
-        <Table columns={columns} data={tableData} />
+        <Table
+          columns={columns}
+          data={tableData}
+          // Named, so an empty table under a chosen classification says which
+          // one it is empty for rather than looking like a branch with no
+          // customers at all.
+          noDataMessage={
+            partyTypeId ? 'No records for the selected client type.' : undefined
+          }
+        />
 
         {totalPages > 1 && (
           <Pagination

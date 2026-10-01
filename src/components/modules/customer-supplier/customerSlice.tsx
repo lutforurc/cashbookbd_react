@@ -16,6 +16,11 @@ type CustomerRequestPayload = {
   per_page: number;
   page: number | null;
   search: string | null;
+  /**
+   * A `cust_party_infos.party_type_id` (1 Customer, 2 Supplier, 3 Supplier &
+   * Customer, 4 Advance), or '' / null / undefined for every party.
+   */
+  partyTypeId?: string | number | null;
 };
 
 type StoreCustomerPayload = {
@@ -59,6 +64,17 @@ interface CustomerState {
 
   loading: boolean;
   error: string | null;
+  /**
+   * ⚠️ Which request is the current one.
+   *
+   * The screen fires a fresh call the moment the classification changes, and a
+   * slower earlier call can land after a faster later one. Without this the
+   * older answer -- for a type the reader has already moved off -- would
+   * overwrite the newer rows, and the table would show one classification of
+   * customers under another's heading. Every pending is tagged by Redux
+   * Toolkit's own request id, and only the latest tag is allowed through.
+   */
+  activeRequestId: string | null;
 }
 type EditCustomerResponse = {
   success: boolean;
@@ -80,15 +96,28 @@ const initialState: CustomerState = {
 
   loading: false,
   error: null,
+  activeRequestId: null,
 };
 
 export const getCustomer = createAsyncThunk<PaginatedCustomerResponse, CustomerRequestPayload, { rejectValue: ErrorResponse }>('getCustomer/fetch', async (payload, { rejectWithValue }) => {
   try {
-    const { data } = await httpService.post(API_CONTACT_DETAILS_LIST_URL, {
+    const body: Record<string, any> = {
       per_page: payload.per_page,
       page: payload.page,
       search: payload.search,
-    });
+    };
+
+    // Absent rather than empty: the server's own "no filter" is the missing
+    // param, and an empty string would have to be special-cased there too.
+    if (
+      payload.partyTypeId !== '' &&
+      payload.partyTypeId !== null &&
+      payload.partyTypeId !== undefined
+    ) {
+      body.party_type_id = payload.partyTypeId;
+    }
+
+    const { data } = await httpService.post(API_CONTACT_DETAILS_LIST_URL, body);
 
     return data.data; // Laravel wraps actual data under `.data`
   } catch (error) {
@@ -253,17 +282,24 @@ const customerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(getCustomer.pending, (state) => {
+      .addCase(getCustomer.pending, (state, action) => {
         state.loading = true;
         state.error = null;
+        // The tag the answers below are checked against.
+        state.activeRequestId = action.meta.requestId;
       })
       .addCase(getCustomer.fulfilled, (state, action) => {
+        // A newer request has already been sent; its answer is the one to keep.
+        if (state.activeRequestId !== action.meta.requestId) return;
+
         state.loading = false;
         state.customer = action.payload.data;
         state.currentPage = action.payload.current_page;
         state.total = action.payload.total;
       })
       .addCase(getCustomer.rejected, (state, action) => {
+        if (state.activeRequestId !== action.meta.requestId) return;
+
         state.loading = false;
         state.error = action.payload?.message || 'Something went wrong!';
       })
