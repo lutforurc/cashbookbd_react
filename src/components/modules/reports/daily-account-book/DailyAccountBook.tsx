@@ -340,12 +340,19 @@ const DailyAccountBook = ({ user }: any) => {
     <div>
       <HelmetTitle title="Daily Account Book" />
 
-      {/* The same bar as the cash books beside it: the branch and the period on
-          the left, and on the right the two numbers that decide what the PAPER
-          looks like, beside the button that uses them. */}
-      <div className="mb-3 flex flex-wrap items-end gap-3">
-        <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div>
+      {/* The same bar as the cash books beside it: the four questions the book
+          answers on the left -- the branch, the two dates, then the till -- and
+          on the right the two numbers that decide what the PAPER looks like,
+          beside the button that uses them.
+
+          ⚠️ FOUR ACROSS ONLY WHERE THERE IS ROOM FOR FOUR. One row on a
+          desktop, two on a tablet, one on a phone. Every cell is `min-w-0` so a
+          long branch name cannot widen its column past the row and push the
+          page sideways, and the group that wraps is the BUTTONS -- never the
+          page. */}
+      <div className="mb-3 flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+        <div className="grid w-full min-w-0 grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:flex-1">
+          <div className="min-w-0">
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Select Branch
             </label>
@@ -353,12 +360,12 @@ const DailyAccountBook = ({ user }: any) => {
               defaultValue={user?.user?.branch_id}
               value={branchId == null ? '' : String(branchId)}
               onChange={(e: any) => setBranchId(e.target.value)}
-              className="w-full p-2 text-sm font-medium"
+              className="w-full px-3 text-sm font-medium"
               branchDdl={dropdownData}
             />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Start Date
             </label>
@@ -370,7 +377,7 @@ const DailyAccountBook = ({ user }: any) => {
             />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
               End Date
             </label>
@@ -384,12 +391,12 @@ const DailyAccountBook = ({ user }: any) => {
 
           {/* Narrows the till the book is about. A branch with a single counter
               leaves this on "Every cash account" and sees no change. */}
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Cash Account
             </label>
             <Select
-              className={`${FIELD_SELECT} w-full px-2 text-sm font-medium`}
+              className={`${FIELD_SELECT} w-full px-3 text-sm font-medium`}
               value={cashAccountId}
               onChange={(event) => setCashAccountId(event.target.value)}
             >
@@ -403,7 +410,7 @@ const DailyAccountBook = ({ user }: any) => {
           </div>
         </div>
 
-        <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto max-md:ml-0 max-md:w-full xl:ml-auto">
+        <div className="flex min-w-0 flex-wrap items-end gap-2 xl:shrink-0">
           <ButtonLoading
             onClick={() => load()}
             buttonLoading={loading}
