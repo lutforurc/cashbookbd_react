@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { useDispatch, useSelector } from 'react-redux';
 import { userCurrentBranch } from '../../branch/branchSlice';
+import { useTilesWarehouseField } from '../../../utils/hooks/useTilesWarehouseField';
 import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
 import WarehouseDropdown from '../../../utils/utils-functions/WarehouseDropdown';
 import dayjs from 'dayjs';
@@ -88,6 +89,7 @@ const normalizeSuggestionItems = (items: any) =>
 const TilesBusinessPurchaseReturn = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const settings = useSelector((s: any) => s.settings);
+  const { showWarehouse, defaultWarehouseId, branchWarehouseIds } = useTilesWarehouseField();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -135,6 +137,20 @@ const TilesBusinessPurchaseReturn = () => {
       setWarehouseDdlData(warehouse?.data);
     }
   }, [warehouse?.data]);
+
+  /**
+   * With the picker hidden a line still has to say which store it moved, and on
+   * a single-warehouse tiles branch that store is the branch's own godown.
+   */
+  useEffect(() => {
+    if (showWarehouse || !defaultWarehouseId) return;
+
+    setProductData((prev: any) =>
+      prev?.warehouse && branchWarehouseIds.has(String(prev.warehouse))
+        ? prev
+        : { ...(prev ?? {}), warehouse: defaultWarehouseId },
+    );
+  }, [showWarehouse, defaultWarehouseId, branchWarehouseIds]);
 
   interface FormData {
     mtmId: string;
@@ -757,13 +773,14 @@ const TilesBusinessPurchaseReturn = () => {
         <div>
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div>
+              <div className={showWarehouse ? undefined : 'md:col-span-2'}>
                 <label htmlFor="">Select Product</label>
                 <ProductDropdown
                   id="product"
                   name="product"
                   onSelect={productSelectHandler}
-                  onKeyDown={(e) => handleInputKeyDown(e, 'warehouse')}
+                  // With the warehouse box hidden the next stop is Quantity.
+                  onKeyDown={(e) => handleInputKeyDown(e, showWarehouse ? 'warehouse' : 'qty')}
                   value={
                     productData.product_name && productData.product
                       ? { label: productData.product_name, value: productData.product }
@@ -771,22 +788,24 @@ const TilesBusinessPurchaseReturn = () => {
                   }
                 />
               </div>
-              <div>
-                {/* ponytail: the return writers store no godown, so this box
-                    decides nothing today. Kept so the line matches the invoice
-                    the desk already knows; wire it to the detail table when a
-                    return must come back out of the store it left. */}
-                <label htmlFor="">Select Warehouse</label>
-                {warehouse.isLoading === true ? <Loader /> : ''}
-                <WarehouseDropdown
-                  id="warehouse"
-                  name="warehouse"
-                  onChange={handleWarehouseChange}
-                  className="w-60 font-medium text-sm p-2 "
-                  warehouseDdl={warehouseDdlData}
-                  defaultValue={productData?.warehouse || ''}
-                />
-              </div>
+              {showWarehouse ? (
+                <div>
+                  {/* ponytail: the return writers store no godown, so this box
+                      decides nothing today. Kept so the line matches the invoice
+                      the desk already knows; wire it to the detail table when a
+                      return must come back out of the store it left. */}
+                  <label htmlFor="">Select Warehouse</label>
+                  {warehouse.isLoading === true ? <Loader /> : ''}
+                  <WarehouseDropdown
+                    id="warehouse"
+                    name="warehouse"
+                    onChange={handleWarehouseChange}
+                    className="w-60 font-medium text-sm p-2 "
+                    warehouseDdl={warehouseDdlData}
+                    defaultValue={productData?.warehouse || ''}
+                  />
+                </div>
+              ) : null}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">

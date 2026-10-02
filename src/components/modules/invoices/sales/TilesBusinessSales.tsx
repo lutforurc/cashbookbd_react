@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { useDispatch, useSelector } from 'react-redux';
 import { userCurrentBranch } from '../../branch/branchSlice';
+import { useTilesWarehouseField } from '../../../utils/hooks/useTilesWarehouseField';
 import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
 import WarehouseDropdown from '../../../utils/utils-functions/WarehouseDropdown';
 import dayjs from 'dayjs';
@@ -101,6 +102,7 @@ const TilesBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const sales = useSelector((s: any) => s.electronicsSales);
   const settings = useSelector((s: any) => s.settings);
+  const { showWarehouse, defaultWarehouseId, branchWarehouseIds } = useTilesWarehouseField();
   const dispatch = useDispatch();
 
   /**
@@ -318,6 +320,22 @@ const TilesBusinessSales = () => {
       setWarehouseDdlData(warehouse?.data);
     }
   }, [warehouse?.data]);
+
+  /**
+   * With the picker hidden a line still has to say which store it moved, and on
+   * a single-warehouse tiles branch that store is the branch's own godown. A
+   * line already holding one of this branch's godowns is left alone, so an
+   * edited bill keeps the store it was written against rather than being moved.
+   */
+  useEffect(() => {
+    if (showWarehouse || !defaultWarehouseId) return;
+
+    setProductData((prev: any) =>
+      prev?.warehouse && branchWarehouseIds.has(String(prev.warehouse))
+        ? prev
+        : { ...(prev ?? {}), warehouse: defaultWarehouseId },
+    );
+  }, [showWarehouse, defaultWarehouseId, branchWarehouseIds]);
 
   const customerAccountHandler = (option: any) => {
     const key = 'account';
@@ -1142,13 +1160,14 @@ const TilesBusinessSales = () => {
         <div className="">
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div>
+              <div className={showWarehouse ? undefined : 'md:col-span-2'}>
                 <label htmlFor="">Select Product</label>
                 <ProductDropdown
                   id="product"
                   name="product"
                   onSelect={productSelectHandler}
-                  onKeyDown={(e) => handleInputKeyDown(e, 'warehouse')}
+                  // With the warehouse box hidden the next stop is Quantity.
+                  onKeyDown={(e) => handleInputKeyDown(e, showWarehouse ? 'warehouse' : 'qty')}
                   defaultValue={
                     productData.product_name && productData.product
                       ? {
@@ -1168,17 +1187,19 @@ const TilesBusinessSales = () => {
                   className=''
                 />
               </div>
-              <div>
-                <label htmlFor="">Select Warehouse</label>
-                {warehouse.isLoading === true ? <Loader /> : ''}
-                <WarehouseDropdown
+              {showWarehouse ? (
+                <div>
+                  <label htmlFor="">Select Warehouse</label>
+                  {warehouse.isLoading === true ? <Loader /> : ''}
+                  <WarehouseDropdown
  id="warehouse"
  onChange={handleWarehouseChange}
  className="w-60 font-medium text-sm p-2 "
  warehouseDdl={warehouseDdlData}
  defaultValue={productData?.warehouse || ''}
-                />
-              </div>
+                  />
+                </div>
+              ) : null}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="block relative">

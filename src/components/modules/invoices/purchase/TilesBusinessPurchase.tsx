@@ -49,6 +49,7 @@ import TrackedProductField from '../../product-tracking/TrackedProductField';
 import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import { useNavigate } from 'react-router-dom';
 import { branchLabel } from '../../../utils/userFeatureSettings';
+import { useTilesWarehouseField } from '../../../utils/hooks/useTilesWarehouseField';
 /**
  * The Purchase Invoice for a Tiles and Sanitary shop -- the mirror of
  * TilesBusinessSales, with purchase accounting behind it.
@@ -107,6 +108,7 @@ const TilesBusinessPurchase = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const purchase = useSelector((s: any) => s.tradingPurchase);
   const settings = useSelector((s: any) => s.settings);
+  const { showWarehouse, defaultWarehouseId, branchWarehouseIds } = useTilesWarehouseField();
   const fieldLabel = (key: string, fallback: string) =>
     branchLabel(settings, key, fallback);
   const dispatch = useDispatch<any>();
@@ -248,6 +250,22 @@ const TilesBusinessPurchase = () => {
       setWarehouseDdlData(warehouse?.data);
     }
   }, [warehouse?.data]);
+
+  /**
+   * With the picker hidden a line still has to say which store it moved, and on
+   * a single-warehouse tiles branch that store is the branch's own godown. A
+   * line already holding one of this branch's godowns is left alone, so an
+   * edited bill keeps the store it was written against rather than being moved.
+   */
+  useEffect(() => {
+    if (showWarehouse || !defaultWarehouseId) return;
+
+    setProductData((prev: any) =>
+      prev?.warehouse && branchWarehouseIds.has(String(prev.warehouse))
+        ? prev
+        : { ...(prev ?? {}), warehouse: defaultWarehouseId },
+    );
+  }, [showWarehouse, defaultWarehouseId, branchWarehouseIds]);
 
   /**
    * What the supplier is owed before the invoice being written, shown as the
@@ -1180,7 +1198,7 @@ const TilesBusinessPurchase = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div>
+              <div className={showWarehouse ? undefined : 'md:col-span-2'}>
                 <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="">
                   Select Product
                 </label>
@@ -1207,7 +1225,8 @@ const TilesBusinessPurchase = () => {
                   // onKeyDown={(e) => handleInputKeyDown(e, 'warehouse')} // Pass the next field's ID
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      const nextElement = document.getElementById('warehouse');
+                      // With the warehouse box hidden the next stop is Quantity.
+                      const nextElement = document.getElementById(showWarehouse ? 'warehouse' : 'qty');
                       if (nextElement) {
                         nextElement.focus();
                       }
@@ -1215,19 +1234,21 @@ const TilesBusinessPurchase = () => {
                   }}
                 />
               </div>
-              <div>
-                <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="">
-                  Select Warehouse
-                </label>
-                {warehouse.isLoading == true ? <Loader /> : ''}
-                <WarehouseDropdown
-                  id="warehouse"
-                  onChange={handleWarehouseChange}
-                  className="w-60 font-medium text-sm p-2 "
-                  warehouseDdl={warehouseDdlData}
-                  defaultValue={productData?.warehouse || ''}
-                />
-              </div>
+              {showWarehouse ? (
+                <div>
+                  <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="">
+                    Select Warehouse
+                  </label>
+                  {warehouse.isLoading == true ? <Loader /> : ''}
+                  <WarehouseDropdown
+                    id="warehouse"
+                    onChange={handleWarehouseChange}
+                    className="w-60 font-medium text-sm p-2 "
+                    warehouseDdl={warehouseDdlData}
+                    defaultValue={productData?.warehouse || ''}
+                  />
+                </div>
+              ) : null}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2">
