@@ -53,12 +53,47 @@ import HelmetTitle from "../../utils/others/HelmetTitle";
  * one old ERP and customer 1473 of another are two people. A client with one
  * old system never sees the picker; it appears only when there is a choice.
  */
+
+/**
+ * The balance column added up over a set of parties: the negative half, the
+ * positive half, and the two against each other.
+ *
+ * ⚠️ ONLY EVER BELIEVED FOR THE WHOLE MATCHING SET, never for one page of a
+ * paged list -- a page total is a smaller number that still looks like a total,
+ * which is the one thing this strip must not put on screen. The API sends the
+ * real one beside the page; this is the fallback for a server that does not,
+ * and the caller only trusts it when the page it holds IS every match.
+ */
+const splitBalance = (list: any[]) => {
+  let negative = 0;
+  let positive = 0;
+
+  for (const row of list) {
+    const value = Number(row?.balance) || 0;
+    if (value > 0) positive += value;
+    else negative += value;
+  }
+
+  // `negative` keeps its own sign; the label carries the minus on screen.
+  return { negative, positive, net: positive + negative };
+};
+
 const LegacyRecordSearch = () => {
   const [term, setTerm] = useState("");
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState<any[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  /**
+   * The balance column's +/−/net halves as the server summed them over the
+   * whole matching set, sent beside the page. Null until a load answers.
+   */
+  const [serverTotals, setServerTotals] = useState<{
+    negative: number;
+    positive: number;
+    net?: number;
+  } | null>(null);
 
   const [sources, setSources] = useState<{ id: string; name: string }[]>([]);
   const [source, setSource] = useState("");
@@ -122,8 +157,10 @@ const LegacyRecordSearch = () => {
 
       setRows(list);
       setTotalPages(data.rows?.last_page ?? 1);
+      setServerTotals(data.totals ?? null);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Could not read the old record");
+      setServerTotals(null);
     } finally {
       setLoading(false);
     }
@@ -317,14 +354,82 @@ const LegacyRecordSearch = () => {
 
   // ------------------------------------------------------------------ search
 
+  // The balance column's two halves and the net between them, over every party
+  // the search matched. The server sums these over the whole set and sends them
+  // beside the page; the fallback adds up the rows already on screen and is
+  // only believed when the page IS the whole set -- a prefix of a paged list
+  // would be a smaller total that still looks like a total.
+  const wholeSet = totalPages <= 1;
+  const totals = serverTotals ?? (wholeSet ? splitBalance(rows) : null);
+
+  // The label carries the minus, so the negative half is shown as a magnitude
+  // whichever way the server sent it.
+  const negativeTotal = Math.abs(Number(totals?.negative) || 0);
+  const positiveTotal = Number(totals?.positive) || 0;
+  const netTotal = totals?.net != null ? Number(totals.net) : positiveTotal - negativeTotal;
+
+  // Shown whenever there is a figure to stand on, and ALSO when the search
+  // matched nobody: a set of none has a total of nought, and the owner asked to
+  // read it as 0 rather than as an empty strip.
+  const showTotals = !!totals || rows.length === 0;
+
+  // thousandSeparator() prints a dash for a nought, which is right in a table
+  // cell holding no balance but wrong for a total. So a nought keeps its figure
+  // here and every other value borrows the app's own number format.
+  const totalFigure = (value: number) => (Number(value) === 0 ? "0" : thousandSeparator(value));
+
   return (
     <div className="p-4">
       <HelmetTitle title='Old Record - Information' />
       <div className="mb-4">
-        <h1 className="text-lg font-semibold">পুরনো ERP-র রেকর্ড</h1>
-        <p className="text-sm dark:text-white text-gray-600">
-          কাস্টমারের নাম বা মোবাইল নম্বর দিয়ে খুঁজুন।
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-lg font-semibold">পুরনো ERP-র রেকর্ড</h1>
+            <p className="text-sm dark:text-white text-gray-600">
+              কাস্টমারের নাম বা মোবাইল নম্বর দিয়ে খুঁজুন।
+            </p>
+          </div>
+
+          {/* The balance column's +/− split, over every party the search
+              matched. Beside the heading rather than in a footer row: these
+              three describe the whole set, which is what the heading announces,
+              and the footer sits under নাম/ঠিকানা/মোবাইল columns that have no
+              heading for them.
+
+              No red or green on the two halves. Which sign means owing is the
+              old system's own convention, not ours, so colouring one side would
+              assert what we do not know. */}
+          {showTotals ? (
+            <div className="flex flex-wrap justify-end gap-x-6 gap-y-2 text-right">
+              <div>
+                <div className="text-xs text-gray-600 dark:text-gray-300">
+                  (−) ব্যালেন্স — মোট
+                </div>
+                <div className="text-lg font-semibold tabular-nums">
+                  {totalFigure(negativeTotal)}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs text-gray-600 dark:text-gray-300">
+                  (+) ব্যালেন্স — মোট
+                </div>
+                <div className="text-lg font-semibold tabular-nums">
+                  {totalFigure(positiveTotal)}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs text-gray-600 dark:text-gray-300">
+                  নিট ((+) − (−))
+                </div>
+                <div className="text-lg font-semibold tabular-nums">
+                  {totalFigure(netTotal)}
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end">
