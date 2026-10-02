@@ -128,6 +128,9 @@ const CustomerSupplier = () => {
 	  // drift apart the way `settings?.data?.branch?.is_opening == 1` and
 	  // isBranchSettingOn() had on the Product list.
 	  const openingOn = isBranchSettingOn(settings, 'is_opening');
+  // The customer form only asks for a National ID when the branch says so, so
+  // where the switch is off the column would be a column of blanks.
+  const needNationalId = isBranchSettingOn(settings, 'need_customer_national_id');
   const canEditCustomer = hasPermission(settings?.data?.permissions, 'cs.edit');
   const canDeleteCustomer = hasPermission(settings?.data?.permissions, 'cs.delete');
   // Deleting an opening balance deletes a voucher, so it answers to the voucher
@@ -756,8 +759,13 @@ const CustomerSupplier = () => {
     // of. The Product list drops its price/action group for the same reason
     // rather than head two groups "Action".
     .filter(
-      (column: any) =>
-        !(openingOn && ['national_id', 'ledger_page', 'action'].includes(column.key)),
+      (column: any) => {
+        // The branch's National ID switch stands the column down on its own:
+        // where the form never asks for it, every row here would be blank.
+        if (column.key === 'national_id') return needNationalId && !openingOn;
+
+        return !(openingOn && ['ledger_page', 'action'].includes(column.key));
+      },
     );
 
   return (

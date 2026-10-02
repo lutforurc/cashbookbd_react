@@ -63,6 +63,10 @@ const LegacyRecordSearch = () => {
   const [sources, setSources] = useState<{ id: string; name: string }[]>([]);
   const [source, setSource] = useState("");
 
+  // Blank is both books. The shop sells to some people and buys from some
+  // suppliers under the same name, so the list can hold both.
+  const [partyType, setPartyType] = useState("");
+
   useEffect(() => {
     httpService
       .get(API_LEGACY_SOURCES_URL)
@@ -104,7 +108,13 @@ const LegacyRecordSearch = () => {
 
     try {
       const res = await httpService.get(API_LEGACY_PARTIES_URL, {
-        params: { q: term.trim(), page, per_page: perPage, source: source || undefined },
+        params: {
+          q: term.trim(),
+          page,
+          per_page: perPage,
+          source: source || undefined,
+          party_type: partyType || undefined,
+        },
       });
 
       const data = res?.data?.data?.data ?? res?.data?.data ?? {};
@@ -117,7 +127,7 @@ const LegacyRecordSearch = () => {
     } finally {
       setLoading(false);
     }
-  }, [term, page, perPage, source]);
+  }, [term, page, perPage, source, partyType]);
 
   useEffect(() => {
     load();
@@ -349,6 +359,25 @@ const LegacyRecordSearch = () => {
           </div>
         ) : null}
 
+        <div className="w-full sm:w-40">
+          <DropdownCommon
+            id="legacy-party-type"
+            name="party_type"
+            label="ধরন"
+            className="w-full"
+            data={[
+              { id: "", name: "-- সব --" },
+              { id: "customer", name: "কাস্টমার" },
+              { id: "supplier", name: "সাপ্লায়ার" },
+            ]}
+            value={partyType}
+            onChange={(e: any) => {
+              setPartyType(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+
         <div className="w-full">
           <SearchInput
             search={term}
@@ -386,6 +415,15 @@ const LegacyRecordSearch = () => {
                 render: (_row: any, index: number) => (page - 1) * perPage + index + 1,
               },
               { key: "name", header: "নাম" },
+              /* Both books are in this one list, and a name alone does not
+                 say which one you are opening -- the shop sells to some
+                 customers and buys from some suppliers under the same name. */
+              {
+                key: "party_type",
+                header: "ধরন",
+                render: (row: any) =>
+                  row.party_type === "supplier" ? "সাপ্লায়ার" : "কাস্টমার",
+              },
               // Which old system, only when the list can mix them.
               ...(sources.length > 1
                 ? [
