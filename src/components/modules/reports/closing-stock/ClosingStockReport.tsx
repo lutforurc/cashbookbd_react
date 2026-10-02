@@ -2,12 +2,14 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
+import { toast } from "react-toastify";
 import { FiCheckSquare, FiRotateCcw } from "react-icons/fi";
 
 import Loader from "../../../../common/Loader";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputDatePicker from "../../../utils/fields/DatePicker";
+import SearchInput from "../../../utils/fields/SearchInput";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import CategoryDropdown from "../../../utils/utils-functions/CategoryDropdown";
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
@@ -139,15 +141,35 @@ const ClosingStockReport = ({ user }: any) => {
   const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
   const [rows, setRows] = useState<StockRow[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [perPage, setPerPage] = useState(0);
   const [fontSize, setFontSize] = useState(12);
+
+  /**
+   * ⚠️ TWO boxes, not one. `search` is what is being typed and `appliedSearch`
+   * is what the report is drawn through -- the same pair Product Stock keeps,
+   * and for the same reason: a row list that re-filters on every keystroke
+   * moves under the eye while somebody is still naming what they want.
+   */
+  const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
 
   const printRef = useRef<HTMLDivElement>(null);
 
   // Bumped on every Apply. A slower earlier request that lands after a newer
   // one must not overwrite the newer rows or clear its spinner.
   const loadSeq = useRef(0);
+
+  /**
+   * ⚠️ One request at a time. `apiClosingStockItems()` REBUILDS the branch's
+   * closing-stock table before it answers, so a second Apply fired while the
+   * first is still running is not a cheap duplicate -- it is a second full
+   * stocktake, and the two answers can land out of order.
+   *
+   * A ref and not `loading`: two presses inside one React batch both read the
+   * state as it was before the re-render, so the state alone lets the pair
+   * through -- exactly the case the guard is here for.
+   */
+  const busy = useRef(false);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -184,11 +206,38 @@ const ClosingStockReport = ({ user }: any) => {
     }
   }, [branchDdlData?.protectedData, authUser?.branch_id]);
 
+  /**
+   * The rows the report is drawn and printed through.
+   *
+   * ⚠️ FILTERED HERE, in the browser, over everything the load returned --
+   * not asked of the server. `apiClosingStockItems()` REBUILDS the branch's
+   * closing-stock table before it answers, so a search that went back to the
+   * server would re-run that whole calculation to hide a few rows; and this
+   * screen draws every row it has, so what is in memory already is the
+   * complete filtered set rather than one page of it.
+   *
+   * ⚠️ CODE *and* NAME. The paper on this screen prints "CODE - NAME", so a
+   * code read off a bill has to find its row; matching the name alone left
+   * DSWG-323A answering with nothing. Product Stock's server search was widened
+   * the same way (`ReportsController::productStockData`), so the two screens
+   * still agree on what the one Search box means.
+   */
+  const visibleRows = useMemo(() => {
+    const needle = appliedSearch.trim().toLowerCase();
+    if (!needle) return rows;
+
+    return rows.filter(
+      (row) =>
+        rowProduct(row).toLowerCase().includes(needle) ||
+        rowCode(row).toLowerCase().includes(needle),
+    );
+  }, [rows, appliedSearch]);
+
   const groups = useMemo<StockGroup[]>(() => {
     const bandOf = groupByBrand ? rowBrand : rowCategory;
     const map = new Map<string, StockRow[]>();
 
-    rows.forEach((row) => {
+    visibleRows.forEach((row) => {
       const band = bandOf(row);
       if (!map.has(band)) map.set(band, []);
       map.get(band)!.push(row);
@@ -210,7 +259,7 @@ const ClosingStockReport = ({ user }: any) => {
         total: list.reduce((sum, row) => sum + rowTotal(row), 0),
       };
     });
-  }, [rows, groupByBrand]);
+  }, [visibleRows, groupByBrand]);
 
   const grandTotal = useMemo(() => groups.reduce((sum, group) => sum + group.total, 0), [groups]);
 
@@ -227,23 +276,39 @@ const ClosingStockReport = ({ user }: any) => {
   const columnCount = showCode ? 7 : 6;
 
   const handleLoad = async () => {
+    // A second Apply while the first is still out is dropped, not queued.
+    if (busy.current) return;
+
     if (!branchId) {
-      setError("Branch select korun");
+      toast.error("Branch select korun");
       return;
     }
     if (!startDate || !endDate) {
-      setError("Start/End date din");
+      toast.error("Start/End date din");
       return;
     }
 
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
 
+    /**
+     * ⚠️ Apply hands over whatever is in the Search box too.
+     *
+     * The whole reason this screen kept two states was so the report would not
+     * re-filter on every keystroke -- Apply is the deliberate submit, so it has
+     * to take the box with it. Left as it was, typing a code and pressing Apply
+     * (which is how anybody loads a date range) reloaded the whole stocktake and
+     * filtered nothing: a search that answered with every unrelated product on
+     * the branch. Product Stock has always read the box on both its buttons;
+     * this is the same rule, not a new one.
+     */
+    setAppliedSearch(search);
+
     // This request's ticket. Only the newest ticket is allowed to write.
     const seq = ++loadSeq.current;
+    busy.current = true;
 
     setLoading(true);
-    setError(null);
 
     try {
       const response = await httpService.post(API_REPORT_CLOSING_STOCK_URL, {
@@ -261,22 +326,37 @@ const ClosingStockReport = ({ user }: any) => {
 
       const nextRows = normalizeRows(response.data);
       setRows(nextRows);
-      if (!nextRows.length) {
-        setError(response.data?.message || "No stock items found");
-      }
+      if (!nextRows.length) toast.error(response.data?.message || "No stock items found");
     } catch (err: any) {
       if (seq !== loadSeq.current) return;
-      setRows([]);
-      setError(err?.response?.data?.message || err?.message || "Closing stock load failed");
+
+      /**
+       * ⚠️ The rows on screen STAY. Emptying them here is what the reader
+       * actually sees when a request fails: the stocktake they were reading
+       * collapses to "No data found" and the reason for it is a sentence in the
+       * corner. A failed refresh is a failed refresh -- the last good answer is
+       * still the last good answer, and the old numbers are one Apply away from
+       * being replaced.
+       */
+      toast.error(err?.response?.data?.message || err?.message || "Closing stock load failed");
     } finally {
-      // A stale request must not clear the spinner the newest one is showing.
-      if (seq === loadSeq.current) setLoading(false);
+      // A stale request must not clear the spinner the newest one is showing,
+      // nor hand the lock to a request that is not the one holding it.
+      if (seq === loadSeq.current) {
+        setLoading(false);
+        busy.current = false;
+      }
     }
   };
 
   const handleReset = () => {
+    // ⚠️ Not just the rows: a request still out would land on a cleared screen
+    // and put its own rows back. The ticket moves on so its answer is dropped.
+    loadSeq.current += 1;
+    busy.current = false;
+    setLoading(false);
+
     setRows([]);
-    setError(null);
     setStartDate(defaultTransactionDate);
     setEndDate(defaultTransactionDate);
     setPerPage(12);
@@ -284,7 +364,43 @@ const ClosingStockReport = ({ user }: any) => {
     setBrandId("");
     setCategoryId("");
     setGroupId("");
+    setSearch("");
+    setAppliedSearch("");
     if (authUser?.branch_id) setBranchId(authUser.branch_id);
+  };
+
+  /**
+   * The box's Enter key comes through here.
+   *
+   * ⚠️ With nothing loaded there is nothing to filter, so the press has to
+   * LOAD. Left as a pure filter it answered a screen nobody had Run yet with
+   * the same "No data found" that was already standing there -- the box read as
+   * dead on the one state every reader meets first. Loaded, it stays what it
+   * was: a filter over rows already in hand, with no request behind it.
+   *
+   * `handleLoad` applies the box itself, so the two paths cannot disagree about
+   * what the needle is.
+   */
+  const submitSearch = () => {
+    if (!rows.length) {
+      handleLoad();
+      return;
+    }
+    setAppliedSearch(search);
+  };
+
+  /**
+   * Enter in the search box submits it.
+   *
+   * ⚠️ Guarded on the target being the box itself. The handler sits on the
+   * group so it catches the key from the input it wraps, but a Search button
+   * inside that group fires its own click on Enter -- unguarded, one press
+   * would submit twice.
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "Enter" || !(e.target instanceof HTMLInputElement)) return;
+    e.preventDefault();
+    submitSearch();
   };
 
   // The sheet this screen printed before there was a designer to print it from,
@@ -341,7 +457,7 @@ const ClosingStockReport = ({ user }: any) => {
    * nothing the absence of a heading does not.
    */
   const handlePrint = async () => {
-    if (!rows.length) {
+    if (!visibleRows.length) {
       printBespoke();
       return;
     }
@@ -369,7 +485,9 @@ const ClosingStockReport = ({ user }: any) => {
     setStockDoc({
       template: { ...template, rowsPerPage: perPage, fontSize },
       data: toStockDetailsDocumentData({
-        rows,
+        // The rows on screen, so the paper carries what the search narrowed to
+        // rather than a full list nobody is looking at any more.
+        rows: visibleRows,
         startDate,
         endDate,
         brandName: nameOf(brandOptions, brandId),
@@ -435,6 +553,29 @@ const ClosingStockReport = ({ user }: any) => {
             </div>
           ) : null}
 
+          {/* The box, immediately left of Start Date.
+              ⚠️ No button beside it: the report is already loaded here, so a
+              button only repeated what the box's own Enter key does -- and the
+              hand that went looking for one pressed Apply next to it instead
+              and got the whole stocktake back. The needle is the name *or* the
+              code, which is what the row prints ("CODE - NAME") and therefore
+              what a reader has in hand when they come looking. */}
+          {/* ⚠️ `flex-1 min-w-50`, not `min-w-max`: this row is a wrapping flex
+              row, so the box grows into whatever room is left on its line --
+              all of it when it wraps, which is the mobile case. `min-w-max`
+              held the wrapper at the box's own width, so the space the removed
+              button used to occupy stayed empty. */}
+          <div className="flex min-w-50 flex-1 items-end gap-2" onKeyDown={handleSearchKeyDown}>
+            <SearchInput
+              id="stockDetailsSearch"
+              label="Search"
+              placeholder="Search product name or code..."
+              search={search}
+              setSearchValue={setSearch}
+              className="w-full min-w-50 font-medium text-sm"
+            />
+          </div>
+
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
             <InputDatePicker
@@ -455,10 +596,16 @@ const ClosingStockReport = ({ user }: any) => {
             />
           </div>
 
-          <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
+          {/* ⚠️ `xl:ml-auto` was removed on purpose. An auto margin swallows the
+              row's free space *before* flex-grow gets a look at it, so the
+              `flex-1` search box could never grow while it was here -- the
+              buttons stayed pinned right and the box stayed narrow. The search
+              box now does the pushing. */}
+          <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto">
             <ButtonLoading
               onClick={handleLoad}
               buttonLoading={loading}
+              disabled={loading}
               label="Apply"
               icon={<FiCheckSquare />}
               className="px-6"
@@ -488,19 +635,28 @@ const ClosingStockReport = ({ user }: any) => {
               type="text"
               className="font-medium text-sm w-full! text-center"
             />
-            <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={!rows.length} />
+            <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={!visibleRows.length} />
           </div>
         </div>
       </div>
 
-      {error ? (
-        <div className="mb-3 rounded-sm border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
-          {error}
-        </div>
-      ) : null}
+      {/* ⚠️ There is no banner here any more, and that is the point.
+          This block used to hold the load error, which put a box between the
+          toolbar and the table: every Apply cleared it and every failure or
+          empty answer put it back, so the table jumped down and up on either
+          side of a request nobody had finished watching. The message goes to
+          the app's own toaster now (`toast.error` above), which is drawn over
+          the page instead of in it -- the table's first row no longer moves for
+          a sentence about the request that was just made. */}
 
-      <div className="overflow-x-auto">
-        {loading ? <Loader /> : null}
+      {/* The table keeps its place for the whole request: the spinner below is
+          drawn over this box, not in front of it. */}
+      <div className="relative overflow-x-auto">
+        {loading ? (
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center py-2">
+            <span className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-t-transparent" />
+          </div>
+        ) : null}
         <table className="min-w-full table-fixed border-collapse text-left text-sm text-gray-700 dark:text-gray-300">
           <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300">
             <tr>
@@ -565,7 +721,15 @@ const ClosingStockReport = ({ user }: any) => {
               ))
             ) : (
               <tr>
-                <td colSpan={columnCount} className="py-4 text-center text-gray-500 dark:text-gray-400">No data found</td>
+                {/* ⚠️ Two different nothings, said differently. A report that
+                    was never Run and a search that matched none of the rows are
+                    the same empty table, and the reader's next move is opposite
+                    in each: press Apply, or change the word in the box. */}
+                <td colSpan={columnCount} className="py-4 text-center text-gray-500 dark:text-gray-400">
+                  {rows.length && appliedSearch.trim()
+                    ? `No product matches "${appliedSearch.trim()}"`
+                    : "No data found"}
+                </td>
               </tr>
             )}
           </tbody>
@@ -583,7 +747,7 @@ const ClosingStockReport = ({ user }: any) => {
       <div className="hidden">
         <ItemDetailsPrint
           ref={printRef}
-          report={rows}
+          report={visibleRows}
           title="Closing Stock Details"
           startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
           endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
