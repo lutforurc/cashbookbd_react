@@ -36,6 +36,7 @@ interface productParam {
   perPage: number;
   categoryId: number | string | null;
   brandId: number | string | null;
+  groupId: number | string | null;
   search: string;
 }
 interface productStoreData {
@@ -49,14 +50,14 @@ interface productStoreData {
   order_level: string;
 }
 export const getProduct =
-  ({ page, perPage, categoryId, brandId, search = '' }: productParam) =>
+  ({ page, perPage, categoryId, brandId, groupId, search = '' }: productParam) =>
     (dispatch: any) => {
       dispatch({ type: PRODUCT_LIST_PENDING });
 
       httpService
         .get(
           API_PRODUCT_LIST_URL +
-          `?page=${page}&per_page=${perPage}&category_id=${categoryId}&brand_id=${brandId}&search=${search}`,
+          `?page=${page}&per_page=${perPage}&category_id=${categoryId}&brand_id=${brandId}&group_id=${groupId}&search=${search}`,
         )
         .then((res) => {
           let _data = res.data;

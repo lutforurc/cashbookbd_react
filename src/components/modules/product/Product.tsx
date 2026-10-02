@@ -21,6 +21,7 @@ import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import { hasPermission } from '../../utils/permissionChecker';
 import { getCategoryDdl } from '../category/categorySlice';
 import { fetchBrandDdl } from './brand/brandSlice';
+import { getProductGroupDdl } from '../productgroup/productGroupSlice';
 import ProductPrint from './ProductPrint';
 import { useReactToPrint } from 'react-to-print';
 import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
@@ -28,6 +29,9 @@ import { Textarea } from '../../utils/fields/FormControls';
 import { isBranchSettingOn } from '../../utils/userFeatureSettings';
 
 const isGroupRow = (row: any) => row?.__type === 'CAT_HEADER';
+
+/** The word over a filter box, written as Stock Details writes it. */
+const FILTER_LABEL = 'mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200';
 
 const buildCategoryWiseRows = (rows: any[]) => {
   if (!Array.isArray(rows)) return [];
@@ -80,6 +84,12 @@ const Product = (user: any) => {
   const settings = useSelector((state: any) => state.settings);
   const categoryData = useSelector((state: any) => state.category);
   const brand = useSelector((state: any) => state.brand);
+  const productGroupData = useSelector((state: any) => state.productGroup);
+
+  // The Group filter appears only where the branch files products under groups
+  // at all -- the same switch that puts the box on the product form and the
+  // dropdown on Stock Details.
+  const needProductGroup = isBranchSettingOn(settings, 'need_product_group');
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -98,6 +108,7 @@ const Product = (user: any) => {
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
   const [brandId, setBrandId] = useState<number | string | null>(null);
+  const [groupId, setGroupId] = useState<number | string | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
   const didInitRef = useRef(false);
@@ -174,10 +185,16 @@ const Product = (user: any) => {
     }
   }, [categoryData]);
 
+  // Separate from the init effect above: whether this branch has groups at all
+  // is a setting that arrives with `settings`, not with the first render.
+  useEffect(() => {
+    if (needProductGroup) dispatch(getProductGroupDdl() as any);
+  }, [dispatch, needProductGroup]);
+
   /* ================= FETCH ================= */
   useEffect(() => {
-    dispatch(getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any);
-  }, [page, perPage, categoryId, brandId, appliedSearch]);
+    dispatch(getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch }) as any);
+  }, [page, perPage, categoryId, brandId, groupId, appliedSearch]);
 
   /* ✅ এখানে per_page=0 (showAll) + paginate দুটোই handle হবে */
   useEffect(() => {
@@ -395,7 +412,7 @@ const Product = (user: any) => {
         if (res?.success) {
           toast.success(res?.message || 'Product deleted successfully.');
           dispatch(
-            getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any,
+            getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch }) as any,
           );
         } else {
           toast.error(res?.message || 'Product could not be deleted.');
@@ -413,6 +430,12 @@ const Product = (user: any) => {
   const handleBrandChange = (selectedOption: any) => {
     const selectedId = selectedOption?.value ?? null;
     setBrandId(selectedId);
+    setPage(1);
+    setCurrentPage(1);
+  };
+
+  const handleGroupChange = (selectedOption: any) => {
+    setGroupId(selectedOption?.value ?? null);
     setPage(1);
     setCurrentPage(1);
   };
@@ -620,21 +643,18 @@ const Product = (user: any) => {
           );
         },
       },
-      // Read as text, '0' is true and its negation is false -- which is why the
-      // Category column was missing from every branch that has opening off.
-      // ⚠️ Spread, never `cond && {...}`: a guard that fails leaves a `false`
-      // in this array, and the table gives a false its own heading, cell and
-      // col -- one blank column, sat to the left of Unit.
-      ...(!openingOn
-        ? [
-            {
-              key: 'category',
-              header: 'Category',
-              cellClass: 'w-32',
-              render: (row: any) => (isGroupRow(row) ? '' : row.category),
-            },
-          ]
-        : []),
+      // ⚠️ On EVERY branch, opening or not. It used to be drawn only where
+      // opening was off -- "read as text, '0' is true" turned the switch into a
+      // condition on the wrong side -- so the branches that actually file
+      // products by category were the ones without the column. The band above
+      // the rows groups by the same word; that is a heading, not a column, and
+      // it was never the place somebody reads a product's category off.
+      {
+        key: 'category',
+        header: 'Category',
+        cellClass: 'w-32',
+        render: (row: any) => (isGroupRow(row) ? '' : row.category),
+      },
       {
         key: 'unit',
         header: 'Unit',
@@ -654,6 +674,13 @@ const Product = (user: any) => {
   const brandOptions = [
     { id: '', name: 'All Brand' },
     ...(brand?.brandDdl?.data || []),
+  ];
+
+  // "All Groups" first, so the list opens unfiltered -- and the empty option
+  // asks the API for no group at all (`group_id` reaches it as 0).
+  const groupOptions = [
+    { id: '', name: 'All Groups' },
+    ...(Array.isArray(productGroupData?.ddlData?.data) ? productGroupData.ddlData.data : []),
   ];
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -684,8 +711,13 @@ const Product = (user: any) => {
       <HelmetTitle title="Product List" />
 
       <div className="mb-2">
-        <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap lg:items-center">
+        {/* ⚠️ Three named boxes, arranged as Stock Details arranges them: a word
+            over each dropdown, and the row closing on the boxes' bottom edge.
+            Two of these filters were here unnamed and read as one long strip of
+            dropdowns; the same word over each is what says which is which. */}
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap lg:items-end">
           <div className="w-full ">
+            <label className={FILTER_LABEL}>Brand</label>
             <CategoryDropdown
               onChange={handleBrandChange}
               className="w-full text-sm !"
@@ -694,6 +726,7 @@ const Product = (user: any) => {
           </div>
 
           <div className="w-full ">
+            <label className={FILTER_LABEL}>Category</label>
             {categoryData.isLoading ? (
               <Loader />
             ) : (
@@ -704,6 +737,17 @@ const Product = (user: any) => {
               />
             )}
           </div>
+
+          {needProductGroup ? (
+            <div className="w-full ">
+              <label className={FILTER_LABEL}>Group</label>
+              <CategoryDropdown
+                onChange={handleGroupChange}
+                className="w-full text-sm !"
+                categoryDdl={groupOptions}
+              />
+            </div>
+          ) : null}
 
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <div className="w-full">
