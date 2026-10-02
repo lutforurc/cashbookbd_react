@@ -110,14 +110,49 @@ for (const { name, screen, print, adapter } of PAIRS) {
   );
 }
 
-/* -- hiding the product lines must not touch the numeric columns ----------- */
+/* -- hiding the product information collapses the numbers onto one line ----- */
 
 for (const { name, print } of PAIRS) {
   const src = read(print);
-  // The qty/rate/total cells map details for the NUMBERS, on purpose: only the
-  // product names are hidden, so those three columns still line up.
+
+  // The Quantity, Rate and Total cells are gated on the switch too, beside the
+  // product cell.
+  const gated = src.match(/showProductDetails && details/g) || [];
+  assert.ok(
+    gated.length >= 3,
+    `${name} Ledger print does not gate its numeric cells on the switch`,
+  );
+
+  // The per-detail maps stay for the switched-on case, so the three columns
+  // still line up product by product.
   const maps = src.match(/details(?:\?)?\.map\(/g) || [];
   assert.ok(maps.length >= 4, `${name} Ledger print lost its numeric detail columns`);
+
+  // With it off, the Total cell reads the invoice total once -- the gross
+  // figure, with the discount left to its own column.
+  assert.ok(
+    /invoiceTotal \? thousandSeparator\(invoiceTotal\)|total \? thousandSeparator\(total\)/.test(src),
+    `${name} Ledger print's Total cell does not fall back to the invoice total`,
+  );
+}
+
+// A saved print layout draws its cells from the adapter's lines, so those
+// collapse the same way: quantity and rate to a dash, the total to the invoice.
+for (const { name, adapter } of PAIRS) {
+  const src = read(adapter);
+
+  assert.ok(
+    /qty_lines: showProductDetails === false[\s\S]{0,40}\['-'\]/.test(src),
+    `${name} document data does not collapse qty_lines to a dash`,
+  );
+  assert.ok(
+    /rate_lines: showProductDetails === false[\s\S]{0,40}\['-'\]/.test(src),
+    `${name} document data does not collapse rate_lines to a dash`,
+  );
+  assert.ok(
+    /amount_lines: showProductDetails === false[\s\S]{0,80}thousandSeparator\(amount\)/.test(src),
+    `${name} document data does not print the invoice total once`,
+  );
 }
 
 /* -- the product label no longer repeats a category the name already carries - */

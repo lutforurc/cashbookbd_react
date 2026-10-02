@@ -356,7 +356,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details?.length
+                              {showProductDetails && details?.length
                                 ? details.map((detail: any, i: number) => {
                                     const label = makeLabel(detail);
                                     return (
@@ -382,7 +382,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details?.length
+                              {showProductDetails && details?.length
                                 ? details.map((detail: any, i: number) => {
                                     const label = makeLabel(detail);
                                     return (
@@ -407,7 +407,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details?.length
+                              {showProductDetails && details?.length
                                 ? details.map((detail: any, i: number) => {
                                     const label = makeLabel(detail);
                                     return (
@@ -431,7 +431,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                       </div>
                                     );
                                   })
-                                : "-"}
+                                : (total ? thousandSeparator(total) : "-")}
                             </td>
 
                             <td

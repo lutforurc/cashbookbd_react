@@ -185,6 +185,13 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
 
                         const coaName = getRelevantCoaName(row);
                         const details = row?.purchase_master?.details || [];
+                        // The invoice's own total, for the one summary line the
+                        // Total column reads when product information is off.
+                        const invoiceTotal = details.reduce(
+                          (s: number, d: any) =>
+                            s + (Number(d?.purchase_price) || 0) * (Number(d?.quantity) || 0),
+                          0,
+                        );
 
                         return (
                           <tr
@@ -252,7 +259,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details.length
+                              {showProductDetails && details.length
                                 ? details.map((detail: any, i: number) => {
                                   const label = ledgerProductLabel(detail, String(stockReportType) === "1");
 
@@ -272,7 +279,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details.length
+                              {showProductDetails && details.length
                                 ? details.map((detail: any, i: number) => {
                                   const label = ledgerProductLabel(detail, String(stockReportType) === "1");
 
@@ -294,7 +301,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details.length
+                              {showProductDetails && details.length
                                 ? details.map((detail: any, i: number) => {
                                   const label = ledgerProductLabel(detail, String(stockReportType) === "1");
 
@@ -309,7 +316,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                     </div>
                                   );
                                 })
-                                : "-"}
+                                : (invoiceTotal ? thousandSeparator(invoiceTotal) : "-")}
                             </td>
 
                             <td

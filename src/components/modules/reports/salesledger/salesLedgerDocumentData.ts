@@ -49,7 +49,9 @@ export type SalesLedgerDocumentOptions = {
    * Branch > Invoice Setup > "Show Product Information in Ledger Details".
    * Undefined/false-y keeps the product lines (the report has always printed
    * them); only an explicit `false` drops them from the cell's block, leaving
-   * the account and the note. The quantity/rate/total lines are untouched.
+   * the account and the note -- and collapses the numeric lines to ONE summary
+   * line: quantity and rate read a dash, and the total is the invoice's own
+   * total once. The discount is its own column and is never taken off the total.
    */
   showProductDetails?: boolean;
 };
@@ -160,15 +162,26 @@ export const toSalesLedgerDocumentData = ({
       // migration. See retargetLedgerProductColumn in printTemplate.ts.
       product_lines: block,
 
-      qty_lines: perLine((detail) => thousandSeparator(num(detail?.quantity))),
-      rate_lines: perLine((detail) =>
-        num(detail?.sales_price) ? thousandSeparator(num(detail.sales_price)) : '-',
-      ),
-      amount_lines: perLine((detail) =>
-        num(detail?.sales_price)
-          ? thousandSeparator(Math.floor(num(detail?.quantity) * num(detail.sales_price)))
-          : '-',
-      ),
+      // With product information off the invoice is ONE summary line: quantity
+      // and rate read a dash, and the total is the invoice's own total once.
+      // The discount is a column of its own, so it is not taken off the total
+      // here -- a saved layout prints the gross total beside the discount it
+      // already carries, exactly as the screen does.
+      qty_lines: showProductDetails === false
+        ? ['-']
+        : perLine((detail) => thousandSeparator(num(detail?.quantity))),
+      rate_lines: showProductDetails === false
+        ? ['-']
+        : perLine((detail) =>
+            num(detail?.sales_price) ? thousandSeparator(num(detail.sales_price)) : '-',
+          ),
+      amount_lines: showProductDetails === false
+        ? [amount ? thousandSeparator(amount) : '-']
+        : perLine((detail) =>
+            num(detail?.sales_price)
+              ? thousandSeparator(Math.floor(num(detail?.quantity) * num(detail.sales_price)))
+              : '-',
+          ),
 
       qty: details.reduce((sum, detail) => sum + num(detail?.quantity), 0),
       amount,

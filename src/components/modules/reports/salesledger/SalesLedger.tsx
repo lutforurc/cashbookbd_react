@@ -795,15 +795,20 @@ const SalesLedger = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
       width: '120px',
-      render: (row: any) => (
-        <>
-          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
-            <div key={detail?.id ?? index}>
-              {thousandSeparator(detail?.quantity)} {detail?.product?.unit?.name}
-            </div>
-          ))}
-        </>
-      ),
+      render: (row: any) =>
+        showProductDetails ? (
+          <>
+            {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
+              <div key={detail?.id ?? index}>
+                {thousandSeparator(detail?.quantity)} {detail?.product?.unit?.name}
+              </div>
+            ))}
+          </>
+        ) : (
+          // Product information off: the invoice is one summary line, so the
+          // per-product quantity gives way to a dash.
+          <div>-</div>
+        ),
     },
     {
       key: 'rate',
@@ -811,23 +816,26 @@ const SalesLedger = (user: any) => {
       width: '120px',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
-      render: (row: any) => (
-        <>
-          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
-            const rate = detail?.sales_price;
-            const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
-            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+      render: (row: any) =>
+        showProductDetails ? (
+          <>
+            {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
+              const rate = detail?.sales_price;
+              const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
+              const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
 
-            return (
-              <div key={detail?.id ?? index}>
-                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
-                  {formatAmountOrZeroMark(rate)}
-                </span>
-              </div>
-            );
-          })}
-        </>
-      ),
+              return (
+                <div key={detail?.id ?? index}>
+                  <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
+                    {formatAmountOrZeroMark(rate)}
+                  </span>
+                </div>
+              );
+            })}
+          </>
+        ) : (
+          <div>-</div>
+        ),
     },
     {
       key: 'total',
@@ -835,23 +843,29 @@ const SalesLedger = (user: any) => {
       width: '130px',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
-      render: (row: any) => (
-        <>
-          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
-            const rate = detail?.sales_price;
-            const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
-            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+      render: (row: any) =>
+        showProductDetails ? (
+          <>
+            {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
+              const rate = detail?.sales_price;
+              const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
+              const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
 
-            return (
-              <div key={detail?.id ?? index}>
-                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
-                  {formatAmountOrZeroMark(total)}
-                </span>
-              </div>
-            );
-          })}
-        </>
-      ),
+              return (
+                <div key={detail?.id ?? index}>
+                  <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
+                    {formatAmountOrZeroMark(total)}
+                  </span>
+                </div>
+              );
+            })}
+          </>
+        ) : (
+          // One summary line per invoice: the invoice's own total, once. It is
+          // the gross figure -- the discount is a column of its own beside it,
+          // so it is never taken off here twice.
+          <div>{formatAmountOrZeroMark(row?.sales_master?.total)}</div>
+        ),
     },
     {
       key: 'discount',

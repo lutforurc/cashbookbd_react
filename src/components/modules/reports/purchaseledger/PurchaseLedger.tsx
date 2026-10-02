@@ -556,6 +556,11 @@ const PurchaseLedger = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
       render: (row: any) => {
+        if (!showProductDetails) {
+          // Product information off: the invoice is one summary line.
+          return <div>-</div>;
+        }
+
         return (
           <div>
             {row?.purchase_master?.details?.map(
@@ -578,23 +583,29 @@ const PurchaseLedger = (user: any) => {
       header: 'Rate',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
-      render: (row: any) => (
-        <div>
-          {row?.purchase_master?.details?.map((detail: any, index: number) => {
-            const rate = detail?.purchase_price;
-            const total = (detail?.purchase_price || 0) * (detail?.quantity || 0);
-            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+      render: (row: any) => {
+        if (!showProductDetails) {
+          return <div>-</div>;
+        }
 
-            return (
-              <div key={index}>
-                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
-                  {formatAmountOrZeroMark(rate)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      ),
+        return (
+          <div>
+            {row?.purchase_master?.details?.map((detail: any, index: number) => {
+              const rate = detail?.purchase_price;
+              const total = (detail?.purchase_price || 0) * (detail?.quantity || 0);
+              const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+
+              return (
+                <div key={index}>
+                  <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
+                    {formatAmountOrZeroMark(rate)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      },
       width: '120px',
     },
 
@@ -603,23 +614,40 @@ const PurchaseLedger = (user: any) => {
       header: 'Total',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
-      render: (row: any) => (
-        <div>
-          {row?.purchase_master?.details?.map((detail: any, index: number) => {
-            const rate = detail?.purchase_price;
-            const total = (detail?.purchase_price || 0) * (detail?.quantity || 0);
-            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+      render: (row: any) => {
+        if (!showProductDetails) {
+          // One summary line per invoice: its own total once. The discount is
+          // the column beside it and is not taken off here.
+          const details = Array.isArray(row?.purchase_master?.details)
+            ? row.purchase_master.details
+            : [];
+          const invoiceTotal = details.reduce(
+            (s: number, d: any) =>
+              s + (Number(d?.purchase_price) || 0) * (Number(d?.quantity) || 0),
+            0,
+          );
 
-            return (
-              <div key={index}>
-                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
-                  {formatAmountOrZeroMark(total)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      ),
+          return <div>{formatAmountOrZeroMark(invoiceTotal)}</div>;
+        }
+
+        return (
+          <div>
+            {row?.purchase_master?.details?.map((detail: any, index: number) => {
+              const rate = detail?.purchase_price;
+              const total = (detail?.purchase_price || 0) * (detail?.quantity || 0);
+              const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+
+              return (
+                <div key={index}>
+                  <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
+                    {formatAmountOrZeroMark(total)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      },
       width: '130px',
     },
     {
@@ -639,7 +667,11 @@ const PurchaseLedger = (user: any) => {
 
         // value format করা এবং default
         // Show the discount only when there is one; otherwise leave the cell blank.
-        const displayValue = creditValue ? thousandSeparator(creditValue) : '';
+        // With product information hidden the invoice is one summary line, so a
+        // missing discount reads as a dash rather than a blank.
+        const displayValue = creditValue
+          ? thousandSeparator(creditValue)
+          : (showProductDetails ? '' : '-');
 
         return <div className="text-right">{displayValue}</div>;
       },
