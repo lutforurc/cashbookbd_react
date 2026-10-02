@@ -20,7 +20,8 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { fetchBrandDdl } from '../../product/brand/brandSlice';
 import StockBookPrintNormal from './StockBookPrintNormal';
-import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import { isBranchSettingOn, isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import { getProductGroupDdl } from '../../productgroup/productGroupSlice';
 import httpService from '../../../services/httpService';
 import { API_PRINT_TEMPLATE_URL } from '../../../services/apiRoutes';
 import { usePrintBranch } from '../../../utils/utils-functions/printBranch';
@@ -120,6 +121,10 @@ const ProductStockNormal = ({ user }: any) => {
 
   const [branchId, setBranchId] = useState<number | string | null>(null);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
+  // Same Group box as Stock Details / ProductStock, from the same branch switch.
+  const needProductGroup = isBranchSettingOn(settings, "need_product_group");
+  const productGroupData = useSelector((state: any) => state.productGroup);
+  const [groupId, setGroupId] = useState<string>('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
@@ -141,6 +146,10 @@ const ProductStockNormal = ({ user }: any) => {
       setCategoryId(categoryData.ddlData[0]?.id ?? null);
     }
   }, [categoryData]);
+
+  useEffect(() => {
+    if (needProductGroup) dispatch(getProductGroupDdl() as any);
+  }, [dispatch, needProductGroup]);
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
@@ -288,16 +297,28 @@ const ProductStockNormal = ({ user }: any) => {
   };
 
   const handleActionButtonClick = () => {
+    /**
+     * ⚠️ A cleared date box is not "no filter", it is a broken one: dayjs(null)
+     * formats to the literal string "Invalid Date", which the report sends as
+     * `startdate` and MySQL answers with nothing at all. Fall back to the
+     * branch's own transaction date -- the value the box starts with -- so a
+     * Search always means something.
+     */
+    const from = startDate || defaultTransactionDate;
+    const to = endDate || defaultTransactionDate;
+    if (!from || !to) return;
+
     setButtonLoading(true);
     setFilterOpen(false);
-    const startD = dayjs(startDate).format('YYYY-MM-DD');
-    const endD = dayjs(endDate).format('YYYY-MM-DD');
+    const startD = dayjs(from).format('YYYY-MM-DD');
+    const endD = dayjs(to).format('YYYY-MM-DD');
 
     dispatch(
       getProductStock({
         branchId,
         brandId,
         categoryId,
+        groupId: needProductGroup ? groupId || null : null,
         search,
         startDate: startD,
         endDate: endD,
@@ -307,11 +328,23 @@ const ProductStockNormal = ({ user }: any) => {
     setTimeout(() => setButtonLoading(false), 500);
   };
 
+  /**
+   * Enter inside the search box submits it, exactly as the Search button does.
+   * Guarded to a text input so Enter on some other control in the group cannot
+   * fire a second load on top of the first.
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter' || !(e.target instanceof HTMLInputElement)) return;
+    e.preventDefault();
+    handleActionButtonClick();
+  };
+
   const handleResetFilters = () => {
     setSearchValue('');
     setPerPage(20);
     setBrandId(null);
     setCategoryId(null);
+    setGroupId('');
     setStartDate(defaultTransactionDate);
     setEndDate(defaultTransactionDate);
     if (authUser?.branch_id) {
@@ -490,6 +523,11 @@ const ProductStockNormal = ({ user }: any) => {
     ...(Array.isArray(ddlCategory) ? ddlCategory : []),
   ];
 
+  const groupOptions = [
+    { id: '', name: 'All Groups' },
+    ...(Array.isArray(productGroupData?.ddlData?.data) ? productGroupData.ddlData.data : []),
+  ];
+
   const handleBrandChange = (selectedOption: any) => {
     const selectedId = selectedOption?.value ?? '';
     setBrandId(selectedId);
@@ -537,11 +575,18 @@ const ProductStockNormal = ({ user }: any) => {
                     : 'w-full'
                 }
               >
+                {/* Same as ProductStock: two literal class strings, because a
+                    runtime-built class name is invisible to Tailwind's scanner,
+                    and the track list is only right with the Group box. The
+                    counts match ProductStock exactly -- see the longer note
+                    there: a spare track still charges its `gap-3`. */}
                 <div
                   className={
                     useFilterMenuEnabled
                       ? 'space-y-3'
-                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]'
+                      : needProductGroup
+                        ? 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)]'
+                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)]'
                   }
                 >
                   {useFilterMenuEnabled && (
@@ -594,6 +639,37 @@ const ProductStockNormal = ({ user }: any) => {
                     )}
                   </div>
 
+                  {/* Same Group box, same place, as Stock Details: after
+                      Category, before the search box. */}
+                  {needProductGroup ? (
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Group</label>
+                      <CategoryDropdown
+                        onChange={(opt: any) => setGroupId(String(opt?.value ?? ''))}
+                        className="w-full font-medium text-sm"
+                        categoryDdl={groupOptions}
+                        value={groupId}
+                        placeholder="All Groups"
+                      />
+                    </div>
+                  ) : null}
+
+                  {/* The box, immediately left of Start Date.
+                      ⚠️ No button beside it: this screen has always sent the
+                      box with the filters, so Apply already runs the search and
+                      a second button only invited a click that did the same
+                      thing twice. Enter in the box still submits. */}
+                  <div className="flex w-full flex-wrap items-end gap-2 md:max-xl:col-span-2" onKeyDown={handleSearchKeyDown}>
+                    <SearchInput
+                      id="productStockNormalSearch"
+                      label="Search"
+                      placeholder="Search product name or code..."
+                      search={search}
+                      setSearchValue={setSearchValue}
+                      className="text-nowrap w-full"
+                    />
+                  </div>
+
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
@@ -604,22 +680,13 @@ const ProductStockNormal = ({ user }: any) => {
                     />
                   </div>
 
-                  <div>
+                  <div className="md:max-xl:col-span-2">
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
  setCurrentDate={handleEndDate}
  className="w-full font-medium text-sm "
  selectedDate={endDate}
  setSelectedDate={setEndDate}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Search</label>
-                    <SearchInput
- search={search}
- setSearchValue={setSearchValue}
- className="text-nowrap bg-transparent w-full"
                     />
                   </div>
 
@@ -646,34 +713,14 @@ const ProductStockNormal = ({ user }: any) => {
                     />
                   </div>
 
-                  {!useFilterMenuEnabled && (
-                    <div className="hidden items-end justify-end gap-2 xl:max-[1880px]:flex">
-                      <PrintRowsInput
- id="perPageToolbar"
- name="perPageToolbar"
- label="Rows"
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type="text"
- className="font-medium text-sm w-16! sm:w-20!"
-                      />
-                      <PrintFontInput
- id="fontSizeToolbar"
- name="fontSizeToolbar"
- label="Font"
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-16! sm:w-20!"
-                      />
-
-                      <PrintButton
-                        onClick={handlePrint}
-                        label="Print"
-                        className="px-4 sm:px-6"
-                      />
-                    </div>
-                  )}
+                  {/* ⚠️ Rows/Font/Print used to be drawn here as well, for the
+                      xl..1880 arrangement -- which made nine items in a
+                      4-column row, so Apply/Reset closed row two and the print
+                      group sat alone on a third, its three cells empty. It now
+                      lives only in the toolbar row below, which serves every
+                      width, and this grid is left with eight items: exactly two
+                      full rows, with Search still immediately left of Start
+                      Date on desktop. Same as ProductStock. */}
                 </div>
               </div>
             )}
@@ -704,7 +751,11 @@ const ProductStockNormal = ({ user }: any) => {
             </div>
           )}
 
-          <div className={`ml-auto flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:justify-end ${useFilterMenuEnabled ? '' : 'xl:max-[1880px]:hidden'}`}>
+          {/* ⚠️ No `xl:max-[1880px]:hidden` any more: this group is the only
+              place Rows/Font/Print is drawn, so it stays at every width. Between
+              xl and 1880 the filter grid above takes the whole row, which drops
+              this line to its own -- right-aligned by `ml-auto`. */}
+          <div className="ml-auto flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:justify-end">
             <PrintRowsInput
  id="perPage"
  name="perPage"

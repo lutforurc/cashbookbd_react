@@ -8,6 +8,7 @@ import Loader from "../../../../common/Loader";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputDatePicker from "../../../utils/fields/DatePicker";
+import SearchInput from "../../../utils/fields/SearchInput";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import CategoryDropdown from "../../../utils/utils-functions/CategoryDropdown";
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
@@ -143,6 +144,15 @@ const ClosingStockReport = ({ user }: any) => {
   const [perPage, setPerPage] = useState(0);
   const [fontSize, setFontSize] = useState(12);
 
+  /**
+   * ⚠️ TWO boxes, not one. `search` is what is being typed and `appliedSearch`
+   * is what the report is drawn through -- the same pair Product Stock keeps,
+   * and for the same reason: a row list that re-filters on every keystroke
+   * moves under the eye while somebody is still naming what they want.
+   */
+  const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+
   const printRef = useRef<HTMLDivElement>(null);
 
   // Bumped on every Apply. A slower earlier request that lands after a newer
@@ -184,11 +194,38 @@ const ClosingStockReport = ({ user }: any) => {
     }
   }, [branchDdlData?.protectedData, authUser?.branch_id]);
 
+  /**
+   * The rows the report is drawn and printed through.
+   *
+   * ⚠️ FILTERED HERE, in the browser, over everything the load returned --
+   * not asked of the server. `apiClosingStockItems()` REBUILDS the branch's
+   * closing-stock table before it answers, so a search that went back to the
+   * server would re-run that whole calculation to hide a few rows; and this
+   * screen draws every row it has, so what is in memory already is the
+   * complete filtered set rather than one page of it.
+   *
+   * ⚠️ CODE *and* NAME. The paper on this screen prints "CODE - NAME", so a
+   * code read off a bill has to find its row; matching the name alone left
+   * DSWG-323A answering with nothing. Product Stock's server search was widened
+   * the same way (`ReportsController::productStockData`), so the two screens
+   * still agree on what the one Search box means.
+   */
+  const visibleRows = useMemo(() => {
+    const needle = appliedSearch.trim().toLowerCase();
+    if (!needle) return rows;
+
+    return rows.filter(
+      (row) =>
+        rowProduct(row).toLowerCase().includes(needle) ||
+        rowCode(row).toLowerCase().includes(needle),
+    );
+  }, [rows, appliedSearch]);
+
   const groups = useMemo<StockGroup[]>(() => {
     const bandOf = groupByBrand ? rowBrand : rowCategory;
     const map = new Map<string, StockRow[]>();
 
-    rows.forEach((row) => {
+    visibleRows.forEach((row) => {
       const band = bandOf(row);
       if (!map.has(band)) map.set(band, []);
       map.get(band)!.push(row);
@@ -210,7 +247,7 @@ const ClosingStockReport = ({ user }: any) => {
         total: list.reduce((sum, row) => sum + rowTotal(row), 0),
       };
     });
-  }, [rows, groupByBrand]);
+  }, [visibleRows, groupByBrand]);
 
   const grandTotal = useMemo(() => groups.reduce((sum, group) => sum + group.total, 0), [groups]);
 
@@ -238,6 +275,19 @@ const ClosingStockReport = ({ user }: any) => {
 
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
+
+    /**
+     * ⚠️ Apply hands over whatever is in the Search box too.
+     *
+     * The whole reason this screen kept two states was so the report would not
+     * re-filter on every keystroke -- Apply is the deliberate submit, so it has
+     * to take the box with it. Left as it was, typing a code and pressing Apply
+     * (which is how anybody loads a date range) reloaded the whole stocktake and
+     * filtered nothing: a search that answered with every unrelated product on
+     * the branch. Product Stock has always read the box on both its buttons;
+     * this is the same rule, not a new one.
+     */
+    setAppliedSearch(search);
 
     // This request's ticket. Only the newest ticket is allowed to write.
     const seq = ++loadSeq.current;
@@ -284,7 +334,31 @@ const ClosingStockReport = ({ user }: any) => {
     setBrandId("");
     setCategoryId("");
     setGroupId("");
+    setSearch("");
+    setAppliedSearch("");
     if (authUser?.branch_id) setBranchId(authUser.branch_id);
+  };
+
+  /**
+   * The box the Search button and the Enter key both come through.
+   *
+   * It only ever sets state: the rows are already here, so clearing the box
+   * and submitting puts the whole report back with nothing to fetch.
+   */
+  const submitSearch = () => setAppliedSearch(search);
+
+  /**
+   * Enter in the search box submits it.
+   *
+   * ⚠️ Guarded on the target being the box itself. The handler sits on the
+   * group so it catches the key from the input it wraps, but a Search button
+   * inside that group fires its own click on Enter -- unguarded, one press
+   * would submit twice.
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "Enter" || !(e.target instanceof HTMLInputElement)) return;
+    e.preventDefault();
+    submitSearch();
   };
 
   // The sheet this screen printed before there was a designer to print it from,
@@ -341,7 +415,7 @@ const ClosingStockReport = ({ user }: any) => {
    * nothing the absence of a heading does not.
    */
   const handlePrint = async () => {
-    if (!rows.length) {
+    if (!visibleRows.length) {
       printBespoke();
       return;
     }
@@ -369,7 +443,9 @@ const ClosingStockReport = ({ user }: any) => {
     setStockDoc({
       template: { ...template, rowsPerPage: perPage, fontSize },
       data: toStockDetailsDocumentData({
-        rows,
+        // The rows on screen, so the paper carries what the search narrowed to
+        // rather than a full list nobody is looking at any more.
+        rows: visibleRows,
         startDate,
         endDate,
         brandName: nameOf(brandOptions, brandId),
@@ -435,6 +511,29 @@ const ClosingStockReport = ({ user }: any) => {
             </div>
           ) : null}
 
+          {/* The box, immediately left of Start Date.
+              ⚠️ No button beside it: the report is already loaded here, so a
+              button only repeated what the box's own Enter key does -- and the
+              hand that went looking for one pressed Apply next to it instead
+              and got the whole stocktake back. The needle is the name *or* the
+              code, which is what the row prints ("CODE - NAME") and therefore
+              what a reader has in hand when they come looking. */}
+          {/* ⚠️ `flex-1 min-w-50`, not `min-w-max`: this row is a wrapping flex
+              row, so the box grows into whatever room is left on its line --
+              all of it when it wraps, which is the mobile case. `min-w-max`
+              held the wrapper at the box's own width, so the space the removed
+              button used to occupy stayed empty. */}
+          <div className="flex min-w-50 flex-1 items-end gap-2" onKeyDown={handleSearchKeyDown}>
+            <SearchInput
+              id="stockDetailsSearch"
+              label="Search"
+              placeholder="Search product name or code..."
+              search={search}
+              setSearchValue={setSearch}
+              className="w-full min-w-50 font-medium text-sm"
+            />
+          </div>
+
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
             <InputDatePicker
@@ -455,7 +554,12 @@ const ClosingStockReport = ({ user }: any) => {
             />
           </div>
 
-          <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
+          {/* ⚠️ `xl:ml-auto` was removed on purpose. An auto margin swallows the
+              row's free space *before* flex-grow gets a look at it, so the
+              `flex-1` search box could never grow while it was here -- the
+              buttons stayed pinned right and the box stayed narrow. The search
+              box now does the pushing. */}
+          <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto">
             <ButtonLoading
               onClick={handleLoad}
               buttonLoading={loading}
@@ -488,7 +592,7 @@ const ClosingStockReport = ({ user }: any) => {
               type="text"
               className="font-medium text-sm w-full! text-center"
             />
-            <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={!rows.length} />
+            <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={!visibleRows.length} />
           </div>
         </div>
       </div>
@@ -583,7 +687,7 @@ const ClosingStockReport = ({ user }: any) => {
       <div className="hidden">
         <ItemDetailsPrint
           ref={printRef}
-          report={rows}
+          report={visibleRows}
           title="Closing Stock Details"
           startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
           endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
