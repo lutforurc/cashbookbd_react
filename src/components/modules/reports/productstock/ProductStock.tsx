@@ -409,13 +409,13 @@ const ProductStock = ({ user }: any) => {
         if (isBrandRow(row)) {
           return <div className="font-bold py-1">{row.brand_name}</div>;
         }
-       
+
         if (isCatRow(row)) {
           return (
             <div className="inline-flex items-center gap-1 whitespace-nowrap py-1 font-semibold">
               <span className="font-semibold">{row.brand_name}</span>
               <FiArrowRight className="shrink-0 text-gray-900 dark:text-gray-100" />
-              
+
               <span>{row.cat_name}</span>
             </div>
           );
@@ -511,11 +511,10 @@ const ProductStock = ({ user }: any) => {
           </span>
         ) : Math.floor(row.balance || 0) ? (
           <span
-            className={`text-sm ${
-              Math.floor(Number(row.balance) || 0) < 0
+            className={`text-sm ${Math.floor(Number(row.balance) || 0) < 0
                 ? 'font-semibold text-orange-700 dark:text-orange-300'
                 : ''
-            }`}
+              }`}
           >
             {thousandSeparator(Math.floor(row.balance))} ({row.unit})
           </span>
@@ -551,9 +550,8 @@ const ProductStock = ({ user }: any) => {
               <Button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
-                className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
- filterOpen
- ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'}`}
+                className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${filterOpen
+                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300' : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'}`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -598,11 +596,11 @@ const ProductStock = ({ user }: any) => {
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Show Rows</label>
                       <PrintRowsInput
- label=""
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type="text"
- className="w-20! text-sm "
+                        label=""
+                        value={perPage.toString()}
+                        onChange={handlePerPageChange}
+                        type="text"
+                        className="w-20! text-sm "
                       />
                     </div>
                   )}
@@ -613,11 +611,11 @@ const ProductStock = ({ user }: any) => {
                       <Loader />
                     ) : (
                       <BranchDropdown
- defaultValue={authUser?.branch_id}
- value={String(branchId)}
- onChange={handleBranchChange}
- className="w-full text-sm p-2 border "
- branchDdl={dropdownData}
+                        defaultValue={authUser?.branch_id}
+                        value={String(branchId)}
+                        onChange={handleBranchChange}
+                        className="w-full text-sm p-2 border "
+                        branchDdl={dropdownData}
                       />
                     )}
                   </div>
@@ -625,10 +623,10 @@ const ProductStock = ({ user }: any) => {
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
                     <CategoryDropdown
- onChange={handleBrandChange}
- className="w-full text-sm "
- categoryDdl={brandOptions}
- value={brandId}
+                      onChange={handleBrandChange}
+                      className="w-full text-sm "
+                      categoryDdl={brandOptions}
+                      value={brandId}
                     />
                   </div>
 
@@ -686,10 +684,10 @@ const ProductStock = ({ user }: any) => {
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
- setCurrentDate={handleStartDate}
- className="w-full text-sm "
- selectedDate={startDate}
- setSelectedDate={setStartDate}
+                      setCurrentDate={handleStartDate}
+                      className="w-full text-sm "
+                      selectedDate={startDate}
+                      setSelectedDate={setStartDate}
                     />
                   </div>
 
@@ -698,19 +696,18 @@ const ProductStock = ({ user }: any) => {
                   <div className="md:max-xl:col-span-2">
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
- setCurrentDate={handleEndDate}
- className="w-full text-sm "
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+                      setCurrentDate={handleEndDate}
+                      className="w-full text-sm "
+                      selectedDate={endDate}
+                      setSelectedDate={setEndDate}
                     />
                   </div>
 
                   <div
-                    className={`flex gap-2 pt-1 ${
-                      useFilterMenuEnabled
+                    className={`flex gap-2 pt-1 ${useFilterMenuEnabled
                         ? 'justify-end'
                         : 'justify-start self-end md:col-span-3 xl:col-span-1'
-                    } ${useFilterMenuEnabled ? '' : 'hidden xl:max-[1880px]:flex min-[1881px]:hidden'}`}
+                      } ${useFilterMenuEnabled ? '' : 'hidden xl:max-[1880px]:flex min-[1881px]:hidden'}`}
                   >
                     <ButtonLoading
                       onClick={handleActionButtonClick}
@@ -774,18 +771,18 @@ const ProductStock = ({ user }: any) => {
               this line to its own -- right-aligned by `ml-auto`. */}
           <div className="ml-auto flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:justify-end">
             <PrintRowsInput
- label="Rows"
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type="text"
- className="w-16! text-sm text-center sm:w-20!"
+              label="Rows"
+              value={perPage.toString()}
+              onChange={handlePerPageChange}
+              type="text"
+              className="w-16! text-sm text-center sm:w-20!"
             />
             <PrintFontInput
- label="Font"
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="w-16! text-sm text-center sm:w-20!"
+              label="Font"
+              value={fontSize.toString()}
+              onChange={handleFontSizeChange}
+              type="text"
+              className="w-16! text-sm text-center sm:w-20!"
             />
             <PrintButton onClick={handlePrint} label="" />
           </div>
@@ -804,11 +801,6 @@ const ProductStock = ({ user }: any) => {
           </div>
         ) : (
           <>
-            {stock.isLoading && (
-              <div className="flex justify-center py-3">
-                <Loader />
-              </div>
-            )}
             <Table columns={columns} data={tableData || []} />
           </>
         )}
