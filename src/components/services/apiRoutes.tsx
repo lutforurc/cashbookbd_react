@@ -1222,6 +1222,12 @@ export const API_LEGACY_PARTIES_URL = `${API_BASE_URL}/legacy/parties`;
 export const API_LEGACY_PARTY_URL = `${API_BASE_URL}/legacy/party`;
 export const API_LEGACY_INVOICE_URL = `${API_BASE_URL}/legacy/invoice`;
 
+// The old shop's own 48 accounts. Read-only, like everything else under
+// /legacy -- they are the old system's own cash and bank accounts, kept as a
+// backup and never posted to the new books.
+export const API_LEGACY_ACCOUNTS_URL = `${API_BASE_URL}/legacy/accounts`;
+export const API_LEGACY_ACCOUNT_URL = `${API_BASE_URL}/legacy/account`;
+
 // The same client's OLDER install -- its own tables behind its own prefix, so
 // the archive already in trial is never touched by work on this one.
 export const API_LEGACY_OLD_SOURCES_URL = `${API_BASE_URL}/legacy-old/sources`;

@@ -229,6 +229,11 @@ const ROUTES = {
   // over its own tables -- the two archives share nothing.
   legacy_old_record: '/legacy/old-records',
 
+  // The old shop's own cash and bank accounts, out of `?p=ViewAccount`. Kept
+  // as a backup and nothing more: these 48 never become a party and never
+  // carry an opening balance.
+  legacy_accounts: '/legacy/accounts',
+
   // Day Close
   day_close: '/admin/dayclose',
   day_jump: '/admin/jumpdate',

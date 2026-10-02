@@ -110,6 +110,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   'legacy': [
     { id: 'legacy/records', title: "Old ERP Record" },
     { id: 'legacy/old-records', title: "Old ERP Record (পুরনো ভার্সন)" },
+    { id: 'legacy/accounts', title: "Old ERP Account" },
   ],
   'product_tracking': [
     { id: 'product_tracking_settings', title: "Product Tracking" },
@@ -1716,6 +1717,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('legacy', 'legacy/old-records')}>
                               <NavLink to={routes.legacy_old_record} className={subMenuLinkClass}>
                                 Old ERP Record 2
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {/* The old shop's own cash and bank accounts. Same
+                              key as the record above -- same archive, same old
+                              system -- and read-only like it. */}
+                          {hasPermission(permissions, 'legacy.record.view') && (
+                            <li style={subSlot('legacy', 'legacy/accounts')}>
+                              <NavLink to={routes.legacy_accounts} className={subMenuLinkClass}>
+                                Old ERP Account
                               </NavLink>
                             </li>
                           )}

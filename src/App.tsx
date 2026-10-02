@@ -47,6 +47,7 @@ import ProductGroup from './components/modules/productgroup/ProductGroup';
 import PackSize from './components/modules/packsize/PackSize';
 import LegacyRecordSearch from './components/modules/legacy/LegacyRecordSearch';
 import LegacyOldRecordSearch from './components/modules/legacy/LegacyOldRecordSearch';
+import LegacyAccounts from './components/modules/legacy/LegacyAccounts';
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import CashBookTwoColumn from './components/modules/reports/cash-book-two-column/CashBookTwoColumn';
 import DailyAccountBook from './components/modules/reports/daily-account-book/DailyAccountBook';
@@ -594,6 +595,21 @@ function App() {
               }
             >
               <Route path={routes.legacy_old_record} element={<LegacyOldRecordSearch />} />
+            </Route>
+
+            {/* The old shop's own 48 accounts, out of the same archive as the
+                record above and on the same permission. Read-only: no form,
+                no save, and an opening balance they must never carry. */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['legacy.record.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.legacy_accounts} element={<LegacyAccounts />} />
             </Route>
 
             {/* Transactions */}
