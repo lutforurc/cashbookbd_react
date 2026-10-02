@@ -145,6 +145,10 @@ const ClosingStockReport = ({ user }: any) => {
 
   const printRef = useRef<HTMLDivElement>(null);
 
+  // Bumped on every Apply. A slower earlier request that lands after a newer
+  // one must not overwrite the newer rows or clear its spinner.
+  const loadSeq = useRef(0);
+
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     dispatch(getCategoryDdl() as any);
@@ -235,6 +239,9 @@ const ClosingStockReport = ({ user }: any) => {
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
 
+    // This request's ticket. Only the newest ticket is allowed to write.
+    const seq = ++loadSeq.current;
+
     setLoading(true);
     setError(null);
 
@@ -250,16 +257,20 @@ const ClosingStockReport = ({ user }: any) => {
         group_id: needProductGroup ? groupId || null : null,
       });
 
+      if (seq !== loadSeq.current) return;
+
       const nextRows = normalizeRows(response.data);
       setRows(nextRows);
       if (!nextRows.length) {
         setError(response.data?.message || "No stock items found");
       }
     } catch (err: any) {
+      if (seq !== loadSeq.current) return;
       setRows([]);
       setError(err?.response?.data?.message || err?.message || "Closing stock load failed");
     } finally {
-      setLoading(false);
+      // A stale request must not clear the spinner the newest one is showing.
+      if (seq === loadSeq.current) setLoading(false);
     }
   };
 
