@@ -121,6 +121,36 @@ const buildBrandCategoryRows = (rows: any[]) => {
   return finalRows;
 };
 
+/**
+ * The Product Stock toolbar is one wrapping flex row, so a control is never
+ * squeezed into a track narrower than it -- it takes the next line instead. The
+ * basis decides how many share a line: a whole one per line on a phone, two
+ * once the screen can hold them, three on a tablet, and a steady ~190px once
+ * the sidebar is back. Every cell grows, so a line that ends short is filled by
+ * its last control rather than left with a hole.
+ *
+ * ⚠️ Written out, not composed at runtime: Tailwind reads this file as text,
+ * and a class built from pieces would never be emitted.
+ */
+const FILTER_CELL =
+  'min-w-0 grow basis-full min-[360px]:basis-[calc(50%-0.375rem)] min-[360px]:max-w-[280px] sm:basis-[calc(33.333%-0.5rem)] lg:basis-[190px]';
+
+/** Branch leads the row, so it is allowed a little more room than the rest. */
+const BRANCH_CELL = 'min-w-0 grow basis-full sm:basis-[240px] lg:max-w-[340px] lg:basis-[260px]';
+
+/** The search box takes the spare room on its line (grow-[2]) and fills it. */
+const SEARCH_CELL = 'min-w-0 grow-[2] basis-full sm:basis-[220px] lg:max-w-[560px]';
+
+/** Rows and Font stay as narrow as their boxes: they are settings, not filters. */
+const COMPACT_CELL = 'shrink-0';
+
+/**
+ * Apply, Reset and Print travel as one item, so a line too short for them moves
+ * the whole group down instead of stranding a single button on its own.
+ */
+const ACTION_CELL =
+  'flex shrink-0 grow basis-full flex-wrap items-end gap-2 sm:ml-auto sm:basis-auto sm:grow-0';
+
 const ProductStock = ({ user }: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -545,7 +575,7 @@ const ProductStock = ({ user }: any) => {
 
       <div className="px-0 py-3 ">
         <div className="flex flex-wrap items-end gap-3">
-          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none'}>
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'w-full'}>
             {useFilterMenuEnabled && (
               <Button
                 type="button"
@@ -567,29 +597,14 @@ const ProductStock = ({ user }: any) => {
                     : 'w-full'
                 }
               >
-                {/* ⚠️ Two full class strings, not one with a column pasted in:
-                    Tailwind reads this file as text, so a class built at runtime
-                    would never be generated. The wide-screen template is a fixed
-                    list, so it names exactly as many tracks as there are boxes
-                    on screen -- one per filter, no spare. A spare track is not
-                    free: `gap-3` is charged between tracks even when a track is
-                    empty, so one wasted column left 12px of dead space past End
-                    Date, and a 4-column row holding 9 items left a whole empty
-                    row of cells.
-
-                    Track counts, and why:
-                    min-[1881px]: the two button groups leave the grid (they are
-                    drawn outside it at that width), so 7 boxes -- or 6 with no
-                    Group box on this branch.
-                    xl..1880: 5 columns, and the print group takes two of them,
-                    which turns the 9 items into two full rows of 5. */}
+                {/* One wrapping flex row for every control, in reading order:
+                    Branch, Brand, Category, Group, Search, the two dates, then
+                    Rows, Font and the Apply/Reset/Print group. Nothing is
+                    forced onto a fixed column count, so no control is squeezed
+                    and no track is left empty -- see the cell classes above. */}
                 <div
                   className={
-                    useFilterMenuEnabled
-                      ? 'space-y-3'
-                      : needProductGroup
-                        ? 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)]'
-                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)]'
+                    useFilterMenuEnabled ? 'space-y-3' : 'flex flex-wrap items-end gap-3'
                   }
                 >
                   {useFilterMenuEnabled && (
@@ -605,7 +620,7 @@ const ProductStock = ({ user }: any) => {
                     </div>
                   )}
 
-                  <div>
+                  <div className={BRANCH_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch</label>
                     {branchDdlData.isLoading ? (
                       <Loader />
@@ -620,7 +635,7 @@ const ProductStock = ({ user }: any) => {
                     )}
                   </div>
 
-                  <div>
+                  <div className={FILTER_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
                     <CategoryDropdown
                       onChange={handleBrandChange}
@@ -630,7 +645,7 @@ const ProductStock = ({ user }: any) => {
                     />
                   </div>
 
-                  <div>
+                  <div className={FILTER_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
                     {categoryData.isLoading ? (
                       <Loader />
@@ -649,7 +664,7 @@ const ProductStock = ({ user }: any) => {
                       order Stock Details draws it. Hidden where the branch does
                       not file products under groups at all. */}
                   {needProductGroup ? (
-                    <div>
+                    <div className={FILTER_CELL}>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Group</label>
                       <CategoryDropdown
                         onChange={(opt: any) => setGroupId(String(opt?.value ?? ''))}
@@ -665,12 +680,8 @@ const ProductStock = ({ user }: any) => {
                       ⚠️ No button beside it: this screen has always sent the
                       box with the filters, so Apply already runs the search and
                       a second button only invited a click that did the same
-                      thing twice. Enter in the box still submits.
-                      ⚠️ `md:max-xl:col-span-2` -- two of the three columns at
-                      that width, so the 7 boxes fill whole rows instead of
-                      leaving two dead cells beside End Date. Stop at xl: the
-                      wide templates size the box by their own track list. */}
-                  <div className="flex w-full flex-wrap items-end gap-2 md:max-xl:col-span-2" onKeyDown={handleSearchKeyDown}>
+                      thing twice. Enter in the box still submits. */}
+                  <div className={SEARCH_CELL} onKeyDown={handleSearchKeyDown}>
                     <SearchInput
                       id="productStockSearch"
                       label="Search"
@@ -681,7 +692,7 @@ const ProductStock = ({ user }: any) => {
                     />
                   </div>
 
-                  <div>
+                  <div className={FILTER_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
                       setCurrentDate={handleStartDate}
@@ -691,9 +702,7 @@ const ProductStock = ({ user }: any) => {
                     />
                   </div>
 
-                  {/* Last cell of its row at md..xl: taking the two remaining
-                      columns closes the row instead of leaving them empty. */}
-                  <div className="md:max-xl:col-span-2">
+                  <div className={FILTER_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
                       setCurrentDate={handleEndDate}
@@ -703,11 +712,34 @@ const ProductStock = ({ user }: any) => {
                     />
                   </div>
 
+                  {!useFilterMenuEnabled && (
+                    <div className={COMPACT_CELL}>
+                      <PrintRowsInput
+                        label="Rows"
+                        value={perPage.toString()}
+                        onChange={handlePerPageChange}
+                        type="text"
+                        className="w-16! text-sm text-center sm:w-20!"
+                      />
+                    </div>
+                  )}
+
+                  {!useFilterMenuEnabled && (
+                    <div className={COMPACT_CELL}>
+                      <PrintFontInput
+                        label="Font"
+                        value={fontSize.toString()}
+                        onChange={handleFontSizeChange}
+                        type="text"
+                        className="w-16! text-sm text-center sm:w-20!"
+                      />
+                    </div>
+                  )}
+
                   <div
-                    className={`flex gap-2 pt-1 ${useFilterMenuEnabled
-                        ? 'justify-end'
-                        : 'justify-start self-end md:col-span-3 xl:col-span-1'
-                      } ${useFilterMenuEnabled ? '' : 'hidden xl:max-[1880px]:flex min-[1881px]:hidden'}`}
+                    className={
+                      useFilterMenuEnabled ? 'flex justify-end gap-2 pt-1' : ACTION_CELL
+                    }
                   >
                     <ButtonLoading
                       onClick={handleActionButtonClick}
@@ -723,69 +755,46 @@ const ProductStock = ({ user }: any) => {
                       icon={<FiRotateCcw />}
                       className="px-4"
                     />
+                    {!useFilterMenuEnabled && (
+                      <PrintButton onClick={handlePrint} label="" />
+                    )}
                   </div>
 
-                  {/* ⚠️ Rows/Font/Print used to be drawn here as well, for the
-                      xl..1880 arrangement -- which made nine items in a
-                      4-column row, so Apply/Reset closed row two and the print
-                      group sat alone on a third, its three cells empty. It now
-                      lives only in the toolbar row below, which serves every
-                      width, and this grid is left with eight items: exactly two
-                      full rows, with Search still immediately left of Start
-                      Date on desktop. */}
+                  {/* ⚠️ Rows/Font/Print are drawn above, in the row's own order
+                      (Rows, Font, then the Apply/Reset/Print group), so there is
+                      nothing left to place here. */}
                 </div>
               </div>
             )}
           </div>
 
-          <div className={`${useFilterMenuEnabled ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300' : 'hidden'}`}>
-            {branchId || brandId || categoryId || search || startDate || endDate
-              ? 'Use the filter'
-              : 'Use the filter'}
-          </div>
-
-          {!useFilterMenuEnabled && <div className="hidden max-md:block max-md:basis-full" />}
-
-          {!useFilterMenuEnabled && (
-            <div className="flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:w-auto xl:max-[1880px]:hidden">
-              <ButtonLoading
-                onClick={handleActionButtonClick}
-                buttonLoading={false}
-                label="Apply"
-                icon={<FiCheckSquare />}
-                className="px-4 sm:px-6"
-              />
-              <ButtonLoading
-                onClick={handleResetFilters}
-                buttonLoading={false}
-                label="Reset"
-                icon={<FiRotateCcw />}
-                className="px-3 sm:px-4"
-              />
+          {useFilterMenuEnabled && (
+            <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+              Use the filter
             </div>
           )}
 
-          {/* ⚠️ No `xl:max-[1880px]:hidden` any more: this group is the only
-              place Rows/Font/Print is drawn, so it stays at every width. Between
-              xl and 1880 the filter grid above takes the whole row, which drops
-              this line to its own -- right-aligned by `ml-auto`. */}
-          <div className="ml-auto flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:justify-end">
-            <PrintRowsInput
-              label="Rows"
-              value={perPage.toString()}
-              onChange={handlePerPageChange}
-              type="text"
-              className="w-16! text-sm text-center sm:w-20!"
-            />
-            <PrintFontInput
-              label="Font"
-              value={fontSize.toString()}
-              onChange={handleFontSizeChange}
-              type="text"
-              className="w-16! text-sm text-center sm:w-20!"
-            />
-            <PrintButton onClick={handlePrint} label="" />
-          </div>
+          {/* The filter-menu feature hides everything behind the funnel button,
+              so Rows/Font/Print stay out here, where they are always reachable. */}
+          {useFilterMenuEnabled && (
+            <div className="ml-auto flex shrink-0 flex-nowrap items-end gap-2">
+              <PrintRowsInput
+                label="Rows"
+                value={perPage.toString()}
+                onChange={handlePerPageChange}
+                type="text"
+                className="w-16! text-sm text-center sm:w-20!"
+              />
+              <PrintFontInput
+                label="Font"
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type="text"
+                className="w-16! text-sm text-center sm:w-20!"
+              />
+              <PrintButton onClick={handlePrint} label="" />
+            </div>
+          )}
         </div>
       </div>
 
