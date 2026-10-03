@@ -56,6 +56,13 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
     const receipt: any[] = report.sections?.receipt ?? [];
     const payment: any[] = report.sections?.payment ?? [];
 
+    // One day reads as one date; a range reads as a range. The desk prints the
+    // day book for a single day far more often than for a span, so the common
+    // sheet must not carry a "to" that repeats its own date.
+    const from = day(report.from);
+    const to = day(report.to);
+    const period = from && to && from !== to ? `${from} to ${to}` : to || from || '-';
+
     const Section = ({ section }: { section: any }) => {
       const blocks = chunkRows<any>(section.rows ?? [], rowsPerPage);
 
@@ -156,7 +163,7 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
           <div className="mb-2">
             <h1 className="text-center text-2xl font-bold">Daily Account Book</h1>
             <div className="mt-1 text-xs">
-              <span className="font-semibold">Report Date:</span> {day(report.to) || '-'}
+              <span className="font-semibold">Report Date:</span> {period}
             </div>
           </div>
 
@@ -189,18 +196,31 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
             </div>
           </div>
 
-          <table className="mb-3 w-full border-collapse avoid-break" style={{ fontSize: fs }}>
-            <tbody>
-              <tr className="font-bold">
-                <td className={`${cell} text-right`}>Total Receipt Amount</td>
-                <td className={`${figure} w-32`}>{money(report.totals?.receipt)}</td>
-              </tr>
-              <tr className="font-bold">
-                <td className={`${cell} text-right`}>Total Payment Amount</td>
-                <td className={`${figure} w-32`}>{money(report.totals?.payment)}</td>
-              </tr>
-            </tbody>
-          </table>
+          {/* ⚠️ TWO TABLES, NOT TWO FLEX BOXES, spaced by the same gap the
+              RECEIPT and PAYMENT columns are spaced by. The label and the figure
+              have to be two CELLS for one reason: the line between them is the
+              cell border, and this is the only way it comes out the same height
+              and the same weight as the line in the Total rows above. A single
+              border drawn round both would read as one box with a line down it,
+              not as two totals. */}
+          <div className="avoid-break mb-3 flex gap-3 font-bold" style={{ fontSize: fs }}>
+            <table className="flex-1 border-collapse">
+              <tbody>
+                <tr>
+                  <td className={cell}>Total Receipt Amount</td>
+                  <td className={`${figure} w-20`}>{money(report.totals?.receipt)}</td>
+                </tr>
+              </tbody>
+            </table>
+            <table className="flex-1 border-collapse">
+              <tbody>
+                <tr>
+                  <td className={cell}>Total Payment Amount</td>
+                  <td className={`${figure} w-20`}>{money(report.totals?.payment)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
           <BalanceTable title="Closing Bank Balance" table={report.banks} />
           <BalanceTable title="Mobile Bank Balance" table={report.mobiles} />
