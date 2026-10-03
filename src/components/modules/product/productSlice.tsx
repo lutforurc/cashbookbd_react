@@ -49,10 +49,19 @@ interface productStoreData {
   unit_id: string;
   order_level: string;
 }
+/* Filters change faster than the API answers, and responses are not
+   guaranteed to arrive in order: a slow request for the old filter could land
+   after the new one and repaint the table with rows that no longer answer it.
+   Only the newest request is allowed to write. Module-level on purpose -- the
+   counter belongs to the endpoint, not to a component instance. */
+let latestListRequest = 0;
+
 export const getProduct =
   ({ page, perPage, categoryId, brandId, groupId, search = '' }: productParam) =>
     (dispatch: any) => {
       dispatch({ type: PRODUCT_LIST_PENDING });
+
+      const requestId = ++latestListRequest;
 
       httpService
         .get(
@@ -60,20 +69,28 @@ export const getProduct =
           `?page=${page}&per_page=${perPage}&category_id=${categoryId}&brand_id=${brandId}&group_id=${groupId}&search=${search}`,
         )
         .then((res) => {
+          if (requestId !== latestListRequest) return; // a newer filter already asked
           let _data = res.data;
           if (_data.success) {
             dispatch({
               type: PRODUCT_LIST_SUCCESS,
+              // An empty array here is a valid answer -- the table clears and
+              // says "No products found."; it is never merged with what was
+              // on screen before.
               payload: _data.data.data,
             });
           } else {
+            // notFound() carries its reason in `message` -- `error.message` is
+            // empty there, so the old line handed the screen '' and an empty
+            // table said nothing at all about why it was empty.
             dispatch({
               type: PRODUCT_LIST_ERROR,
-              payload: _data.error.message,
+              payload: _data?.error?.message || _data?.message || 'No product found.',
             });
           }
         })
-        .catch((err) => {
+        .catch(() => {
+          if (requestId !== latestListRequest) return;
           dispatch({
             type: PRODUCT_LIST_ERROR,
             payload: 'Something went wrongs!',
@@ -370,6 +387,9 @@ const productReducer = (state = initialState, action: any) => {
       return {
         ...state,
         isLoading: false,
+        // A refusal that has been answered -- otherwise the list's empty state
+        // keeps quoting a failure the next load already recovered from.
+        errors: null,
         data: action.payload,
       };
 
@@ -396,8 +416,18 @@ const productReducer = (state = initialState, action: any) => {
       };
 
     case PRODUCT_LIST_ERROR:
+      return {
+        ...state,
+        isLoading: false,
+        errors: action.payload,
+        // A failed load must not leave the old rows on the table: they answer
+        // the previous filter, not this one. A fresh object also re-runs the
+        // list effect, which is what empties the table -- otherwise data keeps
+        // its reference and the effect never fires.
+        data: {},
+      };
+
     case PRODUCT_LIST_DDL_ERROR:
-    case PRODUCT_EDIT_ERROR:
     case PRODUCT_EDIT_ERROR:
     case PRODUCT_UPDATE_ERROR:
     case PRODUCT_UPDATE_BY_RATE_ERROR:

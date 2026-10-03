@@ -5,7 +5,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiCheckSquare, FiClock, FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
+import { FiCheckSquare, FiClock, FiEdit2, FiPlus, FiTrash2, FiX } from 'react-icons/fi';
 import httpService from '../../services/httpService';
 import { API_PRODUCT_HISTORY_URL } from '../../services/apiRoutes';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -96,6 +96,7 @@ const Product = (user: any) => {
 
   const [search, setSearchValue] = useState('');
   const [appliedSearch, setAppliedSearch] = useState(''); // ✅ Search চাপলে apply হবে
+  const [searchRun, setSearchRun] = useState(0); // ✅ একই শব্দে আবার Enter চাপলেও একবার request যাবে
 
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
@@ -194,7 +195,7 @@ const Product = (user: any) => {
   /* ================= FETCH ================= */
   useEffect(() => {
     dispatch(getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch }) as any);
-  }, [page, perPage, categoryId, brandId, groupId, appliedSearch]);
+  }, [page, perPage, categoryId, brandId, groupId, appliedSearch, searchRun]);
 
   /* ✅ এখানে per_page=0 (showAll) + paginate দুটোই handle হবে */
   useEffect(() => {
@@ -215,12 +216,28 @@ const Product = (user: any) => {
   }, [product?.data, perPage]);
 
   /* ================= HANDLERS ================= */
-  const handleSearchButton = () => {
+  /* Enter is the only way in. The box keeps its own text while the filters
+     beside it change -- typing is not a query, the API searches the whole
+     filtered set (per_page is not in play), so a half-typed word would be
+     looked up on every keystroke. */
+  const submitSearch = () => {
     setTableData([]);
     setTotalPages(0);
     setPage(1);
     setCurrentPage(1);
     setAppliedSearch(search);
+    // An Enter on the word already applied changes no state, so the fetch
+    // effect above would stay quiet; this is what still asks it once.
+    setSearchRun((n) => n + 1);
+  };
+
+  /* On the cell, not the box: SearchInput is shared, and this is how the
+     report screens already read Enter -- see ClosingStockReport. The guard
+     keeps Enter on the per-page dropdown beside it out of the search. */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter' || !(e.target instanceof HTMLInputElement)) return;
+    e.preventDefault(); // Enter inside a form submits it -- this is a search
+    submitSearch();
   };
 
   const handlePageChange = (p: number) => {
@@ -716,7 +733,7 @@ const Product = (user: any) => {
             Two of these filters were here unnamed and read as one long strip of
             dropdowns; the same word over each is what says which is which. */}
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap lg:items-end">
-          <div className="w-full ">
+          <div className="w-full lg:flex-1">
             <label className={FILTER_LABEL}>Brand</label>
             <CategoryDropdown
               onChange={handleBrandChange}
@@ -725,7 +742,7 @@ const Product = (user: any) => {
             />
           </div>
 
-          <div className="w-full ">
+          <div className="w-full lg:flex-1">
             <label className={FILTER_LABEL}>Category</label>
             {categoryData.isLoading ? (
               <Loader />
@@ -739,7 +756,7 @@ const Product = (user: any) => {
           </div>
 
           {needProductGroup ? (
-            <div className="w-full ">
+            <div className="w-full lg:flex-1">
               <label className={FILTER_LABEL}>Group</label>
               <CategoryDropdown
                 onChange={handleGroupChange}
@@ -749,8 +766,16 @@ const Product = (user: any) => {
             </div>
           ) : null}
 
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <div className="w-full">
+          {/* ⚠️ Enter replaced the Search button, so the cell is two boxes and
+              the search takes every pixel the button used to hold. On lg the
+              filters keep one share each and this cell two -- the search box is
+              the only one here that wants the room, and at one share it came
+              out narrower than the button's old `sm:w-64` box. */}
+          <div
+            className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:flex-2"
+            onKeyDown={handleSearchKeyDown}
+          >
+            <div className="w-full shrink-0 sm:w-24">
               <SelectOption
                 className="w-full! h-9"
                 onChange={(e: any) => {
@@ -762,13 +787,17 @@ const Product = (user: any) => {
                 }}
               />
             </div>
-            <div className="w-full sm:w-64">
+            <div className="w-full min-w-0 flex-1">
               <SearchInput className="w-full! " search={search} setSearchValue={setSearchValue} />
             </div>
-            <ButtonLoading label="Search" icon={<FiSearch className="text-gray-500" />} onClick={handleSearchButton} className="w-full sm:w-auto" />
           </div>
 
-          <div className="flex w-full items-center">
+          {/* ⚠️ lg:w-auto + flex-none, not the w-full it wears on smaller
+              screens. As a row-mate of the filters, `w-full` is a flex-basis of
+              100% -- it claimed the whole row and squeezed the filters to their
+              min-content (the search box down to 26px). Sized to its buttons,
+              it leaves the rest of the row to them. */}
+          <div className="flex w-full items-center lg:w-auto lg:flex-none">
             <div className="mr-2">
               <PrintRowsInput
                 id="perPage"
@@ -810,7 +839,15 @@ const Product = (user: any) => {
       <div className="relative overflow-x-auto">
         {product.isLoading && <Loader />}
 
-        <Table columns={columns} data={tableData} />
+        {/* ⚠️ An empty table has to say which empty it is. A load that failed
+            carries its reason in `product.errors`; a request that succeeded
+            with nothing to show is a real "no match" and says so. Same rows,
+            two different things, so the message is picked by that. */}
+        <Table
+          columns={columns}
+          data={tableData}
+          noDataMessage={product.errors ? product.errors : 'No products found.'}
+        />
         {totalPages > 1 && (
           <Pagination currentPage={currentPage} totalPages={totalPages} handlePageChange={handlePageChange} />
         )}
