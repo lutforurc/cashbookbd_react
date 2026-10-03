@@ -77,7 +77,7 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
                 <tr>
                   <th className={`${cell} w-8 text-center`}>SL</th>
                   <th className={`${cell} text-left`}>Description</th>
-                  <th className={`${cell} w-24 text-center`}>Amount</th>
+                  <th className={`${cell} w-20 text-center`}>Amount</th>
                 </tr>
               </thead>
               <tbody>
