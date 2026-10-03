@@ -71,7 +71,6 @@ const SectionTable = ({ section }: { section: any }) => {
           <thead>
             <tr className="bg-slate-50 text-slate-600 dark:bg-slate-900 dark:text-slate-300">
               <th className="w-10 border border-slate-200 px-2 py-1 text-center dark:border-slate-700">SL</th>
-              <th className="w-24 border border-slate-200 px-2 py-1 text-center dark:border-slate-700">Date</th>
               <th className="border border-slate-200 px-2 py-1 text-left dark:border-slate-700">Description</th>
               <th className="w-28 border border-slate-200 px-2 py-1 text-right dark:border-slate-700">Amount</th>
             </tr>
@@ -81,9 +80,6 @@ const SectionTable = ({ section }: { section: any }) => {
               rows.map((row: any) => (
                 <tr key={row.mtm_id} className="align-top hover:bg-slate-50 dark:hover:bg-slate-800/60">
                   <td className="border border-slate-200 px-2 py-1 text-center dark:border-slate-700">{row.sl}</td>
-                  <td className="whitespace-nowrap border border-slate-200 px-2 py-1 dark:border-slate-700">
-                    {row.vr_date ? dayjs(row.vr_date).format('DD/MM/YYYY') : ''}
-                  </td>
                   <td className="border border-slate-200 px-2 py-1 dark:border-slate-700">{row.description}</td>
                   <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700">
                     {money(row.amount)}
@@ -92,7 +88,7 @@ const SectionTable = ({ section }: { section: any }) => {
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="border border-slate-200 px-2 py-1 text-center text-slate-400 dark:border-slate-700">
+                <td colSpan={3} className="border border-slate-200 px-2 py-1 text-center text-slate-400 dark:border-slate-700">
                   No entry
                 </td>
               </tr>
@@ -100,7 +96,7 @@ const SectionTable = ({ section }: { section: any }) => {
           </tbody>
           <tfoot>
             <tr className="font-bold">
-              <td colSpan={3} className="border border-slate-200 px-2 py-1 text-right dark:border-slate-700">
+              <td colSpan={2} className="border border-slate-200 px-2 py-1 text-right dark:border-slate-700">
                 Total
               </td>
               <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700">

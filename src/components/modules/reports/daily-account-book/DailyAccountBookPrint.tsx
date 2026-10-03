@@ -69,14 +69,13 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
             >
               <thead>
                 <tr>
-                  <th colSpan={4} className={`${cell} bg-gray-100 text-left`} style={{ fontSize: small }}>
+                  <th colSpan={3} className={`${cell} bg-gray-100 text-left`} style={{ fontSize: small }}>
                     {section.title}
                     {blockIndex > 0 ? ' (continued)' : ''}
                   </th>
                 </tr>
                 <tr>
                   <th className={`${cell} w-8 text-center`}>SL</th>
-                  <th className={`${cell} w-20 text-center`}>Date</th>
                   <th className={`${cell} text-left`}>Description</th>
                   <th className={`${cell} w-24 text-center`}>Amount</th>
                 </tr>
@@ -85,7 +84,6 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
                 {block.map((row: any) => (
                   <tr key={`${section.key}-${row.mtm_id}`}>
                     <td className={`${cell} text-center`}>{row.sl}</td>
-                    <td className={`${cell} whitespace-nowrap`}>{day(row.vr_date)}</td>
                     <td className={cell}>{row.description}</td>
                     <td className={figure}>{money(row.amount)}</td>
                   </tr>
@@ -97,7 +95,7 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
                     reader does with the page. */}
                 {blockIndex === blocks.length - 1 ? (
                   <tr className="font-bold">
-                    <td colSpan={3} className={`${cell} text-right`}>
+                    <td colSpan={2} className={`${cell} text-right`}>
                       Total
                     </td>
                     <td className={figure}>{money(section.total)}</td>
