@@ -79,16 +79,16 @@ const SectionTable = ({ section }: { section: any }) => {
             {rows.length ? (
               rows.map((row: any) => (
                 <tr key={row.mtm_id} className="align-top hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                  <td className="border border-slate-200 px-2 py-1 text-center dark:border-slate-700">{row.sl}</td>
-                  <td className="border border-slate-200 px-2 py-1 dark:border-slate-700">{row.description}</td>
-                  <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700">
+                  <td className="border border-slate-200 px-2 py-1 text-center dark:border-slate-700 dark:text-slate-300">{row.sl}</td>
+                  <td className="border border-slate-200 px-2 py-1 dark:border-slate-700 dark:text-slate-300">{row.description}</td>
+                  <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
                     {money(row.amount)}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={3} className="border border-slate-200 px-2 py-1 text-center text-slate-400 dark:border-slate-700">
+                <td colSpan={3} className="border border-slate-200 px-2 py-1 text-center text-slate-400 dark:border-slate-700 dark:text-slate-300">
                   No entry
                 </td>
               </tr>
@@ -96,10 +96,10 @@ const SectionTable = ({ section }: { section: any }) => {
           </tbody>
           <tfoot>
             <tr className="font-bold">
-              <td colSpan={2} className="border border-slate-200 px-2 py-1 text-right dark:border-slate-700">
+              <td colSpan={2} className="border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
                 Total
               </td>
-              <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700">
+              <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
                 {money(section.total)}
               </td>
             </tr>
@@ -131,18 +131,18 @@ const BalanceTable = ({ title, table }: { title: string; table: any }) => (
           {(table?.rows ?? []).length ? (
             (table?.rows ?? []).map((row: any) => (
               <tr key={row.sl} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                <td className="border border-slate-200 px-2 py-1 text-center dark:border-slate-700">{row.sl}</td>
-                <td className="border border-slate-200 px-2 py-1 dark:border-slate-700">{row.name}</td>
-                <td className="border border-slate-200 px-2 py-1 dark:border-slate-700">{row.account_number}</td>
-                <td className="border border-slate-200 px-2 py-1 dark:border-slate-700">{row.details}</td>
-                <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700">
+                <td className="border border-slate-200 px-2 py-1 text-center dark:border-slate-700 dark:text-slate-300">{row.sl}</td>
+                <td className="border border-slate-200 px-2 py-1 dark:border-slate-700 dark:text-slate-300">{row.name}</td>
+                <td className="border border-slate-200 px-2 py-1 dark:border-slate-700 dark:text-slate-300">{row.account_number}</td>
+                <td className="border border-slate-200 px-2 py-1 dark:border-slate-700 dark:text-slate-300">{row.details}</td>
+                <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
                   {money(row.balance)}
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={5} className="border border-slate-200 px-2 py-1 text-center text-slate-400 dark:border-slate-700">
+              <td colSpan={5} className="border border-slate-200 px-2 py-1 text-center text-slate-400 dark:border-slate-700 dark:text-slate-300">
                 No account
               </td>
             </tr>
@@ -150,10 +150,10 @@ const BalanceTable = ({ title, table }: { title: string; table: any }) => (
         </tbody>
         <tfoot>
           <tr className="font-bold">
-            <td colSpan={4} className="border border-slate-200 px-2 py-1 text-right dark:border-slate-700">
+            <td colSpan={4} className="border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
               Total
             </td>
-            <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700">
+            <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
               {money(table?.total)}
             </td>
           </tr>
