@@ -10,6 +10,15 @@ type Props = {
    * is unchanged from before this prop existed.
    */
   pageSize?: 'a4' | 'half';
+  /**
+   * Half the side margin, for a report whose tables want the width.
+   *
+   * ⚠️ BOTH HALVES GO TOGETHER. The white strip down the side of the paper is
+   * the sheet's own margin AND the gutter inside it; narrowing one alone moves
+   * the strip by a couple of millimetres and looks like nothing happened. The
+   * top stays as it was -- only the sides are asked about.
+   */
+  narrowMargins?: boolean;
 };
 
 /**
@@ -24,17 +33,20 @@ type Props = {
  * The numbers below are the whole arrangement:
  *
  *   margin      6mm top, 5mm bottom, 10mm left and 8mm right. The left edge is
- *               the wider one because that is the edge that gets punched.
+ *               the wider one because that is the edge that gets punched. A
+ *               report asking for `narrowMargins` halves the two sides -- 5mm
+ *               and 4mm -- and leaves the top and bottom alone.
  *   padding     8mm around a page's content, and nothing at the bottom -- the
  *               5mm page margin is the gap under the footer, which is where the
- *               old fixed-position footer sat.
+ *               old fixed-position footer sat. Under `narrowMargins` the sides
+ *               come to 4mm; the top stays at 8mm.
  *   min-height  the sheet less the two margins, less 1mm. The padding is NOT
  *               subtracted: everything is border-box, so a page's padding is
  *               inside its height already, and taking it off again left the
  *               page 8mm short and the footer 8mm up the sheet. The millimetre
  *               keeps a rounding overflow from spilling onto a page of its own.
  */
-const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4' }) => {
+const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4', narrowMargins = false }) => {
   // A4: 210 x 297mm. Half: 210 x 148.5mm -- half of A4's height, the sheet a
   // half-page receipt is actually cut from. 'landscape' swaps which of the
   // two is the printed width, exactly as it already did for A4 alone.
@@ -59,7 +71,11 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4
    * margin, the one band the @page rule has already taken away from the
    * content. That is why it cannot overlap anything.
    */
-  const MARGIN = { top: '6mm', right: '8mm', bottom: '5mm', left: '10mm' };
+  const SIDES = narrowMargins
+    ? { left: '5mm', right: '4mm', gutter: '4mm' }
+    : { left: '10mm', right: '8mm', gutter: '8mm' };
+
+  const MARGIN = { top: '6mm', right: SIDES.right, bottom: '5mm', left: SIDES.left };
 
   return (
     <style>
@@ -93,7 +109,7 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4
           }
 
           .print-page {
-            padding: 8mm 8mm 0 8mm !important;
+            padding: 8mm ${SIDES.gutter} 0 ${SIDES.gutter} !important;
             display: flex;
             flex-direction: column;
             min-height: var(--print-page-height);

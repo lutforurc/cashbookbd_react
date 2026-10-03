@@ -146,7 +146,9 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="text-gray-900 print-root">
-        <PrintStyles orientation="portrait" />
+        {/* Receipts and payments stand side by side on this sheet, so the two
+            of them want every millimetre the sides can give up. */}
+        <PrintStyles orientation="portrait" narrowMargins />
 
         <div className="print-page">
           <PadPrinting />
