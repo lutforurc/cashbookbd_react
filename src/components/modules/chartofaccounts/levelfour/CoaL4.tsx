@@ -28,12 +28,15 @@ const CoaL4 = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [search, setSearchValue] = useState('');
-    const [page, setPage] = useState(0);
+    const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    const [isDataLoading, setIsDataLoading] = useState(false);
     const [buttonLoading, setButtonLoading] = useState(false);
+    // Reading the search box does not re-run the list request on its own: the
+    // button is what does. This counter is how it asks for one when the page is
+    // already 1, where `setPage(1)` on its own would change nothing.
+    const [searchRun, setSearchRun] = useState(0);
     const [tableData, setTableData] = useState([]);
     const [searchName, setSearchName] = useState('');
     // The selected level-1 head, or '' for the whole chart.
@@ -62,13 +65,17 @@ const CoaL4 = () => {
     }, []);
 
 
+    // One request per change, and this is the only place the list is asked for.
+    // The handlers below move state and nothing else -- a second call from a
+    // click handler would race this one, and it would be built from the state
+    // that click had not yet changed (`page` in particular).
+    //
+    // `search` is deliberately not a dependency: it is applied by the Search
+    // button, so leaving it in made the request chase every keystroke and then
+    // run again on the press that was meant to send it.
     useEffect(() => {
-        setIsDataLoading(true);
-        dispatch(getCoal4({ page, perPage, search, coal1Id, coal2Id })); //.finally(() => setIsDataLoading(false));
-        setTotalPages(Math.ceil(coal4?.data?.last_page) || 0);
-        setTableData(coal4?.data?.data);
-        setCurrentPage(page);
-    }, [page, perPage, search, coal1Id, coal2Id]);
+        dispatch(getCoal4({ page, perPage, search, coal1Id, coal2Id }));
+    }, [page, perPage, coal1Id, coal2Id, searchRun]);
 
 
 
@@ -80,16 +87,13 @@ const CoaL4 = () => {
         }
     }, [coal4]);
 
-    const handleSearchButton = (e: any) => {
+    // Both selections ride along on the request the effect sends, so searching
+    // looks through the chosen heads rather than quietly falling back to the
+    // whole chart.
+    const handleSearchButton = () => {
         setCurrentPage(1);
         setPage(1);
-        // Both selections ride along, so searching looks through the chosen
-        // heads rather than quietly falling back to the whole chart.
-        dispatch(getCoal4({ page, perPage, search, coal1Id, coal2Id }));
-        if (coal4?.data?.total >= 0) {
-            setTotalPages(Math.ceil(coal4?.data?.total / perPage));
-            setTableData(coal4?.data?.data);
-        }
+        setSearchRun((run) => run + 1);
     };
 
     /**
@@ -141,19 +145,18 @@ const CoaL4 = () => {
         setCurrentPage(1);
     };
 
+    // The page count and the rows come back with the answer to the request these
+    // set off; copying them here would only copy the previous answer's numbers
+    // over the new ones for as long as the request takes.
     const handleSelectChange = (page: any) => {
         setPerPage(page.target.value);
         setPage(1);
         setCurrentPage(1);
-        setTotalPages(Math.ceil(coal4.data.total / perPage));
-        setTableData(coal4.data.data);
     };
     const handlePageChange = (page: any) => {
         setPerPage(perPage);
         setPage(page);
         setCurrentPage(page);
-        setTotalPages(Math.ceil(coal4?.data?.last_page));
-        setTableData(coal4.data.data);
     };
 
     const columns = [
