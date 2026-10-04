@@ -106,6 +106,7 @@ import CustomerChangePassword from './pages/CustomerAuth/CustomerChangePassword'
 import CustomerLayout from './layout/CustomerLayout';
 import AddCustomerSupplier from './components/modules/customer-supplier/AddCustomerSupplier';
 import ChangeDate from './components/modules/change_date/ChangeDate';
+import SwitchBranch from './components/modules/branch/SwitchBranch';
 import ReportComponent from './components/modules/reports/test/ReportComponent';
 import StaffWiseDueInstallment from './components/modules/installment/StaffWiseDueInstallment';
 import LabourLedger from './components/modules/reports/ledger-labour/LabourLedger';
@@ -354,6 +355,9 @@ function App() {
               <Route path={routes.main} element={<DashboardIndex />} />
               <Route path={routes.dashboard} element={<DashboardIndex />} />
               <Route path={routes.profile} element={<Profile />} />
+              {/* One's own working branch, like the password below it:
+                  personal, so it carries no permission. */}
+              <Route path={routes.switch_branch} element={<SwitchBranch />} />
               <Route path={routes.my_devices} element={<MyDevices />} />
               {/* One's own password, like the devices above it: personal, so
                   it carries no permission. Another user's is on User Edit. */}

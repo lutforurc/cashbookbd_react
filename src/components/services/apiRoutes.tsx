@@ -249,6 +249,7 @@ export const API_COMPANY_UPDATE_URL = `${API_BASE_URL}/company/company-update`;
 
 // Branch Routes
 export const API_USER_CURRENT_BRANCH_URL = `${API_BASE_URL}/user/current-branch`;
+export const API_USER_SWITCH_BRANCH_URL = `${API_BASE_URL}/user/switch-branch`;
 export const API_BRANCH_LIST_URL = `${API_BASE_URL}/branch/branch-list`;
 export const API_BRANCH_EDIT_URL = `${API_BASE_URL}/branch/branch-edit/`;
 export const API_BRANCH_UPDATE_URL = `${API_BASE_URL}/branch/branch-update`;

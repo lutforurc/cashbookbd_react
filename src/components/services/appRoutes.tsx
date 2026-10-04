@@ -48,6 +48,7 @@ const ROUTES = {
   dashboard_two: '/dashboard-two',
   calendar: '/calendar',
   profile: '/profile',
+  switch_branch: '/switch-branch',
   menu_arrangement: '/settings/menu-arrangement',
   // One route per paper the designer edits. Two entries rather than one
   // generic screen, because somebody looking for the order's layout looks for
