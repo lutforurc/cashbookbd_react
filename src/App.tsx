@@ -126,6 +126,7 @@ import DashboardIndex from './components/modules/dashboard/DashboardIndex';
 import ItemChart from './components/modules/charts/item-char/ItemChart';
 import InstallmentDelete from './components/modules/vr_settings/InstallmentDelete';
 import Recyclebin from './components/modules/vr_settings/Recyclebin';
+import ReportMismatch from './components/modules/vr_settings/ReportMismatch';
 import ChangeHistory from './components/modules/history/ChangeHistory';
 import EmployeeCreate from './components/modules/hrms/employee/EmployeeCreate';
 import Employees from './components/modules/hrms/employee/Employees';
@@ -1206,6 +1207,12 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.recycle']} loading={permissionsLoading} />}>
               <Route path={routes.recyclebin} element={<Recyclebin />} />
+            </Route>
+            {/* Report Mismatch. Gated on the mismatch permission the backend
+                already creates; a brand-new permission would be granted to
+                nobody, and a menu nobody may open is a menu nobody can use. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['mitmatch.report']} loading={permissionsLoading} />}>
+              <Route path={routes.report_mismatch} element={<ReportMismatch />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.history']} loading={permissionsLoading} />}>
               <Route path={routes.voucher_history} element={<ChangeHistory user={me} />} />

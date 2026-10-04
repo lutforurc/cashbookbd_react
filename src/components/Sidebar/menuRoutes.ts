@@ -222,6 +222,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.recyclebin,
     routes.voucher_history,
     routes.voucher_activity,
+    routes.report_mismatch,
   ],
   'hrm': [
     '/hrms/employees',

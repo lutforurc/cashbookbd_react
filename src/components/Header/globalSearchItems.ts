@@ -135,6 +135,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Recycle Bin', path: routes.recyclebin, group: 'VR Settings', permissions: ['voucher.recycle'] },
   { title: 'Voucher History', path: routes.voucher_history, group: 'VR Settings', permissions: ['voucher.history'] },
   { title: 'Voucher Activity', path: routes.voucher_activity, group: 'VR Settings', permissions: ['log.changes'] },
+  { title: 'Report Mismatch', path: routes.report_mismatch, group: 'VR Settings', permissions: ['mitmatch.report'], keywords: ['company', 'balance sheet', 'difference'] },
 
   { title: 'Employees', path: routes.hrms_employee_list, group: 'HRM', permissions: ['employee.view'] },
   { title: 'Designation Levels', path: routes.hrms_designation_level_list, group: 'HRM', permissions: ['employee.view'] },

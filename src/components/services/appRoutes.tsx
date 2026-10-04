@@ -305,6 +305,7 @@ const ROUTES = {
   voucher_delete: '/vr-settings/voucher-delete',
   installment_delete: '/vr-settings/installment-delete',
   recyclebin: '/vr-settings/recyclebin',
+  report_mismatch: '/vr-settings/report-mismatch',
 
   // Voucher history
   voucher_history: '/vr-settings/voucher-history',

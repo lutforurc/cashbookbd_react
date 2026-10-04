@@ -388,6 +388,9 @@ export const API_SOMITY_MONTHLY_REPORT_DATA_URL = `${API_BASE_URL}/somity-report
 
 // Mitch Match url
 export const API_REPORT_MITCH_MATCH_URL = `${API_BASE_URL}/reports/mitch-match/data`;
+// Report Mismatch url (VR Settings) -- the list and the repair for one row
+export const API_REPORT_MISMATCH_LIST_URL = `${API_BASE_URL}/reports/mismatch/list`;
+export const API_REPORT_MISMATCH_FIX_URL = `${API_BASE_URL}/reports/mismatch/fix`;
 // HRMS Mismatch Payment url
 export const API_REPORT_HRM_MISMATCH_PAYMENT_URL = `${API_BASE_URL}/reports/hrm-mismatch-payment/data`;
 export const API_REPORT_HRM_MISMATCH_PAYMENT_DELETE_URL = `${API_BASE_URL}/reports/hrm-mismatch-payment/delete`;

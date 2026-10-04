@@ -89,6 +89,12 @@ export const MENU_PERMISSIONS = {
     // one, so a user holding only this was kept out of the parent menu here
     // and bounced to /no-access by the route guard.
     'log.changes',
+    // Report Mismatch, which repairs a voucher that belongs to no company. It
+    // answers to the mismatch permission the backend already creates rather
+    // than to one of its own, so whoever holds that one reaches the menu it
+    // now sits in -- without it the sub-item's own gate would open a screen
+    // hanging off a parent that never opened.
+    'mitmatch.report',
   ],
   hrm: [
     'employee.view',

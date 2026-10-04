@@ -214,6 +214,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'recyclebin', title: "Recycle Bin" },
     { id: 'voucher_history', title: "History" },
     { id: 'voucher_activity', title: "Log Changes" },
+    { id: 'report_mismatch', title: "Report Mismatch" },
   ],
   'hrm': [
     { id: 'hrms/employees', title: "Employees" },
@@ -3253,6 +3254,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               >
 
                                 Log Changes
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'mitmatch.report') && (
+                            <li style={subSlot('vr_settings', 'report_mismatch')}>
+                              <NavLink
+                                to={routes.report_mismatch}
+                                className={subMenuLinkClass}
+                              >
+                                Report Mismatch
                               </NavLink>
                             </li>
                           )}
