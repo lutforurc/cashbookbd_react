@@ -127,6 +127,23 @@ interface branchItem {
   show_brand_in_invoice: boolean;
   show_category_in_invoice: boolean;
   show_description_in_invoice: boolean;
+  /**
+   * Branch Setup -> Product Dropdown: which lines the product search box shows
+   * beside a product's name. Read back settled by the API, so a branch that has
+   * never opened the step answers on for the five the dropdown has always
+   * shown and off for brand and group.
+   */
+  product_ddl_show_name: boolean;
+  product_ddl_show_category: boolean;
+  product_ddl_show_brand: boolean;
+  product_ddl_show_group: boolean;
+  product_ddl_show_purchase_price: boolean;
+  product_ddl_show_sales_price: boolean;
+  product_ddl_show_unit: boolean;
+  product_ddl_show_balance: boolean;
+  /** 'single' or 'multiple' -- one line per product in the search box, or the
+      details on lines of their own. */
+  product_ddl_lines: string;
   show_spelling_of_money: boolean;
   need_demo_tutorial: boolean;
   need_customer_contact_person: boolean;
@@ -267,6 +284,13 @@ const schemeDueWeekdays = [
   { id: '6', name: 'Saturday' },
 ];
 
+/** Branch Setup -> Product Dropdown. Multiple Line is what the box has always
+    done, so it is also what a branch that has never been asked gets. */
+const productDdlLineOptions = [
+  { id: 'multiple', name: 'Multiple Line' },
+  { id: 'single', name: 'Single Line' },
+];
+
 /**
  * A saved choice as the form's own text. Unset metas come back false, so only
  * a real answer is kept.
@@ -372,6 +396,7 @@ const AddBranch = () => {
     'Invoice Setup',
     'Customer Setup',
     'Product Setup',
+    'Product Dropdown',
     'Real Estate Setup',
     'Hotel Setup',
     'Feature Controls',
@@ -460,6 +485,20 @@ const AddBranch = () => {
     show_brand_in_invoice: false,
     show_category_in_invoice: false,
     show_description_in_invoice: false,
+    // Product Dropdown. The five the search box has always shown start on; the
+    // two it has never shown start off. The API settles an untouched branch the
+    // same way -- see getBranchEdit().
+    product_ddl_show_name: true,
+    product_ddl_show_category: true,
+    product_ddl_show_brand: false,
+    product_ddl_show_group: false,
+    product_ddl_show_purchase_price: true,
+    product_ddl_show_sales_price: true,
+    product_ddl_show_unit: true,
+    // Off even for a branch that has never opened this step: it is the one
+    // detail that costs the search anything, and no branch shows one today.
+    product_ddl_show_balance: false,
+    product_ddl_lines: 'multiple',
     show_spelling_of_money: false,
     need_demo_tutorial: false,
     need_customer_contact_person: false,
@@ -791,6 +830,15 @@ const AddBranch = () => {
         show_brand_in_invoice: toBooleanFlag(b.show_brand_in_invoice),
         show_category_in_invoice: toBooleanFlag(b.show_category_in_invoice),
         show_description_in_invoice: toBooleanFlag(b.show_description_in_invoice),
+        product_ddl_show_name: toBooleanFlag(b.product_ddl_show_name),
+        product_ddl_show_category: toBooleanFlag(b.product_ddl_show_category),
+        product_ddl_show_brand: toBooleanFlag(b.product_ddl_show_brand),
+        product_ddl_show_group: toBooleanFlag(b.product_ddl_show_group),
+        product_ddl_show_purchase_price: toBooleanFlag(b.product_ddl_show_purchase_price),
+        product_ddl_show_sales_price: toBooleanFlag(b.product_ddl_show_sales_price),
+        product_ddl_show_unit: toBooleanFlag(b.product_ddl_show_unit),
+        product_ddl_show_balance: toBooleanFlag(b.product_ddl_show_balance),
+        product_ddl_lines: metaTextOr(b.product_ddl_lines, 'multiple'),
         combined_invoice_note: toBooleanFlag(b.combined_invoice_note),
       }));
 
@@ -1000,6 +1048,8 @@ const AddBranch = () => {
                     {currentStep === stepIndex('Invoice Setup') && 'Invoice labels, notes, formatting, and invoice display options.'}
                     {currentStep === stepIndex('Customer Setup') && 'Customer and supplier related options for this branch.'}
                     {currentStep === stepIndex('Product Setup') && 'How products are ordered and priced in this branch.'}
+                    {currentStep === stepIndex('Product Dropdown') &&
+                      'Which details the product search box shows under each product.'}
                     {currentStep === stepIndex('Real Estate Setup') && 'Real estate options for this branch.'}
                     {currentStep === stepIndex('Hotel Setup') &&
                       'When the day turns over at this property, for a branch that is a hotel.'}
@@ -1865,6 +1915,94 @@ const AddBranch = () => {
                         </div>
                       </div>
                     )}
+                  </>
+                )}
+
+                {currentStep === stepIndex('Product Dropdown') && (
+                  <>
+                    {/* How many lines each product takes, before which of the
+                      switches below are worth turning on: Single Line has room
+                      for one or two of them, Multiple Line for all of them. */}
+                    <div className="mb-4 max-w-xs">
+                      <DropdownCommon
+                        id="product_ddl_lines"
+                        name="product_ddl_lines"
+                        label="Dropdown Type"
+                        onChange={handleOnSelectChange}
+                        value={formData?.product_ddl_lines ?? 'multiple'}
+                        className="bg-transparent"
+                        data={productDdlLineOptions}
+                        description="Multiple Line stacks the details under each product's name, one to a line. Single Line puts them all on the name's own line -- CODE - NAME, Category: ..., Unit: ... -- which stays readable with one or two of the switches below on."
+                      />
+                    </div>
+                    {/* One grid for the whole step, the same shape as the
+                      Invoice Setup and Product Setup grids. */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Show Category?"
+                        description="Lists the category under each product's name in the search box."
+                        checked={Boolean(formData.product_ddl_show_category)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_category', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Brand?"
+                        description="Lists the brand under each product's name. A product with no brand shows none."
+                        checked={Boolean(formData.product_ddl_show_brand)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_brand', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Group?"
+                        description="Lists the group under each product's name, for a branch that files its products in groups."
+                        checked={Boolean(formData.product_ddl_show_group)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_group', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Product Name?"
+                        description="The name is the line a product is picked by. Off, only the details under it remain."
+                        checked={Boolean(formData.product_ddl_show_name)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_name', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Purchase Price?"
+                        description="Lists what the product cost. Still hidden from a user who may not see purchase prices."
+                        checked={Boolean(formData.product_ddl_show_purchase_price)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_purchase_price', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Sales Price?"
+                        description="Lists the price the product sells at."
+                        checked={Boolean(formData.product_ddl_show_sales_price)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_sales_price', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Unit?"
+                        description="Lists the unit the product is kept in, such as Kg or Pcs."
+                        checked={Boolean(formData.product_ddl_show_unit)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_unit', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Balance?"
+                        description="Lists what is left in stock on this branch. The only switch here that makes the product search work harder, so it is off by default."
+                        checked={Boolean(formData.product_ddl_show_balance)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_balance', checked)
+                        }
+                      />
+                    </div>
                   </>
                 )}
 
