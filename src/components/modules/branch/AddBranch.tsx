@@ -144,6 +144,18 @@ interface branchItem {
   /** 'single' or 'multiple' -- one line per product in the search box, or the
       details on lines of their own. */
   product_ddl_lines: string;
+  /**
+   * Branch Setup -> Customer / Supplier Dropdown: the same two answers for the
+   * party search box the invoice screens pick a customer or a supplier with.
+   * Read back settled, so a branch that has never opened the step answers on --
+   * the box has always shown all four of these.
+   */
+  party_ddl_show_code: boolean;
+  party_ddl_show_mobile: boolean;
+  party_ddl_show_address: boolean;
+  party_ddl_show_father: boolean;
+  /** 'single' or 'multiple', for the party box. */
+  party_ddl_lines: string;
   show_spelling_of_money: boolean;
   need_demo_tutorial: boolean;
   need_customer_contact_person: boolean;
@@ -286,7 +298,7 @@ const schemeDueWeekdays = [
 
 /** Branch Setup -> Product Dropdown. Multiple Line is what the box has always
     done, so it is also what a branch that has never been asked gets. */
-const productDdlLineOptions = [
+const ddlLineOptions = [
   { id: 'multiple', name: 'Multiple Line' },
   { id: 'single', name: 'Single Line' },
 ];
@@ -396,7 +408,7 @@ const AddBranch = () => {
     'Invoice Setup',
     'Customer Setup',
     'Product Setup',
-    'Product Dropdown',
+    'Dropdown',
     'Real Estate Setup',
     'Hotel Setup',
     'Feature Controls',
@@ -414,10 +426,6 @@ const AddBranch = () => {
   const stepIndex = (title: string) => steps.indexOf(title);
   const SAAS_STEP = stepIndex('SaaS Setup');
 
-  /** What the rail calls each step. Only for the rail: the step's own name is
-      what stepIndex() and the panel heading use. */
-  const RAIL_LABELS: Record<string, string> = { 'Product Dropdown': 'Dropdown' };
-  const railSteps = steps.map((step) => RAIL_LABELS[step] ?? step);
   const paperSizeOptions = [
     { id: '', name: 'Select Invoice Page Size' },
     ...((settings?.branchSettings?.paperSize || []).map((item: any) => ({
@@ -504,6 +512,14 @@ const AddBranch = () => {
     // detail that costs the search anything, and no branch shows one today.
     product_ddl_show_balance: false,
     product_ddl_lines: 'multiple',
+    // Customer / Supplier Dropdown. All four lines the party search box has
+    // always shown start on; the API settles an untouched branch the same way --
+    // see getBranchEdit().
+    party_ddl_show_code: true,
+    party_ddl_show_mobile: true,
+    party_ddl_show_address: true,
+    party_ddl_show_father: true,
+    party_ddl_lines: 'multiple',
     show_spelling_of_money: false,
     need_demo_tutorial: false,
     need_customer_contact_person: false,
@@ -844,6 +860,11 @@ const AddBranch = () => {
         product_ddl_show_unit: toBooleanFlag(b.product_ddl_show_unit),
         product_ddl_show_balance: toBooleanFlag(b.product_ddl_show_balance),
         product_ddl_lines: metaTextOr(b.product_ddl_lines, 'multiple'),
+        party_ddl_show_code: toBooleanFlag(b.party_ddl_show_code),
+        party_ddl_show_mobile: toBooleanFlag(b.party_ddl_show_mobile),
+        party_ddl_show_address: toBooleanFlag(b.party_ddl_show_address),
+        party_ddl_show_father: toBooleanFlag(b.party_ddl_show_father),
+        party_ddl_lines: metaTextOr(b.party_ddl_lines, 'multiple'),
         combined_invoice_note: toBooleanFlag(b.combined_invoice_note),
       }));
 
@@ -1035,7 +1056,7 @@ const AddBranch = () => {
 
         <>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
-            <StepRail steps={railSteps} current={currentStep} onSelect={setCurrentStep} />
+            <StepRail steps={steps} current={currentStep} onSelect={setCurrentStep} />
 
             {/* Viewport-tall column so the action bar lands in the same spot on
                 every step, however short that step's content is. */}
@@ -1053,8 +1074,8 @@ const AddBranch = () => {
                     {currentStep === stepIndex('Invoice Setup') && 'Invoice labels, notes, formatting, and invoice display options.'}
                     {currentStep === stepIndex('Customer Setup') && 'Customer and supplier related options for this branch.'}
                     {currentStep === stepIndex('Product Setup') && 'How products are ordered and priced in this branch.'}
-                    {currentStep === stepIndex('Product Dropdown') &&
-                      'Which details the product search box shows under each product.'}
+                    {currentStep === stepIndex('Dropdown') &&
+                      'Which details the customer, supplier and product search boxes show.'}
                     {currentStep === stepIndex('Real Estate Setup') && 'Real estate options for this branch.'}
                     {currentStep === stepIndex('Hotel Setup') &&
                       'When the day turns over at this property, for a branch that is a hotel.'}
@@ -1923,8 +1944,70 @@ const AddBranch = () => {
                   </>
                 )}
 
-                {currentStep === stepIndex('Product Dropdown') && (
+                {currentStep === stepIndex('Dropdown') && (
                   <>
+                    {/* Two boxes in one step, each with its own switches. First
+                      the party search box -- Select Customer on a sales screen,
+                      Select Supplier on a purchase one -- then the product box.
+                      They share the step because they are the same kind of
+                      setting, not because they share answers: showing a party's
+                      address says nothing about a product's category. */}
+
+                    {/* ---------- Customer / Supplier Dropdown ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Customer / Supplier Dropdown
+                    </h4>
+                    <div className="mb-4 max-w-xs">
+                      <DropdownCommon
+                        id="party_ddl_lines"
+                        name="party_ddl_lines"
+                        label="Dropdown Type"
+                        onChange={handleOnSelectChange}
+                        value={formData?.party_ddl_lines ?? 'multiple'}
+                        className="bg-transparent"
+                        data={ddlLineOptions}
+                        description="Multiple Line stacks the details under each party's name, one to a line. Single Line puts them all on the name's own line, after the code -- Father: ..., Address: ..., Mobile: ... ."
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Show Code?"
+                        description="Lists the party's own code beside the name -- what tells two parties of the same name apart."
+                        checked={Boolean(formData.party_ddl_show_code)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_code', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Mobile?"
+                        description="Lists the party's mobile number under the name."
+                        checked={Boolean(formData.party_ddl_show_mobile)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_mobile', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Address?"
+                        description="Lists the party's address under the name."
+                        checked={Boolean(formData.party_ddl_show_address)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_address', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Father's Name?"
+                        description="Lists the father's name the party was filed under, which the counter often recognises before the party's own name."
+                        checked={Boolean(formData.party_ddl_show_father)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_father', checked)
+                        }
+                      />
+                    </div>
+
+                    {/* ---------- Product Dropdown ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Product Dropdown
+                    </h4>
                     {/* How many lines each product takes, before which of the
                       switches below are worth turning on: Single Line has room
                       for one or two of them, Multiple Line for all of them. */}
@@ -1936,7 +2019,7 @@ const AddBranch = () => {
                         onChange={handleOnSelectChange}
                         value={formData?.product_ddl_lines ?? 'multiple'}
                         className="bg-transparent"
-                        data={productDdlLineOptions}
+                        data={ddlLineOptions}
                         description="Multiple Line stacks the details under each product's name, one to a line. Single Line puts them all on the name's own line -- CODE - NAME, Category: ..., Unit: ... -- which stays readable with one or two of the switches below on."
                       />
                     </div>

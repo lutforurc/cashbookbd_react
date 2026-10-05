@@ -1,8 +1,9 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import AsyncSelect from 'react-select/async';
 import { getCoal4DdlNext } from '../../modules/chartofaccounts/levelfour/coal4DdlSlicer';
 import type { AccountTypeFilter } from '../../modules/chartofaccounts/levelfour/coal4DdlSlicer';
+import { settingOn } from '../userFeatureSettings';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { StylesConfig } from 'react-select';
 import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
@@ -47,6 +48,14 @@ interface DropdownProps {
    * broken, and gets reported as a bug.
    */
   isDisabled?: boolean;
+  /**
+   * Whether Branch Setup's Customer / Supplier Dropdown settings apply to this
+   * box. Left unset it follows `acType`: '3' is what every party picker on the
+   * invoice screens passes, while the chart-of-accounts pickers -- ledger,
+   * journal, cash -- pass '' and must keep showing everything the chart has. A
+   * call site that fits neither can say so outright.
+   */
+  applyBranchSettings?: boolean;
 }
 
 const ACTION_OPTION_VALUE = '__ddl_multiline_action__';
@@ -83,6 +92,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   minChars,
   defaultOptions,
   isDisabled,
+  applyBranchSettings,
 }) => {
   const [isSelected, setIsSelected] = React.useState(false);
   const [isControlFocused, setIsControlFocused] = React.useState(false);
@@ -94,6 +104,62 @@ const DdlMultiline: React.FC<DropdownProps> = ({
     document.documentElement.classList.contains('dark')
   );
   const dispatch = useDispatch();
+
+  // Branch Setup -> Customer / Supplier Dropdown: how many lines each party
+  // takes in this box, and which of them the branch wants shown.
+  const settings = useSelector((state: any) => state.settings);
+  const branchSettings = settings?.data?.branch;
+  const partyBox = applyBranchSettings ?? String(acType) === '3';
+  const singleLine = partyBox && branchSettings?.party_ddl_lines === 'single';
+
+  /**
+   * One of those switches, as the server settled it.
+   *
+   * These read the opposite way round to most branch switches: all four have to
+   * be ON for a branch that has never been asked, and that is what
+   * getBranchEdit() answers. The `undefined` arm is the moment before settings
+   * arrive -- reading unset as off there would blank every line on a page that
+   * is a tick away from drawing them. A box that is not a party picker answers
+   * on for all four, so the ledger and journal lists are left as they were.
+   */
+  const ddlOn = (key: string) => {
+    if (!partyBox) return true;
+
+    const value = branchSettings?.[key];
+
+    return value === undefined ? true : settingOn(value);
+  };
+
+  /** The party's own code, when it has one and the branch wants it shown. */
+  const partyCode = (option: OptionType) =>
+    ddlOn('party_ddl_show_code') && option.label_4 && Number(option.label_4) > 0
+      ? option.label_4
+      : '';
+
+  /**
+   * The lines the branch wants under a party's name, in the order the owner
+   * reads them: father, then address, then mobile. One list for both modes:
+   * Multi Line stacks them under the name, Single Line packs them onto the
+   * name's own line.
+   *
+   * A line drops out when its switch is off, and when the party has nothing for
+   * it -- which is why a bare ledger head, with no mobile and no father's name,
+   * still keeps its own line.
+   */
+  const partyDetails = (option: OptionType) =>
+    [
+      {
+        setting: 'party_ddl_show_father',
+        label: 'Father',
+        value: (option.label_5 || '').trim() === '0' ? '' : (option.label_5 || '').trim(),
+      },
+      { setting: 'party_ddl_show_address', label: 'Address', value: option.label_3 },
+      {
+        setting: 'party_ddl_show_mobile',
+        label: 'Mobile',
+        value: (option.label_2 || '').trim().length > 5 ? option.label_2!.trim() : '',
+      },
+    ].filter((field) => ddlOn(field.setting) && field.value);
 
   // The shared height unless the caller asks for another. It used to fall back
   // to 2.1rem of its own, which is how this dropdown ended up shorter than the
@@ -333,46 +399,51 @@ const DdlMultiline: React.FC<DropdownProps> = ({
         onBlur={() => setIsControlFocused(false)}
         onKeyDown={onKeyDown}
         getOptionLabel={(option) => option.label}
-        formatOptionLabel={(option) => (
-          <div>
-            <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))] focus:border-blue-500">
-              {option.label}
-              {option.isAction ? null : (
-                <>
-              {option?.label_4 && Number(option.label_4) > 0 && (
-                <span className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                  {' '}({option.label_4})
-                </span>
-              )}
-                </>
-              )}
-            </div>
-            {isSelected && !option.isAction && (
-              <div className="additional-info">
-                {option.label_5 && (
-                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                    {option.label_5 &&
-                      option.label_5.trim() !== '' &&
-                      option.label_5.trim() !== '0' && (
-                        // <>C/O: {option.label_5.trim()}</>
-                        <>{option.label_5.trim()}</>
-                      )}
-                  </div>
-                )}
-                {option.label_2 && option.label_2.trim().length > 5 && (
-                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                    {option.label_2.trim()}
-                  </div>
-                )}
-                {option.label_3 && (
-                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                    {option.label_3}
-                  </div>
+        formatOptionLabel={(option) => {
+          // Single Line spends the party's one line on everything the branch
+          // asked for, so it is drawn on its own: the markup below puts a colour
+          // on the code and cannot be packed into a string. Nothing is added
+          // before the list is open -- a closed box is one control high, and the
+          // packed line overflows it.
+          if (singleLine) {
+            const code = partyCode(option);
+            const head = code ? `${option.label} (${code})` : option.label;
+
+            return (
+              <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
+                {isSelected && !option.isAction
+                  ? [head, ...partyDetails(option).map((field) => `${field.label}: ${field.value}`)].join(', ')
+                  : head}
+              </div>
+            );
+          }
+
+          return (
+            <div>
+              <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))] focus:border-blue-500">
+                {option.label}
+                {option.isAction ? null : (
+                  <>
+                    {partyCode(option) && (
+                      <span className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
+                        {' '}({partyCode(option)})
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
-            )}
-          </div>
-        )}
+              {isSelected && !option.isAction && (
+                <div className="additional-info">
+                  {partyDetails(option).map((field) => (
+                    <div key={field.label} className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
+                      {field.value}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        }}
         getOptionValue={(option) => option.value}
         placeholder={placeholder || 'Select an account'}
         styles={withFieldHeight(customStyles, controlHeight)}
