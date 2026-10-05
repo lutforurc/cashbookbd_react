@@ -413,6 +413,11 @@ const AddBranch = () => {
    */
   const stepIndex = (title: string) => steps.indexOf(title);
   const SAAS_STEP = stepIndex('SaaS Setup');
+
+  /** What the rail calls each step. Only for the rail: the step's own name is
+      what stepIndex() and the panel heading use. */
+  const RAIL_LABELS: Record<string, string> = { 'Product Dropdown': 'Dropdown' };
+  const railSteps = steps.map((step) => RAIL_LABELS[step] ?? step);
   const paperSizeOptions = [
     { id: '', name: 'Select Invoice Page Size' },
     ...((settings?.branchSettings?.paperSize || []).map((item: any) => ({
@@ -1030,7 +1035,7 @@ const AddBranch = () => {
 
         <>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
-            <StepRail steps={steps} current={currentStep} onSelect={setCurrentStep} />
+            <StepRail steps={railSteps} current={currentStep} onSelect={setCurrentStep} />
 
             {/* Viewport-tall column so the action bar lands in the same spot on
                 every step, however short that step's content is. */}
