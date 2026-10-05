@@ -34,6 +34,9 @@ interface Product {
   id: number;
   product: number;
   product_name: string;
+  /** Shown in front of the name on the row, blank when the product has no
+      code -- same shape the paper prints. */
+  product_code?: string;
   unit: string;
   qty: string;
   price: string;
@@ -178,6 +181,9 @@ const ConstructionBusinessPurchaseReturn = () => {
       ...prev,
       product: option?.value || 0,
       product_name: option?.label || '',
+      // The code the picker carried down with the name, so the row can read
+      // "GI-106 - 2 Tangki Nipple" the way the paper does.
+      product_code: option?.code || '',
       unit: option?.label_5 || '',
       price: price.toString(),
     }));
@@ -225,6 +231,7 @@ const ConstructionBusinessPurchaseReturn = () => {
       id: Date.now(),
       product: productData.product || 0,
       product_name: productData.product_name || '',
+      product_code: productData.product_code || '',
       unit: productData.unit || '',
       qty: productData.qty || '',
       price: productData.price || '',
@@ -244,6 +251,7 @@ const ConstructionBusinessPurchaseReturn = () => {
       id: formData.products[updateId]?.id ?? Date.now(),
       product: productData.product || 0,
       product_name: productData.product_name || '',
+      product_code: productData.product_code || '',
       unit: productData.unit || '',
       qty: productData.qty || '',
       price: productData.price || '',
@@ -631,7 +639,9 @@ const ConstructionBusinessPurchaseReturn = () => {
                   {index + 1}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))]">
-                  {row.product_name}
+                  {row.product_code
+                      ? `${row.product_code} - ${row.product_name}`
+                      : row.product_name}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                   {thousandSeparator(Number(row.qty))} {row.unit}

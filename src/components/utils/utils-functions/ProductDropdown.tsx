@@ -74,6 +74,28 @@ const ProductDropdown: React.FC<DropdownProps> = ({
   const darkMode = themeMode[0] === 'dark';
   const controlHeight = getControlHeightFromClassName(className) || FIELD_HEIGHT_REM;
 
+  /**
+   * The code of every product that has been through the list, by id.
+   *
+   * The screens keep only the id and the name of the product they picked and
+   * hand the box back a `{value, label}` of their own making -- so a box that a
+   * moment ago read "VC4 - Verso Commode Blue" fell back to the bare name the
+   * instant it was filled. Their object wins over the option that was clicked,
+   * because it is the `value` prop, so the code has to be put back on it here.
+   */
+  const codeByValue = useRef<Record<string, string>>({});
+
+  /** The screen's own `{value, label}`, with the code the list already knows. */
+  const withCode = (option: OptionType | null | undefined): OptionType | null => {
+    if (!option || option.code || !option.value) {
+      return option ?? null;
+    }
+
+    const code = codeByValue.current[String(option.value)];
+
+    return code ? { ...option, code } : option;
+  };
+
   React.useEffect(() => {
     setInternalSelectedOption(value ?? defaultValue ?? null);
   }, [value, defaultValue]);
@@ -117,6 +139,13 @@ const ProductDropdown: React.FC<DropdownProps> = ({
             label_5: item.label_5,
             code: item.code || '',
           }));
+          // Remembered so the box keeps the code after the screen takes over
+          // the value -- see withCode().
+          formattedOptions.forEach((option) => {
+            if (option.code) {
+              codeByValue.current[String(option.value)] = option.code;
+            }
+          });
           callback(formattedOptions);
         } else {
           callback([]);
@@ -264,12 +293,9 @@ const ProductDropdown: React.FC<DropdownProps> = ({
         formatOptionLabel={(option) => (
           <div>
             <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
-              {option.label}
-              {option.code ? (
-                <span className="ml-1 font-mono text-xs text-gray-500 dark:text-gray-400">
-                  [{option.code}]
-                </span>
-              ) : null}
+              {/* "CODE - NAME" while there is a code, the bare name when there
+                  is none -- the same shape the invoice paper prints. */}
+              {option.code ? `${option.code} - ${option.label}` : option.label}
             </div>
             {isSelected && (
               <div className="additional-info">
@@ -300,8 +326,8 @@ const ProductDropdown: React.FC<DropdownProps> = ({
         getOptionValue={(option) => option.value}
         placeholder="Select product"
         styles={withFieldHeight(customStyles, controlHeight)}
-        defaultValue={defaultValue}
-        value={value ?? internalSelectedOption}
+        defaultValue={withCode(defaultValue)}
+        value={withCode(value ?? internalSelectedOption)}
         menuPortalTarget={document.body}
         ref={selectRef} // রেফ যোগ করুন
         // components={{ DropdownIndicator: () => null }}

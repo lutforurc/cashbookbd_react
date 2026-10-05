@@ -57,6 +57,9 @@ interface CombinedProduct {
   id: number;
   product: number;
   product_name: string;
+  /** Shown in front of the name on the row, blank when the product has no
+      code -- same shape the paper prints. */
+  product_code?: string;
   unit: string;
   qty: number;
   purchase_price: number;
@@ -630,7 +633,7 @@ const TradingCombinedEntry = () => {
       orderOption?.product?.id ??
       '';
 
-    let resolved = { id: String(productId || ''), name: String(productName || ''), unit: String(unitName || '') };
+    let resolved = { id: String(productId || ''), name: String(productName || ''), code: '', unit: String(unitName || '') };
 
     if (productName) {
       try {
@@ -646,6 +649,7 @@ const TradingCombinedEntry = () => {
           resolved = {
             id: String(matchedProduct?.value ?? resolved.id),
             name: String(matchedProduct?.label ?? resolved.name),
+            code: String(matchedProduct?.code ?? resolved.code),
             unit: String(matchedProduct?.label_5 ?? resolved.unit),
           };
         }
@@ -660,6 +664,7 @@ const TradingCombinedEntry = () => {
       ...prev,
       product: resolved.id,
       product_name: resolved.name,
+      product_code: resolved.code,
       unit: resolved.unit,
     }));
 
@@ -913,6 +918,9 @@ const TradingCombinedEntry = () => {
       ...prev,
       product: option?.value || '',
       product_name: option?.label || '',
+      // The code the picker carried down with the name, so the row can read
+      // "GI-106 - 2 Tangki Nipple" the way the paper does.
+      product_code: option?.code || '',
       unit: option?.label_5 || '',
       purchase_price: String(option?.label_3 ?? ''),
       sales_price: String(option?.label_4 ?? ''),
@@ -946,6 +954,7 @@ const TradingCombinedEntry = () => {
         ? {
           product: prev.product,
           product_name: prev.product_name,
+          product_code: prev.product_code,
           unit: prev.unit,
           purchase_price: prev.purchase_price,
           sales_price: prev.sales_price,
@@ -977,6 +986,7 @@ const TradingCombinedEntry = () => {
       id: editingProductId ?? Date.now(),
       product: Number(productData.product),
       product_name: productData.product_name || '',
+      product_code: productData.product_code || '',
       unit: productData.unit || '',
       qty: Number(productData.qty) || 0,
       purchase_price: Number(productData.purchase_price) || 0,
@@ -1001,6 +1011,7 @@ const TradingCombinedEntry = () => {
     setProductData({
       product: String(row.product || ''),
       product_name: row.product_name || '',
+      product_code: row.product_code || '',
       unit: row.unit || '',
       qty: String(row.qty || ''),
       purchase_price: String(row.purchase_price || ''),
@@ -1611,7 +1622,9 @@ const TradingCombinedEntry = () => {
                       {index + 1}
                     </td>
                     <td className="px-2 py-2 font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
-                      {row.product_name}
+                      {row.product_code
+                        ? `${row.product_code} - ${row.product_name}`
+                        : row.product_name}
                     </td>
                     <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
                       {row.variance && row.variance_type && row.variance_type !== 'Not Applicable'

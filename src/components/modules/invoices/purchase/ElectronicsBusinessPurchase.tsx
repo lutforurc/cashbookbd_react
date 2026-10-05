@@ -46,6 +46,9 @@ interface Product {
   id: number;
   product: number;
   product_name: string;
+  /** Shown in front of the name on the row, blank when the product has no
+      code -- same shape the paper prints. */
+  product_code?: string;
   serial_no: string;
   unit: string;
   qty: string;
@@ -218,6 +221,7 @@ const ElectronicsBusinessPurchase = () => {
       ...productData,
       [key]: option.value,
       [accountName]: option.label,
+      product_code: option.code || '',
       [unit]: option.label_5,
       [price]: Number(option.label_3),
     });
@@ -303,6 +307,7 @@ const ElectronicsBusinessPurchase = () => {
       id: detail.id,
       product: detail.product?.id,
       product_name: detail.product?.name,
+      product_code: detail.product?.code || '',
       serial_no: detail.serial_no || '',
       unit: detail.product?.unit?.name || '',
       qty: detail.quantity ?? 0,
@@ -387,6 +392,7 @@ const ElectronicsBusinessPurchase = () => {
       id: Date.now(), // Use timestamp as a unique ID
       product: productData.product || 0,
       product_name: productData.product_name || '',
+      product_code: productData.product_code || '',
       serial_no: productData.serial_no || '',
       unit: productData.unit || '',
       qty: productData.qty || '',
@@ -1023,7 +1029,9 @@ const ElectronicsBusinessPurchase = () => {
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] `}
                   >
-                    {row.product_name}
+                    {row.product_code
+                      ? `${row.product_code} - ${row.product_name}`
+                      : row.product_name}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}

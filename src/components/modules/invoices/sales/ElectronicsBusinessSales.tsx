@@ -49,6 +49,9 @@ interface Product {
   id: number;
   product: number;
   product_name: string;
+  /** Shown in front of the name on the row, blank when the product has no
+      code -- same shape the paper prints. */
+  product_code?: string;
   serial_no: string;
   unit: string;
   qty: number;
@@ -326,6 +329,7 @@ const ElectronicsBusinessSales = () => {
       ...productData,
       [key]: option.value,
       [accountName]: option.label,
+      product_code: option.code || '',
       [unit]: option.label_5,
       [price]: Number(option.label_4),
     });
@@ -414,6 +418,7 @@ const ElectronicsBusinessSales = () => {
         id: detail.id,
         product: detail.product.id,
         product_name: detail.product.name,
+        product_code: detail.product.code || '',
         serial_no: detail.serial_no,
         unit: detail.product.unit.name,
         qty: detail.quantity,
@@ -511,6 +516,7 @@ const ElectronicsBusinessSales = () => {
       id: Date.now(),
       product: productData.product || 0,
       product_name: productData.product_name || '',
+      product_code: productData.product_code || '',
       serial_no: productData.serial_no || '',
       unit: productData.unit || '',
       qty: Number(productData.qty) || 0,
@@ -1455,7 +1461,9 @@ const ElectronicsBusinessSales = () => {
                     {++index}
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))]">
-                    {row.product_name}
+                    {row.product_code
+                      ? `${row.product_code} - ${row.product_name}`
+                      : row.product_name}
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                     {row.qty} {row.unit}
