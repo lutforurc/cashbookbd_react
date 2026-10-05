@@ -1966,7 +1966,7 @@ const AddBranch = () => {
                         value={formData?.party_ddl_lines ?? 'multiple'}
                         className="bg-transparent"
                         data={ddlLineOptions}
-                        description="Multiple Line stacks the details under each party's name, one to a line. Single Line puts them all on the name's own line, after the code -- Father: ..., Address: ..., Mobile: ... ."
+                        description=""
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -2020,7 +2020,7 @@ const AddBranch = () => {
                         value={formData?.product_ddl_lines ?? 'multiple'}
                         className="bg-transparent"
                         data={ddlLineOptions}
-                        description="Multiple Line stacks the details under each product's name, one to a line. Single Line puts them all on the name's own line -- CODE - NAME, Category: ..., Unit: ... -- which stays readable with one or two of the switches below on."
+                        description=""
                       />
                     </div>
                     {/* One grid for the whole step, the same shape as the

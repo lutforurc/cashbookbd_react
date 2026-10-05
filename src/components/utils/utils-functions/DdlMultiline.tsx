@@ -138,7 +138,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
 
   /**
    * The lines the branch wants under a party's name, in the order the owner
-   * reads them: father, then address, then mobile. One list for both modes:
+   * reads them: father, then mobile, then address. One list for both modes:
    * Multi Line stacks them under the name, Single Line packs them onto the
    * name's own line.
    *
@@ -153,12 +153,12 @@ const DdlMultiline: React.FC<DropdownProps> = ({
         label: 'Father',
         value: (option.label_5 || '').trim() === '0' ? '' : (option.label_5 || '').trim(),
       },
-      { setting: 'party_ddl_show_address', label: 'Address', value: option.label_3 },
       {
         setting: 'party_ddl_show_mobile',
         label: 'Mobile',
         value: (option.label_2 || '').trim().length > 5 ? option.label_2!.trim() : '',
       },
+      { setting: 'party_ddl_show_address', label: 'Address', value: option.label_3 },
     ].filter((field) => ddlOn(field.setting) && field.value);
 
   // The shared height unless the caller asks for another. It used to fall back
@@ -434,9 +434,12 @@ const DdlMultiline: React.FC<DropdownProps> = ({
               </div>
               {isSelected && !option.isAction && (
                 <div className="additional-info">
+                  {/* Labelled, unlike the product box: a party's address and its
+                    father's name are both bare words, and three unlabelled lines
+                    under a name say nothing about which is which. */}
                   {partyDetails(option).map((field) => (
                     <div key={field.label} className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                      {field.value}
+                      {field.label}: {field.value}
                     </div>
                   ))}
                 </div>
