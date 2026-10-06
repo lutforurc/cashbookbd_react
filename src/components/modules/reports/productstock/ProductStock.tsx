@@ -11,6 +11,7 @@ import { getProductStock } from './productStockSlice';
 import SearchInput from '../../../utils/fields/SearchInput';
 import { getCategoryDdl } from '../../category/categorySlice';
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
+import FieldLoading from '../../../utils/components/FieldLoading';
 import dayjs from 'dayjs';
 import StockBookPrint from './StockBookPrint';
 import { useReactToPrint } from 'react-to-print';
@@ -598,7 +599,7 @@ const ProductStock = ({ user }: any) => {
                 }
               >
                 {/* One wrapping flex row for every control, in reading order:
-                    Branch, Brand, Category, Group, Search, the two dates, then
+                    Branch, Brand, Group, Category, Search, the two dates, then
                     Rows, Font and the Apply/Reset/Print group. Nothing is
                     forced onto a fixed column count, so no control is squeezed
                     and no track is left empty -- see the cell classes above. */}
@@ -635,21 +636,52 @@ const ProductStock = ({ user }: any) => {
                     )}
                   </div>
 
+                  {/* ⚠️ THE THREE GATES READ `loaded`, NOT `isLoading`. A
+                      slice's isLoading starts false, so the render before its
+                      thunk's pending action lands is indistinguishable from a
+                      finished fetch -- the box drew empty for that frame and
+                      only then started spinning. `loaded` is set the moment the
+                      call comes back, success or failure, so the spinner covers
+                      the whole wait and nothing after it. Same reading as
+                      areaSlice's, and as Stock Details'. */}
                   <div className={FILTER_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
-                    <CategoryDropdown
-                      onChange={handleBrandChange}
-                      className="w-full text-sm "
-                      categoryDdl={brandOptions}
-                      value={brandId}
-                    />
+                    {brand.loaded ? (
+                      <CategoryDropdown
+                        onChange={handleBrandChange}
+                        className="w-full text-sm "
+                        categoryDdl={brandOptions}
+                        value={brandId}
+                      />
+                    ) : (
+                      <FieldLoading />
+                    )}
                   </div>
+
+                  {/* Group sits between Brand and Category: the order the branch
+                      files products in, and the order Stock Details draws them.
+                      Hidden where the branch does not file products under groups
+                      at all. */}
+                  {needProductGroup ? (
+                    <div className={FILTER_CELL}>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Group</label>
+                      {productGroupData.loaded ? (
+                        <CategoryDropdown
+                          onChange={(opt: any) => setGroupId(String(opt?.value ?? ''))}
+                          className="w-full text-sm"
+                          categoryDdl={groupOptions}
+                          value={groupId}
+                          placeholder="All Groups"
+                        />
+                      ) : (
+                        <FieldLoading />
+                      )}
+                    </div>
+                  ) : null}
 
                   <div className={FILTER_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
-                    {categoryData.isLoading ? (
-                      <Loader />
-                    ) : (
+                    {categoryData.loaded ? (
                       <CategoryDropdown
                         onChange={handleCategoryChange}
                         className="w-full text-sm"
@@ -657,24 +689,10 @@ const ProductStock = ({ user }: any) => {
                         placeholder="All Categories"
                         value={categoryId}
                       />
+                    ) : (
+                      <FieldLoading />
                     )}
                   </div>
-
-                  {/* Group sits between Category and the search box, in the same
-                      order Stock Details draws it. Hidden where the branch does
-                      not file products under groups at all. */}
-                  {needProductGroup ? (
-                    <div className={FILTER_CELL}>
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Group</label>
-                      <CategoryDropdown
-                        onChange={(opt: any) => setGroupId(String(opt?.value ?? ''))}
-                        className="w-full text-sm"
-                        categoryDdl={groupOptions}
-                        value={groupId}
-                        placeholder="All Groups"
-                      />
-                    </div>
-                  ) : null}
 
                   {/* The box, immediately left of Start Date.
                       ⚠️ No button beside it: this screen has always sent the

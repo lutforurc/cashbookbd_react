@@ -159,6 +159,11 @@ export const deleteProductGroup =
 
 const initialState = {
   isLoading: false,
+  // Has the dropdown call ever come back? `isLoading` cannot answer that: it
+  // starts false, so the render before the thunk's pending action lands looks
+  // exactly like a finished fetch with nothing in it -- and the screen draws an
+  // empty box for that frame. Same flag, same reading, as areaSlice's `loaded`.
+  loaded: false,
   errors: null,
   listData: [],
   ddlData: [],
@@ -185,11 +190,24 @@ const productGroupReducer = (state = initialState, action: any) => {
       return {
         ...state,
         isLoading: false,
+        loaded: true,
         ddlData: action.payload,
       };
 
-    case PRODUCT_GROUP_LIST_ERROR:
+    // ⚠️ Kept apart from the list's own error. The two shared a case until
+    // `loaded` arrived, and sharing it now would have a failed *list* call
+    // settle the *dropdown* gate -- an empty box where a spinner belonged.
     case PRODUCT_GROUP_LIST_DDL_ERROR:
+      return {
+        ...state,
+        isLoading: false,
+        // A failed call has still come back -- there is nothing more to wait
+        // for, and a box that spun forever would hide the error behind it.
+        loaded: true,
+        errors: action.payload,
+      };
+
+    case PRODUCT_GROUP_LIST_ERROR:
       return {
         ...state,
         isLoading: false,

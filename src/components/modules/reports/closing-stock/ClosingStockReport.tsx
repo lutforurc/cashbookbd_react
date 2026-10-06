@@ -12,6 +12,7 @@ import InputDatePicker from "../../../utils/fields/DatePicker";
 import SearchInput from "../../../utils/fields/SearchInput";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import CategoryDropdown from "../../../utils/utils-functions/CategoryDropdown";
+import FieldLoading from "../../../utils/components/FieldLoading";
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
@@ -518,40 +519,62 @@ const ClosingStockReport = ({ user }: any) => {
             />
           </div>
 
+          {/* ⚠️ THE THREE GATES READ `loaded`, NOT `isLoading`. A slice's
+              isLoading starts false, so the render before its thunk's pending
+              action lands is indistinguishable from a finished fetch -- the box
+              drew empty for that frame and only then started spinning. `loaded`
+              is set the moment the call comes back, success or failure, so the
+              spinner covers the whole wait and nothing after it. Same reading as
+              areaSlice's, and as Product Stock's. */}
           <div className="min-w-50">
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
-            <CategoryDropdown
-              onChange={(opt: any) => setBrandId(String(opt?.value ?? ""))}
-              className="w-full text-sm"
-              categoryDdl={brandOptions}
-              value={brandId}
-              placeholder="All Brand"
-            />
+            {brandData.loaded ? (
+              <CategoryDropdown
+                onChange={(opt: any) => setBrandId(String(opt?.value ?? ""))}
+                className="w-full text-sm"
+                categoryDdl={brandOptions}
+                value={brandId}
+                placeholder="All Brand"
+              />
+            ) : (
+              <FieldLoading />
+            )}
           </div>
 
-          <div className="min-w-50">
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
-            <CategoryDropdown
-              onChange={(opt: any) => setCategoryId(String(opt?.value ?? ""))}
-              className="w-full text-sm"
-              categoryDdl={categoryOptions}
-              value={categoryId}
-              placeholder="All Categories"
-            />
-          </div>
-
+          {/* Group sits between Brand and Category: the order the branch files
+              products in, and the order Product Stock draws them. Hidden where
+              the branch does not file products under groups at all. */}
           {needProductGroup ? (
             <div className="min-w-50">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Group</label>
-              <CategoryDropdown
-                onChange={(opt: any) => setGroupId(String(opt?.value ?? ""))}
-                className="w-full text-sm"
-                categoryDdl={groupOptions}
-                value={groupId}
-                placeholder="All Groups"
-              />
+              {productGroupData.loaded ? (
+                <CategoryDropdown
+                  onChange={(opt: any) => setGroupId(String(opt?.value ?? ""))}
+                  className="w-full text-sm"
+                  categoryDdl={groupOptions}
+                  value={groupId}
+                  placeholder="All Groups"
+                />
+              ) : (
+                <FieldLoading />
+              )}
             </div>
           ) : null}
+
+          <div className="min-w-50">
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
+            {categoryData.loaded ? (
+              <CategoryDropdown
+                onChange={(opt: any) => setCategoryId(String(opt?.value ?? ""))}
+                className="w-full text-sm"
+                categoryDdl={categoryOptions}
+                value={categoryId}
+                placeholder="All Categories"
+              />
+            ) : (
+              <FieldLoading />
+            )}
+          </div>
 
           {/* The box, immediately left of Start Date.
               ⚠️ No button beside it: the report is already loaded here, so a
