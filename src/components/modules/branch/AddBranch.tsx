@@ -114,6 +114,8 @@ interface branchItem {
   need_package: boolean;
   need_code: boolean;
   is_opening: boolean;
+  /** Opening চলাকালীন movement থাকা সত্ত্বেও opening বদলানোর ছাড়। */
+  multiple_opening_allow: boolean;
   use_bangla: boolean;
   report_zero_bal: boolean;
   warn_negative_stock_sale: boolean;
@@ -488,6 +490,7 @@ const AddBranch = () => {
     need_package: false,
     need_code: false,
     is_opening: false,
+    multiple_opening_allow: false,
     use_bangla: false,
     report_zero_bal: false,
     warn_negative_stock_sale: false,
@@ -776,6 +779,9 @@ const AddBranch = () => {
 
         // 🔑 CHECKBOX FIX
         is_opening: toBooleanFlag(b.is_opening),
+        // Off unless the branch asked for it, which is what an unsaved meta
+        // reads back as.
+        multiple_opening_allow: toBooleanFlag(b.multiple_opening_allow),
         // The API answers 1 for a branch that has never been asked, since its
         // ledgers have always printed the product lines. A key the server does
         // not send at all (an install a version behind) is read the same way.
@@ -2451,6 +2457,26 @@ const AddBranch = () => {
                             onClick={() => setConfirmClearTransactions(true)}
                             variant="danger"
                             className="whitespace-nowrap rounded"
+                          />
+                        </div>
+                      )}
+
+                      {/* ⚠️ Its own cell, NOT inside showClearTransactions.
+                        That gate needs `branch.transaction.clear`, and tying
+                        this to it would hide the switch from everyone who can
+                        edit the branch but may not withdraw its vouchers. The
+                        only thing it answers to is "Opening ongoing?" -- a
+                        branch that has stopped taking openings has nothing to
+                        correct. */}
+                      {Boolean(formData.is_opening) && (
+                        <div className="flex items-center">
+                          <FormToggleField
+                            label="Multiple opening allow?"
+                            description=""
+                            checked={Boolean(formData.multiple_opening_allow)}
+                            onChange={(checked) =>
+                              handleToggleFieldChange('multiple_opening_allow', checked)
+                            }
                           />
                         </div>
                       )}
