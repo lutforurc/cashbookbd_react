@@ -6,6 +6,7 @@ import SelectOption from "../../utils/utils-functions/SelectOption";
 import DropdownCommon from "../../utils/utils-functions/DropdownCommon";
 import { ClientType } from "../../utils/fields/DataConstant";
 import SearchInput from "../../utils/fields/SearchInput";
+import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
 import { ButtonLoading } from "../../../pages/UiElements/CustomButtons";
 import Loader from "../../../common/Loader";
 import Pagination from "../../utils/utils-functions/Pagination";
@@ -644,6 +645,21 @@ const CustomerSupplier = () => {
       // Grouped the way this branch asked for in its Customer Setup. What is
       // stored is untouched -- this is only how the column reads.
       render: (row: any) => formatMobile(row?.mobile, mobileFormat),
+    },
+    {
+      key: 'balance',
+      header: 'Balance',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      // The party's ledger, signed: a plain figure is what they owe, a leading
+      // minus is an advance -- the same language the Ledger and the invoice
+      // screens already speak. The server sends it with the row, so the column
+      // can be read against the ledger the row opens.
+      //
+      // Grouped the way the branch's own decimal setting asks, through the same
+      // helper the Ledger's running balance uses -- which is also what turns a
+      // nought (or a row with no ledger at all) into a dash.
+      render: (row: any) => thousandSeparator(Number(row?.balance ?? 0)),
     },
     {
       key: "action",
