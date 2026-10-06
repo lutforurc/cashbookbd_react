@@ -459,7 +459,9 @@ const TilesCashReceived = () => {
                 ) && (
                     <>
                       <div className="min-w-0 flex-1">
-                        <label htmlFor="search">Search Received</label>
+                        {/* No label: the box's own placeholder says the same
+                            words, and the button beside it is already a looking
+                            glass. */}
                         <InputOnly
  id="search"
  value={search}

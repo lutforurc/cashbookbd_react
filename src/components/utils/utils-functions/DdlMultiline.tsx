@@ -158,7 +158,11 @@ const DdlMultiline: React.FC<DropdownProps> = ({
         label: 'Mobile',
         value: (option.label_2 || '').trim().length > 5 ? option.label_2!.trim() : '',
       },
-      { setting: 'party_ddl_show_address', label: 'Address', value: option.label_3 },
+      // Trimmed like the two above, because the chart half of the picker sends
+      // a single space in every one of these columns as a UNION placeholder --
+      // and a space is truthy, so an untrimmed address printed the word
+      // "Address:" with nothing after it on every ledger head.
+      { setting: 'party_ddl_show_address', label: 'Address', value: (option.label_3 || '').trim() },
     ].filter((field) => ddlOn(field.setting) && field.value);
 
   // The shared height unless the caller asks for another. It used to fall back
