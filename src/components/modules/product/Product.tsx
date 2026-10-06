@@ -348,11 +348,22 @@ const Product = (user: any) => {
           delete copy[row.product_id];
           return copy;
         });
-      } else if (result?.message) {
-        toast.info(result.message);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+
+      // ⚠️ A refusal from this endpoint rides a 4xx, so it never reaches the
+      // `else if` above -- axios throws, and the words went to the console and
+      // nowhere else. The approved voucher is the one that bites: the row looks
+      // saved, the figure snaps back on the next refetch, and the screen said
+      // nothing. The interceptor has already spoken for the refusals that are
+      // its own (no permission, expired session, no network); this stays quiet
+      // for those and shows the rest.
+      if (!err?.toastReported) {
+        toast.error(
+          err?.response?.data?.message || err?.message || 'Could not save the opening stock.'
+        );
+      }
     }
   };
 
