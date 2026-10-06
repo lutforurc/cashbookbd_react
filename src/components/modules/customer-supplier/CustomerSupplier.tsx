@@ -853,10 +853,16 @@ const CustomerSupplier = () => {
             className="mr-1 md:mr-2"
           />
 
+          {/* The box takes a comparison as well as a word -- "> 200" narrows to
+              the parties whose Balance meets it, and everything else is the
+              search it has always been. The hint is here rather than inside
+              SearchInput because that component is on fifty screens and this
+              syntax belongs to one of them. */}
           <SearchInput
             search={search}
             setSearchValue={setSearchValue}
             className="text-nowrap"
+            placeholder="Search... or > 200"
           />
 
           <ButtonLoading
