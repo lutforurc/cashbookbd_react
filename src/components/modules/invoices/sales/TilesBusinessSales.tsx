@@ -27,7 +27,7 @@ import {
   electronicsSalesStore,
   electronicsSalesUpdate,
 } from './electronicsSalesSlice';
-import { getServiceList } from '../../settings/settingsSlice'; 
+import { getServiceList } from '../../settings/settingsSlice';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import QuickCustomerModal from './QuickCustomerModal';
@@ -638,6 +638,8 @@ const TilesBusinessSales = () => {
       products: [...prevFormData.products, newProduct],
     }));
     clearProductEntry();
+    const product = document.getElementById('product');
+    product?.focus();
   };
 
   const editProduct = () => {
@@ -845,7 +847,7 @@ const TilesBusinessSales = () => {
       setUpdateButtonLoading(false);
       setIsUpdateButton(false);
     }, 2000);
- 
+
 
     setIsUpdating(false);
   };
@@ -1075,7 +1077,7 @@ const TilesBusinessSales = () => {
               <InputElement
                 id="serviceCharge"
                 value={formData.serviceCharge ?? ""}
-                
+
                 name="serviceCharge"
                 placeholder={serviceList(42, settings?.serviceList)}
                 label={serviceList(42, settings?.serviceList)}
@@ -1200,11 +1202,11 @@ const TilesBusinessSales = () => {
                   <label htmlFor="">Select Warehouse</label>
                   {warehouse.isLoading === true ? <Loader /> : ''}
                   <WarehouseDropdown
- id="warehouse"
- onChange={handleWarehouseChange}
- className="w-60 font-medium text-sm p-2 "
- warehouseDdl={warehouseDdlData}
- defaultValue={productData?.warehouse || ''}
+                    id="warehouse"
+                    onChange={handleWarehouseChange}
+                    className="w-60 font-medium text-sm p-2 "
+                    warehouseDdl={warehouseDdlData}
+                    defaultValue={productData?.warehouse || ''}
                   />
                 </div>
               ) : null}
@@ -1302,26 +1304,26 @@ const TilesBusinessSales = () => {
               <div className="flex shrink-0 ml-auto">
                 <div className="mr-2">
                   <PrintRowsInput
- id="perPage"
- name="perPage"
+                    id="perPage"
+                    name="perPage"
                     // label="Rows"
- title="Rows per page"
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type='text'
- className="font-medium text-sm w-12!"
+                    title="Rows per page"
+                    value={perPage.toString()}
+                    onChange={handlePerPageChange}
+                    type='text'
+                    className="font-medium text-sm w-12!"
                   />
                 </div>
                 <div className="mr-2">
                   <PrintFontInput
- id="fontSize"
- name="fontSize"
+                    id="fontSize"
+                    name="fontSize"
                     // label="Font"
- title="Font Size"
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type='text'
- className="font-medium text-sm w-12!"
+                    title="Font Size"
+                    value={fontSize.toString()}
+                    onChange={handleFontSizeChange}
+                    type='text'
+                    className="font-medium text-sm w-12!"
                   />
                 </div>
 
@@ -1464,19 +1466,19 @@ const TilesBusinessSales = () => {
         onClose={closeCustomerModal}
         initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
-            const isCashCustomer = Number(id) === 17;
+          const isCashCustomer = Number(id) === 17;
 
-            setIsReceivedAmtManuallyEdited(false);
-            setFormData((prev) => ({
-              ...prev,
-              account: id,
-              accountName: name,
-              // Same rule as picking a customer from the dropdown: kept for
-              // cash (the effect forces it), cleared for anyone else.
-              receivedAmt: isCashCustomer ? prev.receivedAmt : '',
-            }));
-          }}
-        />
+          setIsReceivedAmtManuallyEdited(false);
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+            // Same rule as picking a customer from the dropdown: kept for
+            // cash (the effect forces it), cleared for anyone else.
+            receivedAmt: isCashCustomer ? prev.receivedAmt : '',
+          }));
+        }}
+      />
 
       <StockShortageModal
         warning={stockWarning}

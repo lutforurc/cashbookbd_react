@@ -1,7 +1,7 @@
 import React from "react";
 import { FiEye } from "react-icons/fi";
 import Pagination from "../utils-functions/Pagination";
-import Checkbox from "../fields/Checkbox";
+import ToggleSwitch from "../fields/ToggleSwitch";
 
 export interface TableHeaderCell {
   label: React.ReactNode;
@@ -175,10 +175,75 @@ const Table: React.FC<TableProps> = ({
 
   const [hiddenColumns, setHiddenColumns] = React.useState<string[]>(() => readHidden(storageKey));
   const [menuOpen, setMenuOpen] = React.useState(false);
+  /**
+   * Where the panel hangs, measured off the button when it opens.
+   *
+   * `fixed`, not `absolute`, and that is the point rather than a detail: half
+   * these tables live in an `overflow-hidden` card, which clips an absolutely
+   * positioned panel to nothing. The same reason InlineConfirm is fixed.
+   *
+   * Hung below the button, or above it when the button is near the foot of the
+   * window -- the panel is up to 18rem tall and would otherwise open off-screen
+   * on the last report of a long page.
+   */
+  const [menuPos, setMenuPos] = React.useState<React.CSSProperties | null>(null);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const panelRef = React.useRef<HTMLDivElement>(null);
   const menuRef = React.useRef<HTMLDivElement>(null);
   // An id per table, because two tables on one page offer two menus and a
-  // checkbox's id has to reach its own label and no other.
+  // switch's id has to reach its own label and no other.
   const menuId = React.useId();
+
+  const openMenu = () => {
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const GAP = 4;
+    const below = window.innerHeight - rect.bottom - GAP - 8;
+    const flip = below < 160;
+
+    setMenuPos({
+      position: 'fixed',
+      right: Math.max(8, window.innerWidth - rect.right),
+      maxHeight: Math.max(120, flip ? rect.top - GAP - 8 : below),
+      ...(flip
+        ? { bottom: window.innerHeight - rect.top + GAP }
+        : { top: rect.bottom + GAP }),
+    });
+    setMenuOpen(true);
+  };
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+    setMenuPos(null);
+  };
+
+  // Never nothing: an empty table reads as a broken report rather than as a
+  // choice somebody made, and the last column cannot be put away.
+  const keptColumns = allColumns.filter((column) => !hiddenColumns.includes(column.key));
+  const visibleColumns = keptColumns.length ? keptColumns : allColumns;
+
+  /**
+   * The one menu column nobody may put away.
+   *
+   * Counted over `menuColumns` and not over every column: the Action column is
+   * never in the menu, so counting it would let a reader put away everything
+   * they were offered and leave a table of buttons with nothing to read.
+   */
+  const shownMenuColumns = menuColumns.filter((column) => !hiddenColumns.includes(column.key));
+  const lastShownMenuKey =
+    shownMenuColumns.length === 1 ? String(shownMenuColumns[0].key) : null;
+
+  /**
+   * How many columns the reader has actually put away.
+   *
+   * ⚠️ Derived from what is on the screen rather than from the stored list, so
+   * it cannot claim a count the table is not honouring. It is also the only
+   * signal anywhere that a report is short a column on purpose: the choice is
+   * kept in this browser, and a reader who hid Balance last week comes back to
+   * a report that looks like it never had one.
+   */
+  const hiddenCount = allColumns.length - visibleColumns.length;
 
   // ⚠️ Re-read rather than left to the initial state. A screen that builds its
   // columns from a filter changes this table's key without remounting it, and a
@@ -190,15 +255,61 @@ const Table: React.FC<TableProps> = ({
   React.useEffect(() => {
     if (!menuOpen) return undefined;
 
+    // ⚠️ The panel is no longer inside `menuRef` -- it is fixed, so it is still
+    // a child in the DOM but it is no longer the same box on the screen. Both
+    // have to be asked, or every click inside the panel counts as a click
+    // outside it and shuts it.
+    const inside = (target: Node) =>
+      Boolean(menuRef.current?.contains(target) || panelRef.current?.contains(target));
+
     const onPointerDown = (event: MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
+      if (!inside(event.target as Node)) closeMenu();
+    };
+
+    // Escape returns the reader to the button they opened it from, so the
+    // keyboard is where it was rather than at the top of the document.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      closeMenu();
+      buttonRef.current?.focus();
+    };
+
+    /**
+     * ⚠️ CAPTURE PHASE, and it is the whole reason this works.
+     *
+     * The app does not scroll the window: DefaultLayout puts the content in a
+     * `flex h-screen overflow-hidden` shell with an `overflow-y-auto` column
+     * inside it, so a listener on `window` never fires and the button would
+     * slide up the screen with the panel left hanging where it was. A scroll
+     * event does not bubble, but the capture phase still runs from the window
+     * down to whatever scrolled, which is what reaches it.
+     *
+     * Its own list is exempt: the panel is `overflow-y-auto` too, and scrolling
+     * through ten columns must not shut the panel being read.
+     */
+    const onScroll = (event: Event) => {
+      if (panelRef.current?.contains(event.target as Node)) return;
+      closeMenu();
     };
 
     document.addEventListener('mousedown', onPointerDown);
-    return () => document.removeEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', closeMenu);
+
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', closeMenu);
+    };
   }, [menuOpen]);
 
   const toggleColumn = (key: string) => {
+    // The last one stays: a table with no columns in it reads as a broken
+    // report, not as a choice somebody made.
+    if (String(key) === lastShownMenuKey) return;
+
     const next = hiddenColumns.includes(key)
       ? hiddenColumns.filter((entry) => entry !== key)
       : [...hiddenColumns, key];
@@ -211,11 +322,6 @@ const Table: React.FC<TableProps> = ({
     setHiddenColumns([]);
     writeHidden(storageKey, []);
   };
-
-  // Never nothing: an empty table reads as a broken report rather than as a
-  // choice somebody made, and the last column cannot be put away.
-  const keptColumns = allColumns.filter((column) => !hiddenColumns.includes(column.key));
-  const visibleColumns = keptColumns.length ? keptColumns : allColumns;
 
   /**
    * A heading or footing row, with the cells of hidden columns taken out.
@@ -273,54 +379,81 @@ const Table: React.FC<TableProps> = ({
 
   return (
     <div className={`rounded-sm shadow-sm ${className || ""}`}>
-      {/* The menu sits ABOVE the table rather than over it, and in the flow
-          rather than floated. A report's own toolbar is at the top of the card,
-          so a panel over the headings would cover the column it was offering --
-          and half these tables live in an `overflow-hidden` card, which clips a
-          floating panel to nothing. Raising the table by a finger's width while
-          the menu is open is the cheaper trade. */}
+      {/* The button sits ABOVE the table rather than floating over it: the
+          column list is a setting for the table, and a panel over the headings
+          would cover the very columns it was offering.
+
+          The PANEL, though, is fixed-positioned rather than laid into the flow
+          as it used to be. In the flow it pushed the table down the page every
+          time it opened, and on a long report it opened above the fold and then
+          scrolled away with the page it was setting up. */}
       {canHide ? (
-        <div ref={menuRef} className="flex flex-col items-end px-2 pt-2">
+        <div ref={menuRef} className="flex justify-end px-2 pt-2">
           <button
+            ref={buttonRef}
             type="button"
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={() => (menuOpen ? closeMenu() : openMenu())}
             title="Show / hide columns"
             aria-label="Show or hide columns"
+            aria-haspopup="true"
+            aria-expanded={menuOpen}
             className="flex items-center gap-1 rounded-sm border border-[rgb(var(--c-border))] px-2 py-1 text-xs text-gray-600 hover:bg-indigo-50 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             <FiEye size={14} />
-            Columns
+            Columns{hiddenCount ? ` (${hiddenCount})` : ''}
           </button>
+        </div>
+      ) : null}
 
-          {menuOpen ? (
-            <div className="mt-1 max-h-72 w-56 overflow-y-auto rounded-sm border border-[rgb(var(--c-border))] bg-white p-2 shadow-lg dark:bg-[rgb(var(--c-boxdark))]">
-              <div className="mb-1 flex items-center justify-between border-b border-[rgb(var(--c-border))] pb-1">
-                <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
-                  Columns
-                </span>
-                <button
-                  type="button"
-                  onClick={showAllColumns}
-                  className="text-xs text-indigo-600 hover:underline dark:text-indigo-400"
-                >
-                  Show all
-                </button>
-              </div>
+      {menuOpen && menuPos ? (
+        <div
+          ref={panelRef}
+          style={menuPos}
+          className="z-50 w-64 overflow-y-auto rounded-sm border border-[rgb(var(--c-border))] bg-white p-2 shadow-lg dark:bg-[rgb(var(--c-boxdark))]"
+        >
+          <div className="mb-1 flex items-center justify-between border-b border-[rgb(var(--c-border))] pb-1">
+            <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+              Columns
+            </span>
+            <button
+              type="button"
+              onClick={showAllColumns}
+              disabled={!hiddenCount}
+              className="text-xs text-indigo-600 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline dark:text-indigo-400 dark:disabled:text-gray-500"
+            >
+              Show all
+            </button>
+          </div>
 
-              {menuColumns.map((column) => (
-                <Checkbox
-                  key={column.key}
-                  id={`${menuId}-${column.key}`}
-                  name={String(column.key)}
-                  label={column.header}
-                  checked={!hiddenColumns.includes(column.key)}
-                  onChange={() => toggleColumn(String(column.key))}
-                  labelClassName="cursor-pointer text-xs text-gray-700 dark:text-gray-300"
-                  className="py-1"
-                />
-              ))}
+          {menuColumns.map((column) => (
+            <div
+              key={column.key}
+              className="py-0.5"
+              // The one switch that will not move, and why. Without this the
+              // reader clicks it, nothing happens, and there is no way to find
+              // out that the table is refusing rather than broken.
+              title={
+                String(column.key) === lastShownMenuKey
+                  ? 'A table needs at least one column'
+                  : undefined
+              }
+            >
+              <ToggleSwitch
+                id={`${menuId}-${column.key}`}
+                name={String(column.key)}
+                label={column.header}
+                // ⚠️ ON MEANS SHOWN. The switch is drawn left-to-right like any
+                // other switch in the app, so the reader reads it as "this
+                // column is on" -- not as "this column is hidden", which is
+                // what the stored list actually holds.
+                checked={!hiddenColumns.includes(column.key)}
+                onChange={() => toggleColumn(String(column.key))}
+                disabled={String(column.key) === lastShownMenuKey}
+                className="w-full"
+                labelClassName="min-w-0 truncate text-xs text-gray-700 dark:text-gray-300"
+              />
             </div>
-          ) : null}
+          ))}
         </div>
       ) : null}
 
