@@ -53,6 +53,17 @@ const initialState: BrandState = {
 export const fetchBrands = createAsyncThunk<any, { search?: string; page?: number; per_page?: number }, { rejectValue: string }>('brand/fetchBrands', async (params, thunkAPI) => {
   try {
     const res = await httpService.get(API_BRAND_LIST_URL, { params });
+
+    // ⚠️ "Nothing matched" is not a failure to the transport. notFound() rides
+    // HTTP 201, so axios hands it back as a success, `data.data` is an empty
+    // array, and the words it carried -- "No brand found" -- were dropped on
+    // the floor: the list went quietly blank instead. Every other refusal
+    // arrives as a throw and is caught below; this is the one that has to be
+    // read, and reading it is what puts it on the screen.
+    if (res.data?.success === false) {
+      return thunkAPI.rejectWithValue(res.data?.message || 'No brand found');
+    }
+
     return res.data?.data ?? res.data;
   } catch (err: any) {
     return thunkAPI.rejectWithValue(
@@ -151,6 +162,10 @@ const brandSlice = createSlice({
       .addCase(fetchBrands.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || 'Failed to fetch brands';
+        // The rows standing under a "No brand found" toast must not be the
+        // previous search's. The screen reads `brands.data.data`, so a bare
+        // array here is how it is told there is nothing to draw.
+        state.brands = [];
       })
 
       /* ===== Save Brand ===== */
