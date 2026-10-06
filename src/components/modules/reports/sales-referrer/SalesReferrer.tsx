@@ -280,7 +280,7 @@ const SalesReferrer = ({ user }: any) => {
       <HelmetTitle title="Referer" />
 
       <div className="mb-3 flex flex-wrap items-end gap-3">
-        <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Select Branch
@@ -325,7 +325,7 @@ const SalesReferrer = ({ user }: any) => {
             buttonLoading={loading}
             label="Apply"
             icon={<FiCheckSquare />}
-            className="px-6"
+            className="px-6 min-w-30"
           />
           <ButtonLoading
             onClick={handleReset}
