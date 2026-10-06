@@ -189,12 +189,18 @@ const TilesBankReceived = () => {
       return;
     }
     try {
+      // ⚠️ `allow_negative` -- the figure WITH its sign. The server floors it at
+      // nought for the receipt box by default, and this screen reads the line
+      // above the box as well: a party in advance showed nothing at all, which
+      // reads as owing nothing. See the note on Cash Received's own call.
       const response = await httpService.get(API_TILES_PREVIOUS_BALANCE_URL, {
-        params: { account },
+        params: { account, allow_negative: 1 },
       });
       const balance = Number(response?.data?.data?.data?.balance ?? 0);
       setPreviousBalance(balance);
-      // Nothing owing -> nothing to prefill; the desk types what it collected.
+      // Nothing owing and nothing in advance -> nothing to prefill; the desk
+      // types what it collected. A negative balance is money held for them and
+      // stays out of the box: what was collected is never a negative amount.
       // Written onto the transaction row, where this screen keeps its amount,
       // rather than onto the header as the cash screen does.
       setFormData((prev) => {
@@ -751,10 +757,14 @@ const TilesBankReceived = () => {
                   <option key={item} value={item} />
                 ))}
               </datalist>
-              {/* What the party already owes, as at the branch's own day. Shown
-                  only once asked for -- a party the ledger says nothing about
-                  shows no line at all, rather than a bare 0. */}
-              {previousBalance > 0 ? (
+              {/* What the party stands at, as at the branch's own day. Shown once
+                  it is anything at all: the ledger says nothing about a party it
+                  has never seen, and that shows no line rather than a bare 0.
+
+                  ⚠️ `!== 0` and NOT `> 0`, the same fix as Cash Received's: a
+                  party in advance stands at a negative figure, and the guard
+                  used to swallow the line, which reads as owing nothing. */}
+              {previousBalance !== 0 ? (
                 <div className="flex items-center justify-between border border-gray-300 px-2 py-1 text-sm dark:border-gray-600">
                   <span>Previous Balance</span>
                   <span className="font-semibold">
@@ -807,8 +817,8 @@ const TilesBankReceived = () => {
                 {/* The arithmetic the desk does in its head: what was owing, what
                     came in, what was written off, what is left. The first line
                     says which three figures are being subtracted; the second is
-                    this voucher's own numbers. */}
-                {previousBalance > 0 ? (
+                    this voucher's own numbers. Kept in step with the line above. */}
+                {previousBalance !== 0 ? (
                   <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-300">
                     <div>Current Balance = Previous Balance − Amount (Tk.) − Discount (Tk.)</div>
                     <div>

@@ -138,12 +138,29 @@ const TilesCashReceived = () => {
       return;
     }
     try {
+      /**
+       * ⚠️ `allow_negative` -- the balance WITH its sign.
+       *
+       * The server floors this figure at nought by default, and that default was
+       * written for this screen: a credit is not an amount to collect, so there
+       * was no reason for the box to carry one. But the desk reads the line
+       * above the box as well as the box, and a party in advance then showed
+       * nothing at all -- which reads as owing nothing, the one answer that is
+       * wrong in both directions.
+       *
+       * The floor is asked off here and left alone in the API: the bill screens
+       * need the sign as a term of their own total, the receipt screens only
+       * need to SEE it. What is collected is still decided below.
+       */
       const response = await httpService.get(API_TILES_PREVIOUS_BALANCE_URL, {
-        params: { account },
+        params: { account, allow_negative: 1 },
       });
       const balance = Number(response?.data?.data?.data?.balance ?? 0);
       setPreviousBalance(balance);
-      // Nothing owing -> nothing to prefill; the desk types what it collected.
+      // ⚠️ Nothing owing AND nothing in advance -> nothing to prefill. A
+      // negative balance is money we hold for them, so it stays out of the box:
+      // the desk types what was collected, and what was collected is not a
+      // negative amount.
       setFormData((prev) => ({
         ...prev,
         amount: balance > 0 ? balance : '',
@@ -513,10 +530,17 @@ const TilesCashReceived = () => {
               />
             </div>
 
-            {/* What the party already owes, as at the branch's own day. Shown
-                only once asked for -- a party the ledger says nothing about
-                shows no line at all, rather than a bare 0. */}
-            {previousBalance > 0 ? (
+            {/* What the party stands at, as at the branch's own day. Shown once
+                it is anything at all: the ledger says nothing about a party it
+                has never seen, and that shows no line rather than a bare 0.
+
+                ⚠️ `!== 0` and NOT `> 0`. A party in advance -- a customer who
+                paid more than was owing, which is the ordinary case for one who
+                has paid ahead -- stands at a negative figure here, and the guard
+                used to swallow it. The desk then saw no Previous Balance line at
+                all and read it as owing nothing, which is the one reading that
+                is wrong in both directions. */}
+            {previousBalance !== 0 ? (
               <div className="flex items-center justify-between border border-gray-300 px-2 py-1 text-sm dark:border-gray-600">
                 <span>Previous Balance</span>
                 <span className="font-semibold">
@@ -568,8 +592,11 @@ const TilesCashReceived = () => {
               {/* The arithmetic the desk does in its head: what was owing, what
                   came in, what was written off, what is left. The first line
                   says which three figures are being subtracted; the second is
-                  this voucher's own numbers. */}
-              {previousBalance > 0 ? (
+                  this voucher's own numbers.
+
+                  Same `!== 0` as the line above: a party in advance has a
+                  negative Previous Balance and the subtraction still reads. */}
+              {previousBalance !== 0 ? (
                 <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-300">
                   <div>Current Balance = Previous Balance − Amount (Tk.) − Discount (Tk.)</div>
                   <div>
