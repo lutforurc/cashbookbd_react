@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiBook, FiCheckSquare, FiClock, FiEdit2, FiList, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
+import { FiBook, FiCheckSquare, FiClock, FiEdit2, FiEye, FiList, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import DropdownCommon from "../../utils/utils-functions/DropdownCommon";
@@ -150,12 +150,12 @@ const CustomerSupplier = () => {
   const location = useLocation();
   const customerPageData = customers?.customer || {};
   const tableData = Array.isArray(customerPageData?.data) ? customerPageData.data : [];
-		  const totalRecords = Number(customerPageData?.total || customers?.total || 0);
-		  const totalPages = Math.max(1, Number(customerPageData?.last_page || Math.ceil(totalRecords / perPage) || 1));
-	  // One reading of the branch's opening switch, so the two places below cannot
-	  // drift apart the way `settings?.data?.branch?.is_opening == 1` and
-	  // isBranchSettingOn() had on the Product list.
-	  const openingOn = isBranchSettingOn(settings, 'is_opening');
+  const totalRecords = Number(customerPageData?.total || customers?.total || 0);
+  const totalPages = Math.max(1, Number(customerPageData?.last_page || Math.ceil(totalRecords / perPage) || 1));
+  // One reading of the branch's opening switch, so the two places below cannot
+  // drift apart the way `settings?.data?.branch?.is_opening == 1` and
+  // isBranchSettingOn() had on the Product list.
+  const openingOn = isBranchSettingOn(settings, 'is_opening');
   // The customer form only asks for a National ID when the branch says so, so
   // where the switch is off the column would be a column of blanks.
   const needNationalId = isBranchSettingOn(settings, 'need_customer_national_id');
@@ -173,6 +173,113 @@ const CustomerSupplier = () => {
   const canViewLedger =
     hasPermission(settings?.data?.permissions, 'ledger.view') ||
     hasPermission(settings?.data?.permissions, 'ledger.customer');
+
+  /**
+   * Which row's action menu is open, and where its panel hangs.
+   *
+   * ⚠️ ONE panel for the whole table, not one per row. Ten rows would otherwise
+   * be ten panels, ten sets of listeners, and ten chances to leave two of them
+   * standing at once. The row the panel belongs to is this state; the items in
+   * it are built from that.
+   */
+  const [rowMenuRow, setRowMenuRow] = useState<any | null>(null);
+  const [rowMenuPos, setRowMenuPos] = useState<React.CSSProperties | null>(null);
+  const rowMenuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const rowMenuPanelRef = useRef<HTMLDivElement | null>(null);
+
+  /**
+   * ⚠️ `fixed`, and that is what makes it work rather than a matter of taste:
+   * the table sits inside two `overflow-x-auto` boxes, and an absolutely
+   * positioned panel would be clipped by the first of them. A fixed one hangs
+   * off the viewport instead -- the only thing that could pull it back in is a
+   * transform on an ancestor, and this screen has none.
+   *
+   * Anchored on the RIGHT, so a row with seven actions grows leftwards into the
+   * page instead of off the right edge. The threshold is one strip tall rather
+   * than the 160px a column panel needs: below the last rows there is nothing
+   * to hang into, so it flips up above the button.
+   */
+  const openRowMenu = (row: any, button: HTMLButtonElement) => {
+    const rect = button.getBoundingClientRect();
+    const GAP = 4;
+    const below = window.innerHeight - rect.bottom - GAP - 8;
+    const flip = below < 48;
+
+    rowMenuButtonRef.current = button;
+
+    setRowMenuPos({
+      position: 'fixed',
+      right: Math.max(8, window.innerWidth - rect.right),
+      maxWidth: window.innerWidth - 16,
+      ...(flip
+        ? { bottom: window.innerHeight - rect.top + GAP }
+        : { top: rect.bottom + GAP }),
+    });
+    setRowMenuRow(row);
+  };
+
+  const closeRowMenu = () => {
+    setRowMenuRow(null);
+    setRowMenuPos(null);
+  };
+
+  /**
+   * The four ways the panel goes away -- and the one click that must not.
+   *
+   * ⚠️ The trigger is asked about alongside the panel because it is NOT inside
+   * it. Without that, pressing the open row's own eye would close the panel on
+   * mousedown and open it again on click, and the button would read as dead.
+   * Table.tsx dodges the same trap by keeping its own trigger inside `menuRef`.
+   */
+  useEffect(() => {
+    if (!rowMenuRow) return undefined;
+
+    const inside = (target: Node) =>
+      Boolean(
+        rowMenuPanelRef.current?.contains(target) ||
+        rowMenuButtonRef.current?.contains(target),
+      );
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (!inside(event.target as Node)) closeRowMenu();
+    };
+
+    // Escape puts the keyboard back on the button it came from rather than at
+    // the top of the document.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      closeRowMenu();
+      rowMenuButtonRef.current?.focus();
+    };
+
+    // On the way down, because the page scrolls in a box rather than on the
+    // window. The panel's own scrollbar is not that, hence the exemption.
+    const onScroll = (event: Event) => {
+      if (rowMenuPanelRef.current?.contains(event.target as Node)) return;
+      closeRowMenu();
+    };
+
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', closeRowMenu);
+
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', closeRowMenu);
+    };
+  }, [rowMenuRow]);
+
+  /**
+   * A refetch, a new page or the branch turning opening on can take the row the
+   * panel was opened for out of the list -- and it would go on hanging there
+   * describing a party that is no longer on the screen.
+   */
+  useEffect(() => {
+    closeRowMenu();
+  }, [openingOn, search, page, partyTypeId]);
 
   useEffect(() => {
     const state = location.state as any;
@@ -329,7 +436,7 @@ const CustomerSupplier = () => {
         data: payload,
       })
     )
-        .unwrap()
+      .unwrap()
       .then((res) => {
         if (res?.message && res?.success) {
           setEditedRows((prev) => {
@@ -614,63 +721,63 @@ const CustomerSupplier = () => {
    * all the row ever carries.
    */
   const openingActionColumn = {
-      key: 'opening_action',
-      header: 'Action',
-      headerClass: 'text-center',
-      // The table lays out fixed and honours no `width` of its own, so a column
-      // left without one takes an equal share of the page. Icons need far less
-      // than three labelled buttons did; the rest goes back to the columns that
-      // carry text.
-      cellClass: 'text-center w-32',
-      render: (row: any) => {
-        const dirty = isRowDirty(row);
+    key: 'opening_action',
+    header: 'Action',
+    headerClass: 'text-center',
+    // The table lays out fixed and honours no `width` of its own, so a column
+    // left without one takes an equal share of the page. Icons need far less
+    // than three labelled buttons did; the rest goes back to the columns that
+    // carry text.
+    cellClass: 'text-center w-32',
+    render: (row: any) => {
+      const dirty = isRowDirty(row);
 
-        // Icon alone, the word kept as a tooltip -- the Product list writes this
-        // same trio that way. "Save", "Cancel" and "Delete" spelled out came to
-        // some 220px, all of it taken off the customer's own name.
-        return (
-          <div className="flex items-center justify-center gap-1">
-            <ButtonLoading
-              icon={<FiCheckSquare />}
-              title="Save"
-              label=""
-              className="py-1 px-2"
-              type="button"
-              disabled={!dirty}
-              onClick={() => handleSaveRow(row)}
-            />
-            <ButtonLoading
-              icon={<FiX />}
-              title="Cancel"
-              label=""
-              className="py-1 px-2 mr-3"
-              type="button"
-              disabled={!editedRows[row.id]}
-              onClick={() => handleCancelRow(row)}
-            />
+      // Icon alone, the word kept as a tooltip -- the Product list writes this
+      // same trio that way. "Save", "Cancel" and "Delete" spelled out came to
+      // some 220px, all of it taken off the customer's own name.
+      return (
+        <div className="flex items-center justify-center gap-1">
+          <ButtonLoading
+            icon={<FiCheckSquare />}
+            title="Save"
+            label=""
+            className="py-1 px-2"
+            type="button"
+            disabled={!dirty}
+            onClick={() => handleSaveRow(row)}
+          />
+          <ButtonLoading
+            icon={<FiX />}
+            title="Cancel"
+            label=""
+            className="py-1 px-2 mr-3"
+            type="button"
+            disabled={!editedRows[row.id]}
+            onClick={() => handleCancelRow(row)}
+          />
 
-            {/* Only where there is a voucher to delete, but its slot is held
+          {/* Only where there is a voucher to delete, but its slot is held
                 either way so Save and Cancel do not slide sideways row by row.
                 A row that never had an opening balance says so by the bin being
                 absent, which reads faster than a greyed one. */}
-            <div className="flex w-9 shrink-0 justify-center">
-              {row.opening_vr_no && canDeleteVoucher ? (
-                <ButtonLoading
-                  icon={<FiTrash2 />}
-                  title="Delete opening balance"
-                  label=""
-                  variant="danger"
-                  className="py-1 px-2 mr-2"
-                  type="button"
-                  buttonLoading={deletingOpeningId === row.id}
-                  disabled={deletingOpeningId === row.id}
-                  onClick={() => setOpeningDeleteRow(row)}
-                />
-              ) : null}
-            </div>
+          <div className="flex w-9 shrink-0 justify-center">
+            {row.opening_vr_no && canDeleteVoucher ? (
+              <ButtonLoading
+                icon={<FiTrash2 />}
+                title="Delete opening balance"
+                label=""
+                variant="danger"
+                className="py-1 px-2 mr-2"
+                type="button"
+                buttonLoading={deletingOpeningId === row.id}
+                disabled={deletingOpeningId === row.id}
+                onClick={() => setOpeningDeleteRow(row)}
+              />
+            ) : null}
           </div>
-        );
-      },
+        </div>
+      );
+    },
   };
 
   const columns = [
@@ -720,7 +827,7 @@ const CustomerSupplier = () => {
       ),
     },
 
-     {
+    {
       key: 'mobile',
       header: 'Mobile',
       headerClass: 'text-center',
@@ -747,116 +854,31 @@ const CustomerSupplier = () => {
     {
       key: "action",
       header: "Action",
-      headerClass: 'text-center', 
-      render: (row: any) => {
-	        return (
-	        <div className="flex justify-center items-center gap-2 ">
-	          {/* Save and Cancel used to sit here; they now travel with the
-	              Opening column, next to the field they belong to. */}
-
-	          {/* ===== Guarantor Slot (fixed) ===== */}
-          <div className="w-4 flex justify-center">
-            {row.guarantors?.length > 0 && (
-              <Button
-                title="View guarantors"
-                onClick={() => {
-                  setSelectedGuarantors(row.guarantors);
-                  setShowGuarantorModal(true);
-                }}
-                className="text-indigo-600 hover:text-indigo-800"
-              >
-                <FiUsers size={16} />
-              </Button>
-            )}
-          </div>
-
-          <div className="w-4 flex justify-center">
-            {row.nominees?.length > 0 && (
-              <Button
-                title="View nominees"
-                onClick={() => {
-                  setSelectedNominees(row.nominees);
-                  setShowNomineeModal(true);
-                }}
-                className="text-emerald-600 hover:text-emerald-800"
-              >
-                <FiBook size={16} />
-              </Button>
-            )}
-          </div>
-
-          {/* ===== Print Slot ===== */}
-          <div className="w-4 flex justify-center">
-            <Button
-              title="Print profile (PDF)"
-              className="text-gray-500 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-300 dark:hover:text-white"
-              disabled={printingCustomerId === row.id}
-              onClick={() => handlePrintRow(row)}
-            >
-              <FiPrinter size={15} />
-            </Button>
-          </div>
-
-          {/* ===== Log Slot ===== */}
-          <div className="w-4 flex justify-center">
-            <Button
-              title="Change log"
-              className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
-              onClick={() => handleShowHistory(row)}
-            >
-              <FiClock size={15} />
-            </Button>
-          </div>
-
-          {/* ===== Recent Transactions Slot ===== */}
-          {canViewLedger && (
-            <div className="w-4 flex justify-center">
-              <Button
-                title="Recent transactions"
-                className="text-teal-600 hover:text-teal-800"
-                onClick={() => setReportParty(row)}
-              >
-                <FiList size={15} />
-              </Button>
-            </div>
-          )}
-
-          {/* ===== Edit Slot ===== */}
-          {canEditCustomer && (
-            <div className="w-4 flex justify-center">
-              <Button
-                title="Edit"
-                className="text-blue-600 hover:text-blue-800"
-                onClick={() =>
-                  navigate(`/customer-supplier/edit/${row.id}`, {
-                    // Where to come back to once the edit is saved. Cancel uses
-                    // the browser's own Back and finds this address anyway;
-                    // saving navigates forward, and needs telling.
-                    state: { returnTo: `${location.pathname}${location.search}` },
-                  })
-                }
-              >
-                <FiEdit2 size={15} />
-              </Button>
-            </div>
-          )}
-
-          {/* ===== Delete Slot ===== */}
-          {canDeleteCustomer && (
-            <div className="w-4 flex justify-center">
-              <Button
-                title="Delete"
-                className="text-red-600 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={deletingCustomerId === row.id}
-                onClick={() => handleDeleteRow(row)}
-              >
-                <FiTrash2 size={15} />
-              </Button>
-            </div>
-          )}
-
-        </div>
-      )},
+      headerClass: 'text-center',
+      // ⚠️ One icon where seven slots used to stand. Left without a width the
+      // column takes an equal share of the page -- the same ~188px Name and
+      // Address get -- to hold a 16px eye. `w-20` is what the heading itself
+      // needs ("ACTION" at text-xs plus the cell's own px-3); less than that
+      // and the word leaves the cell.
+      cellClass: 'text-center w-20',
+      // The actions themselves are in the panel below, built from the row the
+      // menu was opened for -- this is only the thing that opens it.
+      render: (row: any) => (
+        <Button
+          title="Actions"
+          aria-label="Actions"
+          aria-haspopup="true"
+          aria-expanded={rowMenuRow?.id === row.id}
+          className="text-gray-600 hover:text-gray-900 dark:text-gray-300"
+          onClick={(e) =>
+            rowMenuRow?.id === row.id
+              ? closeRowMenu()
+              : openRowMenu(row, e.currentTarget)
+          }
+        >
+          <FiEye size={20} />
+        </Button>
+      ),
     },
     // ⚠️ Spread, never `openingOn && {...}`: a guard that fails leaves a `false`
     // in this array, and the table gives a false its own heading, cell and col.
@@ -934,7 +956,7 @@ const CustomerSupplier = () => {
             buttonLoading={buttonLoading}
             label="Search"
             className="whitespace-nowrap"
-             icon={<FiSearch size={15} />}
+            icon={<FiSearch size={15} />}
           />
         </div>
 
@@ -970,6 +992,134 @@ const CustomerSupplier = () => {
           />
         )}
       </div>
+
+      {/* The row's actions, one strip of the very icons the column used to hold
+          -- same colours, same conditions, name on hover. It is built HERE
+          rather than inside the column because it hangs off the viewport, not
+          off the cell (see openRowMenu), and because there is only ever one of
+          it while there are ten rows.
+
+          ⚠️ Every item closes the panel before it does anything. Delete and the
+          three popups raise an overlay of their own, and a panel left standing
+          would go on hanging over it. */}
+      {rowMenuRow && rowMenuPos ? (
+        <div
+          ref={rowMenuPanelRef}
+          style={rowMenuPos}
+          role="menu"
+          className="z-50 flex w-max flex-nowrap items-center gap-2 overflow-x-auto rounded-sm border border-[rgb(var(--c-border))] bg-white px-2 py-1 shadow-lg dark:bg-[rgb(var(--c-boxdark))]"
+        >
+          {rowMenuRow.guarantors?.length > 0 && (
+            <Button
+              role="menuitem"
+              title="View guarantors"
+              aria-label="View guarantors"
+              className="text-indigo-600 hover:text-indigo-800"
+              onClick={() => {
+                closeRowMenu();
+                setSelectedGuarantors(rowMenuRow.guarantors);
+                setShowGuarantorModal(true);
+              }}
+            >
+              <FiUsers size={20} />
+            </Button>
+          )}
+
+          {rowMenuRow.nominees?.length > 0 && (
+            <Button
+              role="menuitem"
+              title="View nominees"
+              aria-label="View nominees"
+              className="text-emerald-600 hover:text-emerald-800"
+              onClick={() => {
+                closeRowMenu();
+                setSelectedNominees(rowMenuRow.nominees);
+                setShowNomineeModal(true);
+              }}
+            >
+              <FiBook size={20} />
+            </Button>
+          )}
+
+          <Button
+            role="menuitem"
+            title="Print profile (PDF)"
+            aria-label="Print profile (PDF)"
+            className="text-gray-500 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-300 dark:hover:text-white"
+            disabled={printingCustomerId === rowMenuRow.id}
+            onClick={() => {
+              closeRowMenu();
+              handlePrintRow(rowMenuRow);
+            }}
+          >
+            <FiPrinter size={20} />
+          </Button>
+
+          <Button
+            role="menuitem"
+            title="Change log"
+            aria-label="Change log"
+            className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+            onClick={() => {
+              closeRowMenu();
+              handleShowHistory(rowMenuRow);
+            }}
+          >
+            <FiClock size={20} />
+          </Button>
+
+          {canViewLedger && (
+            <Button
+              role="menuitem"
+              title="Recent transactions"
+              aria-label="Recent transactions"
+              className="text-teal-600 hover:text-teal-800"
+              onClick={() => {
+                closeRowMenu();
+                setReportParty(rowMenuRow);
+              }}
+            >
+              <FiList size={20} />
+            </Button>
+          )}
+
+          {canEditCustomer && (
+            <Button
+              role="menuitem"
+              title="Edit"
+              aria-label="Edit"
+              className="text-blue-600 hover:text-blue-800"
+              onClick={() => {
+                closeRowMenu();
+                navigate(`/customer-supplier/edit/${rowMenuRow.id}`, {
+                  // Where to come back to once the edit is saved. Cancel uses
+                  // the browser's own Back and finds this address anyway;
+                  // saving navigates forward, and needs telling.
+                  state: { returnTo: `${location.pathname}${location.search}` },
+                });
+              }}
+            >
+              <FiEdit2 size={24} />
+            </Button>
+          )}
+
+          {canDeleteCustomer && (
+            <Button
+              role="menuitem"
+              title="Delete"
+              aria-label="Delete"
+              className="text-red-600 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={deletingCustomerId === rowMenuRow.id}
+              onClick={() => {
+                closeRowMenu();
+                handleDeleteRow(rowMenuRow);
+              }}
+            >
+              <FiTrash2 size={18} />
+            </Button>
+          )}
+        </div>
+      ) : null}
 
       <ConfirmModal
         show={Boolean(deleteConfirmRow)}
@@ -1278,7 +1428,7 @@ const CustomerSupplier = () => {
                         className="hover:bg-emerald-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         <td className="px-3 py-2 truncate">{n.name}</td>
-                        <td className="px-3 py-2 truncate">{ n.relation.toUpperCase() || ''}</td>
+                        <td className="px-3 py-2 truncate">{n.relation.toUpperCase() || ''}</td>
                         <td className="px-3 py-2">{n.mobile || ''}</td>
                         <td className="px-3 py-2 text-center">{n.share_percentage || ''}</td>
                         <td className="px-3 py-2 text-center">{n.priority_order || ''}</td>
