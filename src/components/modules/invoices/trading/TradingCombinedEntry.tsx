@@ -97,7 +97,7 @@ const isSameOrderProduct = (
   first.id && second.id
     ? first.id === second.id
     : Boolean(normalizeLookupText(first.name)) &&
-      normalizeLookupText(first.name) === normalizeLookupText(second.name);
+    normalizeLookupText(first.name) === normalizeLookupText(second.name);
 
 type OrderProduct = { id: string; name: string };
 const ordersHaveCommonProduct = (first: OrderProduct[], second: OrderProduct[]) =>
@@ -1112,9 +1112,9 @@ const TradingCombinedEntry = () => {
       notesApplyTo === 'separate'
         ? { purchaseNotes: formData.purchaseNotes || null, salesNotes: formData.salesNotes || null }
         : {
-            purchaseNotes: notesApplyTo !== 'sales' ? formData.notes || null : null,
-            salesNotes: notesApplyTo !== 'purchase' ? formData.notes || null : null,
-          };
+          purchaseNotes: notesApplyTo !== 'sales' ? formData.notes || null : null,
+          salesNotes: notesApplyTo !== 'purchase' ? formData.notes || null : null,
+        };
 
     try {
       const payload = {
@@ -1183,11 +1183,11 @@ const TradingCombinedEntry = () => {
               <div>
                 <label htmlFor="" className='text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>Select Supplier</label>
                 <DdlMultiline
- id="supplierAccount"
- className=""
- onSelect={supplierAccountHandler}
- actionOptionLabel="+ Add New Supplier"
- onActionSelect={(typedName: string) => openPartyModal('supplier', typedName)}
+                  id="supplierAccount"
+                  className=""
+                  onSelect={supplierAccountHandler}
+                  actionOptionLabel="+ Add New Supplier"
+                  onActionSelect={(typedName: string) => openPartyModal('supplier', typedName)}
                   value={
                     selectedSupplierOption ||
                     (formData.supplierAccount
@@ -1203,11 +1203,11 @@ const TradingCombinedEntry = () => {
               <div>
                 <label htmlFor="" className='text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]'>Select Customer</label>
                 <DdlMultiline
- id="customerAccount"
- className=""
- onSelect={customerAccountHandler}
- actionOptionLabel="+ Add New Customer"
- onActionSelect={(typedName: string) => openPartyModal('customer', typedName)}
+                  id="customerAccount"
+                  className=""
+                  onSelect={customerAccountHandler}
+                  actionOptionLabel="+ Add New Customer"
+                  onActionSelect={(typedName: string) => openPartyModal('customer', typedName)}
                   value={
                     selectedCustomerOption ||
                     (formData.customerAccount
@@ -1223,16 +1223,16 @@ const TradingCombinedEntry = () => {
 
               <div>
                 <InputElement
- id="vehicleNumber"
- value={formData.vehicleNumber}
- name="vehicleNumber"
- placeholder="Vehicle Number"
- label="Vehicle Number"
- className="py-1 "
- list="combined-vehicle-suggestions"
- autoComplete="off"
- onChange={handleFormChange}
- onKeyDown={handleVehicleNumberKeyDown}
+                  id="vehicleNumber"
+                  value={formData.vehicleNumber}
+                  name="vehicleNumber"
+                  placeholder="Vehicle Number"
+                  label="Vehicle Number"
+                  className="py-1 "
+                  list="combined-vehicle-suggestions"
+                  autoComplete="off"
+                  onChange={handleFormChange}
+                  onKeyDown={handleVehicleNumberKeyDown}
                 />
                 <datalist id="combined-vehicle-suggestions">
                   {vehicleSuggestions.map((item) => (
@@ -1438,16 +1438,16 @@ const TradingCombinedEntry = () => {
                   Select Product
                 </label>
                 <ProductDropdown
- id="product"
- name="product"
- className=""
- onSelect={productSelectHandler}
- value={
- productData.product_name && productData.product
+                  id="product"
+                  name="product"
+                  className=""
+                  onSelect={productSelectHandler}
+                  value={
+                    productData.product_name && productData.product
                       ? { label: productData.product_name, value: productData.product }
                       : null
                   }
- onKeyDown={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       focusField('bag', 150);
                     }
