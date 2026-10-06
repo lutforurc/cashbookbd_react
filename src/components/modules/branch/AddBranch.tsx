@@ -98,6 +98,8 @@ interface branchItem {
   dashboard_top_sales_days: number;
   dashboard_top_purchase_days: number;
   dashboard_due_soon_days: number;
+  /** How far back the transaction button on List Customers opens. */
+  default_report_days: NumberField;
   device_identifier_text?: string;
   status: string;
   warranty_controll: boolean;
@@ -285,6 +287,8 @@ const defaultDownPaymentPercent = 30;
 const defaultDownPaymentBase = 'total';
 const defaultDelayChargePercent = 10;
 const defaultCompanySchemeDueDays = 30;
+/** Kept in step with the `?? 30` in SettingsController::branch(). */
+const defaultReportDays = 30;
 const schemeDueWeekdays = [
   { id: '', name: 'No fixed day (use days)' },
   { id: '0', name: 'Sunday' },
@@ -469,6 +473,7 @@ const AddBranch = () => {
     dashboard_top_sales_days: 0,
     dashboard_top_purchase_days: 0,
     dashboard_due_soon_days: 0,
+    default_report_days: defaultReportDays,
     device_identifier_text: '',
     status: '',
     warranty_controll: false,
@@ -828,6 +833,7 @@ const AddBranch = () => {
         product_tracking: toBooleanFlag(b.product_tracking),
         company_scheme: toBooleanFlag(b.company_scheme),
         company_scheme_due_days: metaNumberOr(b.company_scheme_due_days, defaultCompanySchemeDueDays),
+        default_report_days: metaNumberOr(b.default_report_days, defaultReportDays),
         company_scheme_due_weekday: metaTextOr(b.company_scheme_due_weekday, ''),
         down_payment_percent: metaNumberOr(b.down_payment_percent, defaultDownPaymentPercent),
         down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
@@ -1783,6 +1789,38 @@ const AddBranch = () => {
                             </>
                           }
                         />
+                      </div>
+                    </div>
+
+                    {/* ---------- Transaction report ---------- */}
+                    <div className="mt-4 border-t border-[rgb(var(--c-border))] pt-3">
+                      <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        Transaction Report
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        {/* Not a field of the customer form -- it decides what the
+                            transaction button on List Customers opens. It sits
+                            here with the other party-report settings for the same
+                            reason the Due List switch above does. */}
+                        <div>
+                          <InputElement
+                            id="default_report_days"
+                            value={formData.default_report_days ?? ''}
+                            name="default_report_days"
+                            type="number"
+                            min={0}
+                            step="1"
+                            placeholder={'Enter Days'}
+                            label={'Show Default Report Days'}
+                            className={''}
+                            onChange={handleOnNumberChange}
+                          />
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            How far back the transaction button opens on List Customers:
+                            the last this many days, up to the branch's transaction date.
+                            The range can be changed again inside the report.
+                          </p>
+                        </div>
                       </div>
                     </div>
 

@@ -195,9 +195,14 @@ const Ledger = (user: any) => {
 
   /**
    * Arrived from somewhere that already knows which account to look at -- the
-   * voucher number beside a customer's opening balance, for one. It wins over
-   * the restored filters above, which is why it runs after them; the dates are
-   * left to default to the current month so the effect below still fills them.
+   * voucher number beside a customer's opening balance, for one, or the
+   * transactions popup on List Customers. It wins over the restored filters
+   * above, which is why it runs after them.
+   *
+   * The dates come across too when the sender has them: the popup shows a
+   * window and hands it over, so this screen opens on what was being read
+   * rather than on the month it last remembered. A sender that names only the
+   * account leaves the dates to the branch lookup below, as before.
    */
   useEffect(() => {
     const account = (location.state as any)?.ledgerAccount;
@@ -208,6 +213,20 @@ const Ledger = (user: any) => {
     setLedgerAccount(ledgerAccountId);
     setSelectedLedgerOption({ value: ledgerAccountId, label: account.label ?? '' });
     autoSearchRef.current = true;
+
+    const from = parseStoredDate(account?.startDate);
+    const to = parseStoredDate(account?.endDate);
+
+    if (from || to) {
+      if (from) setStartDate(from);
+      if (to) setEndDate(to);
+
+      // ⚠️ SET, OR THE DATES ARE LOST. The branch lookup further down fills
+      // both dates with the current month unless this flag is up, and it runs
+      // after this effect -- the handed-over window would be replaced before
+      // the search that was asked for ever ran.
+      restoredFilterRef.current = true;
+    }
 
     // Cleared so a later reload of this page does not silently jump back to
     // the same account.

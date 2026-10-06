@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiBook, FiCheckSquare, FiClock, FiEdit2, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
+import { FiBook, FiCheckSquare, FiClock, FiEdit2, FiList, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import DropdownCommon from "../../utils/utils-functions/DropdownCommon";
@@ -20,6 +20,7 @@ import { hasPermission } from "../../utils/permissionChecker";
 import httpService from "../../services/httpService";
 import { API_CUSTOMER_HISTORY_URL, API_CUSTOMER_PROFILE_PDF_URL } from "../../services/apiRoutes";
 import routes from "../../services/appRoutes";
+import PartyLedgerModal from "./PartyLedgerModal";
 import { formatMobile, useMobileFormat } from "../../utils/utils-functions/mobileFormat";
 import { Button } from '../../../pages/UiElements/CustomButtons';
 import { isBranchSettingOn } from "../../utils/userFeatureSettings";
@@ -119,6 +120,8 @@ const CustomerSupplier = () => {
   const [historyCustomer, setHistoryCustomer] = useState<any | null>(null);
   const [historyEvents, setHistoryEvents] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  // The party whose recent transactions are open in the popup, or null.
+  const [reportParty, setReportParty] = useState<any | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const customerPageData = customers?.customer || {};
@@ -138,6 +141,14 @@ const CustomerSupplier = () => {
   // permission -- the same one the API checks. Gating it on cs.delete instead
   // would offer a button that comes back 403.
   const canDeleteVoucher = hasPermission(settings?.data?.permissions, 'voucher.delete');
+  // The popup reads the Ledger's own endpoint, so it asks for the permissions
+  // that screen asks for -- the very same pair its route is guarded with.
+  // Deliberately not `cs.ledger`: that key is in the menu list but no route or
+  // component in the app reads it, so gating on it would hide the button from
+  // everybody.
+  const canViewLedger =
+    hasPermission(settings?.data?.permissions, 'ledger.view') ||
+    hasPermission(settings?.data?.permissions, 'ledger.customer');
 
   useEffect(() => {
     const state = location.state as any;
@@ -739,6 +750,19 @@ const CustomerSupplier = () => {
             </Button>
           </div>
 
+          {/* ===== Recent Transactions Slot ===== */}
+          {canViewLedger && (
+            <div className="w-4 flex justify-center">
+              <Button
+                title="Recent transactions"
+                className="text-teal-600 hover:text-teal-800"
+                onClick={() => setReportParty(row)}
+              >
+                <FiList size={15} />
+              </Button>
+            </div>
+          )}
+
           {/* ===== Edit Slot ===== */}
           {canEditCustomer && (
             <div className="w-4 flex justify-center">
@@ -1210,6 +1234,14 @@ const CustomerSupplier = () => {
         </div>
       )}
 
+      {/* The transactions popup: the party's last N days, N coming from Branch
+          Setup, with the dates editable inside. */}
+      {reportParty && (
+        <PartyLedgerModal
+          party={reportParty}
+          onClose={() => setReportParty(null)}
+        />
+      )}
 
     </div>
   );
