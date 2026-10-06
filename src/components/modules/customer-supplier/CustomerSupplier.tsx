@@ -195,9 +195,23 @@ const CustomerSupplier = () => {
 
 
   // 🔥 Per Page Change
+  /**
+   * ⚠️ ONE setListParams CALL, NOT TWO.
+   *
+   * This used to be `setPerPage(...)` followed by `setPage(1)`, and the per-page
+   * never took: react-router's `setSearchParams` builds the next address from
+   * the search string of the LAST RENDER, so two calls in one handler do not
+   * stack -- the second navigates from the params as they were before the
+   * first, and the `per_page` the first had just written is not in them. Every
+   * choice, 20 through 100, was written and dropped in the same tick while the
+   * address bar briefly showed it.
+   *
+   * `setPerPage` above already sends `page: null` in its own call, which is the
+   * reset to page one this line was trying to make, so there is nothing to do
+   * here but hand it the number.
+   */
   const handleSelectChange = (e) => {
     setPerPage(Number(e.target.value));
-    setPage(1);
   };
 
   // 🔥 Page Change
