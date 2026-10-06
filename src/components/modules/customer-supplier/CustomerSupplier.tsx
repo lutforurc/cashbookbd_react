@@ -73,6 +73,31 @@ const CustomerSupplier = () => {
   // query string, and only what is written there survives them.
   const partyTypeId = searchParams.get("party_type_id") ?? "";
 
+  /**
+   * What is IN the box, which is not the same as what has been searched for.
+   *
+   * The box used to write straight into the address bar, and the fetch effect
+   * below reads `search` from there -- so every keystroke dispatched a request.
+   * Typing "100" sent three of them, and the list under the desk flickered
+   * through two answers to reach a third. The box now holds its own text and the
+   * term is committed on Enter or on the Search button, which is when a search
+   * was ever meant to happen.
+   *
+   * ⚠️ `search` STILL IS WHAT WAS SEARCHED FOR, and it changes from outside this
+   * component too: the global search navigates here with a term already in it,
+   * and Back rewrites the address. The effect further down copies those in, so
+   * the box and the list never disagree about the last search.
+   */
+  const [searchText, setSearchText] = useState(search);
+
+  /**
+   * ⚠️ An Enter on the word already applied writes nothing new into the
+   * address, and the fetch effect keyed on the address would stay quiet -- so
+   * Search on a list somebody else has been editing since would appear to do
+   * nothing. This still asks it once.
+   */
+  const [searchRun, setSearchRun] = useState(0);
+
   /** Writes one part of the list's position, leaving the others as they are. */
   const setListParams = (next: Record<string, string | number | null>) => {
     setSearchParams(
@@ -95,7 +120,6 @@ const CustomerSupplier = () => {
     );
   };
 
-  const setSearchValue = (value: string) => setListParams({ search: value, page: null });
   const setPage = (value: number) => setListParams({ page: value === 1 ? null : value });
   const setPerPage = (value: number) => setListParams({ per_page: value === 10 ? null : value, page: null });
   // A new classification is a new list, so the page goes back to the first:
@@ -179,14 +203,48 @@ const CustomerSupplier = () => {
 
 
 
+  /**
+   * The address bar is the other way in, and it does not go through the box --
+   * so the box has to be told what the list has ended up showing. Keyed on
+   * `search` alone: a change of page or of classification must not wipe what is
+   * half-typed in the box.
+   */
+  useEffect(() => {
+    setSearchText(search);
+  }, [search]);
+
   // 🔥 First API Call and on pagination change
   useEffect(() => {
     dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId }));
-  }, [dispatch, page, perPage, search, partyTypeId]);
+  }, [dispatch, page, perPage, search, partyTypeId, searchRun]);
+
+  /**
+   * Enter, or the Search button -- the two ways the term is committed.
+   *
+   * ⚠️ `page: null` is the reset to the first page, and it belongs here rather
+   * than in the button: page four of the old word is not page four of the new
+   * one, and a shorter list would open past its own end.
+   */
+  const submitSearch = () => {
+    setListParams({ search: searchText, page: null });
+    setSearchRun((n) => n + 1);
+  };
 
   // 🔥 Search Button
   const handleSearchButton = () => {
-    setPage(1);
+    submitSearch();
+  };
+
+  /**
+   * ⚠️ On the row, not on the box. SearchInput is on fifty screens and Enter is
+   * this one screen's business -- the same reason the placeholder lives at this
+   * call site. The guard keeps Enter on the per-page dropdown beside it out of
+   * the search: that control is a <select>, so it is not the input we are after.
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "Enter" || !(e.target instanceof HTMLInputElement)) return;
+    e.preventDefault(); // Enter inside a form submits it -- this is a search
+    submitSearch();
   };
 
   /**
@@ -830,7 +888,9 @@ const CustomerSupplier = () => {
 
       {/* Top Search Panel */}
       <div className="flex overflow-x-auto justify-between mb-1">
-        <div className="flex items-end">
+        {/* Enter anywhere on this row is the same as pressing Search -- see
+            handleSearchKeyDown, which ignores every control here but the box. */}
+        <div className="flex items-end" onKeyDown={handleSearchKeyDown}>
           {/* The classification, drawn and wired exactly as the Due List draws
               its own: the same four values, the same field, the same wording on
               the empty one. */}
@@ -853,16 +913,20 @@ const CustomerSupplier = () => {
             className="mr-1 md:mr-2"
           />
 
-          {/* The box takes a comparison as well as a word -- "> 200" narrows to
-              the parties whose Balance meets it, and everything else is the
-              search it has always been. The hint is here rather than inside
-              SearchInput because that component is on fifty screens and this
-              syntax belongs to one of them. */}
+          {/* The box takes comparisons as well as a word -- "> 200" narrows to
+              the parties whose Balance meets it, and "> 0 and < 500" narrows to
+              a range; everything else is the search it has always been. The hint
+              is here rather than inside SearchInput because that component is on
+              fifty screens and this syntax belongs to one of them.
+
+              ⚠️ `searchText`, not `search`. Handed the applied term, the box
+              would be reset to it the moment the address was written -- and
+              every keystroke would be gone before the next one arrived. */}
           <SearchInput
-            search={search}
-            setSearchValue={setSearchValue}
+            search={searchText}
+            setSearchValue={setSearchText}
             className="text-nowrap"
-            placeholder="Search... or > 200"
+            placeholder="Search... or > 0 and < 500"
           />
 
           <ButtonLoading
