@@ -24,7 +24,7 @@ import { fetchBrandDdl } from '../../product/brand/brandSlice';
 import { getProductGroupDdl } from '../../productgroup/productGroupSlice';
 import { getCustomerSales, resetCustomerSales } from './customerSalesSlice';
 import type { CustomerSalesRow } from './customerSalesSlice';
-import { buildCustomerSalesGroups } from './customerSalesGroups';
+import { buildCustomerSalesRows } from './customerSalesGroups';
 import CustomerSalesPrint from './CustomerSalesPrint';
 
 const toArray = (value: any) => (Array.isArray(value) ? value : []);
@@ -152,7 +152,7 @@ const CustomerSalesReport = (user: any) => {
     options.find((option) => String(option.id) === String(id ?? ''))?.name || '';
 
   const rows: CustomerSalesRow[] = toArray(report?.data);
-  const built = useMemo(() => buildCustomerSalesGroups(rows), [rows]);
+  const built = useMemo(() => buildCustomerSalesRows(rows), [rows]);
 
   const buildParams = (overrides?: Record<string, any>) => ({
     branchId,
@@ -422,21 +422,17 @@ const CustomerSalesReport = (user: any) => {
         {report?.loading ? <Loader /> : null}
 
         {/*
-          The Customer and Invoice cells MERGE down their own blocks (rowSpan),
-          so each label sits beside the lines it belongs to and appears once --
-          the customer for all its rows, the invoice for all of its lines. The
-          shared <Table/> draws one cell per column per row and cannot merge,
-          which is why this one report is laid out by hand.
+          Customer and Invoice are heading ROWS, not columns. The customer heads
+          its block once, and each invoice heads its lines once -- number and
+          date on the one row. Both span the table so they read as bands.
         */}
         <table className="min-w-full table-fixed border-collapse text-left text-sm text-gray-700 dark:text-gray-300">
           <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300">
             <tr>
-              <th className={`${cell} w-[190px] text-left font-semibold`}>Customer</th>
-              <th className={`${cell} w-[150px] text-left font-semibold`}>Invoice / Date</th>
               <th className={`${cell} w-[60px] text-center font-semibold`}>SL</th>
-              <th className={`${cell} w-[110px] text-left font-semibold`}>Brand</th>
-              <th className={`${cell} w-[110px] text-left font-semibold`}>Group</th>
-              <th className={`${cell} w-[110px] text-left font-semibold`}>Category</th>
+              <th className={`${cell} w-[130px] text-left font-semibold`}>Brand</th>
+              <th className={`${cell} w-[130px] text-left font-semibold`}>Group</th>
+              <th className={`${cell} w-[130px] text-left font-semibold`}>Category</th>
               <th className={`${cell} text-left font-semibold`}>Product</th>
               <th className={`${cell} w-[90px] text-right font-semibold`}>Qty</th>
               <th className={`${cell} w-[90px] text-right font-semibold`}>Rate</th>
@@ -445,70 +441,73 @@ const CustomerSalesReport = (user: any) => {
           </thead>
 
           <tbody className="bg-[rgb(var(--c-table-body))]">
-            {built.customers.length ? (
-              built.customers.map((customer) =>
-                customer.invoices.map((invoice, invoiceIndex) =>
-                  invoice.lines.map((line, lineIndex) => (
-                    <tr
-                      key={`${customer.key}-${invoice.key}-${line.key}`}
-                      className={
-                        invoiceIndex === 0 && lineIndex === 0
-                          ? 'border-t-2 border-slate-300 dark:border-slate-600'
-                          : ''
-                      }
-                    >
-                      {/* The customer's own cell, once, spanning its whole
-                          block -- every line of every invoice. */}
-                      {invoiceIndex === 0 && lineIndex === 0 ? (
-                        <td
-                          rowSpan={customer.rowCount}
-                          className={`${cell} whitespace-normal bg-slate-100 font-bold dark:bg-slate-900/50`}
-                        >
-                          {customer.customer_name}
-                        </td>
-                      ) : null}
-
-                      {/* The invoice's cell, once per invoice, spanning its
-                          lines. Number and date on the one cell. */}
-                      {lineIndex === 0 ? (
-                        <td
-                          rowSpan={invoice.lines.length}
-                          className={`${cell} whitespace-normal bg-slate-50 dark:bg-slate-900/30`}
-                        >
-                          <div className="font-semibold">{invoice.invoice_no}</div>
-                          {invoice.invoice_date && invoice.invoice_date !== '-' ? (
-                            <div className="text-xs text-slate-600 dark:text-slate-300">
-                              {invoice.invoice_date}
-                            </div>
-                          ) : null}
-                        </td>
-                      ) : null}
-
-                      <td className={`${cell} text-center`}>{line.sl}</td>
-                      <td className={cell}>{line.row.brand_name || '-'}</td>
-                      <td className={cell}>{line.row.group_name || '-'}</td>
-                      <td className={cell}>{line.row.category_name || '-'}</td>
-                      <td className={cell}>{productLabel(line.row)}</td>
-                      <td className={`${cell} text-right`}>{thousandSeparator(line.row.quantity)}</td>
-                      <td className={`${cell} text-right`}>{thousandSeparator(line.row.rate)}</td>
-                      <td className={`${cell} text-right`}>{thousandSeparator(line.row.amount)}</td>
+            {built.rows.length ? (
+              built.rows.map((row) => {
+                if (row.__type === 'CUSTOMER') {
+                  return (
+                    <tr key={row.key} className="bg-slate-200 font-bold dark:bg-slate-900/70">
+                      <td colSpan={8} className={cell}>
+                        <div className="flex items-center justify-between gap-4">
+                          <span>{row.customer_name}</span>
+                          <span className="whitespace-nowrap text-xs font-semibold">
+                            Qty: {thousandSeparator(row.quantity)} | Amount: {thousandSeparator(row.amount)}
+                          </span>
+                        </div>
+                      </td>
                     </tr>
-                  )),
-                ),
-              )
+                  );
+                }
+
+                // The invoice heads its lines once: number and date on the one
+                // row, with the invoice's own subtotal beside them.
+                if (row.__type === 'INVOICE') {
+                  return (
+                    <tr key={row.key} className="bg-slate-100 font-semibold dark:bg-slate-900/40">
+                      <td colSpan={8} className={cell}>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="whitespace-nowrap">
+                            <span className="font-semibold">Invoice: {row.invoice_no}</span>
+                            {row.invoice_date && row.invoice_date !== '-' ? (
+                              <span className="ml-3">Date: {row.invoice_date}</span>
+                            ) : null}
+                          </span>
+                          <span className="whitespace-nowrap text-xs font-semibold">
+                            Qty: {thousandSeparator(row.quantity)} | Amount: {thousandSeparator(row.amount)}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                }
+
+                const line = row.row;
+
+                return (
+                  <tr key={row.key} className="hover:bg-indigo-50 dark:hover:bg-gray-700">
+                    <td className={`${cell} text-center`}>{row.sl}</td>
+                    <td className={cell}>{line.brand_name || '-'}</td>
+                    <td className={cell}>{line.group_name || '-'}</td>
+                    <td className={cell}>{line.category_name || '-'}</td>
+                    <td className={cell}>{productLabel(line)}</td>
+                    <td className={`${cell} text-right`}>{thousandSeparator(line.quantity)}</td>
+                    <td className={`${cell} text-right`}>{thousandSeparator(line.rate)}</td>
+                    <td className={`${cell} text-right`}>{thousandSeparator(line.amount)}</td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan={10} className="py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={8} className="py-4 text-center text-gray-500 dark:text-gray-400">
                   No data found
                 </td>
               </tr>
             )}
           </tbody>
 
-          {built.customers.length ? (
-            <tfoot className="bg-slate-100 font-semibold text-slate-800 dark:bg-slate-900/60 dark:text-slate-100">
+          {built.rows.length ? (
+            <tfoot className="bg-slate-200 font-bold text-slate-900 dark:bg-slate-900/70 dark:text-slate-100">
               <tr>
-                <td colSpan={7} className={`${cell} text-right`}>Grand Total</td>
+                <td colSpan={5} className={`${cell} text-right`}>Grand Total</td>
                 <td className={`${cell} text-right`}>{thousandSeparator(built.totalQuantity)}</td>
                 <td className={cell}></td>
                 <td className={`${cell} text-right`}>{thousandSeparator(built.totalAmount)}</td>
@@ -523,7 +522,7 @@ const CustomerSalesReport = (user: any) => {
       <div className="hidden">
         <CustomerSalesPrint
           ref={printRef}
-          customers={built.customers}
+          rows={built.rows}
           totalQuantity={built.totalQuantity}
           totalAmount={built.totalAmount}
           filterLine={filterLine}
