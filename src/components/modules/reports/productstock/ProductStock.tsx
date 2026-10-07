@@ -34,11 +34,13 @@ import type { PrintTemplate } from '../../../utils/print-designer/printTemplate'
 import { toProductStockDocumentData } from './productStockDocumentData';
 
 // ======================
-// Brand -> Category wise helper
+// Brand -> Group -> Category wise helper
 // ======================
 const isBrandRow = (row: any) => row?.__type === 'BRAND';
+const isGroupRow = (row: any) => row?.__type === 'GROUP';
 const isCatRow = (row: any) => row?.__type === 'CAT';
-const isGroupRow = (row: any) => isBrandRow(row) || isCatRow(row);
+/** A heading of any depth: nothing is drawn in its figure cells. */
+const isHeadingRow = (row: any) => isBrandRow(row) || isGroupRow(row) || isCatRow(row);
 const isGrandTotalRow = (row: any) => row?.__type === 'GRAND_TOTAL';
 
 const toNumber = (value: any) => {
@@ -46,24 +48,124 @@ const toNumber = (value: any) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const buildBrandCategoryRows = (rows: any[]) => {
+/** Has the report actually sent a value for this id? 0 is a value, "" is not. */
+const hasId = (value: any) =>
+  value !== null && value !== undefined && String(value) !== '';
+
+const brandLabelOf = (row: any) =>
+  String(row?.brand_name ?? '').trim() || 'Unknown Brand';
+const groupLabelOf = (row: any) => String(row?.group_name ?? '').trim();
+const catLabelOf = (row: any) =>
+  String(row?.cat_name ?? '').trim() || 'Uncategorized';
+
+/**
+ * The key a row is filed under.
+ *
+ * ⚠️ THE ID LEADS, THE NAME IS ONLY THE FALLBACK. Two brands or categories that
+ * happen to share a name are still two records, and one that is renamed must not
+ * merge into another -- so a row with an id is keyed by it and a row without one
+ * (an install a version behind) is keyed by its name instead.
+ */
+const brandKeyOf = (row: any) =>
+  hasId(row?.brand_id) ? `b:${row.brand_id}` : `b:${brandLabelOf(row)}`;
+const catKeyOf = (row: any) =>
+  hasId(row?.category_id) ? `c:${row.category_id}` : `c:${catLabelOf(row)}`;
+
+/**
+ * The group a row is filed under, or '' when it genuinely has none.
+ *
+ * ⚠️ THERE IS NO "Ungrouped" BUCKET. An item with no group is not a group called
+ * "Ungrouped" -- it simply has no Group level, and its category hangs straight
+ * off the brand (`A-Taj → Angle Stop Cock`). So a group key is handed back only
+ * when the server actually named a group for the row; everything else returns ''
+ * and lands in the brand's ungrouped categories.
+ */
+const groupKeyOf = (row: any) => {
+  const label = groupLabelOf(row);
+  if (!label) return '';
+  return hasId(row?.group_id) ? `g:${row.group_id}` : `g:${label}`;
+};
+
+/**
+ * A heading's path, drawn as `A → B → C`. ⚠️ Empty parts are dropped, so an item
+ * with no group reads `Brand → Category` rather than carrying a blank step.
+ */
+const HeadingPath = ({ parts }: { parts: any[] }) => {
+  const shown = parts.map((part) => String(part ?? '').trim()).filter(Boolean);
+
+  return (
+    <div className="inline-flex items-center gap-1 whitespace-nowrap py-1 font-semibold">
+      {shown.map((part, index) => (
+        <React.Fragment key={`${index}-${part}`}>
+          {index > 0 && (
+            <FiArrowRight className="shrink-0 text-gray-900 dark:text-gray-100" />
+          )}
+          <span>{part}</span>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
+
+const buildBrandGroupCategoryRows = (rows: any[]) => {
   if (!Array.isArray(rows)) return [];
 
+  const byName = (a: any, b: any) => String(a ?? '').localeCompare(String(b ?? ''));
+
   const sorted = [...rows].sort((a, b) => {
-    const b1 = String(a.brand_name || '').localeCompare(String(b.brand_name || ''));
-    if (b1 !== 0) return b1;
+    const brand = byName(a.brand_name, b.brand_name);
+    if (brand !== 0) return brand;
 
-    const c1 = String(a.cat_name || '').localeCompare(String(b.cat_name || ''));
-    if (c1 !== 0) return c1;
+    const group = byName(a.group_name, b.group_name);
+    if (group !== 0) return group;
 
-    return String(a.product_name || '').localeCompare(String(b.product_name || ''));
+    const cat = byName(a.cat_name, b.cat_name);
+    if (cat !== 0) return cat;
+
+    return byName(a.product_name, b.product_name);
   });
 
-  const brandMap = new Map<string, any[]>();
+  type CatBucket = { label: string; items: any[] };
+  type GroupBucket = { label: string; cats: Map<string, CatBucket> };
+  type BrandBucket = {
+    label: string;
+    /** Named groups, each holding its own categories. */
+    groups: Map<string, GroupBucket>;
+    /** Categories of items with no group: they sit straight under the brand. */
+    ungrouped: Map<string, CatBucket>;
+  };
+
+  const brands = new Map<string, BrandBucket>();
+
   for (const r of sorted) {
-    const brandKey = (r.brand_name || 'Unknown Brand').trim() || 'Unknown Brand';
-    if (!brandMap.has(brandKey)) brandMap.set(brandKey, []);
-    brandMap.get(brandKey)!.push(r);
+    const bKey = brandKeyOf(r);
+    const cKey = catKeyOf(r);
+
+    if (!brands.has(bKey)) {
+      brands.set(bKey, { label: brandLabelOf(r), groups: new Map(), ungrouped: new Map() });
+    }
+    const brand = brands.get(bKey)!;
+
+    const gKey = groupKeyOf(r);
+
+    // No group: the category belongs to the brand directly.
+    if (!gKey) {
+      if (!brand.ungrouped.has(cKey)) {
+        brand.ungrouped.set(cKey, { label: catLabelOf(r), items: [] });
+      }
+      brand.ungrouped.get(cKey)!.items.push(r);
+      continue;
+    }
+
+    if (!brand.groups.has(gKey)) {
+      brand.groups.set(gKey, { label: groupLabelOf(r), cats: new Map() });
+    }
+    const group = brand.groups.get(gKey)!;
+
+    if (!group.cats.has(cKey)) {
+      group.cats.set(cKey, { label: catLabelOf(r), items: [] });
+    }
+    group.cats.get(cKey)!.items.push(r);
   }
 
   const finalRows: any[] = [];
@@ -74,37 +176,53 @@ const buildBrandCategoryRows = (rows: any[]) => {
     balance: 0,
   };
 
-  for (const [brand, brandItems] of brandMap.entries()) {
+  const pushCategoryItems = (cat: CatBucket) => {
+    let serial = 1;
+    for (const it of cat.items) {
+      grandTotal.opening += toNumber(it.opening);
+      grandTotal.stock_in += toNumber(it.stock_in);
+      grandTotal.stock_out += toNumber(it.stock_out);
+      grandTotal.balance += toNumber(it.balance);
+      finalRows.push({
+        ...it,
+        sl_number: serial++,
+      });
+    }
+  };
+
+  for (const brand of brands.values()) {
     finalRows.push({
       __type: 'BRAND',
-      brand_name: brand,
+      brand_name: brand.label,
     });
 
-    const catMap = new Map<string, any[]>();
-    for (const it of brandItems) {
-      const catKey = (it.cat_name || 'Uncategorized').trim() || 'Uncategorized';
-      if (!catMap.has(catKey)) catMap.set(catKey, []);
-      catMap.get(catKey)!.push(it);
-    }
-
-    for (const [cat, items] of catMap.entries()) {
+    // Grouped items first: Brand -> Group -> Category -> items.
+    for (const group of brand.groups.values()) {
       finalRows.push({
-        __type: 'CAT',
-        brand_name: brand,
-        cat_name: cat,
+        __type: 'GROUP',
+        brand_name: brand.label,
+        group_name: group.label,
       });
 
-      let serial = 1;
-      for (const it of items) {
-        grandTotal.opening += toNumber(it.opening);
-        grandTotal.stock_in += toNumber(it.stock_in);
-        grandTotal.stock_out += toNumber(it.stock_out);
-        grandTotal.balance += toNumber(it.balance);
+      for (const cat of group.cats.values()) {
         finalRows.push({
-          ...it,
-          sl_number: serial++,
+          __type: 'CAT',
+          brand_name: brand.label,
+          group_name: group.label,
+          cat_name: cat.label,
         });
+        pushCategoryItems(cat);
       }
+    }
+
+    // Then the items with no group: Brand -> Category -> items.
+    for (const cat of brand.ungrouped.values()) {
+      finalRows.push({
+        __type: 'CAT',
+        brand_name: brand.label,
+        cat_name: cat.label,
+      });
+      pushCategoryItems(cat);
     }
   }
 
@@ -209,7 +327,7 @@ const ProductStock = ({ user }: any) => {
 
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {
-      const grouped = buildBrandCategoryRows(stock.data);
+      const grouped = buildBrandGroupCategoryRows(stock.data);
       setTableData(grouped);
     } else if (!stock.isLoading) {
       setTableData([]);
@@ -428,7 +546,7 @@ const ProductStock = ({ user }: any) => {
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) =>
-        isGroupRow(row) || isGrandTotalRow(row) ? '' : row.sl_number,
+        isHeadingRow(row) || isGrandTotalRow(row) ? '' : row.sl_number,
     },
     {
       key: 'product_name',
@@ -441,15 +559,15 @@ const ProductStock = ({ user }: any) => {
           return <div className="font-bold py-1">{row.brand_name}</div>;
         }
 
-        if (isCatRow(row)) {
-          return (
-            <div className="inline-flex items-center gap-1 whitespace-nowrap py-1 font-semibold">
-              <span className="font-semibold">{row.brand_name}</span>
-              <FiArrowRight className="shrink-0 text-gray-900 dark:text-gray-100" />
+        // Each heading spells out the whole path down to it: the group prints the
+        // brand it hangs from, and the category prints the brand and the group --
+        // dropping the group step entirely for an item that has none.
+        if (isGroupRow(row)) {
+          return <HeadingPath parts={[row.brand_name, row.group_name]} />;
+        }
 
-              <span>{row.cat_name}</span>
-            </div>
-          );
+        if (isCatRow(row)) {
+          return <HeadingPath parts={[row.brand_name, row.group_name, row.cat_name]} />;
         }
         // The code in front of the name, and only the name where there is no
         // code -- a lone dash reads as a product with a missing name.
@@ -467,7 +585,7 @@ const ProductStock = ({ user }: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) =>
-        isGroupRow(row) ? (
+        isHeadingRow(row) ? (
           ''
         ) : isGrandTotalRow(row) ? (
           <p className="font-bold">
@@ -494,7 +612,7 @@ const ProductStock = ({ user }: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) =>
-        isGroupRow(row) ? (
+        isHeadingRow(row) ? (
           ''
         ) : isGrandTotalRow(row) ? (
           <span className="text-sm font-bold">
@@ -514,7 +632,7 @@ const ProductStock = ({ user }: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) =>
-        isGroupRow(row) ? (
+        isHeadingRow(row) ? (
           ''
         ) : isGrandTotalRow(row) ? (
           <span className="text-sm font-bold">
@@ -534,7 +652,7 @@ const ProductStock = ({ user }: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) =>
-        isGroupRow(row) ? (
+        isHeadingRow(row) ? (
           ''
         ) : isGrandTotalRow(row) ? (
           <span className="text-sm font-bold">
@@ -836,7 +954,7 @@ const ProductStock = ({ user }: any) => {
         <div className="hidden">
           <StockBookPrint
             ref={printRef}
-            rows={(tableData || []).filter((r: any) => !isGroupRow(r) && !isGrandTotalRow(r))}
+            rows={(tableData || []).filter((r: any) => !isHeadingRow(r) && !isGrandTotalRow(r))}
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Product Stock"

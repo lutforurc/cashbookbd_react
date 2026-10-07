@@ -4,11 +4,15 @@ import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { humanizeEnumText } from '../../../utils/hooks/humanizeEnumText';
-import { FiActivity } from 'react-icons/fi';
+import { FiArrowRight } from 'react-icons/fi';
 
 type StockRow = {
   sl_number?: number | string;
+  brand_id?: number | string;
   brand_name?: string;
+  group_id?: number | string;
+  group_name?: string;
+  category_id?: number | string;
   cat_name?: string;
   product_name?: string;
   /** Absent on databases the product-code column has not reached. */
@@ -31,11 +35,32 @@ type Props = {
 
 type PrintRow =
   | { __type: 'BRAND_HEADER'; brand_name: string }
-  | { __type: 'CAT_HEADER'; brand_name: string; cat_name: string }
-  | { __type: 'CAT_TOTAL'; brand_name: string; cat_name: string; opening: number; stock_in: number; stock_out: number; balance: number }
+  | { __type: 'GROUP_HEADER'; brand_name: string; group_name: string }
+  | { __type: 'CAT_HEADER'; brand_name: string; group_name: string; cat_name: string }
+  | { __type: 'CAT_TOTAL'; brand_name: string; group_name: string; cat_name: string; opening: number; stock_in: number; stock_out: number; balance: number }
   | { __type: 'BRAND_TOTAL'; brand_name: string; opening: number; stock_in: number; stock_out: number; balance: number }
   | { __type: 'GRAND_TOTAL'; opening: number; stock_in: number; stock_out: number; balance: number }
   | ({ __type: 'ITEM' } & StockRow);
+
+/**
+ * A heading's path on the paper, drawn as `A → B → C`. ⚠️ Empty parts are
+ * dropped, so an item with no group prints `Brand → Category` rather than a
+ * blank step where a group's name would be.
+ */
+const PrintPath = ({ parts }: { parts: any[] }) => {
+  const shown = parts.map((part) => String(part ?? '').trim()).filter(Boolean);
+
+  return (
+    <span className="inline-flex items-center gap-1 whitespace-nowrap">
+      {shown.map((part, index) => (
+        <React.Fragment key={`${index}-${part}`}>
+          {index > 0 && <FiArrowRight className="shrink-0 text-gray-900" />}
+          <span>{part}</span>
+        </React.Fragment>
+      ))}
+    </span>
+  );
+};
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
   if (size <= 0) return [data];
@@ -58,23 +83,48 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
         ? rows.filter((row: any) => row?.__type !== 'GRAND_TOTAL')
         : [];
 
-      // ✅ Sort by Brand -> Category -> Product
+      const byName = (a: any, b: any) => String(a ?? '').localeCompare(String(b ?? ''));
+
+      // ⚠️ Keyed by the server's ids, like the screen behind it, so two records
+      // that share a name stay apart. The name is only the fallback.
+      const hasId = (v: any) => v !== null && v !== undefined && String(v) !== '';
+      const brandNameOf = (row: StockRow) =>
+        String(row.brand_name || 'Unknown Brand').trim() || 'Unknown Brand';
+      const brandKeyOf = (row: StockRow) =>
+        hasId(row.brand_id) ? `b:${row.brand_id}` : `b:${brandNameOf(row)}`;
+      // ⚠️ '' MEANS "NO GROUP", NOT A GROUP CALLED SOMETHING. The category then
+      // sits straight under the brand instead of under a made-up band.
+      const groupNameOf = (row: StockRow) => String(row.group_name || '').trim();
+      const groupKeyOf = (row: StockRow) => {
+        const label = groupNameOf(row);
+        if (!label) return '';
+        return hasId(row.group_id) ? `g:${row.group_id}` : `g:${label}`;
+      };
+      const catNameOf = (row: StockRow) =>
+        String(row.cat_name || 'Uncategorized').trim() || 'Uncategorized';
+      const catKeyOf = (row: StockRow) =>
+        hasId(row.category_id) ? `c:${row.category_id}` : `c:${catNameOf(row)}`;
+
+      // ✅ Sort by Brand -> Group -> Category -> Product
       const sorted = [...rowsArr].sort((a, b) => {
-        const b1 = String(a.brand_name || '').localeCompare(String(b.brand_name || ''));
-        if (b1 !== 0) return b1;
+        const brand = byName(a.brand_name, b.brand_name);
+        if (brand !== 0) return brand;
 
-        const c1 = String(a.cat_name || '').localeCompare(String(b.cat_name || ''));
-        if (c1 !== 0) return c1;
+        const group = byName(a.group_name, b.group_name);
+        if (group !== 0) return group;
 
-        return String(a.product_name || '').localeCompare(String(b.product_name || ''));
+        const cat = byName(a.cat_name, b.cat_name);
+        if (cat !== 0) return cat;
+
+        return byName(a.product_name, b.product_name);
       });
 
       // ✅ Group by Brand
-      const brandMap = new Map<string, StockRow[]>();
+      const brandMap = new Map<string, { name: string; items: StockRow[] }>();
       for (const r of sorted) {
-        const brandKey = (r.brand_name || 'Unknown Brand').trim() || 'Unknown Brand';
-        if (!brandMap.has(brandKey)) brandMap.set(brandKey, []);
-        brandMap.get(brandKey)!.push(r);
+        const brandKey = brandKeyOf(r);
+        if (!brandMap.has(brandKey)) brandMap.set(brandKey, { name: brandNameOf(r), items: [] });
+        brandMap.get(brandKey)!.items.push(r);
       }
 
       const out: PrintRow[] = [];
@@ -85,15 +135,83 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
       let gOut = 0;
       let gBal = 0;
 
-      for (const [brand, brandItems] of brandMap.entries()) {
+      // One category block: heading, its items, its subtotal -- and back comes
+      // the block's own totals for the brand and grand total to fold in.
+      const emitCategory = (brand: string, group: string, catName: string, items: StockRow[]) => {
+        out.push({
+          __type: 'CAT_HEADER',
+          brand_name: brand,
+          group_name: group,
+          cat_name: catName,
+        });
+
+        // ✅ serial reset per category (inside its group, or its brand)
+        let serial = 1;
+
+        let tOpening = 0;
+        let tIn = 0;
+        let tOut = 0;
+        let tBal = 0;
+
+        for (const it of items) {
+          const opening = toNum(it.opening);
+          const stockIn = toNum(it.stock_in);
+          const stockOut = toNum(it.stock_out);
+          const balance = it.balance != null ? toNum(it.balance) : opening + stockIn - stockOut;
+
+          tOpening += opening;
+          tIn += stockIn;
+          tOut += stockOut;
+          tBal += balance;
+
+          out.push({
+            __type: 'ITEM',
+            ...it,
+            sl_number: serial++, // ✅ override
+            balance,
+          });
+        }
+
+        out.push({
+          __type: 'CAT_TOTAL',
+          brand_name: brand,
+          group_name: group,
+          cat_name: catName,
+          opening: tOpening,
+          stock_in: tIn,
+          stock_out: tOut,
+          balance: tBal,
+        });
+
+        return { opening: tOpening, stock_in: tIn, stock_out: tOut, balance: tBal };
+      };
+
+      // The categories of a set of rows, keyed by id where the server sent one.
+      const categoriesOf = (items: StockRow[]) => {
+        const map = new Map<string, { name: string; items: StockRow[] }>();
+        for (const it of items) {
+          const key = catKeyOf(it);
+          if (!map.has(key)) map.set(key, { name: catNameOf(it), items: [] });
+          map.get(key)!.items.push(it);
+        }
+        return map;
+      };
+
+      for (const brandEntry of brandMap.values()) {
+        const brand = brandEntry.name;
         out.push({ __type: 'BRAND_HEADER', brand_name: brand });
 
-        // ✅ group inside brand by Category
-        const catMap = new Map<string, StockRow[]>();
-        for (const it of brandItems) {
-          const catKey = (it.cat_name || 'Uncategorized').trim() || 'Uncategorized';
-          if (!catMap.has(catKey)) catMap.set(catKey, []);
-          catMap.get(catKey)!.push(it);
+        // Split the brand's rows into its named groups and the ones with none.
+        const groupMap = new Map<string, { name: string; items: StockRow[] }>();
+        const ungrouped: StockRow[] = [];
+        for (const it of brandEntry.items) {
+          const groupKey = groupKeyOf(it);
+          if (!groupKey) {
+            ungrouped.push(it);
+            continue;
+          }
+          if (!groupMap.has(groupKey)) groupMap.set(groupKey, { name: groupNameOf(it), items: [] });
+          groupMap.get(groupKey)!.items.push(it);
         }
 
         let bOpening = 0;
@@ -101,51 +219,25 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
         let bOut = 0;
         let bBal = 0;
 
-        for (const [cat, items] of catMap.entries()) {
-          out.push({ __type: 'CAT_HEADER', brand_name: brand, cat_name: cat });
+        const fold = (t: { opening: number; stock_in: number; stock_out: number; balance: number }) => {
+          bOpening += t.opening;
+          bIn += t.stock_in;
+          bOut += t.stock_out;
+          bBal += t.balance;
+        };
 
-          // ✅ serial reset per category (inside brand)
-          let serial = 1;
+        // ✅ Brand -> Group -> Category
+        for (const groupEntry of groupMap.values()) {
+          out.push({ __type: 'GROUP_HEADER', brand_name: brand, group_name: groupEntry.name });
 
-          let tOpening = 0;
-          let tIn = 0;
-          let tOut = 0;
-          let tBal = 0;
-
-          for (const it of items) {
-            const opening = toNum(it.opening);
-            const stockIn = toNum(it.stock_in);
-            const stockOut = toNum(it.stock_out);
-            const balance = it.balance != null ? toNum(it.balance) : opening + stockIn - stockOut;
-
-            tOpening += opening;
-            tIn += stockIn;
-            tOut += stockOut;
-            tBal += balance;
-
-            out.push({
-              __type: 'ITEM',
-              ...it,
-              sl_number: serial++, // ✅ override
-              balance,
-            });
+          for (const catEntry of categoriesOf(groupEntry.items).values()) {
+            fold(emitCategory(brand, groupEntry.name, catEntry.name, catEntry.items));
           }
+        }
 
-          out.push({
-            __type: 'CAT_TOTAL',
-            brand_name: brand,
-            cat_name: cat,
-            opening: tOpening,
-            stock_in: tIn,
-            stock_out: tOut,
-            balance: tBal,
-          });
-
-          // ✅ add into brand total
-          bOpening += tOpening;
-          bIn += tIn;
-          bOut += tOut;
-          bBal += tBal;
+        // ✅ Brand -> Category, for the items that have no group.
+        for (const catEntry of categoriesOf(ungrouped).values()) {
+          fold(emitCategory(brand, '', catEntry.name, catEntry.items));
         }
 
         // ✅ brand total
@@ -235,15 +327,21 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                         );
                       }
 
+                      if (row.__type === 'GROUP_HEADER') {
+                        return (
+                          <tr key={idx} className="avoid-break">
+                            <td colSpan={6} style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 font-semibold bg-gray-50">
+                              <PrintPath parts={[row.brand_name, row.group_name]} />
+                            </td>
+                          </tr>
+                        );
+                      }
+
                       if (row.__type === 'CAT_HEADER') {
                         return (
                           <tr key={idx} className="avoid-break">
                             <td colSpan={6} style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 font-semibold bg-white">
-                              <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                                <span className="font-semibold">{row.brand_name}</span>
-                                <FiActivity className="shrink-0 text-gray-900" />
-                                <span>{row.cat_name}</span>
-                              </span>
+                              <PrintPath parts={[row.brand_name, row.group_name, row.cat_name]} />
                             </td>
                           </tr>
                         );

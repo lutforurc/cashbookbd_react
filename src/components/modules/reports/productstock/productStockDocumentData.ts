@@ -6,30 +6,32 @@ import type { PrintBranch } from '../../../utils/utils-functions/printBranch';
  * The Product Stock report in the shape the print designer draws.
  *
  * The bespoke paper (StockBookPrint.tsx) knows these columns by hard-coded name
- * and builds a Brand heading and a Category heading over each group. This hands
- * the same facts over, each product on a row the tenant can arrange, and the
- * headings the screen already grouped it by as heading rows of their own.
+ * and builds a Brand heading, a Group heading under it and a Category heading
+ * under that. This hands the same facts over, each product on a row the tenant
+ * can arrange, and the headings the screen already grouped it by as heading rows
+ * of their own.
  *
  * ⚠️ THE SENTINEL ROWS COME THROUGH AS HEADINGS, EXCEPT THE GRAND TOTAL. What
- * the screen holds is the report's rows with `__type: 'BRAND' | 'CAT' | 'GROUP'
- * | 'GRAND_TOTAL'` entries woven between them (see buildBrandCategoryRows and
- * buildCategoryWiseRows), and the first three are headings, not products. They
- * are turned into `__heading` rows, which DocumentPrint draws as one cell across
- * the table -- so the paper groups exactly as the screen behind it does. The
- * Grand Total row is still dropped: DocumentPrint works its own foot out from
- * these rows, so passing it through would print it as a product called "Grand
- * Total" and count every figure twice.
+ * the screen holds is the report's rows with `__type: 'BRAND' | 'GROUP' | 'CAT'
+ * | 'GRAND_TOTAL'` entries woven between them (see buildBrandGroupCategoryRows
+ * and buildCategoryWiseRows), and the first three are headings, not products.
+ * They are turned into `__heading` rows, which DocumentPrint draws as one cell
+ * across the table -- so the paper groups exactly as the screen behind it does.
+ * The Grand Total row is still dropped: DocumentPrint works its own foot out
+ * from these rows, so passing it through would print it as a product called
+ * "Grand Total" and count every figure twice.
  *
- * ⚠️ `brand` AND `category` ARE THE SERVER'S `brand_name` AND `cat_name`, renamed.
- * A composed product pattern reads a token by the row's own key, verbatim, so
- * the catalogue's `{brand}` finds nothing under the server's name.
+ * ⚠️ `brand`, `category` AND `group` ARE THE SERVER'S `brand_name`, `cat_name`
+ * AND `group_name`, renamed. A composed product pattern reads a token by the
+ * row's own key, verbatim, so the catalogue's `{brand}` finds nothing under the
+ * server's name.
  *
- * ⚠️ `code` COMES FROM THE SERVER NOW, `group` STILL DOES NOT. The report's
- * query carries the product code (guarded -- older databases have no such
- * column, in which case it answers an empty string and a `{code}` in a pattern
- * prints blank, which is the truth there). `group` is a different matter: it is
- * not in this report's answer at all, and it is deliberately left off rather
- * than invented, so a layout asking for it prints blank on every page.
+ * ⚠️ `code` AND NOW `group` COME FROM THE SERVER. The report's query carries the
+ * product code (guarded -- older databases have no such column, in which case it
+ * answers an empty string and a `{code}` in a pattern prints blank, which is the
+ * truth there) and joins `product_groups` for the group's own name, so a layout
+ * asking for `{group}` prints the name the screen grouped it by. A product filed
+ * under no group answers blank, and the layout prints blank -- the truth again.
  */
 export type ProductStockDocumentOptions = {
   rows: any[];
@@ -68,18 +70,19 @@ export const toProductStockDocumentData = ({
    * ⚠️ THE GROUP HEADINGS ARE HANDED THROUGH, THE GRAND TOTAL ROW IS NOT.
    *
    * How this report is grouped is not decided here -- the screen has already
-   * decided it. A branch that turns on Edit Branch -> "Stock: Brand->Category->
-   * Item" gets brand and category rows woven among its products by
-   * buildBrandCategoryRows, and one that does not gets category rows from
-   * buildCategoryWiseRows. Passing those rows on is what makes this paper print
-   * the same grouping as the screen behind it, with no second setting to keep in
-   * step.
+   * decided it. A branch that turns on Edit Branch -> "Stock:
+   * Brand->Group->Category->Item" gets brand, group and category rows woven
+   * among its products by buildBrandGroupCategoryRows, and one that does not
+   * gets category rows from buildCategoryWiseRows. Passing those rows on is what
+   * makes this paper print the same grouping as the screen behind it, with no
+   * second setting to keep in step.
    *
-   * ⚠️ Their NAME comes out of the fact each row is built around, and a category
-   * heading says which brand it sits under -- `ATI → Tiles`, the arrow the screen
-   * and the bespoke sheet both draw there (ProductStock.tsx prints exactly that).
-   * A category row from the straight-listing branch carries no brand, so it
-   * comes out as its own name alone.
+   * ⚠️ Their NAME comes out of the fact each row is built around, and each
+   * heading says what it hangs from -- `ATI → Tiles` for a group, and
+   * `ATI → Tiles → Tiles Adhesive` for a category, the arrow the screen and the
+   * bespoke sheet both draw there (ProductStock.tsx prints exactly that). A
+   * category row from the straight-listing branch carries no brand or group, so
+   * it comes out as its own name alone.
    *
    * ⚠️ AND THE GRAND TOTAL IS STILL DROPPED. DocumentPrint works its own foot
    * out from these rows, so a Grand Total row passed through would print as a
@@ -92,17 +95,28 @@ export const toProductStockDocumentData = ({
 
     if (row?.__type) {
       const brand = text(row.brand_name);
-      const heading =
-        row.__type === 'BRAND' ? brand : [brand, text(row.cat_name)].filter(Boolean).join(' → ');
+      const group = text(row.group_name);
+
+      const parts =
+        row.__type === 'BRAND'
+          ? [brand]
+          : row.__type === 'GROUP'
+            ? [brand, group]
+            : [brand, group, text(row.cat_name)];
 
       /**
-       * ⚠️ ONE STEP IN, AND ONLY WHERE THERE IS SOMETHING TO SIT UNDER. On the
-       * grouped branch a category hangs off its brand (depth 1); on the
-       * straight-listing branch there is no brand, so its category stands at the
-       * margin like the brand would. See the heading branch in DocumentPrint.
+       * ⚠️ ONE STEP IN PER LEVEL THAT IS ACTUALLY THERE. A category hangs off
+       * the group inside its brand (depth 2), and a group off its brand (depth
+       * 1). Where the branch does not file the product under a group the group
+       * is blank, so the category only steps in once under its brand -- and a
+       * heading with nothing above it stands at the margin. See the heading
+       * branch in DocumentPrint.
        */
+      const ancestors = parts.filter(Boolean);
+      const heading = ancestors.join(' → ');
+
       if (heading) {
-        products.push({ __heading: heading, __depth: row.__type === 'CAT' && brand ? 1 : 0 });
+        products.push({ __heading: heading, __depth: Math.max(0, ancestors.length - 1) });
       }
       continue;
     }
@@ -114,7 +128,7 @@ export const toProductStockDocumentData = ({
       product_name: text(row?.product_name),
       brand: text(row?.brand_name),
       category: text(row?.cat_name),
-      group: '',
+      group: text(row?.group_name),
       code: text(row?.code),
       unit: text(row?.unit),
       opening: num(row?.opening),
