@@ -306,6 +306,11 @@ export const API_REPORT_PURCHASE_LEDGER_URL = `${API_BASE_URL}/reports/purchase/
 // Sales Ledger url
 export const API_REPORT_SALES_LEDGER_URL = `${API_BASE_URL}/reports/sales/ledger`;
 
+// Customer Sales Report url
+// Every sales invoice line, filed by customer and then by the product's brand,
+// group and category.
+export const API_REPORT_CUSTOMER_SALES_URL = `${API_BASE_URL}/reports/customer-sales`;
+
 // Names the driver on a sale before its delivery challan is printed. Writes
 // two columns the accounts never read, so it is allowed to whoever may open
 // the ledger rather than to whoever may edit a sale.

@@ -1610,6 +1610,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+                          {hasPermission(permissions, 'sales.ledger') && (
+                            <li style={subSlot('reports', 'report_customer_sales')}>
+                              <NavLink
+                                to="/reports/customer-sales"
+                                className={subMenuLinkClass}
+                              >
+                                Customer Sales
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'group.report') && (
                             <li style={subSlot('reports', 'reports/group-report')}>
                               <NavLink
