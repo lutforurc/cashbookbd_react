@@ -579,6 +579,17 @@ const ProductStock = ({ user }: any) => {
         );
       },
     },
+
+    {
+      key: 'unit',
+      header: 'Unit',
+      render: (row: any)=>{
+          
+          return <div className="py-1">{row.unit}</div>;
+          
+      }
+    },
+
     {
       key: 'opening',
       header: 'Opening',
@@ -600,7 +611,7 @@ const ProductStock = ({ user }: any) => {
             }
           >
             {thousandSeparator(Math.floor(row.opening || 0))}
-            <span className="text-sm"> ({row.unit})</span>
+            {/* <span className="text-sm"> ({row.unit})</span> */}
           </p>
         ) : (
           '-'
@@ -620,7 +631,7 @@ const ProductStock = ({ user }: any) => {
           </span>
         ) : row.stock_in ? (
           <span className="text-sm">
-            {thousandSeparator(Math.floor(row.stock_in))} ({row.unit})
+            {thousandSeparator(Math.floor(row.stock_in))} 
           </span>
         ) : (
           '-'
@@ -640,7 +651,7 @@ const ProductStock = ({ user }: any) => {
           </span>
         ) : row.stock_out ? (
           <span className="text-sm">
-            {thousandSeparator(Math.floor(row.stock_out))} ({row.unit})
+            {thousandSeparator(Math.floor(row.stock_out))} 
           </span>
         ) : (
           '-'
@@ -665,7 +676,7 @@ const ProductStock = ({ user }: any) => {
                 : ''
               }`}
           >
-            {thousandSeparator(Math.floor(row.balance))} ({row.unit})
+            {thousandSeparator(Math.floor(row.balance))} 
           </span>
         ) : (
           '-'
