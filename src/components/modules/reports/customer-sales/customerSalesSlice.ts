@@ -12,6 +12,9 @@ export interface CustomerSalesRow {
   customer_name?: string | null;
   invoice_no?: string | null;
   invoice_date?: string | null;
+  /** The hand-written book/challan numbers the invoice was filed under. */
+  manual_voucher_no?: string | null;
+  manual_challan_no?: string | null;
   brand_id?: number | string | null;
   brand_name?: string | null;
   group_id?: number | string | null;

@@ -115,10 +115,20 @@ const CustomerSalesPrint = React.forwardRef<HTMLDivElement, Props>(
                             >
                               <div className="flex items-center justify-between gap-4">
                                 <span className="whitespace-nowrap">
-                                  <span className="font-semibold">Invoice: {row.invoice_no}</span>
+                                  <span className="font-semibold">Invoices: {row.invoice_no}</span>
+
                                   {row.invoice_date && row.invoice_date !== '-' ? (
                                     <span className="ml-3">Date: {row.invoice_date}</span>
                                   ) : null}
+
+                                  {row.manual_voucher_no ? (
+                                    <span className="ml-3">Memo No.: {row.manual_voucher_no}</span>
+                                  ) : null}
+
+                                  {row.manual_challan_no ? (
+                                    <span className="ml-3">Challan No.: {row.manual_challan_no}</span>
+                                  ) : null}
+
                                 </span>
                                 <span className="whitespace-nowrap">
                                   Qty: {thousandSeparator(row.quantity)} | Amount: {thousandSeparator(row.amount)}

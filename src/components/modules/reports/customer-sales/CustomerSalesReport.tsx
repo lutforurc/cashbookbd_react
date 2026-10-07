@@ -26,6 +26,7 @@ import { getCustomerSales, resetCustomerSales } from './customerSalesSlice';
 import type { CustomerSalesRow } from './customerSalesSlice';
 import { buildCustomerSalesRows } from './customerSalesGroups';
 import CustomerSalesPrint from './CustomerSalesPrint';
+import Table from '../../../utils/others/Table';
 
 const toArray = (value: any) => (Array.isArray(value) ? value : []);
 
@@ -426,6 +427,7 @@ const CustomerSalesReport = (user: any) => {
           its block once, and each invoice heads its lines once -- number and
           date on the one row. Both span the table so they read as bands.
         */}
+        
         <table className="min-w-full table-fixed border-collapse text-left text-sm text-gray-700 dark:text-gray-300">
           <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300">
             <tr>
@@ -470,6 +472,10 @@ const CustomerSalesReport = (user: any) => {
                             {row.invoice_date && row.invoice_date !== '-' ? (
                               <span className="ml-3">Date: {row.invoice_date}</span>
                             ) : null}
+                            {row.manual_voucher_no ? (
+                              <span className="ml-3">Memo No.: {row.manual_voucher_no}</span>
+                            ) : null}
+                           
                           </span>
                           <span className="whitespace-nowrap text-xs font-semibold">
                             Qty: {thousandSeparator(row.quantity)} | Amount: {thousandSeparator(row.amount)}

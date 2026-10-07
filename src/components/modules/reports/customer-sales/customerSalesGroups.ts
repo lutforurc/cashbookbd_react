@@ -24,6 +24,8 @@ export type CustomerSalesDisplayRow =
       key: string;
       invoice_no: string;
       invoice_date: string;
+      manual_voucher_no: string;
+      manual_challan_no: string;
       quantity: number;
       amount: number;
     }
@@ -113,15 +115,26 @@ export const buildCustomerSalesRows = (
     // Invoices of this customer, in the order the rows arrived (raised order).
     const byInvoice = new Map<
       string,
-      { invoice_no: string; invoice_date: string; rows: CustomerSalesRow[] }
+      {
+        invoice_no: string;
+        invoice_date: string;
+        manual_voucher_no: string;
+        manual_challan_no: string;
+        rows: CustomerSalesRow[];
+      }
     >();
 
     for (const row of customer.rows) {
       const key = invoiceKeyOf(row);
       if (!byInvoice.has(key)) {
+        // ⚠️ EVERY LINE OF AN INVOICE CARRIES THE SAME MEMO AND CHALLAN, so the
+        // line that raises the block is the one that names it -- reading them off
+        // the block instead of the line would head the invoice with "undefined".
         byInvoice.set(key, {
           invoice_no: String(row?.invoice_no ?? '').trim() || '-',
           invoice_date: String(row?.invoice_date ?? '').trim() || '-',
+          manual_voucher_no: String(row?.manual_voucher_no ?? '').trim(),
+          manual_challan_no: String(row?.manual_challan_no ?? '').trim(),
           rows: [],
         });
       }
@@ -160,6 +173,8 @@ export const buildCustomerSalesRows = (
         __type: 'INVOICE',
         key: invoiceKey,
         invoice_no: invoice.invoice_no,
+        manual_voucher_no: invoice.manual_voucher_no,
+        manual_challan_no: invoice.manual_challan_no,
         invoice_date: invoice.invoice_date,
         quantity: invoiceQuantity,
         amount: invoiceAmount,
