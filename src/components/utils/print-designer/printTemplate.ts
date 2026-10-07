@@ -195,17 +195,25 @@ export type InfoItem = {
    *
    * Drawn only where the line is drawn -- a rule over a line hidden for having
    * nothing to say would be a rule under nothing.
+   *
+   * ⚠️ The tenant's switch, not the paper's: the designer draws a Line button on
+   * every totals figure, and this is on only where they put it. The lines on the
+   * default footer are set here too, but they are only the starting point --
+   * they can be taken off one at a time.
    */
   ruleAbove?: boolean;
   /**
-   * ⚠️ ONLY THE `rule` FIELD READS THESE -- a line standing on its own in the
-   * totals block, added from the picker's "Line".
+   * The three knobs of a rule: how it is drawn, and the paper on either side.
    *
-   * `ruleAbove` above draws a rule tied to the figure under it, which is what a
-   * bill wants where a sum happens: move the line and the figure moves with it.
-   * A tenant who wants the rule somewhere else -- between two figures that are
-   * not a sum, or with more air than the row itself gives -- needs a rule that
-   * is a thing in its own right, and these are its three knobs.
+   * Read by BOTH kinds of rule -- the `rule` field standing on its own in the
+   * totals block, and the rule `ruleAbove` ties to the figure under it.
+   *
+   * ⚠️ They differ in their DEFAULT, and it is deliberate. A standalone rule has
+   * `RULE_SPACE` of air either side, because a line between two lines of text
+   * needs it to read as a rule rather than as an underline. A rule over a figure
+   * has NONE, because that is how it was drawn before these were adjustable --
+   * so a paper saved back then, with no margins stored, prints exactly as it did
+   * rather than shifting every total down six pixels the moment it is opened.
    */
   ruleStyle?: 'solid' | 'dashed';
   /** Pixels of paper between the rule and the line above it. */

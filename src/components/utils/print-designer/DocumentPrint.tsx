@@ -915,27 +915,58 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                 }
 
                 // A rule where a sum happens -- above the gross, the net and
-                // the balance. Drawn on the cells rather than the row, which
-                // browsers ignore on a collapsed table; and never on the first
-                // line drawn, where it would only underline the table above.
-                const rule = item.ruleAbove && index > 0 ? 'border-t border-gray-800 ' : '';
+                // the balance.
+                //
+                // ⚠️ Its OWN ROW, not a border on the cells. Drawn on the cells
+                // it could not be given margins: the line sat hard against the
+                // figure, and the tenant had no way to take it off the paper or
+                // to open a gap above it. As a row it is the same line the
+                // standalone "Line" draws, so it carries the same three knobs --
+                // and the margins default to nought rather than RULE_SPACE, so
+                // every paper already saved prints exactly as it did.
+                //
+                // Still never on the first line drawn, where it would only
+                // underline the table above.
+                const ruled = item.ruleAbove && index > 0;
 
                 return (
-                  <tr key={`${item.field}-${index}`}>
-                    {footedTo ? <td /> : null}
-                    <td className={`${rule}pr-3 text-right font-semibold`}>
-                      {caption(item.label, fieldName(item.field))}
-                    </td>
-                    <td className={`${rule}pr-1 text-right`}>:</td>
-                    <td
-                      className={
-                        `${rule}font-bold ` +
-                        (isNumericField(item.field) ? 'text-right' : 'text-left')
-                      }
-                    >
-                      {value(item.field)}
-                    </td>
-                  </tr>
+                  <React.Fragment key={`${item.field}-${index}`}>
+                    {ruled ? (
+                      <tr>
+                        {footedTo ? <td /> : null}
+                        <td
+                          colSpan={3}
+                          style={{
+                            paddingTop: `${item.ruleSpaceAbove ?? 0}px`,
+                            paddingBottom: `${item.ruleSpaceBelow ?? 0}px`,
+                          }}
+                        >
+                          <div
+                            className={
+                              item.ruleStyle === 'dashed'
+                                ? 'border-t border-dashed border-gray-400'
+                                : 'border-t border-gray-800'
+                            }
+                          />
+                        </td>
+                      </tr>
+                    ) : null}
+                    <tr>
+                      {footedTo ? <td /> : null}
+                      <td className="pr-3 text-right font-semibold">
+                        {caption(item.label, fieldName(item.field))}
+                      </td>
+                      <td className="pr-1 text-right">:</td>
+                      <td
+                        className={
+                          'font-bold ' +
+                          (isNumericField(item.field) ? 'text-right' : 'text-left')
+                        }
+                      >
+                        {value(item.field)}
+                      </td>
+                    </tr>
+                  </React.Fragment>
                 );
               })}
             </tbody>

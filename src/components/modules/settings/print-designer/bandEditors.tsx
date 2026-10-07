@@ -1,5 +1,13 @@
 import React from 'react';
-import { FiChevronDown, FiChevronUp, FiEye, FiEyeOff, FiMenu, FiTrash2 } from 'react-icons/fi';
+import {
+  FiChevronDown,
+  FiChevronUp,
+  FiEye,
+  FiEyeOff,
+  FiMenu,
+  FiMinus,
+  FiTrash2,
+} from 'react-icons/fi';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { Input, Select, Textarea } from '../../../utils/fields/FormControls';
 import {
@@ -410,7 +418,13 @@ const ItemList: React.FC<{
   onChange: (items: InfoItem[]) => void;
   /** Totals have nothing to leave off -- a zero total is still a total. */
   allowHideIfEmpty?: boolean;
-}> = ({ items, onChange, allowHideIfEmpty = true }) => {
+  /**
+   * ⚠️ TOTALS ONLY. The renderer draws a rule over a figure in the totals block
+   * and nowhere else, so offering the switch on an info line would be a control
+   * that changes nothing on the paper.
+   */
+  allowRuleAbove?: boolean;
+}> = ({ items, onChange, allowHideIfEmpty = true, allowRuleAbove = false }) => {
   const { handlers, rowClass } = useRowDrag();
 
   const move = (from: number, to: number) => onChange(reorder(items, from, to));
@@ -533,6 +547,96 @@ const ItemList: React.FC<{
                 >
                   {item.hideIfEmpty ? <FiEyeOff /> : <FiEye />}
                 </Button>
+              ) : null}
+
+              {/* ⚠️ THE LINE OVER A SUM IS THE TENANT'S, not the paper's. It used
+                  to be baked into the default layout, so a tenant who wanted the
+                  net ruled off but not the balance had no way to say so -- and
+                  one who wanted the whole footer unruled had to give up the
+                  defaults to get it. The same three knobs as a standalone Line,
+                  because it is drawn by the same code. */}
+              {allowRuleAbove ? (
+                <>
+                  <Button
+                    type="button"
+                    draggable={false}
+                    title={
+                      item.ruleAbove
+                        ? 'A line above this figure — click to take it off'
+                        : 'Draw a line above this figure'
+                    }
+                    onClick={() => {
+                      const next = items.slice();
+                      next[index] = { ...item, ruleAbove: !item.ruleAbove };
+                      onChange(next);
+                    }}
+                    className={
+                      'rounded p-1 ' +
+                      (item.ruleAbove
+                        ? 'bg-gray-100 text-primary dark:bg-meta-4'
+                        : 'hover:bg-gray-100 dark:hover:bg-meta-4')
+                    }
+                  >
+                    <FiMinus />
+                  </Button>
+
+                  {item.ruleAbove ? (
+                    <div className="flex flex-wrap items-end gap-2">
+                      <div className="w-24 shrink-0">
+                        <span className={SUB_LABEL}>Line</span>
+                        <Select
+                          value={item.ruleStyle ?? 'solid'}
+                          draggable={false}
+                          onChange={(event) => {
+                            const next = items.slice();
+                            next[index] = {
+                              ...item,
+                              ruleStyle: event.target.value as 'solid' | 'dashed',
+                            };
+                            onChange(next);
+                          }}
+                          className={CONTROL}
+                        >
+                          <option value="solid">Solid</option>
+                          <option value="dashed">Dashed</option>
+                        </Select>
+                      </div>
+
+                      {/* ⚠️ Defaults of nought, unlike a standalone Line's six:
+                          the rule over a figure was drawn flush against it until
+                          now, and a paper saved before this control existed
+                          carries no margins. Six pixels there would move every
+                          such paper's net line the moment it was opened. */}
+                      <div className="w-24 shrink-0">
+                        <NumberBox
+                          label="Space above"
+                          value={item.ruleSpaceAbove ?? 0}
+                          min={0}
+                          max={60}
+                          onChange={(ruleSpaceAbove) => {
+                            const next = items.slice();
+                            next[index] = { ...item, ruleSpaceAbove };
+                            onChange(next);
+                          }}
+                        />
+                      </div>
+
+                      <div className="w-24 shrink-0">
+                        <NumberBox
+                          label="Space below"
+                          value={item.ruleSpaceBelow ?? 0}
+                          min={0}
+                          max={60}
+                          onChange={(ruleSpaceBelow) => {
+                            const next = items.slice();
+                            next[index] = { ...item, ruleSpaceBelow };
+                            onChange(next);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </>
           )}
@@ -700,6 +804,7 @@ export const TotalsBandEditor: React.FC<{
     <ItemList
       items={band.items}
       allowHideIfEmpty={false}
+      allowRuleAbove
       onChange={(items) => onChange({ ...band, items })}
     />
     <FieldPicker onPick={(field) => onChange({ ...band, items: [...band.items, { field }] })} />
