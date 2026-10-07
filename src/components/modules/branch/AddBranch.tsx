@@ -1915,7 +1915,7 @@ const AddBranch = () => {
                         onChange={(checked) => handleToggleFieldChange('need_code', checked)}
                       />
                       <FormToggleField
-                        label="Stock: Brand->Category->Item"
+                        label="Stock: Brand->Group->Category->Item"
                         description="Groups the stock report by brand, then category, then item, instead of listing items straight."
                         checked={Boolean(formData.stock_report_type)}
                         onChange={(checked) => handleToggleFieldChange('stock_report_type', checked)}
