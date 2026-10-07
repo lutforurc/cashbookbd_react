@@ -62,8 +62,8 @@ const CustomerSalesPrint = React.forwardRef<HTMLDivElement, Props>(
             <div key={pIdx} className="print-page">
               <PadPrinting />
 
-              <div className="mb-4 text-center">
-                <h1 className="text-xl font-bold">{title}</h1>
+              <div className="mb-4 mt-2 text-center">
+                <h2 className="text-xl font-bold">{title}</h2>
                 {filterLine ? <div className="mt-1 text-xs">{filterLine}</div> : null}
               </div>
 

@@ -226,12 +226,12 @@ const CustomerSalesReport = (user: any) => {
 
   // What the sheet says it is showing, so a printed copy carries its own filters.
   const filterLine = [
-    `Branch: ${nameOf(branchId, dropdownData.map((b: any) => ({ id: b.id, name: b.name }))) || '-'}`,
-    `Customer: ${selectedCustomerOption?.label || 'All Customers'}`,
-    `Brand: ${nameOf(brandId, brandOptions)}`,
-    `Group: ${nameOf(groupId, groupOptions)}`,
-    `Category: ${nameOf(categoryId, categoryOptions)}`,
-    `Product: ${selectedProductOption?.label || 'All Products'}`,
+    // `Branch: ${nameOf(branchId, dropdownData.map((b: any) => ({ id: b.id, name: b.name }))) || '-'}`,
+    // `Customer: ${selectedCustomerOption?.label || 'All Customers'}`,
+    // `Brand: ${nameOf(brandId, brandOptions)}`,
+    // `Group: ${nameOf(groupId, groupOptions)}`,
+    // `Category: ${nameOf(categoryId, categoryOptions)}`,
+    // `Product: ${selectedProductOption?.label || 'All Products'}`,
     `Date: ${startDate ? dayjs(startDate).format('DD/MM/YYYY') : '-'} - ${endDate ? dayjs(endDate).format('DD/MM/YYYY') : '-'}`,
   ].join('  |  ');
 
