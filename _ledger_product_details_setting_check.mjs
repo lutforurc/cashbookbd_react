@@ -155,6 +155,53 @@ for (const { name, adapter } of PAIRS) {
   );
 }
 
+/* -- the plain Ledger's own description tail obeys the same switch ---------- */
+
+/**
+ * ⚠️ THE API FILE IS READ LIVE, ACROSS THE REPO BOUNDARY, never from a copy
+ * under `temp/`: a stale copy would let this pass while the server that answers
+ * the screen did the opposite. The plain Ledger's Description carries the sold
+ * items as text the SERVER composes into the row's name, so there is nothing on
+ * the client to gate -- an unguarded append here prints the product list on a
+ * branch that switched it off, and nothing raises.
+ */
+const api = read('../www/cashbook_api/app/Http/Controllers/Reports/ReportsController.php');
+
+const ledgerStart = api.indexOf('public function checkEloquentQuery');
+const ledgerBody = api.slice(ledgerStart, api.indexOf('public function', ledgerStart + 10));
+
+assert.ok(ledgerBody.length > 0, 'checkEloquentQuery is gone from the API');
+
+// The same meta key as the two ledgers -- one switch, three reports.
+assert.ok(
+  ledgerBody.includes(`'${KEY}'`),
+  'the plain Ledger does not read the branch switch',
+);
+assert.ok(
+  new RegExp(
+    `hideItemBranches\\[\\(int\\) \\$setting->branch_id\\] = true`,
+  ).test(ledgerBody),
+  'the switch is not read per branch',
+);
+assert.ok(
+  /trim\(\(string\) \$setting->meta_value\) !== ''[\s\S]{0,60}=== 0/.test(ledgerBody),
+  'a branch nobody has asked would be read as switched off',
+);
+
+// The tail is still appended -- so the guard below cannot pass by deletion.
+assert.ok(
+  /salesItems\(\$mtmId\)/.test(ledgerBody),
+  "the sale's own items are no longer appended at all",
+);
+// ⚠️ THE GUARD MUST RETURN, not merely mention the set: `false && isset(...)`
+// reads as present to a looser pattern and appends the items anyway.
+assert.ok(
+  /if \(isset\(\$hideItemBranches\[\(int\) \$record->branch_id\]\)\) \{\s*return \$record;[\s\S]{0,400}salesItems\(\$mtmId\)/.test(
+    ledgerBody,
+  ),
+  'the items are appended before the switch is looked at, or the switch does not stop them',
+);
+
 /* -- the product label no longer repeats a category the name already carries - */
 
 const labelHelper = read('src/components/modules/reports/utils/ledgerProductLabel.ts');
@@ -178,4 +225,4 @@ for (const { name, screen, print, adapter } of PAIRS) {
   );
 }
 
-console.log('ok -- the ledger product-details switch is stored, loaded, and honoured on both ledgers and their paper');
+console.log('ok -- the ledger product-details switch is stored, loaded, and honoured on both ledgers, their paper, and the plain Ledger\'s description');
