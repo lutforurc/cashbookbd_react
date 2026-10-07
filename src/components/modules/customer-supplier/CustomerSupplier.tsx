@@ -7,7 +7,7 @@ import DropdownCommon from "../../utils/utils-functions/DropdownCommon";
 import { ClientType } from "../../utils/fields/DataConstant";
 import SearchInput from "../../utils/fields/SearchInput";
 import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
-import { ButtonLoading } from "../../../pages/UiElements/CustomButtons";
+import { ButtonLoading, PrintButton } from "../../../pages/UiElements/CustomButtons";
 import Loader from "../../../common/Loader";
 import Pagination from "../../utils/utils-functions/Pagination";
 import Table from "../../utils/others/Table";
@@ -18,8 +18,12 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import ConfirmModal from "../../utils/components/ConfirmModalProps";
 import { hasPermission } from "../../utils/permissionChecker";
 import httpService from "../../services/httpService";
-import { API_CUSTOMER_HISTORY_URL, API_CUSTOMER_PROFILE_PDF_URL } from "../../services/apiRoutes";
+import { API_CONTACT_DETAILS_LIST_URL, API_CUSTOMER_HISTORY_URL, API_CUSTOMER_PROFILE_PDF_URL } from "../../services/apiRoutes";
 import routes from "../../services/appRoutes";
+import { useReactToPrint } from "react-to-print";
+import PrintFontInput from "../../utils/fields/PrintFontInput";
+import PrintRowsInput from "../../utils/fields/PrintRowsInput";
+import CustomerListPrint from "./CustomerListPrint";
 import PartyLedgerModal from "./PartyLedgerModal";
 import { formatMobile, useMobileFormat } from "../../utils/utils-functions/mobileFormat";
 import { Button } from '../../../pages/UiElements/CustomButtons';
@@ -38,6 +42,13 @@ const CUSTOMER_TYPE_FILTER = [
   { id: '', name: 'All Types' },
   ...ClientType.filter((entry) => entry.id !== ''),
 ];
+
+/**
+ * What the print toolbar starts on: thirty names to a sheet, set at ten point.
+ * The desk can change both, and clearing either box falls back to these.
+ */
+const PRINT_ROWS_PER_SHEET = 30;
+const PRINT_FONT_SIZE = 10;
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -347,9 +358,14 @@ const CustomerSupplier = () => {
    * this one screen's business -- the same reason the placeholder lives at this
    * call site. The guard keeps Enter on the per-page dropdown beside it out of
    * the search: that control is a <select>, so it is not the input we are after.
+   *
+   * ⚠️ The print toolbar's two boxes ARE inputs, and stand on this row. Left in,
+   * Enter on a Rows figure typed and done with would search again -- and reset
+   * the list to its first page under the desk.
    */
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== "Enter" || !(e.target instanceof HTMLInputElement)) return;
+    if (e.target.id === "printRowsPerPage" || e.target.id === "printFontSize") return;
     e.preventDefault(); // Enter inside a form submits it -- this is a search
     submitSearch();
   };
@@ -630,6 +646,115 @@ const CustomerSupplier = () => {
       setPrintingCustomerId(null);
     }
   };
+
+  /**
+   * The whole list on paper, not the page of it on screen.
+   *
+   * ⚠️ THE FETCH IS ITS OWN, DELIBERATELY. The server pages this list, so the
+   * store holds ten rows -- printing from those would put ten customers on the
+   * sheet however many the report has. The same endpoint is asked for every row
+   * under the filters on screen, and the answer lands in this component's own
+   * state rather than in the slice, so the desk stays on the page it was
+   * reading: the address bar, the box and the table are all untouched.
+   *
+   * ponytail: every row in one request. A branch with several thousand parties
+   * waits on a heavier answer; fetch it page by page when that day comes.
+   */
+  const [printRows, setPrintRows] = useState<any[]>([]);
+  const [printFilterLine, setPrintFilterLine] = useState('');
+  const [printPending, setPrintPending] = useState(false);
+  const [printingList, setPrintingList] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * The two numbers the print toolbar carries, and they are NOT the screen's
+   * `per_page`.
+   *
+   * ⚠️ THAT NAME IS TAKEN, AND MEANS SOMETHING ELSE. `perPage` above is the
+   * list's own paging, read out of the address bar -- chunking the sheet by it
+   * would page a printed list ten rows at a time, whatever the desk asked the
+   * screen for. These two belong to the paper: the font it is set in, and how
+   * many rows go on a sheet. Both are read only by CustomerListPrint.
+   *
+   * Thirty rows rather than the "All" the other screens start on: this list is
+   * thousands of names, and a sheet per thirty of them keeps a heading, a page
+   * number and a footer on every sheet. Clearing the box falls back to it.
+   */
+  const [printRowsPerPage, setPrintRowsPerPage] = useState<number>(PRINT_ROWS_PER_SHEET);
+  const [printFontSize, setPrintFontSize] = useState<number>(PRINT_FONT_SIZE);
+
+  const handlePrintRowsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintRowsPerPage(Number.isFinite(value) && value > 0 ? value : PRINT_ROWS_PER_SHEET);
+  };
+
+  const handlePrintFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintFontSize(Number.isFinite(value) && value > 0 ? value : PRINT_FONT_SIZE);
+  };
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: 'Customer List',
+  });
+
+  const handlePrintList = async () => {
+    if (printingList) return;
+
+    setPrintingList(true);
+
+    try {
+      const body: Record<string, any> = {
+        // Never fewer than the screen's own page: a list that has not answered
+        // yet reads total 0, and asking for nought rows would print nothing
+        // rather than the row that is there.
+        per_page: Math.max(totalRecords, perPage),
+        page: 1,
+        search,
+      };
+
+      if (partyTypeId) body.party_type_id = partyTypeId;
+
+      const { data } = await httpService.post(API_CONTACT_DETAILS_LIST_URL, body);
+      const rows = data?.data?.data?.data;
+
+      if (!Array.isArray(rows) || !rows.length) {
+        toast.info('There is nothing to print for this list.');
+        return;
+      }
+
+      // The sheet says which list it is: an empty box and "All Types" are
+      // choices too, and four hundred names with no heading look like every
+      // customer the company has.
+      const typeName =
+        CUSTOMER_TYPE_FILTER.find((entry) => String(entry.id) === String(partyTypeId))?.name ||
+        'All Types';
+
+      setPrintRows(rows);
+      setPrintFilterLine(
+        [`Client Type: ${typeName}`, search.trim() ? `Search: ${search.trim()}` : null]
+          .filter(Boolean)
+          .join('  |  '),
+      );
+      setPrintPending(true);
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not load the list for printing.');
+    } finally {
+      setPrintingList(false);
+    }
+  };
+
+  /**
+   * ⚠️ ONE COMMIT LATER, or the sheet is blank. The rows above are state, and
+   * the print clones the node as it stands -- called in the same tick it would
+   * clone the sheet from before the fetch and print an empty page.
+   */
+  useEffect(() => {
+    if (!printPending) return;
+
+    setPrintPending(false);
+    handlePrint();
+  }, [printPending, handlePrint]);
 
   const handleDeleteConfirmed = () => {
     if (!deleteConfirmRow) return;
@@ -957,6 +1082,46 @@ const CustomerSupplier = () => {
             label="Search"
             className="whitespace-nowrap"
             icon={<FiSearch size={15} />}
+          />
+
+          {/* Beside Search, in the same row: everything below it is the answer
+              to what is above it, and the sheet it prints carries the same
+              filters -- see printFilterLine.
+
+              Rows and Font are the two boxes every print toolbar carries (the
+              Cash Book draws the same pair); Print stands last. Both belong to
+              the paper alone -- see the note over printRowsPerPage. */}
+          <div className="ml-2">
+            
+            <PrintRowsInput
+              id="printRowsPerPage"
+              name="printRowsPerPage"
+              label=""
+              value={printRowsPerPage.toString()}
+              onChange={handlePrintRowsChange}
+              type="text"
+              className="font-medium text-sm w-16! text-center"
+            />
+          </div>
+
+          <div className="ml-2">
+            
+            <PrintFontInput
+              id="printFontSize"
+              name="printFontSize"
+              label=""
+              value={printFontSize.toString()}
+              onChange={handlePrintFontSizeChange}
+              type="text"
+              className="font-medium text-sm w-16! text-center"
+            />
+          </div>
+
+          <PrintButton
+            onClick={handlePrintList}
+            label="Print"
+            className="ml-2 whitespace-nowrap"
+            disabled={printingList}
           />
         </div>
 
@@ -1462,6 +1627,24 @@ const CustomerSupplier = () => {
           onClose={() => setReportParty(null)}
         />
       )}
+
+      {/* The sheet itself, drawn off-screen and cloned by react-to-print. ⚠️ The
+          ref is on the print node and the hiding on this wrapper: a `hidden` on
+          the node the ref points at is cloned with it and prints a blank page.
+          The three column flags are the screen's own conditions, so paper and
+          screen stand the same columns down. */}
+      <div className="hidden">
+        <CustomerListPrint
+          ref={printRef}
+          rows={printRows}
+          filterLine={printFilterLine}
+          rowsPerPage={printRowsPerPage}
+          fontSize={printFontSize}
+          showNationalId={needNationalId && !openingOn}
+          showLedgerPage={!openingOn}
+          showOpening={openingOn}
+        />
+      </div>
 
     </div>
   );
