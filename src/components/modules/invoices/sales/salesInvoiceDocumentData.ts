@@ -107,6 +107,12 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
       // The running outstanding, the figure the Tiles sales screen totalled
       // into its Total Tk.: what was already owed, plus what this bill leaves.
       final_due: previousDue + dueAmount,
+      // ⚠️ NOT final_due. The shop's "Grand Total" is what the bill comes to on
+      // top of the old balance -- the NET plus the previous due -- where
+      // final_due takes the bill's DUE (net less what was paid today). On a bill
+      // paid in full the two differ by the whole payment: net + previous due is
+      // what a khata is settled against, final_due is what is still owed.
+      net_plus_previous: netAmount + previousDue,
       // From net_amount here rather than the server's `inword`, which leaves
       // out carrying outward (coa4 198) and so could disagree with the Net line
       // printed right above it.

@@ -326,6 +326,9 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
     // comes from the server (see previousDueOf); this is the sample's own.
     previous_due: 5000,
     final_due: 34120,
+    // 36,120 net + the 5,000 owed before this bill. Kept as the sum rather than
+    // a fourth literal, so the sample cannot come to disagree with the paper.
+    net_plus_previous: 41120,
     amount_words: 'Thirty Six Thousand One Hundred And Twenty Taka Only',
     printed_by: 'Sample User',
   },

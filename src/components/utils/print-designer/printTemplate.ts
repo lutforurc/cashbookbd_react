@@ -1309,6 +1309,23 @@ export const SALES_INVOICE_FIELD_CATALOG: FieldDef[] = [
   // the Tiles sales screen already totalled into its Total Tk.
   { key: 'previous_due', name: 'Previous Due', group: 'total', numeric: true, format: 'money' },
   { key: 'final_due', name: 'Final Due', group: 'total', numeric: true, format: 'money' },
+  // ⚠️ ITS OWN KEY, because "Total" is already taken: `grand_total` above is the
+  // product lines summed, which the paper prints as "Total Tk.". This is the
+  // shop's own Grand Total -- what this bill comes to ON TOP OF what the party
+  // already owed, so it is net + previous due and NOT final_due, which takes the
+  // bill's due rather than its net.
+  //
+  // Summed in salesInvoiceDocumentData rather than here, beside the other two
+  // derived dues: a renderer that did arithmetic would give the designer's own
+  // preview a different answer from the paper whenever the sample and the
+  // voucher disagreed.
+  {
+    key: 'net_plus_previous',
+    name: 'Grand Total (Net + Previous Due)',
+    group: 'total',
+    numeric: true,
+    format: 'money',
+  },
   { key: 'amount_words', name: 'Amount In Words', group: 'total', format: 'words', from: 'net_amount' },
   { key: 'line_count', name: 'Number of Items', group: 'total', numeric: true },
 ];
@@ -3103,6 +3120,18 @@ const salesInvoice = (): PrintTemplate => ({
           hideIfEmpty: true,
           ruleAbove: true,
           hideIfEqualTo: 'due_amount',
+        },
+        // The shop's own reading of the bill: the net plus what the party
+        // already owed, which is the figure a khata is settled against.
+        // ⚠️ hideIfEqualTo takes it off a party who owed nothing before this
+        // bill -- there it is the net over again, and "Net Tk. 3,600 / Grand
+        // Total Tk. 3,600" sends the reader looking for a difference.
+        {
+          field: 'net_plus_previous',
+          label: 'Grand Total Tk.',
+          hideIfEmpty: true,
+          ruleAbove: true,
+          hideIfEqualTo: 'net_amount',
         },
       ],
     }),
