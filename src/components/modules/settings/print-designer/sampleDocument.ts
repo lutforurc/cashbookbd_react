@@ -95,6 +95,7 @@ export const SAMPLE_ORDER_DOCUMENT: DocumentData = {
     order_date: dayjs().format('DD/MM/YYYY'),
     duration: `${dayjs().subtract(1, 'day').format('DD/MM/YYYY')} to ${dayjs().format('DD/MM/YYYY')}`,
     delivery_location: 'Sample Poultry Division, Baniarchala',
+    transaction_account: 'City Bank - CD-1102',
     product_name: 'DORB',
     order_rate: 26,
     total_order: 100000,

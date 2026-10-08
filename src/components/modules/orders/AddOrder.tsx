@@ -109,6 +109,7 @@ const AddOrder = (user: any) => {
         order_number: string;
         ref_order_id: string;
         ref_order_text: string;
+        transaction_account: string;
         delivery_location: string | null;
         order_date: string | null;
         last_delivery_date: string | null;
@@ -131,6 +132,7 @@ const AddOrder = (user: any) => {
         order_number: '',
         ref_order_id: '',
         ref_order_text: '',
+        transaction_account: '',
         delivery_location: '',
         order_date: '',
         last_delivery_date: '',
@@ -192,6 +194,8 @@ const AddOrder = (user: any) => {
                 locationOrder?.ref_order_number ||
                 prev.ref_order_text ||
                 '',
+            transaction_account:
+                locationOrder?.transaction_account ?? prev.transaction_account,
             delivery_location: locationOrder?.delivery_location ?? prev.delivery_location,
             order_date: locationOrder?.order_date ?? prev.order_date,
             last_delivery_date: locationOrder?.last_delivery_date ?? prev.last_delivery_date,
@@ -352,6 +356,7 @@ const AddOrder = (user: any) => {
                 editData?.reference_order?.order_number ??
                 editData?.ref_order_number ??
                 '',
+            transaction_account: editData?.transaction_account ?? '',
             delivery_location: editData?.delivery_location ?? '',
             order_date: editData?.order_date ?? '',
             last_delivery_date: editData?.last_delivery_date ?? '',
@@ -511,6 +516,7 @@ const AddOrder = (user: any) => {
             order_number: '',
             ref_order_id: '',
             ref_order_text: '',
+            transaction_account: '',
             delivery_location: '',
             order_date: '',
             last_delivery_date: '',
@@ -609,6 +615,7 @@ const AddOrder = (user: any) => {
             product_id: formData.product_id,
             order_number: formData.order_number,
             ref_order_id: formData.ref_order_id || null,
+            transaction_account: formData.transaction_account || null,
             delivery_location: formData.delivery_location,
             order_date: formData.order_date,
             last_delivery_date: formData.last_delivery_date,
@@ -900,8 +907,7 @@ const AddOrder = (user: any) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 e.currentTarget.blur();
-                                focusNextField('ref_order_id');
-                                setReferenceOrderFocusTrigger((prev) => prev + 1);
+                                focusNextField('transaction_account');
                             }
                         }}
                     />
@@ -911,7 +917,31 @@ const AddOrder = (user: any) => {
                         <option key={item} value={item} />
                     ))}
                 </datalist>
+                {/* Typed by hand, not picked off the chart: a note the clerk
+                    makes now, for whoever raises the voucher against this order
+                    later. Optional, so it may be left empty. */}
                 <div className="md:col-span-2">
+                    <InputElement
+                        id="transaction_account"
+                        value={formData.transaction_account || ''}
+                        name="transaction_account"
+                        placeholder={'Transaction Account'}
+                        label={'Transaction Account'}
+                        className={''}
+                        autoComplete="off"
+                        onChange={handleOrderChange}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.currentTarget.blur();
+                                focusNextField('ref_order_id');
+                                setReferenceOrderFocusTrigger((prev) => prev + 1);
+                            }
+                        }}
+                    />
+                </div>
+                <div className="md:col-span-1">
                     <label htmlFor="">Reference Order</label>
                     <OrderDropdown
                         id="ref_order_id"
@@ -939,7 +969,7 @@ const AddOrder = (user: any) => {
                         }}
                     />
                 </div>
-                <div className="md:col-span-2">
+                <div className="md:col-span-1">
                     <DropdownCommon
                         id="status"
                         name={'status'}

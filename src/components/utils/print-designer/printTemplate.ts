@@ -1006,6 +1006,11 @@ export const ORDER_FIELD_CATALOG: FieldDef[] = [
   { key: 'duration', name: 'Duration', group: 'order' },
   { key: 'last_delivery_date', name: 'Last Delivery Date', group: 'order' },
   { key: 'delivery_location', name: 'Delivery Location', group: 'order' },
+  // What the clerk typed as the account the money is expected to move through.
+  // Free text, not a chart-of-accounts name, and blank on every order saved
+  // before the field existed -- so a branch that puts it on their paper wants
+  // hideIfEmpty on the row.
+  { key: 'transaction_account', name: 'Transaction Account', group: 'order' },
   { key: 'contract_order_qty', name: 'Contract Quantity', group: 'order', numeric: true },
   { key: 'trx_quantity', name: 'Delivered Quantity', group: 'order', numeric: true },
 

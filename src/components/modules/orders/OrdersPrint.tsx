@@ -232,6 +232,9 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                         </td>
                         <td style={printTextStyle} className="border border-gray-900 px-2 py-1">
                           <span className="block">{row?.order_for || '-'}</span>
+                          {row?.transaction_account ? (
+                            <span className="block">{row.transaction_account}</span>
+                          ) : null}
                           {row?.delivery_location ? (
                             <span className="block">{row.delivery_location}</span>
                           ) : null}
