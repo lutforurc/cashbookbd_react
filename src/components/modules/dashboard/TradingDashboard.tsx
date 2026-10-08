@@ -734,7 +734,7 @@ const TradingDashboard = () => {
       case 'top-sales':
         return productCard(
           'top-sales',
-          'Top Sales Products by Quantity',
+          'Top Sales by Quantity',
           topSales,
           'qty',
           'text-emerald-600 dark:text-emerald-400',
@@ -744,7 +744,7 @@ const TradingDashboard = () => {
       case 'top-sales-value':
         return productCard(
           'top-sales-value',
-          'Top Sales Products by Value',
+          'Top Sales by Value',
           topSalesValue,
           'amount',
           'text-emerald-600 dark:text-emerald-400',
@@ -754,7 +754,7 @@ const TradingDashboard = () => {
       case 'top-purchase':
         return productCard(
           'top-purchase',
-          'Top Purchase Products by Quantity',
+          'Top Purchase by Quantity',
           topPurchase,
           'qty',
           'text-primary dark:text-secondary',
@@ -764,7 +764,7 @@ const TradingDashboard = () => {
       case 'top-purchase-value':
         return productCard(
           'top-purchase-value',
-          'Top Purchase Products by Value',
+          'Top Purchase by Value',
           topPurchaseValue,
           'amount',
           'text-primary dark:text-secondary',
