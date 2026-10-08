@@ -4385,6 +4385,13 @@ const infoItems = (value: any): InfoItem[] =>
         typeof item.hideIfEqualTo === 'string' && item.hideIfEqualTo
           ? item.hideIfEqualTo
           : undefined,
+      // ⚠️ NAMED HERE OR THE CONDITION NEVER COMES BACK. It is saved to the
+      // database and dropped on the way in, so the designer shows "Always"
+      // again the moment it reloads -- and the next Save writes that back.
+      hideUnlessShown:
+        typeof item.hideUnlessShown === 'string' && item.hideUnlessShown
+          ? item.hideUnlessShown
+          : undefined,
       ruleAbove: Boolean(item.ruleAbove),
       // A rule of its own. Solid is what the paper already does, so only the
       // other one is remembered -- and the two gaps are kept only when they
