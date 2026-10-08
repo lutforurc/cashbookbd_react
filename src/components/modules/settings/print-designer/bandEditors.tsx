@@ -419,12 +419,13 @@ const ItemList: React.FC<{
   /** Totals have nothing to leave off -- a zero total is still a total. */
   allowHideIfEmpty?: boolean;
   /**
-   * ⚠️ TOTALS ONLY. The renderer draws a rule over a figure in the totals block
-   * and nowhere else, so offering the switch on an info line would be a control
-   * that changes nothing on the paper.
+   * ⚠️ TOTALS ONLY, and both of these are the same reason: the renderer draws a
+   * rule over a figure, and resolves a line that waits on another line, in the
+   * totals block and nowhere else. Offering either on an info line would be a
+   * control that changes nothing on the paper.
    */
-  allowRuleAbove?: boolean;
-}> = ({ items, onChange, allowHideIfEmpty = true, allowRuleAbove = false }) => {
+  allowTotalsControls?: boolean;
+}> = ({ items, onChange, allowHideIfEmpty = true, allowTotalsControls = false }) => {
   const { handlers, rowClass } = useRowDrag();
 
   const move = (from: number, to: number) => onChange(reorder(items, from, to));
@@ -555,8 +556,46 @@ const ItemList: React.FC<{
                   one who wanted the whole footer unruled had to give up the
                   defaults to get it. The same three knobs as a standalone Line,
                   because it is drawn by the same code. */}
-              {allowRuleAbove ? (
+              {allowTotalsControls ? (
                 <>
+                  {/* ⚠️ THE CONDITION IS THE TENANT'S TOO, and it is per line,
+                      which is what makes it usable by a branch that wants the
+                      pairing and harmless to the one that does not: a paper
+                      with nothing set here behaves exactly as it did before
+                      this control existed. "Always" is the shipped answer. */}
+                  <div className="w-36 shrink-0">
+                    <span className={SUB_LABEL}>Print only when</span>
+                    <Select
+                      value={item.hideUnlessShown ?? ''}
+                      draggable={false}
+                      onChange={(event) => {
+                        const next = items.slice();
+                        const changed = { ...item };
+                        // Cleared rather than set to '', so a layout saved after
+                        // a change of mind carries no condition at all -- see
+                        // InfoItem.hideUnlessShown.
+                        if (event.target.value) changed.hideUnlessShown = event.target.value;
+                        else delete changed.hideUnlessShown;
+                        next[index] = changed;
+                        onChange(next);
+                      }}
+                      className={CONTROL}
+                    >
+                      <option value="">Always</option>
+                      {/* The other lines of THIS band, by the words the paper
+                          prints -- the tenant is choosing a line they can see,
+                          not a field name. A rule is not offered: it can never
+                          be hidden, so a condition on it would be a no-op. */}
+                      {items.map((other, at) =>
+                        at === index || other.field === RULE_FIELD ? null : (
+                          <option key={at} value={other.field}>
+                            {other.label?.trim() || fieldName(other.field)} prints
+                          </option>
+                        ),
+                      )}
+                    </Select>
+                  </div>
+
                   <Button
                     type="button"
                     draggable={false}
@@ -804,7 +843,7 @@ export const TotalsBandEditor: React.FC<{
     <ItemList
       items={band.items}
       allowHideIfEmpty={false}
-      allowRuleAbove
+      allowTotalsControls
       onChange={(items) => onChange({ ...band, items })}
     />
     <FieldPicker onPick={(field) => onChange({ ...band, items: [...band.items, { field }] })} />

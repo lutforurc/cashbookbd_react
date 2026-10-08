@@ -203,6 +203,33 @@ export type InfoItem = {
    */
   ruleAbove?: boolean;
   /**
+   * ⚠️ A LINE THAT ONLY MAKES SENSE WHERE ANOTHER LINE PRINTED.
+   *
+   * The owner's own case: a bill's "Net Tk." is worth showing where the party
+   * already owed something -- the reader wants to see the net beside the old
+   * balance and the grand total -- and is only noise on a party with no previous
+   * due, where "Total 3,600 / Net Amount 3,600" says one thing twice. Naming
+   * `previous_due` here means the net goes off the paper the moment that line
+   * does, and comes back with it.
+   *
+   * ⚠️ OPT-IN, LINE BY LINE, and off unless a tenant sets it. Nothing in the
+   * shipped defaults reads it, so a paper nobody has touched prints exactly as
+   * it did; the switch is on the totals item in the designer, where a branch
+   * that wants the pairing can add it and its neighbour that does not can leave
+   * it alone. Every tenant's answer is stored in that tenant's own saved layout.
+   *
+   * ⚠️ MEASURED AGAINST WHAT WAS PRINTED, not against the voucher. The named
+   * line may itself be off the paper for any of three reasons -- nothing to say,
+   * the same figure as the line above it, or its own condition -- and this line
+   * follows it in all three. A name that is on no line of this paper at all is
+   * treated as satisfied: the tenant took that line away on purpose, and this
+   * one should not disappear behind their back.
+   *
+   * Only the totals block honours it -- see TotalsBlock, which resolves a chain
+   * of them.
+   */
+  hideUnlessShown?: string;
+  /**
    * The three knobs of a rule: how it is drawn, and the paper on either side.
    *
    * Read by BOTH kinds of rule -- the `rule` field standing on its own in the

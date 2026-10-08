@@ -747,10 +747,42 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
        */
       const isRule = (item: (typeof band.items)[number]) => item.field === RULE_FIELD;
 
-      const visible = band.items.filter(
-        (item) =>
-          isRule(item) || (!(item.hideIfEmpty && nothing(item.field)) && !repeats(item)),
-      );
+      /**
+       * A line that stands on its own, before any condition on another line.
+       */
+      const stands = (item: (typeof band.items)[number]) =>
+        isRule(item) || (!(item.hideIfEmpty && nothing(item.field)) && !repeats(item));
+
+      /**
+       * ⚠️ AND THEN THE LINES THAT DEPEND ON OTHER LINES.
+       *
+       * See InfoItem.hideUnlessShown -- "Net Tk." that only prints where
+       * "Previous Due Tk." did. The test is made against the OTHER LINE'S OWN
+       * VERDICT, not against the voucher, so it answers the question the tenant
+       * is asking: did that line reach the paper?
+       *
+       * Resolved by walking the chain, because the line it names may itself be
+       * waiting on a third. The seen-set stops the walk: a pair naming each
+       * other is two controls away in the designer, and without it the print
+       * would hang rather than come out wrong.
+       *
+       * A name that is on no line of this paper is satisfied -- the tenant took
+       * that line away deliberately, and dropping this one behind their back
+       * would take away a figure they never asked to lose.
+       */
+      const prints = (item: (typeof band.items)[number], seen = new Set<string>()): boolean => {
+        if (!stands(item)) return false;
+
+        const needs = item.hideUnlessShown;
+        if (!needs || seen.has(item.field)) return true;
+
+        seen.add(item.field);
+        const other = band.items.find((one) => one.field === needs);
+
+        return !other || prints(other, seen);
+      };
+
+      const visible = band.items.filter((item) => prints(item));
       if (!visible.length) return null;
 
       /**

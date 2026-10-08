@@ -1,6 +1,6 @@
 /**
- * The totals footer: the lines belong to the TENANT, and so does the Grand
- * Total that sits under them.
+ * The totals footer: the lines belong to the TENANT, the Grand Total sits under
+ * them, and a line may wait on another line.
  *
  *   node _totals_rule_control_check.mjs
  *
@@ -111,29 +111,96 @@ check('a standalone Line keeps its own air, which is a different default', () =>
 });
 
 /* ------------------------------------------------------------------ */
+/* A line that waits on another line                                   */
+/* ------------------------------------------------------------------ */
+
+const condAt = doc.indexOf('const prints = (item');
+// Through to the end of the `visible` line, which is the whole point of the
+// verdict above it -- a slice stopping before that would pass on a file where
+// nothing ever called it.
+const visibleAt = doc.indexOf('const visible = band.items.filter', condAt);
+const condEnd = doc.indexOf('\n', visibleAt);
+assert.ok(condAt > -1 && visibleAt > condAt && condEnd > visibleAt, 'the condition is gone from TotalsBlock');
+const cond = doc.slice(condAt, condEnd);
+
+check('a line asks whether the OTHER LINE printed, not whether the voucher has a figure', () => {
+  assert.ok(
+    cond.includes('const prints = (item') && cond.includes('): boolean => {'),
+    'there is no verdict function for a line any more',
+  );
+  assert.ok(
+    cond.includes('if (!stands(item)) return false;'),
+    'the named line’s own emptiness and repetition are ignored -- the condition would leak a blank Net',
+  );
+  assert.ok(
+    cond.includes('return !other || prints(other, seen);'),
+    'the chain is not followed, so a line waiting on a line that waits on a third is wrong',
+  );
+  assert.ok(
+    cond.includes('band.items.filter((item) => prints(item))'),
+    'the visible list is still built from the unconditional test',
+  );
+});
+
+check('a pair of lines naming each other cannot hang the print', () => {
+  assert.ok(
+    cond.includes('seen.has(item.field)') && cond.includes('seen.add(item.field)'),
+    'the walk has no guard against a loop -- the designer can set one in two clicks',
+  );
+});
+
+check('a condition naming a line that is not on this paper is satisfied', () => {
+  // ⚠️ The tenant took that line away on purpose. Reading the absence as "not
+  // printed" would delete this figure behind their back.
+  assert.ok(
+    cond.includes('return !other || prints(other, seen);'),
+    'a missing line is read as a failed condition',
+  );
+  assert.ok(
+    cond.includes('const needs = item.hideUnlessShown;') && cond.includes('if (!needs'),
+    'a line with no condition of its own is not short-circuited to printing',
+  );
+});
+
+check('nothing in the shipped defaults carries a condition', () => {
+  // ⚠️ Opt-in is the whole point -- "many users can use it, and the rest can work
+  // without it". One `hideUnlessShown:` in the file is the type declaration; a
+  // second would be a default template quietly pairing two lines for everybody.
+  const declarations = (tpl.match(/hideUnlessShown\??:/g) || []).length;
+  assert.equal(
+    declarations,
+    1,
+    `the shipped defaults set a condition on ${declarations - 1} line(s) -- every untouched paper would change`,
+  );
+});
+
+/* ------------------------------------------------------------------ */
 /* The designer                                                        */
 /* ------------------------------------------------------------------ */
 
 // The totals editor's own item list, from its declaration to its picker. Read
-// as a slice so `allowRuleAbove` appearing anywhere else in the file -- the
+// as a slice so `allowTotalsControls` appearing anywhere else in the file -- the
 // prop's declaration, say -- cannot stand in for the call under test.
 const totalsAt = ed.indexOf('export const TotalsBandEditor');
 const totalsTo = ed.indexOf('<FieldPicker', totalsAt);
 assert.ok(totalsAt > -1 && totalsTo > totalsAt, 'TotalsBandEditor is gone');
 const totals = ed.slice(totalsAt, totalsTo);
 
-check('the switch is offered on the totals and nowhere else', () => {
-  assert.ok(ed.includes('allowRuleAbove?: boolean;'), 'ItemList has no allowRuleAbove prop');
+check('both totals-only controls are offered there, and nowhere else', () => {
+  assert.ok(ed.includes('allowTotalsControls?: boolean;'), 'ItemList has no allowTotalsControls prop');
   assert.ok(
-    ed.includes('allowHideIfEmpty = true, allowRuleAbove = false'),
-    'the switch does not default to off',
+    ed.includes('allowHideIfEmpty = true, allowTotalsControls = false'),
+    'the controls do not default to off',
   );
-  assert.ok(totals.includes('allowRuleAbove'), 'TotalsBandEditor never turns the switch on for its own rows');
-  // ⚠️ The exact call made by InfoBandEditor. The renderer draws a rule in the
-  // totals block only, so a switch there would change nothing on the paper.
+  assert.ok(
+    totals.includes('allowTotalsControls'),
+    'TotalsBandEditor never turns the controls on for its own rows',
+  );
+  // ⚠️ The exact call made by InfoBandEditor. The renderer honours neither the
+  // rule nor the condition in an info block.
   assert.ok(
     ed.includes('<ItemList items={band.items} onChange={(items) => onChange({ ...band, items })} />'),
-    'the info band now offers a line-above switch, which its block cannot draw',
+    'the info band now offers controls its block cannot draw',
   );
 });
 
@@ -144,7 +211,29 @@ check('the switch writes the flag the renderer reads', () => {
   );
 });
 
-check('the three knobs appear under the switch, on the nought default', () => {
+check('the condition offers THIS band’s lines, by the words the paper prints', () => {
+  assert.ok(
+    ed.includes("value={item.hideUnlessShown ?? ''}"),
+    'the condition select does not read the item',
+  );
+  assert.ok(
+    ed.includes('{other.label?.trim() || fieldName(other.field)} prints'),
+    'the options are field names rather than the tenant’s own labels',
+  );
+  assert.ok(
+    ed.includes('at === index || other.field === RULE_FIELD ? null :'),
+    'the line itself or a rule is offered as a condition -- a rule can never be hidden',
+  );
+  assert.ok(ed.includes('<option value="">Always</option>'), 'there is no way back to no condition');
+  // ⚠️ Cleared, not stored as ''. A layout keeping `hideUnlessShown: ''` still
+  // reads as "waiting on a line called nothing" to anyone reading the JSON.
+  assert.ok(
+    ed.includes('delete changed.hideUnlessShown;'),
+    'clearing the condition leaves an empty string on the item',
+  );
+});
+
+check('the three rule knobs still appear under the line switch, on the nought default', () => {
   assert.ok(
     ed.includes('{item.ruleAbove ? (\n') || ed.includes('{item.ruleAbove ? (\r\n'),
     'the knobs are not shown by the flag',
