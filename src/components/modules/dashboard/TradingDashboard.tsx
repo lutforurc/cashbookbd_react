@@ -37,6 +37,7 @@ import DashboardCustomizeButton, {
   useDashboardCustomization,
 } from './dashboardCustomization';
 import { CARD, CARD_HEAD, CardTitle, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
+import { listedValue, rankProducts } from './topProducts';
 
 /**
  * The dashboard a trader opens the morning on: goods in, goods out, and what
@@ -113,8 +114,10 @@ const TRADING_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'dues-payable', title: 'Payable Ageing' },
   { id: 'dues-net', title: 'Net Position' },
   { id: 'top-profit', title: 'What Made the Money' },
-  { id: 'top-sales', title: 'Top Sales Products' },
-  { id: 'top-purchase', title: 'Top Purchase Products' },
+  { id: 'top-sales', title: 'Top Sales Products by Quantity' },
+  { id: 'top-sales-value', title: 'Top Sales Products by Value' },
+  { id: 'top-purchase', title: 'Top Purchase Products by Quantity' },
+  { id: 'top-purchase-value', title: 'Top Purchase Products by Value' },
   { id: 'daily-sales', title: 'Daily Sales Chart' },
   { id: 'daily-purchase', title: 'Daily Purchase Chart' },
   { id: 'monthly-purchase-sales', title: 'Monthly Purchase Sales Chart' },
@@ -134,17 +137,6 @@ const qty = (value: number | null | undefined) => {
   const amount = Number(value ?? 0);
   return amount.toLocaleString('en-IN', { maximumFractionDigits: 2 });
 };
-
-/**
- * What a list of rows is worth together.
- *
- * ⚠️ The rows the server sent, not all the rows there are. The dead list is cut
- * to five, so this is the total of the five on screen and the footer beside it
- * says which five — a subtotal presented as a whole is the error the footer
- * exists to prevent.
- */
-const listedValue = (rows: any[], key: string) =>
-  rows.reduce((sum, row) => sum + Number(row?.[key] || 0), 0);
 
 const TradingDashboard = () => {
   const dispatch = useDispatch<any>();
@@ -280,6 +272,14 @@ const TradingDashboard = () => {
   const topPurchase: any[] = Array.isArray(payload?.top_purchase)
     ? payload.top_purchase
     : [];
+  // The same two windows ranked by value, sent separately by the server so the
+  // value cards are a rank over the whole window and not the unit list's five.
+  const topSalesValue: any[] = Array.isArray(payload?.top_sales_value)
+    ? payload.top_sales_value
+    : [];
+  const topPurchaseValue: any[] = Array.isArray(payload?.top_purchase_value)
+    ? payload.top_purchase_value
+    : [];
 
   const dead: any[] = Array.isArray(stock?.dead) ? stock.dead : [];
   const deadDays = Number(stock?.dead_days ?? 60);
@@ -309,15 +309,19 @@ const TradingDashboard = () => {
   const variance = Number(profit?.variance || 0);
 
   /*
-   * The two lists drawn in UNITS — what moves fastest across the counter and
-   * what is bought most. Same card as "What Made the Money" but the sort is
-   * quantity and the money is the second column; that card's header says why
-   * the two must not be read as the same question.
+   * The four lists: rank, product, units, money -- the same card, once per
+   * question. A branch's fastest-moving line and its highest-earning line are
+   * routinely two different products, so quantity and value are ranked
+   * separately; each card is ordered by its own metric and never by the other
+   * card's. Same card as "What Made the Money" but with a plain count or sum
+   * at the top; that card's header says why the two must not be read as the
+   * same question.
    */
-  const unitsCard = (
+  const productCard = (
     id: string,
     title: string,
     rows: any[],
+    metric: 'qty' | 'amount',
     verb: string,
     tone: string,
     days: number,
@@ -335,8 +339,16 @@ const TradingDashboard = () => {
     aside?: { verb: string; qty: number; amount: number; days: number },
   ): React.ReactNode => {
     if (!isWidgetVisible(id) || rows.length === 0) return null;
-    const total = listedValue(rows, 'amount');
-    const qtyTotal = listedValue(rows, 'qty');
+    /*
+     * ⚠️ RANKED HERE, BY THE CARD'S OWN METRIC. The server sends each list in
+     * its own order -- units for the quantity card, money for the value card --
+     * but sorting on the metric the card is titled for is what keeps the two
+     * from ever sharing an order, whatever order they arrive in.
+     */
+    const byQuantity = metric === 'qty';
+    const ranked = rankProducts(rows, metric);
+    const total = listedValue(ranked, 'amount');
+    const qtyTotal = listedValue(ranked, 'qty');
     /*
      * ⚠️ NOUGHT IS NOT A FIGURE. "0 bought 0" beside five lines that sold tells
      * the reader nothing the five lines did not, and it is the ordinary case --
@@ -358,12 +370,12 @@ const TradingDashboard = () => {
         <div className={CARD_HEAD}>
           <CardTitle href={href}>{title}</CardTitle>
           <span className="shrink-0 text-[11px] font-normal text-slate-400">
-            by quantity
+            by {byQuantity ? 'quantity' : 'value'}
           </span>
         </div>
 
         <ul className="divide-y divide-slate-100 dark:divide-gray-700">
-          {rows.map((row, index) => (
+          {ranked.map((row, index) => (
             <li
               key={row.id}
               className={`grid grid-cols-[2rem_minmax(0,1fr)_auto_auto] items-center gap-2 ${rowClass} text-[12px] transition hover:bg-slate-50 dark:hover:bg-gray-700/50`}
@@ -379,11 +391,23 @@ const TradingDashboard = () => {
               >
                 {row.name}
               </Link>
-              <span className="shrink-0 whitespace-nowrap text-right text-[11px] tabular-nums text-slate-400">
+              {/* The card's own metric is the bold one, so a value card reads
+                  its money first and a quantity card its units. */}
+              <span
+                className={`shrink-0 whitespace-nowrap text-right tabular-nums ${
+                  byQuantity
+                    ? `font-bold ${tone}`
+                    : 'text-[11px] text-slate-400'
+                }`}
+              >
                 {units(row.qty)} {verb}
               </span>
               <span
-                className={`w-24 shrink-0 text-right font-bold tabular-nums ${tone}`}
+                className={`w-24 shrink-0 text-right tabular-nums ${
+                  byQuantity
+                    ? 'text-[11px] text-slate-400'
+                    : `font-bold ${tone}`
+                }`}
               >
                 {money(row.amount)}
               </span>
@@ -395,7 +419,7 @@ const TradingDashboard = () => {
           className={`mt-auto flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] dark:bg-gray-700/50`}
         >
           <span className="text-slate-500 dark:text-slate-300">
-            Top {rows.length} · {window}
+            Top {ranked.length} · {window}
           </span>
           <span className="ml-auto flex flex-wrap items-baseline justify-end gap-x-3 gap-y-1">
             {hasFigure(qtyTotal, total) ? (
@@ -765,11 +789,12 @@ const TradingDashboard = () => {
           </div>
         ) : null;
       case 'top-sales':
-        return unitsCard(
+        return productCard(
           'top-sales',
-          'Top Sales Products',
+          'Top Sales Products by Quantity',
           topSales,
-          'sold',
+          'qty',
+          '',
           'text-emerald-600 dark:text-emerald-400',
           Number(payload?.top_sales_days) || 1,
           links.salesLedger,
@@ -785,12 +810,33 @@ const TradingDashboard = () => {
               1,
           },
         );
+      case 'top-sales-value':
+        return productCard(
+          'top-sales-value',
+          'Top Sales Products by Value',
+          topSalesValue,
+          'amount',
+          '',
+          'text-emerald-600 dark:text-emerald-400',
+          Number(payload?.top_sales_days) || 1,
+          links.salesLedger,
+          {
+            verb: 'bought',
+            qty: Number(payload?.top_sales_value_bought?.qty) || 0,
+            amount: Number(payload?.top_sales_value_bought?.amount) || 0,
+            days:
+              Number(payload?.top_purchase_days) ||
+              Number(payload?.top_sales_days) ||
+              1,
+          },
+        );
       case 'top-purchase':
-        return unitsCard(
+        return productCard(
           'top-purchase',
-          'Top Purchase Products',
+          'Top Purchase Products by Quantity',
           topPurchase,
-          'bought',
+          'qty',
+          '',
           'text-primary dark:text-secondary',
           Number(payload?.top_purchase_days) || 1,
           links.purchaseLedger,
@@ -798,6 +844,23 @@ const TradingDashboard = () => {
             verb: 'sold',
             qty: Number(payload?.top_purchase_sold?.qty) || 0,
             amount: Number(payload?.top_purchase_sold?.amount) || 0,
+            days: Number(payload?.top_sales_days) || 1,
+          },
+        );
+      case 'top-purchase-value':
+        return productCard(
+          'top-purchase-value',
+          'Top Purchase Products by Value',
+          topPurchaseValue,
+          'amount',
+          '',
+          'text-primary dark:text-secondary',
+          Number(payload?.top_purchase_days) || 1,
+          links.purchaseLedger,
+          {
+            verb: 'sold',
+            qty: Number(payload?.top_purchase_value_sold?.qty) || 0,
+            amount: Number(payload?.top_purchase_value_sold?.amount) || 0,
             days: Number(payload?.top_sales_days) || 1,
           },
         );
