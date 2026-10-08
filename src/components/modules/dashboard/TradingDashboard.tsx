@@ -309,34 +309,22 @@ const TradingDashboard = () => {
   const variance = Number(profit?.variance || 0);
 
   /*
-   * The four lists: rank, product, units, money -- the same card, once per
-   * question. A branch's fastest-moving line and its highest-earning line are
-   * routinely two different products, so quantity and value are ranked
-   * separately; each card is ordered by its own metric and never by the other
-   * card's. Same card as "What Made the Money" but with a plain count or sum
-   * at the top; that card's header says why the two must not be read as the
-   * same question.
+   * The four lists: rank, product, and the one figure the card is about -- the
+   * same card, once per question. A branch's fastest-moving line and its
+   * highest-earning line are routinely two different products, so quantity and
+   * value are ranked separately, each card ordered by its own metric and never
+   * by the other card's, and each drawing only its own figure. "What Made the
+   * Money" is the same card by profit; its header says why the three must not
+   * be read as the same question.
    */
   const productCard = (
     id: string,
     title: string,
     rows: any[],
     metric: 'qty' | 'amount',
-    verb: string,
     tone: string,
     days: number,
     href: string,
-    /*
-     * ⚠️ THE FOOT IS THE TOTAL OF THE ROWS ABOVE IT, both figures, and both
-     * over the SAME products. The sales card says what its five lines sold and
-     * what those lines cost to buy; the purchase card says the same two things
-     * the other way round. The server counts the far figure over the product ids
-     * above -- drawing it from the other list would be five different products
-     * under one label. The branch windows the two lists separately, so a figure
-     * counted over other days carries those days with it: a foot naming one
-     * window while counting another is a number somebody buys stock on.
-     */
-    aside?: { verb: string; qty: number; amount: number; days: number },
   ): React.ReactNode => {
     if (!isWidgetVisible(id) || rows.length === 0) return null;
     /*
@@ -347,20 +335,12 @@ const TradingDashboard = () => {
      */
     const byQuantity = metric === 'qty';
     const ranked = rankProducts(rows, metric);
-    const total = listedValue(ranked, 'amount');
-    const qtyTotal = listedValue(ranked, 'qty');
-    /*
-     * ⚠️ NOUGHT IS NOT A FIGURE. "0 bought 0" beside five lines that sold tells
-     * the reader nothing the five lines did not, and it is the ordinary case --
-     * a branch that bought none of its five best sellers this week. The far
-     * figure is left out rather than drawn as zero, as the variance tile on the
-     * profit band is. Either half alone is still worth saying: a return window
-     * can round the units to nought while the money does not.
-     */
-    const hasFigure = (qty: number, amount: number) =>
-      Number(qty) !== 0 || Number(amount) !== 0;
-    const units = (n: number) =>
+    const units = (n: number | null | undefined) =>
       Number(n ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+    // The card's own figure, in the card's own unit -- money for the value
+    // cards, a quantity for the unit cards. Nothing else is formatted here.
+    const format = (value: number | null | undefined) =>
+      byQuantity ? units(value) : money(value);
     // The window the server actually counted -- the branch's own setting, not
     // the page's month -- said in the foot so the list is not read as the month.
     const windowLabel = (d: number) => (d === 1 ? 'today' : `last ${d} days`);
@@ -378,7 +358,7 @@ const TradingDashboard = () => {
           {ranked.map((row, index) => (
             <li
               key={row.id}
-              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto_auto] items-center gap-2 ${rowClass} text-[12px] transition hover:bg-slate-50 dark:hover:bg-gray-700/50`}
+              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 ${rowClass} text-[12px] transition hover:bg-slate-50 dark:hover:bg-gray-700/50`}
             >
               <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
                 {String(index + 1).padStart(2, '0')}
@@ -391,60 +371,23 @@ const TradingDashboard = () => {
               >
                 {row.name}
               </Link>
-              {/* The card's own metric is the bold one, so a value card reads
-                  its money first and a quantity card its units. */}
               <span
-                className={`shrink-0 whitespace-nowrap text-right tabular-nums ${
-                  byQuantity
-                    ? `font-bold ${tone}`
-                    : 'text-[11px] text-slate-400'
-                }`}
+                className={`shrink-0 whitespace-nowrap text-right font-bold tabular-nums ${tone}`}
               >
-                {units(row.qty)} {verb}
-              </span>
-              <span
-                className={`w-24 shrink-0 text-right tabular-nums ${
-                  byQuantity
-                    ? 'text-[11px] text-slate-400'
-                    : `font-bold ${tone}`
-                }`}
-              >
-                {money(row.amount)}
+                {format(row?.[metric])}
               </span>
             </li>
           ))}
         </ul>
 
         <div
-          className={`mt-auto flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] dark:bg-gray-700/50`}
+          className={`mt-auto flex items-center justify-between border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] dark:bg-gray-700/50`}
         >
           <span className="text-slate-500 dark:text-slate-300">
             Top {ranked.length} · {window}
           </span>
-          <span className="ml-auto flex flex-wrap items-baseline justify-end gap-x-3 gap-y-1">
-            {hasFigure(qtyTotal, total) ? (
-              <span className="flex items-baseline gap-1">
-                <span className="font-bold tabular-nums text-slate-500 dark:text-slate-300">
-                  {units(qtyTotal)}
-                </span>
-                <span className="text-[10px] font-medium text-slate-400">{verb}</span>
-                <span className={`font-bold tabular-nums ${tone}`}>{money(total)}</span>
-              </span>
-            ) : null}
-            {aside && hasFigure(aside.qty, aside.amount) ? (
-              <span className="flex items-baseline gap-1">
-                <span className="font-bold tabular-nums text-slate-500 dark:text-slate-300">
-                  {units(aside.qty)}
-                </span>
-                <span className="text-[10px] font-medium text-slate-400">
-                  {aside.verb}
-                  {aside.days !== days ? ` · ${windowLabel(aside.days)}` : ''}
-                </span>
-                <span className="font-bold tabular-nums text-primary dark:text-secondary">
-                  {money(aside.amount)}
-                </span>
-              </span>
-            ) : null}
+          <span className={`font-bold tabular-nums ${tone}`}>
+            {format(listedValue(ranked, metric))}
           </span>
         </div>
       </div>
@@ -794,21 +737,9 @@ const TradingDashboard = () => {
           'Top Sales Products by Quantity',
           topSales,
           'qty',
-          '',
           'text-emerald-600 dark:text-emerald-400',
           Number(payload?.top_sales_days) || 1,
           links.salesLedger,
-          // The purchase window, which falls back to the sales one server-side
-          // -- mirrored here so the label matches the figure.
-          {
-            verb: 'bought',
-            qty: Number(payload?.top_sales_bought?.qty) || 0,
-            amount: Number(payload?.top_sales_bought?.amount) || 0,
-            days:
-              Number(payload?.top_purchase_days) ||
-              Number(payload?.top_sales_days) ||
-              1,
-          },
         );
       case 'top-sales-value':
         return productCard(
@@ -816,19 +747,9 @@ const TradingDashboard = () => {
           'Top Sales Products by Value',
           topSalesValue,
           'amount',
-          '',
           'text-emerald-600 dark:text-emerald-400',
           Number(payload?.top_sales_days) || 1,
           links.salesLedger,
-          {
-            verb: 'bought',
-            qty: Number(payload?.top_sales_value_bought?.qty) || 0,
-            amount: Number(payload?.top_sales_value_bought?.amount) || 0,
-            days:
-              Number(payload?.top_purchase_days) ||
-              Number(payload?.top_sales_days) ||
-              1,
-          },
         );
       case 'top-purchase':
         return productCard(
@@ -836,16 +757,9 @@ const TradingDashboard = () => {
           'Top Purchase Products by Quantity',
           topPurchase,
           'qty',
-          '',
           'text-primary dark:text-secondary',
           Number(payload?.top_purchase_days) || 1,
           links.purchaseLedger,
-          {
-            verb: 'sold',
-            qty: Number(payload?.top_purchase_sold?.qty) || 0,
-            amount: Number(payload?.top_purchase_sold?.amount) || 0,
-            days: Number(payload?.top_sales_days) || 1,
-          },
         );
       case 'top-purchase-value':
         return productCard(
@@ -853,16 +767,9 @@ const TradingDashboard = () => {
           'Top Purchase Products by Value',
           topPurchaseValue,
           'amount',
-          '',
           'text-primary dark:text-secondary',
           Number(payload?.top_purchase_days) || 1,
           links.purchaseLedger,
-          {
-            verb: 'sold',
-            qty: Number(payload?.top_purchase_value_sold?.qty) || 0,
-            amount: Number(payload?.top_purchase_value_sold?.amount) || 0,
-            days: Number(payload?.top_sales_days) || 1,
-          },
         );
       case 'all-branches':
         return isWidgetVisible('all-branches') ? (

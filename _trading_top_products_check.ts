@@ -73,9 +73,9 @@ const salesQty = rankProducts(topSales, 'qty');
 check('sales-by-quantity leads with the fastest-moving line', salesQty[0].id === 1, ids(salesQty));
 check('sales-by-quantity is in descending units', ids(salesQty) === '1,2,3,4,5', ids(salesQty));
 check(
-  'the sales quantity card totals the five rows on it',
-  listedValue(salesQty, 'qty') === 1170 && listedValue(salesQty, 'amount') === 154000,
-  `${listedValue(salesQty, 'qty')} / ${listedValue(salesQty, 'amount')}`,
+  'the sales quantity card totals the units on it, and no money',
+  listedValue(salesQty, 'qty') === 1170,
+  String(listedValue(salesQty, 'qty')),
 );
 
 // ── Sales: the value card ───────────────────────────────────────────────────
@@ -83,9 +83,9 @@ const salesValue = rankProducts(topSalesValue, 'amount');
 check('sales-by-value leads with the highest-value line', salesValue[0].id === 6, ids(salesValue));
 check('sales-by-value is in descending money', ids(salesValue) === '6,4,2,1,3', ids(salesValue));
 check(
-  'the sales value card totals the five rows on it',
-  listedValue(salesValue, 'qty') === 1110 && listedValue(salesValue, 'amount') === 239000,
-  `${listedValue(salesValue, 'qty')} / ${listedValue(salesValue, 'amount')}`,
+  'the sales value card totals the money on it, and no units',
+  listedValue(salesValue, 'amount') === 239000,
+  String(listedValue(salesValue, 'amount')),
 );
 
 // ── The point of the split ──────────────────────────────────────────────────
@@ -111,9 +111,14 @@ check(
   purchaseValue.some((row: any) => !topPurchase.some((unit: any) => unit.id === row.id)),
 );
 check(
-  'the purchase value card totals the five rows on it',
-  listedValue(purchaseValue, 'qty') === 6180 && listedValue(purchaseValue, 'amount') === 233000,
-  `${listedValue(purchaseValue, 'qty')} / ${listedValue(purchaseValue, 'amount')}`,
+  'the purchase quantity card totals the units on it, and no money',
+  listedValue(purchaseQty, 'qty') === 6250,
+  String(listedValue(purchaseQty, 'qty')),
+);
+check(
+  'the purchase value card totals the money on it, and no units',
+  listedValue(purchaseValue, 'amount') === 233000,
+  String(listedValue(purchaseValue, 'amount')),
 );
 
 // ── Nothing is mutated, and an empty window stays empty ─────────────────────
