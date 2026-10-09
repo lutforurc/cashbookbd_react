@@ -31,9 +31,10 @@ const normalizeSuggestionItems = (items: any) =>
             .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
         : [];
 
-const getOrderSuggestionValue = (row: any, field: 'order_number' | 'delivery_location' | 'notes') => {
+const getOrderSuggestionValue = (row: any, field: 'order_number' | 'delivery_location' | 'notes' | 'transaction_account') => {
     if (field === 'order_number') return row?.order_number || row?.label || '';
     if (field === 'delivery_location') return row?.delivery_location || row?.label_6 || '';
+    if (field === 'transaction_account') return row?.transaction_account || row?.label_10 || '';
     return row?.notes || row?.label_9 || '';
 };
 
@@ -83,11 +84,13 @@ const AddOrder = (user: any) => {
         order_number: [],
         delivery_location: [],
         notes: [],
+        transaction_account: [],
     });
     const [orderSuggestionRows, setOrderSuggestionRows] = useState<Record<string, any[]>>({
         order_number: [],
         delivery_location: [],
         notes: [],
+        transaction_account: [],
     });
 
     const toValidDate = (value: string | null | undefined) => {
@@ -328,6 +331,14 @@ const AddOrder = (user: any) => {
 
         return () => window.clearTimeout(timer);
     }, [formData.branch_id, formData.notes]);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            void loadOrderFieldSuggestions('transaction_account', formData.transaction_account);
+        }, 250);
+
+        return () => window.clearTimeout(timer);
+    }, [formData.branch_id, formData.transaction_account]);
 
     useEffect(() => {
         const editData = ordersState?.editData;
@@ -919,7 +930,11 @@ const AddOrder = (user: any) => {
                 </datalist>
                 {/* Typed by hand, not picked off the chart: a note the clerk
                     makes now, for whoever raises the voucher against this order
-                    later. Optional, so it may be left empty. */}
+                    later. Optional, so it may be left empty.
+
+                    The datalist suggests what other orders have already said,
+                    newest order first -- the API hands the rows over that way
+                    and normalizeSuggestionItems() keeps the first of each. */}
                 <div className="md:col-span-2">
                     <InputElement
                         id="transaction_account"
@@ -928,6 +943,7 @@ const AddOrder = (user: any) => {
                         placeholder={'Transaction Account'}
                         label={'Transaction Account'}
                         className={''}
+                        list="order-transaction-account-suggestions"
                         autoComplete="off"
                         onChange={handleOrderChange}
                         onKeyDown={(e) => {
@@ -941,6 +957,11 @@ const AddOrder = (user: any) => {
                         }}
                     />
                 </div>
+                <datalist id="order-transaction-account-suggestions">
+                    {orderFieldSuggestions.transaction_account.map((item) => (
+                        <option key={item} value={item} />
+                    ))}
+                </datalist>
                 <div className="md:col-span-1">
                     <label htmlFor="">Reference Order</label>
                     <OrderDropdown
