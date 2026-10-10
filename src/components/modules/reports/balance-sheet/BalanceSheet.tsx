@@ -535,16 +535,18 @@ const BalanceSheet = (user: any) => {
           </div>
         </div>
 
-        {balanceSheetState?.loading && (
-          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-8 shadow-default">
-            <Loader />
-          </div>
-        )}
+        {/* ⚠️ The sheet is NOT unmounted while loading. Profit & Loss lays the
+            spinner over what is already there and swaps the numbers when they
+            arrive; this screen used to drop the whole report first, so an Apply
+            looked like the page had been emptied until the data landed. */}
+        {balanceSheetState?.loading && <Loader />}
 
-        {!balanceSheetState?.loading && !hasReportData && (
+        {!hasReportData && (
           <div className="rounded-sm border border-dashed border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-6 py-12 text-center shadow-default">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
-              No balance sheet loaded yet
+              {balanceSheetState?.loading
+                ? "Balance sheet loading..."
+                : "No balance sheet loaded yet"}
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Select a branch, date range, then click Load Report.
@@ -552,14 +554,14 @@ const BalanceSheet = (user: any) => {
           </div>
         )}
 
-        {!balanceSheetState?.loading && hasBalanceSheetResponse && !hasReportData && (
+        {hasBalanceSheetResponse && !hasReportData && (
           <NetProfitDebugPanel
             branchName={appliedBranchName}
             values={netProfitDebug}
           />
         )}
 
-        {!balanceSheetState?.loading && hasReportData && (
+        {hasReportData && (
           <>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <SummaryCard title="Total Assets" value={totals.assets} tone="emerald" />
