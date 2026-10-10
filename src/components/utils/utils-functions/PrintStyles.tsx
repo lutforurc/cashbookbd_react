@@ -66,10 +66,16 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4
    * here and are interpolated into both.
    *
    * The left edge is the wider one because that is the edge that gets punched.
-   * The bottom is the band the pinned footer sits in: the footer is placed at
-   * `bottom: 0` -- the paper's own edge -- which puts it inside the bottom
-   * margin, the one band the @page rule has already taken away from the
-   * content. That is why it cannot overlap anything.
+   * The bottom is the band under a pinned footer.
+   *
+   * ⚠️ BUT IT IS NOT A BAND THE FOOTER SITS IN, which is what this comment used
+   * to say. Chrome measures a fixed element's `bottom: 0` from the edge of the
+   * CONTENT area, not the paper, so the pinned line lands on the last rows of a
+   * full page rather than beside them -- measured on 2026-10-10, and the fault
+   * on Closing Stock Details. The bottom margin still has to be here -- it is
+   * the gap under the footer, and it is what `--print-page-height` counts off --
+   * but the space the rows must leave is reserved by the report, out of its own
+   * flow. See the <tfoot> spacer in ItemDetailsPrint.
    */
   const SIDES = narrowMargins
     ? { left: '5mm', right: '4mm', gutter: '4mm' }

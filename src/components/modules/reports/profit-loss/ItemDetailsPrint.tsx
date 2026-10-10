@@ -665,10 +665,54 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
                     <React.Fragment key={i}>{renderLine(r)}</React.Fragment>
                   ))}
                 </tbody>
+
+                {/*
+                  ⚠️ THE BAND THE PINNED FOOTER SITS IN, TAKEN OUT OF THE ROWS.
+                  PrintFooter is position:fixed and repainted at the foot of
+                  every sheet, and `bottom: 0` there means the CONTENT area's
+                  edge -- not the paper's -- so it lands squarely on the last
+                  rows of a full page. A pinned box reserves nothing, so nothing
+                  it does can keep the rows off it; the space has to come out of
+                  the flow, on every sheet.
+
+                  ⚠️ A <tfoot> IS THE ONLY PART OF A TABLE THAT REPEATS AT THE
+                  FOOT OF EACH PRINTED PAGE, which is what makes it the reserve:
+                  its height is held back on every sheet, not just the last.
+                  Measured in Chrome: with this row the last line on a full page
+                  stops well clear of the software line, and without it the rows
+                  print through it.
+
+                  ⚠️ 6mm IS THE FOOTER'S OWN HEIGHT WITH ROOM TO SPARE. It is at
+                  most 10px of type over a 1px rule and 4px of padding -- a shade
+                  under 4mm -- but only because PrintFooter sets `leading-none`;
+                  left to inherit the report's line-height it was 6.6mm and would
+                  outgrow this reserve. Change one and the other has to follow.
+                */}
+                <tfoot>
+                  <tr>
+                    <td colSpan={5} style={{ height: "6mm", border: "none" }} />
+                  </tr>
+                </tfoot>
               </table>
             </div>
 
-            <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
+            {/* ⚠️ PINNED ONLY WHEN THE REPORT DID NOT CUT ITS OWN PAGES. The Rows
+                box starts at 0 on both screens that mount this sheet, which makes
+                the whole report one block and leaves the breaks to the browser --
+                and a line left in the flow then prints once, under the last row,
+                on whichever sheet the table happens to end. Pinned, it is
+                repainted at the foot of every sheet instead. Same rule, word for
+                word, as Cash Book's foot.
+
+                A numbered run keeps the in-flow line: one block per sheet, so
+                `mt-auto` already holds each copy at the foot of its own sheet,
+                and it can say which page this is. */}
+            <PrintFooter
+              fixed={pages.length === 1}
+              page={pIdx + 1}
+              total={pages.length}
+              fontSize={fs}
+            />
 
             {pIdx !== pages.length - 1 && (
               <div className="page-break" style={{ pageBreakAfter: "always" }} />

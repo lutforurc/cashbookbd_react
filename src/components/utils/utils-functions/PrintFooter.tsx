@@ -81,23 +81,31 @@ const PrintFooter: React.FC<Props> = ({ page, total, fontSize, fixed, note, hide
       <style>{`
         @media print {
           /*
-            ⚠️ THIS LINE IS POSITIONED AGAINST THE SHEET, NOT AGAINST THE
-            REPORT. position:fixed is measured from the edge of the PAPER --
-            the one place in a print where the @page margins do not apply --
-            so left:0 would run the line off the report's own left edge and
-            into the strip the printer cannot reach. The margins come from
+            ⚠️ THIS LINE IS POSITIONED AGAINST THE SHEET ACROSS, NOT DOWN.
+            position:fixed is measured from the edge of the PAPER for left and
+            right, so left:0 would run the line off the report's own left edge
+            and into the strip the printer cannot reach. The margins come from
             PrintStyles, which is the only thing that still knows them.
 
-            What makes it safe is where it lands: bottom:0 is the paper's own
-            edge, and the footer sits in the band the @page margin has already
-            taken out of the content area. So the rows above it can never reach
-            it, on any sheet, however full the page is -- which is the whole
-            reason it is fixed rather than in the flow.
+            ⚠️ BUT bottom:0 IS THE CONTENT AREA'S EDGE, NOT THE PAPER'S, and
+            this file used to claim the opposite. Measured in Chrome on
+            2026-10-10: with a 5mm @page bottom margin the line's baseline lands
+            7.03mm up from the paper -- which is a box sitting on the content
+            edge at 5mm, exactly where the rows also stop. So the pinned line
+            does NOT get a band of its own, and a full page of rows prints
+            through it. That was the fault on Closing Stock Details.
 
-            And it is REPAINTED ON EVERY SHEET the document runs to, which is
-            what a report that leaves its page breaks to the browser needs: an
-            in-flow footer is printed once, on the last sheet, because that is
-            where the flow ends.
+            Which leaves two things a report must do, and neither is optional:
+            keep this box short (see leading-none on the div, without which a
+            10px line carries a 20px box and eats 6.6mm instead of 4mm), and
+            take the band out of its own flow on every sheet -- a repeating
+            <tfoot> spacer, as ItemDetailsPrint does. A footer that reserves
+            nothing cannot be made safe from this side.
+
+            What is still true, and the reason it stays fixed: it is REPAINTED
+            ON EVERY SHEET the document runs to, which is what a report that
+            leaves its page breaks to the browser needs -- an in-flow footer is
+            printed once, on the last sheet, because that is where the flow ends.
           */
           .print-footer-fixed {
             position: fixed;
@@ -112,7 +120,15 @@ const PrintFooter: React.FC<Props> = ({ page, total, fontSize, fixed, note, hide
     <div
       style={{ fontSize: footSize(fontSize) }}
       className={
-        'mt-auto flex shrink-0 items-end justify-between gap-4 border-t border-gray-400 pt-1 text-black ' +
+        // ⚠️ `leading-none` IS WHAT KEEPS THE PINNED LINE INSIDE ITS BAND.
+        // PrintStyles reserves the bottom 5mm of the sheet as the @page margin,
+        // and the footer is placed at bottom:0 -- the paper's own edge -- which
+        // puts it inside that band. Left to inherit, though, it took the
+        // report's own line-height (text-sm means 20px), so a 10px line was
+        // carrying a 20px-tall box: 6.6mm of footer in a 5mm band, and the last
+        // row printed through it. Seen on Closing Stock Details, 2026-10-10.
+        // Measured in Chrome: 6.61mm inheriting, 3.97mm at leading-none.
+        'leading-none mt-auto flex shrink-0 items-end justify-between gap-4 border-t border-gray-400 pt-1 text-black ' +
         (fixed ? 'print-footer-fixed ' : '') +
         className
       }
