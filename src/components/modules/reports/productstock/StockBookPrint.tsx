@@ -296,6 +296,8 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                     <th style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 w-8 text-center">
                       #
                     </th>
+                    {/* Plain, matching the screen: the product line below prints
+                        its code and name only, the chain lives on the headings. */}
                     <th style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 text-left">
                       Product Name
                     </th>

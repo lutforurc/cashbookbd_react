@@ -3869,12 +3869,15 @@ const productStockPaper = (): PrintTemplate => ({
  * Stock Details as ItemDetailsPrint.tsx draws it: the code in a column of its
  * own, the name beside it, the rate and the value past that.
  *
- * ⚠️ THE CODE IS ITS OWN COLUMN, NOT PART OF THE PRODUCT CELL, because that is
- * how both the screen and the paper it replaces already read -- and because the
- * code column is conditional there (it appears only where the loaded stock
- * carries codes at all). A tenant who would rather see the product written as a
- * block can swap in `product_lines`, which is in this paper's line catalogue
- * along with `product_flat` and `own_format`.
+ * ⚠️ THIS SEED KEEPS THE CODE IN ITS OWN COLUMN even though the screen and the
+ * paper behind the designer stopped doing that on 2026-10-10, when the owner
+ * asked Stock Details to read like Product Stock -- its product cell now prints
+ * `code - name`, with the chain it is filed under left to the headings, and
+ * there is no column beside it. The seed is left alone because it is a starting
+ * arrangement, not the paper: a tenant who wants the code standing on its own
+ * can keep this, and one who wants the block can swap in `product_lines`, which
+ * is in this paper's line catalogue along with `product_flat` and
+ * `own_format`.
  */
 const stockDetailsPaper = (): PrintTemplate => ({
   version: 1,

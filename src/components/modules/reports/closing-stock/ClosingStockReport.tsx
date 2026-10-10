@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
-import { FiCheckSquare, FiRotateCcw } from "react-icons/fi";
+import { FiArrowRight, FiCheckSquare, FiRotateCcw } from "react-icons/fi";
 
 import Loader from "../../../../common/Loader";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
@@ -34,17 +34,20 @@ import { toStockDetailsDocumentData } from "./stockDetailsDocumentData";
 
 type StockRow = Record<string, any>;
 
-type StockGroup = {
-  /**
-   * The band printed over the rows -- "Air Conditioner", or "GREE" on a branch
-   * that asked for brands. Named `band` rather than `category` because it holds
-   * whichever of the two the branch chose, and a field called category holding
-   * a brand name is how the next reader is misled.
-   */
-  band: string;
-  categories: { category: string; rows: StockRow[] }[];
-  total: number;
-};
+/**
+ * One line of the table, in the order it is drawn.
+ *
+ * ⚠️ FLAT, NOT NESTED, the same shape Product Stock's `buildBrandGroupCategoryRows`
+ * returns and for the same reason: every heading has to know what it is worth
+ * before it is drawn, and a three-deep tree has to be walked three times to find
+ * that out. Here each line already carries the whole path above it.
+ */
+type RenderRow =
+  | { __type: "BRAND"; brand: string }
+  | { __type: "GROUP"; brand: string; group: string }
+  | { __type: "CAT"; brand: string; group: string; category: string }
+  | { __type: "ITEM"; row: StockRow; sl: number }
+  | { __type: "BAND_TOTAL"; label: string; total: number };
 
 /**
  * Every cell is boxed, as the printed stocktake is.
@@ -73,6 +76,14 @@ const rowCategory = (row: StockRow) =>
 const rowBrand = (row: StockRow) =>
   firstName(row?.brand, row?.brand_name, row?.__brandKey) || "Others";
 
+/**
+ * ⚠️ NO "Ungrouped" BUCKET, exactly as Product Stock reads it: an item with no
+ * group has no Group level at all, and its category hangs straight off the brand
+ * (`GREE → Split` becomes `GREE → Air Conditioner`). An empty string is what
+ * says so; the heading draws the parts it has and drops the blank step.
+ */
+const rowGroup = (row: StockRow) => firstName(row?.group, row?.group_name);
+
 const rowProduct = (row: StockRow) => String(row?.product_name ?? row?.name ?? "-");
 const rowCode = (row: StockRow) => String(row?.code ?? "").trim();
 const rowUnit = (row: StockRow) => String(row?.unit ?? row?.unit_name ?? "Nos");
@@ -82,6 +93,41 @@ const rowTotal = (row: StockRow) => {
   const direct = row?.total_stock ?? row?.total ?? row?.amount;
   if (direct !== undefined && direct !== null && direct !== "") return toNum(direct);
   return toNum(rowQty(row)) * toNum(rowRate(row));
+};
+
+/**
+ * A heading's path, drawn as `A → B → C`. The same component, word for word, as
+ * Product Stock's `HeadingPath` -- and the same ten lines again on the paper.
+ *
+ * ⚠️ EMPTY PARTS ARE DROPPED, so an item with no group reads `Brand → Category`
+ * rather than carrying a blank step where a group's name would be, and a branch
+ * that lists stock straight by category reads a one-part path, which is just the
+ * category's name.
+ *
+ * ⚠️ `className` IS HOW A PRODUCT ROW WEARS THE SAME CHAIN WITHOUT THE HEADING'S
+ * WEIGHT -- the steps, the arrow and the spacing stay identical.
+ */
+const HeadingPath = ({
+  parts,
+  className = "font-semibold",
+}: {
+  parts: any[];
+  className?: string;
+}) => {
+  const shown = parts.map((part) => String(part ?? "").trim()).filter(Boolean);
+
+  return (
+    <div className={`inline-flex items-center gap-1 whitespace-nowrap py-1 ${className}`}>
+      {shown.map((part, index) => (
+        <Fragment key={`${index}-${part}`}>
+          {index > 0 && (
+            <FiArrowRight className="shrink-0 text-gray-900 dark:text-gray-100" />
+          )}
+          <span>{part}</span>
+        </Fragment>
+      ))}
+    </div>
+  );
 };
 
 const normalizeRows = (payload: any): StockRow[] => {
@@ -234,47 +280,135 @@ const ClosingStockReport = ({ user }: any) => {
     );
   }, [rows, appliedSearch]);
 
-  const groups = useMemo<StockGroup[]>(() => {
-    const bandOf = groupByBrand ? rowBrand : rowCategory;
-    const map = new Map<string, StockRow[]>();
+  /**
+   * The lines the table is drawn from, in the order they are drawn.
+   *
+   * ⚠️ TWO SHAPES, AND THE BRANCH SETTING PICKS. `stock_report_type` on means
+   * Brand → Group → Category, which is the report Product Stock draws; off means
+   * the flat list by category that ProductStockNormal draws. The same split, off
+   * the same switch, as Product Stock's own two screens.
+   */
+  const renderRows = useMemo<RenderRow[]>(() => {
+    const byName = (a: any, b: any) => String(a ?? "").localeCompare(String(b ?? ""));
+    const out: RenderRow[] = [];
 
-    visibleRows.forEach((row) => {
-      const band = bandOf(row);
-      if (!map.has(band)) map.set(band, []);
-      map.get(band)!.push(row);
-    });
+    const emitItems = (items: StockRow[]) => {
+      items.forEach((row, index) => out.push({ __type: "ITEM", row, sl: index + 1 }));
+      return items.reduce((sum, row) => sum + rowTotal(row), 0);
+    };
 
-    return Array.from(map.entries()).map(([band, list]) => {
-      const categories = new Map<string, StockRow[]>();
-      list.forEach((row) => {
-        const category = groupByBrand
-          ? rowCategory(row)
-          : band;
-        if (!categories.has(category)) categories.set(category, []);
-        categories.get(category)!.push(row);
+    // Off: one heading per category, over every brand's rows filed under it.
+    if (!groupByBrand) {
+      const cats = new Map<string, StockRow[]>();
+
+      [...visibleRows]
+        .sort(
+          (a, b) =>
+            byName(rowCategory(a), rowCategory(b)) || byName(rowProduct(a), rowProduct(b)),
+        )
+        .forEach((row) => {
+          const key = rowCategory(row);
+          if (!cats.has(key)) cats.set(key, []);
+          cats.get(key)!.push(row);
+        });
+
+      cats.forEach((items, category) => {
+        out.push({ __type: "CAT", brand: "", group: "", category });
+        out.push({ __type: "BAND_TOTAL", label: category, total: emitItems(items) });
       });
 
-      return {
-        band,
-        categories: Array.from(categories, ([category, rows]) => ({ category, rows })),
-        total: list.reduce((sum, row) => sum + rowTotal(row), 0),
-      };
+      return out;
+    }
+
+    // On: Brand -> Group -> Category, with the categories of the items that have
+    // no group hanging straight off their brand -- see the note on rowGroup.
+    type CatBucket = { category: string; items: StockRow[] };
+    type BrandBucket = {
+      brand: string;
+      groups: Map<string, { group: string; cats: Map<string, CatBucket> }>;
+      ungrouped: Map<string, CatBucket>;
+    };
+
+    const brands = new Map<string, BrandBucket>();
+
+    [...visibleRows]
+      .sort(
+        (a, b) =>
+          byName(rowBrand(a), rowBrand(b)) ||
+          byName(rowGroup(a), rowGroup(b)) ||
+          byName(rowCategory(a), rowCategory(b)) ||
+          byName(rowProduct(a), rowProduct(b)),
+      )
+      .forEach((row) => {
+        const brandKey = rowBrand(row);
+        if (!brands.has(brandKey)) {
+          brands.set(brandKey, { brand: brandKey, groups: new Map(), ungrouped: new Map() });
+        }
+        const brand = brands.get(brandKey)!;
+        const catKey = rowCategory(row);
+        const groupLabel = rowGroup(row);
+
+        if (!groupLabel) {
+          if (!brand.ungrouped.has(catKey)) {
+            brand.ungrouped.set(catKey, { category: catKey, items: [] });
+          }
+          brand.ungrouped.get(catKey)!.items.push(row);
+          return;
+        }
+
+        if (!brand.groups.has(groupLabel)) {
+          brand.groups.set(groupLabel, { group: groupLabel, cats: new Map() });
+        }
+        const group = brand.groups.get(groupLabel)!;
+
+        if (!group.cats.has(catKey)) {
+          group.cats.set(catKey, { category: catKey, items: [] });
+        }
+        group.cats.get(catKey)!.items.push(row);
+      });
+
+    const emitCategory = (brand: string, group: string, cat: CatBucket) => {
+      out.push({ __type: "CAT", brand, group, category: cat.category });
+      return emitItems(cat.items);
+    };
+
+    brands.forEach((brand) => {
+      out.push({ __type: "BRAND", brand: brand.brand });
+
+      let brandTotal = 0;
+      brand.groups.forEach((group) => {
+        out.push({ __type: "GROUP", brand: brand.brand, group: group.group });
+        group.cats.forEach((cat) => {
+          brandTotal += emitCategory(brand.brand, group.group, cat);
+        });
+      });
+      brand.ungrouped.forEach((cat) => {
+        brandTotal += emitCategory(brand.brand, "", cat);
+      });
+
+      out.push({ __type: "BAND_TOTAL", label: brand.brand, total: brandTotal });
     });
+
+    return out;
   }, [visibleRows, groupByBrand]);
 
-  const grandTotal = useMemo(() => groups.reduce((sum, group) => sum + group.total, 0), [groups]);
+  const grandTotal = useMemo(
+    () =>
+      renderRows.reduce(
+        (sum, line) => (line.__type === "ITEM" ? sum + rowTotal(line.row) : sum),
+        0,
+      ),
+    [renderRows],
+  );
 
   /**
-   * The Code column exists only where the stock on the report carries codes.
-   *
-   * ⚠️ It is the LOADED ROWS that decide, not a branch setting: half a company's
-   * products have no code, and a column of empty boxes down the report -- under
-   * a heading promising a code -- is worse than no column. The spans below all
-   * count off this one number, so the bands and the totals cannot end up a
-   * column wider than the lines between them.
+   * ⚠️ SIX, ALWAYS. The separate Code column is gone: the code rides in front of
+   * the product's name, exactly as it does on Product Stock, so the second column
+   * was printing a string the product cell already carried. Every colSpan below
+   * counts off this one number, so no heading can end up a column wider than the
+   * lines beneath it.
    */
-  const showCode = useMemo(() => rows.some((row) => rowCode(row) !== ""), [rows]);
-  const columnCount = showCode ? 7 : 6;
+  const columnCount = 6;
 
   const handleLoad = async () => {
     // A second Apply while the first is still out is dropped, not queued.
@@ -684,64 +818,113 @@ const ClosingStockReport = ({ user }: any) => {
           <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300">
             <tr>
               <th className={`w-[80px] px-3 py-3 text-center font-semibold ${CELL}`}>Sl. No</th>
-              {showCode ? (
-                <th className={`w-[110px] px-3 py-3 font-semibold ${CELL}`}>Code</th>
-              ) : null}
-              <th className={`px-3 py-3 font-semibold ${CELL}`}>Product Details</th>
+              {/* Plain, matching Product Stock's identical column: a product line
+                  below prints its code and name only, and the chain it is filed
+                  under lives on the headings above it. */}
+              <th className={`px-3 py-3 font-semibold ${CELL}`}>Product Name</th>
               <th className={`w-[90px] px-3 py-3 text-center font-semibold ${CELL}`}>Unit</th>
               <th className={`w-[120px] px-3 py-3 text-right font-semibold ${CELL}`}>Stock Qty</th>
               <th className={`w-[130px] px-3 py-3 text-right font-semibold ${CELL}`}>Rate (Tk.)</th>
               <th className={`w-[150px] px-3 py-3 text-right font-semibold ${CELL}`}>Total (Tk.)</th>
             </tr>
           </thead>
-          {/* Replace the old flat-list DOM, including rows left by duplicate keys. */}
+          {/* The key carries which shape is drawn, so switching the branch
+              setting rebuilds the body rather than reconciling a heading list
+              into a differently-shaped one. */}
           <tbody
-            key={groupByBrand ? "brand-category-items" : "category-items"}
+            key={groupByBrand ? "brand-group-category-items" : "category-items"}
             className="divide-y divide-gray-200 bg-[rgb(var(--c-table-body))] dark:divide-gray-700"
           >
-            {groups.length ? (
-              groups.map((group) => (
-                <Fragment key={group.band}>
-                  {/* The band is not uppercased: "Air Conditioner" is the name
-                      as it was filed, and shouting it back adds nothing a
-                      heavier weight and a grey ground do not already say. */}
-                  <tr key={`${group.band}-header`} className={`bg-slate-100 font-semibold text-slate-900 dark:bg-slate-900/60 dark:text-slate-100 ${CELL}`}>
-                    <td colSpan={columnCount} className="px-3 py-2">{group.band}</td>
+            {renderRows.length ? (
+              renderRows.map((line, index) => {
+                if (line.__type === "BAND_TOTAL") {
+                  return (
+                    <tr key={`total-${index}`} className="bg-slate-50 font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
+                      <td colSpan={columnCount - 1} className={`px-3 py-3 text-right ${CELL}`}>{line.label} Total Tk.</td>
+                      <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(line.total)}</td>
+                    </tr>
+                  );
+                }
+
+                if (line.__type === "ITEM") {
+                  // The line above it, where that line is a product too: two
+                  // layers of one product are tinted, so the eye can tell one
+                  // product's stock from the next product's.
+                  const above = renderRows[index - 1];
+                  const sameProduct =
+                    above?.__type === "ITEM" &&
+                    line.row?.prodct_detls_id != null &&
+                    line.row.prodct_detls_id === above.row?.prodct_detls_id;
+
+                  return (
+                    <tr
+                      key={`item-${index}`}
+                      className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${sameProduct ? "bg-cyan-50 dark:bg-cyan-950/20" : ""}`}
+                    >
+                      <td className={`px-3 py-2 text-center ${CELL}`}>{line.sl}</td>
+                      {/* ⚠️ CODE AND NAME, NOTHING ELSE. The chain this line used
+                          to spell out was taken back off it by the owner on
+                          2026-10-10, hours after he asked for it: the headings
+                          above already carry the chain, once per band instead of
+                          once per product. `HeadingPath` stays even for a single
+                          part, because it is what sets this row's line-height and
+                          no-wrap to match those headings. */}
+                      <td className={`px-3 py-2 ${CELL}`}>
+                        <HeadingPath
+                          className="font-normal"
+                          parts={[
+                            rowCode(line.row)
+                              ? `${rowCode(line.row)} - ${rowProduct(line.row)}`
+                              : rowProduct(line.row),
+                          ]}
+                        />
+                      </td>
+                      <td className={`px-3 py-2 text-center ${CELL}`}>{rowUnit(line.row)}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowQty(line.row))}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowRate(line.row))}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowTotal(line.row))}</td>
+                    </tr>
+                  );
+                }
+
+                /**
+                 * A heading, at one of the three depths. It prints the whole path
+                 * down to itself -- the group prints the brand it hangs from, the
+                 * category prints both -- with HeadingPath dropping the steps a
+                 * row has none of. The depth is read off `__type` rather than
+                 * repeated in a class, so the two can never disagree.
+                 *
+                 * ⚠️ NO INDENTATION STEP. The path is the indentation: "GREE →
+                 * Split → Air Conditioner" says where it sits without a margin
+                 * the reader has to measure. Same as Product Stock.
+                 */
+                if (line.__type === "CAT") {
+                  return (
+                    <tr key={`heading-${index}`} className="bg-slate-50 font-medium text-slate-700 dark:bg-slate-900/40 dark:text-slate-200">
+                      <td colSpan={columnCount} className={`px-3 py-2 ${CELL}`}>
+                        <HeadingPath parts={[line.brand, line.group, line.category]} className="font-medium" />
+                      </td>
+                    </tr>
+                  );
+                }
+
+                if (line.__type === "GROUP") {
+                  return (
+                    <tr key={`heading-${index}`} className="bg-slate-50 font-medium text-slate-700 dark:bg-slate-900/40 dark:text-slate-200">
+                      <td colSpan={columnCount} className={`px-3 py-2 ${CELL}`}>
+                        <HeadingPath parts={[line.brand, line.group]} className="font-medium" />
+                      </td>
+                    </tr>
+                  );
+                }
+
+                // The brand: the top of the chain, so its path is its own name.
+                return (
+                  <tr key={`heading-${index}`} className="bg-slate-100 font-semibold text-slate-900 dark:bg-slate-900/60 dark:text-slate-100">
+                    <td colSpan={columnCount} className={`px-3 py-2 ${CELL}`}>{line.brand}</td>
                   </tr>
-                  {group.categories.map((categoryGroup) => (
-                    <Fragment key={categoryGroup.category}>
-                      {groupByBrand ? (
-                        <tr className="bg-slate-50 font-medium text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
-                          <td colSpan={columnCount} className={`px-6 py-2 ${CELL}`}>{categoryGroup.category}</td>
-                        </tr>
-                      ) : null}
-                      {categoryGroup.rows.map((row, index) => (
-                        <tr
-                          key={`${group.band}-${categoryGroup.category}-${index}`}
-                          className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${index > 0 && row?.prodct_detls_id === categoryGroup.rows[index - 1]?.prodct_detls_id
-                              ? "bg-cyan-50 dark:bg-cyan-950/20"
-                              : ""
-                            }`}
-                        >
-                          <td className={`px-3 py-2 text-center ${CELL}`}>{index + 1}</td>
-                          {showCode ? (
-                            <td className={`truncate px-3 py-2 ${CELL}`}>{rowCode(row)}</td>
-                          ) : null}
-                          <td className={`truncate px-3 py-2 ${CELL}`}>{rowProduct(row)}</td>
-                          <td className={`px-3 py-2 text-center ${CELL}`}>{rowUnit(row)}</td>
-                          <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowQty(row))}</td>
-                          <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowRate(row))}</td>
-                          <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowTotal(row))}</td>
-                        </tr>
-                      ))}
-                    </Fragment>
-                  ))}
-                  <tr key={`${group.band}-total`} className="bg-slate-50 font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
-                    <td colSpan={columnCount - 1} className={`px-3 py-3 text-right ${CELL}`}>{group.band} Total Tk.</td>
-                    <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(group.total)}</td>
-                  </tr>
-                </Fragment>
-              ))
+                );
+              })
             ) : (
               <tr>
                 {/* ⚠️ Two different nothings, said differently. A report that
@@ -756,7 +939,7 @@ const ClosingStockReport = ({ user }: any) => {
               </tr>
             )}
           </tbody>
-          {groups.length ? (
+          {renderRows.length ? (
             <tfoot className="bg-slate-50 text-sm font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
               <tr>
                 <td colSpan={columnCount - 1} className={`px-3 py-3 text-right ${CELL}`}>Grand Total</td>

@@ -89,12 +89,22 @@ const groupKeyOf = (row: any) => {
 /**
  * A heading's path, drawn as `A → B → C`. ⚠️ Empty parts are dropped, so an item
  * with no group reads `Brand → Category` rather than carrying a blank step.
+ *
+ * ⚠️ `className` IS HOW A HEADING OF LESSER WEIGHT IS DRAWN, and how a product
+ * row reuses the same spacing for its single part without the boldness -- see
+ * the Product Name column.
  */
-const HeadingPath = ({ parts }: { parts: any[] }) => {
+const HeadingPath = ({
+  parts,
+  className = 'font-semibold',
+}: {
+  parts: any[];
+  className?: string;
+}) => {
   const shown = parts.map((part) => String(part ?? '').trim()).filter(Boolean);
 
   return (
-    <div className="inline-flex items-center gap-1 whitespace-nowrap py-1 font-semibold">
+    <div className={`inline-flex items-center gap-1 whitespace-nowrap py-1 ${className}`}>
       {shown.map((part, index) => (
         <React.Fragment key={`${index}-${part}`}>
           {index > 0 && (
@@ -550,6 +560,10 @@ const ProductStock = ({ user }: any) => {
     },
     {
       key: 'product_name',
+      // ⚠️ PLAIN AGAIN since 2026-10-10 (evening): the header had been widened to
+      // name the four parts a product line printed, and the owner then took three
+      // of those parts back off the line. A header naming what the column no
+      // longer holds is worse than the plain one -- see the item row below.
       header: 'Product Name',
       render: (row: any) => {
         if (isGrandTotalRow(row)) {
@@ -569,13 +583,27 @@ const ProductStock = ({ user }: any) => {
         if (isCatRow(row)) {
           return <HeadingPath parts={[row.brand_name, row.group_name, row.cat_name]} />;
         }
-        // The code in front of the name, and only the name where there is no
-        // code -- a lone dash reads as a product with a missing name.
+        /**
+         * ⚠️ CODE AND NAME, NOTHING ELSE. The chain this line used to spell out
+         * (`name ▸ category ▸ group ▸ brand`, asked for on 2026-10-10 and taken
+         * back the same day) is already on the headings above it, once per band
+         * instead of once per product. The owner's words: only `Akota Metal Bib
+         * Cock Round Head L` -- the product, with its code in front where it has
+         * one. The headings keep the chain; this line does not repeat it.
+         *
+         * ⚠️ `HeadingPath` STAYS even for a single part, because it is what sets
+         * the row's line-height and no-wrap; a bare `<span>` here would sit a
+         * pixel off every heading above it.
+         */
         return (
-          <div>
-            {row.code ? `${row.code} - ` : ''}
-            {row.product_name}
-          </div>
+          <HeadingPath
+            className="font-normal"
+            parts={[
+              // The code in front of the name, and only the name where there is
+              // no code -- a lone dash reads as a product with a missing name.
+              row.code ? `${row.code} - ${row.product_name}` : row.product_name,
+            ]}
+          />
         );
       },
     },

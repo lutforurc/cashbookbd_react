@@ -32,11 +32,33 @@ type Props = {
 
 type RenderRow =
   | { type: "brand"; brand: string }
-  | { type: "category"; brand: string; category: string }
-  | { type: "item"; brand: string; category: string; idx: number; row: RowAny }
-  | { type: "catTotal"; brand: string; category: string; stock: number; unit: string; total: number }
+  | { type: "group"; brand: string; group: string }
+  | { type: "category"; brand: string; group: string; category: string }
+  | { type: "item"; brand: string; group: string; category: string; idx: number; row: RowAny }
+  | { type: "catTotal"; brand: string; group: string; category: string; stock: number; unit: string; total: number }
   | { type: "brandTotal"; brand: string; stock: number; unit: string; total: number }
   | { type: "grandTotal"; stock: number; unit: string; total: number };
+
+/**
+ * A heading's path on the paper, drawn as `A → B → C`. ⚠️ Empty parts are
+ * dropped, so an item with no group prints `Brand → Category` rather than a
+ * blank step where a group's name would be, and a branch that lists its stock
+ * straight by category prints a one-part path, which is its name.
+ */
+const PrintPath = ({ parts, className = "" }: { parts: any[]; className?: string }) => {
+  const shown = parts.map((part) => String(part ?? "").trim()).filter(Boolean);
+
+  return (
+    <span className={`inline-flex items-center gap-1 whitespace-nowrap ${className}`}>
+      {shown.map((part, index) => (
+        <React.Fragment key={`${index}-${part}`}>
+          {index > 0 && <FiArrowRight className="shrink-0 text-gray-900" />}
+          <span>{part}</span>
+        </React.Fragment>
+      ))}
+    </span>
+  );
+};
 
 const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
   (
@@ -95,6 +117,13 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
     const getCategory = (r: RowAny) =>
       (r?.category ?? r?.category_name ?? r?.cat_name ?? "Uncategorized").toString();
 
+    /**
+     * ⚠️ '' MEANS "NO GROUP", NOT A GROUP CALLED SOMETHING. An item with no group
+     * has no Group level at all and its category hangs straight off the brand, so
+     * an empty string is what says so -- the heading draws the parts it has.
+     */
+    const getGroup = (r: RowAny) => (r?.group ?? r?.group_name ?? "").toString().trim();
+
     const getProductName = (r: RowAny) =>
       (r?.product_name ?? r?.name ?? "-").toString();
 
@@ -103,16 +132,12 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
     const getUnit = (r: RowAny) => (r?.unit ?? "Nos").toString();
 
     /**
-     * The Code column is printed only where the stock on this report carries
-     * codes.
-     *
-     * ⚠️ The loaded rows decide, not a branch setting: where no product has a
-     * code the column is not printed at all, and where the API does not send
-     * one (a database the code patch has not reached) every row reads exactly
-     * as it did before. Every colSpan in this file counts off this one number.
+     * ⚠️ FIVE, ALWAYS. The separate Code column is gone: the code rides in front
+     * of the product's name, exactly as it does on Product Stock's paper, so the
+     * second column was printing a string the product cell already carried. Every
+     * colSpan in this file counts off this one number.
      */
-    const showCode = flatRows.some((r) => getCode(r) !== "");
-    const colCount = showCode ? 6 : 5;
+    const colCount = 5;
 
     const getQty = (r: RowAny) => r?.stock ?? r?.qty ?? 0;
     const getRate = (r: RowAny) => r?.rate ?? r?.avg_rate ?? 0;
@@ -127,26 +152,73 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       return toNum(getQty(r)) * toNum(getRate(r));
     };
 
-    // ✅ group: brand -> category -> items
+    // ✅ group: brand -> group -> category -> items, with the categories of the
+    // items that have no group hanging straight off their brand.
     const grouped = useMemo(() => {
-      const map = new Map<string, Map<string, RowAny[]>>();
+      type CatBucket = { category: string; rows: RowAny[] };
+      type BrandBucket = {
+        brand: string;
+        groups: Map<string, { group: string; cats: Map<string, CatBucket> }>;
+        ungrouped: Map<string, CatBucket>;
+      };
 
-      flatRows.forEach((r) => {
-        const brand = groupByBrand ? getBrand(r) : "";
-        const category = getCategory(r);
+      const byName = (a: any, b: any) => String(a ?? "").localeCompare(String(b ?? ""));
 
-        if (!map.has(brand)) map.set(brand, new Map());
-        const catMap = map.get(brand)!;
-        if (!catMap.has(category)) catMap.set(category, []);
-        catMap.get(category)!.push(r);
+      // ⚠️ SORTED HERE, not left in the order the API sent: a branch that lists
+      // its stock straight by category has the brands interleaved in that order,
+      // so the same category would print as two separate headings.
+      const sorted = [...flatRows].sort((a, b) => {
+        if (!groupByBrand) {
+          return byName(getCategory(a), getCategory(b)) || byName(getProductName(a), getProductName(b));
+        }
+        return (
+          byName(getBrand(a), getBrand(b)) ||
+          byName(getGroup(a), getGroup(b)) ||
+          byName(getCategory(a), getCategory(b)) ||
+          byName(getProductName(a), getProductName(b))
+        );
       });
 
-      return Array.from(map.entries()).map(([brand, catMap]) => ({
-        brand,
-        categories: Array.from(catMap.entries()).map(([category, rows]) => ({
-          category,
-          rows,
-        })),
+      const brands = new Map<string, BrandBucket>();
+
+      for (const r of sorted) {
+        const brandKey = groupByBrand ? getBrand(r) : "";
+        if (!brands.has(brandKey)) {
+          brands.set(brandKey, { brand: brandKey, groups: new Map(), ungrouped: new Map() });
+        }
+        const brand = brands.get(brandKey)!;
+        const catKey = getCategory(r);
+        const groupLabel = groupByBrand ? getGroup(r) : "";
+
+        if (!groupLabel) {
+          if (!brand.ungrouped.has(catKey)) brand.ungrouped.set(catKey, { category: catKey, rows: [] });
+          brand.ungrouped.get(catKey)!.rows.push(r);
+          continue;
+        }
+
+        if (!brand.groups.has(groupLabel)) {
+          brand.groups.set(groupLabel, { group: groupLabel, cats: new Map() });
+        }
+        const group = brand.groups.get(groupLabel)!;
+
+        if (!group.cats.has(catKey)) group.cats.set(catKey, { category: catKey, rows: [] });
+        group.cats.get(catKey)!.rows.push(r);
+      }
+
+      return Array.from(brands.values()).map((brand) => ({
+        brand: brand.brand,
+        /**
+         * ✅ Flat, in print order, each category carrying the group it sits in.
+         * The named groups come first and the ungrouped categories after them,
+         * so a group heading is emitted wherever the group changes -- which
+         * keeps the walk below the one it always was.
+         */
+        categories: [
+          ...Array.from(brand.groups.values()).flatMap((group) =>
+            Array.from(group.cats.values(), (cat) => ({ ...cat, group: group.group })),
+          ),
+          ...Array.from(brand.ungrouped.values(), (cat) => ({ ...cat, group: "" })),
+        ],
       }));
     }, [flatRows, groupByBrand]);
 
@@ -164,13 +236,26 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         let brandStock = 0;
         const brandRows: RowAny[] = [];
 
+        let lastGroup = "";
+
         g.categories.forEach((c) => {
-          out.push({ type: "category", brand: g.brand, category: c.category });
+          /**
+           * A group heading wherever the group changes. The categories of the
+           * items that have none arrive last, carrying no group, so they print
+           * under the brand directly -- which is where they belong.
+           */
+          if (groupByBrand && c.group && c.group !== lastGroup) {
+            out.push({ type: "group", brand: g.brand, group: c.group });
+            lastGroup = c.group;
+          }
+
+          out.push({ type: "category", brand: g.brand, group: c.group, category: c.category });
 
           c.rows.forEach((r, idx) => {
             out.push({
               type: "item",
               brand: g.brand,
+              group: c.group,
               category: c.category,
               idx: idx + 1,
               row: r,
@@ -186,6 +271,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           out.push({
             type: "catTotal",
             brand: g.brand,
+            group: c.group,
             category: c.category,
             stock: catStock,
             unit: getTotalUnit(c.rows),
@@ -233,10 +319,11 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         count += 1;
       };
 
-      const addContextHeaders = (brand: string, category: string) => {
+      const addContextHeaders = (brand: string, group: string, category: string) => {
         if (groupByBrand) page.push({ type: "brand", brand });
-        page.push({ type: "category", brand, category });
-        count += groupByBrand ? 2 : 1;
+        if (groupByBrand && group) page.push({ type: "group", brand, group });
+        page.push({ type: "category", brand, group, category });
+        count += groupByBrand ? (group ? 3 : 2) : 1;
       };
 
       for (let i = 0; i < renderRows.length; i++) {
@@ -245,10 +332,10 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
 
         const remaining = rp - count;
 
-        // orphan brand/category header avoid
+        // orphan brand/group/category header avoid
         if (
           page.length > 0 &&
-          (r.type === "brand" || r.type === "category") &&
+          (r.type === "brand" || r.type === "group" || r.type === "category") &&
           remaining <= 1
         ) {
           pushPage();
@@ -269,13 +356,13 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           pushPage();
         }
 
-        // new page শুরু হলে item/catTotal হলে brand+category repeat
+        // new page শুরু হলে item/catTotal হলে brand+group+category repeat
         if (page.length === 0 && (r.type === "item" || r.type === "catTotal")) {
-          addContextHeaders(r.brand, r.category);
+          addContextHeaders(r.brand, r.group, r.category);
 
           if (count + 1 > rp) {
             pushPage();
-            addContextHeaders(r.brand, r.category);
+            addContextHeaders(r.brand, r.group, r.category);
           }
         }
 
@@ -312,6 +399,25 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         );
       }
 
+      if (r.type === "group") {
+        return (
+          <tr className="avoid-break">
+            <td
+              colSpan={colCount}
+              style={{ fontSize: fs }}
+              className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} font-semibold`}
+            >
+              <PrintPath parts={[firstLetterCapitalize(r.brand), r.group]} />
+            </td>
+          </tr>
+        );
+      }
+
+      /**
+       * Each heading spells out the whole path down to it -- the group prints the
+       * brand it hangs from, the category prints both -- with PrintPath dropping
+       * the steps it has none of. Same shape as Product Stock's screen and paper.
+       */
       if (r.type === "category") {
         return (
           <tr className="avoid-break">
@@ -320,10 +426,13 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
               style={{ fontSize: fs }}
               className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} font-semibold`}
             >
-              <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                {groupByBrand && <>{firstLetterCapitalize(r.brand)}<FiArrowRight className="shrink-0" /></>}
-                {r.category}
-              </span>
+              <PrintPath
+                parts={
+                  groupByBrand
+                    ? [firstLetterCapitalize(r.brand), r.group, r.category]
+                    : [r.category]
+                }
+              />
             </td>
           </tr>
         );
@@ -345,20 +454,28 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
               {r.idx}
             </td>
 
-            {showCode ? (
-              <td
-                style={{ fontSize: fs }}
-                className={`border border-gray-900 px-2 ${cellPy}`}
-              >
-                {getCode(row)}
-              </td>
-            ) : null}
+            {/*
+              ⚠️ CODE AND NAME, NOTHING ELSE. The chain this line used to spell
+              out was taken back off it by the owner on 2026-10-10, hours after
+              he asked for it: the headings above already carry the chain, once
+              per band instead of once per product.
 
+              ⚠️ THE CODE RIDES IN FRONT OF THE NAME, as it does on Product
+              Stock's paper, which is why there is no Code column beside it any
+              more. A product without one prints its name alone rather than a
+              lone dash.
+            */}
             <td
               style={{ fontSize: fs }}
               className={`border border-gray-900 px-2 ${cellPy}`}
             >
-              {getProductName(row)}
+              <PrintPath
+                parts={[
+                  getCode(row)
+                    ? `${getCode(row)} - ${getProductName(row)}`
+                    : getProductName(row),
+                ]}
+              />
             </td>
 
             <td
@@ -510,14 +627,12 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
                     >
                       SL. NO
                     </th>
-                    {showCode ? (
-                      <th
-                        style={{ fontSize: fs }}
-                        className={`border border-gray-900 px-2 ${cellPy} w-[100px] text-left`}
-                      >
-                        Code
-                      </th>
-                    ) : null}
+                    {/*
+                      ⚠️ The heading names the parts, not just the first of them:
+                      the column is not the product's name, it is the whole chain
+                      a line is filed under -- see the same column on Product
+                      Stock's paper and screen.
+                    */}
                     <th
                       style={{ fontSize: fs }}
                       className={`border border-gray-900 px-2 ${cellPy} text-left`}
