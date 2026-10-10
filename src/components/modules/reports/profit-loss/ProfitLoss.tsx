@@ -81,6 +81,33 @@ const sumByIds = (rows: TradingRow[], coal3_id: number, coal4_id: number) => {
     );
 };
 
+/**
+ * A trading head's balance, read net.
+ *
+ * ⚠️ NOT ON ONE SIDE. Summing only the head's natural side -- Sales Discount
+ * debits, Purchase Discount credits -- drops every reversal, and a reversal is
+ * ordinary: a sales return credits 23 with the discount the customer forfeits,
+ * a purchase return debits 40 with the one the firm loses. `natural` is which
+ * side GROWS the head, read from the chart (23 is Income > Direct Income and
+ * debit-nature; 40 is Income > Indirect Income and credit-nature).
+ *
+ * ⚠️ THIS MIRRORS `ReportsController::extractNetProfitLossAmount()` and the two
+ * have to agree. The server's copy feeds the Balance Sheet's equity line; if
+ * only one side is netted the sheet reports the gap as Difference.
+ *
+ * A book that never reverses a head gets exactly what the one-sided sum gave.
+ */
+const sumNatural = (
+  rows: TradingRow[],
+  coal3_id: number,
+  coal4_id: number,
+  natural: "debit" | "credit"
+) => {
+  const { debit, credit } = sumByIds(rows, coal3_id, coal4_id);
+
+  return natural === "debit" ? debit - credit : credit - debit;
+};
+
 const ProfitLoss = (user: any) => {
   const dispatch = useDispatch();
 
@@ -208,20 +235,24 @@ const ProfitLoss = (user: any) => {
     const trading: TradingRow[] = apiData?.trading || [];
     const netprofit: NetRow[] = apiData?.netprofit || [];
 
-    // Opening Stock: coal3_id=29 coal4_id=18 => debit
-    const opening = sumByIds(trading, 29, 18).debit;
+    // Each head is read net -- see sumNatural. The names keep saying which head
+    // they are, not which side they sit on, because a net value can carry
+    // either sign.
+    //
+    // Opening Stock: coal3_id=29 coal4_id=18
+    const opening = sumNatural(trading, 29, 18, "debit");
 
-    // Closing Stock: coal3_id=29 coal4_id=21 => credit
-    const closing = sumByIds(trading, 29, 21).credit;
+    // Closing Stock: coal3_id=29 coal4_id=21
+    const closing = sumNatural(trading, 29, 21, "credit");
 
-    // Purchase: coal3_id=9 coal4_id=35 => debit
-    const purchaseDebit = sumByIds(trading, 9, 35).debit;
+    // Purchase: coal3_id=9 coal4_id=35
+    const purchaseDebit = sumNatural(trading, 9, 35, "debit");
 
-    // Purchase Return: coal3_id=9 coal4_id=16 => credit
-    const purchaseReturnCredit = sumByIds(trading, 9, 16).credit;
+    // Purchase Return: coal3_id=9 coal4_id=16
+    const purchaseReturnCredit = sumNatural(trading, 9, 16, "credit");
 
-    // Purchase Discount: coal3_id=8 coal4_id=40 => credit
-    const purchaseDiscountCredit = sumByIds(trading, 8, 40).credit;
+    // Purchase Discount: coal3_id=8 coal4_id=40
+    const purchaseDiscountCredit = sumNatural(trading, 8, 40, "credit");
 
     // Net Purchase = Purchase - Purchase Return - Purchase Discount
     const netPurchase = Math.max(
@@ -229,14 +260,14 @@ const ProfitLoss = (user: any) => {
       purchaseDebit - purchaseReturnCredit - purchaseDiscountCredit
     );
 
-    // Sales: coal3_id=7 coal4_id=15 => credit
-    const salesCredit = sumByIds(trading, 7, 15).credit;
+    // Sales: coal3_id=7 coal4_id=15
+    const salesCredit = sumNatural(trading, 7, 15, "credit");
 
-    // Sales Discount: coal3_id=7 coal4_id=23 => debit
-    const salesDiscountDebit = sumByIds(trading, 7, 23).debit;
+    // Sales Discount: coal3_id=7 coal4_id=23
+    const salesDiscountDebit = sumNatural(trading, 7, 23, "debit");
 
-    // Sales Return: coal3_id=7 coal4_id=19 => debit
-    const salesReturnDebit = sumByIds(trading, 7, 19).debit;
+    // Sales Return: coal3_id=7 coal4_id=19
+    const salesReturnDebit = sumNatural(trading, 7, 19, "debit");
 
     // Net Sales = Sales - Sales Discount - Sales Return
     const netSalesCredit = Math.max(

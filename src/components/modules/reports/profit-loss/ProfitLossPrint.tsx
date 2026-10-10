@@ -172,7 +172,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                     ></td>
                   </tr>
 
-                  {Number(report?.trading?.purchaseDiscountCredit || 0) > 0 ? (
+                  {Number(report?.trading?.purchaseDiscountCredit || 0) !== 0 ? (
                     <tr className="avoid-break">
                       <td
                         style={{ fontSize: fs }}
@@ -255,7 +255,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                     ></td>
                   </tr>
 
-                  {Number(report?.trading?.salesDiscountDebit || 0) > 0 ? (
+                  {Number(report?.trading?.salesDiscountDebit || 0) !== 0 ? (
                     <tr className="avoid-break">
                       <td
                         style={{ fontSize: fs }}

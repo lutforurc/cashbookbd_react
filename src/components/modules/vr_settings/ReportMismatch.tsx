@@ -19,9 +19,13 @@ import {
 /**
  * Report Mismatch (VR Settings).
  *
- * The vouchers a report cannot make up its mind about, in three kinds, and the
+ * The vouchers a report cannot make up its mind about, in two kinds, and the
  * repair for the one kind that can be repaired without anybody deciding
  * anything.
+ *
+ * ⚠️ EVERY STRING ON THIS SCREEN IS ENGLISH — labels, headers, toasts, the
+ * confirmation dialog, and the `detail` text the API builds. Asked for by the
+ * owner on 2026-10-10; the Bangla that was here is gone, so do not add it back.
  *
  * ⚠️ KIND 1 — A VOUCHER THAT BELONGS TO NOBODY. Every query that filters
  * `mtm.company_id` — the Balance Sheet's ledger side, the Trial Balance, the
@@ -45,13 +49,15 @@ import {
  * Live case: `3-261000002` (Cash Dr 1,660 + Sales Discount Dr 3 / Sales Cr
  * 1,660) — ৳3.
  *
- * ⚠️ KIND 3 — A TRADING HEAD HOLDING AN ENTRY ON ITS OTHER SIDE. The Profit &
- * Loss reads each trading head on ONE side only (Sales Sum(credit), Sales
- * Discount Sum(debit), and so on), so an entry on the other side is invisible
- * to the P&L while the Balance Sheet's ledger query still counts it. Live case:
- * a ৳20 Sales Discount credit on the sales-return voucher `13-261000003` — a
- * correct reversal of a discount, read by the P&L as nothing. No button here
- * either: the voucher itself is fine, the code limit is what shows.
+ * ⚠️ KIND 3 IS GONE, REMOVED 2026-10-10. It listed trading heads holding an
+ * entry on the side the Profit & Loss never read — the one-sided read in the
+ * API's `extractNetProfitLossAmount()`. That function now reads all eight heads
+ * net (`debit - credit`), so the entry is no longer invisible and the check has
+ * nothing left to say. Its live case, a ৳100 Sales Discount credit on the
+ * sales-return voucher `13-261000002` (03/10/2026), was a real ৳100 fault while
+ * the read was one-sided and is a correct voucher now — keeping the check would
+ * report it as a mismatch for ever. The check is deleted on both sides: here and
+ * in `ReportMismatchController`.
  *
  * ⚠️ A ROW IS NOT A VOUCHER. `amount` is the number the check tripped on, shown
  * so a row can be recognised; two vouchers sharing a number appear as two rows,
@@ -60,16 +66,12 @@ import {
 
 const MISMATCH_TYPES: Record<string, { label: string; help: string }> = {
   company_missing: {
-    label: 'কোম্পানি নেই',
-    help: 'ভাউচারটি কোনো কোম্পানির অধীনে নেই — P&L গুনে, Balance Sheet গুনে না',
+    label: 'No Company',
+    help: 'Voucher belongs to no company — Profit & Loss counts it, Balance Sheet does not',
   },
   unbalanced: {
-    label: 'ভাউচার অমিল',
-    help: 'ভাউচারের ডেবিট ও ক্রেডিট সমান নয় — প্রতিটি রিপোর্ট এই পরিমাণে সরে গেছে',
-  },
-  off_side: {
-    label: 'উল্টো হেড',
-    help: 'ট্রেডিং হেডে উল্টো দিকের এন্ট্রি — P&L এই দিকটি পড়ে না',
+    label: 'Unbalanced',
+    help: 'Debit and credit are not equal — every report is off by this amount',
   },
 };
 
@@ -90,7 +92,7 @@ const ReportMismatch = () => {
 
       setRows(Array.isArray(payload) ? payload : []);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'মিসম্যাচের তালিকা আনা যায়নি');
+      toast.error(error?.response?.data?.message || 'Could not load the mismatch list');
     } finally {
       setLoading(false);
     }
@@ -111,14 +113,14 @@ const ReportMismatch = () => {
       const res = await httpService.post(API_REPORT_MISMATCH_FIX_URL, { id: row.id });
 
       if (res?.data?.success === false) {
-        toast.error(res?.data?.error?.message || 'ঠিক করা যায়নি');
+        toast.error(res?.data?.error?.message || 'Could not be fixed');
       } else {
-        toast.success(`${row.vr_no} ঠিক করা হয়েছে`);
+        toast.success(`${row.vr_no} has been fixed`);
       }
 
       await load();
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'ঠিক করা যায়নি');
+      toast.error(error?.response?.data?.message || 'Could not be fixed');
     } finally {
       setFixingId(null);
       setConfirmRow(null);
@@ -134,13 +136,13 @@ const ReportMismatch = () => {
   const columns = [
     {
       key: 'serial_number',
-      header: 'ক্রম',
+      header: 'Sl. No.',
       width: '60px',
       render: (row: any) => <div className="text-center">{row.serial_number}</div>,
     },
     {
       key: 'type',
-      header: 'ধরন',
+      header: 'Type',
       width: '150px',
       render: (row: any) => (
         <div title={MISMATCH_TYPES[row.type]?.help}>{typeLabel(row)}</div>
@@ -148,32 +150,32 @@ const ReportMismatch = () => {
     },
     {
       key: 'vr_no',
-      header: 'ভাউচার নম্বর',
+      header: 'Voucher No',
       width: '130px',
       render: (row: any) => <div>{row.vr_no}</div>,
     },
     {
       key: 'vr_date',
-      header: 'তারিখ',
+      header: 'Voucher Date',
       width: '110px',
       render: (row: any) => <div>{formatDate(row.vr_date)}</div>,
     },
     {
       key: 'detail',
-      header: 'বিবরণ',
+      header: 'Details',
       render: (row: any) => (
         <div className="text-xs text-body dark:text-bodydark">{row.detail}</div>
       ),
     },
     {
       key: 'branch_name',
-      header: 'ব্রাঞ্চ',
+      header: 'Branch',
       width: '150px',
       render: (row: any) => <div>{row.branch_name}</div>,
     },
     {
       key: 'amount',
-      header: 'টাকা (Tk)',
+      header: 'Amount (Tk)',
       is_number: true,
       width: '130px',
       headerClass: 'text-right',
@@ -184,42 +186,42 @@ const ReportMismatch = () => {
     },
     {
       key: 'status',
-      header: 'অবস্থা',
+      header: 'Status',
       width: '110px',
       render: (row: any) => (
         <div>
           {Number(row.status) === 1 ? (
-            'সক্রিয়'
+            'Active'
           ) : (
-            <span className="text-bodydark2">রিসাইকেল</span>
+            <span className="text-bodydark2">Recycled</span>
           )}
         </div>
       ),
     },
     {
       key: 'action',
-      header: 'সমাধান',
+      header: 'Action',
       width: '150px',
       render: (row: any) =>
         row.type === 'company_missing' ? (
           <ButtonLoading
             size="sm"
             variant="primary"
-            label="ঠিক করুন"
-            title="ভাউচারটিকে তার ব্রাঞ্চের কোম্পানির অধীনে নিন"
+            label="Fix"
+            title="Put this voucher under the company its branch belongs to"
             buttonLoading={fixingId === row.id}
             disabled={fixingId !== null}
             onClick={() => setConfirmRow(row)}
             className={`rounded ${ROW_ACTION_BUTTON_CLASS}`}
           />
         ) : (
-          // Not a tagging mistake — an amount on the voucher is wrong, or the
-          // P&L's one-sided read is. Nothing here can guess which, so no button.
+          // Not a tagging mistake — an amount on the voucher is wrong, and
+          // nothing here can guess which, so no button.
           <span
             className="text-xs text-bodydark2"
             title={MISMATCH_TYPES[row.type]?.help}
           >
-            নিজে ঠিক করার উপায় নেই
+            Cannot be fixed here
           </span>
         ),
     },
@@ -235,19 +237,18 @@ const ReportMismatch = () => {
             Report Mismatch
           </h2>
           <p className="mt-1 max-w-3xl text-sm text-body dark:text-bodydark">
-            Balance Sheet-এ <span className="font-medium">Difference</span> দেখানোর তিনটি কারণ।
-            <span className="font-medium"> কোম্পানি নেই</span> — Profit &amp; Loss ভাউচারটি গুনে,
-            Balance Sheet গুনে না। <span className="font-medium">ভাউচার অমিল</span> — ডেবিট ও
-            ক্রেডিট সমান নয়, তাই প্রতিটি রিপোর্ট ওই পরিমাণে সরে গেছে।{' '}
-            <span className="font-medium">উল্টো হেড</span> — ট্রেডিং হেডে উল্টো দিকের এন্ট্রি, যা
-            Profit &amp; Loss পড়ে না।{' '}
-            <span className="font-medium">ঠিক করুন</span> কেবল প্রথম ধরনের জন্য, কারণ কেবল সেটিই
-            অনুমান ছাড়া সারানো যায়; টাকা, তারিখ, ভাউচার নম্বর বা পোস্টিং কিছুই বদলাবে না।
+            Two causes of a <span className="font-medium">Difference</span> in the Balance Sheet.{' '}
+            <span className="font-medium">No Company</span> — Profit &amp; Loss counts the voucher,
+            the Balance Sheet does not. <span className="font-medium">Unbalanced</span> — debit and
+            credit are not equal, so every report is off by that amount.{' '}
+            <span className="font-medium">Fix</span> is offered for the first kind only, because
+            only that one can be settled without a judgement call; no amount, date, voucher number
+            or posting line is touched.
           </p>
         </div>
 
         <ButtonLoading
-          label="রিফ্রেশ"
+          label="Refresh"
           icon={<FiRefreshCcw size={16} />}
           buttonLoading={loading}
           onClick={load}
@@ -261,11 +262,11 @@ const ReportMismatch = () => {
         <>
           {rows.length > 0 && (
             <p className="mb-2 text-sm text-body dark:text-bodydark">
-              মোট {rows.length} টি ভাউচার —{' '}
+              {rows.length} voucher{rows.length === 1 ? '' : 's'} in total —{' '}
               {Object.entries(MISMATCH_TYPES)
                 .map(([type, meta]) => `${meta.label} ${counts[type] ?? 0}`)
                 .join(', ')}
-              ।
+              .
             </p>
           )}
 
@@ -274,9 +275,9 @@ const ReportMismatch = () => {
               columns={columns}
               data={rows}
               // A voucher can trip two checks at once, so the type has to be in
-              // the key — the id alone is not unique across the three kinds.
+              // the key — the id alone is not unique across the two kinds.
               getRowKey={(row: any) => `${row.type}-${row.id}`}
-              noDataMessage="কোনো মিসম্যাচ পাওয়া যায়নি — কোনো ভাউচার কোম্পানিহীন, অমিল বা উল্টো হেড নয়।"
+              noDataMessage="No mismatch found — no voucher is company-less or unbalanced."
             />
           </div>
         </>
@@ -286,27 +287,27 @@ const ReportMismatch = () => {
           looks and behaves the same wherever it is met. */}
       <ConfirmModal
         show={Boolean(confirmRow)}
-        title="ভাউচারটি ঠিক করা হবে"
-        confirmLabel="ঠিক করুন"
-        cancelLabel="বাতিল"
+        title="This voucher will be fixed"
+        confirmLabel="Fix"
+        cancelLabel="Cancel"
         className="bg-primary hover:bg-primary/90"
         loading={fixingId !== null}
         onCancel={() => setConfirmRow(null)}
         onConfirm={repair}
         message={
           <div className="text-base leading-7 text-slate-700 dark:text-slate-200">
-            <div>এই ভাউচারটি তার ব্রাঞ্চের কোম্পানির অধীনে নেওয়া হবে:</div>
+            <div>This voucher will be put under the company its branch belongs to:</div>
             <div className="mt-2 border border-[rgb(var(--c-border))] px-3 py-2 text-sm">
               <div>
-                ভাউচার: <span className="font-bold">{confirmRow?.vr_no}</span>
+                Voucher: <span className="font-bold">{confirmRow?.vr_no}</span>
               </div>
-              <div>তারিখ: {formatDate(confirmRow?.vr_date)}</div>
-              <div>ব্রাঞ্চ: {confirmRow?.branch_name}</div>
-              <div>টাকা: {thousandSeparator(confirmRow?.amount, 0)}</div>
+              <div>Date: {formatDate(confirmRow?.vr_date)}</div>
+              <div>Branch: {confirmRow?.branch_name}</div>
+              <div>Amount: {thousandSeparator(confirmRow?.amount, 0)}</div>
             </div>
             <div className="mt-2 text-sm">
-              টাকা, তারিখ, ভাউচার নম্বর বা পোস্টিং — কিছুই বদলাবে না। শুধু ভাউচারটি আর “কোনো
-              কোম্পানির নয়” থাকবে না।
+              No amount, date, voucher number or posting line changes. The voucher simply stops
+              belonging to no company.
             </div>
           </div>
         }

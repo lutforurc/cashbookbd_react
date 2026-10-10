@@ -107,7 +107,11 @@ const ProfitLossReport = ({
             </tr>
           ) : null}
 
-          {report.trading.purchaseReturnCredit > 0 ? (
+          {/* `!== 0`, not `> 0`: the two head values are net (see sumNatural), so
+              a return that forfeited more discount than was granted makes one
+              negative -- and the row still has to print, or the column stops
+              adding up to the Net line below it. */}
+          {report.trading.purchaseReturnCredit !== 0 ? (
             <tr className="border-b border-[rgb(var(--c-border))]">
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Purchase Return</td>
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
@@ -118,7 +122,7 @@ const ProfitLossReport = ({
             </tr>
           ) : null}
 
-          {report.trading.purchaseDiscountCredit > 0 ? (
+          {report.trading.purchaseDiscountCredit !== 0 ? (
             <tr className="border-b border-[rgb(var(--c-border))]">
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Purchase Discount</td>
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
@@ -153,7 +157,7 @@ const ProfitLossReport = ({
             </tr>
           ) : null}
 
-          {report.trading.salesDiscountDebit > 0 ? (
+          {report.trading.salesDiscountDebit !== 0 ? (
             <tr className="border-b border-[rgb(var(--c-border))]">
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Sales Discount</td>
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right w-30">
@@ -164,7 +168,7 @@ const ProfitLossReport = ({
             </tr>
           ) : null}
 
-          {report.trading.salesReturnDebit > 0 ? (
+          {report.trading.salesReturnDebit !== 0 ? (
             <tr className="border-b border-[rgb(var(--c-border))]">
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Sales Return</td>
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right w-30">
