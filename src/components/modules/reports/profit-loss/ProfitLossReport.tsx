@@ -46,7 +46,7 @@ type ProfitLossReportProps = {
   loading?: boolean;
   report: ProfitLossReportData;
   loader: ReactNode;
-  onNetExpenseClick?: (row: NetRow) => void;
+  onNetExpenseClick?: (row: NetRow, side: "expense" | "income") => void;
 };
 
 const toNum = (v: any) => {
@@ -266,7 +266,7 @@ const ProfitLossReport = ({
                 {onNetExpenseClick ? (
                   <Button
                     type="button"
-                    onClick={() => onNetExpenseClick(r)}
+                    onClick={() => onNetExpenseClick(r, "expense")}
                     className="text-left text-sky-700 underline decoration-dotted underline-offset-4 transition hover:text-sky-900 dark:text-sky-300 dark:hover:text-sky-200"
                   >
                     (-) {r.name}
@@ -294,9 +294,26 @@ const ProfitLossReport = ({
 
           {report.net.incomes.length > 0 ? (
             <>
+              {/* ⚠️ The income rows open the same summary the expense rows do.
+                  The server's summary is a list of the heads under a level-3
+                  with their debit, credit and difference -- it was never
+                  expense-shaped, only named that way, so an income line needs
+                  no endpoint of its own. */}
               {report.net.incomes.map((r, idx) => (
                 <tr key={`inc-${idx}`} className="border-b border-[rgb(var(--c-border))]">
-                  <td className="p-2 pl-6">{r.name}</td>
+                  <td className="p-2 pl-6">
+                    {onNetExpenseClick ? (
+                      <Button
+                        type="button"
+                        onClick={() => onNetExpenseClick(r, "income")}
+                        className="text-left text-sky-700 underline decoration-dotted underline-offset-4 transition hover:text-sky-900 dark:text-sky-300 dark:hover:text-sky-200"
+                      >
+                        {r.name}
+                      </Button>
+                    ) : (
+                      <>{r.name}</>
+                    )}
+                  </td>
                   <td className="p-2 text-right">{fmtZero(toNum(r.credit))}</td>
                   <td className="p-2 text-right"></td>
                   <td className="p-2 text-right"></td>

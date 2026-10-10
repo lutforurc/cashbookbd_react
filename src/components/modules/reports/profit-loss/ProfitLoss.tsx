@@ -58,6 +58,16 @@ type SelectedExpenseDetail = {
   debit: number;
   credit: number;
   netEffect: number;
+  /**
+   * Which half of the net account the head was clicked on.
+   *
+   * ⚠️ THE SAME ENDPOINT ANSWERS FOR BOTH. The server's summary takes a
+   * level-3 id and lists the heads under it with debit, credit and their
+   * difference -- nothing in it is expense-shaped, only its name. Income rows
+   * open this same modal, so the side travels with the click and decides no
+   * more than which way the difference is read and what the headings say.
+   */
+  side: "expense" | "income";
 };
 
 const toNum = (v: any) => {
@@ -65,12 +75,9 @@ const toNum = (v: any) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-const sumByIds = (rows: TradingRow[], coal3_id: number, coal4_id: number) => {
+const sumByIds = (rows: TradingRow[], coal4_id: number) => {
   return rows
-    .filter(
-      (r) =>
-        Number(r.coal3_id) === coal3_id && Number(r.coal4_id) === coal4_id
-    )
+    .filter((r) => Number(r.coal4_id) === coal4_id)
     .reduce(
       (acc, r) => {
         acc.debit += toNum(r.debit);
@@ -96,14 +103,25 @@ const sumByIds = (rows: TradingRow[], coal3_id: number, coal4_id: number) => {
  * only one side is netted the sheet reports the gap as Difference.
  *
  * A book that never reverses a head gets exactly what the one-sided sum gave.
+ *
+ * ⚠️ THE HEAD IS FOUND BY ITS ID ALONE, NOT BY ITS ID INSIDE A GROUP. This
+ * used to ask for group 7 AND head 19 for a sales return, and that reads the
+ * chart's filing as part of the head's identity. Where the two disagree the
+ * figure goes to nil without a word: on krishibitandatabase head 19 (Sales
+ * Return, 1,26,967.53) is filed under group 9, Purchase -- so this screen
+ * showed Net Sales 28,21,697.54 and a 3,34,371.54 profit while the Balance
+ * Sheet, which reads the same heads by id, showed 2,07,404.01. The
+ * difference was the return, and the guard on its row hid the empty line that
+ * would have said so.
+ *
+ * The server has always matched on the head alone. This now does too.
  */
 const sumNatural = (
   rows: TradingRow[],
-  coal3_id: number,
   coal4_id: number,
   natural: "debit" | "credit"
 ) => {
-  const { debit, credit } = sumByIds(rows, coal3_id, coal4_id);
+  const { debit, credit } = sumByIds(rows, coal4_id);
 
   return natural === "debit" ? debit - credit : credit - debit;
 };
@@ -239,20 +257,20 @@ const ProfitLoss = (user: any) => {
     // they are, not which side they sit on, because a net value can carry
     // either sign.
     //
-    // Opening Stock: coal3_id=29 coal4_id=18
-    const opening = sumNatural(trading, 29, 18, "debit");
+    // Opening Stock: coal4_id=18
+    const opening = sumNatural(trading, 18, "debit");
 
-    // Closing Stock: coal3_id=29 coal4_id=21
-    const closing = sumNatural(trading, 29, 21, "credit");
+    // Closing Stock: coal4_id=21
+    const closing = sumNatural(trading, 21, "credit");
 
-    // Purchase: coal3_id=9 coal4_id=35
-    const purchaseDebit = sumNatural(trading, 9, 35, "debit");
+    // Purchase: coal4_id=35
+    const purchaseDebit = sumNatural(trading, 35, "debit");
 
-    // Purchase Return: coal3_id=9 coal4_id=16
-    const purchaseReturnCredit = sumNatural(trading, 9, 16, "credit");
+    // Purchase Return: coal4_id=16
+    const purchaseReturnCredit = sumNatural(trading, 16, "credit");
 
-    // Purchase Discount: coal3_id=8 coal4_id=40
-    const purchaseDiscountCredit = sumNatural(trading, 8, 40, "credit");
+    // Purchase Discount: coal4_id=40
+    const purchaseDiscountCredit = sumNatural(trading, 40, "credit");
 
     // Net Purchase = Purchase - Purchase Return - Purchase Discount
     const netPurchase = Math.max(
@@ -260,14 +278,14 @@ const ProfitLoss = (user: any) => {
       purchaseDebit - purchaseReturnCredit - purchaseDiscountCredit
     );
 
-    // Sales: coal3_id=7 coal4_id=15
-    const salesCredit = sumNatural(trading, 7, 15, "credit");
+    // Sales: coal4_id=15
+    const salesCredit = sumNatural(trading, 15, "credit");
 
-    // Sales Discount: coal3_id=7 coal4_id=23
-    const salesDiscountDebit = sumNatural(trading, 7, 23, "debit");
+    // Sales Discount: coal4_id=23
+    const salesDiscountDebit = sumNatural(trading, 23, "debit");
 
-    // Sales Return: coal3_id=7 coal4_id=19
-    const salesReturnDebit = sumNatural(trading, 7, 19, "debit");
+    // Sales Return: coal4_id=19
+    const salesReturnDebit = sumNatural(trading, 19, "debit");
 
     // Net Sales = Sales - Sales Discount - Sales Return
     const netSalesCredit = Math.max(
@@ -403,27 +421,40 @@ const ProfitLoss = (user: any) => {
     setFilterOpen(false);
   };
 
-  const handleExpenseRowClick = async (row: NetRow) => {
+  const handleExpenseRowClick = async (
+    row: NetRow,
+    side: "expense" | "income" = "expense"
+  ) => {
     const coal3Id = Number(row.coal3_id);
+
+    // Expenses grow on the debit side, income on the credit one, so the
+    // "net" figure is the same subtraction read from the other end.
+    const netEffect =
+      side === "income"
+        ? toNum(row.credit) - toNum(row.debit)
+        : toNum(row.debit) - toNum(row.credit);
 
     setSelectedExpenseDetail({
       coal3Id: Number.isFinite(coal3Id) ? coal3Id : null,
-      name: row.name || "Expense Details",
+      name: row.name || "Head Details",
       debit: toNum(row.debit),
       credit: toNum(row.credit),
-      netEffect: toNum(row.debit) - toNum(row.credit),
+      netEffect,
+      side,
     });
 
     setExpenseSummaryRows([]);
     setExpenseSummaryError(null);
 
     if (!Number.isFinite(coal3Id) || coal3Id <= 0) {
-      setExpenseSummaryError("COA Level 3 id not found for this expense.");
+      setExpenseSummaryError("COA Level 3 id not found for this head.");
       return;
     }
 
     if (!branchId || !startDate || !endDate) {
-      setExpenseSummaryError("Branch and date range are required to load expense summary.");
+      setExpenseSummaryError(
+        "Branch and date range are required to load the summary."
+      );
       return;
     }
 
@@ -461,13 +492,13 @@ const ProfitLoss = (user: any) => {
       setExpenseSummaryRows(detailRows);
 
       if (detailRows.length === 0) {
-        setExpenseSummaryError("No expense summary found for this COA Level 3 in the selected period.");
+        setExpenseSummaryError("No summary found for this COA Level 3 in the selected period.");
       }
     } catch (error: any) {
       setExpenseSummaryError(
         error?.response?.data?.message ||
           error?.message ||
-          "Expense summary load failed"
+          "Summary load failed"
       );
     } finally {
       setExpenseSummaryLoading(false);
@@ -750,9 +781,17 @@ const ExpenseDetailsModal = ({
 }) => {
   if (!open || !detail) return null;
 
+  const isIncome = detail.side === "income";
+  const netLabel = isIncome ? "Net Income" : "Net Expense";
+  // The server's `net_expense` is debit less credit for every head it lists,
+  // expenses and income alike. Income grows on the credit side, so its
+  // difference is read the other way round.
+  const netOf = (row: ExpenseSummaryRow) =>
+    isIncome ? row.movementCredit - row.movementDebit : row.netExpense;
+
   const totalMovementDebit = rows.reduce((sum, row) => sum + row.movementDebit, 0);
   const totalMovementCredit = rows.reduce((sum, row) => sum + row.movementCredit, 0);
-  const totalNetExpense = rows.reduce((sum, row) => sum + row.netExpense, 0);
+  const totalNet = rows.reduce((sum, row) => sum + netOf(row), 0);
 
   return (
     <div
@@ -772,7 +811,9 @@ const ExpenseDetailsModal = ({
                 {detail.name}
               </h3>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
-                NET PROFIT OR LOSS A/C expense summary
+                {isIncome
+                  ? "NET PROFIT OR LOSS A/C income summary"
+                  : "NET PROFIT OR LOSS A/C expense summary"}
               </p>
             </div>
 
@@ -789,7 +830,7 @@ const ExpenseDetailsModal = ({
             <div className="grid gap-3 sm:grid-cols-3">
             <ModalStat label="Debit" value={detail.debit} />
             <ModalStat label="Credit" value={detail.credit} />
-            <ModalStat label="Net Expense" value={detail.netEffect} />
+            <ModalStat label={netLabel} value={detail.netEffect} />
           </div>
           </div>
 
@@ -800,7 +841,7 @@ const ExpenseDetailsModal = ({
                   <th className="px-3 py-3 text-left font-semibold">Particular</th>
                   <th className="px-3 py-3 text-right font-semibold">Debit</th>
                   <th className="px-3 py-3 text-right font-semibold">Credit</th>
-                  <th className="px-3 py-3 text-right font-semibold">Net Expense</th>
+                  <th className="px-3 py-3 text-right font-semibold">{netLabel}</th>
                 </tr>
               </thead>
               <tbody>
@@ -837,7 +878,7 @@ const ExpenseDetailsModal = ({
                           {row.movementCredit ? thousandSeparator(row.movementCredit) : "-"}
                         </td>
                         <td className="px-3 py-3 text-right font-semibold">
-                          {thousandSeparator(row.netExpense)}
+                          {thousandSeparator(netOf(row))}
                         </td>
                       </tr>
                     ))}
@@ -850,7 +891,7 @@ const ExpenseDetailsModal = ({
                         {thousandSeparator(totalMovementCredit)}
                       </td>
                       <td className="px-3 py-3 text-right">
-                        {thousandSeparator(totalNetExpense)}
+                        {thousandSeparator(totalNet)}
                       </td>
                     </tr>
                   </>
@@ -860,7 +901,7 @@ const ExpenseDetailsModal = ({
                       colSpan={4}
                       className="px-3 py-6 text-center text-slate-500 dark:text-slate-300"
                     >
-                      No expense summary found.
+                      No summary found.
                     </td>
                   </tr>
                 )}
