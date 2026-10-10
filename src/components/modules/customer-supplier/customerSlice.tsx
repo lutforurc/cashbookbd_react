@@ -21,6 +21,12 @@ type CustomerRequestPayload = {
    * Customer, 4 Advance), or '' / null / undefined for every party.
    */
   partyTypeId?: string | number | null;
+  /**
+   * An `hrm_employees.id` -- whose customers to list, set from the List
+   * Customers screen where Branch Setup's "Customer Handle By Employee" is on.
+   * '' / null / undefined is every party, the ones nobody holds included.
+   */
+  employeeId?: string | number | null;
 };
 
 type StoreCustomerPayload = {
@@ -115,6 +121,16 @@ export const getCustomer = createAsyncThunk<PaginatedCustomerResponse, CustomerR
       payload.partyTypeId !== undefined
     ) {
       body.party_type_id = payload.partyTypeId;
+    }
+
+    // Same rule for the employee: the server's "no filter" is the missing
+    // param, and the blank option on the screen means exactly that.
+    if (
+      payload.employeeId !== '' &&
+      payload.employeeId !== null &&
+      payload.employeeId !== undefined
+    ) {
+      body.handle_by_employee_id = payload.employeeId;
     }
 
     const { data } = await httpService.post(API_CONTACT_DETAILS_LIST_URL, body);

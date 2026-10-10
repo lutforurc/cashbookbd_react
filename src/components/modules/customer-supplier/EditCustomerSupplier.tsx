@@ -30,6 +30,7 @@ import DdlDynamicMultiline from "../../utils/utils-functions/DdlDynamicMultiline
 import InputDatePicker from "../../utils/fields/DatePicker";
 import PhotoInput from "../../utils/fields/PhotoInput";
 import { getDdlArea } from "../area/areaSlice";
+import { getEmployeesDDL } from "../hrms/employee/employeeSlice";
 import { ButtonLoading } from "../../../pages/UiElements/CustomButtons";
 import { toast } from "react-toastify";
 import { getSettings } from "../settings/settingsSlice";
@@ -90,6 +91,7 @@ const EditCustomerSupplier = () => {
 
   const area = useSelector((state: any) => state.area);
   const settings = useSelector((state: any) => state.settings);
+  const employees = useSelector((state: any) => state.employees);
   const customers = useSelector((state: any) => state.customers);
   const fetchedSettingsRef = useRef(false);
   const fetchedEditIdRef = useRef<number | null>(null);
@@ -114,6 +116,12 @@ const EditCustomerSupplier = () => {
   // than a meta, so it arrives as a number and not as the string '1'.
   const usesBangla = String(branchSettings?.use_bangla) === '1';
   const needArea = String(branchSettings?.need_customer_area) === '1';
+  /**
+   * Whether this form asks which member of staff handles the customer --
+   * Branch Setup's "Customer Handle By Employee". The list screen reads the
+   * same switch for its own filter and column.
+   */
+  const needHandleByEmployee = String(branchSettings?.need_customer_handle_by_employee) === '1';
   // The same switch the Add page and the customer list read.
   const isOpeningEnabled = String(branchSettings?.is_opening) === '1';
 
@@ -193,6 +201,33 @@ const EditCustomerSupplier = () => {
       dispatch(getSettings());
     }
   }, [area?.loaded, area?.loading, dispatch, hasSettings, settings?.loading]);
+
+  /**
+   * This branch's own staff, for the "handled by" picker.
+   *
+   * ⚠️ ONLY WHERE THE SWITCH IS ON -- the picker is not drawn otherwise, and
+   * the endpoint answers 404 with "No employees found" on a branch that runs
+   * no HRMS at all.
+   */
+  useEffect(() => {
+    if (!needHandleByEmployee) return;
+
+    dispatch(getEmployeesDDL({ branchId: String(branchSettings?.id ?? '') }));
+  }, [dispatch, needHandleByEmployee, branchSettings?.id]);
+
+  /**
+   * The picker's rows, with a blank first: the field is optional, and the blank
+   * is also how a customer is taken off somebody's list again.
+   */
+  const employeeOptions = [
+    { id: "", name: "Select Employee" },
+    ...(Array.isArray(employees?.employeeDDL?.data?.data)
+      ? employees.employeeDDL.data.data.map((item: any) => ({
+          id: item?.id?.toString() ?? "",
+          name: item?.name ?? "",
+        }))
+      : []),
+  ];
 
   useEffect(() => {
     const editId = Number(id);
@@ -336,6 +371,10 @@ const EditCustomerSupplier = () => {
       party_type_id: (editCustomer?.party_type_id ?? "").toString(),
       area_id: (editCustomer?.area_id ?? "").toString(),
       areaName: editCustomer?.areaName ?? "",
+      // As a string, because a <select> compares its own option values as
+      // strings: handed the number 3 the picker would show nothing chosen --
+      // which is also what it shows for a customer nobody handles.
+      handle_by_employee_id: (editCustomer?.handle_by_employee_id ?? "").toString(),
       customerLogin: Number(editCustomer?.customer_login ?? 0),
 
       // ----- guarantors & nominees -----
@@ -353,14 +392,28 @@ const EditCustomerSupplier = () => {
          * a customer fail. An empty string is dropped for the same reason —
          * the API reads it as a non-numeric opening rather than as "no value".
          */
-        const { openingbalance, ...rest } = values as any;
+        const { openingbalance, handle_by_employee_id, ...rest } = values as any;
         const sendsOpening =
           isOpeningEnabled && !openingLocked && String(openingbalance ?? "").trim() !== "";
+
+        /**
+         * ⚠️ AND THE HANDLED-BY FIELD IS LEFT OUT WHICHEVER WAY IT CANNOT BE
+         * ANSWERED -- the branch has the switch off, or this row is a supplier
+         * or an advance entry, which this form does not ask about. Sent anyway,
+         * an untouched blank would take the customer off their employee's list
+         * the first time somebody corrected a mobile number.
+         */
+        const sendsHandleByEmployee =
+          needHandleByEmployee && ["1", "3"].includes(String(values.party_type_id));
 
         const res = await dispatch(
           updateCustomerFromEdit({
             id: Number(id),
-            data: sendsOpening ? { ...rest, openingbalance } : rest,
+            data: {
+              ...rest,
+              ...(sendsOpening ? { openingbalance } : {}),
+              ...(sendsHandleByEmployee ? { handle_by_employee_id } : {}),
+            },
           })
         ).unwrap();
 
@@ -482,6 +535,25 @@ const EditCustomerSupplier = () => {
                 </div>
               )}
             </div>
+
+            {/* Who looks after this customer. Drawn after the type, because it
+                is the type that decides whether it belongs here at all -- and
+                read off the type being SAVED, so changing a customer into a
+                supplier takes the picker away with it. */}
+            {needHandleByEmployee &&
+              ["1", "3"].includes(String(formik.values.party_type_id)) && (
+                <div className="text-left flex flex-col">
+                  <DropdownCommon
+                    id="handle_by_employee_id"
+                    name="handle_by_employee_id"
+                    label="Handle By Employee"
+                    onChange={formik.handleChange}
+                    value={formik.values.handle_by_employee_id ?? ""}
+                    className="bg-transparent"
+                    data={employeeOptions}
+                  />
+                </div>
+              )}
 
             <div className="text-left flex flex-col">
               <InputElement

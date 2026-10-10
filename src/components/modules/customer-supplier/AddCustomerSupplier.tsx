@@ -11,6 +11,7 @@ import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { ClientType, nomineeRelationType, relationType, sexType, TrueFalse } from '../../utils/fields/DataConstant';
 import DdlDynamicMultiline from '../../utils/utils-functions/DdlDynamicMultiline';
 import { getDdlArea } from '../area/areaSlice';
+import { getEmployeesDDL } from '../hrms/employee/employeeSlice';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { storeCustomer } from './customerSlice';
 import { toast } from 'react-toastify';
@@ -43,6 +44,7 @@ const AddCustomerSupplier = () => {
   ];
   const area = useSelector((state: any) => state.area);
   const settings = useSelector((state: any) => state.settings);
+  const employees = useSelector((state: any) => state.employees);
 
   // Branch switches from Branch > Customer & Supplier Setup.
   const branchSettings = settings?.data?.branch;
@@ -57,6 +59,12 @@ const AddCustomerSupplier = () => {
   // than a meta, so it arrives as a number and not as the string '1'.
   const usesBangla = String(branchSettings?.use_bangla) === '1';
   const needArea = String(branchSettings?.need_customer_area) === '1';
+  /**
+   * Whether the form asks which member of staff handles this customer --
+   * Branch Setup's "Customer Handle By Employee". The list screen reads the
+   * same switch for its own filter and column.
+   */
+  const needHandleByEmployee = String(branchSettings?.need_customer_handle_by_employee) === '1';
   // The same switch the customer list reads before showing its Opening column.
   const isOpeningEnabled = String(branchSettings?.is_opening) === '1';
 
@@ -102,6 +110,34 @@ const AddCustomerSupplier = () => {
   useEffect(() => {
     dispatch(getDdlArea());
   }, [dispatch]);
+
+  /**
+   * This branch's own staff, for the "handled by" picker.
+   *
+   * ⚠️ ONLY WHERE THE SWITCH IS ON. The endpoint answers 404 with "No employees
+   * found" on a branch that runs no HRMS, and the picker would not be drawn
+   * anyway -- so on eight visits in ten this is a request whose answer is
+   * thrown away, into a slice four other screens share.
+   */
+  useEffect(() => {
+    if (!needHandleByEmployee) return;
+
+    dispatch(getEmployeesDDL({ branchId: String(branchSettings?.id ?? '') }));
+  }, [dispatch, needHandleByEmployee, branchSettings?.id]);
+
+  /**
+   * The picker's rows, with a blank first: the field is optional, and the blank
+   * is also how a customer is taken off somebody's list again.
+   */
+  const employeeOptions = [
+    { id: '', name: 'Select Employee' },
+    ...(Array.isArray(employees?.employeeDDL?.data?.data)
+      ? employees.employeeDDL.data.data.map((item: any) => ({
+          id: item?.id?.toString() ?? '',
+          name: item?.name ?? '',
+        }))
+      : []),
+  ];
 
   const formattedAreaData = useMemo(
     () =>
@@ -200,6 +236,9 @@ const AddCustomerSupplier = () => {
     type_id: '',
     area_id: '',
     areaName: '',
+    // An hrm_employees.id, or '' for nobody. Optional, so no Yup rule: the
+    // branch asks who handles a customer, it does not insist on an answer.
+    handle_by_employee_id: '',
     customerLogin: 0,
     password: '',
     guarantors: [],
@@ -270,6 +309,18 @@ const AddCustomerSupplier = () => {
       }
     },
   });
+
+  /**
+   * Whether the "handled by" picker belongs on the form as it now stands.
+   *
+   * ⚠️ READ OFF THE TYPE BEING ENTERED, not off the switch alone. The column
+   * lives on customers; a supplier or an advance entry has nobody handling it,
+   * and a picker that saved a name against one would be a promise the List
+   * Customers screen does not keep -- it stands its own Employee column down
+   * under the Supplier filter for the same reason.
+   */
+  const showHandleByEmployee =
+    needHandleByEmployee && ['1', '3'].includes(String(formik.values.type_id));
 
   // An error in the tab that is out of view would be invisible, so bring its tab
   // forward once the form has been submitted at least once.
@@ -463,6 +514,25 @@ const AddCustomerSupplier = () => {
                 </div>
               )}
             </div>
+
+            {/* Who looks after this customer. Drawn after the type, because it
+                is the type that decides whether it belongs here at all. */}
+            {showHandleByEmployee && (
+              <div className="text-left flex flex-col">
+                <DropdownCommon
+                  id="handle_by_employee_id"
+                  name="handle_by_employee_id"
+                  label="Handle By Employee"
+                  onChange={formik.handleChange}
+                  onKeyDown={handleEnterNavigation('handle_by_employee_id')}
+                  // Controlled rather than defaultValue: the Reset button has to
+                  // be able to take the name back off.
+                  value={formik.values.handle_by_employee_id ?? ''}
+                  className="bg-transparent"
+                  data={employeeOptions}
+                />
+              </div>
+            )}
 
             <div className="text-left flex flex-col">
               <InputElement

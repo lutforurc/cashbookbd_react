@@ -28,6 +28,9 @@ import PartyLedgerModal from "./PartyLedgerModal";
 import { formatMobile, useMobileFormat } from "../../utils/utils-functions/mobileFormat";
 import { Button } from '../../../pages/UiElements/CustomButtons';
 import { isBranchSettingOn } from "../../utils/userFeatureSettings";
+// The branch's own staff, for the "handled by" filter. The DDL endpoint is the
+// one the Installment screens already pick a field officer from.
+import { getEmployeesDDL } from "../hrms/employee/employeeSlice";
 
 /**
  * The classification filter, built from the same constant the Due List draws its
@@ -83,6 +86,11 @@ const CustomerSupplier = () => {
   // paged, searched or came back from an edit -- each of those rewrites the
   // query string, and only what is written there survives them.
   const partyTypeId = searchParams.get("party_type_id") ?? "";
+  /**
+   * Whose customers the list is narrowed to -- an `hrm_employees.id`, in the
+   * address bar with the rest of the list's position and for the same reasons.
+   */
+  const employeeId = searchParams.get("handle_by_employee_id") ?? "";
 
   /**
    * What is IN the box, which is not the same as what has been searched for.
@@ -138,6 +146,10 @@ const CustomerSupplier = () => {
   // shorter list would open past its own end.
   const setPartyTypeId = (value: string) =>
     setListParams({ party_type_id: value, page: null });
+  // Same rule: page four of one employee's customers is not page four of
+  // another's, so a new employee starts the list at the first page.
+  const setEmployeeId = (value: string) =>
+    setListParams({ handle_by_employee_id: value, page: null });
   const [editedRows, setEditedRows] = useState<Record<number, any>>({});
   const [buttonLoading, setButtonLoading] = useState(false);
   const [showGuarantorModal, setShowGuarantorModal] = useState(false);
@@ -170,6 +182,19 @@ const CustomerSupplier = () => {
   // The customer form only asks for a National ID when the branch says so, so
   // where the switch is off the column would be a column of blanks.
   const needNationalId = isBranchSettingOn(settings, 'need_customer_national_id');
+  /**
+   * Whether this list filters and shows by the employee a customer is handled
+   * by -- Branch Setup's "Customer Handle By Employee".
+   *
+   * ⚠️ AND IT STANDS DOWN ON THE SUPPLIER CLASSIFICATION. The field lives on
+   * the customer form alone, so a supplier row can never carry one: under the
+   * Supplier filter the picker could only offer choices that all come back
+   * empty, and the column would be a third column of blanks beside National ID
+   * and the ledger page -- which stand down for exactly this reason.
+   */
+  const handleByEmployeeOn =
+    isBranchSettingOn(settings, 'need_customer_handle_by_employee') && partyTypeId !== '2';
+  const employees = useSelector((state: any) => state.employees);
   const canEditCustomer = hasPermission(settings?.data?.permissions, 'cs.edit');
   const canDeleteCustomer = hasPermission(settings?.data?.permissions, 'cs.delete');
   // Deleting an opening balance deletes a voucher, so it answers to the voucher
@@ -333,8 +358,39 @@ const CustomerSupplier = () => {
 
   // 🔥 First API Call and on pagination change
   useEffect(() => {
-    dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId }));
-  }, [dispatch, page, perPage, search, partyTypeId, searchRun]);
+    dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId, employeeId }));
+  }, [dispatch, page, perPage, search, partyTypeId, employeeId, searchRun]);
+
+  /**
+   * The staff to filter by, fetched once for the branch.
+   *
+   * ⚠️ ONLY WHERE THE SWITCH IS ON. The picker is not drawn otherwise, and the
+   * endpoint answers 404 with "No employees found" on a branch that runs no
+   * HRMS at all -- a request per visit whose answer is thrown away, plus an
+   * error in a slice four other screens share.
+   */
+  useEffect(() => {
+    if (!handleByEmployeeOn) return;
+
+    dispatch(getEmployeesDDL({ branchId: String(settings?.data?.branch?.id ?? '') }));
+  }, [dispatch, handleByEmployeeOn, settings?.data?.branch?.id]);
+
+  /**
+   * The picker's rows: every party first, then the branch's staff.
+   *
+   * ⚠️ "All Employees" IS NOT OPTIONAL. A branch that has just turned the
+   * switch on has nothing but customers with nobody on them; without this row
+   * the desk could never get back to the full list once it had picked a name.
+   */
+  const employeeFilterData = [
+    { id: '', name: 'All Employees' },
+    ...(Array.isArray(employees?.employeeDDL?.data?.data)
+      ? employees.employeeDDL.data.data.map((item: any) => ({
+          id: item?.id?.toString() ?? '',
+          name: item?.name ?? '',
+        }))
+      : []),
+  ];
 
   /**
    * Enter, or the Search button -- the two ways the term is committed.
@@ -381,6 +437,13 @@ const CustomerSupplier = () => {
    */
   const handlePartyTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setPartyTypeId(e.target.value);
+  };
+
+  // The same narrowing, by employee -- written to the address bar by setEmployeeId
+  // and read by the fetch effect above. No local state: `employeeId` IS what has
+  // been asked for, and the box shows it.
+  const handleEmployeeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setEmployeeId(e.target.value);
   };
 
 
@@ -460,7 +523,7 @@ const CustomerSupplier = () => {
             delete copy[row.id];
             return copy;
           });
-          dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId }));
+          dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId, employeeId }));
           toast.success(res.message);
         } else {
           toast.info(res.message);
@@ -502,7 +565,7 @@ const CustomerSupplier = () => {
             }
             return copy;
           });
-          dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId }));
+          dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId, employeeId }));
           toast.success(res.message);
         } else {
           toast.info(res?.message || "No changes were made.");
@@ -530,7 +593,7 @@ const CustomerSupplier = () => {
         // The typed-but-unsaved figure would otherwise sit in the box looking
         // like the balance survived.
         handleCancelRow(openingDeleteRow);
-        dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId }));
+        dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId, employeeId }));
       })
       .catch((err) => {
         toast.error(err || 'Opening balance could not be deleted');
@@ -765,7 +828,7 @@ const CustomerSupplier = () => {
       .then((res) => {
         toast.success(res?.message || 'Customer deleted successfully');
         setDeleteConfirmRow(null);
-        dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId }));
+        dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId, employeeId }));
       })
       .catch((err) => {
         toast.error(err || 'Customer delete failed');
@@ -930,6 +993,28 @@ const CustomerSupplier = () => {
       key: "manual_address",
       header: "Address",
     },
+    /**
+     * Who looks after this customer, beside the address -- which is where a
+     * name printed on a sheet handed to that person is read from.
+     *
+     * ⚠️ THE SERVER'S NAME, NOT A LOOKUP HERE. The list API left joins
+     * hrm_employees and sends `handle_by_employee_name` with the row; matching
+     * the id against the picker's own list would print blank for an employee
+     * who has since been made inactive, since the DDL endpoint only returns
+     * active staff -- exactly the rows a desk is most likely to be reading.
+     *
+     * ⚠️ Spread, never `handleByEmployeeOn && {...}`: a guard that fails leaves
+     * a `false` in this array and the table gives it its own heading and cell.
+     */
+    ...(handleByEmployeeOn
+      ? [
+          {
+            key: 'handle_by_employee_name',
+            header: 'Employee',
+            render: (row: any) => <>{row.handle_by_employee_name ?? ''}</>,
+          },
+        ]
+      : []),
     {
       key: 'ledger_page',
       header: 'Ledger Page',
@@ -1054,6 +1139,26 @@ const CustomerSupplier = () => {
               data={CUSTOMER_TYPE_FILTER}
             />
           </div>
+
+          {/* Whose customers -- the branch's own staff, and only where Branch
+              Setup asked for the field at all. "All Employees" opens the list,
+              so the ones nobody holds are reachable too. Drawn beside the
+              classification because the two narrow the same list. */}
+          {handleByEmployeeOn && (
+            <div className="mr-1 md:mr-2">
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Employee
+              </label>
+              <DropdownCommon
+                id="handle_by_employee_id"
+                name="handle_by_employee_id"
+                value={employeeId}
+                onChange={handleEmployeeChange}
+                className="font-medium text-sm"
+                data={employeeFilterData}
+              />
+            </div>
+          )}
 
           <SelectOption
             onChange={handleSelectChange}

@@ -192,6 +192,11 @@ interface branchItem {
   need_customer_national_id: boolean;
   need_nominee_photo: boolean;
   need_customer_area: boolean;
+  /**
+   * Whether a customer is looked after by a member of staff: the picker on the
+   * Add and Edit Customer forms, and the filter and column on List Customers.
+   */
+  need_customer_handle_by_employee: boolean;
   show_voucher_image: boolean;
   multi_product_order: boolean;
   /** Whether the cash forms ask which product a receipt or payment was for. */
@@ -559,6 +564,7 @@ const AddBranch = () => {
     need_customer_national_id: false,
     need_nominee_photo: false,
     need_customer_area: false,
+    need_customer_handle_by_employee: false,
     show_voucher_image: false,
     multi_product_order: false,
     product_tracking: false,
@@ -834,6 +840,7 @@ const AddBranch = () => {
         need_customer_national_id: toBooleanFlag(b.need_customer_national_id),
         need_nominee_photo: toBooleanFlag(b.need_nominee_photo),
         need_customer_area: toBooleanFlag(b.need_customer_area),
+        need_customer_handle_by_employee: toBooleanFlag(b.need_customer_handle_by_employee),
         show_voucher_image: toBooleanFlag(b.show_voucher_image),
         multi_product_order: toBooleanFlag(b.multi_product_order),
         product_tracking: toBooleanFlag(b.product_tracking),
@@ -1680,6 +1687,12 @@ const AddBranch = () => {
                         description="Adds the area field to the customer form, so customers can be grouped by locality."
                         checked={Boolean(formData.need_customer_area)}
                         onChange={(checked) => handleToggleFieldChange('need_customer_area', checked)}
+                      />
+                      <FormToggleField
+                        label="Customer Handle By Employee?"
+                        description="Asks which member of your staff looks after each customer: a picker on the Add and Edit Customer forms, and a filter and an Employee column on List Customers. The list of names is your HRMS employee list for this branch."
+                        checked={Boolean(formData.need_customer_handle_by_employee)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_handle_by_employee', checked)}
                       />
                       <FormToggleField
                         label="Customer Share with Other branch?"
