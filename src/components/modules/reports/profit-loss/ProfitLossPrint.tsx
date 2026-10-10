@@ -172,6 +172,39 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                     ></td>
                   </tr>
 
+                  {/* ⚠️ THE RETURNS PRINT. Net Purchase and Net Sales are both
+                      struck AFTER the returns come off, so a sheet that shows
+                      the discounts but not the returns has a column that does
+                      not add up to the Net line under it. The screen has
+                      always shown both; the paper was missing them. */}
+                  {Number(report?.trading?.purchaseReturnCredit || 0) !== 0 ? (
+                    <tr className="avoid-break">
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
+                      >
+                        (-) Purchase Return
+                      </td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                      >
+                        {fmtEmptyIfZero(report?.trading?.purchaseReturnCredit)}
+                      </td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                      ></td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                      ></td>
+                    </tr>
+                  ) : null}
+
                   {Number(report?.trading?.purchaseDiscountCredit || 0) !== 0 ? (
                     <tr className="avoid-break">
                       <td
@@ -269,6 +302,34 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                         className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
                       >
                         {fmtEmptyIfZero(report?.trading?.salesDiscountDebit)}
+                      </td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                      ></td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                      ></td>
+                    </tr>
+                  ) : null}
+
+                  {Number(report?.trading?.salesReturnDebit || 0) !== 0 ? (
+                    <tr className="avoid-break">
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
+                      >
+                        (-) Sales Return
+                      </td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                      >
+                        {fmtEmptyIfZero(report?.trading?.salesReturnDebit)}
                       </td>
 
                       <td
