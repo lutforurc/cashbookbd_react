@@ -182,6 +182,8 @@ const ROUTES = {
   cat_wise_in_out: '/reports/cat-wise/in-out',
   purchase_ledger: '/reports/purchase-ledger',
   sales_ledger: '/reports/sales-ledger',
+  purchase_return_ledger: '/reports/purchase-return-ledger',
+  sales_return_ledger: '/reports/sales-return-ledger',
   report_customer_sales: '/reports/customer-sales',
   mitch_match: '/reports/mitch-match',
   hrm_mismatch_payment: '/reports/hrm-mismatch-payment',

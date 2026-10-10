@@ -68,6 +68,7 @@ import CatWiseInOut from './components/modules/reports/catwiseinout/CatWiseInOut
 import EditUser from './components/modules/user/EditUser';
 import PurchaseLedger from './components/modules/reports/purchaseledger/PurchaseLedger';
 import SalesLedger from './components/modules/reports/salesledger/SalesLedger';
+import ReturnLedger from './components/modules/reports/returnledger/ReturnLedger';
 import CustomerSalesReport from './components/modules/reports/customer-sales/CustomerSalesReport';
 import BankReceivedIndex from './components/modules/transactions/bankreceived/BankReceivedIndex';
 import BankPayment from './components/modules/transactions/bankpayment/BankPayment';
@@ -1077,9 +1078,14 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.ledger']} loading={permissionsLoading} />}>
               <Route path={routes.purchase_ledger} element={<PurchaseLedger user={me} />} />
+              {/* The return ledger under the permission of the ledger it sits
+                  beneath: it is the same book read the other way, and a role
+                  that may open one may open both. Same rule on the sales side. */}
+              <Route path={routes.purchase_return_ledger} element={<ReturnLedger user={me} mode="purchase" />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.ledger']} loading={permissionsLoading} />}>
               <Route path={routes.sales_ledger} element={<SalesLedger user={me} />} />
+              <Route path={routes.sales_return_ledger} element={<ReturnLedger user={me} mode="sales" />} />
               {/* The same permission as the ledger: it is the sales book read
                   another way, and a role that may open one may open both. */}
               <Route path={routes.report_customer_sales} element={<CustomerSalesReport user={me} />} />

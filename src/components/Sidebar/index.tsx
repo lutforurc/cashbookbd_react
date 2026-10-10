@@ -104,6 +104,10 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'reports/cat-wise/in-out', title: "Cat-wise In\/Out" },
     { id: 'reports/purchase-ledger', title: "Purchase Ledger" },
     { id: 'reports/sales-ledger', title: "Sales Ledger" },
+    // Declared in this order so the two returns sit under the Sales Ledger they
+    // are read beside, not at the foot of the menu.
+    { id: 'reports/purchase-return-ledger', title: "Purchase Return" },
+    { id: 'reports/sales-return-ledger', title: "Sales Return" },
     { id: 'reports/group-report', title: "Group Report" },
     { id: 'reports/mitch-match', title: "Mismatch" },
   ],
@@ -1607,6 +1611,30 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Sales Ledger
+                              </NavLink>
+                            </li>
+                          )}
+                          {/* The two return ledgers, under the ledger they are
+                              read against and gated by its permission — the
+                              same book the other way round, so a role that may
+                              open a ledger may open its returns. */}
+                          {hasPermission(permissions, 'purchase.ledger') && (
+                            <li style={subSlot('reports', 'reports/purchase-return-ledger')}>
+                              <NavLink
+                                to="/reports/purchase-return-ledger"
+                                className={subMenuLinkClass}
+                              >
+                                Purchase Return
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'sales.ledger') && (
+                            <li style={subSlot('reports', 'reports/sales-return-ledger')}>
+                              <NavLink
+                                to="/reports/sales-return-ledger"
+                                className={subMenuLinkClass}
+                              >
+                                Sales Return
                               </NavLink>
                             </li>
                           )}
