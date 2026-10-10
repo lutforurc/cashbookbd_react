@@ -174,10 +174,10 @@ const CoaL4 = () => {
             key: 'l3_name',
             header: 'COA L3', 
         },
-        {
-            key: 'l2_name',
-            header: 'COA L2', 
-        },
+        // {
+        //     key: 'l2_name',
+        //     header: 'COA L2', 
+        // },
 
         {
             key: 'action',
