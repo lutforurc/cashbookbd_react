@@ -16,6 +16,7 @@ import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { storeCustomer } from './customerSlice';
 import { toast } from 'react-toastify';
 import InputDatePicker from '../../utils/fields/DatePicker';
+import Checkbox from '../../utils/fields/Checkbox';
 import PhotoInput from '../../utils/fields/PhotoInput';
 import httpService from '../../services/httpService';
 import { API_CUSTOMER_MOBILE_CHECK_URL } from '../../services/apiRoutes';
@@ -83,6 +84,8 @@ const AddCustomerSupplier = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [buttonLoading, setButtonLoading] = useState(false);
+  // "The address is the same one" -- see the tick box beside Permanent Address.
+  const [sameAsPresentAddress, setSameAsPresentAddress] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState<DuplicateWarning>(null);
   const [mobileDuplicate, setMobileDuplicate] = useState<MobileDuplicateState>({
     checking: false,
@@ -258,6 +261,7 @@ const AddCustomerSupplier = () => {
             type_id: values.type_id,
           },
         });
+        setSameAsPresentAddress(false);
         setMobileDuplicate({
           checking: false,
           exists: false,
@@ -321,6 +325,22 @@ const AddCustomerSupplier = () => {
    */
   const showHandleByEmployee =
     needHandleByEmployee && ['1', '3'].includes(String(formik.values.type_id));
+
+  /**
+   * The tick beside Permanent Address: the two addresses are one.
+   *
+   * ⚠️ AN EFFECT AND NOT A COPY INSIDE THE CLICK. Copying when the box is
+   * ticked only covers the desk that filled Present first; tick it first -- or
+   * go back and correct the present address afterwards -- and Permanent is left
+   * holding the old text while the box says the two agree, which is a lie the
+   * form cannot see. Mirroring on every change makes the box mean what it says
+   * whichever order the fields are filled in.
+   */
+  useEffect(() => {
+    if (!sameAsPresentAddress) return;
+
+    formik.setFieldValue('permanent_address', formik.values.manual_address);
+  }, [sameAsPresentAddress, formik.values.manual_address]);
 
   // An error in the tab that is out of view would be invisible, so bring its tab
   // forward once the form has been submitted at least once.
@@ -404,6 +424,9 @@ const AddCustomerSupplier = () => {
 
   const handleReset = () => {
     formik.handleReset();
+    // The two addresses go back to being two, or the next customer's Permanent
+    // Address is written for him by a box he never ticked.
+    setSameAsPresentAddress(false);
     setDuplicateWarning(null);
     setMobileDuplicate({
       checking: false,
@@ -763,16 +786,45 @@ const AddCustomerSupplier = () => {
               )}
             </div>
             {needPermanentAddress && (
-              <InputElement
-                id="permanent_address"
-                name="permanent_address"
-                autoComplete="off"
-                placeholder="Enter Permanent Address"
-                label="Permanent Address"
-                value={formik.values.permanent_address}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
+              /* The tick sits on the field's own line, level with the box it
+                 fills, rather than above it -- it is a shortcut for that one
+                 field and belongs against it. */
+              <div className="flex items-end gap-2">
+                <Checkbox
+                  id="same_as_present_address"
+                  name="same_as_present_address"
+                  checked={sameAsPresentAddress}
+                  onChange={() => {
+                    setSameAsPresentAddress((on) => !on);
+                    // The pointer has just said "the same one", so it goes on
+                    // to the box that answer fills -- typed straight over, or
+                    // corrected when the two differ after all.
+                    document.getElementById('permanent_address')?.focus();
+                  }}
+                  className="pb-2"
+                  labelClassName="cursor-pointer"
+                  label={
+                    <span
+                      className="whitespace-nowrap text-sm text-gray-600 dark:text-gray-300"
+                      title="Copy the Present Address into this field"
+                    >
+                      Same as Present
+                    </span>
+                  }
+                />
+                <div className="flex-1">
+                  <InputElement
+                    id="permanent_address"
+                    name="permanent_address"
+                    autoComplete="off"
+                    placeholder="Enter Permanent Address"
+                    label="Permanent Address"
+                    value={formik.values.permanent_address}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  />
+                </div>
+              </div>
             )}
 
             <InputElement
