@@ -124,7 +124,17 @@ const normalizeRows = (items: any[]): TrialBalanceRow[] => {
         pickFirst(item, ["credit_bal", "closing_credit_bal", "credit"]),
       ),
     }))
-    .filter((row) => row.closingDebit !== 0 || row.closingCredit !== 0);
+    // Any of the six figures, not "closes non-zero": movement is gross, so a
+    // head that posted in the period and netted to nothing still belongs here.
+    .filter(
+      (row) =>
+        row.openingDebit !== 0 ||
+        row.openingCredit !== 0 ||
+        row.movementDebit !== 0 ||
+        row.movementCredit !== 0 ||
+        row.closingDebit !== 0 ||
+        row.closingCredit !== 0,
+    );
 };
 
 const formatAmount = (amount: number) => {
