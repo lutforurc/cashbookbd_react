@@ -92,6 +92,16 @@ const formatAmount = (amount: number | null) => {
   return numericAmount < 0 ? `(${formatted})` : formatted;
 };
 
+/**
+ * The stair the paper draws: a level-1 section at the margin, its level-2
+ * group one step in, the level-3 groups under that another -- the same rule the
+ * screen follows (level2Indent / level3Indent in sheetLines), one step
+ * narrower, because print type is small and the page is narrow. A step that
+ * reads as an indent at 14px on screen would be a gutter here.
+ */
+const level2Indent = "pl-4";
+const level3Indent = "pl-8";
+
 const groupAmounts = (group: BalanceSheetGroup): ColumnAmounts => ({
   opening: toNum(group.opening),
   movement: toNum(group.movement),
@@ -327,7 +337,7 @@ const StatementTable = ({
             if (line.kind === "subsection") {
               return (
                 <tr key={`${line.label}-${index}`}>
-                  <td colSpan={3} style={{ fontSize: fs }} className="pt-2 font-semibold">
+                  <td colSpan={3} style={{ fontSize: fs }} className={`pt-2 ${level2Indent} font-semibold`}>
                     {line.label}
                   </td>
                 </tr>
@@ -347,7 +357,7 @@ const StatementTable = ({
                 <tr key={`${line.label}-${index}`}>
                   <td
                     style={{ fontSize: fs }}
-                    className={line.indent ? "py-0.5 pl-4" : "pt-1 pb-1.5 pl-2 font-semibold"}
+                    className={line.indent ? `py-0.5 ${level3Indent}` : `pt-1 pb-1.5 ${level2Indent} font-semibold`}
                   >
                     {line.label}
                   </td>
@@ -381,7 +391,7 @@ const StatementTable = ({
 
             return (
               <tr key={`${line.name}-${line.serial}`}>
-                <td style={{ fontSize: fs }} className="py-0.5 pl-4">
+                <td style={{ fontSize: fs }} className={`py-0.5 ${level3Indent}`}>
                   {line.name}
                 </td>
                 <td style={{ fontSize: fs }} className={`py-0.5 pl-3 ${amount}`}>
@@ -598,7 +608,7 @@ const BalanceSheetPrint = ({
                             <td
                               colSpan={8}
                               style={{ fontSize: fs }}
-                              className="border border-gray-900 py-0.5 pl-6 pr-2 text-left"
+                              className={`border border-gray-900 py-0.5 ${level2Indent} pr-2 text-left`}
                             >
                               {line.label}
                             </td>
@@ -668,7 +678,7 @@ const BalanceSheetPrint = ({
                           </td>
                           <td
                             style={{ fontSize: fs }}
-                            className="border border-gray-900 px-2 py-0.5 align-middle"
+                            className={`border border-gray-900 py-0.5 ${level3Indent} pr-2 align-middle`}
                           >
                             {line.name}
                           </td>

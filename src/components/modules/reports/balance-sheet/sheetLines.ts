@@ -105,6 +105,20 @@ export const formatAmount = (amount: number) => {
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
+/**
+ * The sheet's stair, one step per level of the chart: a level-1 section stands
+ * at the margin, its level-2 group one step in, the level-3 groups under that
+ * another. The line that closes a level stands on that level's own step -- the
+ * "Total Current Assets" with the heading it closes, the "Less: Accumulated
+ * Depreciation" with the accounts it belongs to, because it is a deduction
+ * from them rather than a sum of its own.
+ *
+ * Shared by both views, so the statement and the worksheet cannot drift into
+ * two different staircases.
+ */
+export const level2Indent = "pl-6";
+export const level3Indent = "pl-12";
+
 const ZERO: ColumnTotals = { opening: 0, movement: 0, closing: 0 };
 
 export const buildSheetLines = ({

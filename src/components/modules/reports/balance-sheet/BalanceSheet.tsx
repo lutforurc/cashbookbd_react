@@ -25,6 +25,8 @@ import {
   buildSheetLines,
   ColumnTotals,
   formatAmount,
+  level2Indent,
+  level3Indent,
   ReportGroup,
   ReportSection,
   SheetLine,
@@ -998,7 +1000,7 @@ const BalanceSheetTable = ({
             if (line.kind === "subsection") {
               return (
                 <tr key={`${line.label}-${index}`} className="bg-slate-50 dark:bg-slate-800/50">
-                  <td colSpan={8} className={`${cell} pl-6 font-medium text-slate-600 dark:text-slate-300`}>
+                  <td colSpan={8} className={`${cell} ${level2Indent} font-medium text-slate-600 dark:text-slate-300`}>
                     {line.label}
                   </td>
                 </tr>
@@ -1011,7 +1013,7 @@ const BalanceSheetTable = ({
               return (
                 <tr key={`${line.label}-${index}`}>
                   <td className={cell} />
-                  <td className={`${cell} ${line.indent ? "pl-10" : "pl-6 font-semibold"} text-slate-700 dark:text-slate-200`}>
+                  <td className={`${cell} ${line.indent ? level3Indent : `${level2Indent} font-semibold`} text-slate-700 dark:text-slate-200`}>
                     {line.label}
                   </td>
                   {(["opening", "movement", "closing"] as const).flatMap((column) => [
@@ -1052,7 +1054,7 @@ const BalanceSheetTable = ({
                 <td className={`${cell} text-center text-slate-700 dark:text-slate-200`}>
                   {line.serial}
                 </td>
-                <td className={`${cell} text-slate-800 dark:text-slate-100`}>
+                <td className={`${cell} ${level3Indent} text-slate-800 dark:text-slate-100`}>
                   <div className="flex items-center justify-between gap-3">
                     <span>{line.label}</span>
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
