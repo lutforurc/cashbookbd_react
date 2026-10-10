@@ -305,6 +305,10 @@ export const API_REPORT_LEDGER_URL = `${API_BASE_URL}/reports/api-ledger`;
 export const API_REPORT_PURCHASE_LEDGER_URL = `${API_BASE_URL}/reports/purchase/ledger`;
 // Sales Ledger url
 export const API_REPORT_SALES_LEDGER_URL = `${API_BASE_URL}/reports/sales/ledger`;
+// Purchase Return / Sales Return ledger urls — the ledger's shape over vouchers
+// 12 and 13, which write their own masters rather than a negative invoice.
+export const API_REPORT_PURCHASE_RETURN_LEDGER_URL = `${API_BASE_URL}/reports/purchase/return-ledger`;
+export const API_REPORT_SALES_RETURN_LEDGER_URL = `${API_BASE_URL}/reports/sales/return-ledger`;
 
 // Customer Sales Report url
 // Every sales invoice line, filed by customer and then by the product's brand,

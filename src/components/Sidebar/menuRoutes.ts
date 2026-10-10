@@ -84,6 +84,8 @@ export const MENU_ROUTES: Record<string, string[]> = {
     '/reports/cat-wise/in-out',
     '/reports/purchase-ledger',
     '/reports/sales-ledger',
+    '/reports/purchase-return-ledger',
+    '/reports/sales-return-ledger',
     '/reports/group-report',
     '/reports/mitch-match',
     // Reached from a list on one of the screens above rather than from the menu
