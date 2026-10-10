@@ -55,6 +55,28 @@ const sumReportColumns = (groups: ReportGroup[]): ColumnTotals => ({
   closing: groups.reduce((sum, group) => sum + toNum(group.closing || group.total), 0),
 });
 
+/**
+ * The Difference card's own figure, always at two decimals.
+ *
+ * ⚠️ NOT formatAmount, and not thousandSeparator either. A column sum is a
+ * float64: two sides holding identical money added up in a different order come
+ * out -0.0000000037 apart. thousandSeparator collapses anything that rounds to
+ * zero to "-", and formatAmount brackets it because the sign bit is negative,
+ * so a sheet that balanced printed "(-)" -- a difference in brackets where there
+ * was none. Padding of 0.00 is the point here: the figure this card carries is
+ * what the reader checks the sheet against, and it has to say nought rather than
+ * go quiet.
+ */
+const formatDifferenceAmount = (amount: number) => {
+  const rounded = Math.round(amount * 100) / 100;
+  const formatted = Math.abs(rounded).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  return rounded < 0 ? `(${formatted})` : formatted;
+};
+
 const BalanceSheet = (user: any) => {
   const dispatch = useDispatch();
 
@@ -574,6 +596,7 @@ const BalanceSheet = (user: any) => {
                 title="Difference"
                 value={totals.difference}
                 tone={Math.abs(totals.difference) > 0.009 ? "amber" : "slate"}
+                formatted={formatDifferenceAmount(totals.difference)}
               />
             </div>
 
@@ -851,10 +874,13 @@ const SummaryCard = ({
   title,
   value,
   tone,
+  formatted,
 }: {
   title: string;
   value: number;
   tone: "emerald" | "blue" | "amber" | "slate";
+  /** Overrides the shared money format — see formatDifferenceAmount. */
+  formatted?: string;
 }) => {
   const toneMap: Record<string, string> = {
     emerald:
@@ -872,7 +898,7 @@ const SummaryCard = ({
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
         {title}
       </p>
-      <p className="mt-3 text-2xl font-semibold">{formatAmount(value)}</p>
+      <p className="mt-3 text-2xl font-semibold">{formatted ?? formatAmount(value)}</p>
     </div>
   );
 };
