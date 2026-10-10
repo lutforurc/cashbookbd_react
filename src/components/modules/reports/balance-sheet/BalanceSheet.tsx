@@ -172,69 +172,23 @@ const BalanceSheet = (user: any) => {
     : [];
   const rawEquity: ReportGroup[] = Array.isArray(apiData?.equity) ? apiData.equity : [];
 
-  const equity: ReportGroup[] = useMemo(() => {
-    const openingDifference = toNum(apiData?.totals?.difference_columns?.opening);
-
-    if (Math.abs(openingDifference) < 0.01) {
-      return rawEquity;
-    }
-
-    let netProfitAdjusted = false;
-    const adjusted = rawEquity.map((group) => {
-      const groupName = String(group.group_name || "").toLowerCase();
-      const isNetProfitGroup = groupName === "net profit" || groupName === "net loss";
-
-      if (!isNetProfitGroup || Math.abs(toNum(group.opening)) >= 0.01) {
-        return group;
-      }
-
-      netProfitAdjusted = true;
-      const nextOpening = toNum(group.opening) + openingDifference;
-      const nextClosing = toNum(group.closing || group.total) + openingDifference;
-
-      return {
-        ...group,
-        opening: nextOpening,
-        closing: nextClosing,
-        total: nextClosing,
-        items: (group.items || []).map((item, index) => {
-          if (index > 0) return item;
-
-          return {
-            ...item,
-            opening: toNum(item.opening) + openingDifference,
-            closing: toNum(item.closing || item.balance) + openingDifference,
-            balance: toNum(item.balance || item.closing) + openingDifference,
-          };
-        }),
-      };
-    });
-
-    if (netProfitAdjusted) {
-      return adjusted;
-    }
-
-    return [
-      ...adjusted,
-      {
-        group_name: openingDifference >= 0 ? "Net Profit" : "Net Loss",
-        opening: openingDifference,
-        movement: 0,
-        closing: openingDifference,
-        total: openingDifference,
-        items: [
-          {
-            coa4_id: null,
-            name: openingDifference >= 0 ? "Net Profit" : "Net Loss",
-            opening: openingDifference,
-            movement: 0,
-            closing: openingDifference,
-            balance: openingDifference,
-          },
-        ],
-      },
-    ];
-  }, [apiData?.totals?.difference_columns?.opening, rawEquity]);
+  /**
+   * ⚠️ THE EQUITY SIDE IS SHOWN AS THE SERVER SENDS IT, AND NOTHING IS ADDED TO
+   * IT. This used to add the opening Difference to equity as a Net Profit group
+   * (or fold it into the one already there), which made the Difference card
+   * read 0.00 on a sheet that did not balance. A Difference is the one figure a
+   * reader checks the sheet against; padding it away is worse than showing it,
+   * and the padding also moved the Closing column, which is the column the
+   * statement view prints.
+   *
+   * The server no longer produces that difference -- its profit line is the
+   * ledger's own leftover, so all three columns balance on any date range --
+   * and where a difference does appear it is real: a voucher whose debits do
+   * not equal its credits, or a head the chart cannot place. Both are listed on
+   * VR Settings → Report Mismatch, and the Difference card and its debug panel
+   * below say so.
+   */
+  const equity: ReportGroup[] = rawEquity;
 
   const totals = useMemo(() => {
     const assetsColumns = sumReportColumns(assets);
