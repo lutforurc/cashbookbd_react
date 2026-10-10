@@ -376,14 +376,23 @@ const CustomerSupplier = () => {
   }, [dispatch, handleByEmployeeOn, settings?.data?.branch?.id]);
 
   /**
-   * The picker's rows: every party first, then the branch's staff.
+   * The picker's rows: every party, then the ones nobody has been given to,
+   * then the branch's staff.
    *
    * ⚠️ "All Employees" IS NOT OPTIONAL. A branch that has just turned the
    * switch on has nothing but customers with nobody on them; without this row
    * the desk could never get back to the full list once it had picked a name.
+   *
+   * ⚠️ "No Employee" IS THE ONE THAT NEEDS THE SENTINEL. An empty value is
+   * already spoken for -- it is the "show everything" the row above means and
+   * the absence of a filter in the query string -- so the unassigned rows are
+   * asked for by the word 'none', which the API turns into `IS NULL`. A branch
+   * turning the switch on uses this row to work through its customers and hand
+   * each one to somebody.
    */
   const employeeFilterData = [
     { id: '', name: 'All Employees' },
+    { id: 'none', name: 'No Employee' },
     ...(Array.isArray(employees?.employeeDDL?.data?.data)
       ? employees.employeeDDL.data.data.map((item: any) => ({
           id: item?.id?.toString() ?? '',
