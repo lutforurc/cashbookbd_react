@@ -21,6 +21,8 @@ import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchBalanceSheet } from "./balanceSheetSlice";
 import BalanceSheetPrint from "./BalanceSheetPrint";
 import BalanceSheetStatement from "./BalanceSheetStatement";
+import ReportNotes from "../../../utils/utils-functions/ReportNotes";
+import { buildBalanceSheetNotes } from "./balanceSheetNotes";
 import {
   buildSheetLines,
   ColumnTotals,
@@ -165,6 +167,20 @@ const BalanceSheet = (user: any) => {
 
   const hasSections =
     sections.assets.length > 0 || sections.liabilities.length > 0 || sections.equity.length > 0;
+
+  // The notes are built from the same sections the sheet is drawn from, so a
+  // note's amount is the row above it and never a figure of its own.
+  const balanceSheetNotes = useMemo(
+    () =>
+      buildBalanceSheetNotes(sections, {
+        asOn: apiData?.report_date?.as_on_date
+          ? dayjs(apiData.report_date.as_on_date).format("DD/MM/YYYY")
+          : endDate
+            ? dayjs(endDate).format("DD/MM/YYYY")
+            : undefined,
+      }),
+    [sections, apiData?.report_date?.as_on_date, endDate],
+  );
 
   const assets: ReportGroup[] = Array.isArray(apiData?.assets) ? apiData.assets : [];
   const liabilities: ReportGroup[] = Array.isArray(apiData?.liabilities)
@@ -598,7 +614,7 @@ const BalanceSheet = (user: any) => {
                     </p>
                   </div>
                   <div className="rounded-sm bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                    As on {reportDates.asOn ? dayjs(reportDates.asOn).format("DD/MM/YYYY") : "-"}
+                    As at {reportDates.asOn ? dayjs(reportDates.asOn).format("DD/MM/YYYY") : "-"}
                   </div>
                 </div>
               </div>
@@ -628,6 +644,13 @@ const BalanceSheet = (user: any) => {
                 </div>
               )}
             </div>
+
+            {/* The notes sit under the sheet, on screen and on paper, and the
+                sheet's own rows point at their numbers. */}
+            <ReportNotes
+              title="Notes to the Balance Sheet"
+              notes={balanceSheetNotes}
+            />
           </>
         )}
       </div>

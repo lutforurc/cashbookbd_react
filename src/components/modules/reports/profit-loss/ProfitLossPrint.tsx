@@ -1,8 +1,10 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, Fragment } from "react";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
+import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes";
+import { buildProfitLossNotes } from "./profitLossNotes";
 
 const fmtZero = (n: number) => thousandSeparator(n || 0);
 const fmtEmptyIfZero = (n: number) => (n ? thousandSeparator(n) : "");
@@ -18,7 +20,7 @@ type Props = {
 
 const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
   (
-    { report, title = "Profit Loss", startDate = "-", endDate = "-", fontSize },
+    { report, title = "Profit & Loss Account", startDate = "-", endDate = "-", fontSize },
     ref
   ) => {
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 11;
@@ -27,7 +29,11 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
     const cellPy = fs <= 11 ? "py-[0.5px]" : fs <= 15 ? "py-[.9px]" : "py-1";
 
 
+    // The notes ride as one more page after the statement, with an explicit
+    // break between them -- they must never share a sheet with the figures.
+    const notes = buildProfitLossNotes(report, { startDate, endDate });
     const pages = [1];
+    const totalPages = pages.length + (notes.length ? 1 : 0);
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
@@ -50,7 +56,8 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
 
             {/* ===== TRADING ===== */}
             <div style={{ fontSize: (fs + 1) }} className="mb-2 text-center font-semibold">
-              PROFIT OR LOSS A/C (TRADING A/C)
+              TRADING ACCOUNT
+              <NoteRef n={1} />
             </div>
 
             <div className="w-full overflow-hidden">
@@ -95,6 +102,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
                       Opening Stock
+                      <NoteRef n={5} />
                     </td>
 
                     <td
@@ -123,6 +131,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
                       Closing Stock
+                      <NoteRef n={5} />
                     </td>
 
                     <td
@@ -473,9 +482,86 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
               </table>
             </div>
 
+            {/* ===== COST OF GOODS SOLD =====
+                A reading of the trading account's own figures, written out
+                because the account states the opening stock, the purchase and
+                the closing stock at opposite ends of the page and never says
+                what they come to. It is in no total -- the trading account's
+                debit side already IS the first two lines of it. */}
+            <div style={{ fontSize: fs + 1 }} className="mt-3 mb-2 text-center font-semibold">
+              COST OF GOODS SOLD
+            </div>
+
+            <div className="w-full overflow-hidden">
+              <table className="w-full table-fixed border-collapse">
+                <tbody>
+                  {[
+                    { label: "Opening Stock", value: report?.cogs?.opening, sign: "" },
+                    { label: "Net Purchase", value: report?.cogs?.netPurchase, sign: "+" },
+                    {
+                      label: "Direct Acquisition Costs",
+                      value: report?.cogs?.directAcquisitionCosts,
+                      sign: "+",
+                      note: "3",
+                    },
+                    { label: "Closing Stock", value: report?.cogs?.closing, sign: "-" },
+                  ].map((line: any) => (
+                    <tr key={line.label} className="avoid-break">
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-l-0 border-r-0 border-gray-900 px-2 pl-6 ${cellPy}`}
+                      >
+                        {line.sign ? `${line.sign} ` : ""}
+                        {line.label}
+                        {line.note ? <NoteRef n={line.note} /> : null}
+                      </td>
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} w-[100px] text-right`}
+                      ></td>
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                      >
+                        {fmtZero(line.value || 0)}
+                      </td>
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                      ></td>
+                    </tr>
+                  ))}
+
+                  <tr className="avoid-break font-bold">
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    >
+                      = Cost of Goods Sold
+                      <NoteRef n={2} />
+                    </td>
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    ></td>
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    >
+                      {fmtZero(report?.cogs?.total || 0)}
+                    </td>
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    ></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
             {/* ===== NET PROFIT/LOSS ===== */}
             <div style={{ fontSize: fs + 1 }} className="mt-3 mb-2 text-center font-semibold">
-              NET PROFIT OR LOSS A/C
+              NET PROFIT OR LOSS ACCOUNT
             </div>
 
             <div className="w-full overflow-hidden">
@@ -608,31 +694,67 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                   report.net.incomes.length > 0 ? (
                     <>
                       {report.net.incomes.map((r: any, idx: number) => (
-                        <tr key={`inc-${idx}`} className="avoid-break">
-                          <td
-                            style={{ fontSize: fs }}
-                            className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
-                          >
-                            (+) {r?.name}
-                          </td>
+                        <Fragment key={`inc-${idx}`}>
+                          <tr className="avoid-break">
+                            <td
+                              style={{ fontSize: fs }}
+                              className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
+                            >
+                              (+) {r?.name}
+                              <span style={{ fontSize: fs - 2 }} className="align-super">
+                                [4]
+                              </span>
+                            </td>
 
-                          <td
-                            style={{ fontSize: fs }}
-                            className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
-                          >
-                            {fmtZero(Number(r?.credit || 0))}
-                          </td>
+                            <td
+                              style={{ fontSize: fs }}
+                              className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                            >
+                              {fmtZero(Number(r?.credit || 0))}
+                            </td>
 
-                          <td
-                            style={{ fontSize: fs }}
-                            className={`border border-gray-900 px-2 ${cellPy} text-right`}
-                          ></td>
+                            <td
+                              style={{ fontSize: fs }}
+                              className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                            ></td>
 
-                          <td
-                            style={{ fontSize: fs }}
-                            className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
-                          ></td>
-                        </tr>
+                            <td
+                              style={{ fontSize: fs }}
+                              className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                            ></td>
+                          </tr>
+
+                          {/* The accounts the group is made of, one step in.
+                              They are inside the group's own amount, never
+                              beside it -- the totals below are untouched. */}
+                          {(r?.children || []).map((child: any, cIdx: number) => (
+                            <tr key={`inc-${idx}-${cIdx}`} className="avoid-break text-gray-600">
+                              <td
+                                style={{ fontSize: fs }}
+                                className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-12`}
+                              >
+                                {child?.name}
+                              </td>
+
+                              <td
+                                style={{ fontSize: fs }}
+                                className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                              >
+                                {fmtZero(Number(child?.credit || 0))}
+                              </td>
+
+                              <td
+                                style={{ fontSize: fs }}
+                                className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                              ></td>
+
+                              <td
+                                style={{ fontSize: fs }}
+                                className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                              ></td>
+                            </tr>
+                          ))}
+                        </Fragment>
                       ))}
 
                       <tr className="avoid-break font-bold">
@@ -733,13 +855,36 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
             </div>
 
             {/* Page footer (CashBookPrint style) */}
-            <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
+            <PrintFooter page={pIdx + 1} total={totalPages} fontSize={fs} />
 
             {pIdx !== pages.length - 1 && <div className="page-break" />}
           </div>
         ))}
 
-        {/* Note */}
+        {notes.length > 0 && (
+          <>
+            <div className="page-break" />
+            <div className="print-page">
+              <PadPrinting />
+
+              <div className="mb-3 text-center" style={{ fontSize: fs }}>
+                <p className="font-semibold">{title}</p>
+                <p>
+                  {startDate} to {endDate}
+                </p>
+              </div>
+
+              <ReportNotes
+                title="Notes to the Profit & Loss Account"
+                notes={notes}
+                fontSize={fs}
+                variant="print"
+              />
+
+              <PrintFooter page={totalPages} total={totalPages} fontSize={fs} />
+            </div>
+          </>
+        )}
       </div>
     );
   }

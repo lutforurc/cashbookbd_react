@@ -3,6 +3,8 @@ import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes";
+import { buildTrialBalanceNotes } from "./trialBalanceNotes";
 
 type TrialBalancePrintRow = {
   key: string;
@@ -38,28 +40,6 @@ type TrialBalanceLevel3PrintProps = {
     closingCredit: number;
   };
 };
-
-/**
- * What this report is, said once and used by both surfaces.
- *
- * A trial balance is read for what it does NOT contain as much as for what it
- * does, and this one is three things a reader would otherwise have to guess:
- * it is unadjusted (posted vouchers only, no closing entries), its movement
- * columns are gross turnover rather than net movement, and stock is not in the
- * ledger at all -- the closing stock on the balance sheet is valued outside it
- * and is not on this report. Left unsaid, an accountant reconciles this sheet
- * against the balance sheet, comes up short by the stock, and concludes the
- * report is broken.
- *
- * Lives here, beside the print that shows it, and the screen imports it from
- * here rather than repeating the sentence -- one wording, so the screen and the
- * paper can never describe the same report two ways.
- */
-export const TRIAL_BALANCE_BASIS =
-  "Unadjusted trial balance: posted vouchers only, no closing entries. " +
-  "Movement columns are the period's gross debits and credits; opening and " +
-  "closing are balances. Stock is valued outside the ledger, so the closing " +
-  "stock on the balance sheet is not part of this report.";
 
 /**
  * Cut the rows into pages of at most `size`, and never leave a group heading
@@ -116,6 +96,7 @@ const TrialBalanceLevel3Print = React.forwardRef<
   HTMLDivElement,
   TrialBalanceLevel3PrintProps
 >(({
+  branchName,
   startDate,
   endDate,
   fontSize,
@@ -129,6 +110,12 @@ const TrialBalanceLevel3Print = React.forwardRef<
   const rowsArr = Array.isArray(rows) ? rows : [];
   const pages = cutPages(rowsArr, rowsPerPage);
   const pageCount = pages.length;
+
+  // The notes describe the paper in hand and nothing has to be passed in
+  // beside it: whether ledgers are listed under their groups is the detailed
+  // report's business, and the note says where to find them either way.
+  const notes = buildTrialBalanceNotes({ branchName, startDate, endDate });
+  const totalPages = pageCount + (notes.length ? 1 : 0);
 
   // Numbered over the whole list, once, so the serial a row carries does not
   // depend on which page it landed on. Ledgers take no number -- they belong to
@@ -151,6 +138,7 @@ const TrialBalanceLevel3Print = React.forwardRef<
         <div className="mb-4 text-center" style={{ fontSize: `${fs}px` }}>
           <h1 className="mt-1 font-bold" style={{ fontSize: `${fs + 10}px` }}>
             Trial Balance Group
+            <NoteRef n={1} />
           </h1>
           <p>
             Period: {startDate} to {endDate}
@@ -184,12 +172,14 @@ const TrialBalanceLevel3Print = React.forwardRef<
                 className="border border-gray-900 px-2 py-1 text-left font-semibold whitespace-nowrap"
               >
                 Description
+                <NoteRef n={3} />
               </th>
               <th colSpan={2} className="border border-gray-900 px-2 py-1 text-center font-semibold">
                 Opening
               </th>
               <th colSpan={2} className="border border-gray-900 px-2 py-1 text-center font-semibold">
                 Movement
+                <NoteRef n={2} />
               </th>
               <th colSpan={2} className="border border-gray-900 px-2 py-1 text-center font-semibold">
                 Closing
@@ -258,6 +248,8 @@ const TrialBalanceLevel3Print = React.forwardRef<
                 className="border border-gray-900 px-2 py-0.5 text-right"
               >
                 Grand Total
+                <NoteRef n={4} />
+                <NoteRef n={5} />
               </td>
               {/* <td className="border border-gray-900 px-2 py-0.5"></td> */}
               <td
@@ -301,28 +293,42 @@ const TrialBalanceLevel3Print = React.forwardRef<
           )}
         </table>
 
-        {/* The note belongs AFTER the figures, not before them. It says why this
-            total and the balance sheet's do not meet, and nobody asks that
-            question until the Grand Total is in front of them -- above the
-            table it was boilerplate a reader skipped. Left-aligned with the
-            table's own left edge, and only on the sheet carrying the Grand
-            Total: repeated per page it would read as part of the page
-            furniture, which is what the footer below it is for. */}
-        {isLastPage && (
-          <p
-            className="mt-4 mb-2 text-left leading-snug text-gray-700"
-            style={{ fontSize: `${Math.max(fs - 2, 9)}px` }}
-          >
-            {TRIAL_BALANCE_BASIS}
-          </p>
-        )}
-
-        <PrintFooter page={pIdx + 1} total={pageCount} />
+        {/* The notes are the last page, after the sheet carrying the Grand
+            Total, and never share it: they answer questions the figures raise,
+            and a reader who wants them can turn to them. */}
+        <PrintFooter page={pIdx + 1} total={totalPages} />
 
         {!isLastPage && <div className="page-break" />}
       </div>
         );
       })}
+
+      {notes.length > 0 && (
+        <>
+          <div className="page-break" />
+          <div className="print-page">
+            <PadPrinting />
+
+            <div className="mb-4 text-center" style={{ fontSize: `${fs}px` }}>
+              <h1 className="mt-1 font-bold" style={{ fontSize: `${fs + 10}px` }}>
+                Trial Balance Group
+              </h1>
+              <p>
+                Period: {startDate} to {endDate}
+              </p>
+            </div>
+
+            <ReportNotes
+              title="Notes to the Trial Balance"
+              notes={notes}
+              fontSize={fs}
+              variant="print"
+            />
+
+            <PrintFooter page={totalPages} total={totalPages} />
+          </div>
+        </>
+      )}
     </div>
   );
 });

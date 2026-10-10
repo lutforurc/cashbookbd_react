@@ -22,6 +22,8 @@ import { fetchClosingStockItems } from "./profitLossSlice";
 import ProfitLossPrint from "./ProfitLossPrint";
 import ItemDetailsPrint from "./ItemDetailsPrint";
 import ProfitLossReport from "./ProfitLossReport";
+import ReportNotes from "../../../utils/utils-functions/ReportNotes";
+import { buildProfitLossNotes } from "./profitLossNotes";
 import { API_REPORT_PROFIT_LOSS_EXPENSE_SUMMARY_URL } from "../../../services/apiRoutes";
 import httpService from "../../../services/httpService";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
@@ -38,6 +40,9 @@ type TradingRow = {
 
 type NetRow = {
   coal3_id?: number | string;
+  /** Present only on the head-level rows (`netprofit_heads`), not the group rows. */
+  coal4_id?: number | string;
+  coal4_name?: string;
   name?: string;
   debit?: number | string;
   credit?: number | string;
@@ -319,6 +324,64 @@ const ProfitLoss = (user: any) => {
 
     const totalIncome = incomeRows.reduce((s, r) => s + toNum(r.credit), 0);
 
+    /**
+     * The accounts inside each income group.
+     *
+     * ⚠️ THE GROUP ROW IS ONE LINE, AND THE INCOME OF A YEAR CAN HIDE IN IT.
+     * Every income head but the sales figures on krishibitandatabase is filed
+     * under a single level-3 called "Direct Income", so the account showed
+     * 2,60,000 with no way to see that a commission and an interest made it
+     * up. The API sends the same rows one level down; they are matched back by
+     * group id, and because the server builds both from one scope a group's
+     * children add back to the group's own line.
+     */
+    const headRows: NetRow[] = apiData?.netprofit_heads || [];
+
+    /**
+     * ⚠️ THE HEAD ROWS ARRIVE AS `coal4_name`, NOT `name`, and both readers of
+     * this list -- the indented rows on the screen and the income note -- ask
+     * for `name`. Renamed here, once, so neither has to know which of the two
+     * spellings the server chose; left as it was, the account name came out
+     * blank on the page and literally "undefined" in the note.
+     *
+     * ⚠️ AND ONE CHART NAME IS MISSPELT. The head is "Company Comission
+     * (Income)" in the chart. The chart is the client's own data and is not
+     * touched -- only the spelling the report prints, corrected here, once,
+     * for the screen, the printed sheet and the note alike.
+     */
+    const incomesWithChildren = incomeRows.map((r) => ({
+      ...r,
+      children: headRows
+        .filter((h) => toNum(h.coal3_id) === toNum(r.coal3_id))
+        .map((h) => ({
+          ...h,
+          name: (h.coal4_name ?? h.name)?.replace(/Comission/g, "Commission"),
+        })),
+    }));
+
+    /**
+     * Cost of goods sold: what the period began holding, plus what it bought,
+     * less what it still holds.
+     *
+     * ⚠️ A READING OF FIGURES ALREADY ON THE STATEMENT, NOT A NEW ONE. The
+     * trading account's debit side IS opening stock plus net purchase, so this
+     * block is not added to any total -- it explains the gross profit beside
+     * it. Written out because the account shows the two stock figures and the
+     * purchase at opposite ends of the page and never states their
+     * consequence.
+     *
+     * Acquisition costs carried into stock are nil because nothing carries
+     * them: heads 197 Purchase Transportation and 199 Unloading book as period
+     * expense, the vouchers that used them move no stock, and the layer that
+     * prices the closing stock holds a purchase price with no room for
+     * freight. A cost directly attributable to bringing goods in may belong in
+     * inventory cost instead -- that is a question of what the cost was for,
+     * and moving it would mean taking it out of the expense it sits in rather
+     * than counting it twice. No such reclassification is made here. See note 3.
+     */
+    const directAcquisitionCosts = 0;
+    const cogs = opening + netPurchase + directAcquisitionCosts - closing;
+
     const debitPLBase = grossLoss + totalExpense;
     const creditPLBase = grossProfit + totalIncome;
 
@@ -351,11 +414,18 @@ const ProfitLoss = (user: any) => {
         totalDebit: tradingTotalDebit,
         totalCredit: tradingTotalCredit,
       },
+      cogs: {
+        opening,
+        netPurchase,
+        directAcquisitionCosts,
+        closing,
+        total: cogs,
+      },
       net: {
         grossProfit,
         grossLoss,
         expenses: expenseRows,
-        incomes: incomeRows,
+        incomes: incomesWithChildren,
         totalExpense,
         totalIncome,
         netProfit,
@@ -366,9 +436,20 @@ const ProfitLoss = (user: any) => {
     };
   }, [apiData]);
 
+  // Built from the report the statement is drawn from, so a note can never
+  // name a figure the page does not show. See profitLossNotes.
+  const profitLossNotes = useMemo(
+    () =>
+      buildProfitLossNotes(report, {
+        startDate: startDate ? dayjs(startDate).format("DD/MM/YYYY") : undefined,
+        endDate: endDate ? dayjs(endDate).format("DD/MM/YYYY") : undefined,
+      }),
+    [report, startDate, endDate]
+  );
+
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: "Profit Loss",
+    documentTitle: "Profit & Loss Account",
   });
 
   // Print handler for closing stock item details.
@@ -507,7 +588,7 @@ const ProfitLoss = (user: any) => {
 
   return (
     <div>
-      <HelmetTitle title={"Profit Loss"} />
+      <HelmetTitle title={"Profit & Loss Account"} />
 
       <div className="pl-0 pr-1 py-3 ">
         <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-wrap items-end"}`}>
@@ -706,12 +787,21 @@ const ProfitLoss = (user: any) => {
       </div>
       {/* ===== Report ===== */}
       {hasReportData ? (
-        <ProfitLossReport
-          loading={profitLossState?.loading}
-          report={report}
-          loader={<Loader />}
-          onNetExpenseClick={handleExpenseRowClick}
-        />
+        <>
+          <ProfitLossReport
+            loading={profitLossState?.loading}
+            report={report}
+            loader={<Loader />}
+            onNetExpenseClick={handleExpenseRowClick}
+          />
+
+          {/* The notes sit under the account, on screen and on paper, and the
+              account's own rows point at their numbers. */}
+          <ReportNotes
+            title="Notes to the Profit & Loss Account"
+            notes={profitLossNotes}
+          />
+        </>
       ) : (
         <div className="rounded border border-dashed border-[rgb(var(--c-border))] bg-white p-6 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-300">
           {profitLossState?.loading
@@ -725,7 +815,7 @@ const ProfitLoss = (user: any) => {
         <ProfitLossPrint
           ref={printRef}
           report={report}
-          title="Profit Loss"
+          title="Profit & Loss Account"
           startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
           endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
           rowsPerPage={Number(perPage)}

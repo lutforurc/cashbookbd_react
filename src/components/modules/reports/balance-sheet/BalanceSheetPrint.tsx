@@ -2,6 +2,12 @@ import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import ReportNotes from "../../../utils/utils-functions/ReportNotes";
+import {
+  buildBalanceSheetNotes,
+  reportGroupLabel,
+  reportSectionLabel,
+} from "./balanceSheetNotes";
 
 type ColumnAmounts = {
   opening: number;
@@ -172,7 +178,7 @@ const buildLines = (
       lines.push({
         kind: "item",
         serial,
-        name: group.group_name || "-",
+        name: reportGroupLabel(group.group_name),
         side,
         amounts: groupAmounts(group),
       });
@@ -195,11 +201,11 @@ const buildLines = (
 
     if (groups.length === 0) return;
 
-    lines.push({ kind: "subsection", label: section.name || "-" });
+    lines.push({ kind: "subsection", label: reportSectionLabel(section.name) });
 
     shown.forEach((group) => {
       serial += 1;
-      lines.push({ kind: "item", serial, name: group.group_name || "-", side, amounts: groupAmounts(group) });
+      lines.push({ kind: "item", serial, name: reportGroupLabel(group.group_name), side, amounts: groupAmounts(group) });
     });
 
     const zero = { opening: 0, movement: 0, closing: 0 };
@@ -218,12 +224,12 @@ const buildLines = (
           closing: -1 * Number(dep.closing ?? 0),
         },
       });
-      lines.push({ kind: "subtotal", label: `Net ${section.name}`, side, amounts: section.columns ?? zero });
+      lines.push({ kind: "subtotal", label: `Net ${reportSectionLabel(section.name)}`, side, amounts: section.columns ?? zero });
 
       return;
     }
 
-    lines.push({ kind: "subtotal", label: `Total ${section.name}`, side, amounts: section.columns ?? zero });
+    lines.push({ kind: "subtotal", label: `Total ${reportSectionLabel(section.name)}`, side, amounts: section.columns ?? zero });
   };
 
   const pushSectioned = (
@@ -465,6 +471,12 @@ const BalanceSheetPrint = ({
   const pages = chunkLines(lines, askedRows > 0 ? askedRows : 0);
   const isUnbalanced = Math.abs(totals.difference) > 0.009;
 
+  // The notes are a page of their own, and the page numbering counts it -- a
+  // sheet whose footer says "page 1 of 1" over a two-page document is the kind
+  // of thing that gets a stapled report handed back.
+  const notes = buildBalanceSheetNotes(sections ?? {}, { asOn: endDate });
+  const totalPages = pages.length + (notes.length ? 1 : 0);
+
   /** The six money cells of one line: Opening, Movement and Closing, Dr then Cr. */
   const amountCells = (side: Side, amounts: ColumnAmounts, cellFs: number, bold: boolean) => {
     const cellClass = `border border-gray-900 px-1 py-0.5 text-right${bold ? " font-semibold" : ""}`;
@@ -509,7 +521,7 @@ const BalanceSheetPrint = ({
               <p>
                 Period: {startDate} to {endDate}
               </p>
-              <p>As on: {endDate}</p>
+              <p>As at: {endDate}</p>
             </div>
 
             <div className="w-full overflow-hidden">
@@ -748,12 +760,38 @@ const BalanceSheetPrint = ({
               )}
             </div>
 
-            <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} />
+            <PrintFooter page={pageIndex + 1} total={totalPages} fontSize={fs} />
 
             {!isLastPage && <div className="page-break" />}
           </div>
         );
       })}
+
+      {/* The notes follow the sheet on a page of their own, so a two-sided
+          print or an export to PDF keeps them off the figures. */}
+      {notes.length > 0 && (
+        <>
+          <div className="page-break" />
+
+          <div className="print-page">
+            <PadPrinting />
+
+            <div className="mb-3 text-center" style={{ fontSize: `${fs}px` }}>
+              <p className="font-semibold">{branchName}</p>
+              <p>As at: {endDate}</p>
+            </div>
+
+            <ReportNotes
+              title="Notes to the Balance Sheet"
+              notes={notes}
+              fontSize={fs}
+              variant="print"
+            />
+
+            <PrintFooter page={totalPages} total={totalPages} fontSize={fs} />
+          </div>
+        </>
+      )}
     </div>
   );
 };

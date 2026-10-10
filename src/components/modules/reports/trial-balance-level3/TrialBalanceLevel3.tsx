@@ -22,9 +22,9 @@ import { API_REPORT_TRIAL_BALANCE_LEVEL4_URL } from "../../../services/apiRoutes
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchTrialBalanceLevel3 } from "./trialBalanceLevel3Slice";
-import TrialBalanceLevel3Print, {
-  TRIAL_BALANCE_BASIS,
-} from "./TrialBalanceLevel3Print";
+import TrialBalanceLevel3Print from "./TrialBalanceLevel3Print";
+import ReportNotes from "../../../utils/utils-functions/ReportNotes";
+import { buildTrialBalanceNotes } from "./trialBalanceNotes";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 
@@ -483,6 +483,20 @@ const TrialBalanceLevel3 = (user: any) => {
     );
     return selected?.name || "Selected Branch";
   }, [dropdownData, branchId]);
+
+  /**
+   * The same notes the printed sheet carries, read from the same list, so the
+   * two surfaces cannot describe this report two ways.
+   */
+  const trialBalanceNotes = useMemo(
+    () =>
+      buildTrialBalanceNotes({
+        branchName,
+        startDate: startDate ? dayjs(startDate).format("DD/MM/YYYY") : undefined,
+        endDate: endDate ? dayjs(endDate).format("DD/MM/YYYY") : undefined,
+      }),
+    [branchName, startDate, endDate],
+  );
 
   const handleBranchChange = (e: any) => {
     const value = Number(e.target.value);
@@ -1077,15 +1091,15 @@ const TrialBalanceLevel3 = (user: any) => {
                     }
 	                />
 
-                  {/* The report's own basis. Imported, not retyped, so the
-                      screen and the printed sheet say the same thing -- and
-                      BELOW the table and its Grand Total, because it answers a
-                      question a reader only has once the total is in front of
-                      them: why this total does not meet the balance sheet's.
-                      Above the table it was boilerplate they skipped. */}
-                  <p className="text-left text-xs leading-snug text-slate-500 dark:text-slate-400">
-                    {TRIAL_BALANCE_BASIS}
-                  </p>
+                  {/* The report's own basis and the rest of what it cannot say
+                      about itself, BELOW the table and its Grand Total, because
+                      it answers questions a reader only has once the total is
+                      in front of them. Imported, not retyped, so the screen and
+                      the printed sheet say the same thing. */}
+                  <ReportNotes
+                    title="Notes to the Trial Balance"
+                    notes={trialBalanceNotes}
+                  />
 
                   {expandedL3Id && (
                     <div className="rounded-sm border border-[rgb(var(--c-border))] bg-slate-50 dark:bg-slate-900/30">

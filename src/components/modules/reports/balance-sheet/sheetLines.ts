@@ -1,4 +1,5 @@
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import { reportGroupLabel, reportSectionLabel } from "./balanceSheetNotes";
 
 /**
  * The balance sheet's shape, and the one list of lines both views draw from.
@@ -163,7 +164,7 @@ export const buildSheetLines = ({
         section: title,
         side,
         group,
-        label: group.group_name || "-",
+        label: reportGroupLabel(group.group_name),
         itemCount: (group.items || []).length,
         columns: {
           opening: toNum(group.opening),
@@ -191,7 +192,7 @@ export const buildSheetLines = ({
 
     if (groups.length === 0) return;
 
-    out.push({ kind: "subsection", label: section.name || "-" });
+    out.push({ kind: "subsection", label: reportSectionLabel(section.name) });
 
     shown.forEach((group, index) => {
       serial += 1;
@@ -202,7 +203,7 @@ export const buildSheetLines = ({
         section: parent,
         side,
         group,
-        label: group.group_name || "-",
+        label: reportGroupLabel(group.group_name),
         itemCount: (group.items || []).length,
         columns: {
           opening: toNum(group.opening),
@@ -231,7 +232,7 @@ export const buildSheetLines = ({
 
       out.push({
         kind: "subtotal",
-        label: `Net ${section.name}`,
+        label: `Net ${reportSectionLabel(section.name)}`,
         side,
         columns: section.columns ?? ZERO,
       });
@@ -241,7 +242,7 @@ export const buildSheetLines = ({
 
     out.push({
       kind: "subtotal",
-      label: `Total ${section.name}`,
+      label: `Total ${reportSectionLabel(section.name)}`,
       side,
       columns: section.columns ?? ZERO,
     });
