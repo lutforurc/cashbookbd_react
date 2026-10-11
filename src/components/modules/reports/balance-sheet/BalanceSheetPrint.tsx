@@ -99,11 +99,16 @@ const formatAmount = (amount: number | null) => {
 };
 
 /**
- * The stair the paper draws: a level-1 section at the margin, its level-2
+ * The stair the STATEMENT draws: a level-1 section at the margin, its level-2
  * group one step in, the level-3 groups under that another -- the same rule the
  * screen follows (level2Indent / level3Indent in sheetLines), one step
  * narrower, because print type is small and the page is narrow. A step that
  * reads as an indent at 14px on screen would be a gutter here.
+ *
+ * ⚠️ THE WORKSHEET DOES NOT USE EITHER. Its rows come off a serial number, so
+ * the serial is the hierarchy: every name sits at the cell's own padding and
+ * the eye reads down the column instead of down a stair. See the worksheet
+ * rows below -- they carry px-2, the same padding the section band uses.
  */
 const level2Indent = "pl-4";
 const level3Indent = "pl-8";
@@ -631,7 +636,7 @@ const BalanceSheetPrint = ({
                             <td
                               colSpan={8}
                               style={{ fontSize: fs }}
-                              className={`border border-gray-900 py-0.5 ${level2Indent} pr-2 text-left`}
+                              className="border border-gray-900 px-2 py-0.5 text-left"
                             >
                               {line.label}
                             </td>
@@ -701,7 +706,7 @@ const BalanceSheetPrint = ({
                           </td>
                           <td
                             style={{ fontSize: fs }}
-                            className={`border border-gray-900 py-0.5 ${level3Indent} pr-2 align-middle`}
+                            className="border border-gray-900 px-2 py-0.5 align-middle"
                           >
                             {line.name}
                           </td>

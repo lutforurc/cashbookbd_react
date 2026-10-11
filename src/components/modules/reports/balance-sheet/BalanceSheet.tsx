@@ -27,8 +27,6 @@ import {
   buildSheetLines,
   ColumnTotals,
   formatAmount,
-  level2Indent,
-  level3Indent,
   ReportGroup,
   ReportSection,
   SheetLine,
@@ -981,20 +979,25 @@ const BalanceSheetTable = ({
             if (line.kind === "subsection") {
               return (
                 <tr key={`${line.label}-${index}`} className="bg-slate-50 dark:bg-slate-800/50">
-                  <td colSpan={8} className={`${cell} ${level2Indent} font-medium text-slate-600 dark:text-slate-300`}>
+                  {/* ⚠️ No indent in the worksheet: the serial is the
+                      hierarchy here, so every name starts at the cell's own
+                      padding and the eye reads straight down the column. The
+                      statement keeps its stair -- see BalanceSheetStatement. */}
+                  <td colSpan={8} className={`${cell} font-medium text-slate-600 dark:text-slate-300`}>
                     {line.label}
                   </td>
                 </tr>
               );
             }
 
-            /* A level-2 subtotal, and the "Less:" line above it. Indented under
-               the groups it sums so the eye reads down the column and stops. */
+            /* A level-2 subtotal, and the "Less:" line above it. Unindented,
+               like every other row of this table; the bold is what tells it
+               apart from the groups it sums. */
             if (line.kind === "subtotal") {
               return (
                 <tr key={`${line.label}-${index}`}>
                   <td className={cell} />
-                  <td className={`${cell} ${line.indent ? level3Indent : `${level2Indent} font-semibold`} text-slate-700 dark:text-slate-200`}>
+                  <td className={`${cell}${line.indent ? "" : " font-semibold"} text-slate-700 dark:text-slate-200`}>
                     {line.label}
                   </td>
                   {(["opening", "movement", "closing"] as const).flatMap((column) => [
@@ -1035,7 +1038,7 @@ const BalanceSheetTable = ({
                 <td className={`${cell} text-center text-slate-700 dark:text-slate-200`}>
                   {line.serial}
                 </td>
-                <td className={`${cell} ${level3Indent} text-slate-800 dark:text-slate-100`}>
+                <td className={`${cell} text-slate-800 dark:text-slate-100`}>
                   <div className="flex items-center justify-between gap-3">
                     <span>{line.label}</span>
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
