@@ -55,7 +55,7 @@ import {
   getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
-import { formatBdShortDate } from '../../../utils/utils-functions/formatDate';
+import formatDate, { formatBdShortDate } from '../../../utils/utils-functions/formatDate';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import routes from '../../../services/appRoutes';
 import SearchInput from '../../../utils/fields/SearchInput';
@@ -490,6 +490,9 @@ const PurchaseLedger = (user: any) => {
         >
           <div>{row?.challan_no}</div>
           <div>{row?.challan_date}</div>
+          { row?.manual_challan_no && <hr/>}
+          <div>{row?.manual_challan_no}</div>
+          <div>{ formatDate(row?.manual_challan_date)}</div>
         </div>
       ),
     },
