@@ -41,6 +41,7 @@ import DashboardCustomizeButton, {
 } from './dashboardCustomization';
 import {
   DashboardRangeBar,
+  businessTypeName,
   rangeCaption,
   useAutoRefresh,
   useCashBookRange,
@@ -318,7 +319,14 @@ const ConstructionDashboard = () => {
     <>
       <HelmetTitle title="Construction Dashboard" />
       <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-slate-400">{rangeCaption(range.from, range.to, refreshedAt)}</p>
+        {/* The trade, then the dates it was read over -- the shape the trade
+            dashboard has had all along. */}
+        <div>
+          <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
+            {businessTypeName(view.viewBranch, 'Construction')}
+          </h1>
+          <p className="text-xs text-slate-400">{rangeCaption(range.from, range.to, refreshedAt)}</p>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <DashboardRangeBar range={range} view={view} onRefresh={refresh} busy={Boolean(dashboard?.isLoading)} />
           <DashboardCustomizeButton

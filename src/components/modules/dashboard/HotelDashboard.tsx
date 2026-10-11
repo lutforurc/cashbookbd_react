@@ -28,6 +28,7 @@ import DashboardCustomizeButton, {
 } from './dashboardCustomization';
 import {
   DashboardRangeBar,
+  businessTypeName,
   rangeCaption,
   useAutoRefresh,
   useCashBookRange,
@@ -186,9 +187,6 @@ const Tile = ({
 const HotelDashboard = () => {
   const dispatch = useDispatch<any>();
 
-  const currentBranch = useSelector(
-    (state: any) => state.branchList?.currentBranch,
-  );
   const settings = useSelector((state: any) => state.settings);
   const dashboard = useSelector((state: any) => state.dashboard);
   const me = useSelector((state: any) => state.auth?.me);
@@ -705,7 +703,7 @@ const HotelDashboard = () => {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
-            {view.viewBranchName || 'The property'}
+            {businessTypeName(view.viewBranch, 'The property')}
           </h1>
           <p className="text-xs text-slate-400">
             {run?.from && run?.to
