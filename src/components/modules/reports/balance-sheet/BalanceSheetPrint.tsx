@@ -2,7 +2,7 @@ import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
-import ReportNotes from "../../../utils/utils-functions/ReportNotes";
+import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes";
 import {
   buildBalanceSheetNotes,
   reportGroupLabel,
@@ -514,9 +514,20 @@ const BalanceSheetPrint = ({
           <div key={pageIndex} className="print-page">
             <PadPrinting />
 
-            <div className="mb-4 text-center" style={{ fontSize: `${fs}px` }}>
+            <div className="mt-3 text-center" style={{ fontSize: `${fs}px` }}>
               <h1 className="mt-3 font-bold" style={{ fontSize: `${fs + 10}px` }}>
                 Balance Sheet
+                {/* ⚠️ NOTE 1 HANGS ON THE SHEET'S OWN TITLE, which is the only
+                    thing on the page it explains. Every other note is pointed at
+                    by a row -- reportGroupLabel puts "[2]".."[7]" after the group
+                    they belong to -- while note 1 is the basis of the whole
+                    sheet and belongs to no row. Without this reference the notes
+                    listed 1..8 while nothing on the sheet pointed at 1, so a
+                    reader counting the references found one missing. The Profit &
+                    Loss and the Trial Balance both hang theirs here
+                    (ProfitLossReport's "TRADING ACCOUNT", TrialBalanceLevel3Print's
+                    "Trial Balance Group"); this is the third of the three. */}
+                <NoteRef n={1} />
               </h1>
               <p>
                 Period: {startDate} to {endDate}
@@ -776,8 +787,8 @@ const BalanceSheetPrint = ({
           <div className="print-page">
             <PadPrinting />
 
-            <div className="mb-3 text-center" style={{ fontSize: `${fs}px` }}>
-              <p className="font-semibold">{branchName}</p>
+            <div className="mb-3 mt-3 text-center" style={{ fontSize: `${fs}px` }}>
+              {/* <p className="font-semibold">{branchName}</p> */}
               <p>As at: {endDate}</p>
             </div>
 

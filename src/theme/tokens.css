@@ -527,6 +527,17 @@ html.dark {
   :root,
   html.dark {
     --c-white: 255 255 255;           /* #FFFFFF */
+
+    /* And the quiet half of the writing, for the same reason.
+     *
+     * ⚠️ PAPER HAS NO DARK MODE, but the tokens do not know that: printing from
+     * dark mode carried the lifted greys onto the sheet, and a report's note
+     * references -- muted text, and proud of it -- came out at #A3ADB9 on
+     * white, which is about 2.7:1 and reads as a smudge. Restated here as the
+     * value the light screen uses, so whoever is printing, the paper is inked
+     * the same. Only this one step is named: the palette ramps below are for
+     * the screen's own furniture and no report prints them. */
+    --c-text-muted: var(--c-body);
   }
 
   /* The canvas the reports sit on has nothing to say on paper.

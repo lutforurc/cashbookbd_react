@@ -135,9 +135,9 @@ const TrialBalanceLevel3Print = React.forwardRef<
       <div key={pIdx} className="print-page">
         <PadPrinting />
 
-        <div className="mb-4 text-center" style={{ fontSize: `${fs}px` }}>
+        <div className="mb-3 mt-3 text-center" style={{ fontSize: `${fs}px` }}>
           <h1 className="mt-1 font-bold" style={{ fontSize: `${fs + 10}px` }}>
-            Trial Balance Group
+            Trial Balance
             <NoteRef n={1} />
           </h1>
           <p>
@@ -165,7 +165,7 @@ const TrialBalanceLevel3Print = React.forwardRef<
                 rowSpan={2}
                 className="border border-gray-900 px-1 py-1 text-center font-semibold"
               >
-                Serial
+                Sl. No.
               </th>
               <th
                 rowSpan={2}
@@ -309,9 +309,9 @@ const TrialBalanceLevel3Print = React.forwardRef<
           <div className="print-page">
             <PadPrinting />
 
-            <div className="mb-4 text-center" style={{ fontSize: `${fs}px` }}>
+            <div className="mb-3 mt-3 text-center" style={{ fontSize: `${fs}px` }}>
               <h1 className="mt-1 font-bold" style={{ fontSize: `${fs + 10}px` }}>
-                Trial Balance Group
+                Trial Balance
               </h1>
               <p>
                 Period: {startDate} to {endDate}

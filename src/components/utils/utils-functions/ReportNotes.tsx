@@ -27,9 +27,21 @@ export type ReportNote = {
  * The reference a report row carries: the number of the note that explains it,
  * set small and high so it reads as a pointer and not as part of the figure.
  * One component for screen and paper, so a row points at the same note in both.
+ *
+ * ⚠️ THE COLOUR IS A TOKEN, NOT `text-gray-500`, AND THAT IS THE WHOLE POINT.
+ * A grey picked to read on white was picked for ONE mode: `--c-gray-500` is
+ * #59636F and dark mode does not move it, so every reference on every report
+ * sat at about 2.3:1 against a #212932 card -- dim enough to look like the
+ * number had not printed at all. The page read as though its notes had lost
+ * their pointers while the notes themselves listed away underneath.
+ *
+ * `--c-text-muted` is the token that answers to both: #59636F on white, and
+ * lifted to #A3ADB9 under html.dark, which is roughly 6:1 either way. It is
+ * restated for print in tokens.css, so a report printed from dark mode still
+ * comes out in ink -- paper does not have a dark mode.
  */
 export const NoteRef = ({ n }: { n: number | string }) => (
-  <span className="ml-1 align-super text-[10px] text-gray-500">[{n}]</span>
+  <span className="ml-1 align-super text-[10px] text-[rgb(var(--c-text-muted))]">[{n}]</span>
 );
 
 type Props = {

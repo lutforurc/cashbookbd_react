@@ -21,7 +21,7 @@ import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchBalanceSheet } from "./balanceSheetSlice";
 import BalanceSheetPrint from "./BalanceSheetPrint";
 import BalanceSheetStatement from "./BalanceSheetStatement";
-import ReportNotes from "../../../utils/utils-functions/ReportNotes";
+import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes";
 import { buildBalanceSheetNotes } from "./balanceSheetNotes";
 import {
   buildSheetLines,
@@ -386,11 +386,11 @@ const BalanceSheet = (user: any) => {
                   Select Branch
                 </label>
                 <BranchDropdown
- branchDdl={dropdownData}
- onChange={handleBranchChange}
- defaultValue={branchId ? String(branchId) : ""}
- value={branchId ? String(branchId) : ""}
- className="px-3"
+                  branchDdl={dropdownData}
+                  onChange={handleBranchChange}
+                  defaultValue={branchId ? String(branchId) : ""}
+                  value={branchId ? String(branchId) : ""}
+                  className="px-3"
                 />
               </div>
 
@@ -399,10 +399,10 @@ const BalanceSheet = (user: any) => {
                   Start Date
                 </label>
                 <InputDatePicker
- selectedDate={startDate}
- setSelectedDate={setStartDate}
- setCurrentDate={setStartDate}
- className="w-full "
+                  selectedDate={startDate}
+                  setSelectedDate={setStartDate}
+                  setCurrentDate={setStartDate}
+                  className="w-full "
                 />
               </div>
 
@@ -411,10 +411,10 @@ const BalanceSheet = (user: any) => {
                   End Date
                 </label>
                 <InputDatePicker
- selectedDate={endDate}
- setSelectedDate={setEndDate}
- setCurrentDate={setEndDate}
- className="w-full "
+                  selectedDate={endDate}
+                  setSelectedDate={setEndDate}
+                  setCurrentDate={setEndDate}
+                  className="w-full "
                 />
               </div>
 
@@ -607,6 +607,11 @@ const BalanceSheet = (user: any) => {
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                       Balance Sheet
+                      {/* Note 1 is the basis of the whole sheet, so it hangs on the
+                          sheet's own title -- every other note is pointed at by the
+                          group row it explains (see balanceSheetNotes). Same place
+                          the P&L and the Trial Balance put theirs. */}
+                      <NoteRef n={1} />
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                       {branchName}, {reportDates.start ? dayjs(reportDates.start).format("DD/MM/YYYY") : "-"} to{" "}
@@ -790,7 +795,7 @@ const NetProfitDebugPanel = ({
               Net Profit Debug
             </h3>
             <p className="mt-1 text-sm text-sky-800 dark:text-sky-200">
-              {branchName} | { formatDate(values.filters.startDate) || "-"} to {formatDate(values.filters.endDate) || "-"}
+              {branchName} | {formatDate(values.filters.startDate) || "-"} to {formatDate(values.filters.endDate) || "-"}
             </p>
           </div>
           <p className="text-sm font-semibold text-sky-900 dark:text-sky-100">
@@ -914,11 +919,10 @@ const BalanceSheetTable = ({
 
   /** The six money cells of one row: Opening, Movement and Closing, Dr then Cr. */
   const amountCells = (side: SheetSide, columns: ColumnTotals, bold: boolean) => {
-    const cellClass = `${moneyCell} ${
-      bold
+    const cellClass = `${moneyCell} ${bold
         ? "font-bold text-slate-900 dark:text-[rgb(var(--c-text))]"
         : "text-slate-900 dark:text-[rgb(var(--c-text))]"
-    }`;
+      }`;
 
     return (["opening", "movement", "closing"] as const).flatMap((column) => [
       <td key={`${column}-dr`} className={cellClass}>
@@ -1110,87 +1114,87 @@ const GroupDetailsModal = ({
       }}
     >
       <div className="mx-auto flex min-h-full w-full max-w-3xl items-start justify-center sm:items-center">
-      <div className="my-2 flex max-h-[88vh] w-full flex-col overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-4 py-3 sm:px-5 sm:py-4">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
-              {title}: {group.group_name || "Details"}
-            </h3>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Clicked summary details are shown here.
-            </p>
+        <div className="my-2 flex max-h-[88vh] w-full flex-col overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-4 py-3 sm:px-5 sm:py-4">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
+                {title}: {group.group_name || "Details"}
+              </h3>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Clicked summary details are shown here.
+              </p>
+            </div>
+            <Button
+              type="button"
+              onClick={onClose}
+              className="rounded-sm border border-[rgb(var(--c-border))] px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Close
+            </Button>
           </div>
-          <Button
-            type="button"
-            onClick={onClose}
-            className="rounded-sm border border-[rgb(var(--c-border))] px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            Close
-          </Button>
-        </div>
 
-        <div className="shrink-0 border-b border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 sm:px-5 sm:py-4 dark:bg-slate-900/40">
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
-            <ModalStat label="Opening" value={toNum(group.opening)} />
-            <ModalStat label="Movement" value={toNum(group.movement)} />
-            <ModalStat label="Closing" value={toNum(group.closing || group.total)} />
-            <ModalStat label="Items" value={items.length} isCount />
+          <div className="shrink-0 border-b border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 sm:px-5 sm:py-4 dark:bg-slate-900/40">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
+              <ModalStat label="Opening" value={toNum(group.opening)} />
+              <ModalStat label="Movement" value={toNum(group.movement)} />
+              <ModalStat label="Closing" value={toNum(group.closing || group.total)} />
+              <ModalStat label="Items" value={items.length} isCount />
+            </div>
           </div>
-        </div>
 
-        <div className="flex-1 overflow-x-auto overflow-y-auto px-4 pb-4 sm:px-5 sm:pb-5">
-          <table className="min-w-full">
-            <thead>
-              <tr className="sticky top-0 z-20 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
-                <th className="px-2 py-2 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
-                  Particular
-                </th>
-                <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
-                  Opening
-                </th>
-                <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
-                  Movement
-                </th>
-                <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
-                  Closing
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.length > 0 ? (
-                items.map((item, index) => (
-                  <tr
-                    key={`${item.coa4_id || index}-${item.name || "item"}`}
-                    className="border-b border-[rgb(var(--c-border))] last:border-b-0"
-                  >
-                    <td className="px-2 py-2 text-slate-800 dark:text-slate-100">
-                      {item.name || "-"}
-                    </td>
-                    <td className="px-2 py-2 text-right whitespace-nowrap text-slate-700 dark:text-slate-200">
-                      {formatAmount(toNum(item.opening))}
-                    </td>
-                    <td className="px-2 py-2 text-right whitespace-nowrap text-slate-700 dark:text-slate-200">
-                      {formatAmount(toNum(item.movement))}
-                    </td>
-                    <td className="px-2 py-2 text-right font-medium whitespace-nowrap text-slate-900 dark:text-[rgb(var(--c-text))]">
-                      {formatAmount(toNum(item.closing || item.balance))}
+          <div className="flex-1 overflow-x-auto overflow-y-auto px-4 pb-4 sm:px-5 sm:pb-5">
+            <table className="min-w-full">
+              <thead>
+                <tr className="sticky top-0 z-20 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
+                  <th className="px-2 py-2 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    Particular
+                  </th>
+                  <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
+                    Opening
+                  </th>
+                  <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
+                    Movement
+                  </th>
+                  <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
+                    Closing
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.length > 0 ? (
+                  items.map((item, index) => (
+                    <tr
+                      key={`${item.coa4_id || index}-${item.name || "item"}`}
+                      className="border-b border-[rgb(var(--c-border))] last:border-b-0"
+                    >
+                      <td className="px-2 py-2 text-slate-800 dark:text-slate-100">
+                        {item.name || "-"}
+                      </td>
+                      <td className="px-2 py-2 text-right whitespace-nowrap text-slate-700 dark:text-slate-200">
+                        {formatAmount(toNum(item.opening))}
+                      </td>
+                      <td className="px-2 py-2 text-right whitespace-nowrap text-slate-700 dark:text-slate-200">
+                        {formatAmount(toNum(item.movement))}
+                      </td>
+                      <td className="px-2 py-2 text-right font-medium whitespace-nowrap text-slate-900 dark:text-[rgb(var(--c-text))]">
+                        {formatAmount(toNum(item.closing || item.balance))}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
+                    >
+                      No detailed items found for this summary.
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
-                  >
-                    No detailed items found for this summary.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
       </div>
     </div>
   );
