@@ -79,6 +79,31 @@ export const CardTitle = ({ children, href }: { children: React.ReactNode; href?
 export const CARD_HEAD =
   'flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100';
 
+/**
+ * A card's foot — the strip along the bottom — at one height on every card.
+ *
+ * ⚠️ IT IS A CONSTANT BECAUSE IT KEPT COMING OUT DIFFERENT. Each card wrote its
+ * own foot where the card was: `text-[12px]` on one, `text-xs` on the next,
+ * `text-[11px]` on a third — three font sizes and three line boxes — and the
+ * padding followed the density setting on the cards that were handed a rowClass
+ * while the others had it hard-coded. Cards standing side by side then ended in
+ * strips at three heights, which reads as a layout that came apart rather than
+ * as three cards. So the strip carries its own size, its own padding and its own
+ * line box, and the density setting no longer moves it: one line, one height,
+ * whatever the card is.
+ *
+ * What a foot SAYS still varies — that is the card's business. Whether it sits
+ * its two facts apart (`justify-between gap-3`) or runs them together (`gap-1.5`)
+ * is the card's business too, so the flex arrangement is left to the call site;
+ * only the geometry is fixed here.
+ *
+ * ⚠️ ONE LINE, AND THE FIGURES GO FIRST. `whitespace-nowrap` plus a truncated
+ * span on whichever end can afford it — a foot that wrapped to two lines would
+ * be taller than every other card's again, which is what this exists to stop.
+ */
+export const CARD_FOOT =
+  'mt-auto flex items-center px-4 py-1.5 text-[12px] leading-[18px] whitespace-nowrap';
+
 /** One tile: the figure, and underneath it the sum that produced it. */
 export const Tile = ({
   label,

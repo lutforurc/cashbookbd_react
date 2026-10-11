@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaRegHandshake } from 'react-icons/fa';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { CardTitle } from './dashboardKit';
+import { CARD_FOOT, CardTitle } from './dashboardKit';
 
 interface Bucket {
   label: string;
@@ -194,29 +194,35 @@ const DueAgingCard: React.FC<DueAgingCardProps> = ({
         })}
       </ul>
 
-      <div className="mt-auto">
-        {/* Said in words, because a row of figures does not tell anyone what to
-            do on Monday morning. */}
-        {overdue > 0 && (
-          <div className="flex items-center justify-between gap-2 border-t border-[rgb(var(--c-border))] bg-[rgb(var(--c-age-overdue))]/5 px-4 py-2 text-[11px]">
-            <span className="font-semibold text-[rgb(var(--c-age-overdue))]">
-              {thousandSeparator(Math.round(overdue))} {overdueLabel}
-            </span>
-            <span className="tabular-nums text-slate-400">
-              {overdueParties} {overdueParties === 1 ? 'party' : 'parties'} over 60 days
-            </span>
-          </div>
-        )}
+      {/* ⚠️ ONE STRIP, ONE HEIGHT — IT WAS TWO STACKED ROWS. The overdue and the
+          advance each had a row of their own, so an ageing card standing beside
+          a product card ended a row lower along the bottom edge: the same
+          complaint the shared CARD_FOOT was written for. Both facts now share
+          the one strip — the overdue on the left where it has always been, the
+          advance on the right — and where there is no advance to say, the
+          parties count takes the right-hand place instead.
 
-        {Number(aging.advance) > 0 && (
-          <div className="flex items-center justify-between bg-slate-50 px-4 py-2 text-[11px] text-slate-400 dark:bg-gray-700/50">
-            <span>{advanceLabel}</span>
-            <span className="tabular-nums">
-              {thousandSeparator(Math.round(Number(aging.advance)))}
-            </span>
-          </div>
-        )}
-      </div>
+          Said in words, because a row of figures does not tell anyone what to
+          do on Monday morning. A card with neither fact carries no strip at
+          all, rather than an empty one. */}
+      {(overdue > 0 || Number(aging.advance) > 0) && (
+        <div
+          className={`${CARD_FOOT} justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 dark:bg-gray-700/50`}
+        >
+          <span
+            className={`min-w-0 truncate font-semibold ${
+              overdue > 0 ? 'text-[rgb(var(--c-age-overdue))]' : 'text-slate-400'
+            }`}
+          >
+            {overdue > 0 ? `${thousandSeparator(Math.round(overdue))} ${overdueLabel}` : ''}
+          </span>
+          <span className="shrink-0 tabular-nums text-slate-400">
+            {Number(aging.advance) > 0
+              ? `${overdueParties > 0 ? `${overdueParties} parties · ` : ''}${advanceLabel} ${thousandSeparator(Math.round(Number(aging.advance)))}`
+              : `${overdueParties} ${overdueParties === 1 ? 'party' : 'parties'} over 60 days`}
+          </span>
+        </div>
+      )}
     </div>
   );
 };

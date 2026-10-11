@@ -3,7 +3,7 @@ import { FaArrowDown, FaArrowUp, FaRegCalendarAlt, FaWallet } from 'react-icons/
 import dayjs from 'dayjs';
 
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { CardTitle } from './dashboardKit';
+import { CARD_FOOT, CardTitle } from './dashboardKit';
 
 /**
  * The Cash Book card for the chosen range, drawn the way the today card is
@@ -94,9 +94,14 @@ const RangeCashCard = ({
         </div>
       </div>
 
-      <div className="mt-auto bg-slate-50 px-4 py-2 text-xs text-slate-400 dark:bg-gray-700/50">
-        Net {cash.received - cash.payment >= 0 ? '+' : '−'}
-        {thousandSeparator(Math.abs(cash.received - cash.payment))} over the range
+      <div className={`${CARD_FOOT} border-t border-[rgb(var(--c-border))] bg-slate-50 text-slate-400 dark:bg-gray-700/50`}>
+        {/* Truncated rather than left to overflow: the card clips its own
+            corners, and a sentence that runs off the edge loses its end, not
+            its middle. */}
+        <span className="min-w-0 truncate">
+          Net {cash.received - cash.payment >= 0 ? '+' : '−'}
+          {thousandSeparator(Math.abs(cash.received - cash.payment))} over the range
+        </span>
       </div>
     </div>
   );

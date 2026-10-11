@@ -36,7 +36,7 @@ import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
-import { CARD, CARD_HEAD, CardTitle, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
+import { CARD, CARD_FOOT, CARD_HEAD, CardTitle, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
 import { listedValue, rankProducts } from './topProducts';
 
 /**
@@ -381,12 +381,12 @@ const TradingDashboard = () => {
         </ul>
 
         <div
-          className={`mt-auto flex items-center justify-between border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] dark:bg-gray-700/50`}
+          className={`${CARD_FOOT} justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 dark:bg-gray-700/50`}
         >
-          <span className="text-slate-500 dark:text-slate-300">
+          <span className="min-w-0 truncate text-slate-500 dark:text-slate-300">
             Top {ranked.length} · {window}
           </span>
-          <span className={`font-bold tabular-nums ${tone}`}>
+          <span className={`shrink-0 font-bold tabular-nums ${tone}`}>
             {format(listedValue(ranked, metric))}
           </span>
         </div>
@@ -510,14 +510,14 @@ const TradingDashboard = () => {
                 </ul>
 
                 <div
-                  className={`mt-auto flex items-center justify-between border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] font-bold dark:bg-gray-700/50`}
+                  className={`${CARD_FOOT} justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 font-bold dark:bg-gray-700/50`}
                 >
-                  <span className="text-slate-500 dark:text-slate-300">
+                  <span className="min-w-0 truncate text-slate-500 dark:text-slate-300">
                     {dead.length < Number(stock.dead_items)
                       ? `Worst ${dead.length} of ${count(stock.dead_items)}`
                       : 'All of it'}
                   </span>
-                  <span className="tabular-nums text-amber-600 dark:text-amber-400">
+                  <span className="shrink-0 tabular-nums text-amber-600 dark:text-amber-400">
                     {money(listedValue(dead, 'value'))}
                   </span>
                 </div>
@@ -702,14 +702,14 @@ const TradingDashboard = () => {
             </ul>
 
             <div
-              className={`mt-auto flex items-center justify-between border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] dark:bg-gray-700/50`}
+              className={`${CARD_FOOT} justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 dark:bg-gray-700/50`}
             >
               {/* ⚠️ The footer says how much of the month these rows are, because
                 five rows above a big number reads as the whole of it. A line
                 that lost money is worth seeing sooner than a thin profit, so
                 the five are the five best — and on a month that went wrong the
                 best of them can still be a loss. */}
-              <span className="text-slate-500 dark:text-slate-300">
+              <span className="min-w-0 truncate text-slate-500 dark:text-slate-300">
                 Top {top.length}
                 {/* ⚠️ A share of a NEGATIVE gross is not a share of anything —
                   percent-of-a-loss reads as a percent of a profit and would be
@@ -720,7 +720,7 @@ const TradingDashboard = () => {
                   : ''}
               </span>
               <span
-                className={`font-bold tabular-nums ${
+                className={`shrink-0 font-bold tabular-nums ${
                   topProfit < 0
                     ? 'text-rose-600 dark:text-rose-400'
                     : 'text-emerald-600 dark:text-emerald-400'
