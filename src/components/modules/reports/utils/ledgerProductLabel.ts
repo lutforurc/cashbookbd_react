@@ -17,6 +17,7 @@ export const ledgerProductLabel = (
 ): string => {
   const category = String(detail?.product?.category?.name ?? '').trim();
   const product = String(detail?.product?.name ?? '').trim();
+  const code = String(detail?.product?.code ?? '').trim();
 
   if (!showCategory || !category) {
     return product;
@@ -24,5 +25,5 @@ export const ledgerProductLabel = (
 
   const alreadyCarried = product.toLowerCase().includes(category.toLowerCase());
 
-  return `${alreadyCarried ? '' : `${category} `}${product}`.trim();
+  return `${alreadyCarried ? '' : `${category} `}${code ? `${code} - ` : ''}${product}`.trim();
 };
