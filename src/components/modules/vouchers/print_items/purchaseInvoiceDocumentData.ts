@@ -67,6 +67,17 @@ export const toPurchaseInvoiceDocumentData = (data: any): DocumentData => {
       notes: purchaseMaster?.notes || '',
       vr_no: data?.vr_no,
       vr_date: purchaseMaster?.invoice_date || purchaseMaster?.transact_date || data?.vr_date,
+      // ⚠️ THE SAME FOUR THE SALES INVOICE READS, off the same `data` -- see
+      // salesInvoiceDocumentData.ts. They are columns on the `main_trx_master`
+      // row being printed, so they arrive at the payload's top level whatever
+      // the voucher type; a branch that never fills them in sends null, and the
+      // four fields carrying hideIfEmpty then print nothing at all. Raw
+      // 'YYYY-MM-DD', never reformatted here: the designer's date fields format
+      // them, and a 'DD/MM/YYYY' string is not a date dayjs can read.
+      manual_voucher_no: data?.manual_voucher_no || '',
+      manual_voucher_date: data?.manual_voucher_date || '',
+      manual_challan_no: data?.manual_challan_no || '',
+      manual_challan_date: data?.manual_challan_date || '',
       order_number: purchaseMaster?.purchase_order?.order_number || '',
       delivery_location: purchaseMaster?.purchase_order?.delivery_location || '',
       vehicle_no: purchaseMaster?.vehicle_no || '',

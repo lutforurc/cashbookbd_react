@@ -1407,6 +1407,17 @@ export const PURCHASE_INVOICE_FIELD_CATALOG: FieldDef[] = [
   { key: 'order_number', name: 'Order Number', group: 'voucher' },
   { key: 'delivery_location', name: 'Delivery Location', group: 'voucher' },
   { key: 'vehicle_no', name: 'Vehicle No', group: 'transport' },
+  // ⚠️ THE SAME FOUR THE SALES INVOICE CARRIES, because they are the same four
+  // columns on the same row: `main_trx_master.manual_voucher_no` and its three
+  // siblings, written by whichever voucher screen the branch uses them on. A
+  // purchase is a `main_trx_master` row like a sale is, so the supplier's own
+  // khata number and the challan the goods came in under are read off it
+  // exactly the way the customer's are -- see SALES_INVOICE_FIELD_CATALOG,
+  // which the two returns also share.
+  { key: 'manual_voucher_no', name: 'Manual Voucher No', group: 'voucher' },
+  { key: 'manual_voucher_date', name: 'Manual Voucher Date', group: 'voucher', format: 'date' },
+  { key: 'manual_challan_no', name: 'Manual Challan No', group: 'voucher' },
+  { key: 'manual_challan_date', name: 'Manual Challan Date', group: 'voucher', format: 'date' },
   { key: 'created_by', name: 'Prepared By', group: 'voucher' },
   { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   { key: 'branch_name', name: 'Branch', group: 'voucher' },
@@ -3233,9 +3244,14 @@ const purchaseInvoice = (): PrintTemplate => ({
       columns: 2,
       layout: 'rows',
       boxed: false,
-      // Same narrowing as Sales Invoice's info band, and for the same
-      // reason -- see its comment.
-      labelWidth: 6,
+      // ⚠️ NOT the narrowed 6em any more. That width was chosen when the
+      // longest label here was "Voucher No", and it is the same band the Sales
+      // Invoice has: the four manual fields carry "Manual Voucher Number" at
+      // twenty-one characters, which 6em cuts in half. Back to
+      // DEFAULT_LABEL_WIDTH, as the Sales Invoice's own band already is. The
+      // four only show on a branch that fills them in; everywhere else they are
+      // in the band but hide, so every other trade's paper keeps its old shape.
+      labelWidth: DEFAULT_LABEL_WIDTH,
       rowPadding: DEFAULT_ROW_PADDING,
       rowGap: DEFAULT_ROW_GAP,
       items: [
@@ -3245,6 +3261,10 @@ const purchaseInvoice = (): PrintTemplate => ({
         { field: 'vr_date', label: 'Date' },
         { field: 'manual_address', label: 'Address', hideIfEmpty: true },
         { field: 'notes', label: 'Notes', hideIfEmpty: true },
+        { field: 'manual_voucher_no', label: 'Manual Voucher No', hideIfEmpty: true },
+        { field: 'manual_voucher_date', label: 'Manual Voucher Date', hideIfEmpty: true },
+        { field: 'manual_challan_no', label: 'Manual Challan No', hideIfEmpty: true },
+        { field: 'manual_challan_date', label: 'Manual Challan Date', hideIfEmpty: true },
       ],
     }),
     band<TableBand>({
