@@ -22,7 +22,6 @@ interface KpiRowProps {
   embedded?: boolean;
   kpis?: Record<string, KpiValue>;
   isLoading?: boolean;
-  trxDate?: string;
   /**
    * Gutter class from the dashboard's density setting. It has to be the same
    * value the widget grid below uses — see DEFAULT_COLUMNS.
@@ -166,17 +165,6 @@ const changePercent = (value: number, previous: number): number | null => {
   return (((Number(value) || 0) - prev) / Math.abs(prev)) * 100;
 };
 
-/**
- * "Today" on this dashboard is the branch's day-close transaction date, not the
- * server date — the two are routinely days apart, so the date is printed rather
- * than left for the reader to assume.
- */
-const formatTrxDate = (iso?: string) => {
-  if (!iso) return '';
-  const [y, m, d] = iso.split('-');
-  return y && m && d ? `${d}/${m}/${y}` : iso;
-};
-
 const KpiTile: React.FC<{
   label: string;
   colour: string;
@@ -228,27 +216,10 @@ const KpiTile: React.FC<{
   );
 };
 
-export const KpiHeading = ({ trxDate }: { trxDate?: string }) => (
-  <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3">
-    <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-300">
-      Today at a glance
-      {trxDate && (
-        <span className="ml-2 font-semibold normal-case tracking-normal text-slate-400">
-          Trx Date: {formatTrxDate(trxDate)}
-        </span>
-      )}
-    </h3>
-    <span className="text-[10px] text-slate-400">
-      change vs previous day · sparkline last 14 days
-    </span>
-  </div>
-);
-
 const KpiRow: React.FC<KpiRowProps> = ({
   kpis,
   embedded = false,
   isLoading,
-  trxDate,
   gapClass = 'gap-4',
   tiles = DEFAULT_TILES,
   columnsClass = DEFAULT_COLUMNS,
@@ -290,20 +261,16 @@ const KpiRow: React.FC<KpiRowProps> = ({
   if (!kpis) return null;
 
   return (
-    <div>
-      <KpiHeading trxDate={trxDate} />
-
-      <div className={`${columnsClass} ${gapClass}`}>
-        {tiles.map((tile) => (
-          <KpiTile
-            key={tile.key}
-            label={tile.label}
-            colour={tile.colour}
-            money={tile.money}
-            kpi={kpis[tile.key]}
-          />
-        ))}
-      </div>
+    <div className={`${columnsClass} ${gapClass}`}>
+      {tiles.map((tile) => (
+        <KpiTile
+          key={tile.key}
+          label={tile.label}
+          colour={tile.colour}
+          money={tile.money}
+          kpi={kpis[tile.key]}
+        />
+      ))}
     </div>
   );
 };

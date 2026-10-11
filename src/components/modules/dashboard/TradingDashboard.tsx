@@ -24,7 +24,7 @@ import { hasPermission } from '../../utils/permissionChecker';
 import { API_TRADING_DASHBOARD_URL } from '../../services/apiRoutes';
 import { getDashboard, getDashboardSummary } from './dashboardSlice';
 import { getMonthlyPurchaseSales } from './chartSlice';
-import KpiRow, { KpiHeading, TRADING_TILES } from './KpiRow';
+import KpiRow, { TRADING_TILES } from './KpiRow';
 import DueAgingCard from './DueAgingCard';
 import BalanceSummaryCard from './BalanceSummaryCard';
 import RangeCashCard from './RangeCashCard';
@@ -833,10 +833,6 @@ const TradingDashboard = () => {
       {/* ------------------------------------------------------------ */}
       {/* Today. The shop's own call and the shop's own tiles, so these four
           read the same on both pages. */}
-      {TRADING_TILES.some((tile) => isWidgetVisible(`kpi-${tile.key}`)) && (
-        <KpiHeading trxDate={summaryData?.trxDate} />
-      )}
-
       {/* ------------------------------------------------------------ */}
       {/* Every card in a row stands as tall as the tallest: the grid stretches
           the cell and the card fills it. Each card is a flex column with its

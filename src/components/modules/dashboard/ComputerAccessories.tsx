@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDashboard, getDashboardSummary } from './dashboardSlice';
-import KpiRow, { KpiHeading, DEFAULT_TILES } from './KpiRow';
+import KpiRow, { DEFAULT_TILES } from './KpiRow';
 import DueAgingCard from './DueAgingCard';
 import LowStockCard from './LowStockCard';
 import StockValueCard from './StockValueCard';
@@ -176,9 +176,6 @@ const ComputerAccessories = () => {
           />
         </div>
       </div>
-
-      {kpiTiles.length > 0 && <KpiHeading trxDate={summaryData?.trxDate} />}
-
 
       {/* items-stretch, not items-start: every card in a row ends at the same
           line. Each card is a flex column with its footer on mt-auto, so the

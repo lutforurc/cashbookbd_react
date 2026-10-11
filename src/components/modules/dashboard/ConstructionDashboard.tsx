@@ -33,7 +33,7 @@ import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { formatDate } from '../../utils/utils-functions/formatDate';
 import { FaRightToBracket } from 'react-icons/fa6';
 import CompareSingleItem from './CompareSingleItem';
-import KpiRow, { KpiHeading, CONSTRUCTION_TILES } from './KpiRow';
+import KpiRow, { CONSTRUCTION_TILES } from './KpiRow';
 import Sparkline from './Sparkline';
 import DashboardCustomizeButton, {
   DashboardWidget,
@@ -340,8 +340,6 @@ const ConstructionDashboard = () => {
           />
         </div>
       </div>
-      {kpiTiles.length > 0 && <KpiHeading trxDate={summaryData?.trxDate} />}
-
 
       {/* The skeleton only before the first figures; a re-read (refresh,
           branch, range) keeps the cards up and dims them until it lands --
