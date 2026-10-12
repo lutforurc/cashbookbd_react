@@ -55,6 +55,7 @@ import employeeSlice from './components/modules/hrms/employee/employeeSlice';
 import designationLevelSlice from './components/modules/hrms/designation-level/designationLevelSlice';
 import hrmDesignationSlice from './components/modules/hrms/designation/hrmDesignationSlice';
 import electronicsSalesSlice from './components/modules/invoices/sales/electronicsSalesSlice';
+import deliverySlice from './components/modules/delivery/deliverySlice';
 import labourLedgerSlice from './components/modules/reports/ledger-labour/labourLedgerSlice';
 import requisitionSlice from './components/modules/Requisition/requisitionSlice';
 import bankReceivedReducer from './components/modules/transactions/bankreceived/bankReceivedSlice';
@@ -145,6 +146,7 @@ const store = configureStore({
     trasingSales: tradingSalesReducer,
     generalSales: generalSalesSlice,
     electronicsSales: electronicsSalesSlice,
+    deliveries: deliverySlice,
     electronicsPurchase: electronicsPurchaseSlice,
     dayclose: dayCloseReducer,
     orders: orderReducer,

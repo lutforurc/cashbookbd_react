@@ -30,6 +30,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   // offers a row that cannot be moved.
   'dashboard': [
     { id: 'dashboard', title: "Dashboard" },
+    { id: 'delivery_dashboard', title: "Delivery System" },
   ],
   'transaction': [
     { id: 'cash_receive', title: "Cash Received" },
@@ -51,6 +52,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'inv_sales_import', title: "Sales Import" },
     { id: 'inv_purchase_return', title: "Purchase Return" },
     { id: 'inv_sales_return', title: "Sales Return" },
+    { id: 'inv_delivery', title: "Delivery" },
     { id: 'invoice/labour-invoice', title: "Labour Invoice" },
     { id: 'inv_trading_combined', title: "Combined Invoice" },
   ],
@@ -108,6 +110,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     // are read beside, not at the foot of the menu.
     { id: 'reports/purchase-return-ledger', title: "Purchase Return" },
     { id: 'reports/sales-return-ledger', title: "Sales Return" },
+    { id: 'reports/delivery', title: "Delivery Report" },
     { id: 'reports/group-report', title: "Group Report" },
     { id: 'reports/mitch-match', title: "Mismatch" },
   ],
@@ -338,6 +341,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   // tenant user is never shown a platform screen the API would refuse.
   const isPlatformAdmin = Boolean(settings?.data?.is_platform_admin);
   const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
+  // Whether the branch the books are in offers "Deduct stock on delivery". The
+  // Delivery menu and the dashboard's Delivery System entry exist only where it
+  // does; a branch without it reads exactly as it did before the feature. The
+  // value is the CURRENT branch's, so switching branches (which reloads) shows
+  // or hides them with the branch.
+  const deductStockOnDelivery =
+    Number(settings?.data?.branch?.deduct_stock_on_delivery) === 1;
   const companyName =
     settings?.data?.company?.name ||
     currentBranch?.company?.name ||
@@ -699,6 +709,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             Dashboard
                           </NavLink>
                         </li>
+                        {deductStockOnDelivery && hasPermission(permissions, 'delivery.view') && (
+                          <li style={subSlot('dashboard', 'delivery_dashboard')}>
+                            <NavLink
+                              to={routes.delivery_dashboard}
+                              className={subMenuLinkClass}
+                            >
+                              Delivery System
+                            </NavLink>
+                          </li>
+                        )}
                       </ul>
                     </div>
                     </React.Fragment>
@@ -999,6 +1019,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Sales Return
+                              </NavLink>
+                            </li>
+                          )}
+                          {deductStockOnDelivery && hasPermission(permissions, 'delivery.view') && (
+                            <li style={subSlot('invoice', 'inv_delivery')}>
+                              <NavLink
+                                to={routes.inv_delivery}
+                                className={subMenuLinkClass}
+                              >
+                                Delivery
                               </NavLink>
                             </li>
                           )}
@@ -1635,6 +1665,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Sales Return
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'delivery.view') && (
+                            <li style={subSlot('reports', 'reports/delivery')}>
+                              <NavLink
+                                to={routes.report_delivery}
+                                className={subMenuLinkClass}
+                              >
+                                Delivery Report
                               </NavLink>
                             </li>
                           )}

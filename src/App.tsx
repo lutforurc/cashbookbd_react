@@ -92,6 +92,9 @@ import PurchaseIndex from './components/modules/invoices/purchase/PurchaseIndex'
 import TradingPurchaseImport from './components/modules/invoices/purchase/TradingPurchaseImport';
 import ConstructionBusinessPurchaseReturn from './components/modules/invoices/purchase/ConstructionBusinessPurchaseReturn';
 import SalesIndex from './components/modules/invoices/sales/SalesIndex';
+import Delivery from './components/modules/delivery/Delivery';
+import DeliveryReport from './components/modules/delivery/DeliveryReport';
+import DeliveryDashboard from './components/modules/delivery/DeliveryDashboard';
 import TradingSalesImport from './components/modules/invoices/sales/TradingSalesImport';
 import GeneralBusinessSalesReturn from './components/modules/invoices/sales/GeneralBusinessSalesReturn';
 import TradingCombinedEntry from './components/modules/invoices/trading/TradingCombinedEntry';
@@ -1257,6 +1260,13 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create', 'sales.return']} loading={permissionsLoading} />}>
               <Route path={routes.inv_sales_return} element={<GeneralBusinessSalesReturn />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['delivery.view']} loading={permissionsLoading} />}>
+              <Route path={routes.inv_delivery} element={<Delivery />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['delivery.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_delivery} element={<DeliveryReport />} />
+              <Route path={routes.delivery_dashboard} element={<DeliveryDashboard />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['labour.invoice.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_labour} element={<ConstructionLabourInvoice />} />

@@ -120,6 +120,7 @@ interface branchItem {
   report_zero_bal: boolean;
   warn_negative_stock_sale: boolean;
   block_negative_stock_sale: boolean;
+  deduct_stock_on_delivery: boolean;
   manufactur_control: boolean;
   sms_service: boolean;
   received_sms: boolean;
@@ -500,6 +501,7 @@ const AddBranch = () => {
     report_zero_bal: false,
     warn_negative_stock_sale: false,
     block_negative_stock_sale: false,
+    deduct_stock_on_delivery: false,
     manufactur_control: false,
     sms_service: false,
     received_sms: false,
@@ -800,6 +802,7 @@ const AddBranch = () => {
         report_zero_bal: toBooleanFlag(b.report_zero_bal),
         warn_negative_stock_sale: toBooleanFlag(b.warn_negative_stock_sale),
         block_negative_stock_sale: toBooleanFlag(b.block_negative_stock_sale),
+        deduct_stock_on_delivery: toBooleanFlag(b.deduct_stock_on_delivery),
         manufactur_control: toBooleanFlag(b.manufactur_control),
         warranty_controll: toBooleanFlag(b.warranty_controll),
         have_warehouse: toBooleanFlag(b.have_warehouse),
@@ -1539,6 +1542,19 @@ const AddBranch = () => {
                         checked={Boolean(formData.ledger_show_product_details)}
                         onChange={(checked) =>
                           handleToggleFieldChange('ledger_show_product_details', checked)
+                        }
+                      />
+                      {/* Sits directly to the right of the ledger switch, on
+                          the same row, at every width. On, the sales invoice
+                          offers "Deduct stock on delivery"; off, it does not --
+                          and the stock always moves with the invoice, as it did
+                          before this switch existed. */}
+                      <FormToggleField
+                        label="Enable Deduct Stock on Delivery"
+                        description="Makes the 'Deduct stock on delivery' option available on this branch's sales invoices, so the stock leaves the godown when the delivery is posted rather than when the invoice is written. Turning it on does not switch any invoice on by itself -- each invoice still chooses. Off is the historical behaviour: every invoice takes the stock at once."
+                        checked={Boolean(formData.deduct_stock_on_delivery)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('deduct_stock_on_delivery', checked)
                         }
                       />
                     </div>

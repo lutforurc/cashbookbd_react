@@ -575,6 +575,16 @@ export const API_ELECTRONICS_SALES_EDIT_URL = `${API_BASE_URL}/electronics/sales
 export const API_ELECTRONICS_SALES_UPDATE_URL = `${API_BASE_URL}/electronics/sales/update`;
 export const API_ELECTRONICS_SALES_INVOICE_PRINT_URL = `${API_BASE_URL}/electronics/sales/invoice-print`;
 
+// Delivery: the Tiles and Sanitary voucher that takes the stock out when the
+// shop sends the goods, rather than when it bills.
+export const API_DELIVERY_PENDING_URL = `${API_BASE_URL}/delivery/pending`;
+export const API_DELIVERY_STORE_URL = `${API_BASE_URL}/delivery/store`;
+export const API_DELIVERY_EDIT_URL = `${API_BASE_URL}/delivery/edit`;
+export const API_DELIVERY_CANCEL_URL = `${API_BASE_URL}/delivery/cancel`;
+export const API_DELIVERY_LIST_URL = `${API_BASE_URL}/delivery/list`;
+export const API_DELIVERY_REPORT_URL = `${API_BASE_URL}/delivery/report`;
+export const API_DELIVERY_PRINT_DATA_URL = `${API_BASE_URL}/delivery/print-data`;
+
 //
 export const API_CONSTRUCTION_DDL_LABOUR_URL = `${API_BASE_URL}/construction/ddl/labour-list`;
 // Purchase Route

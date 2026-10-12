@@ -263,6 +263,13 @@ const ROUTES = {
   inv_sales: '/invoice/sales',
   inv_sales_import: '/invoice/sales-import',
   inv_sales_return: '/invoice/sales-return',
+  // Stock out on dispatch (Tiles and Sanitary).
+  inv_delivery: '/invoice/delivery',
+  report_delivery: '/reports/delivery',
+  // The delivery system's own dashboard: what has gone out, what is still to
+  // go. Reached from the Dashboard menu, on the same delivery.view permission
+  // as the two screens above it.
+  delivery_dashboard: '/delivery/dashboard',
 
   // Installment Routes
   installment_list: '/admin/installment-details',
