@@ -34,11 +34,15 @@ import {
 /**
  * Delivery System Dashboard: the state of the delivery system at a glance.
  *
- * One read -- the delivery report -- answers both questions the page is asked:
- * how many invoices are complete, partial or not delivered at all, and how much
- * is still on the road. The pending list underneath is the same rows, narrowed
- * to the ones with something left to send, so a dispatcher sees what to load
- * next rather than a wall of finished invoices.
+ * One read -- the delivery report -- answers what the page is asked: how many
+ * invoices are complete, partial or not delivered at all, and how much is still
+ * on the road. Underneath, the same rows are split into the two lists a
+ * dispatcher works from, because they are two different jobs:
+ *
+ *   - PARTIAL deliveries: something has gone out, something has not. The next
+ *     trip is planned against what is still pending on them.
+ *   - DUE FOR DELIVERY: nothing has gone out yet. The invoices whose goods are
+ *     sitting on the floor waiting to be sent at all.
  *
  * Same endpoint the Delivery Report reads (mode = delivery), so the two never
  * disagree; only the shape differs. The report's own links carry the dates the
@@ -60,6 +64,98 @@ const statusMeta = (status: string) => {
     default:
       return { label: 'Stock on invoice', cls: 'text-slate-500 dark:text-slate-400' };
   }
+};
+
+/** The longest wait first, so the invoice that has been pending the most is on top. */
+const byPendingDesc = (a: any, b: any) => Number(b.pending || 0) - Number(a.pending || 0);
+
+/**
+ * One list of invoices still to send -- the same table for both cards, so the
+ * two cannot drift apart in columns, alignment or empty state.
+ */
+const DeliveryLinesCard = ({
+  title,
+  rows,
+  loading,
+  emptyText,
+  accent,
+  reportHref,
+}: {
+  title: string;
+  rows: any[];
+  loading: boolean;
+  emptyText: string;
+  accent: string;
+  reportHref: string;
+}) => {
+  const pendingTotal = rows.reduce((sum, row) => sum + Number(row.pending || 0), 0);
+
+  return (
+    <div className={CARD}>
+      <div className={CARD_HEAD}>
+        <Link to={reportHref} title="Open the delivery report" className="truncate hover:underline">
+          {title}
+        </Link>
+        <span className="shrink-0 text-[11px] font-normal text-slate-400">
+          {count(rows.length)} invoice{rows.length === 1 ? '' : 's'}
+        </span>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left">
+          <thead className="text-xs uppercase bg-[rgb(var(--c-table-head))]">
+            <tr>
+              <th className="px-3 py-2 text-center">Sl.</th>
+              <th className="px-3 py-2">Invoice No.</th>
+              <th className="px-3 py-2">Date</th>
+              <th className="px-3 py-2">Customer</th>
+              <th className="px-3 py-2 text-right">Ordered</th>
+              <th className="px-3 py-2 text-right">Delivered</th>
+              <th className="px-3 py-2 text-right">Pending</th>
+              <th className="px-3 py-2 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-3 py-4 text-center text-gray-500">
+                  {loading ? 'Loading…' : emptyText}
+                </td>
+              </tr>
+            )}
+            {rows.map((row, index) => {
+              const meta = statusMeta(row.status);
+              return (
+                <tr key={row.mtm_id} className="border-b bg-[rgb(var(--c-table-body))]">
+                  <td className="px-3 py-2 text-center">{index + 1}</td>
+                  <td className="px-3 py-2">{row.vr_no}</td>
+                  <td className="px-3 py-2">{row.vr_date}</td>
+                  <td className="px-3 py-2">{row.customer_name || '-'}</td>
+                  <td className="px-3 py-2 text-right">{row.ordered}</td>
+                  <td className="px-3 py-2 text-right">{row.delivered}</td>
+                  <td className={`px-3 py-2 text-right font-semibold ${accent}`}>{row.pending}</td>
+                  <td className={`px-3 py-2 text-center font-semibold ${meta.cls}`}>
+                    {meta.label}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {rows.length > 0 && (
+        <div
+          className={`${CARD_FOOT} justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 dark:bg-gray-700/50`}
+        >
+          <span className="min-w-0 truncate text-slate-500 dark:text-slate-300">
+            Still to send across these invoices
+          </span>
+          <span className={`shrink-0 font-bold tabular-nums ${accent}`}>{qty(pendingTotal)}</span>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const DeliveryDashboard = () => {
@@ -126,12 +222,21 @@ const DeliveryDashboard = () => {
     [rows],
   );
 
-  /** What is still on the road, the longest wait first. */
-  const pendingRows = useMemo(
+  /** Something has gone out, something has not -- the next trip is planned off these. */
+  const partialRows = useMemo(
     () =>
       rows
-        .filter((row) => Number(row.pending || 0) > 0)
-        .sort((a, b) => Number(b.pending || 0) - Number(a.pending || 0)),
+        .filter((row) => Number(row.delivered || 0) > 0 && Number(row.pending || 0) > 0)
+        .sort(byPendingDesc),
+    [rows],
+  );
+
+  /** Nothing has gone out yet -- the goods are on the floor waiting to be sent. */
+  const dueRows = useMemo(
+    () =>
+      rows
+        .filter((row) => Number(row.delivered || 0) <= 0 && Number(row.pending || 0) > 0)
+        .sort(byPendingDesc),
     [rows],
   );
 
@@ -223,77 +328,24 @@ const DeliveryDashboard = () => {
         />
       </div>
 
-      <div className={CARD}>
-        <div className={CARD_HEAD}>
-          <Link
-            to={reportHref}
-            title="Open the delivery report"
-            className="truncate hover:underline"
-          >
-            Pending Deliveries
-          </Link>
-          <span className="shrink-0 text-[11px] font-normal text-slate-400">
-            {count(pendingRows.length)} invoice{pendingRows.length === 1 ? '' : 's'}
-          </span>
-        </div>
+      <div className="flex flex-col gap-4">
+        <DeliveryLinesCard
+          title="Partial Deliveries"
+          rows={partialRows}
+          loading={loading}
+          emptyText="No partially delivered invoices in this window."
+          accent="text-amber-600 dark:text-amber-400"
+          reportHref={reportHref}
+        />
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs uppercase bg-[rgb(var(--c-table-head))]">
-              <tr>
-                <th className="px-3 py-2 text-center">Sl.</th>
-                <th className="px-3 py-2">Invoice No.</th>
-                <th className="px-3 py-2">Date</th>
-                <th className="px-3 py-2">Customer</th>
-                <th className="px-3 py-2 text-right">Ordered</th>
-                <th className="px-3 py-2 text-right">Delivered</th>
-                <th className="px-3 py-2 text-right">Pending</th>
-                <th className="px-3 py-2 text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingRows.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-3 py-4 text-center text-gray-500">
-                    {loading ? 'Loading…' : 'Nothing pending — every invoice in this window has gone out.'}
-                  </td>
-                </tr>
-              )}
-              {pendingRows.map((row, index) => {
-                const meta = statusMeta(row.status);
-                return (
-                  <tr key={row.mtm_id} className="border-b bg-[rgb(var(--c-table-body))]">
-                    <td className="px-3 py-2 text-center">{index + 1}</td>
-                    <td className="px-3 py-2">{row.vr_no}</td>
-                    <td className="px-3 py-2">{row.vr_date}</td>
-                    <td className="px-3 py-2">{row.customer_name || '-'}</td>
-                    <td className="px-3 py-2 text-right">{row.ordered}</td>
-                    <td className="px-3 py-2 text-right">{row.delivered}</td>
-                    <td className="px-3 py-2 text-right font-semibold text-amber-600 dark:text-amber-400">
-                      {row.pending}
-                    </td>
-                    <td className={`px-3 py-2 text-center font-semibold ${meta.cls}`}>
-                      {meta.label}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {pendingRows.length > 0 && (
-          <div
-            className={`${CARD_FOOT} justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 dark:bg-gray-700/50`}
-          >
-            <span className="min-w-0 truncate text-slate-500 dark:text-slate-300">
-              Still to send across these invoices
-            </span>
-            <span className="shrink-0 font-bold tabular-nums text-amber-600 dark:text-amber-400">
-              {qty(totals.pending)}
-            </span>
-          </div>
-        )}
+        <DeliveryLinesCard
+          title="Due for Delivery"
+          rows={dueRows}
+          loading={loading}
+          emptyText="Nothing due — every invoice in this window has gone out."
+          accent="text-red-600 dark:text-red-400"
+          reportHref={reportHref}
+        />
       </div>
     </div>
   );
