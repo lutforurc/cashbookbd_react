@@ -440,6 +440,18 @@ const ClosingStockReport = ({ user }: any) => {
     [renderRows],
   );
 
+  // The same, in quantity: every product row the filters let through, and only
+  // those -- a SUMMARY row is skipped so the group totals are not counted a
+  // second time on top of the rows they already sum.
+  const grandQty = useMemo(
+    () =>
+      renderRows.reduce(
+        (sum, line) => (line.__type === "ITEM" ? sum + toNum(rowQty(line.row)) : sum),
+        0,
+      ),
+    [renderRows],
+  );
+
   /**
    * ⚠️ SIX, ALWAYS. The separate Code column is gone: the code rides in front of
    * the product's name, exactly as it does on Product Stock, so the second column
@@ -1004,8 +1016,15 @@ const ClosingStockReport = ({ user }: any) => {
           </tbody>
           {renderRows.length ? (
             <tfoot className="bg-slate-50 text-sm font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
+              {/* Grand Total: the label spans the name columns, then Stock Qty
+                  carries every filtered product row's quantity, Rate stays
+                  empty (nothing rates a whole report) and Total (Tk.) its
+                  value, as it always did. columnCount - 3 + the three cells
+                  below counts off the same number the headings do. */}
               <tr>
-                <td colSpan={columnCount - 1} className={`px-3 py-3 text-right ${CELL}`}>Grand Total</td>
+                <td colSpan={columnCount - 3} className={`px-3 py-3 text-right ${CELL}`}>Grand Total</td>
+                <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(grandQty)}</td>
+                <td className={`px-3 py-3 text-right ${CELL}`} />
                 <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(grandTotal)}</td>
               </tr>
             </tfoot>
