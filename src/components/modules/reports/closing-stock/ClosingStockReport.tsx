@@ -31,6 +31,8 @@ import type { DocumentData } from "../../../utils/print-designer/DocumentPrint";
 import { normalizeTemplate } from "../../../utils/print-designer/printTemplate";
 import type { PrintTemplate } from "../../../utils/print-designer/printTemplate";
 import { toStockDetailsDocumentData } from "./stockDetailsDocumentData";
+import { summariseStockGroup } from "./groupSummary";
+import type { StockGroupRow } from "./groupSummary";
 
 type StockRow = Record<string, any>;
 
@@ -47,6 +49,12 @@ type RenderRow =
   | { __type: "GROUP"; brand: string; group: string }
   | { __type: "CAT"; brand: string; group: string; category: string }
   | { __type: "ITEM"; row: StockRow; sl: number }
+  // A group's one summary row, drawn directly under its product rows: the
+  // group's total Stock Qty, its average rate (value over quantity) and the
+  // group's total value together, as "{group} Total Tk.". Per product group in
+  // the banded shape and per category in the flat one, so it is there whichever
+  // shape the branch's `stock_report_type` asks for.
+  | { __type: "SUMMARY"; label: string; qty: number; value: number; avgRate: number }
   | { __type: "BAND_TOTAL"; label: string; total: number };
 
 /**
@@ -314,7 +322,21 @@ const ClosingStockReport = ({ user }: any) => {
 
       cats.forEach((items, category) => {
         out.push({ __type: "CAT", brand: "", group: "", category });
-        out.push({ __type: "BAND_TOTAL", label: category, total: emitItems(items) });
+
+        // The flat shape's band is the category. It gets ONE summary row -- the
+        // quantity, the average rate and the value together -- so there is no
+        // separate band-total line under it to double the figures.
+        const catRows: StockGroupRow[] = items.map((row) => ({
+          qty: toNum(rowQty(row)),
+          value: rowTotal(row),
+        }));
+        emitItems(items);
+
+        out.push({
+          __type: "SUMMARY",
+          label: `${category} Total Tk.`,
+          ...summariseStockGroup(catRows),
+        });
       });
 
       return out;
@@ -378,8 +400,25 @@ const ClosingStockReport = ({ user }: any) => {
       let brandTotal = 0;
       brand.groups.forEach((group) => {
         out.push({ __type: "GROUP", brand: brand.brand, group: group.group });
+
+        // The group's own figures, gathered from the same rows it emits: its
+        // total quantity and its quantity-weighted average rate. See
+        // groupSummary.ts for the formula.
+        const groupRows: StockGroupRow[] = [];
+
         group.cats.forEach((cat) => {
+          cat.items.forEach((row) => {
+            groupRows.push({ qty: toNum(rowQty(row)), value: rowTotal(row) });
+          });
           brandTotal += emitCategory(brand.brand, group.group, cat);
+        });
+
+        // Immediately below the group's product rows: one row naming the group
+        // and carrying its quantity, average rate and value together.
+        out.push({
+          __type: "SUMMARY",
+          label: `${group.group} Total Tk.`,
+          ...summariseStockGroup(groupRows),
         });
       });
       brand.ungrouped.forEach((cat) => {
@@ -898,6 +937,30 @@ const ClosingStockReport = ({ user }: any) => {
                  * Split → Air Conditioner" says where it sits without a margin
                  * the reader has to measure. Same as Product Stock.
                  */
+                /**
+                 * A group's summary, directly under its product rows. The Stock
+                 * Qty column carries the group's total quantity and the Rate
+                 * column its average rate -- the group's value over its
+                 * quantity, the same figures the lines above it were valued
+                 * from. The other columns are left empty so the two land under
+                 * their own headings; the label sits over the name columns.
+                 */
+                if (line.__type === "SUMMARY") {
+                  return (
+                    <tr
+                      key={`summary-${index}`}
+                      className="bg-slate-50 font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100"
+                    >
+                      <td colSpan={3} className={`px-3 py-2 text-right ${CELL}`}>
+                        {line.label}
+                      </td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(line.qty)}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(line.avgRate)}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(line.value)}</td>
+                    </tr>
+                  );
+                }
+
                 if (line.__type === "CAT") {
                   return (
                     <tr key={`heading-${index}`} className="bg-slate-50 font-medium text-slate-700 dark:bg-slate-900/40 dark:text-slate-200">
