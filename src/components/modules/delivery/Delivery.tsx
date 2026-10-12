@@ -65,6 +65,10 @@ const Delivery = () => {
   const [invoiceId, setInvoiceId] = useState('');
   const [lines, setLines] = useState<any[]>([]);
   const [returned, setReturned] = useState(0);
+  // 0 = the invoice expects a delivery; 1 = it took its own stock, so there is
+  // nothing to deliver (the form is hidden and said so, rather than failing on
+  // save). null until an invoice is loaded.
+  const [deductsOnInvoice, setDeductsOnInvoice] = useState<number | null>(null);
   const [header, setHeader] = useState<any>({ ...emptyHeader });
   const [idempotencyKey, setIdempotencyKey] = useState('');
   const [saving, setSaving] = useState(false);
@@ -109,6 +113,7 @@ const Delivery = () => {
 
         setInvoiceId(data?.mtmId || '');
         setReturned(Number(data?.returned) || 0);
+        setDeductsOnInvoice(Number(data?.deducts_on_invoice));
         setLines(
           (data?.lines || []).map((line: any) => ({
             ...line,
@@ -167,6 +172,7 @@ const Delivery = () => {
           setInvoiceId('');
           setLines([]);
           setReturned(0);
+          setDeductsOnInvoice(null);
           setHeader({ ...emptyHeader });
           setIdempotencyKey('');
           loadList();
@@ -243,7 +249,16 @@ const Delivery = () => {
             />
           </div>
 
-          {lines.length > 0 && (
+          {lines.length > 0 && deductsOnInvoice === 1 && (
+            <div className="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-900/20">
+              This invoice already took its stock on the invoice date, so there is
+              nothing to deliver. Write the invoice with{' '}
+              <strong>Deduct stock on delivery</strong> turned on to send it by
+              delivery instead.
+            </div>
+          )}
+
+          {lines.length > 0 && deductsOnInvoice !== 1 && (
             <>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">

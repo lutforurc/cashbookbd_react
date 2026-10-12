@@ -265,6 +265,7 @@ const ROUTES = {
   inv_sales_return: '/invoice/sales-return',
   // Stock out on dispatch (Tiles and Sanitary).
   inv_delivery: '/invoice/delivery',
+  report_delivery: '/reports/delivery',
 
   // Installment Routes
   installment_list: '/admin/installment-details',

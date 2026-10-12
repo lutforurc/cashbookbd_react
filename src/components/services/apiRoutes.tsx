@@ -582,6 +582,7 @@ export const API_DELIVERY_STORE_URL = `${API_BASE_URL}/delivery/store`;
 export const API_DELIVERY_EDIT_URL = `${API_BASE_URL}/delivery/edit`;
 export const API_DELIVERY_CANCEL_URL = `${API_BASE_URL}/delivery/cancel`;
 export const API_DELIVERY_LIST_URL = `${API_BASE_URL}/delivery/list`;
+export const API_DELIVERY_REPORT_URL = `${API_BASE_URL}/delivery/report`;
 export const API_DELIVERY_PRINT_DATA_URL = `${API_BASE_URL}/delivery/print-data`;
 
 //

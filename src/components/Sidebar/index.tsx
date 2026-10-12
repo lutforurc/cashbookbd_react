@@ -109,6 +109,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     // are read beside, not at the foot of the menu.
     { id: 'reports/purchase-return-ledger', title: "Purchase Return" },
     { id: 'reports/sales-return-ledger', title: "Sales Return" },
+    { id: 'reports/delivery', title: "Delivery Report" },
     { id: 'reports/group-report', title: "Group Report" },
     { id: 'reports/mitch-match', title: "Mismatch" },
   ],
@@ -1646,6 +1647,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Sales Return
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'delivery.view') && (
+                            <li style={subSlot('reports', 'reports/delivery')}>
+                              <NavLink
+                                to={routes.report_delivery}
+                                className={subMenuLinkClass}
+                              >
+                                Delivery Report
                               </NavLink>
                             </li>
                           )}

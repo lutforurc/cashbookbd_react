@@ -93,6 +93,7 @@ import TradingPurchaseImport from './components/modules/invoices/purchase/Tradin
 import ConstructionBusinessPurchaseReturn from './components/modules/invoices/purchase/ConstructionBusinessPurchaseReturn';
 import SalesIndex from './components/modules/invoices/sales/SalesIndex';
 import Delivery from './components/modules/delivery/Delivery';
+import DeliveryReport from './components/modules/delivery/DeliveryReport';
 import TradingSalesImport from './components/modules/invoices/sales/TradingSalesImport';
 import GeneralBusinessSalesReturn from './components/modules/invoices/sales/GeneralBusinessSalesReturn';
 import TradingCombinedEntry from './components/modules/invoices/trading/TradingCombinedEntry';
@@ -1261,6 +1262,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['delivery.view']} loading={permissionsLoading} />}>
               <Route path={routes.inv_delivery} element={<Delivery />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['delivery.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_delivery} element={<DeliveryReport />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['labour.invoice.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_labour} element={<ConstructionLabourInvoice />} />
