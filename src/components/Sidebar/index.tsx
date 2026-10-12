@@ -341,6 +341,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   // tenant user is never shown a platform screen the API would refuse.
   const isPlatformAdmin = Boolean(settings?.data?.is_platform_admin);
   const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
+  // Whether the branch the books are in offers "Deduct stock on delivery". The
+  // Delivery menu and the dashboard's Delivery System entry exist only where it
+  // does; a branch without it reads exactly as it did before the feature. The
+  // value is the CURRENT branch's, so switching branches (which reloads) shows
+  // or hides them with the branch.
+  const deductStockOnDelivery =
+    Number(settings?.data?.branch?.deduct_stock_on_delivery) === 1;
   const companyName =
     settings?.data?.company?.name ||
     currentBranch?.company?.name ||
@@ -702,7 +709,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             Dashboard
                           </NavLink>
                         </li>
-                        {hasPermission(permissions, 'delivery.view') && (
+                        {deductStockOnDelivery && hasPermission(permissions, 'delivery.view') && (
                           <li style={subSlot('dashboard', 'delivery_dashboard')}>
                             <NavLink
                               to={routes.delivery_dashboard}
@@ -1015,7 +1022,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'delivery.view') && (
+                          {deductStockOnDelivery && hasPermission(permissions, 'delivery.view') && (
                             <li style={subSlot('invoice', 'inv_delivery')}>
                               <NavLink
                                 to={routes.inv_delivery}

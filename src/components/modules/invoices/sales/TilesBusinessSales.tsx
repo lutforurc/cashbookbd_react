@@ -244,9 +244,14 @@ const TilesBusinessSales = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
   /**
-   * On a NEW invoice the stock switch starts where the branch leaves it: a
-   * branch set to "deduct on delivery" opens ready to deliver, any other branch
-   * opens taking the stock at once, as every invoice always has.
+   * The branch switch decides whether this invoice OFFERS "Deduct stock on
+   * delivery", not where it starts. It never switches an invoice on by itself:
+   * a new invoice always opens taking the stock at once, and the seller ticks
+   * the box when this is a bill that will be delivered.
+   *
+   * When the branch switch is off the choice is not available at all, so any
+   * unsaved tick is cleared here -- the moment the branch changes, the screen
+   * matches the branch it is now on.
    *
    * ⚠️ AN EDIT NEVER CONSULTS THIS. It shows the stamp the invoice was SAVED
    * with (read in the edit effect below), so opening an old invoice cannot
@@ -255,10 +260,11 @@ const TilesBusinessSales = () => {
   useEffect(() => {
     if (sales.data.transaction) return;
 
-    const branchDefault =
-      Number(settings?.data?.branch?.deduct_stock_on_delivery) === 1 ? '0' : '1';
-
-    setFormData((prev) => ({ ...prev, invoice_deducts_stock: branchDefault }));
+    if (Number(settings?.data?.branch?.deduct_stock_on_delivery) !== 1) {
+      setFormData((prev) =>
+        prev.invoice_deducts_stock === '1' ? prev : { ...prev, invoice_deducts_stock: '1' },
+      );
+    }
   }, [settings?.data?.branch?.deduct_stock_on_delivery]);
 
   const getInvoicePayableAmount = (data: FormData = formData) => {
@@ -1206,31 +1212,39 @@ const TilesBusinessSales = () => {
               />
             </div>
 
-            {/* Where the stock leaves: on this invoice, or on a delivery. A
-                branch that bills first and loads the truck later turns this on,
-                and the godown is not touched until the delivery is posted.
+            {/* Where the stock leaves: on this invoice, or on a delivery.
+
+                ⚠️ SHOWN ONLY WHEN THE BRANCH OFFERS IT. The branch's "Enable
+                Deduct Stock on Delivery" switch gates the option; a disabled
+                branch never sees it, and the invoice takes the stock at once as
+                it always has. An invoice that was SAVED in delivery mode keeps
+                its switch on view even if the branch was later turned off, so
+                its mode is represented rather than silently cleared.
 
                 ⚠️ LOCKED once a delivery has gone out. The invoice's stock mode
                 is what the delivery's deduction rests on, so the toggle is shut
                 here and the server refuses a change to it either way. */}
-            <div className="mt-2">
-              <FormToggleField
-                label="Deduct stock on delivery"
-                description={
-                  formData.delivery_locked
-                    ? 'A delivery has already gone out for this invoice, so its stock mode is fixed.'
-                    : 'On: the stock leaves the godown when the delivery is posted. Off: this invoice takes the stock now, as it always has.'
-                }
-                checked={formData.invoice_deducts_stock === '0'}
-                disabled={formData.delivery_locked}
-                onChange={(checked) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    invoice_deducts_stock: checked ? '0' : '1',
-                  }))
-                }
-              />
-            </div>
+            {(Number(settings?.data?.branch?.deduct_stock_on_delivery) === 1 ||
+              formData.invoice_deducts_stock === '0') && (
+              <div className="mt-2">
+                <FormToggleField
+                  label="Deduct stock on delivery"
+                  description={
+                    formData.delivery_locked
+                      ? 'A delivery has already gone out for this invoice, so its stock mode is fixed.'
+                      : 'On: the stock leaves the godown when the delivery is posted. Off: this invoice takes the stock now, as it always has.'
+                  }
+                  checked={formData.invoice_deducts_stock === '0'}
+                  disabled={formData.delivery_locked}
+                  onChange={(checked) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      invoice_deducts_stock: checked ? '0' : '1',
+                    }))
+                  }
+                />
+              </div>
+            )}
 
           </div>
 

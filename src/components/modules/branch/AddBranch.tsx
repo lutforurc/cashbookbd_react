@@ -1544,6 +1544,19 @@ const AddBranch = () => {
                           handleToggleFieldChange('ledger_show_product_details', checked)
                         }
                       />
+                      {/* Sits directly to the right of the ledger switch, on
+                          the same row, at every width. On, the sales invoice
+                          offers "Deduct stock on delivery"; off, it does not --
+                          and the stock always moves with the invoice, as it did
+                          before this switch existed. */}
+                      <FormToggleField
+                        label="Enable Deduct Stock on Delivery"
+                        description="Makes the 'Deduct stock on delivery' option available on this branch's sales invoices, so the stock leaves the godown when the delivery is posted rather than when the invoice is written. Turning it on does not switch any invoice on by itself -- each invoice still chooses. Off is the historical behaviour: every invoice takes the stock at once."
+                        checked={Boolean(formData.deduct_stock_on_delivery)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('deduct_stock_on_delivery', checked)
+                        }
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -1663,14 +1676,6 @@ const AddBranch = () => {
                         checked={Boolean(formData.block_negative_stock_sale)}
                         onChange={(checked) =>
                           handleToggleFieldChange('block_negative_stock_sale', checked)
-                        }
-                      />
-                      <FormToggleField
-                        label="Deduct Stock on Delivery?"
-                        description="Stock leaves the godown when the delivery is posted, not when the invoice is written. For a Tiles and Sanitary shop that bills first and sends the truck later. New invoices open with the switch already set this way; each invoice can still be changed until a delivery goes out."
-                        checked={Boolean(formData.deduct_stock_on_delivery)}
-                        onChange={(checked) =>
-                          handleToggleFieldChange('deduct_stock_on_delivery', checked)
                         }
                       />
                     </div>
