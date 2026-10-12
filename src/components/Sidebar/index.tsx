@@ -111,6 +111,10 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'reports/purchase-return-ledger', title: "Purchase Return" },
     { id: 'reports/sales-return-ledger', title: "Sales Return" },
     { id: 'reports/delivery', title: "Delivery Report" },
+    // Customer Sales is declared here so Arrange Menu lists it like every other
+    // report -- hide/show and reorder. Its route, label and `sales.ledger`
+    // permission are untouched; hiding it only hides the sidebar link.
+    { id: 'report_customer_sales', title: "Customer Sales" },
     { id: 'reports/group-report', title: "Group Report" },
     { id: 'reports/mitch-match', title: "Mismatch" },
   ],
