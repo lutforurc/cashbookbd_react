@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import { FiPrinter, FiSearch, FiXCircle } from 'react-icons/fi';
@@ -36,6 +37,20 @@ const newIdempotencyKey = () =>
     ? window.crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+/**
+ * A product as "code - name", the way the rest of the app reads one -- the code
+ * first, so the same product is found the same way on every screen, the
+ * invoices included.
+ *
+ * ⚠️ THE CODE IS SHOWN ONLY WHEN THERE IS ONE. A product that carries no code
+ * prints its name alone rather than a dangling separator in front of it.
+ */
+const productLabel = (line: any) => {
+  const code = String(line?.product_code ?? line?.product?.code ?? line?.code ?? '').trim();
+  const name = line?.product_name || line?.product?.name || '';
+  return [code, name].filter(Boolean).join(' - ') || String(line?.product_id ?? '') || '-';
+};
+
 const emptyHeader = {
   delivery_date: asText(new Date()),
   challan_no: '',
@@ -60,6 +75,10 @@ const Delivery = () => {
   const deliveries = useSelector((s: any) => s.deliveries);
   const settings = useSelector((s: any) => s.settings);
   const permissions = settings?.data?.permissions ?? [];
+
+  // The invoice the dashboard sent the dispatcher here for, off the address.
+  const [searchParams] = useSearchParams();
+  const invoiceParam = searchParams.get('invoice_no') || '';
 
   const [searchInvoice, setSearchInvoice] = useState('');
   const [invoiceId, setInvoiceId] = useState('');
@@ -96,13 +115,7 @@ const Delivery = () => {
     loadList();
   }, []);
 
-  const handleLoadInvoice = () => {
-    const invoiceNo = searchInvoice.trim();
-    if (!invoiceNo) {
-      toast.info('Enter an invoice number');
-      return;
-    }
-
+  const loadInvoice = (invoiceNo: string) => {
     dispatch(
       deliveryLoadPending({ invoice_no: invoiceNo }, (message: string, data: any) => {
         if (message) {
@@ -125,6 +138,28 @@ const Delivery = () => {
       }),
     );
   };
+
+  const handleLoadInvoice = () => {
+    const invoiceNo = searchInvoice.trim();
+    if (!invoiceNo) {
+      toast.info('Enter an invoice number');
+      return;
+    }
+
+    loadInvoice(invoiceNo);
+  };
+
+  // Opened from the Delivery dashboard with an invoice on the query string:
+  // load it, so the pending lines are already on the screen when the dispatcher
+  // arrives. A ref keeps it to once per invoice rather than on every render.
+  const autoLoadedInvoice = useRef('');
+  useEffect(() => {
+    const invoiceNo = invoiceParam.trim();
+    if (!invoiceNo || autoLoadedInvoice.current === invoiceNo) return;
+    autoLoadedInvoice.current = invoiceNo;
+    setSearchInvoice(invoiceNo);
+    loadInvoice(invoiceNo);
+  }, [invoiceParam]);
 
   const handleQtyChange = (salesLineUid: string, value: string) => {
     setLines((prev) =>
@@ -280,7 +315,7 @@ const Delivery = () => {
                       >
                         <td className="px-2 py-2 text-center">{index + 1}</td>
                         <td className="px-2 py-2">
-                          {line.product_name || line.product_id}
+                          {productLabel(line)}
                         </td>
                         <td className="px-2 py-2 text-right">{line.ordered}</td>
                         <td className="px-2 py-2 text-right">{line.delivered}</td>

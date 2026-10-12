@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fa';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
+import Table from '../../utils/others/Table';
 import httpService from '../../services/httpService';
 import { API_DELIVERY_REPORT_URL } from '../../services/apiRoutes';
 import routes from '../../services/appRoutes';
@@ -22,9 +23,6 @@ import {
   useViewBranch,
 } from '../dashboard/dashboardRange';
 import {
-  CARD,
-  CARD_FOOT,
-  CARD_HEAD,
   DASHBOARD_FADE,
   DASHBOARD_GRID,
   Tile,
@@ -43,6 +41,10 @@ import {
  *     trip is planned against what is still pending on them.
  *   - DUE FOR DELIVERY: nothing has gone out yet. The invoices whose goods are
  *     sitting on the floor waiting to be sent at all.
+ *
+ * Both lists are drawn by the shared Table component, the same one the rest of
+ * the reports use -- so the columns, the cell rules and the "Columns" menu are
+ * the app's, not this screen's own.
  *
  * Same endpoint the Delivery Report reads (mode = delivery), so the two never
  * disagree; only the shape differs. The report's own links carry the dates the
@@ -70,11 +72,18 @@ const statusMeta = (status: string) => {
 const byPendingDesc = (a: any, b: any) => Number(b.pending || 0) - Number(a.pending || 0);
 
 /**
- * One list of invoices still to send -- the same table for both cards, so the
- * two cannot drift apart in columns, alignment or empty state.
+ * One list of invoices still to send.
+ *
+ * ⚠️ `keyPrefix` is not decoration. The shared Table remembers which columns a
+ * reader has put away against the ROUTE plus the column keys -- so two tables on
+ * one page sharing a set of keys would hide a column in both when the reader
+ * meant one. The two lists carry the same columns, so the prefix is what tells
+ * their choices apart. It is also why the keys do not need to name a data field:
+ * every cell is drawn by its own `render`.
  */
 const DeliveryLinesCard = ({
   title,
+  keyPrefix,
   rows,
   loading,
   emptyText,
@@ -82,18 +91,90 @@ const DeliveryLinesCard = ({
   reportHref,
 }: {
   title: string;
+  keyPrefix: string;
   rows: any[];
   loading: boolean;
   emptyText: string;
   accent: string;
   reportHref: string;
 }) => {
+  const columns = [
+    {
+      key: `${keyPrefix}-sl`,
+      header: 'Sl.',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (_row: any, index: number) => index + 1,
+    },
+    {
+      key: `${keyPrefix}-vr-no`,
+      header: 'Invoice No.',
+      render: (row: any) =>
+        row.vr_no ? (
+          <Link
+            to={`${routes.inv_delivery}?invoice_no=${encodeURIComponent(row.vr_no)}`}
+            title="Open this invoice on the Delivery screen"
+            className="font-semibold text-primary hover:underline dark:text-secondary"
+          >
+            {row.vr_no}
+          </Link>
+        ) : (
+          row.vr_no
+        ),
+    },
+    {
+      key: `${keyPrefix}-date`,
+      header: 'Date',
+      render: (row: any) => row.vr_date,
+    },
+    {
+      key: `${keyPrefix}-customer`,
+      header: 'Customer',
+      render: (row: any) => row.customer_name || '-',
+    },
+    {
+      key: `${keyPrefix}-ordered`,
+      header: 'Ordered',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => row.ordered,
+    },
+    {
+      key: `${keyPrefix}-delivered`,
+      header: 'Delivered',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => row.delivered,
+    },
+    {
+      key: `${keyPrefix}-pending`,
+      header: 'Pending',
+      headerClass: 'text-right',
+      cellClass: `text-right font-semibold ${accent}`,
+      render: (row: any) => row.pending,
+    },
+    {
+      key: `${keyPrefix}-status`,
+      header: 'Status',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => {
+        const meta = statusMeta(row.status);
+        return <span className={`font-semibold ${meta.cls}`}>{meta.label}</span>;
+      },
+    },
+  ];
+
   const pendingTotal = rows.reduce((sum, row) => sum + Number(row.pending || 0), 0);
 
   return (
-    <div className={CARD}>
-      <div className={CARD_HEAD}>
-        <Link to={reportHref} title="Open the delivery report" className="truncate hover:underline">
+    <div>
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <Link
+          to={reportHref}
+          title="Open the delivery report"
+          className="truncate text-sm font-bold text-slate-700 hover:underline dark:text-slate-100"
+        >
           {title}
         </Link>
         <span className="shrink-0 text-[11px] font-normal text-slate-400">
@@ -101,59 +182,29 @@ const DeliveryLinesCard = ({
         </span>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left">
-          <thead className="text-xs uppercase bg-[rgb(var(--c-table-head))]">
-            <tr>
-              <th className="px-3 py-2 text-center">Sl.</th>
-              <th className="px-3 py-2">Invoice No.</th>
-              <th className="px-3 py-2">Date</th>
-              <th className="px-3 py-2">Customer</th>
-              <th className="px-3 py-2 text-right">Ordered</th>
-              <th className="px-3 py-2 text-right">Delivered</th>
-              <th className="px-3 py-2 text-right">Pending</th>
-              <th className="px-3 py-2 text-center">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={8} className="px-3 py-4 text-center text-gray-500">
-                  {loading ? 'Loading…' : emptyText}
-                </td>
-              </tr>
-            )}
-            {rows.map((row, index) => {
-              const meta = statusMeta(row.status);
-              return (
-                <tr key={row.mtm_id} className="border-b bg-[rgb(var(--c-table-body))]">
-                  <td className="px-3 py-2 text-center">{index + 1}</td>
-                  <td className="px-3 py-2">{row.vr_no}</td>
-                  <td className="px-3 py-2">{row.vr_date}</td>
-                  <td className="px-3 py-2">{row.customer_name || '-'}</td>
-                  <td className="px-3 py-2 text-right">{row.ordered}</td>
-                  <td className="px-3 py-2 text-right">{row.delivered}</td>
-                  <td className={`px-3 py-2 text-right font-semibold ${accent}`}>{row.pending}</td>
-                  <td className={`px-3 py-2 text-center font-semibold ${meta.cls}`}>
-                    {meta.label}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {rows.length > 0 && (
-        <div
-          className={`${CARD_FOOT} justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 dark:bg-gray-700/50`}
-        >
-          <span className="min-w-0 truncate text-slate-500 dark:text-slate-300">
-            Still to send across these invoices
-          </span>
-          <span className={`shrink-0 font-bold tabular-nums ${accent}`}>{qty(pendingTotal)}</span>
-        </div>
-      )}
+      <Table
+        columns={columns}
+        data={rows}
+        noDataMessage={loading ? 'Loading…' : emptyText}
+        footerRows={
+          rows.length > 0
+            ? [
+                [
+                  {
+                    label: 'Still to send across these invoices',
+                    colSpan: 6,
+                    className: 'text-right font-normal text-slate-500 dark:text-slate-300',
+                  },
+                  {
+                    label: <span className={`font-bold tabular-nums ${accent}`}>{qty(pendingTotal)}</span>,
+                    className: 'text-right',
+                  },
+                  { label: '' },
+                ],
+              ]
+            : undefined
+        }
+      />
     </div>
   );
 };
@@ -328,9 +379,10 @@ const DeliveryDashboard = () => {
         />
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <DeliveryLinesCard
           title="Partial Deliveries"
+          keyPrefix="partial"
           rows={partialRows}
           loading={loading}
           emptyText="No partially delivered invoices in this window."
@@ -340,6 +392,7 @@ const DeliveryDashboard = () => {
 
         <DeliveryLinesCard
           title="Due for Delivery"
+          keyPrefix="due"
           rows={dueRows}
           loading={loading}
           emptyText="Nothing due — every invoice in this window has gone out."
