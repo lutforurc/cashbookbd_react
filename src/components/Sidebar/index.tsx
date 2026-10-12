@@ -51,6 +51,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'inv_sales_import', title: "Sales Import" },
     { id: 'inv_purchase_return', title: "Purchase Return" },
     { id: 'inv_sales_return', title: "Sales Return" },
+    { id: 'inv_delivery', title: "Delivery" },
     { id: 'invoice/labour-invoice', title: "Labour Invoice" },
     { id: 'inv_trading_combined', title: "Combined Invoice" },
   ],
@@ -999,6 +1000,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Sales Return
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'delivery.view') && (
+                            <li style={subSlot('invoice', 'inv_delivery')}>
+                              <NavLink
+                                to={routes.inv_delivery}
+                                className={subMenuLinkClass}
+                              >
+                                Delivery
                               </NavLink>
                             </li>
                           )}

@@ -120,6 +120,7 @@ interface branchItem {
   report_zero_bal: boolean;
   warn_negative_stock_sale: boolean;
   block_negative_stock_sale: boolean;
+  deduct_stock_on_delivery: boolean;
   manufactur_control: boolean;
   sms_service: boolean;
   received_sms: boolean;
@@ -500,6 +501,7 @@ const AddBranch = () => {
     report_zero_bal: false,
     warn_negative_stock_sale: false,
     block_negative_stock_sale: false,
+    deduct_stock_on_delivery: false,
     manufactur_control: false,
     sms_service: false,
     received_sms: false,
@@ -800,6 +802,7 @@ const AddBranch = () => {
         report_zero_bal: toBooleanFlag(b.report_zero_bal),
         warn_negative_stock_sale: toBooleanFlag(b.warn_negative_stock_sale),
         block_negative_stock_sale: toBooleanFlag(b.block_negative_stock_sale),
+        deduct_stock_on_delivery: toBooleanFlag(b.deduct_stock_on_delivery),
         manufactur_control: toBooleanFlag(b.manufactur_control),
         warranty_controll: toBooleanFlag(b.warranty_controll),
         have_warehouse: toBooleanFlag(b.have_warehouse),
@@ -1660,6 +1663,14 @@ const AddBranch = () => {
                         checked={Boolean(formData.block_negative_stock_sale)}
                         onChange={(checked) =>
                           handleToggleFieldChange('block_negative_stock_sale', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Deduct Stock on Delivery?"
+                        description="Stock leaves the godown when the delivery is posted, not when the invoice is written. For a Tiles and Sanitary shop that bills first and sends the truck later. New invoices open with the switch already set this way; each invoice can still be changed until a delivery goes out."
+                        checked={Boolean(formData.deduct_stock_on_delivery)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('deduct_stock_on_delivery', checked)
                         }
                       />
                     </div>

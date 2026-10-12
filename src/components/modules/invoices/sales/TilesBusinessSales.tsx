@@ -33,6 +33,7 @@ import { useVoucherPrint } from '../../vouchers';
 import QuickCustomerModal from './QuickCustomerModal';
 import ReferrerPickerModal from './ReferrerPickerModal';
 import ToggleSwitch from '../../../utils/utils-functions/ToggleSwitch';
+import FormToggleField from '../../../utils/utils-functions/FormToggleField';
 import httpService from '../../../services/httpService';
 import {
   API_TILES_PREVIOUS_BALANCE_URL,
@@ -65,6 +66,9 @@ interface Product {
   qty: number;
   price: number;
   warehouse: string;
+  /** The line's stable identity, carried back on an edit so a delivery that
+      already holds the line keeps holding it. Absent on a brand-new line. */
+  line_uid?: string;
 }
 
 type SalesSuggestionField = 'notes';
@@ -202,6 +206,12 @@ const TilesBusinessSales = () => {
     manual_voucher_date: string;
     manual_challan_no: string;
     manual_challan_date: string;
+    // '1' = this invoice takes the stock (the historical behaviour); '0' = a
+    // delivery will. The branch setting only decides where the switch STARTS.
+    invoice_deducts_stock: string;
+    // Set on an edit when a delivery has already gone out: the switch and the
+    // delivered lines stop being editable, and the server refuses the change.
+    delivery_locked: boolean;
     // Who recommended this sale -- the id alone. ⚠️ The name is deliberately
     // never held in the form: the customer reads this screen, and the owner
     // asked for the reference to be kept from them. It shows in the popup and
@@ -226,10 +236,30 @@ const TilesBusinessSales = () => {
     manual_voucher_date: '',
     manual_challan_no: '',
     manual_challan_date: '',
+    invoice_deducts_stock: '1',
+    delivery_locked: false,
     referrer_id: '',
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  /**
+   * On a NEW invoice the stock switch starts where the branch leaves it: a
+   * branch set to "deduct on delivery" opens ready to deliver, any other branch
+   * opens taking the stock at once, as every invoice always has.
+   *
+   * ⚠️ AN EDIT NEVER CONSULTS THIS. It shows the stamp the invoice was SAVED
+   * with (read in the edit effect below), so opening an old invoice cannot
+   * quietly change where its stock came from.
+   */
+  useEffect(() => {
+    if (sales.data.transaction) return;
+
+    const branchDefault =
+      Number(settings?.data?.branch?.deduct_stock_on_delivery) === 1 ? '0' : '1';
+
+    setFormData((prev) => ({ ...prev, invoice_deducts_stock: branchDefault }));
+  }, [settings?.data?.branch?.deduct_stock_on_delivery]);
 
   const getInvoicePayableAmount = (data: FormData = formData) => {
     const productsTotal = data.products.reduce((acc, product) => {
@@ -471,6 +501,9 @@ const TilesBusinessSales = () => {
     if (sales.data.transaction) {
       const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
         id: detail.id,
+        // Carried back so a save preserves the line's identity -- a delivery
+        // that already holds this line keeps holding it through the edit.
+        line_uid: detail.line_uid,
         product: detail.product.id,
         product_name: detail.product.name,
         product_code: detail.product.code,
@@ -522,6 +555,12 @@ const TilesBusinessSales = () => {
         manual_voucher_date: sales.data.transaction.manual_voucher_date || '',
         manual_challan_no: sales.data.transaction.manual_challan_no || '',
         manual_challan_date: sales.data.transaction.manual_challan_date || '',
+        // The stamp this invoice was saved with, and whether a delivery has
+        // already gone out. Both come from the server's own read.
+        invoice_deducts_stock: String(
+          sales.data.transaction?.sales_master?.invoice_deducts_stock ?? 1,
+        ),
+        delivery_locked: Boolean(sales.data.delivery_locked),
         // Read from the response's own key, not from the voucher model: the
         // link lives on its own table, so nothing about it is on the voucher.
         referrer_id: sales.data.referrer_id ? String(sales.data.referrer_id) : '',
@@ -657,6 +696,9 @@ const TilesBusinessSales = () => {
 
     const newItem: Product = {
       id: Date.now(),
+      // The row keeps the identity it was loaded with, so editing its rate or
+      // quantity does not hand it a new one on the way back.
+      line_uid: productData.line_uid,
       product: productData.product || 0,
       product_name: productData.product_name || '',
       product_code: productData.product_code || '',
@@ -1164,6 +1206,32 @@ const TilesBusinessSales = () => {
               />
             </div>
 
+            {/* Where the stock leaves: on this invoice, or on a delivery. A
+                branch that bills first and loads the truck later turns this on,
+                and the godown is not touched until the delivery is posted.
+
+                ⚠️ LOCKED once a delivery has gone out. The invoice's stock mode
+                is what the delivery's deduction rests on, so the toggle is shut
+                here and the server refuses a change to it either way. */}
+            <div className="mt-2">
+              <FormToggleField
+                label="Deduct stock on delivery"
+                description={
+                  formData.delivery_locked
+                    ? 'A delivery has already gone out for this invoice, so its stock mode is fixed.'
+                    : 'On: the stock leaves the godown when the delivery is posted. Off: this invoice takes the stock now, as it always has.'
+                }
+                checked={formData.invoice_deducts_stock === '0'}
+                disabled={formData.delivery_locked}
+                onChange={(checked) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    invoice_deducts_stock: checked ? '0' : '1',
+                  }))
+                }
+              />
+            </div>
+
           </div>
 
         </div>
@@ -1436,7 +1504,15 @@ const TilesBusinessSales = () => {
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20">
                     <Button
-                      onClick={() => handleDelete(row.id)}
+                      onClick={() => {
+                        if (formData.delivery_locked) {
+                          toast.info(
+                            'This invoice has a delivery; a delivered line cannot be removed. Post a sales return instead.',
+                          );
+                          return;
+                        }
+                        handleDelete(row.id);
+                      }}
                       className="text-red-500 ml-2 text-center"
                     >
                       <FiTrash2 className="cursor-pointer text-center" />
