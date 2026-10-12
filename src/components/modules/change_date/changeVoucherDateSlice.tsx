@@ -2,14 +2,14 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../services/httpService";
 import { API_VOUCHER_DATE_CHANGE_URL } from "../../services/apiRoutes"; // ✅ তোমার voucher date change এর API route
 
-// ✅ Payload type (based on Formik form)
+// ✅ Payload type (based on Formik form). The voucher type is inferred from the
+// voucher numbers on the server, so it is not sent.
 export interface VoucherDateChangePayload {
   branch_id: number;
-  voucher_type: string;
-  current_date: string;
+  present_date: string;
   change_date: string;
-  start_voucher_number: string;
-  end_voucher_number: string;
+  start_voucher: string;
+  end_voucher: string;
 }
 
 // ✅ Slice state type
