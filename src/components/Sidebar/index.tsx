@@ -30,6 +30,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   // offers a row that cannot be moved.
   'dashboard': [
     { id: 'dashboard', title: "Dashboard" },
+    { id: 'delivery_dashboard', title: "Delivery System" },
   ],
   'transaction': [
     { id: 'cash_receive', title: "Cash Received" },
@@ -701,6 +702,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             Dashboard
                           </NavLink>
                         </li>
+                        {hasPermission(permissions, 'delivery.view') && (
+                          <li style={subSlot('dashboard', 'delivery_dashboard')}>
+                            <NavLink
+                              to={routes.delivery_dashboard}
+                              className={subMenuLinkClass}
+                            >
+                              Delivery System
+                            </NavLink>
+                          </li>
+                        )}
                       </ul>
                     </div>
                     </React.Fragment>

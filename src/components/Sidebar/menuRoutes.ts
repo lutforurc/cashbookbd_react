@@ -16,6 +16,7 @@ import routes from '../services/appRoutes';
 export const MENU_ROUTES: Record<string, string[]> = {
   'dashboard': [
     '/dashboard',
+    routes.delivery_dashboard,
   ],
   'transaction': [
     routes.cash_receive,
