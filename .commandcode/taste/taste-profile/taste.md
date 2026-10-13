@@ -1,0 +1,31 @@
+# Taste Profile
+
+## Coding Style & Correctness
+- Fix the true root cause of bugs rather than suppressing the symptom. In SQL, do not disable `ONLY_FULL_GROUP_BY`, change global/session SQL mode, or paper over errors with `ANY_VALUE`, `DISTINCT`, or arbitrary aggregates — restructure the query/A)logic instead. Confidence: 0.8
+- Prefers preserving existing behavior/semantics while making a fix — keep permissions, company/branch isolation, payload shapes, and other working behavior intact. Confidence: 0.6
+- Values verifying edge cases (empty/null, duplicates, rounding, repeated inputs) and having parts sum exactly to the whole, instead of producing inflated or duplicated totals. Confidence: 0.55
+
+## Workflow
+- The user explicitly controls git operations: never commit, push, or deploy unless asked to. Confidence: 0.72
+- Wants investigation/reporting before implementation: explicitly gates changes ("do not make any changes yet") and expects an upfront statement of capabilities and limitations (including whether results can actually be verified) before work begins. Confidence: 0.6
+- Runs explicit read-only audit passes where the deliverable is findings only — no code, style, functionality, or config changes (and no commit/push/deploy). Confidence: 0.75
+- Will not use credentials found in source files or audit documents; requires an explicitly approved, disposable/non-production test account with a broad read-only role to reach authenticated areas. Confidence: 0.8
+- For audits/large sweeps, demands exhaustive coverage of every discovered route/page, worked through in manageable batches, rather than a few representative samples. Confidence: 0.7
+- Once the approach/authentication is confirmed, prefers the agent to proceed autonomously through the remaining batches without pausing for further confirmation on non-destructive, read-only work. Confidence: 0.7
+- Maintains a route-by-route coverage ledger and expects tracking artifacts kept current; stale/paused status notes (e.g., a TODO still marked "waiting on login") should be updated as soon as their blocker is resolved. Confidence: 0.65
+- Verifies UI/visual work against the running application (dev server) using real browser screenshots where possible, rather than reasoning purely from source. Confidence: 0.55
+- Never prints/echoes secret values (passwords, tokens) in output; restricts auth automation to an explicitly approved disposable test account. Confidence: 0.75
+- Works on Windows and expects commands/instructions that run in Windows PowerShell — does not assume Unix conventions (e.g., Ctrl+D for stdin) apply. Confidence: 0.75
+- Verifies tooling/CLI syntax against actual `--help` output rather than assuming flags exist. Confidence: 0.6
+- Wants to see/interact with the exact browser window being automated (foregrounded window or a streamed/dashboard view) rather than acting on a window they cannot observe. Confidence: 0.6
+- When fixing/resetting tooling, scope destructive actions tightly to the isolated task process — restart only the audit/agent session and never close, kill, or disturb the user's own personal browser or other unrelated processes. Confidence: 0.6
+- Expects prior work artifacts (audit findings, screenshots) to survive environment restarts/resets rather than being lost. Confidence: 0.5
+
+## Communication & Reporting
+- Prefers report findings in English. Confidence: 0.75
+- Wants findings delivered as a structured table with explicit columns: page/module + route, the specific inconsistency, evidence (screenshot or source file), user impact, severity (High/Medium/Low), recommended correction, and whether the fix belongs in a shared component/theme or an individual page. Confidence: 0.8
+- Wants intentional design differences distinguished from genuine inconsistencies, and repeated issues grouped into a single finding that lists affected pages. Stylistic observations (e.g., a grey default CTA) are framed as recommendations unless they clearly breach an established design rule. Confidence: 0.7
+- Prefers fixes to live in the shared design system — theme tokens and shared components as a single source of truth — over per-page one-off patches; flags hardcoded styles and duplicated patterns. Confidence: 0.6
+- Requires claims to be backed by conclusive evidence: distinguishes observed behavior from a diagnosed root cause and rejects indirect signals (e.g., empty login fields or empty browser storage) as proof of a conclusion. Confidence: 0.75
+- Scopes verification claims strictly to what was actually checked: never describes a page as "clean"/passing beyond the states and checks performed, and explicitly distinguishes sampled (representative breakpoint or dark-mode) checks from fully verified routes. Confidence: 0.8
+- Wants one consolidated final report (severity, evidence, recommended fixes) that also enumerates remaining coverage gaps. Confidence: 0.7

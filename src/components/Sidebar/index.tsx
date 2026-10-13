@@ -64,6 +64,9 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'branch_transfer', title: "Branch Issue" },
     { id: 'branch_received', title: "Branch Receive" },
     { id: 'material_issue', title: "Material Issue" },
+    { id: 'product_out', title: "Product Out" },
+    { id: 'product_out_reason', title: "Out Reasons" },
+    { id: 'product_out_report', title: "Write-off Register" },
     { id: 'report_branch_transfer_list', title: "Transfer List" },
     { id: 'report_branch_receive_list', title: "Receive List" },
     { id: 'report_branch_transfer', title: "Issue Report" },
@@ -1078,7 +1081,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {(hasPermission(permissions, 'branch.issue.create') ||
                 hasPermission(permissions, 'branch.received.create') ||
                 hasPermission(permissions, 'inventory.received.create') ||
-                hasPermission(permissions, 'product.received.create')) && (
+                hasPermission(permissions, 'product.received.create') ||
+                // Product Out hangs off this group, so whoever is granted any
+                // one of its screens and nothing else still has to be able to
+                // open the group they live in.
+                hasPermission(permissions, 'product.out.create') ||
+                hasPermission(permissions, 'product.out.report.view') ||
+                hasPermission(permissions, 'product.out.approve') ||
+                hasPermission(permissions, 'product.out.reason.manage')) && (
                 <SidebarLinkGroup
                   activeCondition={isMenuActive('branch-transfer', pathname)}
                   menuId="branch-transfer"
@@ -1212,6 +1222,36 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Material Issue
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.out.create') && (
+                            <li style={subSlot('branch-transfer', 'product_out')}>
+                              <NavLink
+                                to={routes.product_out}
+                                className={subMenuLinkClass}
+                              >
+                                Product Out
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.out.report.view') && (
+                            <li style={subSlot('branch-transfer', 'product_out_report')}>
+                              <NavLink
+                                to={routes.product_out_report}
+                                className={subMenuLinkClass}
+                              >
+                                Write-off Register
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.out.reason.manage') && (
+                            <li style={subSlot('branch-transfer', 'product_out_reason')}>
+                              <NavLink
+                                to={routes.product_out_reason}
+                                className={subMenuLinkClass}
+                              >
+                                Out Reasons
                               </NavLink>
                             </li>
                           )}

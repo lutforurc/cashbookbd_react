@@ -414,6 +414,7 @@ const ProfitLoss = (user: any) => {
         totalDebit: tradingTotalDebit,
         totalCredit: tradingTotalCredit,
       },
+<<<<<<< HEAD
       cogs: {
         opening,
         netPurchase,
@@ -421,6 +422,13 @@ const ProfitLoss = (user: any) => {
         closing,
         total: cogs,
       },
+=======
+      // ⚠️ CARRIED THROUGH, NEVER ADDED TO ANY TOTAL. The money is already gone
+      // -- the closing stock above is short by this much and the profit has
+      // taken it off once. It is shown because a shop that cannot see the
+      // number asks why the month was thin.
+      productOut: toNum(apiData?.product_out),
+>>>>>>> vite-8
       net: {
         grossProfit,
         grossLoss,
