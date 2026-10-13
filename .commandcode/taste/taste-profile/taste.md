@@ -2,7 +2,8 @@
 
 ## Coding Style & Correctness
 - Fix the true root cause of bugs rather than suppressing the symptom. In SQL, do not disable `ONLY_FULL_GROUP_BY`, change global/session SQL mode, or paper over errors with `ANY_VALUE`, `DISTINCT`, or arbitrary aggregates — restructure the query/A)logic instead. Confidence: 0.8
-- Prefers preserving existing behavior/semantics while making a fix — keep permissions, company/branch isolation, payload shapes, and other working behavior intact. Confidence: 0.6
+- Prefers preserving existing behavior/semantics while making a fix — keep permissions, company/branch isolation, payload shapes, and other working behavior intact (e.g. when widening a permission grant, explicitly preserve the previously-granted role's rows). Confidence: 0.65
+- Scope authorization/permission changes to least privilege: grant only to the specific role(s) intended, never bypass authorization, and never broaden a grant to all roles. Confidence: 0.7
 - Values verifying edge cases (empty/null, duplicates, rounding, repeated inputs) and having parts sum exactly to the whole, instead of producing inflated or duplicated totals. Confidence: 0.55
 
 ## Workflow
@@ -27,6 +28,8 @@
 ## Communication & Reporting
 - Prefers report findings in English. Confidence: 0.75
 - Wants findings delivered as a structured table with explicit columns: page/module + route, the specific inconsistency, evidence (screenshot or source file), user impact, severity (High/Medium/Low), recommended correction, and whether the fix belongs in a shared component/theme or an individual page. Confidence: 0.8
+- In a review/audit, expects findings grouped into distinct classes — confirmed bugs vs UI/usability improvements vs optional feature suggestions — and each finding tagged with the layer it needs (frontend, API, or database); explicitly wants missing features distinguished from features that already work. Confidence: 0.6
+- Prioritizes improvements that are practical for daily operators over speculative or cosmetic work when ranking review findings. Confidence: 0.55
 - Wants intentional design differences distinguished from genuine inconsistencies, and repeated issues grouped into a single finding that lists affected pages. Stylistic observations (e.g., a grey default CTA) are framed as recommendations unless they clearly breach an established design rule. Confidence: 0.7
 - Prefers fixes to live in the shared design system — theme tokens and shared components as a single source of truth — over per-page one-off patches; flags hardcoded styles and duplicated patterns. Confidence: 0.6
 - Requires claims to be backed by conclusive evidence: distinguishes observed behavior from a diagnosed root cause and rejects indirect signals (e.g., empty login fields or empty browser storage) as proof of a conclusion. Confidence: 0.75

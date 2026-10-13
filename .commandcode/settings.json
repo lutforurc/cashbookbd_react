@@ -15,7 +15,12 @@
       "Shell(node -e const j=require('./.commandcode/settings.json');console.log('JSON OK, allow entries:',j.permissions.allow.length))",
       "Shell(type:*)",
       "Shell(more:*)",
-      "Shell(node -e const {execSync}=require('child_process');const b=execSync('git show HEAD:.commandcode/settings.json',{maxBuffer:1e7}).toString('binary');console.log('original CRLF:',b.includes('\\r\\n'),'total bytes:',b.length);const fs=require('fs');const c=fs.readFileSync('.commandcode/settings.json','binary');console.log('working CRLF:',c.includes('\\r\\n')))"
+      "Shell(node -e const {execSync}=require('child_process');const b=execSync('git show HEAD:.commandcode/settings.json',{maxBuffer:1e7}).toString('binary');console.log('original CRLF:',b.includes('\\r\\n'),'total bytes:',b.length);const fs=require('fs');const c=fs.readFileSync('.commandcode/settings.json','binary');console.log('working CRLF:',c.includes('\\r\\n')))",
+      "Shell(tasklist /FI \"IMAGENAME eq chrome.exe\" 2>nul | find /I /C \"chrome.exe\")",
+      "Shell(grep:*)",
+      "Shell(agent-browser --session profx click @e22 & agent-browser --session profx eval \"JSON.stringify(Array.from(document.querySelectorAll('input')).map(i=>({n:i.name,t:i.type,v:i.value})))\")",
+      "Shell(agent-browser --session profx eval \"JSON.stringify({url:location.href,inputs:Array.from(document.querySelectorAll('input')).map(i=>({n:i.name,t:i.type,v:i.value})),text:document.body.innerText.slice(0,300)})\")",
+      "Shell(agent-browser --session ui eval \"JSON.stringify({url:location.href,h:[...document.querySelectorAll('h1,h2,h3')].map(e=>e.innerText.trim()).filter(Boolean),labels:[...document.querySelectorAll('label')].map(e=>e.innerText.trim()).filter(Boolean),inputs:[...document.querySelectorAll('input,textarea,select')].map(e=>({tag:e.tagName,type:e.type,name:e.name,ph:e.placeholder,label:(e.closest('label')||{}).innerText})).slice(0,20),ths:[...document.querySelectorAll('th')].map(e=>e.innerText.trim()),text:document.body.innerText.replace(/Dashboard[\\s\\S]*?Customer Dashboard/,'').slice(0,1200)})\")"
     ],
     "deny": [],
     "defaultMode": "default"
