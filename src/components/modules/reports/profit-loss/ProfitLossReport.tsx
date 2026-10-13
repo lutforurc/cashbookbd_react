@@ -33,9 +33,6 @@ type ProfitLossReportData = {
     totalCredit: number;
   };
   /**
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
    * The period's cost of goods sold, written out. A reading of the trading
    * account's own figures -- it is in no total.
    */
@@ -46,8 +43,7 @@ type ProfitLossReportData = {
     closing: number;
     total: number;
   };
-=======
->>>>>>> main
+  /**
    * What was written off as damaged or lost in this period, at FIFO cost.
    *
    * ⚠️ SHOWN, NEVER SUMMED. The money has already left the profit through a
@@ -55,10 +51,6 @@ type ProfitLossReportData = {
    * it off twice.
    */
   productOut?: number;
-<<<<<<< HEAD
-=======
->>>>>>> vite-8
->>>>>>> main
   net: {
     grossProfit: number;
     grossLoss: number;
@@ -276,15 +268,10 @@ const ProfitLossReport = ({
         </tbody>
       </table>
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
       {/* Cost of goods sold, written out. The trading account states the two
           stock figures and the purchase at opposite ends of the page and never
           says what they come to; this says it. It is a reading of those same
           figures -- nothing here is added to the totals above or below. */}
-=======
->>>>>>> main
       {/* ⚠️ A NOTE UNDER THE TABLE, WITH NO FIGURE IN EITHER COLUMN. The money
           is already gone -- the closing stock above is short by exactly this,
           and the gross result has taken it off once. A row that put it in the
@@ -295,11 +282,6 @@ const ProfitLossReport = ({
           স্টকের ভেতরে ইতিমধ্যে ধরা আছে; উপরের মুনাফা থেকে একবারই কাটা হয়েছে।
         </div>
       ) : null}
-
-<<<<<<< HEAD
-=======
->>>>>>> vite-8
->>>>>>> main
       <div className="text-center font-semibold mt-6 mb-2 text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
         COST OF GOODS SOLD
       </div>
