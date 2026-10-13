@@ -885,11 +885,29 @@ export const FIELD_CATALOG: FieldDef[] = [
   { key: 'vr_no', name: 'Invoice No', group: 'voucher' },
   { key: 'vr_date', name: 'Invoice Date', group: 'voucher' },
   { key: 'order_no', name: 'Order / PO No', group: 'voucher' },
+  // The source sales invoice's own handwritten pair -- its khata memo number
+  // and date. A challan filed beside the book has to say which memo it went out
+  // under, and the number the software allocated is not the one written in the
+  // book. Read off the invoice and blank where it carries none: the system
+  // voucher's own number and date are never put in their place.
+  //
+  // The date key is `manual_voucher_date`, the same one the sales invoice and
+  // its returns already use -- one column, one name, so nothing here invents a
+  // second field for the same fact.
+  { key: 'manual_voucher_no', name: 'Manual Voucher No.', group: 'voucher' },
+  { key: 'manual_voucher_date', name: 'Manual Voucher Date', group: 'voucher', format: 'date' },
   // The paper challan the gate wrote by hand, printed on the paper the
   // software prints. Null on every trade but Tiles and Sanitary -- see the
   // note on the sales invoice catalogue.
   { key: 'manual_challan_no', name: 'Manual Challan No', group: 'voucher' },
   { key: 'manual_challan_date', name: 'Manual Challan Date', group: 'voucher', format: 'date' },
+  // The three pairs above, run onto ONE line each for a pad with no room for
+  // two rows -- "3-260900001, 13/10/2026". Offered BESIDE the separate fields,
+  // never in place of them: a saved layout keeps whichever it already names,
+  // and a tenant picks the one that fits.
+  { key: 'invoice_no_date', name: 'Invoice no & Date', group: 'voucher' },
+  { key: 'memo_no_date', name: 'Memo no & Date', group: 'voucher' },
+  { key: 'challan_no_date', name: 'Challan no & Date', group: 'voucher' },
   { key: 'created_by', name: 'Sales By', group: 'voucher' },
   /**
    * Whoever is printing, from the session -- not from the voucher.
@@ -1062,6 +1080,14 @@ export const LINE_FIELDS: FieldDef[] = [
   { key: 'qty', name: 'Quantity', group: 'line', numeric: true },
   { key: 'unit', name: 'Unit', group: 'line' },
   { key: 'qty_unit', name: 'Quantity + Unit', group: 'line' },
+  { key: 'measurement_qty', name: 'Measurement', group: 'line', numeric: true },
+  { key: 'measurement_unit', name: 'Measurement Unit', group: 'line' },
+  // The measured figure and the unit it is measured in, in ONE cell --
+  // "256.06 sqf". Offered beside the plain Measurement so a layout that already
+  // prints the two apart is untouched, and so the designer's list says the
+  // combined column exists.
+  { key: 'measurement_qty_unit', name: 'Measurement + Unit', group: 'line' },
+  { key: 'packaging_text', name: 'Packaging', group: 'line' },
   { key: 'bag', name: 'Bag', group: 'line', numeric: true },
   { key: 'price', name: 'Rate', group: 'line', numeric: true },
   { key: 'amount', name: 'Amount', group: 'line', numeric: true },
@@ -1384,6 +1410,9 @@ export const SALES_INVOICE_LINE_FIELDS: FieldDef[] = [
   { key: 'qty', name: 'Quantity', group: 'line', numeric: true },
   { key: 'unit', name: 'Unit', group: 'line' },
   { key: 'qty_unit', name: 'Quantity + Unit', group: 'line' },
+  { key: 'measurement_qty', name: 'Measurement', group: 'line', numeric: true },
+  { key: 'measurement_unit', name: 'Measurement Unit', group: 'line' },
+  { key: 'packaging_text', name: 'Packaging', group: 'line' },
   { key: 'price', name: 'Rate', group: 'line', numeric: true, format: 'money' },
   { key: 'amount', name: 'Amount', group: 'line', numeric: true, format: 'money' },
 ];
@@ -2413,10 +2442,15 @@ const standardChallan = (): PrintTemplate => ({
       totalRow: false,
       totalRowLabel: 'Grand Total',
       columns: [
-        { field: 'sl', label: 'Sl. No.', width: 8, align: 'center' },
-        { field: 'product_name', label: 'Product Name', width: 62, align: 'left' },
-        { field: 'qty', label: 'Quantity', width: 15, align: 'right' },
-        { field: 'unit', label: 'Unit', width: 15, align: 'center' },
+        { field: 'sl', label: 'Sl. No.', width: 6, align: 'center' },
+        { field: 'product_name', label: 'Product Name', width: 42, align: 'left' },
+        // "256.06 sqf" -- the measured figure and its own unit in one cell.
+        // See cell('measurement_qty_unit') in DocumentPrint.
+        { field: 'measurement_qty_unit', label: 'Meas.', width: 14, align: 'right' },
+        { field: 'packaging_text', label: 'Packaging', width: 18, align: 'left' },
+        // Quantity carries its own unit ("20 Bag") -- see cell('qty') in
+        // DocumentPrint -- so there is no separate Unit column to repeat it in.
+        { field: 'qty', label: 'Quantity', width: 20, align: 'right' },
       ],
     }),
     band<TotalsBand>({
@@ -3119,20 +3153,22 @@ const salesInvoice = (): PrintTemplate => ({
       totalRow: false,
       totalRowLabel: 'Grand Total',
       columns: [
-        { field: 'sl', label: '#', width: 6, align: 'center' },
+        { field: 'sl', label: '#', width: 5, align: 'center' },
         {
           field: 'product_name',
           label: 'Product',
-          width: 54,
+          width: 38,
           align: 'left',
           // The room's second line, borrowed by name -- here it is the
           // warranty, printed under the product exactly as
           // getWarrantyInfo() always has.
           subField: 'warranty',
         },
-        { field: 'qty', label: 'Qty', width: 12, align: 'center' },
-        { field: 'price', label: 'Rate', width: 14, align: 'right' },
-        { field: 'amount', label: 'Amount', width: 14, align: 'right' },
+        { field: 'measurement_qty', label: 'Measurement', width: 12, align: 'right' },
+        { field: 'packaging_text', label: 'Packaging', width: 17, align: 'left' },
+        { field: 'qty', label: 'Qty', width: 9, align: 'center' },
+        { field: 'price', label: 'Rate', width: 10, align: 'right' },
+        { field: 'amount', label: 'Amount', width: 9, align: 'right' },
       ],
     }),
     band<TotalsBand>({

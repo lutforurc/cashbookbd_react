@@ -42,6 +42,9 @@ import {
   handleInputKeyDown,
   handleSelectKeyDown,
 } from '../../../utils/utils-functions/handleKeyDown';
+import LineMeasurementCell, {
+  measurementFromDetail,
+} from '../../../utils/utils-functions/LineMeasurement';
 import QuickCustomerModal from './QuickCustomerModal';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import httpService from '../../../services/httpService';
@@ -77,6 +80,12 @@ interface Product {
   warehouse: string;
   variance?: string;
   variance_type?: string;
+  measurement?: string | number | null;
+  measurement_unit?: string | null;
+  package_size?: string | number | null;
+  package_unit?: string | null;
+  measurement_qty?: string | number | null;
+  packaging_text?: string | null;
 }
 
 type SalesSuggestionField = 'vehicle_no' | 'notes';
@@ -370,6 +379,12 @@ const TradingBusinessSales = () => {
       product_code: option.code || '',
       [unit]: option.label_5,
       [price]: Number(option.label_3),
+      // The product's current measurement/package values, shown under the name
+      // on a line before it is saved; the API snapshots them when it is.
+      measurement: option.measurement ?? null,
+      measurement_unit: option.measurement_unit ?? null,
+      package_size: option.package_size ?? null,
+      package_unit: option.package_unit ?? null,
     });
 
     // After setting product data, recalculate line total
@@ -447,6 +462,7 @@ const TradingBusinessSales = () => {
 	        variance: detail.weight_variance || '',
 	        variance_type: detail.variance_type || '',
 	        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+	        ...measurementFromDetail(detail),
 	      }),
 	      );
 
@@ -540,6 +556,12 @@ const TradingBusinessSales = () => {
       warehouse: productData.warehouse || '',
       variance: productData.variance || '',
       variance_type: productData.variance_type || '',
+      measurement: productData.measurement ?? null,
+      measurement_unit: productData.measurement_unit ?? null,
+      package_size: productData.package_size ?? null,
+      package_unit: productData.package_unit ?? null,
+      measurement_qty: productData.measurement_qty ?? null,
+      packaging_text: productData.packaging_text ?? '',
     };
     // products[updateId] = newItem;
     // Add the product to the formData.products array
@@ -889,6 +911,7 @@ const TradingBusinessSales = () => {
 	          variance: detail.weight_variance || '',
 	          variance_type: detail.variance_type || '',
 	          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+	          ...measurementFromDetail(detail),
 	        }),
 	      );
 
@@ -1778,8 +1801,9 @@ const TradingBusinessSales = () => {
 	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] `}
 	                  >
 	                    {row.product_code
-                      ? `${row.product_code} - ${row.product_name}`
-                      : row.product_name}
+	                      ? `${row.product_code} - ${row.product_name}`
+	                      : row.product_name}
+	                    <LineMeasurementCell {...row} />
 	                  </td>
 	                  <td
 	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}

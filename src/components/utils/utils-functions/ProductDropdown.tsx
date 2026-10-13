@@ -23,6 +23,12 @@ interface OptionType {
       them, which is why every use of them has to allow for nothing. */
   brand?: string;
   group_name?: string;
+  /** Measurement and packaging; display only. Absent on a database the patch
+      has not reached, so every read has to allow for nothing. */
+  measurement?: string | number | null;
+  measurement_unit?: string | null;
+  package_size?: string | number | null;
+  package_unit?: string | null;
   /** What is left in stock on this branch. Only sent -- and so only ever
       present -- for a branch that turned the switch on, since working it out
       is the one detail that costs the search anything. */

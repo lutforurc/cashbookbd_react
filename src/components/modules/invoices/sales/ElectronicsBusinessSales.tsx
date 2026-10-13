@@ -23,6 +23,9 @@ import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
 import { validateForm } from '../../../utils/utils-functions/validationUtils';
 import InputOnly from '../../../utils/fields/InputOnly';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
+import LineMeasurementCell, {
+  measurementFromDetail,
+} from '../../../utils/utils-functions/LineMeasurement';
 import { hasPermission } from '../../../utils/permissionChecker';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
@@ -57,6 +60,12 @@ interface Product {
   qty: number;
   price: number;
   warehouse: string;
+  measurement?: string | number | null;
+  measurement_unit?: string | null;
+  package_size?: string | number | null;
+  package_unit?: string | null;
+  measurement_qty?: string | number | null;
+  packaging_text?: string | null;
 }
 
 interface InstallmentData {
@@ -332,6 +341,12 @@ const ElectronicsBusinessSales = () => {
       product_code: option.code || '',
       [unit]: option.label_5,
       [price]: Number(option.label_4),
+      // The product's current measurement/package values, shown under the name
+      // on a line before it is saved; the API snapshots them when it is.
+      measurement: option.measurement ?? null,
+      measurement_unit: option.measurement_unit ?? null,
+      package_size: option.package_size ?? null,
+      package_unit: option.package_unit ?? null,
     });
 
     // After setting product data, recalculate line total
@@ -424,6 +439,7 @@ const ElectronicsBusinessSales = () => {
         qty: detail.quantity,
         price: detail.sales_price,
         warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+        ...measurementFromDetail(detail),
       }),
       );
 
@@ -522,6 +538,12 @@ const ElectronicsBusinessSales = () => {
       qty: Number(productData.qty) || 0,
       price: Number(productData.price) || 0,
       warehouse: productData.warehouse || '',
+      measurement: productData.measurement ?? null,
+      measurement_unit: productData.measurement_unit ?? null,
+      package_size: productData.package_size ?? null,
+      package_unit: productData.package_unit ?? null,
+      measurement_qty: productData.measurement_qty ?? null,
+      packaging_text: productData.packaging_text ?? '',
     };
 
     setFormData((prevFormData) => ({
@@ -1464,6 +1486,7 @@ const ElectronicsBusinessSales = () => {
                     {row.product_code
                       ? `${row.product_code} - ${row.product_name}`
                       : row.product_name}
+                    <LineMeasurementCell {...row} />
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                     {row.qty} {row.unit}

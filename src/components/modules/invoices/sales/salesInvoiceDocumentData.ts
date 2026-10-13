@@ -130,6 +130,12 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
       warranty: getWarranty(row?.product?.warranty_days),
       qty: Number(row?.quantity) || 0,
       unit: row?.product?.unit?.name || '',
+      // The measurement/packaging snapshot the API computed for this line --
+      // blank where the line carries none, so a bill from before the feature
+      // prints exactly as it did.
+      measurement_qty: row?.measurement_qty ?? null,
+      measurement_unit: row?.measurement_unit || '',
+      packaging_text: row?.packaging_text || '',
       price: Number(row?.sales_price) || 0,
       amount: (Number(row?.quantity) || 0) * (Number(row?.sales_price) || 0),
     })),

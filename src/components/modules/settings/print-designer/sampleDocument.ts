@@ -23,6 +23,15 @@ export const SAMPLE_DOCUMENT: DocumentData = {
     vr_no: '3-260800142',
     vr_date: dayjs().format('YYYY-MM-DD'),
     order_no: 'PO-1100025951',
+    // The source invoice's handwritten memo pair, carried onto the challan.
+    // Filled here so a tenant who drags them onto the paper sees a value in the
+    // preview rather than a blank they would design around.
+    manual_voucher_no: 'MV-2609-0114',
+    manual_voucher_date: '2026-09-11',
+    // The handwritten paper challan's pair, so the compact "Challan no & Date"
+    // field shows a value in the preview too.
+    manual_challan_no: 'CH-M-9087',
+    manual_challan_date: '2026-09-11',
     created_by: 'Sample User',
     notes: 'Handle with care.',
     vehicle_no: 'DHAKA METRO TA-11-2233',
@@ -41,6 +50,9 @@ export const SAMPLE_DOCUMENT: DocumentData = {
       price: 2450,
       serial_no: '',
       warranty_days: 0,
+      measurement_qty: 214.4,
+      measurement_unit: 'Sqft',
+      packaging_text: '6 Box 20 Kg',
     },
     {
       id: 2,
@@ -348,6 +360,9 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
       amount: 28000,
       serial_no: '862795086755008',
       warranty: '365 day',
+      measurement_qty: 0.67,
+      measurement_unit: 'Sqft',
+      packaging_text: '',
     },
     {
       sl: 2,

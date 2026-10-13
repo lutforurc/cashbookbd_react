@@ -45,6 +45,14 @@ interface productItem {
   opening_qty?: string | number;
   opening_rate?: string | number;
   opening_serial_no?: string;
+  /** Measurement and packaging, shown as extra information on a bill. Each
+      pair is both-or-neither: a value beside no unit, or the reverse, is one
+      half of an answer and the API refuses it. Display only -- they never
+      touch quantity, price or stock. */
+  measurement?: string | number;
+  measurement_unit_id?: string | number;
+  package_size?: string | number;
+  package_unit_id?: string | number;
 }
 
 const AddProduct = () => {
@@ -81,6 +89,10 @@ const AddProduct = () => {
     opening_qty: '',
     opening_rate: '',
     opening_serial_no: '',
+    measurement: '',
+    measurement_unit_id: '',
+    package_size: '',
+    package_unit_id: '',
   };
 
   // The same branch switch the product list reads before showing its
@@ -104,6 +116,14 @@ const AddProduct = () => {
   const productTypeOptions = category?.ddlData?.data?.product_type || [];
   const unitOptions = category?.ddlData?.data?.unit || [];
 
+  // The measurement and package unit pickers read the same authorized unit list
+  // the Unit field uses -- no second endpoint, and never a unit the branch
+  // cannot reach. A leading blank lets a pair be left empty.
+  const measurementUnitOptions = [
+    { id: '', name: 'Not applicable' },
+    ...(Array.isArray(unitOptions) ? unitOptions : []),
+  ];
+
   useEffect(() => {
     if (product?.editData) {
       const edit = product.editData;
@@ -121,6 +141,10 @@ const AddProduct = () => {
         product_type: edit?.product_type != null ? String(edit.product_type) : '',
         unit_id: edit?.unit_id != null ? String(edit.unit_id) : '',
         manufacture_id: edit?.manufacture_id != null ? String(edit.manufacture_id) : '',
+        measurement: edit?.measurement ?? '',
+        measurement_unit_id: edit?.measurement_unit_id != null ? String(edit.measurement_unit_id) : '',
+        package_size: edit?.package_size ?? '',
+        package_unit_id: edit?.package_unit_id != null ? String(edit.package_unit_id) : '',
         warranty_type: String(warrantyTypeKey || edit?.warranty_type || '0'),
         warranty_days: edit?.warranty_days?.day || '',
       });
@@ -143,6 +167,11 @@ const AddProduct = () => {
   // before the server had replied, so a refused edit -- a code or a name
   // already taken -- looked saved and was lost.
   const handleBranchUpdate = () => {
+    const measurementIssue = measurementError();
+    if (measurementIssue) {
+      toast.info(measurementIssue);
+      return;
+    }
     dispatch(
       updateProduct(formData, (d: any) => {
         if (d?.success) {
@@ -194,6 +223,39 @@ const AddProduct = () => {
   };
 
 
+  // The same rules the API keeps (ItemController::measurementValidationError):
+  // each pair is both-or-neither, and a value is a number greater than zero
+  // with at most two decimals -- a third decimal is refused, not rounded away.
+  const measurementError = (): string | null => {
+    const decimal = (value: any, label: string): string | null => {
+      const text = String(value ?? '').trim();
+      if (text === '') return null;
+      if (!/^\d+(\.\d{1,2})?$/.test(text)) {
+        return `${label} must be a number greater than zero with at most two decimals.`;
+      }
+      if (Number(text) <= 0) return `${label} must be greater than zero.`;
+      return null;
+    };
+
+    const valueError =
+      decimal(formData.measurement, 'Measurement') || decimal(formData.package_size, 'Package size');
+    if (valueError) return valueError;
+
+    const hasMeasurement = String(formData.measurement ?? '').trim() !== '';
+    const hasMeasurementUnit = String(formData.measurement_unit_id ?? '').trim() !== '';
+    if (hasMeasurement !== hasMeasurementUnit) {
+      return 'Measurement and measurement unit must be given together.';
+    }
+
+    const hasPackageSize = String(formData.package_size ?? '').trim() !== '';
+    const hasPackageUnit = String(formData.package_unit_id ?? '').trim() !== '';
+    if (hasPackageSize !== hasPackageUnit) {
+      return 'Package size and package type must be given together.';
+    }
+
+    return null;
+  };
+
   const handleButtonClick = async (e: any) => {
     e.preventDefault();
 
@@ -211,6 +273,12 @@ const AddProduct = () => {
       return;
     } else if (!(formData.unit_id || '').trim()) {
       toast.info('Please select unit.');
+      return;
+    }
+
+    const measurementIssue = measurementError();
+    if (measurementIssue) {
+      toast.info(measurementIssue);
       return;
     }
 
@@ -578,6 +646,53 @@ const AddProduct = () => {
               value={formData?.unit_id?.toString() ?? ''}
             />
           </div>
+        </div>
+        {/* Measurement and packaging: additional information and nothing else.
+            Left empty on a product they simply do not print. Each pair goes
+            together, and a value carries at most two decimals. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          <InputElement
+            id="measurement"
+            value={formData.measurement ? formData.measurement.toString() : ''}
+            name="measurement"
+            type="number"
+            step="0.01"
+            placeholder={'e.g. 0.67'}
+            label={'Measurement'}
+            className={''}
+            onChange={handleOnChange}
+          />
+          <DropdownCommon
+            id="measurement_unit_id"
+            label="Measurement Unit"
+            onChange={handleOnChange}
+            name="measurement_unit_id"
+            className="w-full"
+            data={measurementUnitOptions}
+            value={formData?.measurement_unit_id?.toString() ?? ''}
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          <InputElement
+            id="package_size"
+            value={formData.package_size ? formData.package_size.toString() : ''}
+            name="package_size"
+            type="number"
+            step="0.01"
+            placeholder={'e.g. 10'}
+            label={'Package Size'}
+            className={''}
+            onChange={handleOnChange}
+          />
+          <DropdownCommon
+            id="package_unit_id"
+            label="Package Type"
+            onChange={handleOnChange}
+            name="package_unit_id"
+            className="w-full"
+            data={measurementUnitOptions}
+            value={formData?.package_unit_id?.toString() ?? ''}
+          />
         </div>
         <InputElement
           id="order_level"

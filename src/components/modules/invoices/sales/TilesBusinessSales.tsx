@@ -20,6 +20,9 @@ import { validateProductData } from '../../../utils/utils-functions/productValid
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
 import { validateForm } from '../../../utils/utils-functions/validationUtils';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
+import LineMeasurementCell, {
+  measurementFromDetail,
+} from '../../../utils/utils-functions/LineMeasurement';
 import { hasPermission } from '../../../utils/permissionChecker';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import {
@@ -69,6 +72,12 @@ interface Product {
   /** The line's stable identity, carried back on an edit so a delivery that
       already holds the line keeps holding it. Absent on a brand-new line. */
   line_uid?: string;
+  measurement?: string | number | null;
+  measurement_unit?: string | null;
+  package_size?: string | number | null;
+  package_unit?: string | null;
+  measurement_qty?: string | number | null;
+  packaging_text?: string | null;
 }
 
 type SalesSuggestionField = 'notes';
@@ -414,6 +423,12 @@ const TilesBusinessSales = () => {
       [price]: Number(option.label_4),
       // The cost, kept beside the rate: the line may not be sold under it.
       purchase_price: Number(option.label_3) || 0,
+      // The product's current measurement/package values, shown under the name
+      // on a line before it is saved; the API snapshots them when it is.
+      measurement: option.measurement ?? null,
+      measurement_unit: option.measurement_unit ?? null,
+      package_size: option.package_size ?? null,
+      package_unit: option.package_unit ?? null,
     });
 
     // After setting product data, recalculate line total
@@ -518,6 +533,7 @@ const TilesBusinessSales = () => {
         qty: detail.quantity,
         price: detail.sales_price,
         warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+        ...measurementFromDetail(detail),
       }),
       );
 
@@ -713,6 +729,12 @@ const TilesBusinessSales = () => {
       qty: Number(productData.qty) || 0,
       price: Number(productData.price) || 0,
       warehouse: productData.warehouse || '',
+      measurement: productData.measurement ?? null,
+      measurement_unit: productData.measurement_unit ?? null,
+      package_size: productData.package_size ?? null,
+      package_unit: productData.package_unit ?? null,
+      measurement_qty: productData.measurement_qty ?? null,
+      packaging_text: productData.packaging_text ?? '',
     };
 
     setFormData((prevFormData) => ({
@@ -1505,6 +1527,7 @@ const TilesBusinessSales = () => {
                     {row.product_code
                       ? `${row.product_code} - ${row.product_name}`
                       : row.product_name}
+                    <LineMeasurementCell {...row} />
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                     {row.qty} {row.unit}

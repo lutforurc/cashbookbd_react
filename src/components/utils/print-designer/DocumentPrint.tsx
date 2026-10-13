@@ -415,6 +415,15 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       return seen.join(', ');
     };
 
+    /**
+     * Two facts on one line for a pad with no room for two rows --
+     * "3-260900001, 13/10/2026". A part with nothing in it drops out rather
+     * than leaving a dangling separator: a memo with no date, or a date with no
+     * memo, prints the one it has; both empty prints nothing at all.
+     */
+    const onOneLine = (...parts: string[]): string =>
+      parts.filter((part) => !blank(part)).join(', ');
+
     const value = (key: string): string => {
       switch (key) {
         // A label the software has no answer for, and is not meant to have --
@@ -442,6 +451,17 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           const raw = basic?.vr_date;
           return raw ? dayjs(raw).format('DD/MM/YYYY') : '';
         }
+        // ⚠️ THE THREE COMPACT PAIRS -- a number and its own date on one line.
+        // They read the SAME keys the separate fields do, so the two can never
+        // disagree, and the date comes through `value()` like any other field,
+        // so it is the app's one date format. Offered beside the separate
+        // fields, never in place of them.
+        case 'invoice_no_date':
+          return onOneLine(value('vr_no'), value('vr_date'));
+        case 'memo_no_date':
+          return onOneLine(value('manual_voucher_no'), value('manual_voucher_date'));
+        case 'challan_no_date':
+          return onOneLine(value('manual_challan_no'), value('manual_challan_date'));
         case 'printed_at':
           return dayjs().format('DD/MM/YYYY hh:mm A');
         // The day the bill is made, date and no hour: the hour is what
@@ -559,9 +579,53 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           const quantity = thousandSeparator(num(row?.qty));
           return blank(row?.unit) ? quantity : `${quantity} ${row.unit}`;
         }
+        /**
+         * ⚠️ THE "Meas." COLUMN: the measured figure and the unit it is measured
+         * in, in ONE cell -- "256.06 sqf".
+         *
+         * Two decimals, which is the precision the server works the figure out
+         * at. The unit is the line's own MEASUREMENT unit (the snapshot's
+         * `measurement_unit`), never the product's base unit and never the
+         * package type: a product sold by the piece but measured by area reads
+         * "256.06 sqf" here and "20 Pcs" in the quantity column.
+         *
+         * Empty when the line carries no measurement at all -- a product nobody
+         * measured leaves the cell blank rather than printing "0.00" or the
+         * word undefined. The figure is the DELIVERED quantity's on a delivery
+         * slip, because the server computed `measurement_qty` from that.
+         */
+        case 'measurement_qty_unit': {
+          if (blank(row?.measurement_qty)) return '';
+          const measured = Number(row.measurement_qty);
+          if (!Number.isFinite(measured)) return '';
+
+          const figure = measured.toFixed(2);
+          return blank(row?.measurement_unit) ? figure : `${figure} ${row.measurement_unit}`;
+        }
         case 'amount':
           return thousandSeparator(lineAmount(row));
-        case 'qty':
+        /**
+         * ⚠️ ON THE DELIVERY CHALLAN THE QUANTITY CARRIES ITS OWN UNIT.
+         *
+         * "20 Bag", not a bare 20 in one column and the unit in another. The
+         * figure is formatted exactly as it always was and the unit is appended
+         * only when the row actually carries one, so a product with no unit
+         * still prints the bare quantity and nothing is ever repeated inside
+         * the cell.
+         *
+         * EVERY OTHER PAPER KEEPS THE PLAIN NUMBER. This was asked of the
+         * challan alone, and `qty` is shared with the invoice, the purchase and
+         * the order sheet -- changing it everywhere would put units on three
+         * papers nobody asked about. Scoping by the template's own docType also
+         * means a clerk's saved challan layout naming `qty` prints this way
+         * without being migrated.
+         */
+        case 'qty': {
+          const quantity = thousandSeparator(num(row?.qty));
+          return template?.docType === 'sales_challan' && !blank(row?.unit)
+            ? `${quantity} ${row.unit}`
+            : quantity;
+        }
         case 'bag':
         case 'price':
           return thousandSeparator(num(row?.[key]));
@@ -1181,16 +1245,47 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
     const TableBlock: React.FC<{
       band: TableBand;
       pageRows: any[];
+      /** Every row of the table across all pages, so a column that happens to be
+          empty on this page but filled on another is not dropped mid-paper. */
+      allRows: any[];
       startIndex: number;
       fillers: number;
       /** Off on later pages when the template says not to repeat the headings. */
       withHeader: boolean;
       /** The footing row, on the last page only -- a total per page is not one. */
       withTotal: boolean;
-    }> = ({ band, pageRows, startIndex, fillers, withHeader, withTotal }) => {
-      const columns = band.columns.length
+    }> = ({ band, pageRows, allRows, startIndex, fillers, withHeader, withTotal }) => {
+      const templateColumns = band.columns.length
         ? band.columns
         : ([{ field: 'product_name', width: 100, align: 'left' }] as TableColumn[]);
+
+      // ⚠️ An optional line column that NO line on this paper carries is left
+      // out entirely -- no empty heading, no empty cell. This is what keeps a
+      // bill of products without measurement or packaging printing exactly as
+      // it always did, while one that does carry them shows the columns. Asked
+      // over ALL rows, not just this page, so the columns cannot appear on one
+      // page and vanish on the next. A template saved before these fields
+      // existed names none of them, so it is untouched.
+      // The value a column is judged by: the combined Meas. cell is carried by
+      // the measured FIGURE, which is what the data holds -- the row has no
+      // `measurement_qty_unit` key of its own, so asking for that name would
+      // drop the column on every paper.
+      const optionalLineFields = new Map<string, string>([
+        ['measurement_qty', 'measurement_qty'],
+        ['measurement_unit', 'measurement_unit'],
+        ['measurement_qty_unit', 'measurement_qty'],
+        ['packaging_text', 'packaging_text'],
+      ]);
+      const columns = templateColumns.filter((column) => {
+        const source = optionalLineFields.get(column.field);
+        if (!source) return true;
+
+        return allRows.some((row) => {
+          const value = row?.[source];
+          return value !== null && value !== undefined && String(value).trim() !== '';
+        });
+      });
+
       const widths = columnWidths(columns);
       const border = band.bordered ? 'border border-gray-800' : '';
 
@@ -1678,6 +1773,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                 <TableBlock
                   band={tableBand}
                   pageRows={pageRows}
+                  allRows={rows}
                   startIndex={startIndex}
                   // Filler lines belong under the last product, not under every
                   // page's worth of them.
