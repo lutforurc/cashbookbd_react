@@ -323,6 +323,12 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
     notes: 'Sales By Installments.',
     vr_no: '3-260900038',
     vr_date: dayjs().format('YYYY-MM-DD'),
+    // The two handwritten pairs the compact fields combine -- filled so the
+    // preview shows "Memo no & Date" and "Challan no & Date" with values.
+    manual_voucher_no: 'MV-2609-0114',
+    manual_voucher_date: '2026-09-11',
+    manual_challan_no: 'CH-M-9087',
+    manual_challan_date: '2026-09-11',
     grand_total: 32520,
     tds_name: 'Installment Charge',
     tds_amount: 3600,
@@ -404,6 +410,12 @@ export const PURCHASE_INVOICE_SAMPLE: DocumentData = {
     notes: 'Purchased against PO-1100025951.',
     vr_no: '4-260900021',
     vr_date: dayjs().format('YYYY-MM-DD'),
+    // As on the sales sample: the supplier's own khata number and the challan
+    // the goods came in under, so the compact fields preview with values.
+    manual_voucher_no: 'PV-2609-0011',
+    manual_voucher_date: '2026-09-12',
+    manual_challan_no: 'CH-P-4471',
+    manual_challan_date: '2026-09-12',
     total_amount: 84000,
     discount_amount: 2000,
     net_amount: 82000,

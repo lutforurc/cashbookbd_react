@@ -1333,6 +1333,13 @@ export const SALES_INVOICE_FIELD_CATALOG: FieldDef[] = [
   { key: 'manual_voucher_date', name: 'Manual Voucher Date', group: 'voucher', format: 'date' },
   { key: 'manual_challan_no', name: 'Manual Challan No', group: 'voucher' },
   { key: 'manual_challan_date', name: 'Manual Challan Date', group: 'voucher', format: 'date' },
+  // The three pairs above, run onto one line each -- "3-260900038, 11/10/2026".
+  // The same three keys and the same renderer the Delivery Challan uses, so the
+  // two papers cannot word them differently. Offered BESIDE the separate fields,
+  // never in place of them: a saved layout keeps whichever it already names.
+  { key: 'invoice_no_date', name: 'Invoice no & Date', group: 'voucher' },
+  { key: 'memo_no_date', name: 'Memo no & Date', group: 'voucher' },
+  { key: 'challan_no_date', name: 'Challan no & Date', group: 'voucher' },
   { key: 'created_by', name: 'Sales By', group: 'voucher' },
   { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   { key: 'branch_name', name: 'Branch', group: 'voucher' },
@@ -1447,6 +1454,13 @@ export const PURCHASE_INVOICE_FIELD_CATALOG: FieldDef[] = [
   { key: 'manual_voucher_date', name: 'Manual Voucher Date', group: 'voucher', format: 'date' },
   { key: 'manual_challan_no', name: 'Manual Challan No', group: 'voucher' },
   { key: 'manual_challan_date', name: 'Manual Challan Date', group: 'voucher', format: 'date' },
+  // The three compact pairs, on the same three keys and the same renderer the
+  // Delivery Challan and the Sales Invoice use -- a purchase is a
+  // `main_trx_master` row like a sale, so its voucher number, its date and the
+  // supplier's two handwritten pairs come off the same columns.
+  { key: 'invoice_no_date', name: 'Invoice no & Date', group: 'voucher' },
+  { key: 'memo_no_date', name: 'Memo no & Date', group: 'voucher' },
+  { key: 'challan_no_date', name: 'Challan no & Date', group: 'voucher' },
   { key: 'created_by', name: 'Prepared By', group: 'voucher' },
   { key: 'printed_by', name: 'Printed By (signed in user)', group: 'voucher' },
   { key: 'branch_name', name: 'Branch', group: 'voucher' },
