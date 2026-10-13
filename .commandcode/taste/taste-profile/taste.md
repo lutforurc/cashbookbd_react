@@ -7,7 +7,7 @@
 - Values verifying edge cases (empty/null, duplicates, rounding, repeated inputs) and having parts sum exactly to the whole, instead of producing inflated or duplicated totals. Confidence: 0.55
 
 ## Workflow
-- The user explicitly controls git operations: never commit, push, or deploy unless asked to. Confidence: 0.72
+- The user explicitly controls git operations: never commit, push, or deploy unless asked to. Confidence: 0.8
 - Expects git conflict resolution to be a careful semantic merge, not a mechanical pick: read both sides and preserve the intended functionality and recent changes from each, and explicitly "do not blindly choose ours or theirs". Confidence: 0.55
 - Expects git work to stay non-destructive and bounded: preserve unrelated uncommitted work, do not start a new merge/rebase/pull, and never use destructive reset/clean commands. Confidence: 0.55
 - For conflict work, wants the resolved files staged (when required) but nothing committed, pushed, or deployed, followed by a summary of the resolved files, the decisions taken, verification results, and any remaining in-progress git operation (or a clear statement that no conflicts exist). Confidence: 0.55
@@ -18,6 +18,7 @@
 - Once the approach/authentication is confirmed, prefers the agent to proceed autonomously through the remaining batches without pausing for further confirmation on non-destructive, read-only work. Confidence: 0.7
 - Maintains a route-by-route coverage ledger and expects tracking artifacts kept current; stale/paused status notes (e.g., a TODO still marked "waiting on login") should be updated as soon as their blocker is resolved. Confidence: 0.65
 - Verifies UI/visual work against the running application (dev server) using real browser screenshots where possible, rather than reasoning purely from source. Confidence: 0.55
+- When asked to verify the actual UI, expects the real rendered output to be exercised (e.g. rendering the actual component and asserting its markup) — a passing build/typecheck alone is not accepted as UI verification, and when the live app can't be driven (needs backend/login) that limitation must be stated along with what was actually rendered. Confidence: 0.55
 - Never prints/echoes secret values (passwords, tokens) in output; restricts auth automation to an explicitly approved disposable test account. Confidence: 0.75
 - Works on Windows and expects commands/instructions that run in Windows PowerShell — does not assume Unix conventions (e.g., Ctrl+D for stdin) apply. Confidence: 0.75
 - Verifies tooling/CLI syntax against actual `--help` output rather than assuming flags exist. Confidence: 0.6
@@ -35,3 +36,4 @@
 - Requires claims to be backed by conclusive evidence: distinguishes observed behavior from a diagnosed root cause and rejects indirect signals (e.g., empty login fields or empty browser storage) as proof of a conclusion. Confidence: 0.75
 - Scopes verification claims strictly to what was actually checked: never describes a page as "clean"/passing beyond the states and checks performed, and explicitly distinguishes sampled (representative breakpoint or dark-mode) checks from fully verified routes. Confidence: 0.8
 - Wants one consolidated final report (severity, evidence, recommended fixes) that also enumerates remaining coverage gaps. Confidence: 0.7
+- Wants each verification item reported as PASS / FAIL / NOT TESTED accurately; syntax, lint, build, or formula checks alone do not count as end-to-end verification, and untested areas must be called out rather than implied as passing. Confidence: 0.7
