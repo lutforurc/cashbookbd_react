@@ -14,7 +14,8 @@
       "Shell(agent-browser --session cbbd2 wait 1500 & agent-browser --session cbbd2 eval \"JSON.stringify({headings:Array.from(document.querySelectorAll('h1,h2,h3')).map(h=>(h.textContent||'').trim()).filter(Boolean).slice(0,14),tail:(document.body.innerText||'').slice(-800)})\")",
       "Shell(node -e const j=require('./.commandcode/settings.json');console.log('JSON OK, allow entries:',j.permissions.allow.length))",
       "Shell(type:*)",
-      "Shell(more:*)"
+      "Shell(more:*)",
+      "Shell(node -e const {execSync}=require('child_process');const b=execSync('git show HEAD:.commandcode/settings.json',{maxBuffer:1e7}).toString('binary');console.log('original CRLF:',b.includes('\\r\\n'),'total bytes:',b.length);const fs=require('fs');const c=fs.readFileSync('.commandcode/settings.json','binary');console.log('working CRLF:',c.includes('\\r\\n')))"
     ],
     "deny": [],
     "defaultMode": "default"

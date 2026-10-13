@@ -7,6 +7,9 @@
 
 ## Workflow
 - The user explicitly controls git operations: never commit, push, or deploy unless asked to. Confidence: 0.72
+- Expects git conflict resolution to be a careful semantic merge, not a mechanical pick: read both sides and preserve the intended functionality and recent changes from each, and explicitly "do not blindly choose ours or theirs". Confidence: 0.55
+- Expects git work to stay non-destructive and bounded: preserve unrelated uncommitted work, do not start a new merge/rebase/pull, and never use destructive reset/clean commands. Confidence: 0.55
+- For conflict work, wants the resolved files staged (when required) but nothing committed, pushed, or deployed, followed by a summary of the resolved files, the decisions taken, verification results, and any remaining in-progress git operation (or a clear statement that no conflicts exist). Confidence: 0.55
 - Wants investigation/reporting before implementation: explicitly gates changes ("do not make any changes yet") and expects an upfront statement of capabilities and limitations (including whether results can actually be verified) before work begins. Confidence: 0.6
 - Runs explicit read-only audit passes where the deliverable is findings only — no code, style, functionality, or config changes (and no commit/push/deploy). Confidence: 0.75
 - Will not use credentials found in source files or audit documents; requires an explicitly approved, disposable/non-production test account with a broad read-only role to reach authenticated areas. Confidence: 0.8
