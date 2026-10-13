@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(php \"C:\\Users\\lutfo\\AppData\\Local\\Temp\\commandcode\\F--All-Database-cashbookbd-react\\0d02213f-8675-4b48-bba2-65b638ace616\\scratchpad\\product_out_alloc_test.php\")"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}
