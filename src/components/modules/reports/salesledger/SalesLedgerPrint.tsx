@@ -7,6 +7,7 @@ import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import SalesLedgerCalculator from "../../../utils/calculators/SalesLedgerCalculator";
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
+import { ledgerProductLabel } from "../utils/ledgerProductLabel";
 import { formatDateUsdToBd, formatLongDateUsdToBd } from "../../../utils/utils-functions/formatDate";
 
 type Props = {
@@ -47,6 +48,11 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
   ) => {
     const settings = useSelector((state: any) => state.settings);
     const stockReportType = settings?.data?.branch?.stock_report_type;
+    // Branch > Invoice Setup > "Show Product Information in Ledger Details".
+    // Unset prints them, as the paper always has; only an explicit '0' hides
+    // the product lines. The account, the note and the numeric columns stay.
+    const showProductDetails =
+      String(settings?.data?.branch?.ledger_show_product_details ?? '1') !== '0';
 
     const rowsArr: any[] = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(rowsArr, rowsPerPage);
@@ -114,7 +120,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
       return received;
     };
 
-    // Ã¢Å“â€¦ Dynamic font for long product names (no ellipsis, no cut)
+    // ✅ Dynamic font for long product names (no ellipsis, no cut)
     const getProductFs = (name: string, baseFs: number) => {
       const len = (name || "").trim().length;
 
@@ -133,11 +139,8 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
       return 1.3;
     };
 
-    const makeLabel = (detail: any) => {
-      const categoryName = detail?.product?.category?.name ?? "";
-      const productName2 = detail?.product?.name ?? "";
-      return `${String(stockReportType) === "1" ? categoryName : ""} ${productName2}`.trim();
-    };
+    const makeLabel = (detail: any) =>
+      ledgerProductLabel(detail, String(stockReportType) === "1");
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
@@ -314,13 +317,10 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                   <div className="font-semibold">{coaName}</div>
                                 ) : null}
 
-                                {Array.isArray(details) &&
+                                {showProductDetails &&
+                                  Array.isArray(details) &&
                                   details.length > 0 &&
                                   details.map((detail: any, i: number) => {
-                                    const categoryName =
-                                      detail?.product?.category?.name ?? "";
-                                    const productName2 =
-                                      detail?.product?.name ?? "";
                                     const label = makeLabel(detail);
 
                                     return (
@@ -334,11 +334,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                           ),
                                         }}
                                       >
-                                        {String(stockReportType) === "1" &&
-                                        categoryName
-                                          ? `${categoryName} `
-                                          : ""}
-                                        {productName2}
+                                        {label}
                                       </div>
                                     );
                                   })}
@@ -360,7 +356,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details?.length
+                              {showProductDetails && details?.length
                                 ? details.map((detail: any, i: number) => {
                                     const label = makeLabel(detail);
                                     return (
@@ -386,7 +382,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details?.length
+                              {showProductDetails && details?.length
                                 ? details.map((detail: any, i: number) => {
                                     const label = makeLabel(detail);
                                     return (
@@ -411,7 +407,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details?.length
+                              {showProductDetails && details?.length
                                 ? details.map((detail: any, i: number) => {
                                     const label = makeLabel(detail);
                                     return (
@@ -435,7 +431,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                       </div>
                                     );
                                   })
-                                : "-"}
+                                : (total ? thousandSeparator(total) : "-")}
                             </td>
 
                             <td

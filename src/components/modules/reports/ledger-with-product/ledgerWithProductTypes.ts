@@ -29,6 +29,9 @@ export type LedgerWithProductRow = {
   running_balance?: number;
   voucher_type?: number | string;
   voucher_type_id?: number | string;
+  /** The server's approval flag, exposed on this report's rows for the Action
+   *  column; absent on the opening row, which carries no voucher. */
+  is_approved?: number | string | boolean;
   mtm_id?: number | string;
   mtmid?: number | string;
   mtmId?: number | string;

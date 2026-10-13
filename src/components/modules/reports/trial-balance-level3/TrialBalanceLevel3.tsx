@@ -8,6 +8,7 @@ import {
   ButtonLoading,
   PrintButton,
 } from "../../../../pages/UiElements/CustomButtons";
+import Checkbox from "../../../utils/fields/Checkbox";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
@@ -22,6 +23,8 @@ import { API_REPORT_TRIAL_BALANCE_LEVEL4_URL } from "../../../services/apiRoutes
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchTrialBalanceLevel3 } from "./trialBalanceLevel3Slice";
 import TrialBalanceLevel3Print from "./TrialBalanceLevel3Print";
+import ReportNotes from "../../../utils/utils-functions/ReportNotes";
+import { buildTrialBalanceNotes } from "./trialBalanceNotes";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 
@@ -35,6 +38,11 @@ type TrialBalanceRow = {
   movementCredit: number;
   closingDebit: number;
   closingCredit: number;
+  /**
+   * The ledgers under this group, sent only when the server was asked for them
+   * (`with_children`). They are what the printed Detailed mode prints.
+   */
+  children?: any[];
 };
 
 type TrialBalanceLevel4Row = TrialBalanceRow & {
@@ -65,6 +73,24 @@ const pickFirst = (obj: any, keys: string[]) => {
 
   return "";
 };
+
+/**
+ * Whether a row has anything worth showing: any one of its six figures.
+ *
+ * ⚠️ NOT "closes non-zero". Movement is reported gross, so a head that took
+ * real postings in the period and happens to net to nothing by the closing
+ * date -- a return against a sale on the same head, an advance settled the
+ * same month -- would otherwise drop off the report while its turnover sits
+ * invisible. Deciding it here also keeps the screen and the printout showing
+ * the same rows, since both read this list.
+ */
+const carriesFigures = (row: TrialBalanceRow) =>
+  row.openingDebit !== 0 ||
+  row.openingCredit !== 0 ||
+  row.movementDebit !== 0 ||
+  row.movementCredit !== 0 ||
+  row.closingDebit !== 0 ||
+  row.closingCredit !== 0;
 
 const findArrayCollection = (raw: any): any[] => {
   if (Array.isArray(raw)) return raw;
@@ -110,8 +136,7 @@ const normalizeRows = (items: any[]): TrialBalanceRow[] => {
           "title",
           "particulars",
         ]) || "Unnamed Head",
-      ),
-      openingDebit: toNum(
+      ),      openingDebit: toNum(
         pickFirst(item, ["opening_debit_bal", "opening_debit", "opening_dr"]),
       ),
       openingCredit: toNum(
@@ -129,8 +154,11 @@ const normalizeRows = (items: any[]): TrialBalanceRow[] => {
       closingCredit: toNum(
         pickFirst(item, ["credit_bal", "closing_credit_bal", "credit"]),
       ),
+      // Kept raw: the ledgers are a payload of their own, shaped for the print,
+      // and normalizing them here would only be undone again on the way out.
+      children: Array.isArray(item?.children) ? item.children : [],
     }))
-    .filter((row) => row.closingDebit !== 0 || row.closingCredit !== 0);
+    .filter(carriesFigures);
 };
 
 const normalizeLevel4Rows = (items: any[]): TrialBalanceLevel4Row[] => {
@@ -155,6 +183,7 @@ const normalizeLevel4Rows = (items: any[]): TrialBalanceLevel4Row[] => {
           "particulars",
         ]) || "Unnamed Head",
       ),
+
       openingDebit: toNum(
         pickFirst(item, ["opening_debit_bal", "opening_debit", "opening_dr"]),
       ),
@@ -174,7 +203,7 @@ const normalizeLevel4Rows = (items: any[]): TrialBalanceLevel4Row[] => {
         pickFirst(item, ["credit_bal", "closing_credit_bal", "credit"]),
       ),
     }))
-    .filter((row) => row.closingDebit !== 0 || row.closingCredit !== 0);
+    .filter(carriesFigures);
 };
 
 const formatAmount = (amount: number) => {
@@ -199,6 +228,12 @@ const TrialBalanceLevel3 = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(10);
+  /**
+   * Detailed mode: the PRINT carries each group's ledgers under it. The screen
+   * is untouched by it -- it already opens a group on click, which is a better
+   * way to read ledgers on a screen than a long flat list.
+   */
+  const [detailed, setDetailed] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedL3Id, setExpandedL3Id] = useState<number | null>(null);
   const [level4Rows, setLevel4Rows] = useState<TrialBalanceLevel4Row[]>([]);
@@ -254,6 +289,30 @@ const TrialBalanceLevel3 = (user: any) => {
   const rows = useMemo(() => {
     return normalizeRows(findArrayCollection(rawReportData));
   }, [rawReportData]);
+
+  /**
+   * The list the PRINT reads: the groups, and in Detailed mode each group
+   * followed by its ledgers, marked `child` so the print indents them and gives
+   * them no serial.
+   *
+   * ⚠️ THE GRAND TOTAL IS NOT TAKEN FROM THIS LIST. It comes from `totals`,
+   * which is the groups alone -- adding the ledgers into a total that already
+   * contains them would report the book at roughly twice its size.
+   */
+  const printRows = useMemo(() => {
+    if (!detailed) return rows;
+
+    return rows.flatMap((row) => [
+      row,
+      ...normalizeLevel4Rows(row.children || []).map((child) => ({
+        ...child,
+        // Ledgers are unique chart heads, but a group and a ledger could still
+        // land on the same number, so the group's key is the prefix.
+        key: `${row.key}-${child.key}`,
+        child: true,
+      })),
+    ]);
+  }, [rows, detailed]);
 
   const tableData = useMemo(() => {
     return rows.map((row, index) => ({
@@ -361,6 +420,32 @@ const TrialBalanceLevel3 = (user: any) => {
 
   const hasReportData = rows.length > 0;
 
+  /**
+   * ⚠️ THE LEDGERS ARRIVE WITH THE REPORT OR NOT AT ALL, SO THE FLAG HAS TO GO
+   * BACK AND ASK. They are the bulk of the payload -- 589 rows on a branch this
+   * size -- so the server only sends them when asked, which means ticking
+   * Detailed after a report is already on screen cannot be served from what is
+   * in hand. It re-runs the same request with the flag.
+   *
+   * Guarded on `hasReportData` so ticking the box before the first Load does
+   * not fire a report of its own; the Load that follows carries the flag.
+   */
+  useEffect(() => {
+    if (!hasReportData || !branchId || !startDate || !endDate) return;
+
+    dispatch(
+      fetchTrialBalanceLevel3({
+        branch_id: Number(branchId),
+        start_date: dayjs(startDate).format("YYYY-MM-DD"),
+        end_date: dayjs(endDate).format("YYYY-MM-DD"),
+        with_children: detailed ? 1 : undefined,
+      }) as any,
+    );
+    // `detailed` is the whole trigger; the rest are read, not watched -- they
+    // only change through Apply, which fetches for itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detailed]);
+
   const selectedLevel3Row = useMemo(() => {
     return rows.find((row) => Number(row.key) === Number(expandedL3Id)) || null;
   }, [expandedL3Id, rows]);
@@ -399,14 +484,28 @@ const TrialBalanceLevel3 = (user: any) => {
     return selected?.name || "Selected Branch";
   }, [dropdownData, branchId]);
 
+  /**
+   * The same notes the printed sheet carries, read from the same list, so the
+   * two surfaces cannot describe this report two ways.
+   */
+  const trialBalanceNotes = useMemo(
+    () =>
+      buildTrialBalanceNotes({
+        branchName,
+        startDate: startDate ? dayjs(startDate).format("DD/MM/YYYY") : undefined,
+        endDate: endDate ? dayjs(endDate).format("DD/MM/YYYY") : undefined,
+      }),
+    [branchName, startDate, endDate],
+  );
+
   const handleBranchChange = (e: any) => {
     const value = Number(e.target.value);
     setBranchId(Number.isFinite(value) ? value : null);
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
-    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
+    if (!branchId) return alert("Branch select করুন");
+    if (!startDate || !endDate) return alert("Start/End Date দিন");
 
     setButtonLoading(true);
     setExpandedL3Id(null);
@@ -418,6 +517,7 @@ const TrialBalanceLevel3 = (user: any) => {
         branch_id: Number(branchId),
         start_date: dayjs(startDate).format("YYYY-MM-DD"),
         end_date: dayjs(endDate).format("YYYY-MM-DD"),
+        with_children: detailed ? 1 : undefined,
       }) as any,
     );
 
@@ -675,6 +775,14 @@ const TrialBalanceLevel3 = (user: any) => {
 
             {useFilterMenuEnabled ? (
               <div className="ml-auto flex items-end gap-2">
+                <Checkbox
+                  id="tbl3-detailed"
+                  name="detailed"
+                  checked={detailed}
+                  onChange={(e: any) => setDetailed(e.target.checked)}
+                  label="Detailed"
+                  className="pb-2"
+                />
                 <PrintRowsInput
                   type="number"
                   id="tbl3-per-page"
@@ -718,6 +826,14 @@ const TrialBalanceLevel3 = (user: any) => {
                   />
                 </div>
                 <div className="flex flex-nowrap items-end gap-2">
+                  <Checkbox
+                    id="tbl3-detailed-inline"
+                    name="detailed"
+                    checked={detailed}
+                    onChange={(e: any) => setDetailed(e.target.checked)}
+                    label="Detailed"
+                    className="pb-2"
+                  />
                   <PrintRowsInput
                     type="number"
                     id="tbl3-per-page"
@@ -975,6 +1091,16 @@ const TrialBalanceLevel3 = (user: any) => {
                     }
 	                />
 
+                  {/* The report's own basis and the rest of what it cannot say
+                      about itself, BELOW the table and its Grand Total, because
+                      it answers questions a reader only has once the total is
+                      in front of them. Imported, not retyped, so the screen and
+                      the printed sheet say the same thing. */}
+                  <ReportNotes
+                    title="Notes to the Trial Balance"
+                    notes={trialBalanceNotes}
+                  />
+
                   {expandedL3Id && (
                     <div className="rounded-sm border border-[rgb(var(--c-border))] bg-slate-50 dark:bg-slate-900/30">
                       <div className="flex flex-col gap-2 border-b border-[rgb(var(--c-border))] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1092,7 +1218,7 @@ const TrialBalanceLevel3 = (user: any) => {
           branchName={branchName}
           startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"}
           endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
-          rows={rows}
+          rows={printRows}
           rowsPerPage={Number(perPage)}
           fontSize={Number(fontSize)}
           totals={totals}

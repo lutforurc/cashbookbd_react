@@ -100,7 +100,7 @@ Product trash icon already fixed.
 - [ ] `~` `console.log` dumps signed-in user's permission map — `cashbookbd_react` `src/components/modules/user/UserList.tsx:44`
 - [ ] `~` `console.log` prints full journal accounting payload on save — `cashbookbd_react` `src/components/modules/transactions/journal/Journal.tsx:133`
 - [ ] `~` Render-path `console.log` of product payloads — `cashbookbd_react` `src/components/modules/product/AddProduct.tsx:288` and `EditProduct.tsx`
-- [ ] `~` Mojibake `âœ…` / `âŒ` (double/triple-encoded UTF-8) in shipped source — `Orders.tsx:751`, `BankPayment.tsx:428`, `BankReceived.tsx:435`, `CompareSingleItem.tsx`, `SalesLedger.tsx`, `CustomerDashboard.tsx`; API side `EmployeeController.php:593`, `SalaryController.php`, `AddUnitTypeToBuildingUnits.php:2261`
+- [ ] `~` Mojibake `✅` / `âŒ` (double/triple-encoded UTF-8) in shipped source — `Orders.tsx:751`, `BankPayment.tsx:428`, `BankReceived.tsx:435`, `CompareSingleItem.tsx`, `SalesLedger.tsx`, `CustomerDashboard.tsx`; API side `EmployeeController.php:593`, `SalaryController.php`, `AddUnitTypeToBuildingUnits.php:2261`
 - [ ] `~` Unauthenticated `/debug` route exposes app config — `cashbook_api` `routes/web.php:118`
 - [ ] `~` Unauthenticated test-PDF route outside auth group — `cashbook_api` `routes/api.php:100`
 - [ ] `~` Dead duplicate `mainTransactionMasterByRequest` (function_exists-guarded, never runs) — `cashbook_api` `app/Helpers/helpers.php:1825`

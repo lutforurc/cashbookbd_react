@@ -17,7 +17,7 @@ export const MENU_PERMISSIONS = {
     'product.transfer.create',
     'product.received.create',
   ],
-  invoice: ['purchase.create', 'sales.create', 'labour.invoice.create'],
+  invoice: ['purchase.create', 'sales.create', 'labour.invoice.create', 'delivery.view'],
   labour_items: ['labour.category.view', 'labour.item.view'],
   reports: [
     'cashbook.view',
@@ -44,6 +44,11 @@ export const MENU_PERMISSIONS = {
     'group.report',
     'mitch.match',
     'productwise.profit',
+    // The referrer report is only ever reached through this menu, so its own
+    // permission has to open the parent group too.
+    'sales.referrer',
+    // The delivery report, likewise reachable only through this menu.
+    'delivery.view',
   ],
   requisition: ['requisition.view', 'requisition.create', 'requisition.comparison'],
   // Opens on any of the three: the settings screen and the two reports each
@@ -86,6 +91,12 @@ export const MENU_PERMISSIONS = {
     // one, so a user holding only this was kept out of the parent menu here
     // and bounced to /no-access by the route guard.
     'log.changes',
+    // Report Mismatch, which repairs a voucher that belongs to no company. It
+    // answers to the mismatch permission the backend already creates rather
+    // than to one of its own, so whoever holds that one reaches the menu it
+    // now sits in -- without it the sub-item's own gate would open a screen
+    // hanging off a parent that never opened.
+    'mitmatch.report',
   ],
   hrm: [
     'employee.view',
@@ -119,6 +130,9 @@ export const MENU_PERMISSIONS = {
     // Bank Opening lives in this menu but answers to a permission of its own, so
     // whoever holds only that one still gets the menu it sits in.
     'bank.opening.view',
+    // Same for the customer opening import, one level down.
+    'party.opening.view',
+    'party.opening.edit',
   ],
   chart_of_accounts: [
     'coa.l1.view',

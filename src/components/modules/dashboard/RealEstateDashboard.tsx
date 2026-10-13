@@ -25,6 +25,7 @@ import DashboardCustomizeButton, {
 } from './dashboardCustomization';
 import {
   DashboardRangeBar,
+  businessTypeName,
   rangeCaption,
   useAutoRefresh,
   useCashBookRange,
@@ -102,9 +103,6 @@ const REAL_ESTATE_DASHBOARD_WIDGETS: DashboardWidget[] = [
 const RealEstateDashboard = () => {
   const dispatch = useDispatch<any>();
 
-  const currentBranch = useSelector(
-    (state: any) => state.branchList?.currentBranch,
-  );
   const settings = useSelector((state: any) => state.settings);
   const dashboard = useSelector((state: any) => state.dashboard);
   const me = useSelector((state: any) => state.auth?.me);
@@ -632,7 +630,7 @@ const RealEstateDashboard = () => {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
-            {payload?.branch?.name || currentBranch?.name || 'The estate'}
+            {businessTypeName(view.viewBranch, 'The estate')}
           </h1>
           <p className="text-xs text-slate-400">
             {payload?.from && payload?.to

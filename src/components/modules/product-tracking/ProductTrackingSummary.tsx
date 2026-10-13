@@ -248,10 +248,10 @@ const ProductTrackingSummary = () => {
               Product-wise Receivable &amp; Payable
             </h2>
             <p className="text-sm">
-              {data.party.name} Â· {data.branch.name}
+              {data.party.name} · {data.branch.name}
             </p>
             <p className="text-sm">
-              {data.start_date} â€” {data.end_date}
+              {data.start_date} — {data.end_date}
             </p>
           </div>
 
@@ -291,7 +291,7 @@ const ProductTrackingSummary = () => {
                 {data.rows.length === 0 ? (
                   <tr>
                     <td colSpan={11} className="px-2 py-4 text-center text-gray-500">
-                      No product is configured. Add one from Settings â†’ Product Tracking.
+                      No product is configured. Add one from Settings → Product Tracking.
                     </td>
                   </tr>
                 ) : null}

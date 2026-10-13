@@ -47,7 +47,7 @@ const EmployeeLoan = () => {
   // When set, the form is editing an existing loan disbursement.
   const [editInfo, setEditInfo] = useState<LoanEditInfo | null>(null);
 
-  // âœ… single payload state
+  // ✅ single payload state
   const [tx, setTx] = useState<LoanPayload>({
     id: Date.now(),
     account: '',

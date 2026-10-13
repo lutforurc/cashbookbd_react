@@ -67,6 +67,9 @@ interface Product {
   id: number;
   product: number;
   product_name: string;
+  /** Shown in front of the name on the row, blank when the product has no
+      code -- same shape the paper prints. */
+  product_code?: string;
   unit: string;
   qty: number;
   price: number;
@@ -362,6 +365,9 @@ const TradingBusinessSales = () => {
       ...productData,
       [key]: option.value,
       [accountName]: option.label,
+      // The code the picker carried down with the name, so the row can read
+      // "GI-106 - 2 Tangki Nipple" the way the paper does.
+      product_code: option.code || '',
       [unit]: option.label_5,
       [price]: Number(option.label_3),
     });
@@ -432,6 +438,7 @@ const TradingBusinessSales = () => {
 	        id: detail.id,
 	        product: detail.product.id,
 	        product_name: detail.product.name,
+	        product_code: detail.product.code,
 	        serial_no: detail.serial_no,
 	        bag: detail.bag || '',
 	        unit: detail.product.unit.name,
@@ -525,6 +532,7 @@ const TradingBusinessSales = () => {
       id: Date.now(), // Use timestamp as a unique ID
       product: productData.product || 0,
       product_name: productData.product_name || '',
+      product_code: productData.product_code || '',
       unit: productData.unit || '',
       qty: productData.qty || '',
       price: productData.price || '',
@@ -872,6 +880,7 @@ const TradingBusinessSales = () => {
 	          id: detail.id,
 	          product: detail.product.id,
 	          product_name: detail.product.name,
+	          product_code: detail.product.code,
 	          serial_no: detail.serial_no,
 	          bag: detail.bag || '',
 	          unit: detail.product.unit.name,
@@ -1051,6 +1060,7 @@ const TradingBusinessSales = () => {
     let resolvedProduct = {
       id: fallbackProductId,
       name: fallbackProductName,
+      code: '',
       unit:
         selectedOrderOption?.unit ??
         selectedOrderOption?.unit_name ??
@@ -1129,6 +1139,7 @@ const TradingBusinessSales = () => {
           resolvedProduct = {
             id: matchedProduct?.value ?? resolvedProduct.id,
             name: matchedProduct?.label ?? resolvedProduct.name,
+            code: matchedProduct?.code ?? resolvedProduct.code,
             unit: matchedProduct?.label_5 ?? resolvedProduct.unit,
             // Keep the selected sales order rate instead of replacing it with
             // the product dropdown default price.
@@ -1167,6 +1178,7 @@ const TradingBusinessSales = () => {
       ...prevState,
       product: resolvedProduct.id,
       product_name: resolvedProduct.name,
+      product_code: resolvedProduct.code || '',
       qty: orderQty > 0 ? orderQty.toString() : '',
       price: resolvedProduct.price > 0 ? resolvedProduct.price.toString() : '',
       unit: resolvedProduct.unit || unitName,
@@ -1765,7 +1777,9 @@ const TradingBusinessSales = () => {
 	                  <td
 	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] `}
 	                  >
-	                    {row.product_name}
+	                    {row.product_code
+                      ? `${row.product_code} - ${row.product_name}`
+                      : row.product_name}
 	                  </td>
 	                  <td
 	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}

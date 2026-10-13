@@ -95,6 +95,7 @@ export const SAMPLE_ORDER_DOCUMENT: DocumentData = {
     order_date: dayjs().format('DD/MM/YYYY'),
     duration: `${dayjs().subtract(1, 'day').format('DD/MM/YYYY')} to ${dayjs().format('DD/MM/YYYY')}`,
     delivery_location: 'Sample Poultry Division, Baniarchala',
+    transaction_account: 'City Bank - CD-1102',
     product_name: 'DORB',
     order_rate: 26,
     total_order: 100000,
@@ -321,6 +322,14 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
     net_amount: 36120,
     received_amount: 7000,
     due_amount: 29120,
+    // A party that already owed 5,000 before this bill, so the designer's
+    // preview shows both lines and the rule between them. The real figure
+    // comes from the server (see previousDueOf); this is the sample's own.
+    previous_due: 5000,
+    final_due: 34120,
+    // 36,120 net + the 5,000 owed before this bill. Kept as the sum rather than
+    // a fourth literal, so the sample cannot come to disagree with the paper.
+    net_plus_previous: 41120,
     amount_words: 'Thirty Six Thousand One Hundred And Twenty Taka Only',
     printed_by: 'Sample User',
   },
@@ -450,11 +459,15 @@ export const LEDGER_SAMPLE: DocumentData = {
       challan_no: 'CH-10041',
       challan_date: '05/09/2026',
       coa_name: 'Sample Traders',
-      product_lines: [
+      products: ['Xiaomi Redmi Note 15 6/128GB Variant', 'Screen Guard (Pack of 10)'],
+      product_details_lines: [
         'Sample Traders',
         'Xiaomi Redmi Note 15 6/128GB Variant',
         'Screen Guard (Pack of 10)',
+        'Delivered by hand.',
       ],
+      product_details_flat:
+        'Sample Traders Xiaomi Redmi Note 15 6/128GB Variant Screen Guard (Pack of 10) Delivered by hand.',
       qty_lines: ['3', '10'],
       rate_lines: ['24,000', '60'],
       amount_lines: ['72,000', '600'],
@@ -470,7 +483,9 @@ export const LEDGER_SAMPLE: DocumentData = {
       challan_no: 'CH-10058',
       challan_date: '12/09/2026',
       coa_name: 'Sample Traders',
-      product_lines: ['Sample Traders', 'Samsung Galaxy A26 8/256GB'],
+      products: ['Samsung Galaxy A26 8/256GB'],
+      product_details_lines: ['Sample Traders', 'Samsung Galaxy A26 8/256GB'],
+      product_details_flat: 'Sample Traders Samsung Galaxy A26 8/256GB',
       qty_lines: ['2'],
       rate_lines: ['32,500'],
       amount_lines: ['65,000'],
@@ -486,7 +501,9 @@ export const LEDGER_SAMPLE: DocumentData = {
       challan_no: 'CH-10074',
       challan_date: '18/09/2026',
       coa_name: 'Another Party',
-      product_lines: ['Another Party', 'Realme C75 6/128GB', 'Back Cover'],
+      products: ['Realme C75 6/128GB', 'Back Cover'],
+      product_details_lines: ['Another Party', 'Realme C75 6/128GB', 'Back Cover'],
+      product_details_flat: 'Another Party Realme C75 6/128GB Back Cover',
       qty_lines: ['1', '4'],
       rate_lines: ['18,900', '250'],
       amount_lines: ['18,900', '1,000'],
@@ -522,6 +539,11 @@ export const LEDGER_DETAILS_SAMPLE: DocumentData = {
     report_trx_type: 'All',
     opening_balance: 12000,
     closing_balance: 14700,
+    // The two column sums, for the reason the ledger's sample carries them:
+    // a totals line marked `hideIfEmpty` is measured against the voucher, not
+    // against the rows, so leaving them out hides the line from the preview.
+    total_debit: 32100,
+    total_credit: 29400,
     branch_name: 'Head Office',
   },
   products: [
@@ -588,6 +610,125 @@ export const LEDGER_DETAILS_SAMPLE: DocumentData = {
       debit: 12600,
       credit: 0,
       running_balance: 14700,
+    },
+  ],
+};
+
+/**
+ * The plain Ledger's sample: one account's book, a line per voucher.
+ *
+ * ⚠️ THE PRODUCT, QUANTITY AND RATE FIELDS ARE LEFT OFF ON PURPOSE, and that is
+ * the sample doing its job rather than a gap. The report this paper prints from
+ * (ReportsController::ledgerApi) answers with the account's own posted lines --
+ * debit, credit, a remark, a voucher -- and joins no inventory detail at all, so
+ * there is nothing to put there. A sample that filled a product cell with a name
+ * would have a tenant lay out a column that prints a live report blank, which is
+ * exactly the hole this file's header warns about; the same reason the receipt's
+ * sample carries no VAT line.
+ *
+ * ⚠️ THE RUNNING BALANCE IS CARRIED DOWN, not invented per row -- opening at
+ * 45,000, each row the one above it plus its debit less its credit, closing where
+ * it lands -- and Total Debit and Total Credit are the sums of the two columns,
+ * so a preview whose figures did not reconcile would have a tenant arranging
+ * columns around numbers they cannot check. Debit RAISES this balance; it is the
+ * account's own book, not a party statement's.
+ *
+ * ⚠️ THE TWO KHATA NUMBERS, unlike the product ones, ARE SHOWN. A Tiles and
+ * Sanitary branch does keep them -- on the voucher itself -- so a layout that
+ * names them has something real to preview against, and leaving them off some
+ * rows shows a tenant where they drop out. They are not put in the DEFAULT
+ * layout: on every other trade they are blank, and a column of blanks is the
+ * needless space the owner asked us to avoid.
+ */
+export const LEDGER_REPORT_SAMPLE: DocumentData = {
+  basic: {
+    ledger_account: 'Cash In Hand',
+    idfr_code: 'AC-1001',
+    manual_address: 'Head Office, 12 Station Road, Dhaka',
+    mobile: '01711223344',
+    report_range: '01/09/2026 to 20/09/2026',
+    opening_balance: 45000,
+    closing_balance: 19850,
+    // ⚠️ THE TWO COLUMN SUMS BELONG IN `basic`, even though the renderer works
+    // them out from the rows. A totals line marked `hideIfEmpty` is measured
+    // against the VOUCHER (`nothing()` reads basic), so with these two left out
+    // the preview would hide the Total Debit and Total Credit lines the real
+    // paper prints -- a tenant arranging a band around lines they cannot see.
+    total_debit: 12850,
+    total_credit: 38000,
+    branch_name: 'Head Office',
+  },
+  products: [
+    {
+      sl: 1,
+      voucher_no: '1-260900003',
+      voucher_date: '01/09/2026',
+      // ⚠️ THE PARTS AS WELL AS THE WHOLE. A Description (own format) column
+      // resolves its tokens off the ROW, so without these a pattern box the
+      // tenant has just filled in would preview blank on every row. The branch
+      // is carried on this row and the third only: on the real report it comes
+      // from the report listing every branch at once, and the other two show
+      // what a pattern does with a part a row has not got (its line drops out).
+      name: 'Payment to Supplier',
+      remarks: 'Against PO-2071',
+      branch_name: 'Head Office',
+      description_lines: ['Payment to Supplier', 'Against PO-2071'],
+      description_flat: 'Payment to Supplier Against PO-2071',
+      // The khata numbers a Tiles & Sanitary branch types by hand -- the paper
+      // voucher and the paper delivery challan. NOT the software's voucher_no
+      // above. Shown on this row and the third, and left off the second and
+      // fourth, so the preview shows both arrangements AND that a layout naming
+      // them prints nothing on a branch that keeps none.
+      manual_voucher_no: 'TV-2609-0114',
+      manual_challan_no: 'CH-M-9087',
+      debit: 12500,
+      credit: 0,
+      running_balance: 57500,
+    },
+    {
+      sl: 2,
+      voucher_no: '1-260900011',
+      voucher_date: '05/09/2026',
+      name: 'Cash Received',
+      remarks: 'Against CH-10041',
+      branch_name: '',
+      description_lines: ['Cash Received', 'Against CH-10041'],
+      description_flat: 'Cash Received Against CH-10041',
+      debit: 0,
+      credit: 20000,
+      running_balance: 37500,
+    },
+    {
+      sl: 3,
+      voucher_no: '2-260900004',
+      voucher_date: '09/09/2026',
+      // No remark on this one -- the report has none for a bank charge -- so a
+      // pattern naming {remarks} drops that line rather than printing a gap.
+      name: 'Bank Charge',
+      remarks: '',
+      branch_name: 'Head Office',
+      description_lines: ['Bank Charge'],
+      description_flat: 'Bank Charge',
+      // A khata voucher but no paper challan: the challan line must drop out
+      // rather than print an empty label beside it.
+      manual_voucher_no: 'BV-2609-0007',
+      manual_challan_no: '',
+      debit: 350,
+      credit: 0,
+      running_balance: 37850,
+    },
+    {
+      sl: 4,
+      voucher_no: '3-260900014',
+      voucher_date: '15/09/2026',
+      name: 'Sales Collection',
+      remarks: 'Counter sale',
+      branch_name: '',
+      description_lines: ['Sales Collection', 'Counter sale'],
+      description_flat: 'Sales Collection Counter sale',
+      debit: 0,
+      credit: 18000,
+      running_balance: 19850,
     },
   ],
 };
@@ -873,6 +1014,193 @@ export const COMPANY_SCHEME_RECEIPTS_SAMPLE: DocumentData = {
 };
 
 /**
+ * Product Stock as the designer previews it: one row per product, what came in
+ * and what went out and where it stands.
+ *
+ * ⚠️ `code` IS FILLED AND `group` IS EMPTY, which is what the report answers.
+ * The code comes from ReportsController::productStockData (guarded -- older
+ * databases have no such column, and there a `{code}` in a pattern prints blank,
+ * which the sample cannot show both ways). `group` is not in the report's answer
+ * at all: it is laid down blank so a layout is the same shape on either paper,
+ * and a tenant who asks for it sees it drop out of a composed pattern here
+ * exactly as it will on a real page.
+ *
+ * ⚠️ EVERY PRODUCT FACT IS FLAT ON THE ROW -- `brand`, `category`,
+ * `product_name`, `unit` -- because that is what a composed pattern reads,
+ * verbatim by key. The adapter lays the server's own `brand_name`/`cat_name` out
+ * under these names, and a sample that kept the server's names would preview a
+ * product cell with the tokens silently taken out of it.
+ *
+ * The four figures agree with each other -- each balance is its opening plus
+ * what came in less what went out -- because the paper foots all four and a
+ * reader runs a finger down them.
+ */
+export const PRODUCT_STOCK_SAMPLE: DocumentData = {
+  basic: {
+    report_range: '01/09/2026 to 20/09/2026',
+    report_brand: 'Walton',
+    report_category: 'Electronics',
+    branch_name: 'Head Office',
+  },
+  products: [
+    /**
+     * ⚠️ THE HEADING ROWS ARE PART OF THE SAMPLE. A branch that groups its stock
+     * by brand and category prints these as rows of their own, one cell across
+     * the table -- brand at the margin, then its category one step in as
+     * `brand → category` (`__depth`) -- and a
+     * sample without them would show a tenant a flat page and then print a
+     * grouped one. Which headings a real page carries is settled by the screen,
+     * not here: see
+     * toProductStockDocumentData.
+     */
+    { id: 'brand-1', __heading: 'Walton' },
+    { id: 'cat-1', __heading: 'Walton → Electronics', __depth: 1 },
+    {
+      id: 1,
+      sl: 1,
+      brand: 'Walton',
+      category: 'Electronics',
+      product_name: 'Refrigerator 316 Ltr',
+      unit: 'Pcs',
+      code: 'WRT-316',
+      group: '',
+      opening: 12,
+      stock_in: 30,
+      stock_out: 22,
+      balance: 20,
+    },
+    {
+      id: 2,
+      sl: 2,
+      brand: 'Walton',
+      category: 'Electronics',
+      product_name: 'LED Television 43"',
+      unit: 'Pcs',
+      code: 'WLT-43S',
+      group: '',
+      opening: 8,
+      stock_in: 15,
+      stock_out: 6,
+      balance: 17,
+    },
+    { id: 'brand-2', __heading: 'Singer' },
+    { id: 'cat-2', __heading: 'Singer → Home Appliance', __depth: 1 },
+    {
+      id: 3,
+      sl: 3,
+      brand: 'Singer',
+      category: 'Home Appliance',
+      product_name: 'Rice Cooker 2.8 Ltr',
+      unit: 'Pcs',
+      code: 'SGR-RC28',
+      group: '',
+      opening: 25,
+      stock_in: 0,
+      stock_out: 9,
+      balance: 16,
+    },
+    {
+      id: 4,
+      sl: 4,
+      brand: 'Singer',
+      category: 'Home Appliance',
+      product_name: 'Ceiling Fan 56"',
+      unit: 'Pcs',
+      code: 'SGR-CF56',
+      group: '',
+      opening: 40,
+      stock_in: 60,
+      stock_out: 55,
+      balance: 45,
+    },
+  ],
+};
+
+/**
+ * Stock Details as the designer previews it: the same stocktake with each
+ * product's rate and value beside it.
+ *
+ * ⚠️ A SECOND SAMPLE RATHER THAN A SHARED ONE, unlike the two ledgers. Those
+ * differ only in which columns a layout prints; these two carry different FACTS
+ * -- this one has a rate and a value and no opening or movement, the other the
+ * reverse -- so one sample would misdescribe whichever paper it was not written
+ * for. It is the same reason Stock Details has a catalogue of its own.
+ *
+ * ⚠️ `amount` IS THE SERVER'S `total_stock`, NOT `qty * price`. The report takes
+ * the layer's purchase percentage off before it values anything, so a sample
+ * (and an adapter) that multiplied the two would preview a figure the paper
+ * never prints. `purchase_pct` is carried so a layout can say what was deducted.
+ */
+export const STOCK_DETAILS_SAMPLE: DocumentData = {
+  basic: {
+    as_on_date: '20/09/2026',
+    report_range: '01/09/2026 to 20/09/2026',
+    report_brand: 'Walton',
+    report_category: 'Electronics',
+    report_group: 'Home Appliance',
+    branch_name: 'Head Office',
+  },
+  products: [
+    {
+      id: 1,
+      sl: 1,
+      brand: 'Walton',
+      category: 'Electronics',
+      group: 'Home Appliance',
+      product_name: 'Refrigerator 316 Ltr',
+      code: 'WRT-316',
+      unit: 'Pcs',
+      qty: 20,
+      price: 48500,
+      amount: 945750,
+      purchase_pct: 2.5,
+    },
+    {
+      id: 2,
+      sl: 2,
+      brand: 'Walton',
+      category: 'Electronics',
+      group: 'Home Appliance',
+      product_name: 'LED Television 43"',
+      code: 'WLT-43S',
+      unit: 'Pcs',
+      qty: 17,
+      price: 41200,
+      amount: 682890,
+      purchase_pct: 2.5,
+    },
+    {
+      id: 3,
+      sl: 3,
+      brand: 'Singer',
+      category: 'Home Appliance',
+      group: 'Kitchen',
+      product_name: 'Rice Cooker 2.8 Ltr',
+      code: 'SGR-RC28',
+      unit: 'Pcs',
+      qty: 16,
+      price: 3450,
+      amount: 54372,
+      purchase_pct: 1.5,
+    },
+    {
+      id: 4,
+      sl: 4,
+      brand: 'Singer',
+      category: 'Home Appliance',
+      group: 'Kitchen',
+      product_name: 'Ceiling Fan 56"',
+      code: 'SGR-CF56',
+      unit: 'Pcs',
+      qty: 45,
+      price: 3980,
+      amount: 176413,
+      purchase_pct: 1.5,
+    },
+  ],
+};
+
+/**
  * The document the designer previews against.
  *
  * ⚠️ It has to be the right KIND of document. An order laid out against a
@@ -880,14 +1208,39 @@ export const COMPANY_SCHEME_RECEIPTS_SAMPLE: DocumentData = {
  * concludes the fields do not work rather than that the sample is the wrong
  * one.
  */
+/**
+ * The two returns preview against their invoice's sample with the voucher
+ * number changed.
+ *
+ * ⚠️ Derived rather than written out. A return shows the same fields an
+ * invoice does -- which is exactly why `sampleFor` cannot send it to the
+ * challan below -- and only the number says which paper is on the screen. A
+ * second literal sample would be fifty lines of copied figures to keep in step
+ * with the invoice's.
+ */
+export const SALES_RETURN_SAMPLE: DocumentData = {
+  ...SALES_INVOICE_SAMPLE,
+  basic: { ...SALES_INVOICE_SAMPLE.basic, vr_no: '13-260900001' },
+};
+
+export const PURCHASE_RETURN_SAMPLE: DocumentData = {
+  ...PURCHASE_INVOICE_SAMPLE,
+  basic: { ...PURCHASE_INVOICE_SAMPLE.basic, vr_no: '12-260900001' },
+};
+
 export const sampleFor = (docType: string): DocumentData => {
   if (docType === 'sales_order') return SAMPLE_ORDER_DOCUMENT;
   if (docType === 'hotel_bill') return HOTEL_BILL_SAMPLE;
   if (docType === 'hotel_money_receipt') return HOTEL_RECEIPT_SAMPLE;
   if (docType === 'sales_invoice') return SALES_INVOICE_SAMPLE;
   if (docType === 'purchase_invoice') return PURCHASE_INVOICE_SAMPLE;
+  if (docType === 'sales_return') return SALES_RETURN_SAMPLE;
+  if (docType === 'purchase_return') return PURCHASE_RETURN_SAMPLE;
   if (docType === 'sales_ledger' || docType === 'purchase_ledger') return LEDGER_SAMPLE;
+  if (docType === 'product_stock') return PRODUCT_STOCK_SAMPLE;
+  if (docType === 'stock_details') return STOCK_DETAILS_SAMPLE;
   if (docType === 'ledger_details') return LEDGER_DETAILS_SAMPLE;
+  if (docType === 'ledger') return LEDGER_REPORT_SAMPLE;
   if (docType === 'due_list') return DUE_LIST_SAMPLE;
   if (docType === 'company_scheme_receivable') return COMPANY_SCHEME_RECEIVABLE_SAMPLE;
   if (docType === 'company_scheme_receipts') return COMPANY_SCHEME_RECEIPTS_SAMPLE;

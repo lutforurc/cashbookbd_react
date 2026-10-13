@@ -7,9 +7,10 @@ import { logout } from '../../features/authReducer';
 import DarkModeSwitcher from './DarkModeSwitcher';
 import useColorMode from '../../hooks/useColorMode';
 import routes from '../services/appRoutes';
+import { API_ALL_DDL_BRANCH_URL } from '../services/apiRoutes';
 import httpService from '../services/httpService';
 import { hasPermission } from '../utils/permissionChecker';
-import { FiGrid, FiCheckSquare } from 'react-icons/fi';
+import { FiGrid, FiCheckSquare, FiGitBranch } from 'react-icons/fi';
 import { Button } from '../../pages/UiElements/CustomButtons';
 
 
@@ -51,6 +52,37 @@ const DropdownUser = () => {
     };
   }, [pathname]);
 
+
+  /**
+   * How many branches this login may work in. `null` until it is known, so the
+   * menu row does not appear for a user whose reach is one branch -- a page
+   * whose only answer would be "this is already your branch".
+   *
+   * Asked for when the menu opens, not on mount: this header is on every screen
+   * and the row is only wanted on the one screen the menu is open on.
+   */
+  const [branchCount, setBranchCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!dropdownOpen || branchCount !== null) return;
+
+    let cancelled = false;
+
+    httpService
+      .get(API_ALL_DDL_BRANCH_URL)
+      .then((res) => {
+        if (cancelled) return;
+        const list = res.data?.success ? res.data?.data?.data : null;
+        setBranchCount(Array.isArray(list) ? list.length : 0);
+      })
+      .catch(() => {
+        if (!cancelled) setBranchCount(0);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dropdownOpen, branchCount]);
 
   useEffect(() => {
     const handleStorageChange = (event: any) => {
@@ -182,6 +214,18 @@ const DropdownUser = () => {
                 My Profile
               </Link>
             </li>
+            {branchCount !== null && branchCount > 1 && (
+              <li>
+                <Link
+                  to={routes.switch_branch}
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+                >
+                  <FiGitBranch size={22} />
+                  Switch Branch
+                </Link>
+              </li>
+            )}
             <li>
               <div className="flex items-center justify-end gap-3 rounded-sm bg-gray-50 px-3 py-2.5 text-sm font-medium dark:bg-meta-4 lg:text-base">
                 <div className="flex items-center gap-2.5">

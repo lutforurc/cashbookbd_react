@@ -21,6 +21,8 @@ import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchBalanceSheet } from "./balanceSheetSlice";
 import BalanceSheetPrint from "./BalanceSheetPrint";
 import BalanceSheetStatement from "./BalanceSheetStatement";
+import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes";
+import { buildBalanceSheetNotes } from "./balanceSheetNotes";
 import {
   buildSheetLines,
   ColumnTotals,
@@ -54,6 +56,28 @@ const sumReportColumns = (groups: ReportGroup[]): ColumnTotals => ({
   movement: groups.reduce((sum, group) => sum + toNum(group.movement), 0),
   closing: groups.reduce((sum, group) => sum + toNum(group.closing || group.total), 0),
 });
+
+/**
+ * The Difference card's own figure, always at two decimals.
+ *
+ * ⚠️ NOT formatAmount, and not thousandSeparator either. A column sum is a
+ * float64: two sides holding identical money added up in a different order come
+ * out -0.0000000037 apart. thousandSeparator collapses anything that rounds to
+ * zero to "-", and formatAmount brackets it because the sign bit is negative,
+ * so a sheet that balanced printed "(-)" -- a difference in brackets where there
+ * was none. Padding of 0.00 is the point here: the figure this card carries is
+ * what the reader checks the sheet against, and it has to say nought rather than
+ * go quiet.
+ */
+const formatDifferenceAmount = (amount: number) => {
+  const rounded = Math.round(amount * 100) / 100;
+  const formatted = Math.abs(rounded).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  return rounded < 0 ? `(${formatted})` : formatted;
+};
 
 const BalanceSheet = (user: any) => {
   const dispatch = useDispatch();
@@ -142,75 +166,43 @@ const BalanceSheet = (user: any) => {
   const hasSections =
     sections.assets.length > 0 || sections.liabilities.length > 0 || sections.equity.length > 0;
 
+  // The notes are built from the same sections the sheet is drawn from, so a
+  // note's amount is the row above it and never a figure of its own.
+  const balanceSheetNotes = useMemo(
+    () =>
+      buildBalanceSheetNotes(sections, {
+        asOn: apiData?.report_date?.as_on_date
+          ? dayjs(apiData.report_date.as_on_date).format("DD/MM/YYYY")
+          : endDate
+            ? dayjs(endDate).format("DD/MM/YYYY")
+            : undefined,
+      }),
+    [sections, apiData?.report_date?.as_on_date, endDate],
+  );
+
   const assets: ReportGroup[] = Array.isArray(apiData?.assets) ? apiData.assets : [];
   const liabilities: ReportGroup[] = Array.isArray(apiData?.liabilities)
     ? apiData.liabilities
     : [];
   const rawEquity: ReportGroup[] = Array.isArray(apiData?.equity) ? apiData.equity : [];
 
-  const equity: ReportGroup[] = useMemo(() => {
-    const openingDifference = toNum(apiData?.totals?.difference_columns?.opening);
-
-    if (Math.abs(openingDifference) < 0.01) {
-      return rawEquity;
-    }
-
-    let netProfitAdjusted = false;
-    const adjusted = rawEquity.map((group) => {
-      const groupName = String(group.group_name || "").toLowerCase();
-      const isNetProfitGroup = groupName === "net profit" || groupName === "net loss";
-
-      if (!isNetProfitGroup || Math.abs(toNum(group.opening)) >= 0.01) {
-        return group;
-      }
-
-      netProfitAdjusted = true;
-      const nextOpening = toNum(group.opening) + openingDifference;
-      const nextClosing = toNum(group.closing || group.total) + openingDifference;
-
-      return {
-        ...group,
-        opening: nextOpening,
-        closing: nextClosing,
-        total: nextClosing,
-        items: (group.items || []).map((item, index) => {
-          if (index > 0) return item;
-
-          return {
-            ...item,
-            opening: toNum(item.opening) + openingDifference,
-            closing: toNum(item.closing || item.balance) + openingDifference,
-            balance: toNum(item.balance || item.closing) + openingDifference,
-          };
-        }),
-      };
-    });
-
-    if (netProfitAdjusted) {
-      return adjusted;
-    }
-
-    return [
-      ...adjusted,
-      {
-        group_name: openingDifference >= 0 ? "Net Profit" : "Net Loss",
-        opening: openingDifference,
-        movement: 0,
-        closing: openingDifference,
-        total: openingDifference,
-        items: [
-          {
-            coa4_id: null,
-            name: openingDifference >= 0 ? "Net Profit" : "Net Loss",
-            opening: openingDifference,
-            movement: 0,
-            closing: openingDifference,
-            balance: openingDifference,
-          },
-        ],
-      },
-    ];
-  }, [apiData?.totals?.difference_columns?.opening, rawEquity]);
+  /**
+   * ⚠️ THE EQUITY SIDE IS SHOWN AS THE SERVER SENDS IT, AND NOTHING IS ADDED TO
+   * IT. This used to add the opening Difference to equity as a Net Profit group
+   * (or fold it into the one already there), which made the Difference card
+   * read 0.00 on a sheet that did not balance. A Difference is the one figure a
+   * reader checks the sheet against; padding it away is worse than showing it,
+   * and the padding also moved the Closing column, which is the column the
+   * statement view prints.
+   *
+   * The server no longer produces that difference -- its profit line is the
+   * ledger's own leftover, so all three columns balance on any date range --
+   * and where a difference does appear it is real: a voucher whose debits do
+   * not equal its credits, or a head the chart cannot place. Both are listed on
+   * VR Settings → Report Mismatch, and the Difference card and its debug panel
+   * below say so.
+   */
+  const equity: ReportGroup[] = rawEquity;
 
   const totals = useMemo(() => {
     const assetsColumns = sumReportColumns(assets);
@@ -342,8 +334,8 @@ const BalanceSheet = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
-    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
+    if (!branchId) return alert("Branch select করুন");
+    if (!startDate || !endDate) return alert("Start/End Date দিন");
 
     setButtonLoading(true);
 
@@ -392,11 +384,11 @@ const BalanceSheet = (user: any) => {
                   Select Branch
                 </label>
                 <BranchDropdown
- branchDdl={dropdownData}
- onChange={handleBranchChange}
- defaultValue={branchId ? String(branchId) : ""}
- value={branchId ? String(branchId) : ""}
- className="px-3"
+                  branchDdl={dropdownData}
+                  onChange={handleBranchChange}
+                  defaultValue={branchId ? String(branchId) : ""}
+                  value={branchId ? String(branchId) : ""}
+                  className="px-3"
                 />
               </div>
 
@@ -405,10 +397,10 @@ const BalanceSheet = (user: any) => {
                   Start Date
                 </label>
                 <InputDatePicker
- selectedDate={startDate}
- setSelectedDate={setStartDate}
- setCurrentDate={setStartDate}
- className="w-full "
+                  selectedDate={startDate}
+                  setSelectedDate={setStartDate}
+                  setCurrentDate={setStartDate}
+                  className="w-full "
                 />
               </div>
 
@@ -417,10 +409,10 @@ const BalanceSheet = (user: any) => {
                   End Date
                 </label>
                 <InputDatePicker
- selectedDate={endDate}
- setSelectedDate={setEndDate}
- setCurrentDate={setEndDate}
- className="w-full "
+                  selectedDate={endDate}
+                  setSelectedDate={setEndDate}
+                  setCurrentDate={setEndDate}
+                  className="w-full "
                 />
               </div>
 
@@ -535,16 +527,18 @@ const BalanceSheet = (user: any) => {
           </div>
         </div>
 
-        {balanceSheetState?.loading && (
-          <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-8 shadow-default">
-            <Loader />
-          </div>
-        )}
+        {/* ⚠️ The sheet is NOT unmounted while loading. Profit & Loss lays the
+            spinner over what is already there and swaps the numbers when they
+            arrive; this screen used to drop the whole report first, so an Apply
+            looked like the page had been emptied until the data landed. */}
+        {balanceSheetState?.loading && <Loader />}
 
-        {!balanceSheetState?.loading && !hasReportData && (
+        {!hasReportData && (
           <div className="rounded-sm border border-dashed border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-6 py-12 text-center shadow-default">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
-              No balance sheet loaded yet
+              {balanceSheetState?.loading
+                ? "Balance sheet loading..."
+                : "No balance sheet loaded yet"}
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Select a branch, date range, then click Load Report.
@@ -552,14 +546,14 @@ const BalanceSheet = (user: any) => {
           </div>
         )}
 
-        {!balanceSheetState?.loading && hasBalanceSheetResponse && !hasReportData && (
+        {hasBalanceSheetResponse && !hasReportData && (
           <NetProfitDebugPanel
             branchName={appliedBranchName}
             values={netProfitDebug}
           />
         )}
 
-        {!balanceSheetState?.loading && hasReportData && (
+        {hasReportData && (
           <>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <SummaryCard title="Total Assets" value={totals.assets} tone="emerald" />
@@ -572,6 +566,7 @@ const BalanceSheet = (user: any) => {
                 title="Difference"
                 value={totals.difference}
                 tone={Math.abs(totals.difference) > 0.009 ? "amber" : "slate"}
+                formatted={formatDifferenceAmount(totals.difference)}
               />
             </div>
 
@@ -610,6 +605,11 @@ const BalanceSheet = (user: any) => {
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                       Balance Sheet
+                      {/* Note 1 is the basis of the whole sheet, so it hangs on the
+                          sheet's own title -- every other note is pointed at by the
+                          group row it explains (see balanceSheetNotes). Same place
+                          the P&L and the Trial Balance put theirs. */}
+                      <NoteRef n={1} />
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                       {branchName}, {reportDates.start ? dayjs(reportDates.start).format("DD/MM/YYYY") : "-"} to{" "}
@@ -617,7 +617,7 @@ const BalanceSheet = (user: any) => {
                     </p>
                   </div>
                   <div className="rounded-sm bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                    As on {reportDates.asOn ? dayjs(reportDates.asOn).format("DD/MM/YYYY") : "-"}
+                    As at {reportDates.asOn ? dayjs(reportDates.asOn).format("DD/MM/YYYY") : "-"}
                   </div>
                 </div>
               </div>
@@ -647,6 +647,13 @@ const BalanceSheet = (user: any) => {
                 </div>
               )}
             </div>
+
+            {/* The notes sit under the sheet, on screen and on paper, and the
+                sheet's own rows point at their numbers. */}
+            <ReportNotes
+              title="Notes to the Balance Sheet"
+              notes={balanceSheetNotes}
+            />
           </>
         )}
       </div>
@@ -786,7 +793,7 @@ const NetProfitDebugPanel = ({
               Net Profit Debug
             </h3>
             <p className="mt-1 text-sm text-sky-800 dark:text-sky-200">
-              {branchName} | { formatDate(values.filters.startDate) || "-"} to {formatDate(values.filters.endDate) || "-"}
+              {branchName} | {formatDate(values.filters.startDate) || "-"} to {formatDate(values.filters.endDate) || "-"}
             </p>
           </div>
           <p className="text-sm font-semibold text-sky-900 dark:text-sky-100">
@@ -849,10 +856,13 @@ const SummaryCard = ({
   title,
   value,
   tone,
+  formatted,
 }: {
   title: string;
   value: number;
   tone: "emerald" | "blue" | "amber" | "slate";
+  /** Overrides the shared money format — see formatDifferenceAmount. */
+  formatted?: string;
 }) => {
   const toneMap: Record<string, string> = {
     emerald:
@@ -870,7 +880,7 @@ const SummaryCard = ({
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
         {title}
       </p>
-      <p className="mt-3 text-2xl font-semibold">{formatAmount(value)}</p>
+      <p className="mt-3 text-2xl font-semibold">{formatted ?? formatAmount(value)}</p>
     </div>
   );
 };
@@ -907,11 +917,10 @@ const BalanceSheetTable = ({
 
   /** The six money cells of one row: Opening, Movement and Closing, Dr then Cr. */
   const amountCells = (side: SheetSide, columns: ColumnTotals, bold: boolean) => {
-    const cellClass = `${moneyCell} ${
-      bold
+    const cellClass = `${moneyCell} ${bold
         ? "font-bold text-slate-900 dark:text-[rgb(var(--c-text))]"
         : "text-slate-900 dark:text-[rgb(var(--c-text))]"
-    }`;
+      }`;
 
     return (["opening", "movement", "closing"] as const).flatMap((column) => [
       <td key={`${column}-dr`} className={cellClass}>
@@ -970,20 +979,25 @@ const BalanceSheetTable = ({
             if (line.kind === "subsection") {
               return (
                 <tr key={`${line.label}-${index}`} className="bg-slate-50 dark:bg-slate-800/50">
-                  <td colSpan={8} className={`${cell} pl-6 font-medium text-slate-600 dark:text-slate-300`}>
+                  {/* ⚠️ No indent in the worksheet: the serial is the
+                      hierarchy here, so every name starts at the cell's own
+                      padding and the eye reads straight down the column. The
+                      statement keeps its stair -- see BalanceSheetStatement. */}
+                  <td colSpan={8} className={`${cell} font-medium text-slate-600 dark:text-slate-300`}>
                     {line.label}
                   </td>
                 </tr>
               );
             }
 
-            /* A level-2 subtotal, and the "Less:" line above it. Indented under
-               the groups it sums so the eye reads down the column and stops. */
+            /* A level-2 subtotal, and the "Less:" line above it. Unindented,
+               like every other row of this table; the bold is what tells it
+               apart from the groups it sums. */
             if (line.kind === "subtotal") {
               return (
                 <tr key={`${line.label}-${index}`}>
                   <td className={cell} />
-                  <td className={`${cell} ${line.indent ? "pl-10" : "pl-6 font-semibold"} text-slate-700 dark:text-slate-200`}>
+                  <td className={`${cell}${line.indent ? "" : " font-semibold"} text-slate-700 dark:text-slate-200`}>
                     {line.label}
                   </td>
                   {(["opening", "movement", "closing"] as const).flatMap((column) => [
@@ -1103,87 +1117,87 @@ const GroupDetailsModal = ({
       }}
     >
       <div className="mx-auto flex min-h-full w-full max-w-3xl items-start justify-center sm:items-center">
-      <div className="my-2 flex max-h-[88vh] w-full flex-col overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-4 py-3 sm:px-5 sm:py-4">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
-              {title}: {group.group_name || "Details"}
-            </h3>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Clicked summary details are shown here.
-            </p>
+        <div className="my-2 flex max-h-[88vh] w-full flex-col overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-4 py-3 sm:px-5 sm:py-4">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
+                {title}: {group.group_name || "Details"}
+              </h3>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Clicked summary details are shown here.
+              </p>
+            </div>
+            <Button
+              type="button"
+              onClick={onClose}
+              className="rounded-sm border border-[rgb(var(--c-border))] px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Close
+            </Button>
           </div>
-          <Button
-            type="button"
-            onClick={onClose}
-            className="rounded-sm border border-[rgb(var(--c-border))] px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            Close
-          </Button>
-        </div>
 
-        <div className="shrink-0 border-b border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 sm:px-5 sm:py-4 dark:bg-slate-900/40">
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
-            <ModalStat label="Opening" value={toNum(group.opening)} />
-            <ModalStat label="Movement" value={toNum(group.movement)} />
-            <ModalStat label="Closing" value={toNum(group.closing || group.total)} />
-            <ModalStat label="Items" value={items.length} isCount />
+          <div className="shrink-0 border-b border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 sm:px-5 sm:py-4 dark:bg-slate-900/40">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
+              <ModalStat label="Opening" value={toNum(group.opening)} />
+              <ModalStat label="Movement" value={toNum(group.movement)} />
+              <ModalStat label="Closing" value={toNum(group.closing || group.total)} />
+              <ModalStat label="Items" value={items.length} isCount />
+            </div>
           </div>
-        </div>
 
-        <div className="flex-1 overflow-x-auto overflow-y-auto px-4 pb-4 sm:px-5 sm:pb-5">
-          <table className="min-w-full">
-            <thead>
-              <tr className="sticky top-0 z-20 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
-                <th className="px-2 py-2 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
-                  Particular
-                </th>
-                <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
-                  Opening
-                </th>
-                <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
-                  Movement
-                </th>
-                <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
-                  Closing
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.length > 0 ? (
-                items.map((item, index) => (
-                  <tr
-                    key={`${item.coa4_id || index}-${item.name || "item"}`}
-                    className="border-b border-[rgb(var(--c-border))] last:border-b-0"
-                  >
-                    <td className="px-2 py-2 text-slate-800 dark:text-slate-100">
-                      {item.name || "-"}
-                    </td>
-                    <td className="px-2 py-2 text-right whitespace-nowrap text-slate-700 dark:text-slate-200">
-                      {formatAmount(toNum(item.opening))}
-                    </td>
-                    <td className="px-2 py-2 text-right whitespace-nowrap text-slate-700 dark:text-slate-200">
-                      {formatAmount(toNum(item.movement))}
-                    </td>
-                    <td className="px-2 py-2 text-right font-medium whitespace-nowrap text-slate-900 dark:text-[rgb(var(--c-text))]">
-                      {formatAmount(toNum(item.closing || item.balance))}
+          <div className="flex-1 overflow-x-auto overflow-y-auto px-4 pb-4 sm:px-5 sm:pb-5">
+            <table className="min-w-full">
+              <thead>
+                <tr className="sticky top-0 z-20 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
+                  <th className="px-2 py-2 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    Particular
+                  </th>
+                  <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
+                    Opening
+                  </th>
+                  <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
+                    Movement
+                  </th>
+                  <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
+                    Closing
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.length > 0 ? (
+                  items.map((item, index) => (
+                    <tr
+                      key={`${item.coa4_id || index}-${item.name || "item"}`}
+                      className="border-b border-[rgb(var(--c-border))] last:border-b-0"
+                    >
+                      <td className="px-2 py-2 text-slate-800 dark:text-slate-100">
+                        {item.name || "-"}
+                      </td>
+                      <td className="px-2 py-2 text-right whitespace-nowrap text-slate-700 dark:text-slate-200">
+                        {formatAmount(toNum(item.opening))}
+                      </td>
+                      <td className="px-2 py-2 text-right whitespace-nowrap text-slate-700 dark:text-slate-200">
+                        {formatAmount(toNum(item.movement))}
+                      </td>
+                      <td className="px-2 py-2 text-right font-medium whitespace-nowrap text-slate-900 dark:text-[rgb(var(--c-text))]">
+                        {formatAmount(toNum(item.closing || item.balance))}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
+                    >
+                      No detailed items found for this summary.
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
-                  >
-                    No detailed items found for this summary.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
       </div>
     </div>
   );

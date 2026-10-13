@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDashboard, getDashboardSummary } from './dashboardSlice';
-import KpiRow, { KpiHeading, DEFAULT_TILES } from './KpiRow';
+import KpiRow, { DEFAULT_TILES } from './KpiRow';
 import DueAgingCard from './DueAgingCard';
 import LowStockCard from './LowStockCard';
 import StockValueCard from './StockValueCard';
@@ -20,6 +20,7 @@ import DashboardCustomizeButton, {
 } from './dashboardCustomization';
 import {
   DashboardRangeBar,
+  businessTypeName,
   rangeCaption,
   useAutoRefresh,
   useCashBookRange,
@@ -152,7 +153,16 @@ const ComputerAccessories = () => {
     <div>
       <HelmetTitle title="Dashboard" />
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-slate-400">{rangeCaption(range.from, range.to, refreshedAt)}</p>
+        {/* The trade, then the dates it was read over -- the shape the trade
+            dashboard has had all along. ⚠️ The name is off the branch: this
+            same page is what "General Business", "LP Gas Business" and "Tiles
+            and Sanitary" all land on. */}
+        <div>
+          <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
+            {businessTypeName(view.viewBranch)}
+          </h1>
+          <p className="text-xs text-slate-400">{rangeCaption(range.from, range.to, refreshedAt)}</p>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <DashboardRangeBar range={range} view={view} onRefresh={refresh} busy={Boolean(summary?.isLoading)} />
           <DashboardCustomizeButton
@@ -166,9 +176,6 @@ const ComputerAccessories = () => {
           />
         </div>
       </div>
-
-      {kpiTiles.length > 0 && <KpiHeading trxDate={summaryData?.trxDate} />}
-
 
       {/* items-stretch, not items-start: every card in a row ends at the same
           line. Each card is a flex column with its footer on mt-auto, so the

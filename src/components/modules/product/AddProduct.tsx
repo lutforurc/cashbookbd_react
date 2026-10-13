@@ -139,17 +139,23 @@ const AddProduct = () => {
   }, [id, dispatch]);
 
 
+  // Waits for the answer. It used to announce success and leave for the list
+  // before the server had replied, so a refused edit -- a code or a name
+  // already taken -- looked saved and was lost.
   const handleBranchUpdate = () => {
-    try {
-      dispatch(updateProduct(formData));
-      toast.success('Product updated successfully');
-      setTimeout(() => {
-        setFormData(initialProduct);
-        navigate('/product/product-list');
-      }, 1000);
-    } catch (error) {
-      console.error('Error saving transactions:', error);
-    }
+    dispatch(
+      updateProduct(formData, (d: any) => {
+        if (d?.success) {
+          toast.success(d?.message || 'Product updated successfully');
+          setTimeout(() => {
+            setFormData(initialProduct);
+            navigate('/product/product-list');
+          }, 1000);
+        } else {
+          toast.error(d?.message || 'Product could not be updated.');
+        }
+      }),
+    );
   };
 
   useEffect(() => {

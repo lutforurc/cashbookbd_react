@@ -1,12 +1,16 @@
+import { Fragment } from "react";
 import type { ReactNode } from "react";
 
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import { NoteRef } from "../../../utils/utils-functions/ReportNotes";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 type NetRow = {
   name?: string;
   debit?: number | string;
   credit?: number | string;
+  /** The accounts inside the group, on an income row. See ProfitLoss.tsx. */
+  children?: NetRow[];
 };
 
 type ProfitLossReportData = {
@@ -29,6 +33,21 @@ type ProfitLossReportData = {
     totalCredit: number;
   };
   /**
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+   * The period's cost of goods sold, written out. A reading of the trading
+   * account's own figures -- it is in no total.
+   */
+  cogs: {
+    opening: number;
+    netPurchase: number;
+    directAcquisitionCosts: number;
+    closing: number;
+    total: number;
+  };
+=======
+>>>>>>> main
    * What was written off as damaged or lost in this period, at FIFO cost.
    *
    * ⚠️ SHOWN, NEVER SUMMED. The money has already left the profit through a
@@ -36,6 +55,10 @@ type ProfitLossReportData = {
    * it off twice.
    */
   productOut?: number;
+<<<<<<< HEAD
+=======
+>>>>>>> vite-8
+>>>>>>> main
   net: {
     grossProfit: number;
     grossLoss: number;
@@ -54,7 +77,7 @@ type ProfitLossReportProps = {
   loading?: boolean;
   report: ProfitLossReportData;
   loader: ReactNode;
-  onNetExpenseClick?: (row: NetRow) => void;
+  onNetExpenseClick?: (row: NetRow, side: "expense" | "income") => void;
 };
 
 const toNum = (v: any) => {
@@ -76,7 +99,8 @@ const ProfitLossReport = ({
       {loading ? loader : null}
 
       <div className="text-center font-semibold mb-2 dark:text-[rgb(var(--c-text))] text-[rgb(var(--c-text))] p-2">
-        PROFIT OR LOSS A/C (TRADING A/C)
+        TRADING ACCOUNT
+        <NoteRef n={1} />
       </div>
 
       <table className="w-full text-sm">
@@ -91,14 +115,20 @@ const ProfitLossReport = ({
 
         <tbody>
           <tr className="border-b border-[rgb(var(--c-border))]">
-            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">Opening Stock</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">
+              Opening Stock
+              <NoteRef n={5} />
+            </td>
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(report.trading.opening)}</td>
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(0)}</td>
           </tr>
 
           <tr className="border-b border-[rgb(var(--c-border))]">
-            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">Closing Stock</td>
+            <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">
+              Closing Stock
+              <NoteRef n={5} />
+            </td>
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(0)}</td>
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(report.trading.closing)}</td>
@@ -115,7 +145,11 @@ const ProfitLossReport = ({
             </tr>
           ) : null}
 
-          {report.trading.purchaseReturnCredit > 0 ? (
+          {/* `!== 0`, not `> 0`: the two head values are net (see sumNatural), so
+              a return that forfeited more discount than was granted makes one
+              negative -- and the row still has to print, or the column stops
+              adding up to the Net line below it. */}
+          {report.trading.purchaseReturnCredit !== 0 ? (
             <tr className="border-b border-[rgb(var(--c-border))]">
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Purchase Return</td>
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
@@ -126,7 +160,7 @@ const ProfitLossReport = ({
             </tr>
           ) : null}
 
-          {report.trading.purchaseDiscountCredit > 0 ? (
+          {report.trading.purchaseDiscountCredit !== 0 ? (
             <tr className="border-b border-[rgb(var(--c-border))]">
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Purchase Discount</td>
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">
@@ -161,7 +195,7 @@ const ProfitLossReport = ({
             </tr>
           ) : null}
 
-          {report.trading.salesDiscountDebit > 0 ? (
+          {report.trading.salesDiscountDebit !== 0 ? (
             <tr className="border-b border-[rgb(var(--c-border))]">
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Sales Discount</td>
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right w-30">
@@ -172,7 +206,7 @@ const ProfitLossReport = ({
             </tr>
           ) : null}
 
-          {report.trading.salesReturnDebit > 0 ? (
+          {report.trading.salesReturnDebit !== 0 ? (
             <tr className="border-b border-[rgb(var(--c-border))]">
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 pl-6">(-) Sales Return</td>
               <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right w-30">
@@ -242,6 +276,15 @@ const ProfitLossReport = ({
         </tbody>
       </table>
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+      {/* Cost of goods sold, written out. The trading account states the two
+          stock figures and the purchase at opposite ends of the page and never
+          says what they come to; this says it. It is a reading of those same
+          figures -- nothing here is added to the totals above or below. */}
+=======
+>>>>>>> main
       {/* ⚠️ A NOTE UNDER THE TABLE, WITH NO FIGURE IN EITHER COLUMN. The money
           is already gone -- the closing stock above is short by exactly this,
           and the gross result has taken it off once. A row that put it in the
@@ -253,8 +296,49 @@ const ProfitLossReport = ({
         </div>
       ) : null}
 
+<<<<<<< HEAD
+=======
+>>>>>>> vite-8
+>>>>>>> main
       <div className="text-center font-semibold mt-6 mb-2 text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
-        NET PROFIT OR LOSS A/C
+        COST OF GOODS SOLD
+      </div>
+
+      <table className="w-full text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
+        <tbody>
+          {[
+            { label: "Opening Stock", value: report.cogs.opening, sign: "" },
+            { label: "Net Purchase", value: report.cogs.netPurchase, sign: "+" },
+            {
+              label: "Direct Acquisition Costs",
+              value: report.cogs.directAcquisitionCosts,
+              sign: "+",
+              note: "3",
+            },
+            { label: "Closing Stock", value: report.cogs.closing, sign: "-" },
+          ].map((line) => (
+            <tr key={line.label} className="border-b border-[rgb(var(--c-border))]">
+              <td className="p-2 pl-6">
+                {line.sign ? `${line.sign} ` : ""}
+                {line.label}
+                {line.note ? <NoteRef n={line.note} /> : null}
+              </td>
+              <td className="p-2 text-right w-[160px]">{fmtZero(line.value)}</td>
+            </tr>
+          ))}
+
+          <tr className="border-t font-semibold border-gray-600 dark:border-gray-300">
+            <td className="p-2">
+              = Cost of Goods Sold
+              <NoteRef n={2} />
+            </td>
+            <td className="p-2 text-right">{fmtZero(report.cogs.total)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div className="text-center font-semibold mt-6 mb-2 text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
+        NET PROFIT OR LOSS ACCOUNT
       </div>
 
       <table className="w-full text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
@@ -281,7 +365,7 @@ const ProfitLossReport = ({
                 {onNetExpenseClick ? (
                   <Button
                     type="button"
-                    onClick={() => onNetExpenseClick(r)}
+                    onClick={() => onNetExpenseClick(r, "expense")}
                     className="text-left text-sky-700 underline decoration-dotted underline-offset-4 transition hover:text-sky-900 dark:text-sky-300 dark:hover:text-sky-200"
                   >
                     (-) {r.name}
@@ -309,13 +393,53 @@ const ProfitLossReport = ({
 
           {report.net.incomes.length > 0 ? (
             <>
+              {/* ⚠️ The income rows open the same summary the expense rows do.
+                  The server's summary is a list of the heads under a level-3
+                  with their debit, credit and difference -- it was never
+                  expense-shaped, only named that way, so an income line needs
+                  no endpoint of its own.
+
+                  Each group is followed by the accounts it is made of, one
+                  step further in. Without them a year's income can read as a
+                  single line: everything but the sales figures is filed under
+                  one level-3 here, so a commission and an interest are
+                  invisible behind the group's own name. The children are
+                  inside the group's amount, never beside it -- the totals
+                  below are untouched by them. */}
               {report.net.incomes.map((r, idx) => (
-                <tr key={`inc-${idx}`} className="border-b border-[rgb(var(--c-border))]">
-                  <td className="p-2 pl-6">{r.name}</td>
-                  <td className="p-2 text-right">{fmtZero(toNum(r.credit))}</td>
-                  <td className="p-2 text-right"></td>
-                  <td className="p-2 text-right"></td>
-                </tr>
+                <Fragment key={`inc-${idx}`}>
+                  <tr className="border-b border-[rgb(var(--c-border))]">
+                    <td className="p-2 pl-6">
+                      {onNetExpenseClick ? (
+                        <Button
+                          type="button"
+                          onClick={() => onNetExpenseClick(r, "income")}
+                          className="text-left text-sky-700 underline decoration-dotted underline-offset-4 transition hover:text-sky-900 dark:text-sky-300 dark:hover:text-sky-200"
+                        >
+                          {r.name}
+                        </Button>
+                      ) : (
+                        <>{r.name}</>
+                      )}
+                      <NoteRef n={4} />
+                    </td>
+                    <td className="p-2 text-right">{fmtZero(toNum(r.credit))}</td>
+                    <td className="p-2 text-right"></td>
+                    <td className="p-2 text-right"></td>
+                  </tr>
+
+                  {(r.children || []).map((child, cIdx) => (
+                    <tr
+                      key={`inc-${idx}-${cIdx}`}
+                      className="border-b border-[rgb(var(--c-border))] text-gray-600 dark:text-gray-400"
+                    >
+                      <td className="p-2 pl-12">{child.name}</td>
+                      <td className="p-2 text-right">{fmtZero(toNum(child.credit))}</td>
+                      <td className="p-2 text-right"></td>
+                      <td className="p-2 text-right"></td>
+                    </tr>
+                  ))}
+                </Fragment>
               ))}
 
               <tr className="border-b border-[rgb(var(--c-border))] font-semibold">

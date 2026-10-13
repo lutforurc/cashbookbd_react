@@ -7,6 +7,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import {
   downPaymentBases,
+  ledgerDiscountSplit,
   moneySpellFormat,
   padPrintModes,
   printerSettings,
@@ -72,10 +73,33 @@ interface branchItem {
   phone: string;
   notes: string;
   invoice_label: string;
+  /**
+   * What the sales invoice calls its four handwritten figures. Blank means the
+   * invoice shows the standard names, which is where the fallback lives -- see
+   * the sales invoice screen.
+   */
+  manual_voucher_no_label: string;
+  manual_voucher_date_label: string;
+  manual_challan_no_label: string;
+  manual_challan_date_label: string;
+  /**
+   * How this branch's party ledger reads a bill that carries a discount.
+   * `''` is the report as it has always read; `'1'` shows the bill whole with
+   * the discount broken out beside it. Display only -- the books do not move.
+   */
+  ledger_discount_split: string;
+  /**
+   * Whether the Purchase and Sales ledgers print the product lines inside
+   * their Product & Details column. Off leaves the account and the voucher's
+   * note, and the quantity, rate and total columns untouched. Display only.
+   */
+  ledger_show_product_details: boolean;
   decimal_places: number;
   dashboard_top_sales_days: number;
   dashboard_top_purchase_days: number;
   dashboard_due_soon_days: number;
+  /** How far back the transaction button on List Customers opens. */
+  default_report_days: NumberField;
   device_identifier_text?: string;
   status: string;
   warranty_controll: boolean;
@@ -90,10 +114,13 @@ interface branchItem {
   need_package: boolean;
   need_code: boolean;
   is_opening: boolean;
+  /** Opening চলাকালীন movement থাকা সত্ত্বেও opening বদলানোর ছাড়। */
+  multiple_opening_allow: boolean;
   use_bangla: boolean;
   report_zero_bal: boolean;
   warn_negative_stock_sale: boolean;
   block_negative_stock_sale: boolean;
+  deduct_stock_on_delivery: boolean;
   manufactur_control: boolean;
   sms_service: boolean;
   received_sms: boolean;
@@ -105,6 +132,35 @@ interface branchItem {
   show_brand_in_invoice: boolean;
   show_category_in_invoice: boolean;
   show_description_in_invoice: boolean;
+  /**
+   * Branch Setup -> Product Dropdown: which lines the product search box shows
+   * beside a product's name. Read back settled by the API, so a branch that has
+   * never opened the step answers on for the five the dropdown has always
+   * shown and off for brand and group.
+   */
+  product_ddl_show_name: boolean;
+  product_ddl_show_category: boolean;
+  product_ddl_show_brand: boolean;
+  product_ddl_show_group: boolean;
+  product_ddl_show_purchase_price: boolean;
+  product_ddl_show_sales_price: boolean;
+  product_ddl_show_unit: boolean;
+  product_ddl_show_balance: boolean;
+  /** 'single' or 'multiple' -- one line per product in the search box, or the
+      details on lines of their own. */
+  product_ddl_lines: string;
+  /**
+   * Branch Setup -> Customer / Supplier Dropdown: the same two answers for the
+   * party search box the invoice screens pick a customer or a supplier with.
+   * Read back settled, so a branch that has never opened the step answers on --
+   * the box has always shown all four of these.
+   */
+  party_ddl_show_code: boolean;
+  party_ddl_show_mobile: boolean;
+  party_ddl_show_address: boolean;
+  party_ddl_show_father: boolean;
+  /** 'single' or 'multiple', for the party box. */
+  party_ddl_lines: string;
   show_spelling_of_money: boolean;
   need_demo_tutorial: boolean;
   need_customer_contact_person: boolean;
@@ -137,6 +193,11 @@ interface branchItem {
   need_customer_national_id: boolean;
   need_nominee_photo: boolean;
   need_customer_area: boolean;
+  /**
+   * Whether a customer is looked after by a member of staff: the picker on the
+   * Add and Edit Customer forms, and the filter and column on List Customers.
+   */
+  need_customer_handle_by_employee: boolean;
   show_voucher_image: boolean;
   multi_product_order: boolean;
   /** Whether the cash forms ask which product a receipt or payment was for. */
@@ -211,7 +272,7 @@ const buildBranchFormData = (data: branchItem, file: File | null) => {
 const toBooleanFlag = (value: unknown) => value == 1 || value === '1' || value === true;
 
 /**
- * What the allotment letter signs off with when a branch has saved nothing â€”
+ * What the allotment letter signs off with when a branch has saved nothing —
  * seeded into the editor so it can be reworded rather than typed from scratch.
  * Kept in step with the fallback in pdf/allotment-letter.blade.php.
  */
@@ -234,6 +295,8 @@ const defaultDownPaymentPercent = 30;
 const defaultDownPaymentBase = 'total';
 const defaultDelayChargePercent = 10;
 const defaultCompanySchemeDueDays = 30;
+/** Kept in step with the `?? 30` in SettingsController::branch(). */
+const defaultReportDays = 30;
 const schemeDueWeekdays = [
   { id: '', name: 'No fixed day (use days)' },
   { id: '0', name: 'Sunday' },
@@ -243,6 +306,13 @@ const schemeDueWeekdays = [
   { id: '4', name: 'Thursday' },
   { id: '5', name: 'Friday' },
   { id: '6', name: 'Saturday' },
+];
+
+/** Branch Setup -> Product Dropdown. Multiple Line is what the box has always
+    done, so it is also what a branch that has never been asked gets. */
+const ddlLineOptions = [
+  { id: 'multiple', name: 'Multiple Line' },
+  { id: 'single', name: 'Single Line' },
 ];
 
 /**
@@ -285,7 +355,7 @@ const spellHours = (value: string): string => {
  * A stored 'YYYY-MM-DD' as a date on the calendar.
  *
  * Read out by hand rather than handed to `new Date`, which reads that shape as
- * UTC midnight â€” east of Greenwich that is still the day before, and the picker
+ * UTC midnight — east of Greenwich that is still the day before, and the picker
  * would open on it.
  */
 const parseIsoDate = (value: string): Date | null => {
@@ -332,7 +402,7 @@ const AddBranch = () => {
    * next setting brings its own permission, and the step should appear for
    * anyone who can reach at least one of the things on it.
    *
-   * Hiding it is only tidiness â€” anyone reading the bundle can see the test.
+   * Hiding it is only tidiness — anyone reading the bundle can see the test.
    * The permission is what decides: BranchController drops each platform
    * setting from the save for a caller who lacks its permission, so a request
    * posted straight at the endpoint changes nothing.
@@ -350,6 +420,7 @@ const AddBranch = () => {
     'Invoice Setup',
     'Customer Setup',
     'Product Setup',
+    'Dropdown',
     'Real Estate Setup',
     'Hotel Setup',
     'Feature Controls',
@@ -366,6 +437,7 @@ const AddBranch = () => {
    */
   const stepIndex = (title: string) => steps.indexOf(title);
   const SAAS_STEP = stepIndex('SaaS Setup');
+
   const paperSizeOptions = [
     { id: '', name: 'Select Invoice Page Size' },
     ...((settings?.branchSettings?.paperSize || []).map((item: any) => ({
@@ -398,10 +470,18 @@ const AddBranch = () => {
     phone: '',
     notes: '',
     invoice_label: '',
+    manual_voucher_no_label: '',
+    manual_voucher_date_label: '',
+    manual_challan_no_label: '',
+    manual_challan_date_label: '',
+    ledger_discount_split: '',
+    // On: every ledger has shown its product lines since the report existed.
+    ledger_show_product_details: true,
     decimal_places: 0,
     dashboard_top_sales_days: 0,
     dashboard_top_purchase_days: 0,
     dashboard_due_soon_days: 0,
+    default_report_days: defaultReportDays,
     device_identifier_text: '',
     status: '',
     warranty_controll: false,
@@ -416,10 +496,12 @@ const AddBranch = () => {
     need_package: false,
     need_code: false,
     is_opening: false,
+    multiple_opening_allow: false,
     use_bangla: false,
     report_zero_bal: false,
     warn_negative_stock_sale: false,
     block_negative_stock_sale: false,
+    deduct_stock_on_delivery: false,
     manufactur_control: false,
     sms_service: false,
     received_sms: false,
@@ -431,6 +513,28 @@ const AddBranch = () => {
     show_brand_in_invoice: false,
     show_category_in_invoice: false,
     show_description_in_invoice: false,
+    // Product Dropdown. The five the search box has always shown start on; the
+    // two it has never shown start off. The API settles an untouched branch the
+    // same way -- see getBranchEdit().
+    product_ddl_show_name: true,
+    product_ddl_show_category: true,
+    product_ddl_show_brand: false,
+    product_ddl_show_group: false,
+    product_ddl_show_purchase_price: true,
+    product_ddl_show_sales_price: true,
+    product_ddl_show_unit: true,
+    // Off even for a branch that has never opened this step: it is the one
+    // detail that costs the search anything, and no branch shows one today.
+    product_ddl_show_balance: false,
+    product_ddl_lines: 'multiple',
+    // Customer / Supplier Dropdown. All four lines the party search box has
+    // always shown start on; the API settles an untouched branch the same way --
+    // see getBranchEdit().
+    party_ddl_show_code: true,
+    party_ddl_show_mobile: true,
+    party_ddl_show_address: true,
+    party_ddl_show_father: true,
+    party_ddl_lines: 'multiple',
     show_spelling_of_money: false,
     need_demo_tutorial: false,
     need_customer_contact_person: false,
@@ -462,6 +566,7 @@ const AddBranch = () => {
     need_customer_national_id: false,
     need_nominee_photo: false,
     need_customer_area: false,
+    need_customer_handle_by_employee: false,
     show_voucher_image: false,
     multi_product_order: false,
     product_tracking: false,
@@ -680,13 +785,24 @@ const AddBranch = () => {
         dashboard_due_soon_days:
           b.dashboard_due_soon_days != null ? b.dashboard_due_soon_days : 0,
 
-        // ðŸ”‘ CHECKBOX FIX
+        // 🔑 CHECKBOX FIX
         is_opening: toBooleanFlag(b.is_opening),
+        // Off unless the branch asked for it, which is what an unsaved meta
+        // reads back as.
+        multiple_opening_allow: toBooleanFlag(b.multiple_opening_allow),
+        // The API answers 1 for a branch that has never been asked, since its
+        // ledgers have always printed the product lines. A key the server does
+        // not send at all (an install a version behind) is read the same way.
+        ledger_show_product_details:
+          b.ledger_show_product_details == null
+            ? true
+            : toBooleanFlag(b.ledger_show_product_details),
         have_is_guaranter: toBooleanFlag(b.have_is_guaranter),
         have_customer_nominee: toBooleanFlag(b.have_customer_nominee),
         report_zero_bal: toBooleanFlag(b.report_zero_bal),
         warn_negative_stock_sale: toBooleanFlag(b.warn_negative_stock_sale),
         block_negative_stock_sale: toBooleanFlag(b.block_negative_stock_sale),
+        deduct_stock_on_delivery: toBooleanFlag(b.deduct_stock_on_delivery),
         manufactur_control: toBooleanFlag(b.manufactur_control),
         warranty_controll: toBooleanFlag(b.warranty_controll),
         have_warehouse: toBooleanFlag(b.have_warehouse),
@@ -727,11 +843,13 @@ const AddBranch = () => {
         need_customer_national_id: toBooleanFlag(b.need_customer_national_id),
         need_nominee_photo: toBooleanFlag(b.need_nominee_photo),
         need_customer_area: toBooleanFlag(b.need_customer_area),
+        need_customer_handle_by_employee: toBooleanFlag(b.need_customer_handle_by_employee),
         show_voucher_image: toBooleanFlag(b.show_voucher_image),
         multi_product_order: toBooleanFlag(b.multi_product_order),
         product_tracking: toBooleanFlag(b.product_tracking),
         company_scheme: toBooleanFlag(b.company_scheme),
         company_scheme_due_days: metaNumberOr(b.company_scheme_due_days, defaultCompanySchemeDueDays),
+        default_report_days: metaNumberOr(b.default_report_days, defaultReportDays),
         company_scheme_due_weekday: metaTextOr(b.company_scheme_due_weekday, ''),
         down_payment_percent: metaNumberOr(b.down_payment_percent, defaultDownPaymentPercent),
         down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
@@ -755,6 +873,20 @@ const AddBranch = () => {
         show_brand_in_invoice: toBooleanFlag(b.show_brand_in_invoice),
         show_category_in_invoice: toBooleanFlag(b.show_category_in_invoice),
         show_description_in_invoice: toBooleanFlag(b.show_description_in_invoice),
+        product_ddl_show_name: toBooleanFlag(b.product_ddl_show_name),
+        product_ddl_show_category: toBooleanFlag(b.product_ddl_show_category),
+        product_ddl_show_brand: toBooleanFlag(b.product_ddl_show_brand),
+        product_ddl_show_group: toBooleanFlag(b.product_ddl_show_group),
+        product_ddl_show_purchase_price: toBooleanFlag(b.product_ddl_show_purchase_price),
+        product_ddl_show_sales_price: toBooleanFlag(b.product_ddl_show_sales_price),
+        product_ddl_show_unit: toBooleanFlag(b.product_ddl_show_unit),
+        product_ddl_show_balance: toBooleanFlag(b.product_ddl_show_balance),
+        product_ddl_lines: metaTextOr(b.product_ddl_lines, 'multiple'),
+        party_ddl_show_code: toBooleanFlag(b.party_ddl_show_code),
+        party_ddl_show_mobile: toBooleanFlag(b.party_ddl_show_mobile),
+        party_ddl_show_address: toBooleanFlag(b.party_ddl_show_address),
+        party_ddl_show_father: toBooleanFlag(b.party_ddl_show_father),
+        party_ddl_lines: metaTextOr(b.party_ddl_lines, 'multiple'),
         combined_invoice_note: toBooleanFlag(b.combined_invoice_note),
       }));
 
@@ -839,7 +971,7 @@ const AddBranch = () => {
   };
 
   /**
-   * The picker deals in dates, the meta in text. Cleared, it saves nothing â€”
+   * The picker deals in dates, the meta in text. Cleared, it saves nothing —
    * which is what makes each letter offer the day it is issued.
    */
   const handleRefDateChange = (date: Date | null) => {
@@ -881,7 +1013,7 @@ const AddBranch = () => {
         setButtonLoading(false);
         if (res?.success) {
           toast.success(res?.message || 'Branch updated successfully');
-          // Several of these switches (multi-product orders, voucher image, â€¦)
+          // Several of these switches (multi-product orders, voucher image, …)
           // are read from the session settings, which are otherwise only loaded
           // at login. Refetch them so a saved switch takes effect at once
           // instead of after the next sign-in.
@@ -964,6 +1096,8 @@ const AddBranch = () => {
                     {currentStep === stepIndex('Invoice Setup') && 'Invoice labels, notes, formatting, and invoice display options.'}
                     {currentStep === stepIndex('Customer Setup') && 'Customer and supplier related options for this branch.'}
                     {currentStep === stepIndex('Product Setup') && 'How products are ordered and priced in this branch.'}
+                    {currentStep === stepIndex('Dropdown') &&
+                      'Which details the customer, supplier and product search boxes show.'}
                     {currentStep === stepIndex('Real Estate Setup') && 'Real estate options for this branch.'}
                     {currentStep === stepIndex('Hotel Setup') &&
                       'When the day turns over at this property, for a branch that is a hotel.'}
@@ -1332,6 +1466,99 @@ const AddBranch = () => {
                         onChange={handleOnChange}
                       />
                     </div>
+
+                    {/* ⚠️ THE BRANCH NAMES THESE FOR ITSELF. Every counter calls
+                        the handwritten papers something of its own -- challan,
+                        gate pass, kacha bill -- so the four figures the sales
+                        invoice keeps are named here. Left blank the invoice
+                        falls back to the standard four names, which is where
+                        the fallback lives and the only place it is written. */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
+                      <InputElement
+                        id="manual_voucher_no_label"
+                        value={formData.manual_voucher_no_label || ''}
+                        name="manual_voucher_no_label"
+                        placeholder={'Memo No.'}
+                        label={'Memo No.'}
+                        description="What the sales invoice calls its handwritten voucher number. Blank shows Memo No."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="manual_voucher_date_label"
+                        value={formData.manual_voucher_date_label || ''}
+                        name="manual_voucher_date_label"
+                        placeholder={'Memo Date'}
+                        label={'Memo Date'}
+                        description="The same for the voucher's date. Blank shows Memo Date."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="manual_challan_no_label"
+                        value={formData.manual_challan_no_label || ''}
+                        name="manual_challan_no_label"
+                        placeholder={'Challan No'}
+                        label={'Challan No'}
+                        description="What the sales invoice calls the paper the goods went out on. Blank shows Challan No."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="manual_challan_date_label"
+                        value={formData.manual_challan_date_label || ''}
+                        name="manual_challan_date_label"
+                        placeholder={'Challan Date'}
+                        label={'Challan Date'}
+                        description="The same for the challan's date. Blank shows Challan Date."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                    </div>
+
+                    {/* ⚠️ HOW THE PARTY LEDGER READS A DISCOUNTED BILL, AND IT
+                        IS DECIDED HERE RATHER THAN ON THE REPORT. A branch
+                        answers once and every counter reads it the same way.
+                        Neither answer moves a figure: the party's line is
+                        posted net of the discount and the discount is its own
+                        leg on a head of its own, so the split is the same money
+                        told as full value plus concession instead of one net
+                        line. Balances, totals, Trial Balance and P&L are
+                        untouched. */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="ledger_discount_split"
+                        name={'ledger_discount_split'}
+                        label="Ledger: Discounted Bill"
+                        description="As it is now shows the party's line net of the discount -- one line a bill. The other shows the bill at full value with the discount as a line of its own on the opposite side."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.ledger_discount_split || ''}
+                        data={ledgerDiscountSplit}
+                      />
+                      <FormToggleField
+                        label="Show Product Information in Ledger Details"
+                        description="Prints each product's name inside the Product & Details column of the Purchase and Sales ledgers. Off, the column still shows the account and the note, and the quantity, rate and total columns are untouched."
+                        checked={Boolean(formData.ledger_show_product_details)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('ledger_show_product_details', checked)
+                        }
+                      />
+                      {/* Sits directly to the right of the ledger switch, on
+                          the same row, at every width. On, the sales invoice
+                          offers "Deduct stock on delivery"; off, it does not --
+                          and the stock always moves with the invoice, as it did
+                          before this switch existed. */}
+                      <FormToggleField
+                        label="Enable Deduct Stock on Delivery"
+                        description="Makes the 'Deduct stock on delivery' option available on this branch's sales invoices, so the stock leaves the godown when the delivery is posted rather than when the invoice is written. Turning it on does not switch any invoice on by itself -- each invoice still chooses. Off is the historical behaviour: every invoice takes the stock at once."
+                        checked={Boolean(formData.deduct_stock_on_delivery)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('deduct_stock_on_delivery', checked)
+                        }
+                      />
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       <InputElement
                         id="dashboard_top_sales_days"
@@ -1478,6 +1705,12 @@ const AddBranch = () => {
                         onChange={(checked) => handleToggleFieldChange('need_customer_area', checked)}
                       />
                       <FormToggleField
+                        label="Customer Handle By Employee?"
+                        description="Asks which member of your staff looks after each customer: a picker on the Add and Edit Customer forms, and a filter and an Employee column on List Customers. The list of names is your HRMS employee list for this branch."
+                        checked={Boolean(formData.need_customer_handle_by_employee)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_handle_by_employee', checked)}
+                      />
+                      <FormToggleField
                         label="Customer Share with Other branch?"
                         description="Customers entered anywhere in the company can be picked here. Off, this branch sees only its own."
                         checked={Boolean(formData.share_customer_with_other_branch)}
@@ -1582,7 +1815,7 @@ const AddBranch = () => {
                               printed as it stands. Leave empty to show numbers exactly as entered.
                               {formData.mobile_number_format ? (
                                 <span className="mt-0.5 block">
-                                  01973190490 â†’{' '}
+                                  01973190490 →{' '}
                                   <span className="font-semibold text-primary">
                                     {formatMobile('01973190490', formData.mobile_number_format)}
                                   </span>
@@ -1591,6 +1824,38 @@ const AddBranch = () => {
                             </>
                           }
                         />
+                      </div>
+                    </div>
+
+                    {/* ---------- Transaction report ---------- */}
+                    <div className="mt-4 border-t border-[rgb(var(--c-border))] pt-3">
+                      <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        Transaction Report
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        {/* Not a field of the customer form -- it decides what the
+                            transaction button on List Customers opens. It sits
+                            here with the other party-report settings for the same
+                            reason the Due List switch above does. */}
+                        <div>
+                          <InputElement
+                            id="default_report_days"
+                            value={formData.default_report_days ?? ''}
+                            name="default_report_days"
+                            type="number"
+                            min={0}
+                            step="1"
+                            placeholder={'Enter Days'}
+                            label={'Show Default Report Days'}
+                            className={''}
+                            onChange={handleOnNumberChange}
+                          />
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            How far back the transaction button opens on List Customers:
+                            the last this many days, up to the branch's transaction date.
+                            The range can be changed again inside the report.
+                          </p>
+                        </div>
                       </div>
                     </div>
 
@@ -1679,7 +1944,7 @@ const AddBranch = () => {
                         onChange={(checked) => handleToggleFieldChange('need_code', checked)}
                       />
                       <FormToggleField
-                        label="Stock: Brand->Category->Item"
+                        label="Stock: Brand->Group->Category->Item"
                         description="Groups the stock report by brand, then category, then item, instead of listing items straight."
                         checked={Boolean(formData.stock_report_type)}
                         onChange={(checked) => handleToggleFieldChange('stock_report_type', checked)}
@@ -1749,6 +2014,156 @@ const AddBranch = () => {
                         </div>
                       </div>
                     )}
+                  </>
+                )}
+
+                {currentStep === stepIndex('Dropdown') && (
+                  <>
+                    {/* Two boxes in one step, each with its own switches. First
+                      the party search box -- Select Customer on a sales screen,
+                      Select Supplier on a purchase one -- then the product box.
+                      They share the step because they are the same kind of
+                      setting, not because they share answers: showing a party's
+                      address says nothing about a product's category. */}
+
+                    {/* ---------- Customer / Supplier Dropdown ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Customer / Supplier Dropdown
+                    </h4>
+                    <div className="mb-4 max-w-xs">
+                      <DropdownCommon
+                        id="party_ddl_lines"
+                        name="party_ddl_lines"
+                        label="Dropdown Type"
+                        onChange={handleOnSelectChange}
+                        value={formData?.party_ddl_lines ?? 'multiple'}
+                        className="bg-transparent"
+                        data={ddlLineOptions}
+                        description=""
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Show Code?"
+                        description="Lists the party's own code beside the name -- what tells two parties of the same name apart."
+                        checked={Boolean(formData.party_ddl_show_code)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_code', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Mobile?"
+                        description="Lists the party's mobile number under the name."
+                        checked={Boolean(formData.party_ddl_show_mobile)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_mobile', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Address?"
+                        description="Lists the party's address under the name."
+                        checked={Boolean(formData.party_ddl_show_address)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_address', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Father's Name?"
+                        description="Lists the father's name the party was filed under, which the counter often recognises before the party's own name."
+                        checked={Boolean(formData.party_ddl_show_father)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_father', checked)
+                        }
+                      />
+                    </div>
+
+                    {/* ---------- Product Dropdown ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Product Dropdown
+                    </h4>
+                    {/* How many lines each product takes, before which of the
+                      switches below are worth turning on: Single Line has room
+                      for one or two of them, Multiple Line for all of them. */}
+                    <div className="mb-4 max-w-xs">
+                      <DropdownCommon
+                        id="product_ddl_lines"
+                        name="product_ddl_lines"
+                        label="Dropdown Type"
+                        onChange={handleOnSelectChange}
+                        value={formData?.product_ddl_lines ?? 'multiple'}
+                        className="bg-transparent"
+                        data={ddlLineOptions}
+                        description=""
+                      />
+                    </div>
+                    {/* One grid for the whole step, the same shape as the
+                      Invoice Setup and Product Setup grids. */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Show Category?"
+                        description="Lists the category under each product's name in the search box."
+                        checked={Boolean(formData.product_ddl_show_category)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_category', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Brand?"
+                        description="Lists the brand under each product's name. A product with no brand shows none."
+                        checked={Boolean(formData.product_ddl_show_brand)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_brand', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Group?"
+                        description="Lists the group under each product's name, for a branch that files its products in groups."
+                        checked={Boolean(formData.product_ddl_show_group)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_group', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Product Name?"
+                        description="The name is the line a product is picked by. Off, only the details under it remain."
+                        checked={Boolean(formData.product_ddl_show_name)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_name', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Purchase Price?"
+                        description="Lists what the product cost. Still hidden from a user who may not see purchase prices."
+                        checked={Boolean(formData.product_ddl_show_purchase_price)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_purchase_price', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Sales Price?"
+                        description="Lists the price the product sells at."
+                        checked={Boolean(formData.product_ddl_show_sales_price)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_sales_price', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Unit?"
+                        description="Lists the unit the product is kept in, such as Kg or Pcs."
+                        checked={Boolean(formData.product_ddl_show_unit)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_unit', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Balance?"
+                        description="Lists what is left in stock on this branch. The only switch here that makes the product search work harder, so it is off by default."
+                        checked={Boolean(formData.product_ddl_show_balance)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_balance', checked)
+                        }
+                      />
+                    </div>
                   </>
                 )}
 
@@ -1835,7 +2250,7 @@ const AddBranch = () => {
                           onChange={handleOnChange}
                         />
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          Offered as written when a letter is issued â€” nothing is
+                          Offered as written when a letter is issued — nothing is
                           added to it. Left blank, the letter falls back to the
                           project's initials. The clerk issuing a letter finishes
                           or replaces it against the register.
@@ -1854,7 +2269,7 @@ const AddBranch = () => {
                         />
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                           The date letters are dated with. Left blank, each letter
-                          is offered the day it is issued â€” which is the safer of
+                          is offered the day it is issued — which is the safer of
                           the two, since a date set here stays until it is changed.
                         </p>
                       </div>
@@ -2075,6 +2490,26 @@ const AddBranch = () => {
                         </div>
                       )}
 
+                      {/* ⚠️ Its own cell, NOT inside showClearTransactions.
+                        That gate needs `branch.transaction.clear`, and tying
+                        this to it would hide the switch from everyone who can
+                        edit the branch but may not withdraw its vouchers. The
+                        only thing it answers to is "Opening ongoing?" -- a
+                        branch that has stopped taking openings has nothing to
+                        correct. */}
+                      {Boolean(formData.is_opening) && (
+                        <div className="flex items-center">
+                          <FormToggleField
+                            label="Multiple opening allow?"
+                            description=""
+                            checked={Boolean(formData.multiple_opening_allow)}
+                            onChange={(checked) =>
+                              handleToggleFieldChange('multiple_opening_allow', checked)
+                            }
+                          />
+                        </div>
+                      )}
+
                       {/* The bar pinned to the top of the window is easy to miss
                         from down here, where the eye already is. This one spans
                         the row directly under the button that started the work,
@@ -2191,7 +2626,7 @@ const AddBranch = () => {
                   </>
                 )}
 
-                {/* SaaS Setup â€” the platform operator's own step. Guarded on the
+                {/* SaaS Setup — the platform operator's own step. Guarded on the
                   index rather than a number, so it stays right if a step is
                   ever added above it. */}
                 {SAAS_STEP >= 0 && currentStep === SAAS_STEP && (
@@ -2201,7 +2636,7 @@ const AddBranch = () => {
                     </h4>
                     <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
                       What happens when someone signs up for a new company. These
-                      belong to the branch that runs the platform â€” setting them on
+                      belong to the branch that runs the platform — setting them on
                       a customer's branch does nothing.
                     </p>
 

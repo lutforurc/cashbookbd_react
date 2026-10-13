@@ -171,10 +171,10 @@ const paymentList = customer?.me?.data?.payments?.original?.data?.data?.payments
 
 const allPayments = paymentList.map((pay: any) => ({
   id: pay.id,
-  vr_no: pay.main_transaction?.vr_no || pay.main_trx_id, // main_transaction Ã Â¦Â¥Ã Â§â€¡Ã Â¦â€¢Ã Â§â€¡ vr_no
+  vr_no: pay.main_transaction?.vr_no || pay.main_trx_id, // main_transaction থেকে vr_no
   paid_at: pay.paid_at,
   amount: pay.amount,
-  installment_no: pay.installment?.installment_no,       // installment relation Ã Â¦Â¥Ã Â§â€¡Ã Â¦â€¢Ã Â§â€¡
+  installment_no: pay.installment?.installment_no,       // installment relation থেকে
   due_date: pay.installment?.due_date,
   status: pay.installment?.status,
   invoice_no: pay.installment?.invoice_no ?? null,       // future-proof
@@ -373,7 +373,7 @@ const allPayments = paymentList.map((pay: any) => ({
                 <FiShoppingBag />
               </span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-[rgb(var(--c-text))]">৳ {money(totalDebit)}</p>
+            <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-[rgb(var(--c-text))]">{money(totalDebit)}</p>
           </div>
 
           <div className="rounded-lg border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-sm">
@@ -383,7 +383,7 @@ const allPayments = paymentList.map((pay: any) => ({
                 <FiCreditCard />
               </span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-[rgb(var(--c-text))]">৳ {money(totalCredit)}</p>
+            <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-[rgb(var(--c-text))]">{money(totalCredit)}</p>
           </div>
 
           <div
@@ -412,7 +412,7 @@ const allPayments = paymentList.map((pay: any) => ({
                 balance > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-800 dark:text-[rgb(var(--c-text))]'
               }`}
             >
-              ৳ {money(balance)}
+              {money(balance)}
             </p>
             {balance > 0 && (
               <p className="mt-1 text-xs text-gray-500 dark:text-[rgb(var(--c-text-muted))]">

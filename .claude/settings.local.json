@@ -15,12 +15,18 @@
       "Read(//c//**)",
       "Read(//f//**)",
       "Bash(npx tsc *)",
-      "Read(//f/All_Database/www/cashbook_api/app/Console/Commands/**)"
+      "Read(//f/All_Database/www/cashbook_api/app/Console/Commands/**)",
+      "Bash(rtk proxy *)",
+      "Bash(gh api *)",
+      "Bash(netstat -ano)",
+      "Read(//f/All_Database/www/cashbook_api/app/Helpers/**)",
+      "Read(//f/All_Database/www/cashbook_api/app/Repositories/**)"
     ],
     "additionalDirectories": [
       "F:\\All_Database\\www\\cashbook_api\\config",
       "F:\\All_Database\\www\\cashbook_api\\app\\Http\\Middleware",
-      "F:\\All_Database\\www\\cashbook_api\\app\\Console\\Commands"
+      "F:\\All_Database\\www\\cashbook_api\\app\\Console\\Commands",
+      "C:\\Users\\lutfo\\AppData\\Local\\Temp"
     ]
   }
 }

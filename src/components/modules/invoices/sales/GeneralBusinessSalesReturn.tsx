@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../../common/Loader';
-import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
@@ -25,11 +25,18 @@ import {
   API_SALES_RETURN_STORE_URL,
 } from '../../../services/apiRoutes';
 import { useNavigate } from 'react-router-dom';
+import { userCurrentBranch } from '../../branch/branchSlice';
+import TilesBusinessSalesReturn from './TilesBusinessSalesReturn';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
 
 interface Product {
   id: number;
   product: number;
   product_name: string;
+  /** Shown in front of the name on the row, blank when the product has no
+      code -- same shape the paper prints. */
+  product_code?: string;
   unit: string;
   qty: number;
   price: number;
@@ -71,6 +78,7 @@ const GeneralBusinessSalesReturn = () => {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
   const warehouse = useSelector((s: any) => s.activeWarehouse);
+  const currentBranch = useSelector((state: any) => state.branchList.currentBranch);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [unit, setUnit] = useState<string | null>(null);
@@ -84,8 +92,24 @@ const GeneralBusinessSalesReturn = () => {
   const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
   const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
 
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+
+  /**
+   * The number of the return just saved, kept apart from the form.
+   *
+   * ⚠️ Held here because the reset rubs the form out -- leaving Print with
+   * nothing to print at the exact moment the desk has a sheet in hand. Same
+   * shape as TilesBusinessSalesReturn's; the invoice does not need it because
+   * its voucher lives on in the redux store.
+   */
+  const [lastVrNo, setLastVrNo] = useState('');
+
   useEffect(() => {
     dispatch(getDdlWarehouse());
+    // A Tiles branch needs this before it can tell it is one -- see the return
+    // below.
+    dispatch(userCurrentBranch());
   }, [dispatch]);
 
   useEffect(() => {
@@ -157,7 +181,14 @@ const GeneralBusinessSalesReturn = () => {
       ...prev,
       product: option?.value || 0,
       product_name: option?.label || '',
+      // The code the picker carried down with the name, so the row can read
+      // "GI-106 - 2 Tangki Nipple" the way the paper does.
+      product_code: option?.code || '',
       unit: option?.label_5 || '',
+      // The dropdown carries the sales price (label_4) beside the name, as the
+      // sales invoices read it. `|| ''` because Number(null) is 0, and a
+      // product with no price yet should leave the box empty, not read 0.
+      price: Number(option?.label_4) || '',
     }));
   };
 
@@ -191,6 +222,7 @@ const GeneralBusinessSalesReturn = () => {
       id: Date.now(),
       product: productData.product || 0,
       product_name: productData.product_name || '',
+      product_code: productData.product_code || '',
       unit: productData.unit || '',
       qty: Number(productData.qty) || 0,
       price: Number(productData.price) || 0,
@@ -209,6 +241,7 @@ const GeneralBusinessSalesReturn = () => {
       id: formData.products[updateId]?.id ?? Date.now(),
       product: productData.product || 0,
       product_name: productData.product_name || '',
+      product_code: productData.product_code || '',
       unit: productData.unit || '',
       qty: Number(productData.qty) || 0,
       price: Number(productData.price) || 0,
@@ -290,6 +323,9 @@ const GeneralBusinessSalesReturn = () => {
       const response = await httpService.post(API_SALES_RETURN_STORE_URL, payload);
       if (response?.data?.success) {
         toast.success(response?.data?.message || 'Sales return saved successfully.');
+        // Kept before the reset rubs the form out -- the sheet in hand is still
+        // printable afterwards.
+        setLastVrNo(response?.data?.data?.data?.vr_no || '');
         resetForm();
       } else {
         toast.error(response?.data?.message || 'Failed to save sales return');
@@ -307,6 +343,11 @@ const GeneralBusinessSalesReturn = () => {
     (sum, row) => sum + Number(row.qty) * Number(row.price),
     0,
   );
+
+  // ⚠️ Before the screen is drawn, and by the branch flag rather than the
+  // system id: a Tiles and Sanitary branch runs inventory_system_id 4, which is
+  // Trading's row, so it reaches this file today and would go on doing so.
+  if (currentBranch?.is_tiles_and_sanitary) return <TilesBusinessSalesReturn />;
 
   return (
     <>
@@ -494,8 +535,11 @@ const GeneralBusinessSalesReturn = () => {
             </div>
             {/* @container: below the width responsiveLabel names the buttons show
                 their icons alone, the words having been clipped in a half-width
-                panel. */}
-            <div className="@container grid grid-cols-4 gap-x-1 gap-y-1">
+                panel.
+
+                ⚠️ FIVE columns now, not four -- Print joined the row. A grid of
+                four puts the fifth button alone on a second line. */}
+            <div className="@container grid grid-cols-5 gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editProduct}
@@ -540,6 +584,15 @@ const GeneralBusinessSalesReturn = () => {
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiHome className="text-lg ml-2 mr-2" />}
               />
+
+              {/* The registry resolves the paper from the Vr. No.'s own prefix,
+                  so all this has to hand over is the number. */}
+              <PrintButton
+                onClick={() => handleVoucherPrint({ vr_no: lastVrNo })}
+                label="Print"
+                responsiveLabel="xl"
+                disabled={!lastVrNo}
+              />
             </div>
           </div>
         </div>
@@ -563,7 +616,9 @@ const GeneralBusinessSalesReturn = () => {
                   {index + 1}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))]">
-                  {row.product_name}
+                  {row.product_code
+                      ? `${row.product_code} - ${row.product_name}`
+                      : row.product_name}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right">
                   {thousandSeparator(row.qty)} {row.unit}
@@ -602,6 +657,9 @@ const GeneralBusinessSalesReturn = () => {
           }));
         }}
       />
+
+      {/* Hidden, and one of the four papers is drawn from it on demand. */}
+      <VoucherPrintRegistry ref={voucherRegistryRef} rowsPerPage={0} fontSize={12} />
     </>
   );
 };

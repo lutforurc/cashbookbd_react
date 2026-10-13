@@ -11,6 +11,7 @@ import { getProductStock } from './productStockSlice';
 import SearchInput from '../../../utils/fields/SearchInput';
 import { getCategoryDdl } from '../../category/categorySlice';
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
+import FieldLoading from '../../../utils/components/FieldLoading';
 import dayjs from 'dayjs';
 import StockBookPrint from './StockBookPrint';
 import { useReactToPrint } from 'react-to-print';
@@ -18,15 +19,28 @@ import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { FiArrowRight, FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
-import { fetchBrandDdl } from '../../product/brand/brandSlice'; 
-import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import { fetchBrandDdl } from '../../product/brand/brandSlice';
+import { isBranchSettingOn, isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import { getProductGroupDdl } from '../../productgroup/productGroupSlice';
+import httpService from '../../../services/httpService';
+import { API_PRINT_TEMPLATE_URL } from '../../../services/apiRoutes';
+import { usePrintBranch } from '../../../utils/utils-functions/printBranch';
+import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
+import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
+import {
+  normalizeTemplate,
+} from '../../../utils/print-designer/printTemplate';
+import type { PrintTemplate } from '../../../utils/print-designer/printTemplate';
+import { toProductStockDocumentData } from './productStockDocumentData';
 
 // ======================
-// Brand -> Category wise helper
+// Brand -> Group -> Category wise helper
 // ======================
 const isBrandRow = (row: any) => row?.__type === 'BRAND';
+const isGroupRow = (row: any) => row?.__type === 'GROUP';
 const isCatRow = (row: any) => row?.__type === 'CAT';
-const isGroupRow = (row: any) => isBrandRow(row) || isCatRow(row);
+/** A heading of any depth: nothing is drawn in its figure cells. */
+const isHeadingRow = (row: any) => isBrandRow(row) || isGroupRow(row) || isCatRow(row);
 const isGrandTotalRow = (row: any) => row?.__type === 'GRAND_TOTAL';
 
 const toNumber = (value: any) => {
@@ -34,24 +48,134 @@ const toNumber = (value: any) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const buildBrandCategoryRows = (rows: any[]) => {
+/** Has the report actually sent a value for this id? 0 is a value, "" is not. */
+const hasId = (value: any) =>
+  value !== null && value !== undefined && String(value) !== '';
+
+const brandLabelOf = (row: any) =>
+  String(row?.brand_name ?? '').trim() || 'Unknown Brand';
+const groupLabelOf = (row: any) => String(row?.group_name ?? '').trim();
+const catLabelOf = (row: any) =>
+  String(row?.cat_name ?? '').trim() || 'Uncategorized';
+
+/**
+ * The key a row is filed under.
+ *
+ * ⚠️ THE ID LEADS, THE NAME IS ONLY THE FALLBACK. Two brands or categories that
+ * happen to share a name are still two records, and one that is renamed must not
+ * merge into another -- so a row with an id is keyed by it and a row without one
+ * (an install a version behind) is keyed by its name instead.
+ */
+const brandKeyOf = (row: any) =>
+  hasId(row?.brand_id) ? `b:${row.brand_id}` : `b:${brandLabelOf(row)}`;
+const catKeyOf = (row: any) =>
+  hasId(row?.category_id) ? `c:${row.category_id}` : `c:${catLabelOf(row)}`;
+
+/**
+ * The group a row is filed under, or '' when it genuinely has none.
+ *
+ * ⚠️ THERE IS NO "Ungrouped" BUCKET. An item with no group is not a group called
+ * "Ungrouped" -- it simply has no Group level, and its category hangs straight
+ * off the brand (`A-Taj → Angle Stop Cock`). So a group key is handed back only
+ * when the server actually named a group for the row; everything else returns ''
+ * and lands in the brand's ungrouped categories.
+ */
+const groupKeyOf = (row: any) => {
+  const label = groupLabelOf(row);
+  if (!label) return '';
+  return hasId(row?.group_id) ? `g:${row.group_id}` : `g:${label}`;
+};
+
+/**
+ * A heading's path, drawn as `A → B → C`. ⚠️ Empty parts are dropped, so an item
+ * with no group reads `Brand → Category` rather than carrying a blank step.
+ *
+ * ⚠️ `className` IS HOW A HEADING OF LESSER WEIGHT IS DRAWN, and how a product
+ * row reuses the same spacing for its single part without the boldness -- see
+ * the Product Name column.
+ */
+const HeadingPath = ({
+  parts,
+  className = 'font-semibold',
+}: {
+  parts: any[];
+  className?: string;
+}) => {
+  const shown = parts.map((part) => String(part ?? '').trim()).filter(Boolean);
+
+  return (
+    <div className={`inline-flex items-center gap-1 whitespace-nowrap py-1 ${className}`}>
+      {shown.map((part, index) => (
+        <React.Fragment key={`${index}-${part}`}>
+          {index > 0 && (
+            <FiArrowRight className="shrink-0 text-gray-900 dark:text-gray-100" />
+          )}
+          <span>{part}</span>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
+
+const buildBrandGroupCategoryRows = (rows: any[]) => {
   if (!Array.isArray(rows)) return [];
 
+  const byName = (a: any, b: any) => String(a ?? '').localeCompare(String(b ?? ''));
+
   const sorted = [...rows].sort((a, b) => {
-    const b1 = String(a.brand_name || '').localeCompare(String(b.brand_name || ''));
-    if (b1 !== 0) return b1;
+    const brand = byName(a.brand_name, b.brand_name);
+    if (brand !== 0) return brand;
 
-    const c1 = String(a.cat_name || '').localeCompare(String(b.cat_name || ''));
-    if (c1 !== 0) return c1;
+    const group = byName(a.group_name, b.group_name);
+    if (group !== 0) return group;
 
-    return String(a.product_name || '').localeCompare(String(b.product_name || ''));
+    const cat = byName(a.cat_name, b.cat_name);
+    if (cat !== 0) return cat;
+
+    return byName(a.product_name, b.product_name);
   });
 
-  const brandMap = new Map<string, any[]>();
+  type CatBucket = { label: string; items: any[] };
+  type GroupBucket = { label: string; cats: Map<string, CatBucket> };
+  type BrandBucket = {
+    label: string;
+    /** Named groups, each holding its own categories. */
+    groups: Map<string, GroupBucket>;
+    /** Categories of items with no group: they sit straight under the brand. */
+    ungrouped: Map<string, CatBucket>;
+  };
+
+  const brands = new Map<string, BrandBucket>();
+
   for (const r of sorted) {
-    const brandKey = (r.brand_name || 'Unknown Brand').trim() || 'Unknown Brand';
-    if (!brandMap.has(brandKey)) brandMap.set(brandKey, []);
-    brandMap.get(brandKey)!.push(r);
+    const bKey = brandKeyOf(r);
+    const cKey = catKeyOf(r);
+
+    if (!brands.has(bKey)) {
+      brands.set(bKey, { label: brandLabelOf(r), groups: new Map(), ungrouped: new Map() });
+    }
+    const brand = brands.get(bKey)!;
+
+    const gKey = groupKeyOf(r);
+
+    // No group: the category belongs to the brand directly.
+    if (!gKey) {
+      if (!brand.ungrouped.has(cKey)) {
+        brand.ungrouped.set(cKey, { label: catLabelOf(r), items: [] });
+      }
+      brand.ungrouped.get(cKey)!.items.push(r);
+      continue;
+    }
+
+    if (!brand.groups.has(gKey)) {
+      brand.groups.set(gKey, { label: groupLabelOf(r), cats: new Map() });
+    }
+    const group = brand.groups.get(gKey)!;
+
+    if (!group.cats.has(cKey)) {
+      group.cats.set(cKey, { label: catLabelOf(r), items: [] });
+    }
+    group.cats.get(cKey)!.items.push(r);
   }
 
   const finalRows: any[] = [];
@@ -62,37 +186,53 @@ const buildBrandCategoryRows = (rows: any[]) => {
     balance: 0,
   };
 
-  for (const [brand, brandItems] of brandMap.entries()) {
+  const pushCategoryItems = (cat: CatBucket) => {
+    let serial = 1;
+    for (const it of cat.items) {
+      grandTotal.opening += toNumber(it.opening);
+      grandTotal.stock_in += toNumber(it.stock_in);
+      grandTotal.stock_out += toNumber(it.stock_out);
+      grandTotal.balance += toNumber(it.balance);
+      finalRows.push({
+        ...it,
+        sl_number: serial++,
+      });
+    }
+  };
+
+  for (const brand of brands.values()) {
     finalRows.push({
       __type: 'BRAND',
-      brand_name: brand,
+      brand_name: brand.label,
     });
 
-    const catMap = new Map<string, any[]>();
-    for (const it of brandItems) {
-      const catKey = (it.cat_name || 'Uncategorized').trim() || 'Uncategorized';
-      if (!catMap.has(catKey)) catMap.set(catKey, []);
-      catMap.get(catKey)!.push(it);
-    }
-
-    for (const [cat, items] of catMap.entries()) {
+    // Grouped items first: Brand -> Group -> Category -> items.
+    for (const group of brand.groups.values()) {
       finalRows.push({
-        __type: 'CAT',
-        brand_name: brand,
-        cat_name: cat,
+        __type: 'GROUP',
+        brand_name: brand.label,
+        group_name: group.label,
       });
 
-      let serial = 1;
-      for (const it of items) {
-        grandTotal.opening += toNumber(it.opening);
-        grandTotal.stock_in += toNumber(it.stock_in);
-        grandTotal.stock_out += toNumber(it.stock_out);
-        grandTotal.balance += toNumber(it.balance);
+      for (const cat of group.cats.values()) {
         finalRows.push({
-          ...it,
-          sl_number: serial++,
+          __type: 'CAT',
+          brand_name: brand.label,
+          group_name: group.label,
+          cat_name: cat.label,
         });
+        pushCategoryItems(cat);
       }
+    }
+
+    // Then the items with no group: Brand -> Category -> items.
+    for (const cat of brand.ungrouped.values()) {
+      finalRows.push({
+        __type: 'CAT',
+        brand_name: brand.label,
+        cat_name: cat.label,
+      });
+      pushCategoryItems(cat);
     }
   }
 
@@ -109,6 +249,36 @@ const buildBrandCategoryRows = (rows: any[]) => {
 
   return finalRows;
 };
+
+/**
+ * The Product Stock toolbar is one wrapping flex row, so a control is never
+ * squeezed into a track narrower than it -- it takes the next line instead. The
+ * basis decides how many share a line: a whole one per line on a phone, two
+ * once the screen can hold them, three on a tablet, and a steady ~190px once
+ * the sidebar is back. Every cell grows, so a line that ends short is filled by
+ * its last control rather than left with a hole.
+ *
+ * ⚠️ Written out, not composed at runtime: Tailwind reads this file as text,
+ * and a class built from pieces would never be emitted.
+ */
+const FILTER_CELL =
+  'min-w-0 grow basis-full min-[360px]:basis-[calc(50%-0.375rem)] min-[360px]:max-w-[280px] sm:basis-[calc(33.333%-0.5rem)] lg:basis-[190px]';
+
+/** Branch leads the row, so it is allowed a little more room than the rest. */
+const BRANCH_CELL = 'min-w-0 grow basis-full sm:basis-[240px] lg:max-w-[340px] lg:basis-[260px]';
+
+/** The search box takes the spare room on its line (grow-[2]) and fills it. */
+const SEARCH_CELL = 'min-w-0 grow-[2] basis-full sm:basis-[220px] lg:max-w-[560px]';
+
+/** Rows and Font stay as narrow as their boxes: they are settings, not filters. */
+const COMPACT_CELL = 'shrink-0';
+
+/**
+ * Apply, Reset and Print travel as one item, so a line too short for them moves
+ * the whole group down instead of stranding a single button on its own.
+ */
+const ACTION_CELL =
+  'flex shrink-0 grow basis-full flex-wrap items-end gap-2 sm:ml-auto sm:basis-auto sm:grow-0';
 
 const ProductStock = ({ user }: any) => {
   const dispatch = useDispatch();
@@ -129,10 +299,15 @@ const ProductStock = ({ user }: any) => {
 
   const [branchId, setBranchId] = useState<number | string | ''>(authUser?.branch_id || '');
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
+  // Stock Details' Group box, verbatim: same switch, same dropdown, same
+  // "All Groups" first entry.
+  const needProductGroup = isBranchSettingOn(settings, "need_product_group");
+  const productGroupData = useSelector((state: any) => state.productGroup);
+  const [groupId, setGroupId] = useState<string>('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
-  const [brandId, setBrandId] = useState<string | null>(''); // null Ã Â¦Â¹Ã Â¦Â¤Ã Â§â€¡ Ã Â¦ÂªÃ Â¦Â¾Ã Â¦Â°Ã Â¦Â¬Ã Â§â€¡
+  const [brandId, setBrandId] = useState<string | null>(''); // null হতে পারবে
 
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(0);
@@ -152,13 +327,17 @@ const ProductStock = ({ user }: any) => {
     }
   }, [categoryData]);
 
+  useEffect(() => {
+    if (needProductGroup) dispatch(getProductGroupDdl() as any);
+  }, [dispatch, needProductGroup]);
+
 
 
 
 
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {
-      const grouped = buildBrandCategoryRows(stock.data);
+      const grouped = buildBrandGroupCategoryRows(stock.data);
       setTableData(grouped);
     } else if (!stock.isLoading) {
       setTableData([]);
@@ -192,7 +371,7 @@ const ProductStock = ({ user }: any) => {
   };
 
   const handleBrandChange = (selectedOption: any) => {
-    setBrandId(selectedOption?.value ?? null); // "" Ã Â¦ÂÃ Â¦Â° Ã Â¦Â¬Ã Â¦Â¦Ã Â¦Â²Ã Â§â€¡ null
+    setBrandId(selectedOption?.value ?? null); // "" এর বদলে null
   };
 
   const handleCategoryChange = (selectedOption: any) => {
@@ -212,24 +391,120 @@ const ProductStock = ({ user }: any) => {
     setFontSize(isNaN(value) ? 10 : value);
   };
 
-  const handlePrint = useReactToPrint({
+  // The sheet this screen printed before there was a designer to print it from,
+  // and still the one it prints unless the branch has saved a layout -- see
+  // handlePrint below.
+  const printBespoke = useReactToPrint({
     contentRef: printRef,
     documentTitle: 'Product Stock',
   });
 
+  const printBranch = usePrintBranch();
+
+  // The report about to be printed through a saved layout, held with its data
+  // and cleared afterwards so a second print cannot go out carrying the first
+  // one's rows.
+  const [stockDoc, setStockDoc] = useState<{
+    template: PrintTemplate;
+    data: DocumentData;
+  } | null>(null);
+
+  const stockPrintRef = useRef<HTMLDivElement>(null);
+  const printStockDoc = useReactToPrint({
+    contentRef: stockPrintRef,
+    documentTitle: 'Product Stock',
+    onAfterPrint: () => setStockDoc(null),
+  });
+
+  /**
+   * Prints once the designed sheet is actually on the page.
+   *
+   * react-to-print copies what is in the DOM at the moment it is called, so
+   * calling it in the same breath as setStockDoc would copy the previous paper
+   * -- or nothing at all on the first one. An effect runs after React has
+   * committed, and the short wait after that is for the letterhead image.
+   */
+  useEffect(() => {
+    if (!stockDoc) return undefined;
+    const timer = setTimeout(() => printStockDoc(), 250);
+    return () => clearTimeout(timer);
+  }, [stockDoc]);
+
+  /**
+   * Print: the branch's own layout where it has saved one, and the sheet this
+   * screen has always printed where it has not.
+   *
+   * ⚠️ THE LAYOUT IS FETCHED AT THE CLICK, not when the screen loaded -- somebody
+   * who has just changed a column in the designer and come straight back should
+   * not have to reload first. And EVERY FAILURE FALLS THROUGH TO THE OLD PAPER:
+   * no layout saved, a server a patch behind, a dropped connection. The report
+   * is what somebody came here for; the arrangement is on top of it.
+   */
+  const handlePrint = async () => {
+    if (!Array.isArray(tableData) || tableData.length === 0) {
+      printBespoke();
+      return;
+    }
+
+    let layout: any = null;
+
+    try {
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/product_stock`, {
+        params: { branch_id: branchId ?? settings?.data?.branch?.id },
+      });
+      layout = response?.data?.data?.data?.layout ?? null;
+    } catch {
+      layout = null;
+    }
+
+    if (!layout) {
+      printBespoke();
+      return;
+    }
+
+    const template = normalizeTemplate(layout, 'product_stock');
+
+    setStockDoc({
+      template: { ...template, rowsPerPage: perPage, fontSize },
+      data: toProductStockDocumentData({
+        // Sentinels and all: the adapter turns the Brand and Category rows into
+        // heading rows the paper prints, and drops the Grand Total, which the
+        // table foots itself.
+        rows: tableData,
+        startDate,
+        endDate,
+        brandName: brandId ? selectedBrandName : '',
+        categoryName: categoryId ? selectedCategoryName : '',
+        branch: printBranch,
+        branchName: dropdownData.find(
+          (entry: any) => String(entry?.id) === String(branchId),
+        )?.name,
+      }),
+    });
+  };
+
   const handleActionButtonClick = () => {
-    if (!startDate || !endDate) return;
+    /**
+     * ⚠️ This used to `return` on a missing date, which made the Search button
+     * a silent no-op: the click did nothing, the previous unfiltered list
+     * stayed on screen, and a search looked like it had returned everything.
+     * Fall back to the branch's own transaction date -- the value the box
+     * starts with -- so the click always means something.
+     */
+    const from = startDate || defaultTransactionDate;
+    const to = endDate || defaultTransactionDate;
+    if (!from || !to) return;
 
     setButtonLoading(true);
     setFilterOpen(false);
 
-    const startD = dayjs(startDate).format('YYYY-MM-DD');
-    const endD = dayjs(endDate).format('YYYY-MM-DD');
+    const startD = dayjs(from).format('YYYY-MM-DD');
+    const endD = dayjs(to).format('YYYY-MM-DD');
 
-    // Ã Â¦Â¡Ã Â¦Â¿Ã Â¦Â¬Ã Â¦Â¾Ã Â¦â€”Ã Â§â€¡Ã Â¦Â° Ã Â¦Å“Ã Â¦Â¨Ã Â§ÂÃ Â¦Â¯ Ã Â¦Â¦Ã Â§â€¡Ã Â¦â€“Ã Â¦Â¤Ã Â§â€¡ Ã Â¦ÂªÃ Â¦Â¾Ã Â¦Â°Ã Â§â€¡Ã Â¦Â¨
+    // ডিবাগের জন্য দেখতে পারেন
     console.log('Sending payload:', {
       branchId,
-      brandId,           // Ã Â¦ÂÃ Â¦â€“Ã Â¦Â¨ null Ã Â¦Â¹Ã Â¦Â²Ã Â§â€¡ null-Ã Â¦â€¡ Ã Â¦Â¯Ã Â¦Â¾Ã Â¦Â¬Ã Â§â€¡
+      brandId,           // এখন null হলে null-ই যাবে
       categoryId,
       search,
       startDate: startD,
@@ -239,8 +514,9 @@ const ProductStock = ({ user }: any) => {
     dispatch(
       getProductStock({
         branchId: branchId || null,
-        brandId: brandId,           // null Ã Â¦ÂªÃ Â¦Â¾Ã Â¦Â Ã Â¦Â¾Ã Â¦Â²Ã Â§â€¡ Ã Â¦Â¬Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â¦â€¢Ã Â¦ÂÃ Â¦Â¨Ã Â§ÂÃ Â¦Â¡Ã Â§â€¡ Ã Â¦Â¸Ã Â¦Â¬ Ã Â¦Â¬Ã Â§ÂÃ Â¦Â°Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â¦Â¨Ã Â§ÂÃ Â¦Â¡ Ã Â¦â€ Ã Â¦Â¸Ã Â¦Â¬Ã Â§â€¡ (Ã Â¦â€ Ã Â¦Â¶Ã Â¦Â¾ Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦Â¯Ã Â¦Â¾Ã Â¦Â¯Ã Â¦Â¼)
+        brandId: brandId,           // null পাঠালে ব্যাকএন্ডে সব ব্র্যান্ড আসবে (আশা করা যায়)
         categoryId,
+        groupId: needProductGroup ? groupId || null : null,
         search: search || undefined,
         startDate: startD,
         endDate: endD,
@@ -250,10 +526,22 @@ const ProductStock = ({ user }: any) => {
     setTimeout(() => setButtonLoading(false), 800);
   };
 
+  /**
+   * Enter inside the search box submits it, exactly as the Search button does.
+   * Guarded to a text input so Enter on some other control in the group cannot
+   * fire a second load on top of the first.
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter' || !(e.target instanceof HTMLInputElement)) return;
+    e.preventDefault();
+    handleActionButtonClick();
+  };
+
   const handleResetFilters = () => {
     setBranchId(authUser?.branch_id || '');
     setBrandId('');
     setCategoryId('');
+    setGroupId('');
     setSearchValue('');
     setPerPage(35);
     setStartDate(defaultTransactionDate);
@@ -268,10 +556,14 @@ const ProductStock = ({ user }: any) => {
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) =>
-        isGroupRow(row) || isGrandTotalRow(row) ? '' : row.sl_number,
+        isHeadingRow(row) || isGrandTotalRow(row) ? '' : row.sl_number,
     },
     {
       key: 'product_name',
+      // ⚠️ PLAIN AGAIN since 2026-10-10 (evening): the header had been widened to
+      // name the four parts a product line printed, and the owner then took three
+      // of those parts back off the line. A header naming what the column no
+      // longer holds is worse than the plain one -- see the item row below.
       header: 'Product Name',
       render: (row: any) => {
         if (isGrandTotalRow(row)) {
@@ -280,25 +572,59 @@ const ProductStock = ({ user }: any) => {
         if (isBrandRow(row)) {
           return <div className="font-bold py-1">{row.brand_name}</div>;
         }
-        if (isCatRow(row)) {
-          return (
-            <div className="inline-flex items-center gap-1 whitespace-nowrap py-1 font-semibold">
-              <span className="font-semibold">{row.brand_name}</span>
-              <FiArrowRight className="shrink-0 text-gray-900 dark:text-gray-100" />
-              <span>{row.cat_name}</span>
-            </div>
-          );
+
+        // Each heading spells out the whole path down to it: the group prints the
+        // brand it hangs from, and the category prints the brand and the group --
+        // dropping the group step entirely for an item that has none.
+        if (isGroupRow(row)) {
+          return <HeadingPath parts={[row.brand_name, row.group_name]} />;
         }
-        return <div>{row.product_name}</div>;
+
+        if (isCatRow(row)) {
+          return <HeadingPath parts={[row.brand_name, row.group_name, row.cat_name]} />;
+        }
+        /**
+         * ⚠️ CODE AND NAME, NOTHING ELSE. The chain this line used to spell out
+         * (`name ▸ category ▸ group ▸ brand`, asked for on 2026-10-10 and taken
+         * back the same day) is already on the headings above it, once per band
+         * instead of once per product. The owner's words: only `Akota Metal Bib
+         * Cock Round Head L` -- the product, with its code in front where it has
+         * one. The headings keep the chain; this line does not repeat it.
+         *
+         * ⚠️ `HeadingPath` STAYS even for a single part, because it is what sets
+         * the row's line-height and no-wrap; a bare `<span>` here would sit a
+         * pixel off every heading above it.
+         */
+        return (
+          <HeadingPath
+            className="font-normal"
+            parts={[
+              // The code in front of the name, and only the name where there is
+              // no code -- a lone dash reads as a product with a missing name.
+              row.code ? `${row.code} - ${row.product_name}` : row.product_name,
+            ]}
+          />
+        );
       },
     },
+
+    {
+      key: 'unit',
+      header: 'Unit',
+      render: (row: any)=>{
+          
+          return <div className="py-1">{row.unit}</div>;
+          
+      }
+    },
+
     {
       key: 'opening',
       header: 'Opening',
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) =>
-        isGroupRow(row) ? (
+        isHeadingRow(row) ? (
           ''
         ) : isGrandTotalRow(row) ? (
           <p className="font-bold">
@@ -313,7 +639,7 @@ const ProductStock = ({ user }: any) => {
             }
           >
             {thousandSeparator(Math.floor(row.opening || 0))}
-            <span className="text-sm"> ({row.unit})</span>
+            {/* <span className="text-sm"> ({row.unit})</span> */}
           </p>
         ) : (
           '-'
@@ -325,7 +651,7 @@ const ProductStock = ({ user }: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) =>
-        isGroupRow(row) ? (
+        isHeadingRow(row) ? (
           ''
         ) : isGrandTotalRow(row) ? (
           <span className="text-sm font-bold">
@@ -333,7 +659,7 @@ const ProductStock = ({ user }: any) => {
           </span>
         ) : row.stock_in ? (
           <span className="text-sm">
-            {thousandSeparator(Math.floor(row.stock_in))} ({row.unit})
+            {thousandSeparator(Math.floor(row.stock_in))} 
           </span>
         ) : (
           '-'
@@ -345,7 +671,7 @@ const ProductStock = ({ user }: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) =>
-        isGroupRow(row) ? (
+        isHeadingRow(row) ? (
           ''
         ) : isGrandTotalRow(row) ? (
           <span className="text-sm font-bold">
@@ -353,7 +679,7 @@ const ProductStock = ({ user }: any) => {
           </span>
         ) : row.stock_out ? (
           <span className="text-sm">
-            {thousandSeparator(Math.floor(row.stock_out))} ({row.unit})
+            {thousandSeparator(Math.floor(row.stock_out))} 
           </span>
         ) : (
           '-'
@@ -365,7 +691,7 @@ const ProductStock = ({ user }: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) =>
-        isGroupRow(row) ? (
+        isHeadingRow(row) ? (
           ''
         ) : isGrandTotalRow(row) ? (
           <span className="text-sm font-bold">
@@ -373,13 +699,12 @@ const ProductStock = ({ user }: any) => {
           </span>
         ) : Math.floor(row.balance || 0) ? (
           <span
-            className={`text-sm ${
-              Math.floor(Number(row.balance) || 0) < 0
+            className={`text-sm ${Math.floor(Number(row.balance) || 0) < 0
                 ? 'font-semibold text-orange-700 dark:text-orange-300'
                 : ''
-            }`}
+              }`}
           >
-            {thousandSeparator(Math.floor(row.balance))} ({row.unit})
+            {thousandSeparator(Math.floor(row.balance))} 
           </span>
         ) : (
           '-'
@@ -389,6 +714,10 @@ const ProductStock = ({ user }: any) => {
 
   const brandOptions = [{ id: '', name: 'All Brand' }, ...(brand?.brandDdl?.data || [])];
   const categoryOptions = [{ id: '', name: 'All Categories' }, ...(ddlCategory || [])];
+  const groupOptions = [
+    { id: '', name: 'All Groups' },
+    ...(Array.isArray(productGroupData?.ddlData?.data) ? productGroupData.ddlData.data : []),
+  ];
   const selectedBrandName = useMemo(() => {
     const found = brandOptions.find((item: any) => String(item.id) === String(brandId ?? ''));
     return found?.name || '';
@@ -404,14 +733,13 @@ const ProductStock = ({ user }: any) => {
 
       <div className="px-0 py-3 ">
         <div className="flex flex-wrap items-end gap-3">
-          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none'}>
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'w-full'}>
             {useFilterMenuEnabled && (
               <Button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
-                className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
- filterOpen
- ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'}`}
+                className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${filterOpen
+                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300' : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'}`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -427,56 +755,90 @@ const ProductStock = ({ user }: any) => {
                     : 'w-full'
                 }
               >
+                {/* One wrapping flex row for every control, in reading order:
+                    Branch, Brand, Group, Category, Search, the two dates, then
+                    Rows, Font and the Apply/Reset/Print group. Nothing is
+                    forced onto a fixed column count, so no control is squeezed
+                    and no track is left empty -- see the cell classes above. */}
                 <div
                   className={
-                    useFilterMenuEnabled
-                      ? 'space-y-3'
-                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]'
+                    useFilterMenuEnabled ? 'space-y-3' : 'flex flex-wrap items-end gap-3'
                   }
                 >
                   {useFilterMenuEnabled && (
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Show Rows</label>
                       <PrintRowsInput
- label=""
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type="text"
- className="w-20! text-sm "
+                        label=""
+                        value={perPage.toString()}
+                        onChange={handlePerPageChange}
+                        type="text"
+                        className="w-20! text-sm "
                       />
                     </div>
                   )}
 
-                  <div>
+                  <div className={BRANCH_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch</label>
                     {branchDdlData.isLoading ? (
                       <Loader />
                     ) : (
                       <BranchDropdown
- defaultValue={authUser?.branch_id}
- value={String(branchId)}
- onChange={handleBranchChange}
- className="w-full text-sm p-2 border "
- branchDdl={dropdownData}
+                        defaultValue={authUser?.branch_id}
+                        value={String(branchId)}
+                        onChange={handleBranchChange}
+                        className="w-full text-sm p-2 border "
+                        branchDdl={dropdownData}
                       />
                     )}
                   </div>
 
-                  <div>
+                  {/* ⚠️ THE THREE GATES READ `loaded`, NOT `isLoading`. A
+                      slice's isLoading starts false, so the render before its
+                      thunk's pending action lands is indistinguishable from a
+                      finished fetch -- the box drew empty for that frame and
+                      only then started spinning. `loaded` is set the moment the
+                      call comes back, success or failure, so the spinner covers
+                      the whole wait and nothing after it. Same reading as
+                      areaSlice's, and as Stock Details'. */}
+                  <div className={FILTER_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
-                    <CategoryDropdown
- onChange={handleBrandChange}
- className="w-full text-sm "
- categoryDdl={brandOptions}
- value={brandId}
-                    />
+                    {brand.loaded ? (
+                      <CategoryDropdown
+                        onChange={handleBrandChange}
+                        className="w-full text-sm "
+                        categoryDdl={brandOptions}
+                        value={brandId}
+                      />
+                    ) : (
+                      <FieldLoading />
+                    )}
                   </div>
 
-                  <div>
+                  {/* Group sits between Brand and Category: the order the branch
+                      files products in, and the order Stock Details draws them.
+                      Hidden where the branch does not file products under groups
+                      at all. */}
+                  {needProductGroup ? (
+                    <div className={FILTER_CELL}>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Group</label>
+                      {productGroupData.loaded ? (
+                        <CategoryDropdown
+                          onChange={(opt: any) => setGroupId(String(opt?.value ?? ''))}
+                          className="w-full text-sm"
+                          categoryDdl={groupOptions}
+                          value={groupId}
+                          placeholder="All Groups"
+                        />
+                      ) : (
+                        <FieldLoading />
+                      )}
+                    </div>
+                  ) : null}
+
+                  <div className={FILTER_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
-                    {categoryData.isLoading ? (
-                      <Loader />
-                    ) : (
+                    {categoryData.loaded ? (
                       <CategoryDropdown
                         onChange={handleCategoryChange}
                         className="w-full text-sm"
@@ -484,44 +846,75 @@ const ProductStock = ({ user }: any) => {
                         placeholder="All Categories"
                         value={categoryId}
                       />
+                    ) : (
+                      <FieldLoading />
                     )}
                   </div>
 
-                  <div>
+                  {/* The box, immediately left of Start Date.
+                      ⚠️ No button beside it: this screen has always sent the
+                      box with the filters, so Apply already runs the search and
+                      a second button only invited a click that did the same
+                      thing twice. Enter in the box still submits. */}
+                  <div className={SEARCH_CELL} onKeyDown={handleSearchKeyDown}>
+                    <SearchInput
+                      id="productStockSearch"
+                      label="Search"
+                      placeholder="Search product name or code..."
+                      search={search}
+                      setSearchValue={setSearchValue}
+                      className="w-full text-sm"
+                    />
+                  </div>
+
+                  <div className={FILTER_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
- setCurrentDate={handleStartDate}
- className="w-full text-sm "
- selectedDate={startDate}
- setSelectedDate={setStartDate}
+                      setCurrentDate={handleStartDate}
+                      className="w-full text-sm "
+                      selectedDate={startDate}
+                      setSelectedDate={setStartDate}
                     />
                   </div>
 
-                  <div>
+                  <div className={FILTER_CELL}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
- setCurrentDate={handleEndDate}
- className="w-full text-sm "
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+                      setCurrentDate={handleEndDate}
+                      className="w-full text-sm "
+                      selectedDate={endDate}
+                      setSelectedDate={setEndDate}
                     />
                   </div>
 
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Search</label>
-                    <SearchInput
- search={search}
- setSearchValue={setSearchValue}
- className="w-full text-sm "
-                    />
-                  </div>
+                  {!useFilterMenuEnabled && (
+                    <div className={COMPACT_CELL}>
+                      <PrintRowsInput
+                        label="Rows"
+                        value={perPage.toString()}
+                        onChange={handlePerPageChange}
+                        type="text"
+                        className="w-16! text-sm text-center sm:w-20!"
+                      />
+                    </div>
+                  )}
+
+                  {!useFilterMenuEnabled && (
+                    <div className={COMPACT_CELL}>
+                      <PrintFontInput
+                        label="Font"
+                        value={fontSize.toString()}
+                        onChange={handleFontSizeChange}
+                        type="text"
+                        className="w-16! text-sm text-center sm:w-20!"
+                      />
+                    </div>
+                  )}
 
                   <div
-                    className={`flex gap-2 pt-1 ${
-                      useFilterMenuEnabled
-                        ? 'justify-end'
-                        : 'justify-start self-end md:col-span-3 xl:col-span-1'
-                    } ${useFilterMenuEnabled ? '' : 'hidden xl:max-[1880px]:flex min-[1881px]:hidden'}`}
+                    className={
+                      useFilterMenuEnabled ? 'flex justify-end gap-2 pt-1' : ACTION_CELL
+                    }
                   >
                     <ButtonLoading
                       onClick={handleActionButtonClick}
@@ -537,99 +930,87 @@ const ProductStock = ({ user }: any) => {
                       icon={<FiRotateCcw />}
                       className="px-4"
                     />
+                    {!useFilterMenuEnabled && (
+                      <PrintButton onClick={handlePrint} label="" />
+                    )}
                   </div>
 
-                  {!useFilterMenuEnabled && (
-                    <div className="hidden items-end justify-end gap-2 xl:max-[1880px]:flex">
-                      <PrintRowsInput
- label="Rows"
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type="text"
- className="w-16! text-sm text-center sm:w-20!"
-                      />
-                      <PrintFontInput
- label="Font"
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="w-16! text-sm text-center sm:w-20!"
-                      />
-                      <PrintButton onClick={handlePrint} label="" />
-                    </div>
-                  )}
+                  {/* ⚠️ Rows/Font/Print are drawn above, in the row's own order
+                      (Rows, Font, then the Apply/Reset/Print group), so there is
+                      nothing left to place here. */}
                 </div>
               </div>
             )}
           </div>
 
-          <div className={`${useFilterMenuEnabled ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300' : 'hidden'}`}>
-            {branchId || brandId || categoryId || search || startDate || endDate
-              ? 'Use the filter'
-              : 'Use the filter'}
-          </div>
-
-          {!useFilterMenuEnabled && <div className="hidden max-md:block max-md:basis-full" />}
-
-          {!useFilterMenuEnabled && (
-            <div className="flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:w-auto xl:max-[1880px]:hidden">
-              <ButtonLoading
-                onClick={handleActionButtonClick}
-                buttonLoading={false}
-                label="Apply"
-                icon={<FiCheckSquare />}
-                className="px-4 sm:px-6"
-              />
-              <ButtonLoading
-                onClick={handleResetFilters}
-                buttonLoading={false}
-                label="Reset"
-                icon={<FiRotateCcw />}
-                className="px-3 sm:px-4"
-              />
+          {useFilterMenuEnabled && (
+            <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+              Use the filter
             </div>
           )}
 
-          <div className={`ml-auto flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:justify-end ${useFilterMenuEnabled ? '' : 'xl:max-[1880px]:hidden'}`}>
-            <PrintRowsInput
- label="Rows"
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type="text"
- className="w-16! text-sm text-center sm:w-20!"
-            />
-            <PrintFontInput
- label="Font"
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="w-16! text-sm text-center sm:w-20!"
-            />
-            <PrintButton onClick={handlePrint} label="" />
-          </div>
+          {/* The filter-menu feature hides everything behind the funnel button,
+              so Rows/Font/Print stay out here, where they are always reachable. */}
+          {useFilterMenuEnabled && (
+            <div className="ml-auto flex shrink-0 flex-nowrap items-end gap-2">
+              <PrintRowsInput
+                label="Rows"
+                value={perPage.toString()}
+                onChange={handlePerPageChange}
+                type="text"
+                className="w-16! text-sm text-center sm:w-20!"
+              />
+              <PrintFontInput
+                label="Font"
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type="text"
+                className="w-16! text-sm text-center sm:w-20!"
+              />
+              <PrintButton onClick={handlePrint} label="" />
+            </div>
+          )}
         </div>
       </div>
 
       <div className="overflow-x-auto">
-        {stock.isLoading ? (
+        {/* ⚠️ Only the *first* load replaces the table with a spinner. Later
+            requests keep the previous table on screen -- a slim loader sits
+            above it -- so Apply swaps one answer for the next instead of
+            blanking the page in between. The slice no longer empties `data` on
+            pending for the same reason. */}
+        {stock.isLoading && !tableData?.length ? (
           <div className="flex justify-center py-10">
             <Loader />
           </div>
         ) : (
-          <Table columns={columns} data={tableData || []} />
+          <>
+            <Table columns={columns} data={tableData || []} />
+          </>
         )}
 
         {/* Print hidden content */}
         <div className="hidden">
           <StockBookPrint
             ref={printRef}
-            rows={(tableData || []).filter((r: any) => !isGroupRow(r) && !isGrandTotalRow(r))}
+            rows={(tableData || []).filter((r: any) => !isHeadingRow(r) && !isGrandTotalRow(r))}
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Product Stock"
             rowsPerPage={perPage}
             fontSize={fontSize}
           />
+
+          {/* Mounted only while a designed sheet is being printed. Left standing
+              it would draw a whole document on every render of a screen that
+              re-renders on every keystroke. */}
+          {stockDoc ? (
+            <DocumentPrint
+              ref={stockPrintRef}
+              template={stockDoc.template}
+              data={stockDoc.data}
+            />
+          ) : null}
         </div>
       </div>
     </div>

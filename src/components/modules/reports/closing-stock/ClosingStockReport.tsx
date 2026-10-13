@@ -2,14 +2,17 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
-import { FiCheckSquare, FiRotateCcw } from "react-icons/fi";
+import { toast } from "react-toastify";
+import { FiArrowRight, FiCheckSquare, FiRotateCcw } from "react-icons/fi";
 
 import Loader from "../../../../common/Loader";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputDatePicker from "../../../utils/fields/DatePicker";
+import SearchInput from "../../../utils/fields/SearchInput";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import CategoryDropdown from "../../../utils/utils-functions/CategoryDropdown";
+import FieldLoading from "../../../utils/components/FieldLoading";
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
@@ -21,20 +24,38 @@ import { API_REPORT_CLOSING_STOCK_URL } from "../../../services/apiRoutes";
 import httpService from "../../../services/httpService";
 import ItemDetailsPrint from "../profit-loss/ItemDetailsPrint";
 import { isBranchSettingOn } from "../../../utils/userFeatureSettings";
+import { API_PRINT_TEMPLATE_URL } from "../../../services/apiRoutes";
+import { usePrintBranch } from "../../../utils/utils-functions/printBranch";
+import DocumentPrint from "../../../utils/print-designer/DocumentPrint";
+import type { DocumentData } from "../../../utils/print-designer/DocumentPrint";
+import { normalizeTemplate } from "../../../utils/print-designer/printTemplate";
+import type { PrintTemplate } from "../../../utils/print-designer/printTemplate";
+import { toStockDetailsDocumentData } from "./stockDetailsDocumentData";
+import { summariseStockGroup } from "./groupSummary";
+import type { StockGroupRow } from "./groupSummary";
 
 type StockRow = Record<string, any>;
 
-type StockGroup = {
-  /**
-   * The band printed over the rows -- "Air Conditioner", or "GREE" on a branch
-   * that asked for brands. Named `band` rather than `category` because it holds
-   * whichever of the two the branch chose, and a field called category holding
-   * a brand name is how the next reader is misled.
-   */
-  band: string;
-  categories: { category: string; rows: StockRow[] }[];
-  total: number;
-};
+/**
+ * One line of the table, in the order it is drawn.
+ *
+ * ⚠️ FLAT, NOT NESTED, the same shape Product Stock's `buildBrandGroupCategoryRows`
+ * returns and for the same reason: every heading has to know what it is worth
+ * before it is drawn, and a three-deep tree has to be walked three times to find
+ * that out. Here each line already carries the whole path above it.
+ */
+type RenderRow =
+  | { __type: "BRAND"; brand: string }
+  | { __type: "GROUP"; brand: string; group: string }
+  | { __type: "CAT"; brand: string; group: string; category: string }
+  | { __type: "ITEM"; row: StockRow; sl: number }
+  // A group's one summary row, drawn directly under its product rows: the
+  // group's total Stock Qty, its average rate (value over quantity) and the
+  // group's total value together, as "{group} Total Tk.". Per product group in
+  // the banded shape and per category in the flat one, so it is there whichever
+  // shape the branch's `stock_report_type` asks for.
+  | { __type: "SUMMARY"; label: string; qty: number; value: number; avgRate: number }
+  | { __type: "BAND_TOTAL"; label: string; total: number };
 
 /**
  * Every cell is boxed, as the printed stocktake is.
@@ -63,7 +84,16 @@ const rowCategory = (row: StockRow) =>
 const rowBrand = (row: StockRow) =>
   firstName(row?.brand, row?.brand_name, row?.__brandKey) || "Others";
 
+/**
+ * ⚠️ NO "Ungrouped" BUCKET, exactly as Product Stock reads it: an item with no
+ * group has no Group level at all, and its category hangs straight off the brand
+ * (`GREE → Split` becomes `GREE → Air Conditioner`). An empty string is what
+ * says so; the heading draws the parts it has and drops the blank step.
+ */
+const rowGroup = (row: StockRow) => firstName(row?.group, row?.group_name);
+
 const rowProduct = (row: StockRow) => String(row?.product_name ?? row?.name ?? "-");
+const rowCode = (row: StockRow) => String(row?.code ?? "").trim();
 const rowUnit = (row: StockRow) => String(row?.unit ?? row?.unit_name ?? "Nos");
 const rowQty = (row: StockRow) => row?.stock ?? row?.qty ?? row?.product_in ?? 0;
 const rowRate = (row: StockRow) => row?.rate ?? row?.avg_rate ?? 0;
@@ -71,6 +101,41 @@ const rowTotal = (row: StockRow) => {
   const direct = row?.total_stock ?? row?.total ?? row?.amount;
   if (direct !== undefined && direct !== null && direct !== "") return toNum(direct);
   return toNum(rowQty(row)) * toNum(rowRate(row));
+};
+
+/**
+ * A heading's path, drawn as `A → B → C`. The same component, word for word, as
+ * Product Stock's `HeadingPath` -- and the same ten lines again on the paper.
+ *
+ * ⚠️ EMPTY PARTS ARE DROPPED, so an item with no group reads `Brand → Category`
+ * rather than carrying a blank step where a group's name would be, and a branch
+ * that lists stock straight by category reads a one-part path, which is just the
+ * category's name.
+ *
+ * ⚠️ `className` IS HOW A PRODUCT ROW WEARS THE SAME CHAIN WITHOUT THE HEADING'S
+ * WEIGHT -- the steps, the arrow and the spacing stay identical.
+ */
+const HeadingPath = ({
+  parts,
+  className = "font-semibold",
+}: {
+  parts: any[];
+  className?: string;
+}) => {
+  const shown = parts.map((part) => String(part ?? "").trim()).filter(Boolean);
+
+  return (
+    <div className={`inline-flex items-center gap-1 whitespace-nowrap py-1 ${className}`}>
+      {shown.map((part, index) => (
+        <Fragment key={`${index}-${part}`}>
+          {index > 0 && (
+            <FiArrowRight className="shrink-0 text-gray-900 dark:text-gray-100" />
+          )}
+          <span>{part}</span>
+        </Fragment>
+      ))}
+    </div>
+  );
 };
 
 const normalizeRows = (payload: any): StockRow[] => {
@@ -131,11 +196,35 @@ const ClosingStockReport = ({ user }: any) => {
   const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
   const [rows, setRows] = useState<StockRow[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [perPage, setPerPage] = useState(0);
   const [fontSize, setFontSize] = useState(12);
 
+  /**
+   * ⚠️ TWO boxes, not one. `search` is what is being typed and `appliedSearch`
+   * is what the report is drawn through -- the same pair Product Stock keeps,
+   * and for the same reason: a row list that re-filters on every keystroke
+   * moves under the eye while somebody is still naming what they want.
+   */
+  const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+
   const printRef = useRef<HTMLDivElement>(null);
+
+  // Bumped on every Apply. A slower earlier request that lands after a newer
+  // one must not overwrite the newer rows or clear its spinner.
+  const loadSeq = useRef(0);
+
+  /**
+   * ⚠️ One request at a time. `apiClosingStockItems()` REBUILDS the branch's
+   * closing-stock table before it answers, so a second Apply fired while the
+   * first is still running is not a cheap duplicate -- it is a second full
+   * stocktake, and the two answers can land out of order.
+   *
+   * A ref and not `loading`: two presses inside one React batch both read the
+   * state as it was before the re-render, so the state alone lets the pair
+   * through -- exactly the case the guard is here for.
+   */
+  const busy = useRef(false);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -172,51 +261,240 @@ const ClosingStockReport = ({ user }: any) => {
     }
   }, [branchDdlData?.protectedData, authUser?.branch_id]);
 
-  const groups = useMemo<StockGroup[]>(() => {
-    const bandOf = groupByBrand ? rowBrand : rowCategory;
-    const map = new Map<string, StockRow[]>();
+  /**
+   * The rows the report is drawn and printed through.
+   *
+   * ⚠️ FILTERED HERE, in the browser, over everything the load returned --
+   * not asked of the server. `apiClosingStockItems()` REBUILDS the branch's
+   * closing-stock table before it answers, so a search that went back to the
+   * server would re-run that whole calculation to hide a few rows; and this
+   * screen draws every row it has, so what is in memory already is the
+   * complete filtered set rather than one page of it.
+   *
+   * ⚠️ CODE *and* NAME. The paper on this screen prints "CODE - NAME", so a
+   * code read off a bill has to find its row; matching the name alone left
+   * DSWG-323A answering with nothing. Product Stock's server search was widened
+   * the same way (`ReportsController::productStockData`), so the two screens
+   * still agree on what the one Search box means.
+   */
+  const visibleRows = useMemo(() => {
+    const needle = appliedSearch.trim().toLowerCase();
+    if (!needle) return rows;
 
-    rows.forEach((row) => {
-      const band = bandOf(row);
-      if (!map.has(band)) map.set(band, []);
-      map.get(band)!.push(row);
-    });
+    return rows.filter(
+      (row) =>
+        rowProduct(row).toLowerCase().includes(needle) ||
+        rowCode(row).toLowerCase().includes(needle),
+    );
+  }, [rows, appliedSearch]);
 
-    return Array.from(map.entries()).map(([band, list]) => {
-      const categories = new Map<string, StockRow[]>();
-      list.forEach((row) => {
-        const category = groupByBrand
-          ? rowCategory(row)
-          : band;
-        if (!categories.has(category)) categories.set(category, []);
-        categories.get(category)!.push(row);
+  /**
+   * The lines the table is drawn from, in the order they are drawn.
+   *
+   * ⚠️ TWO SHAPES, AND THE BRANCH SETTING PICKS. `stock_report_type` on means
+   * Brand → Group → Category, which is the report Product Stock draws; off means
+   * the flat list by category that ProductStockNormal draws. The same split, off
+   * the same switch, as Product Stock's own two screens.
+   */
+  const renderRows = useMemo<RenderRow[]>(() => {
+    const byName = (a: any, b: any) => String(a ?? "").localeCompare(String(b ?? ""));
+    const out: RenderRow[] = [];
+
+    const emitItems = (items: StockRow[]) => {
+      items.forEach((row, index) => out.push({ __type: "ITEM", row, sl: index + 1 }));
+      return items.reduce((sum, row) => sum + rowTotal(row), 0);
+    };
+
+    // Off: one heading per category, over every brand's rows filed under it.
+    if (!groupByBrand) {
+      const cats = new Map<string, StockRow[]>();
+
+      [...visibleRows]
+        .sort(
+          (a, b) =>
+            byName(rowCategory(a), rowCategory(b)) || byName(rowProduct(a), rowProduct(b)),
+        )
+        .forEach((row) => {
+          const key = rowCategory(row);
+          if (!cats.has(key)) cats.set(key, []);
+          cats.get(key)!.push(row);
+        });
+
+      cats.forEach((items, category) => {
+        out.push({ __type: "CAT", brand: "", group: "", category });
+
+        // The flat shape's band is the category. It gets ONE summary row -- the
+        // quantity, the average rate and the value together -- so there is no
+        // separate band-total line under it to double the figures.
+        const catRows: StockGroupRow[] = items.map((row) => ({
+          qty: toNum(rowQty(row)),
+          value: rowTotal(row),
+        }));
+        emitItems(items);
+
+        out.push({
+          __type: "SUMMARY",
+          label: `${category} Total Tk.`,
+          ...summariseStockGroup(catRows),
+        });
       });
 
-      return {
-        band,
-        categories: Array.from(categories, ([category, rows]) => ({ category, rows })),
-        total: list.reduce((sum, row) => sum + rowTotal(row), 0),
-      };
-    });
-  }, [rows, groupByBrand]);
+      return out;
+    }
 
-  const grandTotal = useMemo(() => groups.reduce((sum, group) => sum + group.total, 0), [groups]);
+    // On: Brand -> Group -> Category, with the categories of the items that have
+    // no group hanging straight off their brand -- see the note on rowGroup.
+    type CatBucket = { category: string; items: StockRow[] };
+    type BrandBucket = {
+      brand: string;
+      groups: Map<string, { group: string; cats: Map<string, CatBucket> }>;
+      ungrouped: Map<string, CatBucket>;
+    };
+
+    const brands = new Map<string, BrandBucket>();
+
+    [...visibleRows]
+      .sort(
+        (a, b) =>
+          byName(rowBrand(a), rowBrand(b)) ||
+          byName(rowGroup(a), rowGroup(b)) ||
+          byName(rowCategory(a), rowCategory(b)) ||
+          byName(rowProduct(a), rowProduct(b)),
+      )
+      .forEach((row) => {
+        const brandKey = rowBrand(row);
+        if (!brands.has(brandKey)) {
+          brands.set(brandKey, { brand: brandKey, groups: new Map(), ungrouped: new Map() });
+        }
+        const brand = brands.get(brandKey)!;
+        const catKey = rowCategory(row);
+        const groupLabel = rowGroup(row);
+
+        if (!groupLabel) {
+          if (!brand.ungrouped.has(catKey)) {
+            brand.ungrouped.set(catKey, { category: catKey, items: [] });
+          }
+          brand.ungrouped.get(catKey)!.items.push(row);
+          return;
+        }
+
+        if (!brand.groups.has(groupLabel)) {
+          brand.groups.set(groupLabel, { group: groupLabel, cats: new Map() });
+        }
+        const group = brand.groups.get(groupLabel)!;
+
+        if (!group.cats.has(catKey)) {
+          group.cats.set(catKey, { category: catKey, items: [] });
+        }
+        group.cats.get(catKey)!.items.push(row);
+      });
+
+    const emitCategory = (brand: string, group: string, cat: CatBucket) => {
+      out.push({ __type: "CAT", brand, group, category: cat.category });
+      return emitItems(cat.items);
+    };
+
+    brands.forEach((brand) => {
+      out.push({ __type: "BRAND", brand: brand.brand });
+
+      let brandTotal = 0;
+      brand.groups.forEach((group) => {
+        out.push({ __type: "GROUP", brand: brand.brand, group: group.group });
+
+        // The group's own figures, gathered from the same rows it emits: its
+        // total quantity and its quantity-weighted average rate. See
+        // groupSummary.ts for the formula.
+        const groupRows: StockGroupRow[] = [];
+
+        group.cats.forEach((cat) => {
+          cat.items.forEach((row) => {
+            groupRows.push({ qty: toNum(rowQty(row)), value: rowTotal(row) });
+          });
+          brandTotal += emitCategory(brand.brand, group.group, cat);
+        });
+
+        // Immediately below the group's product rows: one row naming the group
+        // and carrying its quantity, average rate and value together.
+        out.push({
+          __type: "SUMMARY",
+          label: `${group.group} Total Tk.`,
+          ...summariseStockGroup(groupRows),
+        });
+      });
+      brand.ungrouped.forEach((cat) => {
+        brandTotal += emitCategory(brand.brand, "", cat);
+      });
+
+      out.push({ __type: "BAND_TOTAL", label: brand.brand, total: brandTotal });
+    });
+
+    return out;
+  }, [visibleRows, groupByBrand]);
+
+  const grandTotal = useMemo(
+    () =>
+      renderRows.reduce(
+        (sum, line) => (line.__type === "ITEM" ? sum + rowTotal(line.row) : sum),
+        0,
+      ),
+    [renderRows],
+  );
+
+  // The same, in quantity: every product row the filters let through, and only
+  // those -- a SUMMARY row is skipped so the group totals are not counted a
+  // second time on top of the rows they already sum.
+  const grandQty = useMemo(
+    () =>
+      renderRows.reduce(
+        (sum, line) => (line.__type === "ITEM" ? sum + toNum(rowQty(line.row)) : sum),
+        0,
+      ),
+    [renderRows],
+  );
+
+  /**
+   * ⚠️ SIX, ALWAYS. The separate Code column is gone: the code rides in front of
+   * the product's name, exactly as it does on Product Stock, so the second column
+   * was printing a string the product cell already carried. Every colSpan below
+   * counts off this one number, so no heading can end up a column wider than the
+   * lines beneath it.
+   */
+  const columnCount = 6;
 
   const handleLoad = async () => {
+    // A second Apply while the first is still out is dropped, not queued.
+    if (busy.current) return;
+
     if (!branchId) {
-      setError("Branch select korun");
+      toast.error("Branch select korun");
       return;
     }
     if (!startDate || !endDate) {
-      setError("Start/End date din");
+      toast.error("Start/End date din");
       return;
     }
 
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
 
+    /**
+     * ⚠️ Apply hands over whatever is in the Search box too.
+     *
+     * The whole reason this screen kept two states was so the report would not
+     * re-filter on every keystroke -- Apply is the deliberate submit, so it has
+     * to take the box with it. Left as it was, typing a code and pressing Apply
+     * (which is how anybody loads a date range) reloaded the whole stocktake and
+     * filtered nothing: a search that answered with every unrelated product on
+     * the branch. Product Stock has always read the box on both its buttons;
+     * this is the same rule, not a new one.
+     */
+    setAppliedSearch(search);
+
+    // This request's ticket. Only the newest ticket is allowed to write.
+    const seq = ++loadSeq.current;
+    busy.current = true;
+
     setLoading(true);
-    setError(null);
 
     try {
       const response = await httpService.post(API_REPORT_CLOSING_STOCK_URL, {
@@ -230,22 +508,41 @@ const ClosingStockReport = ({ user }: any) => {
         group_id: needProductGroup ? groupId || null : null,
       });
 
+      if (seq !== loadSeq.current) return;
+
       const nextRows = normalizeRows(response.data);
       setRows(nextRows);
-      if (!nextRows.length) {
-        setError(response.data?.message || "No stock items found");
-      }
+      if (!nextRows.length) toast.error(response.data?.message || "No stock items found");
     } catch (err: any) {
-      setRows([]);
-      setError(err?.response?.data?.message || err?.message || "Closing stock load failed");
+      if (seq !== loadSeq.current) return;
+
+      /**
+       * ⚠️ The rows on screen STAY. Emptying them here is what the reader
+       * actually sees when a request fails: the stocktake they were reading
+       * collapses to "No data found" and the reason for it is a sentence in the
+       * corner. A failed refresh is a failed refresh -- the last good answer is
+       * still the last good answer, and the old numbers are one Apply away from
+       * being replaced.
+       */
+      toast.error(err?.response?.data?.message || err?.message || "Closing stock load failed");
     } finally {
-      setLoading(false);
+      // A stale request must not clear the spinner the newest one is showing,
+      // nor hand the lock to a request that is not the one holding it.
+      if (seq === loadSeq.current) {
+        setLoading(false);
+        busy.current = false;
+      }
     }
   };
 
   const handleReset = () => {
+    // ⚠️ Not just the rows: a request still out would land on a cleared screen
+    // and put its own rows back. The ticket moves on so its answer is dropped.
+    loadSeq.current += 1;
+    busy.current = false;
+    setLoading(false);
+
     setRows([]);
-    setError(null);
     setStartDate(defaultTransactionDate);
     setEndDate(defaultTransactionDate);
     setPerPage(12);
@@ -253,13 +550,142 @@ const ClosingStockReport = ({ user }: any) => {
     setBrandId("");
     setCategoryId("");
     setGroupId("");
+    setSearch("");
+    setAppliedSearch("");
     if (authUser?.branch_id) setBranchId(authUser.branch_id);
   };
 
-  const handlePrint = useReactToPrint({
+  /**
+   * The box's Enter key comes through here.
+   *
+   * ⚠️ With nothing loaded there is nothing to filter, so the press has to
+   * LOAD. Left as a pure filter it answered a screen nobody had Run yet with
+   * the same "No data found" that was already standing there -- the box read as
+   * dead on the one state every reader meets first. Loaded, it stays what it
+   * was: a filter over rows already in hand, with no request behind it.
+   *
+   * `handleLoad` applies the box itself, so the two paths cannot disagree about
+   * what the needle is.
+   */
+  const submitSearch = () => {
+    if (!rows.length) {
+      handleLoad();
+      return;
+    }
+    setAppliedSearch(search);
+  };
+
+  /**
+   * Enter in the search box submits it.
+   *
+   * ⚠️ Guarded on the target being the box itself. The handler sits on the
+   * group so it catches the key from the input it wraps, but a Search button
+   * inside that group fires its own click on Enter -- unguarded, one press
+   * would submit twice.
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "Enter" || !(e.target instanceof HTMLInputElement)) return;
+    e.preventDefault();
+    submitSearch();
+  };
+
+  // The sheet this screen printed before there was a designer to print it from,
+  // and still the one it prints unless the branch has saved a layout -- see
+  // handlePrint below.
+  const printBespoke = useReactToPrint({
     contentRef: printRef,
     documentTitle: "Closing Stock Details",
   });
+
+  const printBranch = usePrintBranch();
+
+  // The report about to be printed through a saved layout, held with its data
+  // and cleared afterwards so a second print cannot go out carrying the first
+  // one's rows.
+  const [stockDoc, setStockDoc] = useState<{
+    template: PrintTemplate;
+    data: DocumentData;
+  } | null>(null);
+
+  const stockPrintRef = useRef<HTMLDivElement>(null);
+  const printStockDoc = useReactToPrint({
+    contentRef: stockPrintRef,
+    documentTitle: "Closing Stock Details",
+    onAfterPrint: () => setStockDoc(null),
+  });
+
+  /**
+   * Prints once the designed sheet is actually on the page.
+   *
+   * react-to-print copies what is in the DOM at the moment it is called, so
+   * calling it in the same breath as setStockDoc would copy the previous paper
+   * -- or nothing at all on the first one. An effect runs after React has
+   * committed, and the short wait after that is for the letterhead image.
+   */
+  useEffect(() => {
+    if (!stockDoc) return undefined;
+    const timer = setTimeout(() => printStockDoc(), 250);
+    return () => clearTimeout(timer);
+  }, [stockDoc]);
+
+  /**
+   * Print: the branch's own layout where it has saved one, and the sheet this
+   * screen has always printed where it has not.
+   *
+   * ⚠️ THE LAYOUT IS FETCHED AT THE CLICK, not when the screen loaded -- somebody
+   * who has just changed a column in the designer and come straight back should
+   * not have to reload first. And EVERY FAILURE FALLS THROUGH TO THE OLD PAPER:
+   * no layout saved, a server a patch behind, a dropped connection. The report
+   * is what somebody came here for; the arrangement is on top of it.
+   *
+   * The filter names are passed only where a filter is actually set: all three
+   * dropdowns open on an "All …" entry, and a heading reading "All Brand" says
+   * nothing the absence of a heading does not.
+   */
+  const handlePrint = async () => {
+    if (!visibleRows.length) {
+      printBespoke();
+      return;
+    }
+
+    let layout: any = null;
+
+    try {
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/stock_details`, {
+        params: { branch_id: branchId ?? settings?.data?.branch?.id },
+      });
+      layout = response?.data?.data?.data?.layout ?? null;
+    } catch {
+      layout = null;
+    }
+
+    if (!layout) {
+      printBespoke();
+      return;
+    }
+
+    const template = normalizeTemplate(layout, "stock_details");
+    const nameOf = (options: any[], id: string) =>
+      id ? options.find((item: any) => String(item?.id) === String(id))?.name ?? "" : "";
+
+    setStockDoc({
+      template: { ...template, rowsPerPage: perPage, fontSize },
+      data: toStockDetailsDocumentData({
+        // The rows on screen, so the paper carries what the search narrowed to
+        // rather than a full list nobody is looking at any more.
+        rows: visibleRows,
+        startDate,
+        endDate,
+        brandName: nameOf(brandOptions, brandId),
+        categoryName: nameOf(categoryOptions, categoryId),
+        groupName: nameOf(groupOptions, groupId),
+        branch: printBranch,
+        branchName: dropdownData.find(
+          (entry: any) => String(entry?.id) === String(branchId),
+        )?.name,
+      }),
+    });
+  };
 
   return (
     <div className="">
@@ -278,65 +704,116 @@ const ClosingStockReport = ({ user }: any) => {
             />
           </div>
 
+          {/* ⚠️ THE THREE GATES READ `loaded`, NOT `isLoading`. A slice's
+              isLoading starts false, so the render before its thunk's pending
+              action lands is indistinguishable from a finished fetch -- the box
+              drew empty for that frame and only then started spinning. `loaded`
+              is set the moment the call comes back, success or failure, so the
+              spinner covers the whole wait and nothing after it. Same reading as
+              areaSlice's, and as Product Stock's. */}
           <div className="min-w-50">
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
-            <CategoryDropdown
-              onChange={(opt: any) => setBrandId(String(opt?.value ?? ""))}
-              className="w-full text-sm"
-              categoryDdl={brandOptions}
-              value={brandId}
-              placeholder="All Brand"
-            />
+            {brandData.loaded ? (
+              <CategoryDropdown
+                onChange={(opt: any) => setBrandId(String(opt?.value ?? ""))}
+                className="w-full text-sm"
+                categoryDdl={brandOptions}
+                value={brandId}
+                placeholder="All Brand"
+              />
+            ) : (
+              <FieldLoading />
+            )}
           </div>
 
-          <div className="min-w-50">
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
-            <CategoryDropdown
-              onChange={(opt: any) => setCategoryId(String(opt?.value ?? ""))}
-              className="w-full text-sm"
-              categoryDdl={categoryOptions}
-              value={categoryId}
-              placeholder="All Categories"
-            />
-          </div>
-
+          {/* Group sits between Brand and Category: the order the branch files
+              products in, and the order Product Stock draws them. Hidden where
+              the branch does not file products under groups at all. */}
           {needProductGroup ? (
             <div className="min-w-50">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Group</label>
-              <CategoryDropdown
-                onChange={(opt: any) => setGroupId(String(opt?.value ?? ""))}
-                className="w-full text-sm"
-                categoryDdl={groupOptions}
-                value={groupId}
-                placeholder="All Groups"
-              />
+              {productGroupData.loaded ? (
+                <CategoryDropdown
+                  onChange={(opt: any) => setGroupId(String(opt?.value ?? ""))}
+                  className="w-full text-sm"
+                  categoryDdl={groupOptions}
+                  value={groupId}
+                  placeholder="All Groups"
+                />
+              ) : (
+                <FieldLoading />
+              )}
             </div>
           ) : null}
+
+          <div className="min-w-50">
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
+            {categoryData.loaded ? (
+              <CategoryDropdown
+                onChange={(opt: any) => setCategoryId(String(opt?.value ?? ""))}
+                className="w-full text-sm"
+                categoryDdl={categoryOptions}
+                value={categoryId}
+                placeholder="All Categories"
+              />
+            ) : (
+              <FieldLoading />
+            )}
+          </div>
+
+          {/* The box, immediately left of Start Date.
+              ⚠️ No button beside it: the report is already loaded here, so a
+              button only repeated what the box's own Enter key does -- and the
+              hand that went looking for one pressed Apply next to it instead
+              and got the whole stocktake back. The needle is the name *or* the
+              code, which is what the row prints ("CODE - NAME") and therefore
+              what a reader has in hand when they come looking. */}
+          {/* ⚠️ `flex-1 min-w-50`, not `min-w-max`: this row is a wrapping flex
+              row, so the box grows into whatever room is left on its line --
+              all of it when it wraps, which is the mobile case. `min-w-max`
+              held the wrapper at the box's own width, so the space the removed
+              button used to occupy stayed empty. */}
+          <div className="flex min-w-50 flex-1 items-end gap-2" onKeyDown={handleSearchKeyDown}>
+            <SearchInput
+              id="stockDetailsSearch"
+              label="Search"
+              placeholder="Search product name or code..."
+              search={search}
+              setSearchValue={setSearch}
+              className="w-full min-w-50 font-medium text-sm"
+            />
+          </div>
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
             <InputDatePicker
- setCurrentDate={setStartDate}
- className="font-medium text-sm w-full min-w-[220px]"
- selectedDate={startDate}
- setSelectedDate={setStartDate}
+              setCurrentDate={setStartDate}
+              className="font-medium text-sm w-full min-w-[220px]"
+              selectedDate={startDate}
+              setSelectedDate={setStartDate}
             />
           </div>
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
             <InputDatePicker
- setCurrentDate={setEndDate}
- className="font-medium text-sm w-full min-w-[220px]"
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+              setCurrentDate={setEndDate}
+              className="font-medium text-sm w-full min-w-[220px]"
+              selectedDate={endDate}
+              setSelectedDate={setEndDate}
             />
           </div>
 
-          <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
+          {/* ⚠️ `xl:ml-auto` was removed on purpose. An auto margin swallows the
+              row's free space *before* flex-grow gets a look at it, so the
+              `flex-1` search box could never grow while it was here -- the
+              buttons stayed pinned right and the box stayed narrow. The search
+              box now does the pushing. */}
+          <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto">
             <ButtonLoading
               onClick={handleLoad}
               buttonLoading={loading}
+              disabled={loading}
               label="Apply"
               icon={<FiCheckSquare />}
               className="px-6"
@@ -366,86 +843,188 @@ const ClosingStockReport = ({ user }: any) => {
               type="text"
               className="font-medium text-sm w-full! text-center"
             />
-            <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={!rows.length} />
+            <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={!visibleRows.length} />
           </div>
         </div>
       </div>
 
-      {error ? (
-        <div className="mb-3 rounded-sm border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
-          {error}
-        </div>
-      ) : null}
+      {/* ⚠️ There is no banner here any more, and that is the point.
+          This block used to hold the load error, which put a box between the
+          toolbar and the table: every Apply cleared it and every failure or
+          empty answer put it back, so the table jumped down and up on either
+          side of a request nobody had finished watching. The message goes to
+          the app's own toaster now (`toast.error` above), which is drawn over
+          the page instead of in it -- the table's first row no longer moves for
+          a sentence about the request that was just made. */}
 
-      <div className="overflow-x-auto">
-        {loading ? <Loader /> : null}
+      {/* The table keeps its place for the whole request: the spinner below is
+          drawn over this box, not in front of it. */}
+      <div className="relative overflow-x-auto">
+        {loading ? (
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center py-2">
+            <span className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-t-transparent" />
+          </div>
+        ) : null}
         <table className="min-w-full table-fixed border-collapse text-left text-sm text-gray-700 dark:text-gray-300">
           <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-800 dark:text-gray-300">
             <tr>
               <th className={`w-[80px] px-3 py-3 text-center font-semibold ${CELL}`}>Sl. No</th>
-              <th className={`px-3 py-3 text-center font-semibold ${CELL}`}>Product Details</th>
+              {/* Plain, matching Product Stock's identical column: a product line
+                  below prints its code and name only, and the chain it is filed
+                  under lives on the headings above it. */}
+              <th className={`px-3 py-3 font-semibold ${CELL}`}>Product Name</th>
               <th className={`w-[90px] px-3 py-3 text-center font-semibold ${CELL}`}>Unit</th>
               <th className={`w-[120px] px-3 py-3 text-right font-semibold ${CELL}`}>Stock Qty</th>
               <th className={`w-[130px] px-3 py-3 text-right font-semibold ${CELL}`}>Rate (Tk.)</th>
               <th className={`w-[150px] px-3 py-3 text-right font-semibold ${CELL}`}>Total (Tk.)</th>
             </tr>
           </thead>
-          {/* Replace the old flat-list DOM, including rows left by duplicate keys. */}
+          {/* The key carries which shape is drawn, so switching the branch
+              setting rebuilds the body rather than reconciling a heading list
+              into a differently-shaped one. */}
           <tbody
-            key={groupByBrand ? "brand-category-items" : "category-items"}
+            key={groupByBrand ? "brand-group-category-items" : "category-items"}
             className="divide-y divide-gray-200 bg-[rgb(var(--c-table-body))] dark:divide-gray-700"
           >
-            {groups.length ? (
-              groups.map((group) => (
-                <Fragment key={group.band}>
-                  {/* The band is not uppercased: "Air Conditioner" is the name
-                      as it was filed, and shouting it back adds nothing a
-                      heavier weight and a grey ground do not already say. */}
-                  <tr key={`${group.band}-header`} className={`bg-slate-100 font-semibold text-slate-900 dark:bg-slate-900/60 dark:text-slate-100 ${CELL}`}>
-                    <td colSpan={6} className="px-3 py-2">{group.band}</td>
+            {renderRows.length ? (
+              renderRows.map((line, index) => {
+                if (line.__type === "BAND_TOTAL") {
+                  return (
+                    <tr key={`total-${index}`} className="bg-slate-50 font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
+                      <td colSpan={columnCount - 1} className={`px-3 py-3 text-right ${CELL}`}>{line.label} Total Tk.</td>
+                      <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(line.total)}</td>
+                    </tr>
+                  );
+                }
+
+                if (line.__type === "ITEM") {
+                  // The line above it, where that line is a product too: two
+                  // layers of one product are tinted, so the eye can tell one
+                  // product's stock from the next product's.
+                  const above = renderRows[index - 1];
+                  const sameProduct =
+                    above?.__type === "ITEM" &&
+                    line.row?.prodct_detls_id != null &&
+                    line.row.prodct_detls_id === above.row?.prodct_detls_id;
+
+                  return (
+                    <tr
+                      key={`item-${index}`}
+                      className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${sameProduct ? "bg-cyan-50 dark:bg-cyan-950/20" : ""}`}
+                    >
+                      <td className={`px-3 py-2 text-center ${CELL}`}>{line.sl}</td>
+                      {/* ⚠️ CODE AND NAME, NOTHING ELSE. The chain this line used
+                          to spell out was taken back off it by the owner on
+                          2026-10-10, hours after he asked for it: the headings
+                          above already carry the chain, once per band instead of
+                          once per product. `HeadingPath` stays even for a single
+                          part, because it is what sets this row's line-height and
+                          no-wrap to match those headings. */}
+                      <td className={`px-3 py-2 ${CELL}`}>
+                        <HeadingPath
+                          className="font-normal"
+                          parts={[
+                            rowCode(line.row)
+                              ? `${rowCode(line.row)} - ${rowProduct(line.row)}`
+                              : rowProduct(line.row),
+                          ]}
+                        />
+                      </td>
+                      <td className={`px-3 py-2 text-center ${CELL}`}>{rowUnit(line.row)}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowQty(line.row))}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowRate(line.row))}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowTotal(line.row))}</td>
+                    </tr>
+                  );
+                }
+
+                /**
+                 * A heading, at one of the three depths. It prints the whole path
+                 * down to itself -- the group prints the brand it hangs from, the
+                 * category prints both -- with HeadingPath dropping the steps a
+                 * row has none of. The depth is read off `__type` rather than
+                 * repeated in a class, so the two can never disagree.
+                 *
+                 * ⚠️ NO INDENTATION STEP. The path is the indentation: "GREE →
+                 * Split → Air Conditioner" says where it sits without a margin
+                 * the reader has to measure. Same as Product Stock.
+                 */
+                /**
+                 * A group's summary, directly under its product rows. The Stock
+                 * Qty column carries the group's total quantity and the Rate
+                 * column its average rate -- the group's value over its
+                 * quantity, the same figures the lines above it were valued
+                 * from. The other columns are left empty so the two land under
+                 * their own headings; the label sits over the name columns.
+                 */
+                if (line.__type === "SUMMARY") {
+                  return (
+                    <tr
+                      key={`summary-${index}`}
+                      className="bg-slate-50 font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100"
+                    >
+                      <td colSpan={3} className={`px-3 py-2 text-right ${CELL}`}>
+                        {line.label}
+                      </td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(line.qty)}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(line.avgRate)}</td>
+                      <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(line.value)}</td>
+                    </tr>
+                  );
+                }
+
+                if (line.__type === "CAT") {
+                  return (
+                    <tr key={`heading-${index}`} className="bg-slate-50 font-medium text-slate-700 dark:bg-slate-900/40 dark:text-slate-200">
+                      <td colSpan={columnCount} className={`px-3 py-2 ${CELL}`}>
+                        <HeadingPath parts={[line.brand, line.group, line.category]} className="font-medium" />
+                      </td>
+                    </tr>
+                  );
+                }
+
+                if (line.__type === "GROUP") {
+                  return (
+                    <tr key={`heading-${index}`} className="bg-slate-50 font-medium text-slate-700 dark:bg-slate-900/40 dark:text-slate-200">
+                      <td colSpan={columnCount} className={`px-3 py-2 ${CELL}`}>
+                        <HeadingPath parts={[line.brand, line.group]} className="font-medium" />
+                      </td>
+                    </tr>
+                  );
+                }
+
+                // The brand: the top of the chain, so its path is its own name.
+                return (
+                  <tr key={`heading-${index}`} className="bg-slate-100 font-semibold text-slate-900 dark:bg-slate-900/60 dark:text-slate-100">
+                    <td colSpan={columnCount} className={`px-3 py-2 ${CELL}`}>{line.brand}</td>
                   </tr>
-                  {group.categories.map((categoryGroup) => (
-                    <Fragment key={categoryGroup.category}>
-                      {groupByBrand ? (
-                        <tr className="bg-slate-50 font-medium text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
-                          <td colSpan={6} className={`px-6 py-2 ${CELL}`}>{categoryGroup.category}</td>
-                        </tr>
-                      ) : null}
-                      {categoryGroup.rows.map((row, index) => (
-                        <tr
-                          key={`${group.band}-${categoryGroup.category}-${index}`}
-                          className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${
-                            index > 0 && row?.prodct_detls_id === categoryGroup.rows[index - 1]?.prodct_detls_id
-                              ? "bg-cyan-50 dark:bg-cyan-950/20"
-                              : ""
-                          }`}
-                        >
-                          <td className={`px-3 py-2 text-center ${CELL}`}>{index + 1}</td>
-                          <td className={`truncate px-3 py-2 ${CELL}`}>{rowProduct(row)}</td>
-                          <td className={`px-3 py-2 text-center ${CELL}`}>{rowUnit(row)}</td>
-                          <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowQty(row))}</td>
-                          <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowRate(row))}</td>
-                          <td className={`px-3 py-2 text-right ${CELL}`}>{fmt(rowTotal(row))}</td>
-                        </tr>
-                      ))}
-                    </Fragment>
-                  ))}
-                  <tr key={`${group.band}-total`} className="bg-slate-50 font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
-                    <td colSpan={5} className={`px-3 py-3 text-right ${CELL}`}>{group.band} Total Tk.</td>
-                    <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(group.total)}</td>
-                  </tr>
-                </Fragment>
-              ))
+                );
+              })
             ) : (
               <tr>
-                <td colSpan={6} className="py-4 text-center text-gray-500 dark:text-gray-400">No data found</td>
+                {/* ⚠️ Two different nothings, said differently. A report that
+                    was never Run and a search that matched none of the rows are
+                    the same empty table, and the reader's next move is opposite
+                    in each: press Apply, or change the word in the box. */}
+                <td colSpan={columnCount} className="py-4 text-center text-gray-500 dark:text-gray-400">
+                  {rows.length && appliedSearch.trim()
+                    ? `No product matches "${appliedSearch.trim()}"`
+                    : "No data found"}
+                </td>
               </tr>
             )}
           </tbody>
-          {groups.length ? (
+          {renderRows.length ? (
             <tfoot className="bg-slate-50 text-sm font-semibold text-slate-800 dark:bg-slate-900/40 dark:text-slate-100">
+              {/* Grand Total: the label spans the name columns, then Stock Qty
+                  carries every filtered product row's quantity, Rate stays
+                  empty (nothing rates a whole report) and Total (Tk.) its
+                  value, as it always did. columnCount - 3 + the three cells
+                  below counts off the same number the headings do. */}
               <tr>
-                <td colSpan={5} className={`px-3 py-3 text-right ${CELL}`}>Grand Total</td>
+                <td colSpan={columnCount - 3} className={`px-3 py-3 text-right ${CELL}`}>Grand Total</td>
+                <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(grandQty)}</td>
+                <td className={`px-3 py-3 text-right ${CELL}`} />
                 <td className={`px-3 py-3 text-right ${CELL}`}>{fmt(grandTotal)}</td>
               </tr>
             </tfoot>
@@ -456,13 +1035,23 @@ const ClosingStockReport = ({ user }: any) => {
       <div className="hidden">
         <ItemDetailsPrint
           ref={printRef}
-          report={rows}
+          report={visibleRows}
           title="Closing Stock Details"
           startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
           endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
           fontSize={fontSize}
           rowsPerPage={perPage}
         />
+
+        {/* Mounted only while a designed sheet is being printed. Left standing
+            it would draw a whole document on every render. */}
+        {stockDoc ? (
+          <DocumentPrint
+            ref={stockPrintRef}
+            template={stockDoc.template}
+            data={stockDoc.data}
+          />
+        ) : null}
       </div>
     </div>
   );

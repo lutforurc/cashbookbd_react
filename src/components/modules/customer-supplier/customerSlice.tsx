@@ -16,6 +16,17 @@ type CustomerRequestPayload = {
   per_page: number;
   page: number | null;
   search: string | null;
+  /**
+   * A `cust_party_infos.party_type_id` (1 Customer, 2 Supplier, 3 Supplier &
+   * Customer, 4 Advance), or '' / null / undefined for every party.
+   */
+  partyTypeId?: string | number | null;
+  /**
+   * An `hrm_employees.id` -- whose customers to list, set from the List
+   * Customers screen where Branch Setup's "Customer Handle By Employee" is on.
+   * '' / null / undefined is every party, the ones nobody holds included.
+   */
+  employeeId?: string | number | null;
 };
 
 type StoreCustomerPayload = {
@@ -59,6 +70,17 @@ interface CustomerState {
 
   loading: boolean;
   error: string | null;
+  /**
+   * ⚠️ Which request is the current one.
+   *
+   * The screen fires a fresh call the moment the classification changes, and a
+   * slower earlier call can land after a faster later one. Without this the
+   * older answer -- for a type the reader has already moved off -- would
+   * overwrite the newer rows, and the table would show one classification of
+   * customers under another's heading. Every pending is tagged by Redux
+   * Toolkit's own request id, and only the latest tag is allowed through.
+   */
+  activeRequestId: string | null;
 }
 type EditCustomerResponse = {
   success: boolean;
@@ -80,15 +102,38 @@ const initialState: CustomerState = {
 
   loading: false,
   error: null,
+  activeRequestId: null,
 };
 
 export const getCustomer = createAsyncThunk<PaginatedCustomerResponse, CustomerRequestPayload, { rejectValue: ErrorResponse }>('getCustomer/fetch', async (payload, { rejectWithValue }) => {
   try {
-    const { data } = await httpService.post(API_CONTACT_DETAILS_LIST_URL, {
+    const body: Record<string, any> = {
       per_page: payload.per_page,
       page: payload.page,
       search: payload.search,
-    });
+    };
+
+    // Absent rather than empty: the server's own "no filter" is the missing
+    // param, and an empty string would have to be special-cased there too.
+    if (
+      payload.partyTypeId !== '' &&
+      payload.partyTypeId !== null &&
+      payload.partyTypeId !== undefined
+    ) {
+      body.party_type_id = payload.partyTypeId;
+    }
+
+    // Same rule for the employee: the server's "no filter" is the missing
+    // param, and the blank option on the screen means exactly that.
+    if (
+      payload.employeeId !== '' &&
+      payload.employeeId !== null &&
+      payload.employeeId !== undefined
+    ) {
+      body.handle_by_employee_id = payload.employeeId;
+    }
+
+    const { data } = await httpService.post(API_CONTACT_DETAILS_LIST_URL, body);
 
     return data.data; // Laravel wraps actual data under `.data`
   } catch (error) {
@@ -100,6 +145,17 @@ export const getCustomer = createAsyncThunk<PaginatedCustomerResponse, CustomerR
 export const storeCustomer = createAsyncThunk<any, StoreCustomerPayload, { rejectValue: ErrorResponse }>('customer/store', async (payload, { rejectWithValue }) => {
   try {
     const { data } = await httpService.post(API_STORE_CUSTOMER_URL, payload);
+
+    // A refusal (the plan's customer limit, a closed year) comes back as HTTP
+    // 200 with success:false. Returning it as-is would resolve unwrap(), so the
+    // form would show the refusal in a green "success" toast and clear itself
+    // while no customer had been saved.
+    if (data?.success === false) {
+      return rejectWithValue({
+        message: data?.error?.message || data?.message || 'Failed to store customer',
+      } as ErrorResponse);
+    }
+
     return data;
   } catch (error) {
     return rejectWithValue({ message: 'Failed to store customer' });
@@ -242,17 +298,24 @@ const customerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(getCustomer.pending, (state) => {
+      .addCase(getCustomer.pending, (state, action) => {
         state.loading = true;
         state.error = null;
+        // The tag the answers below are checked against.
+        state.activeRequestId = action.meta.requestId;
       })
       .addCase(getCustomer.fulfilled, (state, action) => {
+        // A newer request has already been sent; its answer is the one to keep.
+        if (state.activeRequestId !== action.meta.requestId) return;
+
         state.loading = false;
         state.customer = action.payload.data;
         state.currentPage = action.payload.current_page;
         state.total = action.payload.total;
       })
       .addCase(getCustomer.rejected, (state, action) => {
+        if (state.activeRequestId !== action.meta.requestId) return;
+
         state.loading = false;
         state.error = action.payload?.message || 'Something went wrong!';
       })

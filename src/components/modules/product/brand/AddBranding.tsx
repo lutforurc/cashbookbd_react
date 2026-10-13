@@ -76,25 +76,24 @@ const AddBranding = () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  /**
+   * ⚠️ THE NAME IS THE ONLY THING ASKED FOR. Address, email and contact are all
+   * optional — a brand is usually written down before anybody has its phone
+   * number, and refusing the save lost the entry rather than the field. The
+   * columns are nullable, so nothing stands behind this but the rule itself.
+   *
+   * ⚠️ A FILLED EMAIL IS STILL CHECKED. Optional means "may be left blank", not
+   * "accepts anything": an address the mailer cannot read is worse than no
+   * address at all, because it looks answered. Same rule the API applies.
+   */
   const validate = () => {
     if (!(formData.name || '').trim()) {
       toast.error('Please enter brand name.');
       return false;
     }
-    if (!(formData.address || '').trim()) {
-      toast.error('Please enter address.');
-      return false;
-    }
-    if (!(formData.email || '').trim()) {
-      toast.error('Please enter email.');
-      return false;
-    }
-    if (!isValidEmail(formData.email.trim())) {
+    const email = (formData.email || '').trim();
+    if (email && !isValidEmail(email)) {
       toast.error('Please enter a valid email.');
-      return false;
-    }
-    if (!(formData.contacts || '').trim()) {
-      toast.error('Please enter contact number.');
       return false;
     }
     return true;
@@ -162,7 +161,7 @@ const AddBranding = () => {
           value={formData.email}
           name="email"
           placeholder="Enter Email"
-          label="Email"
+          label="Email (Optional)"
           className=""
           onChange={handleOnChange}
         />
@@ -172,7 +171,7 @@ const AddBranding = () => {
           value={formData.contacts}
           name="contacts"
           placeholder="Enter Contact Number"
-          label="Contact"
+          label="Contact (Optional)"
           className=""
           onChange={handleOnChange}
         />
@@ -182,7 +181,7 @@ const AddBranding = () => {
           value={formData.address}
           name="address"
           placeholder="Enter Address"
-          label="Address"
+          label="Address (Optional)"
           className="md:col-span-2"
           onChange={handleOnChange}
         />

@@ -5,7 +5,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiCheckSquare, FiClock, FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
+import { FiCheckSquare, FiClock, FiEdit2, FiPlus, FiTrash2, FiX } from 'react-icons/fi';
 import httpService from '../../services/httpService';
 import { API_PRODUCT_HISTORY_URL } from '../../services/apiRoutes';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -21,6 +21,7 @@ import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import { hasPermission } from '../../utils/permissionChecker';
 import { getCategoryDdl } from '../category/categorySlice';
 import { fetchBrandDdl } from './brand/brandSlice';
+import { getProductGroupDdl } from '../productgroup/productGroupSlice';
 import ProductPrint from './ProductPrint';
 import { useReactToPrint } from 'react-to-print';
 import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
@@ -28,6 +29,9 @@ import { Textarea } from '../../utils/fields/FormControls';
 import { isBranchSettingOn } from '../../utils/userFeatureSettings';
 
 const isGroupRow = (row: any) => row?.__type === 'CAT_HEADER';
+
+/** The word over a filter box, written as Stock Details writes it. */
+const FILTER_LABEL = 'mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200';
 
 const buildCategoryWiseRows = (rows: any[]) => {
   if (!Array.isArray(rows)) return [];
@@ -54,16 +58,16 @@ const buildCategoryWiseRows = (rows: any[]) => {
   return out;
 };
 
-// Ã¢Å“â€¦ API response Ã Â¦â€¢Ã Â§â€¡ flat rows Ã Â¦Â normalize Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¬Ã Â§â€¡ (paginate vs showAll)
+// ✅ API response কে flat rows এ normalize করবে (paginate vs showAll)
 const normalizeProductRows = (apiState: any) => {
   const raw = apiState?.data?.data;
 
-  // Ã¢Å“â€¦ flat paginate response
+  // ✅ flat paginate response
   if (Array.isArray(raw) && raw.length > 0 && !raw[0]?.items) {
     return raw;
   }
 
-  // Ã¢Å“â€¦ grouped showAll response: [{category, items:[]}, ...]
+  // ✅ grouped showAll response: [{category, items:[]}, ...]
   if (Array.isArray(raw) && raw.length > 0 && Array.isArray(raw[0]?.items)) {
     const flat: any[] = [];
     raw.forEach((group: any) => {
@@ -80,12 +84,19 @@ const Product = (user: any) => {
   const settings = useSelector((state: any) => state.settings);
   const categoryData = useSelector((state: any) => state.category);
   const brand = useSelector((state: any) => state.brand);
+  const productGroupData = useSelector((state: any) => state.productGroup);
+
+  // The Group filter appears only where the branch files products under groups
+  // at all -- the same switch that puts the box on the product form and the
+  // dropdown on Stock Details.
+  const needProductGroup = isBranchSettingOn(settings, 'need_product_group');
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [search, setSearchValue] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState(''); // Ã¢Å“â€¦ Search Ã Â¦Å¡Ã Â¦Â¾Ã Â¦ÂªÃ Â¦Â²Ã Â§â€¡ apply Ã Â¦Â¹Ã Â¦Â¬Ã Â§â€¡
+  const [appliedSearch, setAppliedSearch] = useState(''); // ✅ Search চাপলে apply হবে
+  const [searchRun, setSearchRun] = useState(0); // ✅ একই শব্দে আবার Enter চাপলেও একবার request যাবে
 
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
@@ -93,11 +104,12 @@ const Product = (user: any) => {
   const [totalPages, setTotalPages] = useState(0);
 
   const [tableData, setTableData] = useState<any[]>([]);
-  const [editedRows, setEditedRows] = useState<Record<string, any>>({}); // Ã¢Å“â€¦ product_id hash string
+  const [editedRows, setEditedRows] = useState<Record<string, any>>({}); // ✅ product_id hash string
 
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
   const [brandId, setBrandId] = useState<number | string | null>(null);
+  const [groupId, setGroupId] = useState<number | string | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
   const didInitRef = useRef(false);
@@ -174,12 +186,18 @@ const Product = (user: any) => {
     }
   }, [categoryData]);
 
+  // Separate from the init effect above: whether this branch has groups at all
+  // is a setting that arrives with `settings`, not with the first render.
+  useEffect(() => {
+    if (needProductGroup) dispatch(getProductGroupDdl() as any);
+  }, [dispatch, needProductGroup]);
+
   /* ================= FETCH ================= */
   useEffect(() => {
-    dispatch(getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any);
-  }, [page, perPage, categoryId, brandId, appliedSearch]);
+    dispatch(getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch }) as any);
+  }, [page, perPage, categoryId, brandId, groupId, appliedSearch, searchRun]);
 
-  /* Ã¢Å“â€¦ Ã Â¦ÂÃ Â¦â€“Ã Â¦Â¾Ã Â¦Â¨Ã Â§â€¡ per_page=0 (showAll) + paginate Ã Â¦Â¦Ã Â§ÂÃ Â¦Å¸Ã Â§â€¹Ã Â¦â€¡ handle Ã Â¦Â¹Ã Â¦Â¬Ã Â§â€¡ */
+  /* ✅ এখানে per_page=0 (showAll) + paginate দুটোই handle হবে */
   useEffect(() => {
     if (!product?.data) return;
 
@@ -198,12 +216,28 @@ const Product = (user: any) => {
   }, [product?.data, perPage]);
 
   /* ================= HANDLERS ================= */
-  const handleSearchButton = () => {
+  /* Enter is the only way in. The box keeps its own text while the filters
+     beside it change -- typing is not a query, the API searches the whole
+     filtered set (per_page is not in play), so a half-typed word would be
+     looked up on every keystroke. */
+  const submitSearch = () => {
     setTableData([]);
     setTotalPages(0);
     setPage(1);
     setCurrentPage(1);
     setAppliedSearch(search);
+    // An Enter on the word already applied changes no state, so the fetch
+    // effect above would stay quiet; this is what still asks it once.
+    setSearchRun((n) => n + 1);
+  };
+
+  /* On the cell, not the box: SearchInput is shared, and this is how the
+     report screens already read Enter -- see ClosingStockReport. The guard
+     keeps Enter on the per-page dropdown beside it out of the search. */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter' || !(e.target instanceof HTMLInputElement)) return;
+    e.preventDefault(); // Enter inside a form submits it -- this is a search
+    submitSearch();
   };
 
   const handlePageChange = (p: number) => {
@@ -263,7 +297,7 @@ const Product = (user: any) => {
     );
   };
 
-  // Ã¢Å“â€¦ Save button click Ã Â¦Â API update Ã Â¦Â¹Ã Â¦Â¬Ã Â§â€¡
+  // ✅ Save button click এ API update হবে
   const handleSaveRow = async (row: any) => {
     if (isGroupRow(row)) return;
 
@@ -308,21 +342,32 @@ const Product = (user: any) => {
           })
         );
 
-        // Ã¢Å“â€¦ save Ã Â¦Â¹Ã Â¦Â²Ã Â§â€¡ draft clear
+        // ✅ save হলে draft clear
         setEditedRows((prev) => {
           const copy = { ...prev };
           delete copy[row.product_id];
           return copy;
         });
-      } else if (result?.message) {
-        toast.info(result.message);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+
+      // ⚠️ A refusal from this endpoint rides a 4xx, so it never reaches the
+      // `else if` above -- axios throws, and the words went to the console and
+      // nowhere else. The approved voucher is the one that bites: the row looks
+      // saved, the figure snaps back on the next refetch, and the screen said
+      // nothing. The interceptor has already spoken for the refusals that are
+      // its own (no permission, expired session, no network); this stays quiet
+      // for those and shows the rest.
+      if (!err?.toastReported) {
+        toast.error(
+          err?.response?.data?.message || err?.message || 'Could not save the opening stock.'
+        );
+      }
     }
   };
 
-  // Ã¢Å“â€¦ Cancel/Reset draft
+  // ✅ Cancel/Reset draft
   const handleCancelRow = (row: any) => {
     if (isGroupRow(row)) return;
 
@@ -395,7 +440,7 @@ const Product = (user: any) => {
         if (res?.success) {
           toast.success(res?.message || 'Product deleted successfully.');
           dispatch(
-            getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any,
+            getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch }) as any,
           );
         } else {
           toast.error(res?.message || 'Product could not be deleted.');
@@ -417,19 +462,29 @@ const Product = (user: any) => {
     setCurrentPage(1);
   };
 
+  const handleGroupChange = (selectedOption: any) => {
+    setGroupId(selectedOption?.value ?? null);
+    setPage(1);
+    setCurrentPage(1);
+  };
+
   /* ================= TABLE ================= */
   const serialQtyRateColumns = [
     {
       key: 'serial_no',
       header: 'IMEI / Serial',
+      // A width in cellClass, not headerClass: that is the one the Table puts
+      // on the <col>, and a table-fixed takes its column widths from there.
+      // The Product column carries none on purpose -- it takes the rest.
+      cellClass: 'w-40',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
         return (
           <Textarea
- className={`${FIELD_TEXTAREA} w-full px-3 py-1 resize-none`}
- placeholder="IMEI Number"
- value={editedRows[row.product_id]?.serial_no ?? row.serial_no ?? ''}
- onChange={(e) => handleProductInputChange(row.product_id, 'serial_no', e.target.value)}
+            className={`${FIELD_TEXTAREA} w-full px-3 py-1 resize-none`}
+            placeholder="IMEI Number"
+            value={editedRows[row.product_id]?.serial_no ?? row.serial_no ?? ''}
+            onChange={(e) => handleProductInputChange(row.product_id, 'serial_no', e.target.value)}
             onBlur={() => handleSerialBlur(row)}
           />
         );
@@ -439,17 +494,17 @@ const Product = (user: any) => {
       key: 'qty',
       header: 'Qty',
       headerClass: 'text-center',
-      cellClass: 'text-right',
+      cellClass: 'text-right w-24',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
         return (
           <InputElement
             type="number"
-            className="text-right w-20"
+            className="text-right w-16"
             placeholder="Qty"
             value={editedRows[row.product_id]?.qty ?? row.qty ?? row.openingbalance ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'qty', e.target.value)}
-          // Ã¢Å“â€¦ onBlur removed (auto-save Ã Â¦Â¬Ã Â¦Â¨Ã Â§ÂÃ Â¦Â§)
+          // ✅ onBlur removed (auto-save বন্ধ)
           />
         );
       },
@@ -458,17 +513,17 @@ const Product = (user: any) => {
       key: 'rate',
       header: 'Rate',
       headerClass: 'text-center',
-      cellClass: 'text-right',
+      cellClass: 'text-right w-28',
       render: (row: any) => {
-        if (isGroupRow(row)) return ''; 
+        if (isGroupRow(row)) return '';
         return (
           <InputElement
             type="number"
             placeholder="Rate"
-            className="text-right w-24" 
+            className="text-right w-20"
             value={editedRows[row.product_id]?.rate ?? row.purchase ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'rate', e.target.value)}
-          // Ã¢Å“â€¦ onBlur removed (auto-save Ã Â¦Â¬Ã Â¦Â¨Ã Â§ÂÃ Â¦Â§)
+          // ✅ onBlur removed (auto-save বন্ধ)
           />
         );
       },
@@ -477,30 +532,30 @@ const Product = (user: any) => {
       key: 'save',
       header: 'Action',
       headerClass: 'text-center',
-      cellClass: 'text-center',
+      cellClass: 'text-center w-36',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
 
         const dirty = isRowDirty(row);
 
+        // Icon alone, with the word kept as a tooltip. Three buttons carrying
+        // "Save", "Cancel" and "Delete" across the row came to some 220px, and
+        // took that width off the product name beside them.
         return (
           <div className="flex flex-col items-center gap-1">
-            <div className="flex justify-center gap-2">
-              <ButtonLoading icon={<FiCheckSquare className="" />} className='py-1 px-2' label='Save' type="button" disabled={!dirty} onClick={() => handleSaveRow(row)} />
-              <ButtonLoading icon={
-                <>
-                <FiCheckSquare className="" />
-                </>
-              } className='py-1 px-2' label='Cancel' type="button" disabled={!editedRows[row.product_id]} onClick={() => handleCancelRow(row)} />
+            <div className="flex justify-center gap-1">
+              <ButtonLoading icon={<FiCheckSquare />} title="Save" label="" className='py-1 px-2' type="button" disabled={!dirty} onClick={() => handleSaveRow(row)} />
+              <ButtonLoading icon={<FiX />} title="Cancel" label="" className='py-1 px-2' type="button" disabled={!editedRows[row.product_id]} onClick={() => handleCancelRow(row)} />
 
               {/* Only where there is a voucher to delete. A product with no
                   opening stock has nothing to offer here. */}
               {row.opening_vr_no && canDeleteVoucher && (
                 <ButtonLoading
                   icon={<FiTrash2 />}
+                  title="Delete opening stock"
+                  label=""
                   variant="danger"
                   className="py-1 px-2"
-                  label="Delete"
                   type="button"
                   buttonLoading={openingDeleteLoading && openingDeleteRow?.product_id === row.product_id}
                   disabled={openingDeleteLoading}
@@ -525,13 +580,75 @@ const Product = (user: any) => {
     },
   ];
 
+  // One reading of the branch's opening switch, so the four places below cannot
+  // drift apart the way `settings?.data?.branch?.is_opening == 1` and
+  // isBranchSettingOn() had.
+  const openingOn = isBranchSettingOn(settings, 'is_opening');
+
+  // Opening stock is entered rate by rate, and that group above brings its own
+  // Save and Delete. So on a branch with opening on, these stand down rather
+  // than print a second "Action" heading over the first.
+  const priceActionColumns = [
+    {
+      key: 'purchase',
+      header: 'P. Price',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => {
+        if (isGroupRow(row)) return '';
+        return row.purchase > 0 ? thousandSeparator(row.purchase) : '-';
+      },
+    },
+    {
+      key: 'sales',
+      header: 'S. Price',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => {
+        if (isGroupRow(row)) return '';
+        return row.sales > 0 ? thousandSeparator(row.sales) : '-';
+      },
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => {
+        if (isGroupRow(row)) return '';
+        return (
+          <div className="flex justify-center items-center gap-2">
+            {/* All three as Button, the way Category List does it: two bare
+                icons beside one Button (which stands a control-height tall)
+                sat higher than the bin. The clock stands where a book icon
+                that did nothing used to. */}
+            <Button
+              type="button"
+              title="Change log"
+              className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+              onClick={() => handleShowHistory(row)}
+            >
+              <FiClock size={15} />
+            </Button>
+            <Button type="button" onClick={() => handleProductEdit(row)} className="text-blue-500" title="Edit">
+              <FiEdit2 className="cursor-pointer" />
+            </Button>
+            <Button type="button" onClick={() => setDeleteRow(row)} className="text-red-500" title="Delete">
+              <FiTrash2 className="cursor-pointer" />
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
+
   const columns = useMemo(() => {
     return [
       {
         key: 'serial',
         header: 'Sl',
         headerClass: 'text-center',
-        cellClass: 'text-center',
+        cellClass: 'text-center w-14',
         render: (row: any) => (isGroupRow(row) ? '' : row.serial),
       },
       {
@@ -548,78 +665,33 @@ const Product = (user: any) => {
           }
           return (
             <div>
-              <div className="text-sm text-gray-500">{row.brand && <>{row.brand}. </>}</div>
-              <div>{row.name}</div>
+              <div className="text-sm text-gray-500">{row.brand && <> Brand: {row.brand} </>}</div>
+              <div>{row.code && <>{row.code} - </>} {row.name}</div>
             </div>
           );
         },
       },
-      // Read as text, '0' is true and its negation is false -- which is why the
-      // Category column was missing from every branch that has opening off.
-      !isBranchSettingOn(settings, 'is_opening') && {
+      // ⚠️ On EVERY branch, opening or not. It used to be drawn only where
+      // opening was off -- "read as text, '0' is true" turned the switch into a
+      // condition on the wrong side -- so the branches that actually file
+      // products by category were the ones without the column. The band above
+      // the rows groups by the same word; that is a heading, not a column, and
+      // it was never the place somebody reads a product's category off.
+      {
         key: 'category',
         header: 'Category',
+        cellClass: 'w-32',
         render: (row: any) => (isGroupRow(row) ? '' : row.category),
       },
       {
         key: 'unit',
         header: 'Unit',
+        cellClass: 'w-24',
         render: (row: any) => (isGroupRow(row) ? '' : row.unit),
       },
-      ...(settings?.data?.branch?.is_opening == 1 ? serialQtyRateColumns : []),
-      {
-        key: 'purchase',
-        header: 'P. Price',
-        headerClass: 'text-right',
-        cellClass: 'text-right',
-        render: (row: any) => {
-          if (isGroupRow(row)) return '';
-          return row.purchase > 0 ? thousandSeparator(row.purchase) : '-';
-        },
-      },
-      {
-        key: 'sales',
-        header: 'S. Price',
-        headerClass: 'text-right',
-        cellClass: 'text-right',
-        render: (row: any) => {
-          if (isGroupRow(row)) return '';
-          return row.sales > 0 ? thousandSeparator(row.sales) : '-';
-        },
-      },
-      {
-        key: 'action',
-        header: 'Action',
-        headerClass: 'text-center',
-        cellClass: 'text-center',
-        render: (row: any) => {
-          if (isGroupRow(row)) return '';
-          return (
-            <div className="flex justify-center items-center gap-2">
-              {/* All three as Button, the way Category List does it: two bare
-                  icons beside one Button (which stands a control-height tall)
-                  sat higher than the bin. The clock stands where a book icon
-                  that did nothing used to. */}
-              <Button
-                type="button"
-                title="Change log"
-                className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
-                onClick={() => handleShowHistory(row)}
-              >
-                <FiClock size={15} />
-              </Button>
-              <Button type="button" onClick={() => handleProductEdit(row)} className="text-blue-500" title="Edit">
-                <FiEdit2 className="cursor-pointer" />
-              </Button>
-              <Button type="button" onClick={() => setDeleteRow(row)} className="text-red-500" title="Delete">
-                <FiTrash2 className="cursor-pointer" />
-              </Button>
-            </div>
-          );
-        },
-      },
+      ...(openingOn ? serialQtyRateColumns : priceActionColumns),
     ];
-  }, [settings, editedRows, openingDeleteRow, openingDeleteLoading, canDeleteVoucher]);
+  }, [settings, editedRows, openingDeleteRow, openingDeleteLoading, canDeleteVoucher, openingOn]);
 
   /* ================= RENDER ================= */
   const optionsWithAll = [
@@ -630,6 +702,13 @@ const Product = (user: any) => {
   const brandOptions = [
     { id: '', name: 'All Brand' },
     ...(brand?.brandDdl?.data || []),
+  ];
+
+  // "All Groups" first, so the list opens unfiltered -- and the empty option
+  // asks the API for no group at all (`group_id` reaches it as 0).
+  const groupOptions = [
+    { id: '', name: 'All Groups' },
+    ...(Array.isArray(productGroupData?.ddlData?.data) ? productGroupData.ddlData.data : []),
   ];
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -660,33 +739,58 @@ const Product = (user: any) => {
       <HelmetTitle title="Product List" />
 
       <div className="mb-2">
-        <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap lg:items-center">
-          <div className="w-full ">
+        {/* ⚠️ Three named boxes, arranged as Stock Details arranges them: a word
+            over each dropdown, and the row closing on the boxes' bottom edge.
+            Two of these filters were here unnamed and read as one long strip of
+            dropdowns; the same word over each is what says which is which. */}
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap lg:items-end">
+          <div className="w-full lg:flex-1">
+            <label className={FILTER_LABEL}>Brand</label>
             <CategoryDropdown
- onChange={handleBrandChange}
- className="w-full text-sm !"
- categoryDdl={brandOptions}
+              onChange={handleBrandChange}
+              className="w-full text-sm !"
+              categoryDdl={brandOptions}
             />
           </div>
 
-          <div className="w-full ">
+          <div className="w-full lg:flex-1">
+            <label className={FILTER_LABEL}>Category</label>
             {categoryData.isLoading ? (
               <Loader />
             ) : (
               <CategoryDropdown
- onChange={handleCategoryChange}
- className="w-full text-sm !"
- categoryDdl={optionsWithAll}
+                onChange={handleCategoryChange}
+                className="w-full text-sm !"
+                categoryDdl={optionsWithAll}
               />
             )}
           </div>
 
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <div className="w-full">
+          {needProductGroup ? (
+            <div className="w-full lg:flex-1">
+              <label className={FILTER_LABEL}>Group</label>
+              <CategoryDropdown
+                onChange={handleGroupChange}
+                className="w-full text-sm !"
+                categoryDdl={groupOptions}
+              />
+            </div>
+          ) : null}
+
+          {/* ⚠️ Enter replaced the Search button, so the cell is two boxes and
+              the search takes every pixel the button used to hold. On lg the
+              filters keep one share each and this cell two -- the search box is
+              the only one here that wants the room, and at one share it came
+              out narrower than the button's old `sm:w-64` box. */}
+          <div
+            className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:flex-2"
+            onKeyDown={handleSearchKeyDown}
+          >
+            <div className="w-full shrink-0 sm:w-24">
               <SelectOption
                 className="w-full! h-9"
                 onChange={(e: any) => {
-                  const v = Number(e.target.value); // Ã¢Å“â€¦ string -> number
+                  const v = Number(e.target.value); // ✅ string -> number
                   const next = Number.isFinite(v) ? v : 10;
                   setPerPage(next);
                   setPage(1);
@@ -694,34 +798,38 @@ const Product = (user: any) => {
                 }}
               />
             </div>
-            <div className="w-full sm:w-64">
+            <div className="w-full min-w-0 flex-1">
               <SearchInput className="w-full! " search={search} setSearchValue={setSearchValue} />
             </div>
-            <ButtonLoading label="Search" icon={<FiSearch className="text-gray-500" />}  onClick={handleSearchButton} className="w-full sm:w-auto" />
           </div>
 
-          <div className="flex w-full items-center">
+          {/* ⚠️ lg:w-auto + flex-none, not the w-full it wears on smaller
+              screens. As a row-mate of the filters, `w-full` is a flex-basis of
+              100% -- it claimed the whole row and squeezed the filters to their
+              min-content (the search box down to 26px). Sized to its buttons,
+              it leaves the rest of the row to them. */}
+          <div className="flex w-full items-center lg:w-auto lg:flex-none">
             <div className="mr-2">
               <PrintRowsInput
- id="perPage"
- name="perPage"
- label=""
- value={rowsPerPage.toString()}
- onChange={handlePerPageChange}
- type="text"
- className="font-medium text-sm w-12!"
+                id="perPage"
+                name="perPage"
+                label=""
+                value={rowsPerPage.toString()}
+                onChange={handlePerPageChange}
+                type="text"
+                className="font-medium text-sm w-12!"
               />
             </div>
 
             <div className="mr-2">
               <PrintFontInput
- id="fontSize"
- name="fontSize"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-12!"
+                id="fontSize"
+                name="fontSize"
+                label=""
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type="text"
+                className="font-medium text-sm w-12!"
               />
             </div>
             <PrintButton onClick={handlePrint} label="Print" className="ml-2" />
@@ -742,7 +850,15 @@ const Product = (user: any) => {
       <div className="relative overflow-x-auto">
         {product.isLoading && <Loader />}
 
-        <Table columns={columns} data={tableData} />
+        {/* ⚠️ An empty table has to say which empty it is. A load that failed
+            carries its reason in `product.errors`; a request that succeeded
+            with nothing to show is a real "no match" and says so. Same rows,
+            two different things, so the message is picked by that. */}
+        <Table
+          columns={columns}
+          data={tableData}
+          noDataMessage={product.errors ? product.errors : 'No products found.'}
+        />
         {totalPages > 1 && (
           <Pagination currentPage={currentPage} totalPages={totalPages} handlePageChange={handlePageChange} />
         )}
@@ -750,7 +866,7 @@ const Product = (user: any) => {
         <div className="hidden">
           <ProductPrint
             ref={printRef}
-            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // Ã¢Å“â€¦ group row print Ã Â¦Â Ã Â¦Â¯Ã Â¦Â¾Ã Â¦Â¬Ã Â§â€¡ Ã Â¦Â¨Ã Â¦Â¾
+            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // ✅ group row print এ যাবে না
             title="Product List"
             rowsPerPage={Number(rowsPerPage)}
             fontSize={Number(fontSize)}
@@ -863,7 +979,7 @@ const Product = (user: any) => {
                 <span className="font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   {openingDeleteRow.qty ?? openingDeleteRow.openingbalance ?? 0}
                 </span>
-                {' Â· '}Voucher{' '}
+                {' · '}Voucher{' '}
                 <span className="font-mono font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                   {openingDeleteRow.opening_vr_no}
                 </span>

@@ -1141,6 +1141,7 @@ const Orders = () => {
       render: (data: any) => (
         <>
         <span className='block'>{data.order_for}</span>
+        { data.transaction_account && <span className='block text-green-500 font-semibold'>{data.transaction_account}</span> }
         { data.delivery_location && <span className='block'>{data.delivery_location}</span> }
         { data.notes && <span className='block text-green-500 font-semibold'>{data.notes}</span> }
         </>

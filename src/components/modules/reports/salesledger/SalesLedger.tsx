@@ -19,6 +19,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import ImagePopup from '../../../utils/others/ImagePopup';
 import SalesLedgerCalculator from '../../../utils/calculators/SalesLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
+import { ledgerProductLabel } from '../utils/ledgerProductLabel';
 import { useReactToPrint } from 'react-to-print';
 import SalesLedgerPrint from './SalesLedgerPrint';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
@@ -54,6 +55,7 @@ import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import {
   buildVoucherAutoEditState,
   getCombinedVoucherOpenState,
+  getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
@@ -121,6 +123,11 @@ const SalesLedger = (user: any) => {
   const ledgerData = useSelector((state: any) => state.salesLedger);
   const settings = useSelector((state: any) => state.settings);
   const stockReportType = settings?.data?.branch?.stock_report_type;
+  // Branch > Invoice Setup > "Show Product Information in Ledger Details".
+  // Unset reads as on -- a branch that predates the switch keeps its product
+  // lines. Only an explicit '0' hides them. Display only; no record changes.
+  const showProductDetails =
+    String(settings?.data?.branch?.ledger_show_product_details ?? '1') !== '0';
   const showVoucherImage = String(settings?.data?.branch?.show_voucher_image) === '1';
   const userPermissions = settings?.data?.permissions || [];
 
@@ -168,11 +175,11 @@ const SalesLedger = (user: any) => {
     data: DocumentData;
   } | null>(null);
 
-  // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Rows + Font controls (like your screenshot)
+  // ✅ Rows + Font controls (like your screenshot)
   const [rowsPerPage, setRowsPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(10);
 
-  // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Print
+  // ✅ Print
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
   const restoredFilterRef = useRef(false);
@@ -289,8 +296,9 @@ const SalesLedger = (user: any) => {
         branch: printBranch,
         branchName: dropdownData.find(
           (entry: any) => String(entry?.id) === String(branchId),
-        )?.name,
+          )?.name,
         showCategory: String(stockReportType) === '1',
+        showProductDetails,
       }),
     });
   };
@@ -340,7 +348,7 @@ const SalesLedger = (user: any) => {
       if (Array.isArray(ledgerData?.data)) {
         setTableData(ledgerData.data);
       } else {
-        setTableData([]); // ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¥ CLEAR OLD DATA
+        setTableData([]); // 🔥 CLEAR OLD DATA
       }
     }
   }, [ledgerData.isLoading, ledgerData.data]);
@@ -493,7 +501,7 @@ const SalesLedger = (user: any) => {
       return;
     }
 
-    const voucherNo = String(row?.vr_no || '').trim();
+    const voucherNo = getEditableVoucherNo(row);
     const editTarget = getVoucherEditTarget(voucherNo);
     const editState = buildVoucherAutoEditState(voucherNo);
 
@@ -740,20 +748,17 @@ const SalesLedger = (user: any) => {
               <div className="text-sm mt-1 font-semibold">{coaName}</div>
             )}
 
-            {Array.isArray(details) &&
+            {/* The product lines, only when the branch shows them. The account
+                above and the note below are the column's other content and
+                stay either way. */}
+            {showProductDetails &&
+              Array.isArray(details) &&
               details.length > 0 &&
-              details.map((detail: any, i: number) => {
-                const categoryName = detail?.product?.category?.name ?? '';
-                const productName = detail?.product?.name ?? '';
-                return (
-                  <div key={detail?.id ?? i} className="leading-normal">
-                    {String(stockReportType) === '1' && categoryName
-                      ? `${categoryName} `
-                      : ''}
-                    {productName}
-                  </div>
-                );
-              })}
+              details.map((detail: any, i: number) => (
+                <div key={detail?.id ?? i} className="leading-normal">
+                  {ledgerProductLabel(detail, String(stockReportType) === '1')}
+                </div>
+              ))}
             {detailText ? (
               <div className="text-green-500">
                 <span
@@ -790,15 +795,20 @@ const SalesLedger = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
       width: '120px',
-      render: (row: any) => (
-        <>
-          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
-            <div key={detail?.id ?? index}>
-              {thousandSeparator(detail?.quantity)} {detail?.product?.unit?.name}
-            </div>
-          ))}
-        </>
-      ),
+      render: (row: any) =>
+        showProductDetails ? (
+          <>
+            {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
+              <div key={detail?.id ?? index}>
+                {thousandSeparator(detail?.quantity)} {detail?.product?.unit?.name}
+              </div>
+            ))}
+          </>
+        ) : (
+          // Product information off: the invoice is one summary line, so the
+          // per-product quantity gives way to a dash.
+          <div>-</div>
+        ),
     },
     {
       key: 'rate',
@@ -806,23 +816,26 @@ const SalesLedger = (user: any) => {
       width: '120px',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
-      render: (row: any) => (
-        <>
-          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
-            const rate = detail?.sales_price;
-            const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
-            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+      render: (row: any) =>
+        showProductDetails ? (
+          <>
+            {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
+              const rate = detail?.sales_price;
+              const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
+              const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
 
-            return (
-              <div key={detail?.id ?? index}>
-                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
-                  {formatAmountOrZeroMark(rate)}
-                </span>
-              </div>
-            );
-          })}
-        </>
-      ),
+              return (
+                <div key={detail?.id ?? index}>
+                  <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
+                    {formatAmountOrZeroMark(rate)}
+                  </span>
+                </div>
+              );
+            })}
+          </>
+        ) : (
+          <div>-</div>
+        ),
     },
     {
       key: 'total',
@@ -830,23 +843,29 @@ const SalesLedger = (user: any) => {
       width: '130px',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
-      render: (row: any) => (
-        <>
-          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
-            const rate = detail?.sales_price;
-            const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
-            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+      render: (row: any) =>
+        showProductDetails ? (
+          <>
+            {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
+              const rate = detail?.sales_price;
+              const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
+              const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
 
-            return (
-              <div key={detail?.id ?? index}>
-                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
-                  {formatAmountOrZeroMark(total)}
-                </span>
-              </div>
-            );
-          })}
-        </>
-      ),
+              return (
+                <div key={detail?.id ?? index}>
+                  <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
+                    {formatAmountOrZeroMark(total)}
+                  </span>
+                </div>
+              );
+            })}
+          </>
+        ) : (
+          // One summary line per invoice: the invoice's own total, once. It is
+          // the gross figure -- the discount is a column of its own beside it,
+          // so it is never taken off here twice.
+          <div>{formatAmountOrZeroMark(row?.sales_master?.total)}</div>
+        ),
     },
     {
       key: 'discount',
@@ -984,6 +1003,8 @@ const SalesLedger = (user: any) => {
     {
       key: 'action',
       header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
       render: (row: any) => {
         const voucherId = Number(
           row?.mtm_id ??
@@ -1063,7 +1084,7 @@ const SalesLedger = (user: any) => {
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
                 className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${filterOpen
- ?'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300':'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'}`}
+                  ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300' : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'}`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -1090,20 +1111,20 @@ const SalesLedger = (user: any) => {
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
                     {branchDdlData.isLoading == true ? <Loader /> : ''}
                     <BranchDropdown
- onChange={handleBranchChange}
- value={branchId == null ? '' : String(branchId)}
- className="w-full font-medium text-sm p-2 "
- branchDdl={dropdownData}
+                      onChange={handleBranchChange}
+                      value={branchId == null ? '' : String(branchId)}
+                      className="w-full font-medium text-sm p-2 "
+                      branchDdl={dropdownData}
                     />
                   </div>
 
                   <div className={useFilterMenuEnabled ? '' : 'order-2 min-w-0 min-[1180px]:col-span-1'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Account</label>
                     <DdlMultiline
- acType={''}
- onSelect={selectedLedgerOptionHandler}
- value={selectedLedgerOption}
- className=""
+                      acType={''}
+                      onSelect={selectedLedgerOptionHandler}
+                      value={selectedLedgerOption}
+                      className=""
                     />
                   </div>
 
@@ -1117,9 +1138,9 @@ const SalesLedger = (user: any) => {
                       {/* <FaRotateRight size={16} className="dark:text-[rgb(var(--c-text))]" /> */}
                     </div>
                     <ProductDropdown
- onSelect={selectedProduct}
- value={selectedProductOption}
- className="appearance-none "
+                      onSelect={selectedProduct}
+                      value={selectedProductOption}
+                      className="appearance-none "
                     />
                   </div>
 
@@ -1127,20 +1148,20 @@ const SalesLedger = (user: any) => {
                     <div className="min-w-0">
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                       <InputDatePicker
- setCurrentDate={handleStartDate}
- className="w-full font-medium text-sm "
- selectedDate={startDate}
- setSelectedDate={setStartDate}
+                        setCurrentDate={handleStartDate}
+                        className="w-full font-medium text-sm "
+                        selectedDate={startDate}
+                        setSelectedDate={setStartDate}
                       />
                     </div>
 
                     <div className="min-w-0">
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                       <InputDatePicker
- setCurrentDate={handleEndDate}
- className="w-full font-medium text-sm "
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+                        setCurrentDate={handleEndDate}
+                        className="w-full font-medium text-sm "
+                        selectedDate={endDate}
+                        setSelectedDate={setEndDate}
                       />
                     </div>
                   </div>
@@ -1149,9 +1170,9 @@ const SalesLedger = (user: any) => {
                       Search
                     </label>
                     <SearchInput
- search={search}
- setSearchValue={setSearchValue}
- className="w-full"
+                      search={search}
+                      setSearchValue={setSearchValue}
+                      className="w-full"
                     />
                   </div>
                   {!useFilterMenuEnabled && (
@@ -1159,10 +1180,10 @@ const SalesLedger = (user: any) => {
                       <div className="min-w-0 flex-[1.1]">
                         <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                         <InputDatePicker
- setCurrentDate={handleEndDate}
- className="w-full font-medium text-sm "
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+                          setCurrentDate={handleEndDate}
+                          className="w-full font-medium text-sm "
+                          selectedDate={endDate}
+                          setSelectedDate={setEndDate}
                         />
                       </div>
 
@@ -1182,22 +1203,22 @@ const SalesLedger = (user: any) => {
                           className="px-4"
                         />
                         <PrintRowsInput
- id="perPageInlineMd"
- name="perPageInlineMd"
- label=""
- value={rowsPerPage.toString()}
- onChange={handleRowsPerPageChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                          id="perPageInlineMd"
+                          name="perPageInlineMd"
+                          label=""
+                          value={rowsPerPage.toString()}
+                          onChange={handleRowsPerPageChange}
+                          type="text"
+                          className="font-medium text-sm w-20! text-center"
                         />
                         <PrintFontInput
- id="fontSizeInlineMd"
- name="fontSizeInlineMd"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                          id="fontSizeInlineMd"
+                          name="fontSizeInlineMd"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm w-20! text-center"
                         />
                         <PrintButton
                           onClick={handlePrint}
@@ -1209,7 +1230,7 @@ const SalesLedger = (user: any) => {
                     </div>
                   )}
 
-                  {/* ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Rows + Font + Run + Print (like your screenshot) */}
+                  {/* ✅ Rows + Font + Run + Print (like your screenshot) */}
                   <div
                     className={`${useFilterMenuEnabled
                       ? 'flex flex-wrap justify-end gap-2'
@@ -1233,22 +1254,22 @@ const SalesLedger = (user: any) => {
                     {!useFilterMenuEnabled && (
                       <>
                         <PrintRowsInput
- id="perPageInline"
- name="perPageInline"
- label=""
- value={rowsPerPage.toString()}
- onChange={handleRowsPerPageChange}
- type="text"
- className="font-medium text-sm w-14! text-center"
+                          id="perPageInline"
+                          name="perPageInline"
+                          label=""
+                          value={rowsPerPage.toString()}
+                          onChange={handleRowsPerPageChange}
+                          type="text"
+                          className="font-medium text-sm w-14! text-center"
                         />
                         <PrintFontInput
- id="fontSizeInline"
- name="fontSizeInline"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-14! text-center"
+                          id="fontSizeInline"
+                          name="fontSizeInline"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm w-14! text-center"
                         />
                         {/* Icon only, for want of room beside Apply and Reset --
                             hence the tooltip, which is all the name it has. */}
@@ -1267,20 +1288,20 @@ const SalesLedger = (user: any) => {
                       <div className="min-w-0 flex-[1.15]">
                         <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                         <InputDatePicker
- setCurrentDate={handleStartDate}
- className="w-full font-medium text-sm "
- selectedDate={startDate}
- setSelectedDate={setStartDate}
+                          setCurrentDate={handleStartDate}
+                          className="w-full font-medium text-sm "
+                          selectedDate={startDate}
+                          setSelectedDate={setStartDate}
                         />
                       </div>
 
                       <div className="min-w-0 flex-[1.15]">
                         <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                         <InputDatePicker
- setCurrentDate={handleEndDate}
- className="w-full font-medium text-sm "
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+                          setCurrentDate={handleEndDate}
+                          className="w-full font-medium text-sm "
+                          selectedDate={endDate}
+                          setSelectedDate={setEndDate}
                         />
                       </div>
 
@@ -1303,23 +1324,23 @@ const SalesLedger = (user: any) => {
 
                       <div className="ml-auto flex items-end gap-2 pt-6">
                         <PrintRowsInput
- id="perPageInline"
- name="perPageInline"
- label=""
- value={rowsPerPage.toString()}
- onChange={handleRowsPerPageChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                          id="perPageInline"
+                          name="perPageInline"
+                          label=""
+                          value={rowsPerPage.toString()}
+                          onChange={handleRowsPerPageChange}
+                          type="text"
+                          className="font-medium text-sm w-20! text-center"
                         />
 
                         <PrintFontInput
- id="fontSizeInline"
- name="fontSizeInline"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                          id="fontSizeInline"
+                          name="fontSizeInline"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm w-20! text-center"
                         />
 
                         <PrintButton
@@ -1353,23 +1374,23 @@ const SalesLedger = (user: any) => {
                 </div>
               ) : null}
               <PrintRowsInput
- id="perPage"
- name="perPage"
- label=""
- value={rowsPerPage.toString()}
- onChange={handleRowsPerPageChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                id="perPage"
+                name="perPage"
+                label=""
+                value={rowsPerPage.toString()}
+                onChange={handleRowsPerPageChange}
+                type="text"
+                className="font-medium text-sm w-20! text-center"
               />
 
               <PrintFontInput
- id="fontSize"
- name="fontSize"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
+                id="fontSize"
+                name="fontSize"
+                label=""
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type="text"
+                className="font-medium text-sm w-20! text-center"
               />
 
               <PrintButton
@@ -1396,28 +1417,28 @@ const SalesLedger = (user: any) => {
           footerRows={
             tableData.length > 0
               ? [
-                  [
-                    {
-                      colSpan: columns.length,
-                      label: (
-                        <div className="flex items-center justify-end space-x-8 whitespace-nowrap font-bold">
-                          <div>Grand Total</div>
-                          <div className="flex space-x-8">
-                            <div>
-                              Quantity: {thousandSeparator(totalQuantity)}
-                            </div>
-                            <div>Total: {thousandSeparator(totalPayment)}</div>
-                            <div>
-                              Discount: {thousandSeparator(totalDiscount)}
-                            </div>
-                            <div>Received: {thousandSeparator(grandTotal)}</div>
-                            <div>Balance: {thousandSeparator(totalBalance)}</div>
+                [
+                  {
+                    colSpan: columns.length,
+                    label: (
+                      <div className="flex items-center justify-end space-x-8 whitespace-nowrap font-bold">
+                        <div>Grand Total</div>
+                        <div className="flex space-x-8">
+                          <div>
+                            Quantity: {thousandSeparator(totalQuantity)}
                           </div>
+                          <div>Total: {thousandSeparator(totalPayment)}</div>
+                          <div>
+                            Discount: {thousandSeparator(totalDiscount)}
+                          </div>
+                          <div>Received: {thousandSeparator(grandTotal)}</div>
+                          <div>Balance: {thousandSeparator(totalBalance)}</div>
                         </div>
-                      ),
-                    },
-                  ],
-                ]
+                      </div>
+                    ),
+                  },
+                ],
+              ]
               : undefined
           }
         />

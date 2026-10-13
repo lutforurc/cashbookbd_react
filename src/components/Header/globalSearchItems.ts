@@ -57,6 +57,8 @@ const globalSearchItems: GlobalSearchItem[] = [
 
   { title: 'Product List', path: routes.product_list, group: 'Products', permissions: ['products.view'] },
   { title: 'Add Product', path: routes.product_create, group: 'Products', permissions: ['products.view'], keywords: ['new product', 'create product'] },
+  { title: 'Product Opening Import', path: routes.product_opening_import, group: 'Products', permissions: ['product.opening.edit', 'products.edit'], keywords: ['opening stock', 'excel', 'import', 'upload'] },
+  { title: 'Customer Opening Import', path: routes.customer_opening_import, group: 'Customer & Supplier', permissions: ['party.opening.edit', 'cs.edit'], keywords: ['opening balance', 'due', 'excel', 'import', 'upload'] },
   { title: 'Low Stock Products', path: routes.product_low_stock, group: 'Products', permissions: ['products.view'] },
   { title: 'Negative Stock Products', path: routes.product_negative_stock, group: 'Products', permissions: ['products.view'] },
   { title: 'Slow Moving Products', path: routes.product_slow_moving, group: 'Products', permissions: ['products.view'] },
@@ -133,6 +135,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Recycle Bin', path: routes.recyclebin, group: 'VR Settings', permissions: ['voucher.recycle'] },
   { title: 'Voucher History', path: routes.voucher_history, group: 'VR Settings', permissions: ['voucher.history'] },
   { title: 'Voucher Activity', path: routes.voucher_activity, group: 'VR Settings', permissions: ['log.changes'] },
+  { title: 'Report Mismatch', path: routes.report_mismatch, group: 'VR Settings', permissions: ['mitmatch.report'], keywords: ['company', 'balance sheet', 'difference'] },
 
   { title: 'Employees', path: routes.hrms_employee_list, group: 'HRM', permissions: ['employee.view'] },
   { title: 'Designation Levels', path: routes.hrms_designation_level_list, group: 'HRM', permissions: ['employee.view'] },

@@ -1,4 +1,5 @@
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import { reportGroupLabel, reportSectionLabel } from "./balanceSheetNotes";
 
 /**
  * The balance sheet's shape, and the one list of lines both views draw from.
@@ -105,6 +106,20 @@ export const formatAmount = (amount: number) => {
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
+/**
+ * The sheet's stair, one step per level of the chart: a level-1 section stands
+ * at the margin, its level-2 group one step in, the level-3 groups under that
+ * another. The line that closes a level stands on that level's own step -- the
+ * "Total Current Assets" with the heading it closes, the "Less: Accumulated
+ * Depreciation" with the accounts it belongs to, because it is a deduction
+ * from them rather than a sum of its own.
+ *
+ * Shared by both views, so the statement and the worksheet cannot drift into
+ * two different staircases.
+ */
+export const level2Indent = "pl-6";
+export const level3Indent = "pl-12";
+
 const ZERO: ColumnTotals = { opening: 0, movement: 0, closing: 0 };
 
 export const buildSheetLines = ({
@@ -149,7 +164,7 @@ export const buildSheetLines = ({
         section: title,
         side,
         group,
-        label: group.group_name || "-",
+        label: reportGroupLabel(group.group_name),
         itemCount: (group.items || []).length,
         columns: {
           opening: toNum(group.opening),
@@ -177,7 +192,7 @@ export const buildSheetLines = ({
 
     if (groups.length === 0) return;
 
-    out.push({ kind: "subsection", label: section.name || "-" });
+    out.push({ kind: "subsection", label: reportSectionLabel(section.name) });
 
     shown.forEach((group, index) => {
       serial += 1;
@@ -188,7 +203,7 @@ export const buildSheetLines = ({
         section: parent,
         side,
         group,
-        label: group.group_name || "-",
+        label: reportGroupLabel(group.group_name),
         itemCount: (group.items || []).length,
         columns: {
           opening: toNum(group.opening),
@@ -217,7 +232,7 @@ export const buildSheetLines = ({
 
       out.push({
         kind: "subtotal",
-        label: `Net ${section.name}`,
+        label: `Net ${reportSectionLabel(section.name)}`,
         side,
         columns: section.columns ?? ZERO,
       });
@@ -227,7 +242,7 @@ export const buildSheetLines = ({
 
     out.push({
       kind: "subtotal",
-      label: `Total ${section.name}`,
+      label: `Total ${reportSectionLabel(section.name)}`,
       side,
       columns: section.columns ?? ZERO,
     });

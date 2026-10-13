@@ -19,6 +19,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import ImagePopup from '../../../utils/others/ImagePopup';
 import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
+import { ledgerProductLabel } from '../utils/ledgerProductLabel';
 import PurchaseLedgerPrint from './PurchaseLedgerPrint';
 import { useReactToPrint } from 'react-to-print';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
@@ -51,9 +52,10 @@ import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import {
   buildVoucherAutoEditState,
   getCombinedVoucherOpenState,
+  getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
-import { formatBdShortDate } from '../../../utils/utils-functions/formatDate';
+import formatDate, { formatBdShortDate } from '../../../utils/utils-functions/formatDate';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import routes from '../../../services/appRoutes';
 import SearchInput from '../../../utils/fields/SearchInput';
@@ -117,6 +119,11 @@ const PurchaseLedger = (user: any) => {
   const ledgerData = useSelector((state) => state.purchaseLedger);
   const settings = useSelector((state: any) => state.settings);
   const stockReportType = settings?.data?.branch?.stock_report_type;
+  // Branch > Invoice Setup > "Show Product Information in Ledger Details".
+  // Unset reads as on -- a branch that predates the switch keeps its product
+  // lines. Only an explicit '0' hides them. Display only; no record changes.
+  const showProductDetails =
+    String(settings?.data?.branch?.ledger_show_product_details ?? '1') !== '0';
   const showVoucherImage = String(settings?.data?.branch?.show_voucher_image) === '1';
   const userPermissions = settings?.data?.permissions || [];
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -352,7 +359,7 @@ const PurchaseLedger = (user: any) => {
       return;
     }
 
-    const voucherNo = String(row?.vr_no || '').trim();
+    const voucherNo = getEditableVoucherNo(row);
     const editTarget = getVoucherEditTarget(voucherNo);
     const editState = buildVoucherAutoEditState(voucherNo);
 
@@ -483,6 +490,9 @@ const PurchaseLedger = (user: any) => {
         >
           <div>{row?.challan_no}</div>
           <div>{row?.challan_date}</div>
+          { row?.manual_challan_no && <hr/>}
+          <div>{row?.manual_challan_no}</div>
+          <div>{ formatDate(row?.manual_challan_date)}</div>
         </div>
       ),
     },
@@ -490,7 +500,6 @@ const PurchaseLedger = (user: any) => {
     {
       key: 'product_name',
       header: 'Product & Details',
-      width: '100px',
       cellClass: 'align-center',
       render: (row: any) => {
         const coaName = getRelevantCoaName(row);
@@ -501,18 +510,17 @@ const PurchaseLedger = (user: any) => {
                 {coaName}
               </div>
             )}
-            {Array.isArray(row?.purchase_master?.details) &&
+            {/* The product lines, only when the branch shows them. The account
+                above and the note below are the column's other content and
+                stay either way. */}
+            {showProductDetails &&
+              Array.isArray(row?.purchase_master?.details) &&
               row.purchase_master.details.length > 0 &&
-              row.purchase_master.details.map((detail: any, i: number) => {
-                const categoryName = detail?.product?.category?.name ?? "";
-                const productName = detail?.product?.name ?? "";
-                return (
-                  <div key={detail?.id ?? i} className="leading-normal">
-                    {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
-                    {productName}
-                  </div>
-                );
-              })}
+              row.purchase_master.details.map((detail: any, i: number) => (
+                <div key={detail?.id ?? i} className="leading-normal">
+                  {ledgerProductLabel(detail, String(stockReportType) === "1")}
+                </div>
+              ))}
             
             {row?.purchase_master?.notes && (
               <div className="text-green-500">
@@ -551,6 +559,11 @@ const PurchaseLedger = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
       render: (row: any) => {
+        if (!showProductDetails) {
+          // Product information off: the invoice is one summary line.
+          return <div>-</div>;
+        }
+
         return (
           <div>
             {row?.purchase_master?.details?.map(
@@ -573,24 +586,30 @@ const PurchaseLedger = (user: any) => {
       header: 'Rate',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
-      render: (row: any) => (
-        <div>
-          {row?.purchase_master?.details?.map((detail: any, index: number) => {
-            const rate = detail?.purchase_price;
-            const total = (detail?.purchase_price || 0) * (detail?.quantity || 0);
-            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+      render: (row: any) => {
+        if (!showProductDetails) {
+          return <div>-</div>;
+        }
 
-            return (
-              <div key={index}>
-                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
-                  {formatAmountOrZeroMark(rate)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      ),
-      width: '100px',
+        return (
+          <div>
+            {row?.purchase_master?.details?.map((detail: any, index: number) => {
+              const rate = detail?.purchase_price;
+              const total = (detail?.purchase_price || 0) * (detail?.quantity || 0);
+              const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+
+              return (
+                <div key={index}>
+                  <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
+                    {formatAmountOrZeroMark(rate)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      },
+      width: '120px',
     },
 
     {
@@ -598,24 +617,41 @@ const PurchaseLedger = (user: any) => {
       header: 'Total',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
-      render: (row: any) => (
-        <div>
-          {row?.purchase_master?.details?.map((detail: any, index: number) => {
-            const rate = detail?.purchase_price;
-            const total = (detail?.purchase_price || 0) * (detail?.quantity || 0);
-            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+      render: (row: any) => {
+        if (!showProductDetails) {
+          // One summary line per invoice: its own total once. The discount is
+          // the column beside it and is not taken off here.
+          const details = Array.isArray(row?.purchase_master?.details)
+            ? row.purchase_master.details
+            : [];
+          const invoiceTotal = details.reduce(
+            (s: number, d: any) =>
+              s + (Number(d?.purchase_price) || 0) * (Number(d?.quantity) || 0),
+            0,
+          );
 
-            return (
-              <div key={index}>
-                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
-                  {formatAmountOrZeroMark(total)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      ),
-      width: '100px',
+          return <div>{formatAmountOrZeroMark(invoiceTotal)}</div>;
+        }
+
+        return (
+          <div>
+            {row?.purchase_master?.details?.map((detail: any, index: number) => {
+              const rate = detail?.purchase_price;
+              const total = (detail?.purchase_price || 0) * (detail?.quantity || 0);
+              const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+
+              return (
+                <div key={index}>
+                  <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
+                    {formatAmountOrZeroMark(total)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      },
+      width: '130px',
     },
     {
       key: 'discount',
@@ -632,9 +668,13 @@ const PurchaseLedger = (user: any) => {
           (detail: any) => detail?.coa4_id === 40,
         )?.credit;
 
-        // value format ÃƒÂ Ã‚Â¦Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¦Ã‚Â°ÃƒÂ Ã‚Â¦Ã‚Â¾ ÃƒÂ Ã‚Â¦Ã‚ÂÃƒÂ Ã‚Â¦Ã‚Â¬ÃƒÂ Ã‚Â¦Ã¢â‚¬Å¡ default
+        // value format করা এবং default
         // Show the discount only when there is one; otherwise leave the cell blank.
-        const displayValue = creditValue ? thousandSeparator(creditValue) : '';
+        // With product information hidden the invoice is one summary line, so a
+        // missing discount reads as a dash rather than a blank.
+        const displayValue = creditValue
+          ? thousandSeparator(creditValue)
+          : (showProductDetails ? '' : '-');
 
         return <div className="text-right">{displayValue}</div>;
       },
@@ -655,7 +695,7 @@ const PurchaseLedger = (user: any) => {
           (detail: any) => detail?.coa4_id === 17,
         )?.credit;
 
-        // value format ÃƒÂ Ã‚Â¦Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¦Ã‚Â°ÃƒÂ Ã‚Â¦Ã‚Â¾ ÃƒÂ Ã‚Â¦Ã‚ÂÃƒÂ Ã‚Â¦Ã‚Â¬ÃƒÂ Ã‚Â¦Ã¢â‚¬Å¡ default
+        // value format করা এবং default
         const displayValue = creditValue
           ? thousandSeparator(creditValue)
           : '-';
@@ -679,7 +719,7 @@ const PurchaseLedger = (user: any) => {
           return Number.isFinite(n) ? n : 0;
         };
 
-        // Purchase total = sum of (rate Ã— qty) across details (matches Total column).
+        // Purchase total = sum of (rate × qty) across details (matches Total column).
         const total = Array.isArray(row?.purchase_master?.details)
           ? row.purchase_master.details.reduce(
               (s: number, d: any) => s + parseNumber(d?.purchase_price) * parseNumber(d?.quantity),
@@ -733,6 +773,8 @@ const PurchaseLedger = (user: any) => {
     {
       key: 'action',
       header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
       render: (row: any) => {
         const voucherId = Number(
           row?.mtm_id ??
@@ -855,8 +897,9 @@ const PurchaseLedger = (user: any) => {
         branch: printBranch,
         branchName: dropdownData.find(
           (entry: any) => String(entry?.id) === String(branchId),
-        )?.name,
+          )?.name,
         showCategory: String(stockReportType) === '1',
+        showProductDetails,
       }),
     });
   };

@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import TradingCashReceived from './TradingCashReceived';
 import GeneralCashReceived from './GeneralCashReceived';
 import HeadOfficeCashReceived from './HeadOfficeCashReceived';
+import TilesCashReceived from './TilesCashReceived';
 import { userCurrentBranch } from '../../branch/branchSlice';
 import Loader from '../../../../common/Loader';
 
@@ -25,6 +26,15 @@ const CashReceivedIndex = () => {
   // business_type_id check and wins over the inventory-system mapping below.
   if (Number(currentBranch?.business_type_id) === 1) {
     return <HeadOfficeCashReceived />;
+  }
+
+  // The trade is recognised by NAME, server-side, and arrives as this flag --
+  // never by business_type_id, which differs from install to install. It is
+  // asked before the inventory-system map because it is the narrower answer:
+  // a tiles branch runs the trading inventory system and would otherwise land
+  // on the trading screen.
+  if (currentBranch?.is_tiles_and_sanitary) {
+    return <TilesCashReceived />;
   }
 
   // Every other branch picks its screen from its inventory system (see the

@@ -36,6 +36,10 @@ const PasswordElement: React.FC<InputElementProps> = ({
         onChange={onChange}
         value={value}
         type={'password'}
+        // Every screen that uses this box is setting a *new* password (add user,
+        // edit user), never signing in -- so tell the browser not to drop the
+        // saved login into it. Without this the box looks pre-filled on open.
+        autoComplete={'new-password'}
         placeholder={placeholder || 'Enter text'}
         className={fieldClass(undefined, className)}
       />

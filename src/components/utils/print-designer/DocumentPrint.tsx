@@ -18,6 +18,8 @@ import {
   InstallmentBand,
   NotesBand,
   PrintTemplate,
+  RULE_FIELD,
+  RULE_SPACE,
   SignatureBand,
   SpacerBand,
   TableBand,
@@ -281,7 +283,13 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
        * what the last row of a running column already reads.
        */
       total_due: totalAmount - totalReceived,
-      line_count: rows.length,
+      /**
+       * ⚠️ A HEADING IS NOT A LINE. A stock report carries the brand and the
+       * category it is grouped by as rows of their own among the products (see
+       * the heading branch in the table below), and counting those would report
+       * four products on a page that printed two.
+       */
+      line_count: rows.filter((row: any) => !row?.__heading).length,
 
       /**
        * The two a ledger foots, and the only entries here that exist for one
@@ -326,6 +334,27 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       total_age_31_60: rows.reduce((sum, row) => sum + num(row?.age_31_60), 0),
       total_age_61_90: rows.reduce((sum, row) => sum + num(row?.age_61_90), 0),
       total_age_90_plus: rows.reduce((sum, row) => sum + num(row?.age_90_plus), 0),
+
+      /**
+       * The Product Stock paper's three middle columns. Here for exactly the
+       * reason the two above and the six before them are: the Grand Total row
+       * reads this map directly and not the generic rule below it, so a column
+       * of openings would foot as a blank cell.
+       *
+       * ⚠️ THE GENERIC RULE WOULD ALREADY SUM THESE for the totals BAND --
+       * `opening` is a numeric line field, so `total_opening` resolves. What it
+       * cannot do is feed the foot row, which is the whole point of a stocktake:
+       * the four columns a reader runs a finger down are the ones that have to
+       * come to something at the bottom.
+       *
+       * Nothing else offers a column of any of these three names, so no other
+       * paper can ask for these totals and no paper's data carries the keys.
+       * `total_balance` is NOT repeated here -- it is already above, summing
+       * the `balance` column this paper shares with the ledgers.
+       */
+      total_opening: rows.reduce((sum, row) => sum + num(row?.opening), 0),
+      total_stock_in: rows.reduce((sum, row) => sum + num(row?.stock_in), 0),
+      total_stock_out: rows.reduce((sum, row) => sum + num(row?.stock_out), 0),
     };
 
     /**
@@ -392,6 +421,10 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         // it is a rule for somebody to write on. See FIELD_CATALOG.
         case 'blank':
           return '';
+        // A rule is drawn, not written: it answers with nothing, and the totals
+        // block draws it where the row would have been. See RULE_FIELD.
+        case 'rule':
+          return '';
         case 'product_names':
           return listOf((row) => row?.product_name);
         case 'product_categories':
@@ -450,6 +483,12 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         case 'line_count':
           return String(totals.line_count);
         case 'amount_words':
+          // ⚠️ An invoice spells its NET -- after the installment charge, the
+          // other charges and the discount -- and only its own adapter knows
+          // that figure, so it sends the words ready-made. Spelling the lines
+          // here printed 19,460 in words under a Net of 21,350. A challan or an
+          // order sends none and spells the sum of its lines, as before.
+          if (!blank(basic?.amount_words)) return String(basic.amount_words);
           return totals.total_amount ? `${numberToWords(totals.total_amount)} Only` : '';
         default: {
           // A total, if the key names one -- total_qty and total_bag as before,
@@ -700,9 +739,50 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       const repeats = (item: (typeof band.items)[number]) =>
         !!item.hideIfEqualTo && value(item.field) === value(item.hideIfEqualTo);
 
-      const visible = band.items.filter(
-        (item) => !(item.hideIfEmpty && nothing(item.field)) && !repeats(item),
-      );
+      /**
+       * ⚠️ A RULE IS NEVER HIDDEN. Every other line here can be dropped for
+       * having nothing to say -- a nought, or the same figure as the line above
+       * it -- but a rule the tenant placed on the paper is not stating a figure,
+       * and a filter written for figures would take it away without a word.
+       */
+      const isRule = (item: (typeof band.items)[number]) => item.field === RULE_FIELD;
+
+      /**
+       * A line that stands on its own, before any condition on another line.
+       */
+      const stands = (item: (typeof band.items)[number]) =>
+        isRule(item) || (!(item.hideIfEmpty && nothing(item.field)) && !repeats(item));
+
+      /**
+       * ⚠️ AND THEN THE LINES THAT DEPEND ON OTHER LINES.
+       *
+       * See InfoItem.hideUnlessShown -- "Net Tk." that only prints where
+       * "Previous Due Tk." did. The test is made against the OTHER LINE'S OWN
+       * VERDICT, not against the voucher, so it answers the question the tenant
+       * is asking: did that line reach the paper?
+       *
+       * Resolved by walking the chain, because the line it names may itself be
+       * waiting on a third. The seen-set stops the walk: a pair naming each
+       * other is two controls away in the designer, and without it the print
+       * would hang rather than come out wrong.
+       *
+       * A name that is on no line of this paper is satisfied -- the tenant took
+       * that line away deliberately, and dropping this one behind their back
+       * would take away a figure they never asked to lose.
+       */
+      const prints = (item: (typeof band.items)[number], seen = new Set<string>()): boolean => {
+        if (!stands(item)) return false;
+
+        const needs = item.hideUnlessShown;
+        if (!needs || seen.has(item.field)) return true;
+
+        seen.add(item.field);
+        const other = band.items.find((one) => one.field === needs);
+
+        return !other || prints(other, seen);
+      };
+
+      const visible = band.items.filter((item) => prints(item));
       if (!visible.length) return null;
 
       /**
@@ -753,7 +833,11 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         // in pixels would not.
         const widest = Math.max(
           8,
-          ...visible.map((item) => caption(item.label, fieldName(item.field)).length),
+          ...visible
+            // A rule has no label to measure, and "Line" is not one of the words
+            // this column is being sized for.
+            .filter((item) => !isRule(item))
+            .map((item) => caption(item.label, fieldName(item.field)).length),
         );
 
         return {
@@ -782,12 +866,31 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
       if (band.layout === 'inline') {
         return (
           <div className={`mb-2 flex flex-wrap gap-x-6 gap-y-1 ${side}`}>
-            {visible.map((item, index) => (
-              <span key={`${item.field}-${index}`}>
-                <b>{caption(item.label, fieldName(item.field))}:</b>{' '}
-                <b>{value(item.field)}</b>
-              </span>
-            ))}
+            {visible.map((item, index) =>
+              // Across one line a rule has nothing to rule off, so it stands up
+              // instead: what it separates is still told apart, and a blank
+              // space with a label on it is not printed.
+              isRule(item) ? (
+                <span
+                  key={`${item.field}-${index}`}
+                  aria-hidden
+                  className={
+                    item.ruleStyle === 'dashed'
+                      ? 'border-l border-dashed border-gray-400'
+                      : 'border-l border-gray-800'
+                  }
+                  style={{
+                    marginLeft: `${item.ruleSpaceAbove ?? RULE_SPACE}px`,
+                    marginRight: `${item.ruleSpaceBelow ?? RULE_SPACE}px`,
+                  }}
+                />
+              ) : (
+                <span key={`${item.field}-${index}`}>
+                  <b>{caption(item.label, fieldName(item.field))}:</b>{' '}
+                  <b>{value(item.field)}</b>
+                </span>
+              ),
+            )}
           </div>
         );
       }
@@ -816,28 +919,86 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
             ) : null}
             <tbody>
               {visible.map((item, index) => {
+                // ⚠️ A line of its own, drawn across the same columns the sums
+                // are ruled across: the empty column on the left stays empty,
+                // exactly as it does for ruleAbove below. Its two gaps are the
+                // only thing that tells it apart from a plain gap in the block.
+                if (isRule(item)) {
+                  return (
+                    <tr key={`${item.field}-${index}`}>
+                      {footedTo ? <td /> : null}
+                      <td
+                        colSpan={3}
+                        style={{
+                          paddingTop: `${item.ruleSpaceAbove ?? RULE_SPACE}px`,
+                          paddingBottom: `${item.ruleSpaceBelow ?? RULE_SPACE}px`,
+                        }}
+                      >
+                        <div
+                          className={
+                            item.ruleStyle === 'dashed'
+                              ? 'border-t border-dashed border-gray-400'
+                              : 'border-t border-gray-800'
+                          }
+                        />
+                      </td>
+                    </tr>
+                  );
+                }
+
                 // A rule where a sum happens -- above the gross, the net and
-                // the balance. Drawn on the cells rather than the row, which
-                // browsers ignore on a collapsed table; and never on the first
-                // line drawn, where it would only underline the table above.
-                const rule = item.ruleAbove && index > 0 ? 'border-t border-gray-800 ' : '';
+                // the balance.
+                //
+                // ⚠️ Its OWN ROW, not a border on the cells. Drawn on the cells
+                // it could not be given margins: the line sat hard against the
+                // figure, and the tenant had no way to take it off the paper or
+                // to open a gap above it. As a row it is the same line the
+                // standalone "Line" draws, so it carries the same three knobs --
+                // and the margins default to nought rather than RULE_SPACE, so
+                // every paper already saved prints exactly as it did.
+                //
+                // Still never on the first line drawn, where it would only
+                // underline the table above.
+                const ruled = item.ruleAbove && index > 0;
 
                 return (
-                  <tr key={`${item.field}-${index}`}>
-                    {footedTo ? <td /> : null}
-                    <td className={`${rule}pr-3 text-right font-semibold`}>
-                      {caption(item.label, fieldName(item.field))}
-                    </td>
-                    <td className={`${rule}pr-1 text-right`}>:</td>
-                    <td
-                      className={
-                        `${rule}font-bold ` +
-                        (isNumericField(item.field) ? 'text-right' : 'text-left')
-                      }
-                    >
-                      {value(item.field)}
-                    </td>
-                  </tr>
+                  <React.Fragment key={`${item.field}-${index}`}>
+                    {ruled ? (
+                      <tr>
+                        {footedTo ? <td /> : null}
+                        <td
+                          colSpan={3}
+                          style={{
+                            paddingTop: `${item.ruleSpaceAbove ?? 0}px`,
+                            paddingBottom: `${item.ruleSpaceBelow ?? 0}px`,
+                          }}
+                        >
+                          <div
+                            className={
+                              item.ruleStyle === 'dashed'
+                                ? 'border-t border-dashed border-gray-400'
+                                : 'border-t border-gray-800'
+                            }
+                          />
+                        </td>
+                      </tr>
+                    ) : null}
+                    <tr>
+                      {footedTo ? <td /> : null}
+                      <td className="pr-3 text-right font-semibold">
+                        {caption(item.label, fieldName(item.field))}
+                      </td>
+                      <td className="pr-1 text-right">:</td>
+                      <td
+                        className={
+                          'font-bold ' +
+                          (isNumericField(item.field) ? 'text-right' : 'text-left')
+                        }
+                      >
+                        {value(item.field)}
+                      </td>
+                    </tr>
+                  </React.Fragment>
                 );
               })}
             </tbody>
@@ -1112,6 +1273,46 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
           <tbody>
             {pageRows.map((row, rowIndex) => {
               /**
+               * A GROUP HEADING -- the brand, or the category, that the rows
+               * beneath it belong to.
+               *
+               * ⚠️ A ROW OF ITS OWN, ONE CELL ACROSS THE TABLE, and it comes
+               * from the DATA rather than from a setting here: the report is
+               * grouped by brand and category on the screen already (a branch
+               * turns that on at Edit Branch -> "Stock: Brand->Category->Item"),
+               * and the adapter hands those heading rows through instead of
+               * dropping them. So a branch that lists its stock straight gets no
+               * headings on the paper either, with nothing to configure twice.
+               *
+               * Left and bold, no figures: there is nothing to align and nothing
+               * to add up. The Grand Total row is NOT among these -- the table's
+               * own foot prints it, and a second one would count everything
+               * twice.
+               *
+               * ⚠️ AND IT STEPS IN BY `__depth`. A brand heading stands at the
+               * margin and its category under it one step in, so the nesting the
+               * report is grouped by is visible at a glance -- the same fact the
+               * category heading spells out in words ("ATI" + arrow + "Tiles").
+               * The step is the SAME for every paper: a heading that carries no
+               * depth sits where headings have always sat.
+               */
+              const heading = String(row?.__heading ?? '').trim();
+              if (heading) {
+                const depth = Math.max(0, Number(row?.__depth) || 0);
+                return (
+                  <tr key={row?.id ?? rowIndex} className="avoid-break">
+                    <td
+                      colSpan={columns.length}
+                      className={`${border} px-1 py-0.5 font-bold`}
+                      style={depth ? { paddingLeft: 4 + depth * 14 } : undefined}
+                    >
+                      {heading}
+                    </td>
+                  </tr>
+                );
+              }
+
+              /**
                * A money row -- a receipt or a payment against this order, not a
                * delivery.
                *
@@ -1176,9 +1377,13 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                    * rows carry one and some do not would step up and down the
                    * page for nothing.
                    *
-                   * Smaller and lighter than the line above it: it is what the
-                   * room offers, read after the room has been found, not
-                   * alongside it.
+                   * ⚠️ READ AT THE SIZE OF THE LINE ABOVE IT. It was 0.80em --
+                   * a note on the line above, which is what the room line this
+                   * was built for is, and what a voucher's DATE under its
+                   * number is not: the date is half of what the cell says.
+                   * Owner's ruling, 2026-09-29, for every paper. A column that
+                   * wants its second line quiet again would need an option of
+                   * its own; there is none.
                    */
                   const sub = column.subField
                     ? String(cell(row, startIndex + rowIndex, column.subField) ?? '').trim()
@@ -1201,9 +1406,26 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                     isNumericLineField(key) && !blank(raw) ? thousandSeparator(num(raw)) : String(raw ?? ''),
                   );
 
-                  // A column of lines, on a ledger -- see `lines` above.
+                  /**
+                   * A column of lines, on a ledger -- see `lines` above.
+                   *
+                   * ⚠️ THE ROW'S OWN LINES WIN WHERE THE PATTERN WROTE NOTHING.
+                   * A layout saved before the ledger got its own composed column
+                   * still points at `product_lines`, whose pattern names the
+                   * invoice's product facts (brand, category, serial) -- facts a
+                   * ledger row does not carry, so the pattern composes to
+                   * nothing and the cell printed blank. The adapter DOES put a
+                   * block of ready-made lines on the row, so where the composed
+                   * pattern came up empty the row's own lines are drawn instead.
+                   * A pattern that wrote something is never overridden, so this
+                   * is a floor rather than a preference.
+                   */
                   const stacked =
-                    composed && isStackedComposed(column) ? composed : lines(row, column.field);
+                    composed && composed.length
+                      ? isStackedComposed(column)
+                        ? composed
+                        : null
+                      : lines(row, column.field);
 
                   return (
                     <td
@@ -1240,7 +1462,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                       {marked ? ' *' : ''}
 
                       {sub ? (
-                        <div className="text-[0.80em] leading-snug ">
+                        <div className="leading-snug">
                           {column.subInBrackets ? `(${sub})` : sub}
                         </div>
                       ) : null}

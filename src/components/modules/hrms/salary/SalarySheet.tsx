@@ -72,7 +72,7 @@ const SalarySheet = ({ user }: any) => {
 
   const printRef = useRef<HTMLDivElement>(null);
 
-  // âœ… Confirm Modal state
+  // ✅ Confirm Modal state
   const [loading, setLoading] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedSheetRow, setSelectedSheetRow] = useState<any>(null);

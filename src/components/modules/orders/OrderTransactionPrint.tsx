@@ -16,6 +16,8 @@ type OrderRow = {
   mobile?: string;
   duration?: string;
   delivery_location?: string;
+  /** Free text the clerk typed on the order; may be empty. */
+  transaction_account?: string;
   order_number?: string;
   product_name?: string;
   total_order?: number | string;
@@ -282,6 +284,15 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                   <span className="w-24 shrink-0">Delivery Location:</span>
                   <span className="">{order?.delivery_location || '-'}</span>
                 </div>
+                {/* Optional, and blank on every order saved before it existed --
+                    so the paper only grows a line when there is something to
+                    say on it. */}
+                {order?.transaction_account ? (
+                  <div className="flex flex-wrap leading-4">
+                    <span className="w-24 shrink-0">Transaction A/C:</span>
+                    <span className="">{order.transaction_account}</span>
+                  </div>
+                ) : null}
                 <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Order No.</span>
                   <span className="">{order?.order_number || '-'}</span>

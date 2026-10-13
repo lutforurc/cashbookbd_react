@@ -22,7 +22,6 @@ const ones = [
 ];
 
 const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-const scales = ['', 'Thousand', 'Million', 'Billion', 'Trillion'];
 
 const convertHundreds = (num: number): string => {
   let words = '';
@@ -44,26 +43,44 @@ const convertHundreds = (num: number): string => {
   return words.trim();
 };
 
+/**
+ * ⚠️ INDIAN GROUPING, not international. The last three digits are the units,
+ * and every group above them is TWO digits -- thousand, lakh, crore. 506,185
+ * is "Five Lakh Six Thousand One Hundred Eighty Five"; the million/billion
+ * scales this used to carry spelled it "Five Hundred Six Thousand One Hundred
+ * Eighty Five", which is not how anybody here writes money.
+ *
+ * The two spellers this app already had beside it -- CashVoucherPrintBase and
+ * CustomerVoucherModal -- grouped this way, so the shared one was the odd one
+ * out above 99,999.
+ */
 const convertIntegerToWords = (num: number): string => {
   if (!Number.isFinite(num)) return '';
   if (num === 0) return 'Zero';
 
-  let words = '';
-  let scaleIndex = 0;
+  const parts: string[] = [];
 
-  while (num > 0) {
-    const chunk = num % 1000;
+  // The last three digits first, then two at a time.
+  const units = num % 1000;
+  if (units > 0) parts.unshift(convertHundreds(units));
+  num = Math.floor(num / 1000);
 
-    if (chunk > 0) {
-      const chunkWords = convertHundreds(chunk);
-      words = `${chunkWords}${scales[scaleIndex] ? ` ${scales[scaleIndex]}` : ''} ${words}`.trim();
-    }
+  const thousands = num % 100;
+  if (thousands > 0) parts.unshift(`${convertHundreds(thousands)} Thousand`);
+  num = Math.floor(num / 100);
 
-    num = Math.floor(num / 1000);
-    scaleIndex += 1;
-  }
+  const lakhs = num % 100;
+  if (lakhs > 0) parts.unshift(`${convertHundreds(lakhs)} Lakh`);
+  num = Math.floor(num / 100);
 
-  return words.trim();
+  // ⚠️ EVERYTHING LEFT IS CRORE, and there may be more than ninety-nine of
+  // them: 100 crore is "One Hundred Crore", not "Ten Crore". So the remainder
+  // goes back through this function rather than being taken as one two-digit
+  // group -- which is also why it stays right at a trillion, where taking a
+  // fixed group would run off the end of the ones table.
+  if (num > 0) parts.unshift(`${convertIntegerToWords(num)} Crore`);
+
+  return parts.join(' ');
 };
 
 const numberToWords = (value: number | string, currencyName = 'Taka'): string => {

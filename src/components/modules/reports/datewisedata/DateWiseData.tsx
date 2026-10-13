@@ -73,7 +73,7 @@ const DateWiseData = (user: any) => {
   }, [branchDdlData?.protectedData?.data]);
 
   // -----------------------------------------------------
-  // Run Button Ã¢â€ â€™ Load Table Data
+  // Run Button → Load Table Data
   // -----------------------------------------------------
   const handleRun = () => {
     if (!branchId || !startDate || !endDate) return;

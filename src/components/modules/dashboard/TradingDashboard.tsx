@@ -24,7 +24,7 @@ import { hasPermission } from '../../utils/permissionChecker';
 import { API_TRADING_DASHBOARD_URL } from '../../services/apiRoutes';
 import { getDashboard, getDashboardSummary } from './dashboardSlice';
 import { getMonthlyPurchaseSales } from './chartSlice';
-import KpiRow, { KpiHeading, TRADING_TILES } from './KpiRow';
+import KpiRow, { TRADING_TILES } from './KpiRow';
 import DueAgingCard from './DueAgingCard';
 import BalanceSummaryCard from './BalanceSummaryCard';
 import RangeCashCard from './RangeCashCard';
@@ -36,7 +36,8 @@ import DashboardCustomizeButton, {
   DashboardWidget,
   useDashboardCustomization,
 } from './dashboardCustomization';
-import { CARD, CARD_HEAD, CardTitle, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
+import { CARD, CARD_FOOT, CARD_HEAD, CardTitle, DASHBOARD_FADE, DASHBOARD_GRID, Tile, count, money, share } from './dashboardKit';
+import { listedValue, rankProducts } from './topProducts';
 
 /**
  * The dashboard a trader opens the morning on: goods in, goods out, and what
@@ -113,8 +114,10 @@ const TRADING_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'dues-payable', title: 'Payable Ageing' },
   { id: 'dues-net', title: 'Net Position' },
   { id: 'top-profit', title: 'What Made the Money' },
-  { id: 'top-sales', title: 'Top Sales Products' },
-  { id: 'top-purchase', title: 'Top Purchase Products' },
+  { id: 'top-sales', title: 'Top Sales Products by Quantity' },
+  { id: 'top-sales-value', title: 'Top Sales Products by Value' },
+  { id: 'top-purchase', title: 'Top Purchase Products by Quantity' },
+  { id: 'top-purchase-value', title: 'Top Purchase Products by Value' },
   { id: 'daily-sales', title: 'Daily Sales Chart' },
   { id: 'daily-purchase', title: 'Daily Purchase Chart' },
   { id: 'monthly-purchase-sales', title: 'Monthly Purchase Sales Chart' },
@@ -134,17 +137,6 @@ const qty = (value: number | null | undefined) => {
   const amount = Number(value ?? 0);
   return amount.toLocaleString('en-IN', { maximumFractionDigits: 2 });
 };
-
-/**
- * What a list of rows is worth together.
- *
- * ⚠️ The rows the server sent, not all the rows there are. The dead list is cut
- * to five, so this is the total of the five on screen and the footer beside it
- * says which five — a subtotal presented as a whole is the error the footer
- * exists to prevent.
- */
-const listedValue = (rows: any[], key: string) =>
-  rows.reduce((sum, row) => sum + Number(row?.[key] || 0), 0);
 
 const TradingDashboard = () => {
   const dispatch = useDispatch<any>();
@@ -280,6 +272,14 @@ const TradingDashboard = () => {
   const topPurchase: any[] = Array.isArray(payload?.top_purchase)
     ? payload.top_purchase
     : [];
+  // The same two windows ranked by value, sent separately by the server so the
+  // value cards are a rank over the whole window and not the unit list's five.
+  const topSalesValue: any[] = Array.isArray(payload?.top_sales_value)
+    ? payload.top_sales_value
+    : [];
+  const topPurchaseValue: any[] = Array.isArray(payload?.top_purchase_value)
+    ? payload.top_purchase_value
+    : [];
 
   const dead: any[] = Array.isArray(stock?.dead) ? stock.dead : [];
   const deadDays = Number(stock?.dead_days ?? 60);
@@ -309,39 +309,56 @@ const TradingDashboard = () => {
   const variance = Number(profit?.variance || 0);
 
   /*
-   * The two lists drawn in UNITS — what moves fastest across the counter and
-   * what is bought most. Same card as "What Made the Money" but the sort is
-   * quantity and the money is the second column; that card's header says why
-   * the two must not be read as the same question.
+   * The four lists: rank, product, and the one figure the card is about -- the
+   * same card, once per question. A branch's fastest-moving line and its
+   * highest-earning line are routinely two different products, so quantity and
+   * value are ranked separately, each card ordered by its own metric and never
+   * by the other card's, and each drawing only its own figure. "What Made the
+   * Money" is the same card by profit; its header says why the three must not
+   * be read as the same question.
    */
-  const unitsCard = (
+  const productCard = (
     id: string,
     title: string,
     rows: any[],
-    verb: string,
+    metric: 'qty' | 'amount',
     tone: string,
     days: number,
     href: string,
   ): React.ReactNode => {
     if (!isWidgetVisible(id) || rows.length === 0) return null;
-    const total = listedValue(rows, 'amount');
+    /*
+     * ⚠️ RANKED HERE, BY THE CARD'S OWN METRIC. The server sends each list in
+     * its own order -- units for the quantity card, money for the value card --
+     * but sorting on the metric the card is titled for is what keeps the two
+     * from ever sharing an order, whatever order they arrive in.
+     */
+    const byQuantity = metric === 'qty';
+    const ranked = rankProducts(rows, metric);
+    const units = (n: number | null | undefined) =>
+      Number(n ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+    // The card's own figure, in the card's own unit -- money for the value
+    // cards, a quantity for the unit cards. Nothing else is formatted here.
+    const format = (value: number | null | undefined) =>
+      byQuantity ? units(value) : money(value);
     // The window the server actually counted -- the branch's own setting, not
     // the page's month -- said in the foot so the list is not read as the month.
-    const window = days === 1 ? 'today' : `last ${days} days`;
+    const windowLabel = (d: number) => (d === 1 ? 'today' : `last ${d} days`);
+    const window = windowLabel(days);
     return (
       <div className={`mb-4 ${CARD}`}>
         <div className={CARD_HEAD}>
           <CardTitle href={href}>{title}</CardTitle>
           <span className="shrink-0 text-[11px] font-normal text-slate-400">
-            by quantity
+            by {byQuantity ? 'quantity' : 'value'}
           </span>
         </div>
 
         <ul className="divide-y divide-slate-100 dark:divide-gray-700">
-          {rows.map((row, index) => (
+          {ranked.map((row, index) => (
             <li
               key={row.id}
-              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto_auto] items-center gap-2 ${rowClass} text-[12px] transition hover:bg-slate-50 dark:hover:bg-gray-700/50`}
+              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 ${rowClass} text-[12px] transition hover:bg-slate-50 dark:hover:bg-gray-700/50`}
             >
               <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
                 {String(index + 1).padStart(2, '0')}
@@ -354,26 +371,24 @@ const TradingDashboard = () => {
               >
                 {row.name}
               </Link>
-              <span className="shrink-0 whitespace-nowrap text-right text-[11px] tabular-nums text-slate-400">
-                {Number(row.qty ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}{' '}
-                {verb}
-              </span>
               <span
-                className={`w-24 shrink-0 text-right font-bold tabular-nums ${tone}`}
+                className={`shrink-0 whitespace-nowrap text-right font-bold tabular-nums ${tone}`}
               >
-                {money(row.amount)}
+                {format(row?.[metric])}
               </span>
             </li>
           ))}
         </ul>
 
         <div
-          className={`mt-auto flex items-center justify-between border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] dark:bg-gray-700/50`}
+          className={`${CARD_FOOT} justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 dark:bg-gray-700/50`}
         >
-          <span className="text-slate-500 dark:text-slate-300">
-            Top {rows.length} · {window}
+          <span className="min-w-0 truncate text-slate-500 dark:text-slate-300">
+            Top {ranked.length} · {window}
           </span>
-          <span className={`font-bold tabular-nums ${tone}`}>{money(total)}</span>
+          <span className={`shrink-0 font-bold tabular-nums ${tone}`}>
+            {format(listedValue(ranked, metric))}
+          </span>
         </div>
       </div>
     );
@@ -495,14 +510,14 @@ const TradingDashboard = () => {
                 </ul>
 
                 <div
-                  className={`mt-auto flex items-center justify-between border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] font-bold dark:bg-gray-700/50`}
+                  className={`${CARD_FOOT} justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 font-bold dark:bg-gray-700/50`}
                 >
-                  <span className="text-slate-500 dark:text-slate-300">
+                  <span className="min-w-0 truncate text-slate-500 dark:text-slate-300">
                     {dead.length < Number(stock.dead_items)
                       ? `Worst ${dead.length} of ${count(stock.dead_items)}`
                       : 'All of it'}
                   </span>
-                  <span className="tabular-nums text-amber-600 dark:text-amber-400">
+                  <span className="shrink-0 tabular-nums text-amber-600 dark:text-amber-400">
                     {money(listedValue(dead, 'value'))}
                   </span>
                 </div>
@@ -687,14 +702,14 @@ const TradingDashboard = () => {
             </ul>
 
             <div
-              className={`mt-auto flex items-center justify-between border-t border-[rgb(var(--c-border))] bg-slate-50 ${rowClass} text-[12px] dark:bg-gray-700/50`}
+              className={`${CARD_FOOT} justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 dark:bg-gray-700/50`}
             >
               {/* ⚠️ The footer says how much of the month these rows are, because
                 five rows above a big number reads as the whole of it. A line
                 that lost money is worth seeing sooner than a thin profit, so
                 the five are the five best — and on a month that went wrong the
                 best of them can still be a loss. */}
-              <span className="text-slate-500 dark:text-slate-300">
+              <span className="min-w-0 truncate text-slate-500 dark:text-slate-300">
                 Top {top.length}
                 {/* ⚠️ A share of a NEGATIVE gross is not a share of anything —
                   percent-of-a-loss reads as a percent of a profit and would be
@@ -705,7 +720,7 @@ const TradingDashboard = () => {
                   : ''}
               </span>
               <span
-                className={`font-bold tabular-nums ${
+                className={`shrink-0 font-bold tabular-nums ${
                   topProfit < 0
                     ? 'text-rose-600 dark:text-rose-400'
                     : 'text-emerald-600 dark:text-emerald-400'
@@ -717,21 +732,41 @@ const TradingDashboard = () => {
           </div>
         ) : null;
       case 'top-sales':
-        return unitsCard(
+        return productCard(
           'top-sales',
-          'Top Sales Products',
+          'Top Sales by Quantity',
           topSales,
-          'sold',
+          'qty',
+          'text-emerald-600 dark:text-emerald-400',
+          Number(payload?.top_sales_days) || 1,
+          links.salesLedger,
+        );
+      case 'top-sales-value':
+        return productCard(
+          'top-sales-value',
+          'Top Sales by Value',
+          topSalesValue,
+          'amount',
           'text-emerald-600 dark:text-emerald-400',
           Number(payload?.top_sales_days) || 1,
           links.salesLedger,
         );
       case 'top-purchase':
-        return unitsCard(
+        return productCard(
           'top-purchase',
-          'Top Purchase Products',
+          'Top Purchase by Quantity',
           topPurchase,
-          'bought',
+          'qty',
+          'text-primary dark:text-secondary',
+          Number(payload?.top_purchase_days) || 1,
+          links.purchaseLedger,
+        );
+      case 'top-purchase-value':
+        return productCard(
+          'top-purchase-value',
+          'Top Purchase by Value',
+          topPurchaseValue,
+          'amount',
           'text-primary dark:text-secondary',
           Number(payload?.top_purchase_days) || 1,
           links.purchaseLedger,
@@ -798,10 +833,6 @@ const TradingDashboard = () => {
       {/* ------------------------------------------------------------ */}
       {/* Today. The shop's own call and the shop's own tiles, so these four
           read the same on both pages. */}
-      {TRADING_TILES.some((tile) => isWidgetVisible(`kpi-${tile.key}`)) && (
-        <KpiHeading trxDate={summaryData?.trxDate} />
-      )}
-
       {/* ------------------------------------------------------------ */}
       {/* Every card in a row stands as tall as the tallest: the grid stretches
           the cell and the card fills it. Each card is a flex column with its

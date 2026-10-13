@@ -1,4 +1,4 @@
-import { formatAmount, type ReportGroup, type SheetLine } from "./sheetLines";
+import { formatAmount, level2Indent, level3Indent, type ReportGroup, type SheetLine } from "./sheetLines";
 
 /**
  * The balance sheet as a statement: the way it goes to a bank, an auditor or
@@ -80,7 +80,7 @@ const BalanceSheetStatement = ({
             if (line.kind === "subsection") {
               return (
                 <tr key={`${line.label}-${index}`}>
-                  <td colSpan={3} className={`pt-3 pb-0.5 font-semibold ${text}`}>
+                  <td colSpan={3} className={`pt-3 pb-0.5 font-semibold ${level2Indent} ${text}`}>
                     {line.label}
                   </td>
                 </tr>
@@ -101,8 +101,8 @@ const BalanceSheetStatement = ({
                   <td
                     className={
                       line.indent
-                        ? `py-0.5 pl-4 ${text}`
-                        : `pt-1.5 pb-2 pl-2 font-semibold ${text}`
+                        ? `py-0.5 ${level3Indent} ${text}`
+                        : `pt-1.5 pb-2 ${level2Indent} font-semibold ${text}`
                     }
                   >
                     {line.label}
@@ -134,7 +134,7 @@ const BalanceSheetStatement = ({
                 title={`${line.itemCount} account${line.itemCount === 1 ? "" : "s"} — click to open`}
                 className="cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
               >
-                <td className={`py-0.5 pl-4 ${text}`}>{line.label}</td>
+                <td className={`py-0.5 ${level3Indent} ${text}`}>{line.label}</td>
                 <td className={`py-0.5 pl-3 ${amount}`}>{formatAmount(line.columns.opening)}</td>
                 <td className={`py-0.5 pl-3 ${amount}`}>{formatAmount(line.columns.closing)}</td>
               </tr>

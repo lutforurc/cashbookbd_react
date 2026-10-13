@@ -220,6 +220,10 @@ const AttendanceEntries = ({ user }: any) => {
   const [pendingRows, setPendingRows] = useState<Record<string, any>>({});
   const [employeeMeta, setEmployeeMeta] = useState<any>(null);
   const [rosterMessage, setRosterMessage] = useState('');
+  // The last day of a range fill. Kept apart from the filters' own date_to:
+  // this one is a thing about to be written, not a report window.
+  const [rangeTo, setRangeTo] = useState('');
+  const [rangeConfirm, setRangeConfirm] = useState(false);
   const manualAttendanceEdit = (location.state as any)?.manualAttendanceEdit;
   const displayEntries = entries.map((row: any) => {
     const pendingRow = pendingRows[attendanceRowKey(row)];
@@ -549,6 +553,55 @@ const AttendanceEntries = ({ user }: any) => {
       loadEntries(loadedListParams());
     } catch (error: any) {
       toast.error(error || 'Bulk attendance failed');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  // How many days a range covers, counted the same way the API counts them:
+  // both ends included.
+  const rangeDayCount = (from?: string, to?: string) => {
+    const start = dateFromString(from);
+    const end = dateFromString(to);
+    if (!start || !end || end < start) return 0;
+    return Math.round((end.getTime() - start.getTime()) / 86400000) + 1;
+  };
+
+  // The same payload as one day's Bulk Entry, with the range tacked on: the
+  // API walks the days itself, so the screen sends what it always sent and
+  // says how far to go.
+  const handleRangeSubmit = async () => {
+    if (!form.attendance_date || !rangeTo) {
+      toast.error('Select the first and the last day of the range');
+      return;
+    }
+    if (rangeTo < form.attendance_date) {
+      toast.error('The last day cannot be before the first');
+      return;
+    }
+
+    setBulkLoading(true);
+    try {
+      const response = await dispatch(bulkSaveAttendanceEntries(normalizePayload({
+        branch_id: form.branch_id,
+        shift_id: form.shift_id,
+        employment_type: form.employment_type,
+        ...attendanceShiftFilterParams(form.shift_id, shifts),
+        attendance_date: form.attendance_date,
+        date_to: rangeTo,
+        in_time: form.in_time,
+        out_time: form.out_time,
+        status: form.status,
+        remarks: form.remarks,
+        // A day that already carries an entry keeps it, approved or not.
+        update_existing: false,
+      }))).unwrap();
+      const result = response?.data?.data || response?.data || {};
+      toast.success(response?.message || `Range filled. Created: ${result.created || 0}, Skipped: ${result.skipped || 0}`);
+      setRangeConfirm(false);
+      loadEntries(loadedListParams());
+    } catch (error: any) {
+      toast.error(error || 'Range fill failed');
     } finally {
       setBulkLoading(false);
     }
@@ -917,6 +970,46 @@ const AttendanceEntries = ({ user }: any) => {
             icon={<FiSearch className="mr-2" />}
           />
         </div>
+
+        {/* A whole range in one go, under the day's own buttons: one day is
+            still the flow above, and this only adds a second way to say how
+            far the same entry should reach. */}
+        <div className="mt-3 grid grid-cols-1 gap-2 border-t border-[rgb(var(--c-border))] pt-3 md:grid-cols-4">
+          {/* The same date the day above runs on -- one value in two boxes, so
+              the sheet on screen and the first day of the fill cannot differ. */}
+          <InputDatePicker
+            id="range_from"
+            name="range_from"
+            label="Fill From"
+            selectedDate={dateFromString(form.attendance_date)}
+            setSelectedDate={(date) => setForm((prev: any) => ({ ...prev, attendance_date: dateToString(date) }))}
+            setCurrentDate={(date) => setForm((prev: any) => ({ ...prev, attendance_date: dateToString(date) }))}
+            className="w-full"
+          />
+          <InputDatePicker
+            id="range_to"
+            name="range_to"
+            label="Fill To"
+            selectedDate={dateFromString(rangeTo)}
+            setSelectedDate={(date) => setRangeTo(dateToString(date))}
+            setCurrentDate={(date) => setRangeTo(dateToString(date))}
+            className="w-full"
+          />
+          <div className="flex items-end">
+            <ButtonLoading
+              type="button"
+              onClick={() => setRangeConfirm(true)}
+              buttonLoading={bulkLoading}
+              label="Fill Range"
+              className=""
+              icon={<FiCheck className="mr-2" />}
+            />
+          </div>
+          <p className="self-end pb-2 text-xs text-bodydark2">
+            Every day from the first to the last, at most 31 days and never past today. Holidays are written as
+            holidays, and a day that already has an entry keeps it.
+          </p>
+        </div>
         </form>
         </div>
       </div>
@@ -1009,6 +1102,30 @@ const AttendanceEntries = ({ user }: any) => {
         </div>
         <Table columns={columns} data={displayEntries} />
       </div>
+
+      {/* A range writes as many rows as the screen has ever written in a day,
+          so it says which days and how many before it starts. */}
+      <ConfirmModal
+        show={rangeConfirm}
+        title="Confirm Range Fill"
+        message={
+          <>
+            Fill attendance for
+            <span className="mt-1 block font-bold">
+              {chartDate(form.attendance_date)} to {chartDate(rangeTo)} — {rangeDayCount(form.attendance_date, rangeTo)} days
+            </span>
+            <span className="mt-1 block">
+              Days the holiday calendar or the weekly policy keeps off are written as holidays, and a day that
+              already has an entry is left exactly as it is.
+            </span>
+          </>
+        }
+        loading={bulkLoading}
+        cancelLabel="Cancel"
+        confirmLabel="Fill Range"
+        onCancel={() => setRangeConfirm(false)}
+        onConfirm={handleRangeSubmit}
+      />
 
       <ConfirmModal
         show={showBulkClearConfirm}

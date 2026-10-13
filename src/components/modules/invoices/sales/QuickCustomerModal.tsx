@@ -6,7 +6,9 @@ import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButton
 import { getDdlArea } from '../../area/areaSlice';
 import { getCoal4DdlNext } from '../../chartofaccounts/levelfour/coal4DdlSlicer';
 import { storeCustomer } from '../../customer-supplier/customerSlice';
+import { getEmployeesDDL } from '../../hrms/employee/employeeSlice';
 import { ClientType } from '../../../utils/fields/DataConstant';
+import { isBranchSettingOn } from '../../../utils/userFeatureSettings';
 import InputElement from '../../../utils/fields/InputElement';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import DdlDynamicMultiline from '../../../utils/utils-functions/DdlDynamicMultiline';
@@ -20,6 +22,7 @@ interface QuickCustomerFormData {
   type_id: string;
   area_id: string;
   areaName: string;
+  handle_by_employee_id: string;
 }
 
 interface QuickCustomerOption {
@@ -43,6 +46,7 @@ const createInitialFormData = (defaultTypeId = '1'): QuickCustomerFormData => ({
   type_id: defaultTypeId,
   area_id: '',
   areaName: '',
+  handle_by_employee_id: '',
 });
 
 const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
@@ -55,11 +59,18 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
 }) => {
   const dispatch = useDispatch<any>();
   const area = useSelector((s: any) => s.area);
+  const settings = useSelector((s: any) => s.settings);
+  const employees = useSelector((s: any) => s.employees);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<QuickCustomerFormData>>({});
   const [formData, setFormData] = useState<QuickCustomerFormData>(
     createInitialFormData(defaultTypeId),
   );
+
+  // Branch Setup -> Customer Setup -> "Customer Handle By Employee", the same
+  // switch the Customers screen reads. Off -- or unset -- and this modal is the
+  // one it was.
+  const needHandleByEmployee = isBranchSettingOn(settings, 'need_customer_handle_by_employee');
 
   useEffect(() => {
     if (!isOpen) {
@@ -73,6 +84,32 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
     });
     setErrors({});
   }, [defaultTypeId, dispatch, initialName, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !needHandleByEmployee) return;
+
+    dispatch(getEmployeesDDL({ branchId: String(settings?.data?.branch?.id ?? '') }));
+  }, [dispatch, isOpen, needHandleByEmployee, settings?.data?.branch?.id]);
+
+  /**
+   * The picker's rows, with a blank first: the field is optional, and a quick
+   * customer is usually saved with nobody on it.
+   */
+  const employeeOptions = [
+    { id: '', name: 'Select Employee' },
+    ...(Array.isArray(employees?.employeeDDL?.data?.data)
+      ? employees.employeeDDL.data.data.map((item: any) => ({
+          id: item?.id?.toString() ?? '',
+          name: item?.name ?? '',
+        }))
+      : []),
+  ];
+
+  // Customers only, exactly as on the Customers screen: a supplier has nobody
+  // handling them, and the list there stands its own Employee column down under
+  // the Supplier filter for the same reason.
+  const showHandleByEmployee =
+    needHandleByEmployee && ['1', '3'].includes(String(formData.type_id));
 
   const formattedAreaData = useMemo(() => {
     const areaList = Array.isArray(area?.area)
@@ -153,6 +190,12 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
         manual_address: formData.manual_address.trim(),
         type_id: formData.type_id,
         area_id: formData.area_id,
+        // Left out when nobody was picked, or when the picker is not on screen
+        // at all: the server's insert names only the columns it is handed, and
+        // a blank string is the absence of an answer, not an employee.
+        ...(showHandleByEmployee && formData.handle_by_employee_id
+          ? { handle_by_employee_id: formData.handle_by_employee_id }
+          : {}),
       };
 
       const res: any = await dispatch(storeCustomer(payload)).unwrap();
@@ -241,6 +284,24 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
               <p className="mt-1 text-xs text-red-500">{errors.type_id}</p>
             )}
           </div>
+          {/* Who looks after this customer. Optional, customers only, and only
+              where the branch turned the switch on -- the same rule the
+              Customers screen follows. */}
+          {showHandleByEmployee && (
+            <div className="md:col-span-2">
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
+                Handle By Employee
+              </label>
+              <DropdownCommon
+                id="handle_by_employee_id"
+                name="handle_by_employee_id"
+                onChange={handleInputChange}
+                value={formData.handle_by_employee_id}
+                className="bg-transparent"
+                data={employeeOptions}
+              />
+            </div>
+          )}
           <div>
             <InputElement
               id="quick_customer_name"

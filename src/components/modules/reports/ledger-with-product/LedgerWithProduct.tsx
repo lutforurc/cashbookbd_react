@@ -1,5 +1,7 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
@@ -7,6 +9,7 @@ import Loader from '../../../../common/Loader';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
+import SearchInput from '../../../utils/fields/SearchInput';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
@@ -21,6 +24,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import {
   clearCustomerSupplierStatement,
   fetchCustomerSupplierStatement,
+  setRowApproval,
 } from './ledgerWithProductSlice';
 import LedgerWithProductPrint from './LedgerWithProductPrint';
 import { toLedgerDetailsDocumentData } from './ledgerDetailsDocumentData';
@@ -29,9 +33,23 @@ import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
 import { normalizeTemplate } from '../../../utils/print-designer/printTemplate';
 import type { PrintTemplate } from '../../../utils/print-designer/printTemplate';
 import httpService from '../../../services/httpService';
-import { API_PRINT_TEMPLATE_URL } from '../../../services/apiRoutes';
+import {
+  API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL,
+  API_PRINT_TEMPLATE_URL,
+} from '../../../services/apiRoutes';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
-import { useVoucherPrint } from '../../vouchers';
+import {
+  useRemoveVoucherApproval,
+  useVoucherPrint,
+  VoucherActionButtons,
+} from '../../vouchers';
+import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
+import { hasPermission } from '../../../utils/permissionChecker';
+import {
+  buildVoucherAutoEditState,
+  getEditableVoucherNo,
+  getVoucherEditTarget,
+} from '../../../utils/utils-functions/voucherEditNavigation';
 import { FiCheckSquare, FiDownload, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
@@ -94,6 +112,57 @@ const downloadExcelHtml = (html: string, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+/**
+ * The filter panel, kept for the trip to a voucher's edit screen and back.
+ *
+ * ⚠️ PRESSING EDIT LEAVES THIS SCREEN rather than covering it, and coming back
+ * mounts it afresh. The statement is still on the page when it does -- the rows
+ * live in the store -- but every box in the panel starts empty, so the reader
+ * is shown rows they can no longer identify and cannot search for again. The
+ * plain Ledger keeps its filters the same way, in the tab.
+ */
+const LEDGER_PRODUCT_FILTER_KEY = 'ledger-with-product-filters';
+
+type SavedLedgerFilters = {
+  branchId?: number | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  partyId?: number | null;
+  partyLabel?: string | null;
+  productId?: number | null;
+  selectedProductOption?: { value: any; label: any } | null;
+  transactionType?: string | null;
+  search?: string | null;
+};
+
+const readSavedLedgerFilters = (): SavedLedgerFilters | null => {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(LEDGER_PRODUCT_FILTER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+/** A saved id comes back as a string from JSON; blank and null are not 0. */
+const toSavedNumber = (value: unknown) => {
+  if (value === null || value === undefined || value === '') return null;
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const parseSavedDate = (value?: string | null) => {
+  if (!value) return null;
+
+  const [year, month, day] = String(value).split('-').map(Number);
+  if (!year || !month || !day) return null;
+
+  return new Date(year, month - 1, day);
+};
+
 const LedgerWithProduct = (user: any) => {
   const dispatch = useDispatch();
   const highlightRules = useHighlightRules();
@@ -103,6 +172,7 @@ const LedgerWithProduct = (user: any) => {
   );
   const settings = useSelector((state: any) => state.settings);
   const mobileFormat = useMobileFormat();
+  const navigate = useNavigate();
   const useFilterMenuEnabled = isUserFeatureEnabled(
     settings,
     'use_filter_parameter',
@@ -129,12 +199,32 @@ const LedgerWithProduct = (user: any) => {
   const [fontSize, setFontSize] = useState<string>('10');
   const [filterOpen, setFilterOpen] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [approvingId, setApprovingId] = useState<number | null>(null);
+  // The same four rights the plain Ledger's Action column reads: these are the
+  // same vouchers, listed for one party instead of one account at a time.
+  const userPermissions = settings?.data?.permissions || [];
+  const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
+  const canRemoveApproval = hasPermission(userPermissions, 'remove.approval');
+  const canEditVoucher = hasAnyPermission(userPermissions, [
+    'sales.edit',
+    'cash.received.edit',
+    'cash.payment.edit',
+    'purchase.edit',
+  ]);
+  const { removingApprovalId, removeVoucherApproval, getVoucherId } =
+    useRemoveVoucherApproval();
   const [modalTitle, setModalTitle] = useState('Notice');
   const [modalMessage, setModalMessage] = useState<React.ReactNode>('');
 
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  // Set while the dates came back from the tab rather than from the server's
+  // transaction date, so the branch effect below leaves them alone.
+  const restoredDatesRef = useRef(false);
+  // The save effect runs once on mount, before the restore above has been
+  // rendered in -- writing then would store the empty panel over the saved one.
+  const skipFirstFilterSaveRef = useRef(true);
 
   const openMessageModal = (title: string, message: React.ReactNode) => {
     setModalTitle(title);
@@ -157,8 +247,22 @@ const LedgerWithProduct = (user: any) => {
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
     const userBranchId = Number(user?.user?.branch_id) || null;
-    setBranchId(userBranchId);
+    const saved = readSavedLedgerFilters();
+    const savedStartDate = parseSavedDate(saved?.startDate);
+    const savedEndDate = parseSavedDate(saved?.endDate);
+
+    restoredDatesRef.current = Boolean(savedStartDate && savedEndDate);
+
+    setBranchId(toSavedNumber(saved?.branchId) ?? userBranchId);
     setDefaultBranchId(userBranchId);
+    setPartyId(toSavedNumber(saved?.partyId));
+    setPartyLabel(saved?.partyLabel || '');
+    setProductId(toSavedNumber(saved?.productId));
+    setSelectedProductOption(saved?.selectedProductOption || null);
+    setTransactionType(saved?.transactionType || '');
+    setSearch(saved?.search || '');
+    setStartDate(savedStartDate);
+    setEndDate(savedEndDate);
   }, []);
 
   useEffect(() => {
@@ -177,8 +281,10 @@ const LedgerWithProduct = (user: any) => {
         Number(day),
       );
       const parsedStartDate = new Date(Number(year), Number(month) - 1, 1);
-      setStartDate(parsedStartDate);
-      setEndDate(parsedEndDate);
+      if (!restoredDatesRef.current) {
+        setStartDate(parsedStartDate);
+        setEndDate(parsedEndDate);
+      }
       setDefaultStartDate(parsedStartDate);
       setDefaultEndDate(parsedEndDate);
     }
@@ -193,6 +299,110 @@ const LedgerWithProduct = (user: any) => {
     () => buildRowsWithRunningBalance(rawRows, rawSummary),
     [rawRows, rawSummary],
   );
+
+  /**
+   * What the search looks through, and what it leaves alone.
+   *
+   * ⚠️ IT FILTERS ON SCREEN, IT DOES NOT ASK THE SERVER AGAIN. A report in
+   * flight takes the whole table off the screen (see the Action column's own
+   * note), so a search that re-ran it would blink every row out on each
+   * keystroke -- the very thing this screen was just cured of. One party's
+   * statement is a few hundred rows and is already in hand.
+   *
+   * What is searched is what is on the screen. The vehicle number is matched as
+   * it is PRINTED as well as as it is stored -- the column shows "DMT 20-2650"
+   * for a stored "DMT-20-2650" -- and so is the rate, which is printed with its
+   * thousands separators. Commas are dropped from both sides of the comparison
+   * so "1234.50" finds a printed "1,234.50" and either way round works.
+   *
+   * The running balances and the summary stay the statement's own -- a filter
+   * that recomputed them would put a balance on screen that belongs to no row.
+   * The printed sheet follows the search, though: five rows on the screen and
+   * two hundred on the paper is the whole statement printed by mistake.
+   */
+  const [search, setSearch] = useState('');
+
+  const visibleRows = useMemo(() => {
+    const term = search.trim().toLowerCase().replace(/,/g, '');
+
+    if (!term) return rows;
+
+    return rows.filter((row: any) =>
+      [
+        row?.vr_no,
+        row?.order_number,
+        row?.truck_no,
+        formatTransportationNumber(row?.truck_no || ''),
+        row?.rate,
+        thousandSeparator(Number(row?.rate || 0)),
+      ].some((value) =>
+        String(value ?? '')
+          .toLowerCase()
+          .replace(/,/g, '')
+          .includes(term),
+      ),
+    );
+  }, [rows, search]);
+
+  /**
+   * What the first column counts.
+   *
+   * ⚠️ THE NUMBER IS THE SERVER'S, WHICH IS WHY A SEARCH LOOKS SHUFFLED. The
+   * server numbers the statement it built -- 1, 2, 3 ... -- so the five rows a
+   * search leaves behind arrive numbered 3, 17, 22, 41, 60. While a search is
+   * on they are counted again from one, and while it is off nothing is touched:
+   * the opening row carries no number of its own, so counting it would shift
+   * every row below it by one on a statement nobody asked to change.
+   */
+  const numberedRows = useMemo(
+    () =>
+      search.trim()
+        ? visibleRows.map((row, index) => ({ ...row, sl_number: index + 1 }))
+        : rows,
+    [rows, visibleRows, search],
+  );
+
+  /**
+   * The panel is written to the tab's own storage on every change, so that
+   * coming back from a voucher's edit screen finds the boxes as they were. The
+   * statement itself is not stored: it is already in the store, and a box that
+   * disagrees with the rows under it is the thing this avoids.
+   */
+  useEffect(() => {
+    if (skipFirstFilterSaveRef.current) {
+      skipFirstFilterSaveRef.current = false;
+      return;
+    }
+
+    if (typeof window === 'undefined') return;
+
+    const filters: SavedLedgerFilters = {
+      branchId,
+      startDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : null,
+      endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : null,
+      partyId,
+      partyLabel,
+      productId,
+      selectedProductOption,
+      transactionType,
+      search,
+    };
+
+    window.sessionStorage.setItem(
+      LEDGER_PRODUCT_FILTER_KEY,
+      JSON.stringify(filters),
+    );
+  }, [
+    branchId,
+    startDate,
+    endDate,
+    partyId,
+    partyLabel,
+    productId,
+    selectedProductOption,
+    transactionType,
+    search,
+  ]);
 
   const summary = useMemo(
     () => ({
@@ -253,6 +463,17 @@ const LedgerWithProduct = (user: any) => {
 
   const hasLoaded = !!statementState?.data;
   const hasTransactions = rows.length > 1;
+
+  /**
+   * The ledger box's own selection, rebuilt from the two things kept for it.
+   * It exists because the box is told what to show rather than holding the
+   * choice itself -- without it a party that came back from a saved filter
+   * would load the right statement under an empty box.
+   */
+  const ledgerOption = useMemo(
+    () => (partyId ? { value: partyId, label: partyLabel } : null),
+    [partyId, partyLabel],
+  );
 
   const branchName = useMemo(() => {
     const selected = dropdownData.find(
@@ -326,8 +547,91 @@ const LedgerWithProduct = (user: any) => {
     setProductId(null);
     setSelectedProductOption(null);
     setTransactionType('');
+    setSearch('');
     dispatch(clearCustomerSupplierStatement());
     setFilterOpen(false);
+  };
+
+  /**
+   * The row actions the plain Ledger offers, on the same vouchers.
+   *
+   * This statement lists one party's account -- the same rows the Ledger lists
+   * per account -- so a voucher that may be approved, un-approved or edited
+   * there may be here. Nothing new is invented for it: the approve endpoint,
+   * the remove-approval hook and the edit-navigation helpers are the ones the
+   * other five report screens already share.
+   *
+   * ⚠️ NEITHER OF THESE RE-RUNS THE REPORT. Both used to call handleRun(), and
+   * a report in flight takes the whole table off the screen (the loading gate
+   * below) -- so one icon changed and every other row vanished and came back.
+   * The flag is patched on its own row instead; the icons re-render from it,
+   * and the row the reader was looking at stays where it was.
+   */
+  const handleApproveClick = async (row: any) => {
+    const voucherId = getVoucherId(row);
+
+    if (!voucherId) {
+      toast.error('Approval id not found.');
+      return;
+    }
+
+    try {
+      setApprovingId(voucherId);
+      const response = await httpService.post(
+        `${API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL}/${voucherId}`,
+        {},
+      );
+      const result = response?.data;
+
+      if (result === '1' || result?.success) {
+        dispatch(setRowApproval({ voucherId, isApproved: true }));
+        toast.success('Voucher approved successfully.');
+        return;
+      }
+
+      if (result === '2') {
+        toast.error('Voucher not found.');
+        return;
+      }
+
+      toast.error(typeof result === 'string' ? result : 'Voucher approval failed.');
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || error?.message || 'Voucher approval failed.',
+      );
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleRemoveApprovalClick = async (row: any) => {
+    const voucherId = getVoucherId(row);
+
+    await removeVoucherApproval(row, {
+      onSuccess: () =>
+        dispatch(setRowApproval({ voucherId, isApproved: false })),
+    });
+  };
+
+  const handleEditVoucher = (row: any) => {
+    const voucherNo = getEditableVoucherNo(row);
+    /**
+     * ⚠️ The number cannot say which pair of screens -- its prefix is the
+     * voucher type, so money banked on the Bank Received screen is numbered
+     * 1-... exactly as a cash receipt is. This report does not mark the row
+     * yet, so the flag is false and the cash screens open, which is the same
+     * fallback the plain Ledger takes against a server that does not send it.
+     */
+    const openOnBankScreen = row?.is_bank_voucher === true;
+    const editTarget = getVoucherEditTarget(voucherNo, { bank: openOnBankScreen });
+    const editState = buildVoucherAutoEditState(voucherNo, { bank: openOnBankScreen });
+
+    if (!voucherNo || !editTarget || !editState) {
+      toast.error('Edit route not found for this voucher.');
+      return;
+    }
+
+    navigate(editTarget.route, { state: editState });
   };
 
   const selectedProduct = (option: any) => {
@@ -423,7 +727,7 @@ const LedgerWithProduct = (user: any) => {
     setLedgerDoc({
       template: { ...template, rowsPerPage: effectiveRowsPerPage, fontSize: effectiveFontSize },
       data: toLedgerDetailsDocumentData({
-        rows,
+        rows: numberedRows,
         summary,
         partyName: party?.name || partyLabel,
         ledgerPage: party?.ledger_page,
@@ -806,6 +1110,36 @@ const LedgerWithProduct = (user: any) => {
         <div>{thousandSeparator(row.running_balance ?? row.balance)}</div>
       ),
     },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => {
+        const voucherId = getVoucherId(row);
+        const isApproved = Number(row?.is_approved ?? 0) === 1;
+
+        return (
+          <VoucherActionButtons
+            row={row}
+            voucherId={voucherId}
+            isApproved={isApproved}
+            approvingId={approvingId}
+            removingApprovalId={removingApprovalId}
+            canShowApproveAction={canApproveCashbook && !!row?.vr_no && voucherId > 0}
+            canShowRemoveApprovalAction={
+              canRemoveApproval && !!row?.vr_no && voucherId > 0 && isApproved
+            }
+            canShowEditAction={canEditVoucher && !isApproved}
+            canEditVoucher={canEditVoucher}
+            confirmInline
+            onApprove={handleApproveClick}
+            onRemoveApproval={handleRemoveApprovalClick}
+            onEdit={handleEditVoucher}
+          />
+        );
+      },
+    },
   ];
 
   const footerRows = [
@@ -933,7 +1267,7 @@ const LedgerWithProduct = (user: any) => {
                     className={
                       useFilterMenuEnabled
                         ? 'space-y-3'
-                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-6'
+                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-7'
                       }
                     >
                     <div>
@@ -957,6 +1291,11 @@ const LedgerWithProduct = (user: any) => {
                       </label>
                       <DdlMultiline
                         key={ledgerSelectKey}
+                        // Held steady between renders: this dropdown resets
+                        // itself whenever the object it is given is a new one,
+                        // so a fresh literal here re-renders on every keystroke
+                        // in the search box beside it.
+                        value={ledgerOption}
                         onSelect={(option: any) => {
                           setPartyId(
                             option?.value ? Number(option.value) : null,
@@ -1027,6 +1366,22 @@ const LedgerWithProduct = (user: any) => {
  setSelectedDate={setEndDate}
  setCurrentDate={setEndDate}
  className="font-medium text-sm w-full "
+                      />
+                    </div>
+
+                    {/* Narrows the rows already on screen -- Vr No., Order No.,
+                        Vehicle No. or Rate. Typing does not re-run the report,
+                        so the table never blinks. */}
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Search
+                      </label>
+                      <SearchInput
+                        id="statement-search"
+                        search={search}
+                        setSearchValue={setSearch}
+                        placeholder="Vr / Order / Vehicle No. / Rate"
+                        className="w-full font-medium text-sm"
                       />
                     </div>
 
@@ -1214,11 +1569,13 @@ const LedgerWithProduct = (user: any) => {
           <div className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-white shadow-default dark:bg-[rgb(var(--c-boxdark))]">
             <Table
               columns={columns}
-              data={rows}
+              data={numberedRows}
               noDataMessage={
-                hasTransactions
-                  ? 'No statement rows found'
-                  : 'No transactions found'
+                search.trim()
+                  ? 'No results found'
+                  : hasTransactions
+                    ? 'No statement rows found'
+                    : 'No transactions found'
               }
               // tableClassName="min-w-full table-fixed text-sm text-slate-700 dark:text-slate-100"
               // theadClassName="bg-slate-100 text-xs uppercase text-slate-700 dark:bg-[rgb(var(--c-form-strokedark))] dark:text-slate-100"
@@ -1238,7 +1595,7 @@ const LedgerWithProduct = (user: any) => {
       <div className="hidden">
         <div ref={printRef}>
           <LedgerWithProductPrint
-            rows={rows}
+            rows={numberedRows}
             branchName={branchName}
             partyName={party?.name || partyLabel}
             ledgerPage={party?.ledger_page}

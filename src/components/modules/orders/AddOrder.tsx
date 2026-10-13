@@ -31,9 +31,10 @@ const normalizeSuggestionItems = (items: any) =>
             .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
         : [];
 
-const getOrderSuggestionValue = (row: any, field: 'order_number' | 'delivery_location' | 'notes') => {
+const getOrderSuggestionValue = (row: any, field: 'order_number' | 'delivery_location' | 'notes' | 'transaction_account') => {
     if (field === 'order_number') return row?.order_number || row?.label || '';
     if (field === 'delivery_location') return row?.delivery_location || row?.label_6 || '';
+    if (field === 'transaction_account') return row?.transaction_account || row?.label_10 || '';
     return row?.notes || row?.label_9 || '';
 };
 
@@ -83,11 +84,13 @@ const AddOrder = (user: any) => {
         order_number: [],
         delivery_location: [],
         notes: [],
+        transaction_account: [],
     });
     const [orderSuggestionRows, setOrderSuggestionRows] = useState<Record<string, any[]>>({
         order_number: [],
         delivery_location: [],
         notes: [],
+        transaction_account: [],
     });
 
     const toValidDate = (value: string | null | undefined) => {
@@ -109,6 +112,7 @@ const AddOrder = (user: any) => {
         order_number: string;
         ref_order_id: string;
         ref_order_text: string;
+        transaction_account: string;
         delivery_location: string | null;
         order_date: string | null;
         last_delivery_date: string | null;
@@ -131,6 +135,7 @@ const AddOrder = (user: any) => {
         order_number: '',
         ref_order_id: '',
         ref_order_text: '',
+        transaction_account: '',
         delivery_location: '',
         order_date: '',
         last_delivery_date: '',
@@ -192,6 +197,8 @@ const AddOrder = (user: any) => {
                 locationOrder?.ref_order_number ||
                 prev.ref_order_text ||
                 '',
+            transaction_account:
+                locationOrder?.transaction_account ?? prev.transaction_account,
             delivery_location: locationOrder?.delivery_location ?? prev.delivery_location,
             order_date: locationOrder?.order_date ?? prev.order_date,
             last_delivery_date: locationOrder?.last_delivery_date ?? prev.last_delivery_date,
@@ -326,6 +333,14 @@ const AddOrder = (user: any) => {
     }, [formData.branch_id, formData.notes]);
 
     useEffect(() => {
+        const timer = window.setTimeout(() => {
+            void loadOrderFieldSuggestions('transaction_account', formData.transaction_account);
+        }, 250);
+
+        return () => window.clearTimeout(timer);
+    }, [formData.branch_id, formData.transaction_account]);
+
+    useEffect(() => {
         const editData = ordersState?.editData;
         if (!isEditMode || !editData?.id) {
             return;
@@ -352,6 +367,7 @@ const AddOrder = (user: any) => {
                 editData?.reference_order?.order_number ??
                 editData?.ref_order_number ??
                 '',
+            transaction_account: editData?.transaction_account ?? '',
             delivery_location: editData?.delivery_location ?? '',
             order_date: editData?.order_date ?? '',
             last_delivery_date: editData?.last_delivery_date ?? '',
@@ -511,6 +527,7 @@ const AddOrder = (user: any) => {
             order_number: '',
             ref_order_id: '',
             ref_order_text: '',
+            transaction_account: '',
             delivery_location: '',
             order_date: '',
             last_delivery_date: '',
@@ -609,6 +626,7 @@ const AddOrder = (user: any) => {
             product_id: formData.product_id,
             order_number: formData.order_number,
             ref_order_id: formData.ref_order_id || null,
+            transaction_account: formData.transaction_account || null,
             delivery_location: formData.delivery_location,
             order_date: formData.order_date,
             last_delivery_date: formData.last_delivery_date,
@@ -681,12 +699,12 @@ const AddOrder = (user: any) => {
                     <div className='w-full'>
                         {branchDdlData.isLoading == true ? <Loader /> : ''}
                         <BranchDropdown
- id="branch_id"
- onChange={handleBranchChange}
- className="w-full font-medium text-sm px-2 "
- branchDdl={dropdownData}
- value={formData.branch_id}
- onKeyDown={(e) => {
+                            id="branch_id"
+                            onChange={handleBranchChange}
+                            className="w-full font-medium text-sm px-2 "
+                            branchDdl={dropdownData}
+                            value={formData.branch_id}
+                            onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     e.preventDefault();
                                     focusNextField('order_for');
@@ -698,9 +716,9 @@ const AddOrder = (user: any) => {
                 <div className='md:col-span-2'>
                     <label htmlFor="">Order For</label>
                     <DdlMultiline id="order_for" onSelect={selectedLedgerOptionHandler} acType={''} value={selectedOrderFor}
- className=''
+                        className=''
 
- onKeyDown={(e) => {
+                        onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 focusNextField('product_id');
                             }
@@ -726,16 +744,16 @@ const AddOrder = (user: any) => {
                 )}
                 <div className="md:col-span-2">
                     <InputElement id="order_number"
- value={formData.order_number}
- name="order_number"
- placeholder={'Enter Order Number'}
- label={'Enter Order Number'}
- className={''}
- list="order-number-suggestions"
- autoComplete="off"
- onChange={handleOrderChange}
+                        value={formData.order_number}
+                        name="order_number"
+                        placeholder={'Enter Order Number'}
+                        label={'Enter Order Number'}
+                        className={''}
+                        list="order-number-suggestions"
+                        autoComplete="off"
+                        onChange={handleOrderChange}
 
- onKeyDown={(e) => {
+                        onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 focusNextField('delivery_location');
                             }
@@ -750,17 +768,17 @@ const AddOrder = (user: any) => {
                 </datalist>
                 <div className="md:col-span-2">
                     <InputElement id="delivery_location"
- value={formData.delivery_location || ''}
+                        value={formData.delivery_location || ''}
 
- name="delivery_location"
- placeholder={'Delivery Location'}
- label={'Delivery Location'}
- className={''}
- list="order-delivery-location-suggestions"
- autoComplete="off"
- onChange={handleOrderChange}
+                        name="delivery_location"
+                        placeholder={'Delivery Location'}
+                        label={'Delivery Location'}
+                        className={''}
+                        list="order-delivery-location-suggestions"
+                        autoComplete="off"
+                        onChange={handleOrderChange}
 
- onKeyDown={(e) => {
+                        onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 focusNextField('order_date');
                             }
@@ -776,13 +794,13 @@ const AddOrder = (user: any) => {
                 <div className='w-full md:col-span-2'>
                     <label htmlFor="">Order Date</label>
                     <InputDatePicker
- id='order_date'
- name='order_date'
- setCurrentDate={handleOrderDate}
- className="w-full px-1.5 "
- selectedDate={orderDate}
- setSelectedDate={setOrderDate}
- onKeyDown={(e) => {
+                        id='order_date'
+                        name='order_date'
+                        setCurrentDate={handleOrderDate}
+                        className="w-full px-1.5 "
+                        selectedDate={orderDate}
+                        setSelectedDate={setOrderDate}
+                        onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -795,13 +813,13 @@ const AddOrder = (user: any) => {
                 <div className='w-full md:col-span-2'>
                     <label htmlFor="">Last Delivery Date</label>
                     <InputDatePicker
- id='last_delivery_date'
- name='last_delivery_date'
- setCurrentDate={handleLastDeliveryDate}
- className="w-full px-1.5 "
- selectedDate={lastDeliveryDate}
- setSelectedDate={setLastDeliveryDate}
- onKeyDown={(e) => {
+                        id='last_delivery_date'
+                        name='last_delivery_date'
+                        setCurrentDate={handleLastDeliveryDate}
+                        className="w-full px-1.5 "
+                        selectedDate={lastDeliveryDate}
+                        setSelectedDate={setLastDeliveryDate}
+                        onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -816,27 +834,28 @@ const AddOrder = (user: any) => {
                     // outer grid rather than sharing one.
                     <>
                         <InputElement id="total_order"
- value={formData.total_order || ""}
- name="total_order"
- placeholder={'Total Order Qty'}
- label={'Total Order Qty'}
- className={''}
- onChange={handleOrderChange}
- onKeyDown={(e) => {
+                            value={formData.total_order || ""}
+                            name="total_order"
+                            type="number"
+                            placeholder={'Total Order Qty'}
+                            label={'Total Order Qty'}
+                            className={''}
+                            onChange={handleOrderChange}
+                            onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     focusNextField('order_rate');
                                 }
                             }}
                         />
                         <InputElement id="order_rate"
- type="number"
- value={formData.order_rate || ''}
- name="order_rate"
- placeholder={'Order Rate'}
- label={'Order Rate'}
- className={''}
- onChange={handleOrderChange}
- onKeyDown={(e) => {
+                            type="number"
+                            value={formData.order_rate || ''}
+                            name="order_rate"
+                            placeholder={'Order Rate'}
+                            label={'Order Rate'}
+                            className={''}
+                            onChange={handleOrderChange}
+                            onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     focusNextField('contract_order_qty');
                                 }
@@ -847,14 +866,14 @@ const AddOrder = (user: any) => {
                 )}
                 {multiProductOrder ? null : (
                     <InputElement id="contract_order_qty"
- type="number"
- value={formData.contract_order_qty || ""}
- name="contract_order_qty"
- placeholder={'Contract Order Qty'}
- label={'Contract Order Qty'}
- className={''}
- onChange={handleOrderChange}
- onKeyDown={(e) => {
+                        type="number"
+                        value={formData.contract_order_qty || ""}
+                        name="contract_order_qty"
+                        placeholder={'Contract Order Qty'}
+                        label={'Contract Order Qty'}
+                        className={''}
+                        onChange={handleOrderChange}
+                        onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 focusNextField('order_type');
                             }
@@ -885,16 +904,49 @@ const AddOrder = (user: any) => {
                 </div>
                 <div className="md:col-span-2">
                     <InputElement
- id="notes"
- value={formData.notes || ''}
- name="notes"
- placeholder={'Note'}
- label={'Note'}
- className={''}
- list="order-note-suggestions"
- autoComplete="off"
- onChange={handleOrderChange}
- onKeyDown={(e) => {
+                        id="notes"
+                        value={formData.notes || ''}
+                        name="notes"
+                        placeholder={'Note'}
+                        label={'Note'}
+                        className={''}
+                        list="order-note-suggestions"
+                        autoComplete="off"
+                        onChange={handleOrderChange}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.currentTarget.blur();
+                                focusNextField('transaction_account');
+                            }
+                        }}
+                    />
+                </div>
+                <datalist id="order-note-suggestions">
+                    {orderFieldSuggestions.notes.map((item) => (
+                        <option key={item} value={item} />
+                    ))}
+                </datalist>
+                {/* Typed by hand, not picked off the chart: a note the clerk
+                    makes now, for whoever raises the voucher against this order
+                    later. Optional, so it may be left empty.
+
+                    The datalist suggests what other orders have already said,
+                    newest order first -- the API hands the rows over that way
+                    and normalizeSuggestionItems() keeps the first of each. */}
+                <div className="md:col-span-2">
+                    <InputElement
+                        id="transaction_account"
+                        value={formData.transaction_account || ''}
+                        name="transaction_account"
+                        placeholder={'Transaction Account'}
+                        label={'Transaction Account'}
+                        className={''}
+                        list="order-transaction-account-suggestions"
+                        autoComplete="off"
+                        onChange={handleOrderChange}
+                        onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -905,12 +957,12 @@ const AddOrder = (user: any) => {
                         }}
                     />
                 </div>
-                <datalist id="order-note-suggestions">
-                    {orderFieldSuggestions.notes.map((item) => (
+                <datalist id="order-transaction-account-suggestions">
+                    {orderFieldSuggestions.transaction_account.map((item) => (
                         <option key={item} value={item} />
                     ))}
                 </datalist>
-                <div className="md:col-span-2">
+                <div className="md:col-span-1">
                     <label htmlFor="">Reference Order</label>
                     <OrderDropdown
                         id="ref_order_id"
@@ -938,16 +990,16 @@ const AddOrder = (user: any) => {
                         }}
                     />
                 </div>
-                <div className="md:col-span-2">
+                <div className="md:col-span-1">
                     <DropdownCommon
- id="status"
- name={'status'}
- label="Order Status"
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData?.status?.toString() ?? ''}
- data={ORDER_STATUS}
- onKeyDown={(e) => {
+                        id="status"
+                        name={'status'}
+                        label="Order Status"
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.status?.toString() ?? ''}
+                        data={ORDER_STATUS}
+                        onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -989,11 +1041,11 @@ const AddOrder = (user: any) => {
                     icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
                 />
                 <ButtonLoading
-                  onClick={() => navigate('/order/order-list')}
-                  buttonLoading={false}
-                  label="Back"
-                  className="whitespace-nowrap text-center mr-0"
-                  icon={<FiHome className="text-lg ml-2 mr-2" />}
+                    onClick={() => navigate('/order/order-list')}
+                    buttonLoading={false}
+                    label="Back"
+                    className="whitespace-nowrap text-center mr-0"
+                    icon={<FiHome className="text-lg ml-2 mr-2" />}
                 />
             </div>
         </div>

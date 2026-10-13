@@ -18,7 +18,7 @@ const ReportComponent: React.FC = () => {
         variant="primary"
         className="px-4 py-2 rounded mb-4"
       >
-        ðŸ–¨ï¸ Print Report
+        🖨️ Print Report
       </Button>
       <div ref={componentRef}>
         <div className='flex justify-center mt-10'>NIBIR NIRMAN</div>
@@ -35,47 +35,47 @@ const ReportComponent: React.FC = () => {
             <tbody>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">à§³1500</td>
+                <td className="border px-4 py-2">1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">à§³1500</td>
+                <td className="border px-4 py-2">1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">à§³1500</td>
+                <td className="border px-4 py-2">1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">à§³1500</td>
+                <td className="border px-4 py-2">1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">à§³1500</td>
+                <td className="border px-4 py-2">1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">à§³1500</td>
+                <td className="border px-4 py-2">1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">à§³1500</td>
+                <td className="border px-4 py-2">1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">à§³1500</td>
+                <td className="border px-4 py-2">1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">Rakib</td>
-                <td className="border px-4 py-2">à§³1500</td>
+                <td className="border px-4 py-2">1500</td>
                 <td className="border px-4 py-2">2025-06-30</td>
               </tr>
             </tbody>

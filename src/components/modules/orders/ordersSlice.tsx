@@ -154,6 +154,7 @@ interface formData {
   product_id: string;
   order_number: string;
   ref_order_id?: string;
+  transaction_account?: string | null;
   delivery_location: string;
   order_date: number;
   last_delivery_date: string;

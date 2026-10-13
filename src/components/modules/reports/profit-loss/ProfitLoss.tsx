@@ -22,6 +22,8 @@ import { fetchClosingStockItems } from "./profitLossSlice";
 import ProfitLossPrint from "./ProfitLossPrint";
 import ItemDetailsPrint from "./ItemDetailsPrint";
 import ProfitLossReport from "./ProfitLossReport";
+import ReportNotes from "../../../utils/utils-functions/ReportNotes";
+import { buildProfitLossNotes } from "./profitLossNotes";
 import { API_REPORT_PROFIT_LOSS_EXPENSE_SUMMARY_URL } from "../../../services/apiRoutes";
 import httpService from "../../../services/httpService";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
@@ -38,6 +40,9 @@ type TradingRow = {
 
 type NetRow = {
   coal3_id?: number | string;
+  /** Present only on the head-level rows (`netprofit_heads`), not the group rows. */
+  coal4_id?: number | string;
+  coal4_name?: string;
   name?: string;
   debit?: number | string;
   credit?: number | string;
@@ -58,6 +63,16 @@ type SelectedExpenseDetail = {
   debit: number;
   credit: number;
   netEffect: number;
+  /**
+   * Which half of the net account the head was clicked on.
+   *
+   * ⚠️ THE SAME ENDPOINT ANSWERS FOR BOTH. The server's summary takes a
+   * level-3 id and lists the heads under it with debit, credit and their
+   * difference -- nothing in it is expense-shaped, only its name. Income rows
+   * open this same modal, so the side travels with the click and decides no
+   * more than which way the difference is read and what the headings say.
+   */
+  side: "expense" | "income";
 };
 
 const toNum = (v: any) => {
@@ -65,12 +80,9 @@ const toNum = (v: any) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-const sumByIds = (rows: TradingRow[], coal3_id: number, coal4_id: number) => {
+const sumByIds = (rows: TradingRow[], coal4_id: number) => {
   return rows
-    .filter(
-      (r) =>
-        Number(r.coal3_id) === coal3_id && Number(r.coal4_id) === coal4_id
-    )
+    .filter((r) => Number(r.coal4_id) === coal4_id)
     .reduce(
       (acc, r) => {
         acc.debit += toNum(r.debit);
@@ -79,6 +91,44 @@ const sumByIds = (rows: TradingRow[], coal3_id: number, coal4_id: number) => {
       },
       { debit: 0, credit: 0 }
     );
+};
+
+/**
+ * A trading head's balance, read net.
+ *
+ * ⚠️ NOT ON ONE SIDE. Summing only the head's natural side -- Sales Discount
+ * debits, Purchase Discount credits -- drops every reversal, and a reversal is
+ * ordinary: a sales return credits 23 with the discount the customer forfeits,
+ * a purchase return debits 40 with the one the firm loses. `natural` is which
+ * side GROWS the head, read from the chart (23 is Income > Direct Income and
+ * debit-nature; 40 is Income > Indirect Income and credit-nature).
+ *
+ * ⚠️ THIS MIRRORS `ReportsController::extractNetProfitLossAmount()` and the two
+ * have to agree. The server's copy feeds the Balance Sheet's equity line; if
+ * only one side is netted the sheet reports the gap as Difference.
+ *
+ * A book that never reverses a head gets exactly what the one-sided sum gave.
+ *
+ * ⚠️ THE HEAD IS FOUND BY ITS ID ALONE, NOT BY ITS ID INSIDE A GROUP. This
+ * used to ask for group 7 AND head 19 for a sales return, and that reads the
+ * chart's filing as part of the head's identity. Where the two disagree the
+ * figure goes to nil without a word: on krishibitandatabase head 19 (Sales
+ * Return, 1,26,967.53) is filed under group 9, Purchase -- so this screen
+ * showed Net Sales 28,21,697.54 and a 3,34,371.54 profit while the Balance
+ * Sheet, which reads the same heads by id, showed 2,07,404.01. The
+ * difference was the return, and the guard on its row hid the empty line that
+ * would have said so.
+ *
+ * The server has always matched on the head alone. This now does too.
+ */
+const sumNatural = (
+  rows: TradingRow[],
+  coal4_id: number,
+  natural: "debit" | "credit"
+) => {
+  const { debit, credit } = sumByIds(rows, coal4_id);
+
+  return natural === "debit" ? debit - credit : credit - debit;
 };
 
 const ProfitLoss = (user: any) => {
@@ -158,8 +208,8 @@ const ProfitLoss = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
-    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
+    if (!branchId) return alert("Branch select করুন");
+    if (!startDate || !endDate) return alert("Start/End Date দিন");
 
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
@@ -208,20 +258,24 @@ const ProfitLoss = (user: any) => {
     const trading: TradingRow[] = apiData?.trading || [];
     const netprofit: NetRow[] = apiData?.netprofit || [];
 
-    // Opening Stock: coal3_id=29 coal4_id=18 => debit
-    const opening = sumByIds(trading, 29, 18).debit;
+    // Each head is read net -- see sumNatural. The names keep saying which head
+    // they are, not which side they sit on, because a net value can carry
+    // either sign.
+    //
+    // Opening Stock: coal4_id=18
+    const opening = sumNatural(trading, 18, "debit");
 
-    // Closing Stock: coal3_id=29 coal4_id=21 => credit
-    const closing = sumByIds(trading, 29, 21).credit;
+    // Closing Stock: coal4_id=21
+    const closing = sumNatural(trading, 21, "credit");
 
-    // Purchase: coal3_id=9 coal4_id=35 => debit
-    const purchaseDebit = sumByIds(trading, 9, 35).debit;
+    // Purchase: coal4_id=35
+    const purchaseDebit = sumNatural(trading, 35, "debit");
 
-    // Purchase Return: coal3_id=9 coal4_id=16 => credit
-    const purchaseReturnCredit = sumByIds(trading, 9, 16).credit;
+    // Purchase Return: coal4_id=16
+    const purchaseReturnCredit = sumNatural(trading, 16, "credit");
 
-    // Purchase Discount: coal3_id=8 coal4_id=40 => credit
-    const purchaseDiscountCredit = sumByIds(trading, 8, 40).credit;
+    // Purchase Discount: coal4_id=40
+    const purchaseDiscountCredit = sumNatural(trading, 40, "credit");
 
     // Net Purchase = Purchase - Purchase Return - Purchase Discount
     const netPurchase = Math.max(
@@ -229,14 +283,14 @@ const ProfitLoss = (user: any) => {
       purchaseDebit - purchaseReturnCredit - purchaseDiscountCredit
     );
 
-    // Sales: coal3_id=7 coal4_id=15 => credit
-    const salesCredit = sumByIds(trading, 7, 15).credit;
+    // Sales: coal4_id=15
+    const salesCredit = sumNatural(trading, 15, "credit");
 
-    // Sales Discount: coal3_id=7 coal4_id=23 => debit
-    const salesDiscountDebit = sumByIds(trading, 7, 23).debit;
+    // Sales Discount: coal4_id=23
+    const salesDiscountDebit = sumNatural(trading, 23, "debit");
 
-    // Sales Return: coal3_id=7 coal4_id=19 => debit
-    const salesReturnDebit = sumByIds(trading, 7, 19).debit;
+    // Sales Return: coal4_id=19
+    const salesReturnDebit = sumNatural(trading, 19, "debit");
 
     // Net Sales = Sales - Sales Discount - Sales Return
     const netSalesCredit = Math.max(
@@ -270,6 +324,64 @@ const ProfitLoss = (user: any) => {
 
     const totalIncome = incomeRows.reduce((s, r) => s + toNum(r.credit), 0);
 
+    /**
+     * The accounts inside each income group.
+     *
+     * ⚠️ THE GROUP ROW IS ONE LINE, AND THE INCOME OF A YEAR CAN HIDE IN IT.
+     * Every income head but the sales figures on krishibitandatabase is filed
+     * under a single level-3 called "Direct Income", so the account showed
+     * 2,60,000 with no way to see that a commission and an interest made it
+     * up. The API sends the same rows one level down; they are matched back by
+     * group id, and because the server builds both from one scope a group's
+     * children add back to the group's own line.
+     */
+    const headRows: NetRow[] = apiData?.netprofit_heads || [];
+
+    /**
+     * ⚠️ THE HEAD ROWS ARRIVE AS `coal4_name`, NOT `name`, and both readers of
+     * this list -- the indented rows on the screen and the income note -- ask
+     * for `name`. Renamed here, once, so neither has to know which of the two
+     * spellings the server chose; left as it was, the account name came out
+     * blank on the page and literally "undefined" in the note.
+     *
+     * ⚠️ AND ONE CHART NAME IS MISSPELT. The head is "Company Comission
+     * (Income)" in the chart. The chart is the client's own data and is not
+     * touched -- only the spelling the report prints, corrected here, once,
+     * for the screen, the printed sheet and the note alike.
+     */
+    const incomesWithChildren = incomeRows.map((r) => ({
+      ...r,
+      children: headRows
+        .filter((h) => toNum(h.coal3_id) === toNum(r.coal3_id))
+        .map((h) => ({
+          ...h,
+          name: (h.coal4_name ?? h.name)?.replace(/Comission/g, "Commission"),
+        })),
+    }));
+
+    /**
+     * Cost of goods sold: what the period began holding, plus what it bought,
+     * less what it still holds.
+     *
+     * ⚠️ A READING OF FIGURES ALREADY ON THE STATEMENT, NOT A NEW ONE. The
+     * trading account's debit side IS opening stock plus net purchase, so this
+     * block is not added to any total -- it explains the gross profit beside
+     * it. Written out because the account shows the two stock figures and the
+     * purchase at opposite ends of the page and never states their
+     * consequence.
+     *
+     * Acquisition costs carried into stock are nil because nothing carries
+     * them: heads 197 Purchase Transportation and 199 Unloading book as period
+     * expense, the vouchers that used them move no stock, and the layer that
+     * prices the closing stock holds a purchase price with no room for
+     * freight. A cost directly attributable to bringing goods in may belong in
+     * inventory cost instead -- that is a question of what the cost was for,
+     * and moving it would mean taking it out of the expense it sits in rather
+     * than counting it twice. No such reclassification is made here. See note 3.
+     */
+    const directAcquisitionCosts = 0;
+    const cogs = opening + netPurchase + directAcquisitionCosts - closing;
+
     const debitPLBase = grossLoss + totalExpense;
     const creditPLBase = grossProfit + totalIncome;
 
@@ -302,16 +414,32 @@ const ProfitLoss = (user: any) => {
         totalDebit: tradingTotalDebit,
         totalCredit: tradingTotalCredit,
       },
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+      cogs: {
+        opening,
+        netPurchase,
+        directAcquisitionCosts,
+        closing,
+        total: cogs,
+      },
+=======
+>>>>>>> main
       // ⚠️ CARRIED THROUGH, NEVER ADDED TO ANY TOTAL. The money is already gone
       // -- the closing stock above is short by this much and the profit has
       // taken it off once. It is shown because a shop that cannot see the
       // number asks why the month was thin.
       productOut: toNum(apiData?.product_out),
+<<<<<<< HEAD
+=======
+>>>>>>> vite-8
+>>>>>>> main
       net: {
         grossProfit,
         grossLoss,
         expenses: expenseRows,
-        incomes: incomeRows,
+        incomes: incomesWithChildren,
         totalExpense,
         totalIncome,
         netProfit,
@@ -322,9 +450,20 @@ const ProfitLoss = (user: any) => {
     };
   }, [apiData]);
 
+  // Built from the report the statement is drawn from, so a note can never
+  // name a figure the page does not show. See profitLossNotes.
+  const profitLossNotes = useMemo(
+    () =>
+      buildProfitLossNotes(report, {
+        startDate: startDate ? dayjs(startDate).format("DD/MM/YYYY") : undefined,
+        endDate: endDate ? dayjs(endDate).format("DD/MM/YYYY") : undefined,
+      }),
+    [report, startDate, endDate]
+  );
+
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: "Profit Loss",
+    documentTitle: "Profit & Loss Account",
   });
 
   // Print handler for closing stock item details.
@@ -335,8 +474,8 @@ const ProfitLoss = (user: any) => {
 
   // Load closing stock item details before printing.
   const handleItemPrintButtonClick = async () => {
-    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
-    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
+    if (!branchId) return alert("Branch select করুন");
+    if (!startDate || !endDate) return alert("Start/End Date দিন");
 
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
@@ -377,27 +516,40 @@ const ProfitLoss = (user: any) => {
     setFilterOpen(false);
   };
 
-  const handleExpenseRowClick = async (row: NetRow) => {
+  const handleExpenseRowClick = async (
+    row: NetRow,
+    side: "expense" | "income" = "expense"
+  ) => {
     const coal3Id = Number(row.coal3_id);
+
+    // Expenses grow on the debit side, income on the credit one, so the
+    // "net" figure is the same subtraction read from the other end.
+    const netEffect =
+      side === "income"
+        ? toNum(row.credit) - toNum(row.debit)
+        : toNum(row.debit) - toNum(row.credit);
 
     setSelectedExpenseDetail({
       coal3Id: Number.isFinite(coal3Id) ? coal3Id : null,
-      name: row.name || "Expense Details",
+      name: row.name || "Head Details",
       debit: toNum(row.debit),
       credit: toNum(row.credit),
-      netEffect: toNum(row.debit) - toNum(row.credit),
+      netEffect,
+      side,
     });
 
     setExpenseSummaryRows([]);
     setExpenseSummaryError(null);
 
     if (!Number.isFinite(coal3Id) || coal3Id <= 0) {
-      setExpenseSummaryError("COA Level 3 id not found for this expense.");
+      setExpenseSummaryError("COA Level 3 id not found for this head.");
       return;
     }
 
     if (!branchId || !startDate || !endDate) {
-      setExpenseSummaryError("Branch and date range are required to load expense summary.");
+      setExpenseSummaryError(
+        "Branch and date range are required to load the summary."
+      );
       return;
     }
 
@@ -435,13 +587,13 @@ const ProfitLoss = (user: any) => {
       setExpenseSummaryRows(detailRows);
 
       if (detailRows.length === 0) {
-        setExpenseSummaryError("No expense summary found for this COA Level 3 in the selected period.");
+        setExpenseSummaryError("No summary found for this COA Level 3 in the selected period.");
       }
     } catch (error: any) {
       setExpenseSummaryError(
         error?.response?.data?.message ||
           error?.message ||
-          "Expense summary load failed"
+          "Summary load failed"
       );
     } finally {
       setExpenseSummaryLoading(false);
@@ -450,7 +602,7 @@ const ProfitLoss = (user: any) => {
 
   return (
     <div>
-      <HelmetTitle title={"Profit Loss"} />
+      <HelmetTitle title={"Profit & Loss Account"} />
 
       <div className="pl-0 pr-1 py-3 ">
         <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-wrap items-end"}`}>
@@ -649,12 +801,21 @@ const ProfitLoss = (user: any) => {
       </div>
       {/* ===== Report ===== */}
       {hasReportData ? (
-        <ProfitLossReport
-          loading={profitLossState?.loading}
-          report={report}
-          loader={<Loader />}
-          onNetExpenseClick={handleExpenseRowClick}
-        />
+        <>
+          <ProfitLossReport
+            loading={profitLossState?.loading}
+            report={report}
+            loader={<Loader />}
+            onNetExpenseClick={handleExpenseRowClick}
+          />
+
+          {/* The notes sit under the account, on screen and on paper, and the
+              account's own rows point at their numbers. */}
+          <ReportNotes
+            title="Notes to the Profit & Loss Account"
+            notes={profitLossNotes}
+          />
+        </>
       ) : (
         <div className="rounded border border-dashed border-[rgb(var(--c-border))] bg-white p-6 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-300">
           {profitLossState?.loading
@@ -668,7 +829,7 @@ const ProfitLoss = (user: any) => {
         <ProfitLossPrint
           ref={printRef}
           report={report}
-          title="Profit Loss"
+          title="Profit & Loss Account"
           startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
           endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
           rowsPerPage={Number(perPage)}
@@ -724,9 +885,17 @@ const ExpenseDetailsModal = ({
 }) => {
   if (!open || !detail) return null;
 
+  const isIncome = detail.side === "income";
+  const netLabel = isIncome ? "Net Income" : "Net Expense";
+  // The server's `net_expense` is debit less credit for every head it lists,
+  // expenses and income alike. Income grows on the credit side, so its
+  // difference is read the other way round.
+  const netOf = (row: ExpenseSummaryRow) =>
+    isIncome ? row.movementCredit - row.movementDebit : row.netExpense;
+
   const totalMovementDebit = rows.reduce((sum, row) => sum + row.movementDebit, 0);
   const totalMovementCredit = rows.reduce((sum, row) => sum + row.movementCredit, 0);
-  const totalNetExpense = rows.reduce((sum, row) => sum + row.netExpense, 0);
+  const totalNet = rows.reduce((sum, row) => sum + netOf(row), 0);
 
   return (
     <div
@@ -746,7 +915,9 @@ const ExpenseDetailsModal = ({
                 {detail.name}
               </h3>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
-                NET PROFIT OR LOSS A/C expense summary
+                {isIncome
+                  ? "NET PROFIT OR LOSS A/C income summary"
+                  : "NET PROFIT OR LOSS A/C expense summary"}
               </p>
             </div>
 
@@ -763,7 +934,7 @@ const ExpenseDetailsModal = ({
             <div className="grid gap-3 sm:grid-cols-3">
             <ModalStat label="Debit" value={detail.debit} />
             <ModalStat label="Credit" value={detail.credit} />
-            <ModalStat label="Net Expense" value={detail.netEffect} />
+            <ModalStat label={netLabel} value={detail.netEffect} />
           </div>
           </div>
 
@@ -774,7 +945,7 @@ const ExpenseDetailsModal = ({
                   <th className="px-3 py-3 text-left font-semibold">Particular</th>
                   <th className="px-3 py-3 text-right font-semibold">Debit</th>
                   <th className="px-3 py-3 text-right font-semibold">Credit</th>
-                  <th className="px-3 py-3 text-right font-semibold">Net Expense</th>
+                  <th className="px-3 py-3 text-right font-semibold">{netLabel}</th>
                 </tr>
               </thead>
               <tbody>
@@ -811,7 +982,7 @@ const ExpenseDetailsModal = ({
                           {row.movementCredit ? thousandSeparator(row.movementCredit) : "-"}
                         </td>
                         <td className="px-3 py-3 text-right font-semibold">
-                          {thousandSeparator(row.netExpense)}
+                          {thousandSeparator(netOf(row))}
                         </td>
                       </tr>
                     ))}
@@ -824,7 +995,7 @@ const ExpenseDetailsModal = ({
                         {thousandSeparator(totalMovementCredit)}
                       </td>
                       <td className="px-3 py-3 text-right">
-                        {thousandSeparator(totalNetExpense)}
+                        {thousandSeparator(totalNet)}
                       </td>
                     </tr>
                   </>
@@ -834,7 +1005,7 @@ const ExpenseDetailsModal = ({
                       colSpan={4}
                       className="px-3 py-6 text-center text-slate-500 dark:text-slate-300"
                     >
-                      No expense summary found.
+                      No summary found.
                     </td>
                   </tr>
                 )}

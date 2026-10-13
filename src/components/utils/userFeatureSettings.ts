@@ -33,6 +33,40 @@ export const isBranchSettingOn = (settings: any, key: string): boolean =>
   settingOn(settings?.data?.branch?.[key]);
 
 /**
+ * What this branch calls one of its own figures, as typed on Branch Setup.
+ *
+ * ⚠️ THE FALLBACK LIVES AT THE CALL SITE. The server stores only what the branch
+ * typed, so a blank setting means the standard name -- and clearing one in the
+ * branch form gets you back to it.
+ */
+export const branchLabel = (
+  settings: any,
+  key: string,
+  fallback: string,
+): string => settings?.data?.branch?.[key] || fallback;
+
+/**
+ * A saved figure read as a number, with the caller's own fallback.
+ *
+ * `metas` stores everything as text and the branch form keeps a cleared box as
+ * an empty string, so blank, unset and unparseable all have to read as "nothing
+ * chosen" and hand back the default. A saved 0 falls back too: for a count of
+ * days, nought days and no answer are the same request, and the form's own
+ * default is the only sane reading of both.
+ *
+ * Same shape as branchLabel above, and for the same reason the fallback lives
+ * at the call site -- the server stores only what the branch typed.
+ */
+export const branchNumber = (
+  settings: any,
+  key: string,
+  fallback: number,
+): number => {
+  const value = Number(settings?.data?.branch?.[key]);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+};
+
+/**
  * The books are locked up to the last closed year end -- spec §42.
  *
  * The server answers `books_locked_until` beside the current branch (the last

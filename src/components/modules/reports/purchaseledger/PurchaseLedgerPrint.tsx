@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import PurchaseLedgerCalculator from "../../../utils/calculators/PurchaseLedgerCalculator";
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
+import { ledgerProductLabel } from "../utils/ledgerProductLabel";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from "../../../utils/utils-functions/PrintFooter";
@@ -47,6 +48,11 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
   ) => {
     const settings = useSelector((state: any) => state.settings);
     const stockReportType = settings?.data?.branch?.stock_report_type;
+    // Branch > Invoice Setup > "Show Product Information in Ledger Details".
+    // Unset prints them, as the paper always has; only an explicit '0' hides
+    // the product lines. The account, the note and the numeric columns stay.
+    const showProductDetails =
+      String(settings?.data?.branch?.ledger_show_product_details ?? '1') !== '0';
     const rowsArr: any[] = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(rowsArr, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 9;
@@ -179,6 +185,13 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
 
                         const coaName = getRelevantCoaName(row);
                         const details = row?.purchase_master?.details || [];
+                        // The invoice's own total, for the one summary line the
+                        // Total column reads when product information is off.
+                        const invoiceTotal = details.reduce(
+                          (s: number, d: any) =>
+                            s + (Number(d?.purchase_price) || 0) * (Number(d?.quantity) || 0),
+                          0,
+                        );
 
                         return (
                           <tr
@@ -217,20 +230,19 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                   </div>
                                 ) : null}
                                 
-                                {Array.isArray(details) && details.length > 0 &&
+                                {showProductDetails &&
+                                  Array.isArray(details) && details.length > 0 &&
                                   details.map((detail: any, i: number) => {
-                                    const categoryName = detail?.product?.category?.name ?? "";
-                                    const productName = detail?.product?.name ?? "";
+                                    const label = ledgerProductLabel(detail, String(stockReportType) === "1");
 
                                     return (
                                       
                                         <div
                                           key={detail?.id ?? i}
                                           className="leading-normal whitespace-nowrap"
-                                          style={{ fontSize: getProductFs(`${categoryName} ${productName}`.trim(), fs) }}
+                                          style={{ fontSize: getProductFs(label, fs) }}
                                         >
-                                          {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
-                                          {productName}
+                                          {label}
                                         </div>
                                      
                                     );
@@ -247,11 +259,9 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details.length
+                              {showProductDetails && details.length
                                 ? details.map((detail: any, i: number) => {
-                                  const categoryName = detail?.product?.category?.name ?? "";
-                                  const productName = detail?.product?.name ?? "";
-                                  const label = `${categoryName} ${productName}`.trim();
+                                  const label = ledgerProductLabel(detail, String(stockReportType) === "1");
 
                                   return (
                                     <div
@@ -269,11 +279,9 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details.length
+                              {showProductDetails && details.length
                                 ? details.map((detail: any, i: number) => {
-                                  const categoryName = detail?.product?.category?.name ?? "";
-                                  const productName = detail?.product?.name ?? "";
-                                  const label = `${categoryName} ${productName}`.trim();
+                                  const label = ledgerProductLabel(detail, String(stockReportType) === "1");
 
                                   return (
                                     <div
@@ -293,11 +301,9 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {details.length
+                              {showProductDetails && details.length
                                 ? details.map((detail: any, i: number) => {
-                                  const categoryName = detail?.product?.category?.name ?? "";
-                                  const productName = detail?.product?.name ?? "";
-                                  const label = `${categoryName} ${productName}`.trim();
+                                  const label = ledgerProductLabel(detail, String(stockReportType) === "1");
 
                                   return (
                                     <div
@@ -310,7 +316,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                     </div>
                                   );
                                 })
-                                : "-"}
+                                : (invoiceTotal ? thousandSeparator(invoiceTotal) : "-")}
                             </td>
 
                             <td

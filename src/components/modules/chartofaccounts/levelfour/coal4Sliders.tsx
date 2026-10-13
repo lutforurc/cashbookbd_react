@@ -15,6 +15,10 @@ interface coal4Param {
   page: number;
   perPage: number;
   search: string;
+  /** The level-1 head the list is narrowed to, or empty for the whole chart. */
+  coal1Id?: string | number | null;
+  /** The level-2 head under that level 1, or empty for all of its level 2s. */
+  coal2Id?: string | number | null;
 }
 
 const initialState = {
@@ -29,10 +33,30 @@ interface coal4Param {
 }
 
 
-export const getCoal4 = ({ page, perPage, search = '' }: coal4Param) => (dispatch: any) => {
+/**
+ * ⚠️ Which request is the current one.
+ *
+ * The screen fires a fresh call the moment either dropdown changes, and a
+ * slower earlier call can land after a faster later one. Without this the older
+ * answer -- for a selection the reader has already moved off -- would overwrite
+ * the newer rows, and the table would show one head's accounts under another
+ * head's label. Every dispatch is tagged, and only the latest tag is let
+ * through.
+ */
+let latestRequestId = 0;
+
+export const getCoal4 = ({ page, perPage, search = '', coal1Id = '', coal2Id = '' }: coal4Param) => (dispatch: any) => {
+  const requestId = ++latestRequestId;
+
   dispatch({ type: COAL4_LIST_PENDING });
-  return httpService.get(API_CHART_OF_ACCOUNTS_L4_URL + `?page=${page}&per_page=${perPage}&search=${search}`)
+  // Both filters ride on the list call rather than a call of their own: the
+  // server narrows the query with them and paginates the narrowed set, so the
+  // page count and the rows always describe the same selection.
+  return httpService.get(API_CHART_OF_ACCOUNTS_L4_URL + `?page=${page}&per_page=${perPage}&search=${search}&coal1_id=${coal1Id ?? ''}&coal2_id=${coal2Id ?? ''}`)
     .then((res) => {
+      // A newer request has already been sent; its answer is the one to keep.
+      if (requestId !== latestRequestId) return;
+
       let _data = res.data;
       if (_data.success) {
         dispatch({
@@ -47,6 +71,7 @@ export const getCoal4 = ({ page, perPage, search = '' }: coal4Param) => (dispatc
       }
     })
     .catch((err) => {
+      if (requestId !== latestRequestId) return;
       dispatch({
         type: COAL4_LIST_ERROR,
         payload: 'Something went wrong',

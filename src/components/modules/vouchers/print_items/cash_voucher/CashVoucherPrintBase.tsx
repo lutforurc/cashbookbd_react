@@ -108,6 +108,19 @@ const getCashVoucherData = (data: any, mode: CashVoucherMode) => {
     // under "Approved By" while "Prepared by" carried its time to the second.
     // The server sends this only while the voucher is still approved.
     approvedAt: data?.approved_date ?? '',
+    // Tiles and Sanitary only -- the server sends these off a tiles branch's
+    // receipt and nothing else, so every other trade's paper is unchanged.
+    // The shop's own bill number, which the system's vr_no does not replace.
+    manualVoucherNo: String(data?.manual_voucher_no ?? '').trim(),
+    // ⚠️ The client cannot work this out for itself: coa_l4 hides
+    // acc_coa_level3_id, and voucher_type_id is 1 for a cash receipt and a
+    // bank receipt alike -- both carry the 1- prefix. The server looks at the
+    // head the money landed on and says so (ElectronicsSalesController). Only
+    // the label changes; the number prints either way.
+    isBankVoucher: data?.is_bank_voucher === true,
+    // The money written off at collection. It sits in its own journal voucher,
+    // so the amount above is the cash that actually came in.
+    discount: Number(data?.discount) || 0,
   };
 };
 
@@ -201,7 +214,21 @@ const CashVoucherPrintBase = React.forwardRef<HTMLDivElement, Props>(
           </h1>
 
           <div className={`flex justify-between mb-3 ${config.textClass}`}>
-            <div><b>Voucher No:</b> {data?.vr_no}</div>
+            <div>
+              <b>Voucher No:</b> {data?.vr_no}
+              {/* The shop's own number, beside the system's -- never in place of
+                  it. Tiles and Sanitary only. On a bank receipt it is the
+                  bank's instrument number, and the paper says so. */}
+              {printData.manualVoucherNo && (
+                <>
+                  &nbsp;&nbsp;
+                  <b>
+                    {printData.isBankVoucher ? 'Cheque / Instrument No:' : 'Manual Voucher No:'}
+                  </b>{' '}
+                  {printData.manualVoucherNo}
+                </>
+              )}
+            </div>
             <div><b>Date:</b> {dayjs(data?.vr_date).format('DD/MM/YYYY')}</div>
           </div>
 
@@ -242,14 +269,48 @@ const CashVoucherPrintBase = React.forwardRef<HTMLDivElement, Props>(
                   <div className="mr-2">{thousandSeparator(printData.amount)}</div>
                 </td>
               </tr>
-              <tr>
-                <td className="border border-black px-2 py-1 text-right font-semibold">
-                  <div className="mr-2">Total Amount{variant.startsWith('half') ? '' : ' (Taka)'}</div>
-                </td>
-                <td className="border border-black px-2 py-1 text-right font-semibold">
-                  <div className="mr-2">{thousandSeparator(printData.amount)}</div>
-                </td>
-              </tr>
+              {printData.discount > 0 ? (
+                <>
+                  {/* A discount was written off, so the paper says so: what was
+                      owing, what came off, and what was actually handed over.
+                      The amount in the row above is the cash, not the bill. */}
+                  <tr>
+                    <td className="border border-black px-2 py-1 text-right font-semibold">
+                      <div className="mr-2">Total Amount{variant.startsWith('half') ? '' : ' (Taka)'}</div>
+                    </td>
+                    <td className="border border-black px-2 py-1 text-right font-semibold">
+                      <div className="mr-2">
+                        {thousandSeparator(printData.amount + printData.discount)}
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black px-2 py-1 text-right font-semibold">
+                      <div className="mr-2">Less: Discount</div>
+                    </td>
+                    <td className="border border-black px-2 py-1 text-right font-semibold">
+                      <div className="mr-2">{thousandSeparator(printData.discount)}</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black px-2 py-1 text-right font-semibold">
+                      <div className="mr-2">Net Received{variant.startsWith('half') ? '' : ' (Taka)'}</div>
+                    </td>
+                    <td className="border border-black px-2 py-1 text-right font-semibold">
+                      <div className="mr-2">{thousandSeparator(printData.amount)}</div>
+                    </td>
+                  </tr>
+                </>
+              ) : (
+                <tr>
+                  <td className="border border-black px-2 py-1 text-right font-semibold">
+                    <div className="mr-2">Total Amount{variant.startsWith('half') ? '' : ' (Taka)'}</div>
+                  </td>
+                  <td className="border border-black px-2 py-1 text-right font-semibold">
+                    <div className="mr-2">{thousandSeparator(printData.amount)}</div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
 

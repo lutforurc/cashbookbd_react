@@ -20,6 +20,10 @@ const ROUTES = {
   business_types: '/admin/business-types',
   inventory_systems: '/admin/inventory-systems',
   tutorial_videos: '/admin/tutorial-videos',
+  // Master website templates -- the platform's catalogue of company-website
+  // templates. Platform admins only (enforced by platform.admin on the API).
+  website_templates: '/admin/website-templates',
+  website_template_editor: '/admin/website-templates/:id',
   highlight_rules: '/admin/highlight-rules',
   reseller_dashboard: '/reseller/dashboard',
 
@@ -44,6 +48,7 @@ const ROUTES = {
   dashboard_two: '/dashboard-two',
   calendar: '/calendar',
   profile: '/profile',
+  switch_branch: '/switch-branch',
   menu_arrangement: '/settings/menu-arrangement',
   // One route per paper the designer edits. Two entries rather than one
   // generic screen, because somebody looking for the order's layout looks for
@@ -146,7 +151,9 @@ const ROUTES = {
   report_ledger: '/reports/ledger',
   report_cashbook: '/reports/cashbook',
   report_cashbook_two_column: '/reports/cash-book-two-column',
+  report_daily_account_book: '/reports/daily-account-book',
   report_voucher_register: '/reports/voucher-register',
+  report_referrer: '/reports/sales-referrer',
   report_bankbook: '/reports/bankbook',
   cash_bank_received_payment: '/reports/cash-bank-received-payment',
   profit_loss: '/reports/profit-loss',
@@ -178,6 +185,9 @@ const ROUTES = {
   cat_wise_in_out: '/reports/cat-wise/in-out',
   purchase_ledger: '/reports/purchase-ledger',
   sales_ledger: '/reports/sales-ledger',
+  purchase_return_ledger: '/reports/purchase-return-ledger',
+  sales_return_ledger: '/reports/sales-return-ledger',
+  report_customer_sales: '/reports/customer-sales',
   mitch_match: '/reports/mitch-match',
   hrm_mismatch_payment: '/reports/hrm-mismatch-payment',
   report_labour_ledger: '/reports/labour/ledger',
@@ -197,6 +207,7 @@ const ROUTES = {
   product_warehouse_difference: '/product/warehouse-difference',
   product_create: '/product/add-product',
   product_edit: '/product/edit/:id',
+  product_opening_import: '/product/opening-import',
   product_store: '/product/store',
 
 
@@ -225,6 +236,11 @@ const ROUTES = {
   // over its own tables -- the two archives share nothing.
   legacy_old_record: '/legacy/old-records',
 
+  // The old shop's own cash and bank accounts, out of `?p=ViewAccount`. Kept
+  // as a backup and nothing more: these 48 never become a party and never
+  // carry an opening balance.
+  legacy_accounts: '/legacy/accounts',
+
   // Day Close
   day_close: '/admin/dayclose',
   day_jump: '/admin/jumpdate',
@@ -250,6 +266,13 @@ const ROUTES = {
   inv_sales: '/invoice/sales',
   inv_sales_import: '/invoice/sales-import',
   inv_sales_return: '/invoice/sales-return',
+  // Stock out on dispatch (Tiles and Sanitary).
+  inv_delivery: '/invoice/delivery',
+  report_delivery: '/reports/delivery',
+  // The delivery system's own dashboard: what has gone out, what is still to
+  // go. Reached from the Dashboard menu, on the same delivery.view permission
+  // as the two screens above it.
+  delivery_dashboard: '/delivery/dashboard',
 
   // Installment Routes
   installment_list: '/admin/installment-details',
@@ -282,7 +305,8 @@ const ROUTES = {
   // Customer and Supplier Routes
   supplier_customer_list: '/customer-supplier/list',
   supplier_customer_add: '/customer-supplier/create',
-  supplier_customer_edit: '/customer-supplier/edit/:id', 
+  supplier_customer_edit: '/customer-supplier/edit/:id',
+  customer_opening_import: '/customer/opening-import',
 
   customer_dashboard: '/customer-dashboard',
 
@@ -295,6 +319,7 @@ const ROUTES = {
   voucher_delete: '/vr-settings/voucher-delete',
   installment_delete: '/vr-settings/installment-delete',
   recyclebin: '/vr-settings/recyclebin',
+  report_mismatch: '/vr-settings/report-mismatch',
 
   // Voucher history
   voucher_history: '/vr-settings/voucher-history',

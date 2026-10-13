@@ -30,6 +30,11 @@ const VOUCHER_EDIT_TARGETS: Record<string, VoucherEditTarget> = {
   // And its opposite number: a sale nobody has paid for, numbered 10- rather
   // than 3-, edited on the sales screen like any other sale.
   '10': { route: routes.inv_sales, label: 'Credit Sales', prefix: '10' },
+  // The returns, numbered 12- and 13- -- see RETURN_VOUCHER_TYPE in the API's
+  // ReturnTransaction. Both open on the branch's own return screen: a Tiles
+  // branch is handed its own by the branch flag inside the general screen.
+  '12': { route: routes.inv_purchase_return, label: 'Purchase Return', prefix: '12' },
+  '13': { route: routes.inv_sales_return, label: 'Sales Return', prefix: '13' },
 };
 
 /**
@@ -84,6 +89,21 @@ export const getVoucherTypePrefix = (
 
   return normalizedVoucherNo.split('-')[0]?.trim() || '';
 };
+
+/**
+ * The voucher a report row's Edit button should open.
+ *
+ * Not always the row's own. A tiles-and-sanitary receipt collects the money and
+ * a second voucher -- a 5- journal -- writes off the discount it allowed; the
+ * two are one event, and the Ledger lists the journal's own party line. Left to
+ * the prefix, Edit there opened the journal screen, where half of an event can
+ * be changed without the other. The server names the receipt on such a row
+ * (`edit_vr_no`), so the desk lands on the screen that owns the pair.
+ *
+ * Absent -- every other voucher, and an older server -- the row edits itself.
+ */
+export const getEditableVoucherNo = (row: any): string =>
+  String(row?.edit_vr_no || '').trim() || String(row?.vr_no || '').trim();
 
 export const getVoucherEditTarget = (
   vrNo: string | number | null | undefined,

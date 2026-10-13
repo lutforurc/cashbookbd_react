@@ -18,7 +18,7 @@ import { CHEQUE_STATUSES, ENTRY_STATUSES, PAYMENT_MODES, PAYMENT_TYPES } from ".
 
 /* ================= CONSTANTS ================= */
 
-const LIST_PATH = "/admin/unit-payment-list"; // âœ… change here only if your actual list route differs
+const LIST_PATH = "/admin/unit-payment-list"; // ✅ change here only if your actual list route differs
 
 /* ================= TYPES ================= */
 
@@ -45,7 +45,7 @@ type FormState = {
   cheque_deposit_due_date: string;
   cheque_collect_date: string;
 
-  // âœ… NEW
+  // ✅ NEW
   cheque_bounce_date: string;
   cheque_return_reason: string;
 
@@ -77,7 +77,7 @@ const initialForm: FormState = {
   cheque_deposit_due_date: "",
   cheque_collect_date: "",
 
-  // âœ… NEW
+  // ✅ NEW
   cheque_bounce_date: "",
   cheque_return_reason: "",
 
@@ -86,10 +86,12 @@ const initialForm: FormState = {
 
 /* ================= HELPERS ================= */
 
-// Laravel date cast may return ISO UTC string; slice first 10 chars to avoid timezone shift
+// Laravel serialises a date cast as an ISO UTC instant for a Dhaka-midnight
+// calendar date (…T18:00:00Z), so slicing the first 10 chars reads the day
+// before and rewrites it a day early on the next save. Parse and format in the
+// local zone to recover the date that was actually stored.
 const toYmd = (v?: string | null): string => {
   if (!v) return "";
-  if (typeof v === "string" && v.length >= 10) return v.slice(0, 10);
 
   const d = dayjs(v);
   return d.isValid() ? d.format("YYYY-MM-DD") : "";
@@ -154,24 +156,30 @@ export default function UnitSalePaymentEdit() {
   const [paymentDateObj, setPaymentDateObj] = useState<Date | null>(null);
   const [chequeDueDateObj, setChequeDueDateObj] = useState<Date | null>(null);
   const [chequeCollectDateObj, setChequeCollectDateObj] = useState<Date | null>(null);
-  const [chequeBounceDateObj, setChequeBounceDateObj] = useState<Date | null>(null); // âœ… NEW
+  const [chequeBounceDateObj, setChequeBounceDateObj] = useState<Date | null>(null); // ✅ NEW
 
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
 
   const isCheque = useMemo(() => form.payment_mode === "CHEQUE", [form.payment_mode]);
 
-  // âœ… Bank Received Account required for both CHEQUE and BANK_TRANSFER
+  // ✅ Bank Received Account required for both CHEQUE and BANK_TRANSFER
   const needsBankReceivedAccount = useMemo(
     () => ["CHEQUE", "BANK_TRANSFER"].includes(form.payment_mode),
     [form.payment_mode]
   );
 
-  // âœ… NEW
+  // ✅ Cheque Details section shown for both CHEQUE and BANK_TRANSFER
+  const showChequeDetails = useMemo(
+    () => ["CHEQUE", "BANK_TRANSFER"].includes(form.payment_mode),
+    [form.payment_mode]
+  );
+
+  // ✅ NEW
   const isChequeBouncedOrCancelled = useMemo(
     () =>
-      isCheque &&
+      showChequeDetails &&
       ["BOUNCED", "CANCELLED"].includes(form.cheque_collect_status || ""),
-    [isCheque, form.cheque_collect_status]
+    [showChequeDetails, form.cheque_collect_status]
   );
 
   const setField = (name: keyof FormState, value: any) => {
@@ -217,14 +225,23 @@ export default function UnitSalePaymentEdit() {
         bank_name: r?.bank_name ?? "",
         branch_name: r?.branch_name ?? "",
 
-        // âœ… normalize to string for dropdown value
+        // ✅ normalize to string for dropdown value
         coal4_id: r?.coal4_id !== null && r?.coal4_id !== undefined ? String(r.coal4_id) : "",
 
-        cheque_collect_status: r?.cheque_collect_status ?? "",
+        // NOT_APPLICABLE is the server's own word for "this payment has no
+        // cheque to follow" -- a bank transfer's money is in the bank already.
+        // It is not one of the five statuses the dropdown offers, so loading it
+        // verbatim left the box blank and the form un-saveable. Left blank it
+        // means the same thing, and the server keeps the stored value when
+        // nothing is sent.
+        cheque_collect_status:
+          r?.cheque_collect_status === "NOT_APPLICABLE"
+            ? ""
+            : r?.cheque_collect_status ?? "",
         cheque_deposit_due_date: toYmd(r?.cheque_deposit_due_date),
         cheque_collect_date: toYmd(r?.cheque_collect_date),
 
-        // âœ… NEW
+        // ✅ NEW
         cheque_bounce_date: toYmd(r?.cheque_bounce_date),
         cheque_return_reason: r?.cheque_return_reason ?? "",
 
@@ -236,7 +253,7 @@ export default function UnitSalePaymentEdit() {
       setPaymentDateObj(ymdToDateOrNull(nextForm.payment_date));
       setChequeDueDateObj(ymdToDateOrNull(nextForm.cheque_deposit_due_date));
       setChequeCollectDateObj(ymdToDateOrNull(nextForm.cheque_collect_date));
-      setChequeBounceDateObj(ymdToDateOrNull(nextForm.cheque_bounce_date)); // âœ… NEW
+      setChequeBounceDateObj(ymdToDateOrNull(nextForm.cheque_bounce_date)); // ✅ NEW
 
       setBookingPreview(getBookingPreview(r));
     } catch (e: any) {
@@ -251,25 +268,25 @@ export default function UnitSalePaymentEdit() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Cheque mode off à¦¹à¦²à§‡ cheque-only fields clear
+  // Cheque / Bank Transfer mode off হলে cheque-only fields clear
   useEffect(() => {
-    if (!isCheque) {
+    if (!showChequeDetails) {
       setForm((prev) => ({
         ...prev,
         cheque_collect_status: "",
         cheque_deposit_due_date: "",
         cheque_collect_date: "",
-        // âœ… NEW
+        // ✅ NEW
         cheque_bounce_date: "",
         cheque_return_reason: "",
       }));
       setChequeDueDateObj(null);
       setChequeCollectDateObj(null);
-      setChequeBounceDateObj(null); // âœ… NEW
+      setChequeBounceDateObj(null); // ✅ NEW
     }
-  }, [isCheque]);
+  }, [showChequeDetails]);
 
-  // âœ… NEW: Bounce/Cancelled à¦¨à¦¾ à¦¹à¦²à§‡ bounce fields clear
+  // ✅ NEW: Bounce/Cancelled না হলে bounce fields clear
   useEffect(() => {
     if (!isChequeBouncedOrCancelled) {
       setForm((prev) => ({
@@ -281,7 +298,7 @@ export default function UnitSalePaymentEdit() {
     }
   }, [isChequeBouncedOrCancelled]);
 
-  // âœ… Bank received account not needed à¦¹à¦²à§‡ clear à¦•à¦°à§‡ à¦¦à¦¿à¦šà§à¦›à¦¿
+  // ✅ Bank received account not needed হলে clear করে দিচ্ছি
   useEffect(() => {
     if (!needsBankReceivedAccount) {
       setForm((prev) => ({
@@ -318,13 +335,14 @@ export default function UnitSalePaymentEdit() {
       return false;
     }
 
-    // âœ… cheque + bank transfer both require receiver bank account
+    // ✅ cheque + bank transfer both require receiver bank account
     // if (needsBankReceivedAccount && !form.coal4_id) {
     //   toast.warning("Bank received account is required");
     //   return false;
     // }
 
-    if (isCheque) {
+    // ✅ same cheque rules apply to CHEQUE and BANK_TRANSFER
+    if (showChequeDetails) {
       if (!form.reference_no) {
         toast.warning("Cheque / Reference No is required for cheque payment");
         return false;
@@ -333,12 +351,14 @@ export default function UnitSalePaymentEdit() {
         toast.warning("Bank name is required for cheque payment");
         return false;
       }
-      if (!form.cheque_collect_status) {
+      // A bank transfer has no cheque to track, so its status is the server's
+      // NOT_APPLICABLE and demanding one here only walled the form off.
+      if (isCheque && !form.cheque_collect_status) {
         toast.warning("Cheque status is required for cheque payment");
         return false;
       }
 
-      // âœ… NEW
+      // ✅ NEW
       if (["BOUNCED", "CANCELLED"].includes(form.cheque_collect_status)) {
         if (!form.cheque_bounce_date) {
           toast.warning("Cheque bounce / return date is required");
@@ -386,7 +406,7 @@ export default function UnitSalePaymentEdit() {
         bank_name: form.bank_name || undefined,
         branch_name: form.branch_name || undefined,
 
-        // âœ… send only when needed, normalize to number
+        // ✅ send only when needed, normalize to number
         // coal4_id:
         //   needsBankReceivedAccount && form.coal4_id
         //     ? Number(form.coal4_id)
@@ -394,17 +414,23 @@ export default function UnitSalePaymentEdit() {
 
         coal4_id: needsBankReceivedAccount ? (form.coal4_id ? Number(form.coal4_id) : null) : null,
 
-        cheque_collect_status: isCheque ? form.cheque_collect_status || undefined : undefined,
-        cheque_deposit_due_date: isCheque ? form.cheque_deposit_due_date || undefined : undefined,
-        cheque_collect_date: isCheque ? form.cheque_collect_date || undefined : undefined,
+        cheque_collect_status: showChequeDetails
+          ? form.cheque_collect_status || undefined
+          : undefined,
+        cheque_deposit_due_date: showChequeDetails
+          ? form.cheque_deposit_due_date || undefined
+          : undefined,
+        cheque_collect_date: showChequeDetails
+          ? form.cheque_collect_date || undefined
+          : undefined,
 
-        // âœ… NEW
+        // ✅ NEW
         cheque_bounce_date:
-          isCheque && isChequeBouncedOrCancelled
+          showChequeDetails && isChequeBouncedOrCancelled
             ? form.cheque_bounce_date || undefined
             : undefined,
         cheque_return_reason:
-          isCheque && isChequeBouncedOrCancelled
+          showChequeDetails && isChequeBouncedOrCancelled
             ? form.cheque_return_reason || undefined
             : undefined,
 
@@ -632,8 +658,8 @@ export default function UnitSalePaymentEdit() {
             </div>
           </div>
 
-          {/* Cheque-specific fields */}
-          {isCheque ? (
+          {/* Cheque-specific fields (shown for CHEQUE and BANK_TRANSFER) */}
+          {showChequeDetails ? (
             <div className="mt-4 border-t border-gray-400 pt-3">
               <h3 className="dark:text-[rgb(var(--c-text))] text-left text-sm text-gray-900 font-semibold">
                 Cheque Details
@@ -652,7 +678,7 @@ export default function UnitSalePaymentEdit() {
                   data={CHEQUE_STATUSES}
                 />
                 <div>
-                  {/* âœ… Bank Received Account (CHEQUE + BANK_TRANSFER) */}
+                  {/* ✅ Bank Received Account (CHEQUE + BANK_TRANSFER) */}
                   {needsBankReceivedAccount ? (
                     <DropdownCommon
                       id="coal4_id"
@@ -704,7 +730,7 @@ export default function UnitSalePaymentEdit() {
                 </div>
               </div>
 
-              {/* âœ… NEW: show only when BOUNCED / CANCELLED */}
+              {/* ✅ NEW: show only when BOUNCED / CANCELLED */}
               {isChequeBouncedOrCancelled ? (
                 <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div className="w-full col-span-1">

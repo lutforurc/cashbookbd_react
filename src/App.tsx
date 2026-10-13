@@ -39,6 +39,7 @@ import SlowMovingProducts from './components/modules/product/SlowMovingProducts'
 import WarehouseDifferenceProducts from './components/modules/product/WarehouseDifferenceProducts';
 import DateWiseData from './components/modules/reports/datewisedata/DateWiseData';
 import AddProduct from './components/modules/product/AddProduct';
+import ProductOpeningImport from './components/modules/product/ProductOpeningImport';
 import Category from './components/modules/category/Category';
 import AddCategory from './components/modules/category/AddCategory';
 import EditCategory from './components/modules/category/EditCategory';
@@ -46,9 +47,12 @@ import ProductGroup from './components/modules/productgroup/ProductGroup';
 import PackSize from './components/modules/packsize/PackSize';
 import LegacyRecordSearch from './components/modules/legacy/LegacyRecordSearch';
 import LegacyOldRecordSearch from './components/modules/legacy/LegacyOldRecordSearch';
+import LegacyAccounts from './components/modules/legacy/LegacyAccounts';
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import CashBookTwoColumn from './components/modules/reports/cash-book-two-column/CashBookTwoColumn';
+import DailyAccountBook from './components/modules/reports/daily-account-book/DailyAccountBook';
 import VoucherRegister from './components/modules/reports/voucher-register/VoucherRegister';
+import SalesReferrer from './components/modules/reports/sales-referrer/SalesReferrer';
 import BankBook from './components/modules/reports/bankbook/BankBook';
 import CashBankReceivedPayment from './components/modules/reports/cash-bank-received-payment/CashBankReceivedPayment';
 import Ledger from './components/modules/reports/ledger/Ledger';
@@ -64,7 +68,9 @@ import CatWiseInOut from './components/modules/reports/catwiseinout/CatWiseInOut
 import EditUser from './components/modules/user/EditUser';
 import PurchaseLedger from './components/modules/reports/purchaseledger/PurchaseLedger';
 import SalesLedger from './components/modules/reports/salesledger/SalesLedger';
-import BankReceived from './components/modules/transactions/bankreceived/BankReceived';
+import ReturnLedger from './components/modules/reports/returnledger/ReturnLedger';
+import CustomerSalesReport from './components/modules/reports/customer-sales/CustomerSalesReport';
+import BankReceivedIndex from './components/modules/transactions/bankreceived/BankReceivedIndex';
 import BankPayment from './components/modules/transactions/bankpayment/BankPayment';
 import Journal from './components/modules/transactions/journal/Journal';
 import Dayclose from './components/modules/dayclose/Dayclose';
@@ -86,6 +92,9 @@ import PurchaseIndex from './components/modules/invoices/purchase/PurchaseIndex'
 import TradingPurchaseImport from './components/modules/invoices/purchase/TradingPurchaseImport';
 import ConstructionBusinessPurchaseReturn from './components/modules/invoices/purchase/ConstructionBusinessPurchaseReturn';
 import SalesIndex from './components/modules/invoices/sales/SalesIndex';
+import Delivery from './components/modules/delivery/Delivery';
+import DeliveryReport from './components/modules/delivery/DeliveryReport';
+import DeliveryDashboard from './components/modules/delivery/DeliveryDashboard';
 import TradingSalesImport from './components/modules/invoices/sales/TradingSalesImport';
 import GeneralBusinessSalesReturn from './components/modules/invoices/sales/GeneralBusinessSalesReturn';
 import TradingCombinedEntry from './components/modules/invoices/trading/TradingCombinedEntry';
@@ -102,6 +111,7 @@ import CustomerChangePassword from './pages/CustomerAuth/CustomerChangePassword'
 import CustomerLayout from './layout/CustomerLayout';
 import AddCustomerSupplier from './components/modules/customer-supplier/AddCustomerSupplier';
 import ChangeDate from './components/modules/change_date/ChangeDate';
+import SwitchBranch from './components/modules/branch/SwitchBranch';
 import ReportComponent from './components/modules/reports/test/ReportComponent';
 import StaffWiseDueInstallment from './components/modules/installment/StaffWiseDueInstallment';
 import LabourLedger from './components/modules/reports/ledger-labour/LabourLedger';
@@ -122,6 +132,7 @@ import DashboardIndex from './components/modules/dashboard/DashboardIndex';
 import ItemChart from './components/modules/charts/item-char/ItemChart';
 import InstallmentDelete from './components/modules/vr_settings/InstallmentDelete';
 import Recyclebin from './components/modules/vr_settings/Recyclebin';
+import ReportMismatch from './components/modules/vr_settings/ReportMismatch';
 import ChangeHistory from './components/modules/history/ChangeHistory';
 import EmployeeCreate from './components/modules/hrms/employee/EmployeeCreate';
 import Employees from './components/modules/hrms/employee/Employees';
@@ -187,6 +198,7 @@ import Brands from './components/modules/product/brand/Brands';
 import AddProductUnit from './components/modules/product/unit/AddProductUnit';
 import ProductUnits from './components/modules/product/unit/ProductUnits';
 import EditCustomerSupplier from './components/modules/customer-supplier/EditCustomerSupplier';
+import CustomerOpeningImport from './components/modules/customer-supplier/CustomerOpeningImport';
 import UnitSalePage from './components/modules/real-estate/sales/UnitSalePage';
 import ProjectExpense from './components/modules/real-estate/project-expense/ProjectExpense';
 import ProjectIncome from './components/modules/real-estate/project-income/ProjectIncome';
@@ -251,6 +263,8 @@ import AdminInAppMessageForm from './components/modules/in-app-messages/AdminInA
 import BusinessType from './components/modules/business-type/BusinessType';
 import InventorySystem from './components/modules/inventory-system/InventorySystem';
 import TutorialVideos from './components/modules/tutorial-videos/TutorialVideos';
+import WebsiteTemplates from './components/modules/website-templates/WebsiteTemplates';
+import WebsiteTemplateEditor from './components/modules/website-templates/WebsiteTemplateEditor';
 import HighlightRules from './components/modules/highlight-rules/HighlightRules';
 import SubscriptionPlanList from './components/modules/subscription/SubscriptionPlanList';
 import SubscriptionPlanForm from './components/modules/subscription/SubscriptionPlanForm';
@@ -349,6 +363,9 @@ function App() {
               <Route path={routes.main} element={<DashboardIndex />} />
               <Route path={routes.dashboard} element={<DashboardIndex />} />
               <Route path={routes.profile} element={<Profile />} />
+              {/* One's own working branch, like the password below it:
+                  personal, so it carries no permission. */}
+              <Route path={routes.switch_branch} element={<SwitchBranch />} />
               <Route path={routes.my_devices} element={<MyDevices />} />
               {/* One's own password, like the devices above it: personal, so
                   it carries no permission. Another user's is on User Edit. */}
@@ -376,6 +393,11 @@ function App() {
                 <Route path={routes.business_types} element={<BusinessType />} />
                 <Route path={routes.inventory_systems} element={<InventorySystem />} />
                 <Route path={routes.tutorial_videos} element={<TutorialVideos />} />
+                {/* Master website templates (platform admin). The route guard is
+                    the same as its neighbours; the API's platform.admin
+                    middleware is what actually protects the data. */}
+                <Route path={routes.website_templates} element={<WebsiteTemplates />} />
+                <Route path={routes.website_template_editor} element={<WebsiteTemplateEditor />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['highlight.rules']} loading={permissionsLoading} />}>
                 <Route path={routes.highlight_rules} element={<HighlightRules />} />
@@ -420,6 +442,12 @@ function App() {
                 <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />
                 <Route path={routes.supplier_customer_add} element={<AddCustomerSupplier />} />
                 <Route path={routes.supplier_customer_edit} element={<EditCustomerSupplier />} />
+              </Route>
+              {/* party.opening.edit, or cs.edit -- the permission it is seeded
+                  from, since the patch creates it without granting it. The
+                  server accepts the same two. */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['party.opening.edit', 'cs.edit']} loading={permissionsLoading} />}>
+                <Route path={routes.customer_opening_import} element={<CustomerOpeningImport />} />
               </Route>
 
               {/* UI demo — superadmin ('*') only via a sentinel permission nobody is granted */}
@@ -582,6 +610,21 @@ function App() {
               <Route path={routes.legacy_old_record} element={<LegacyOldRecordSearch />} />
             </Route>
 
+            {/* The old shop's own 48 accounts, out of the same archive as the
+                record above and on the same permission. Read-only: no form,
+                no save, and an opening balance they must never carry. */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['legacy.record.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.legacy_accounts} element={<LegacyAccounts />} />
+            </Route>
+
             {/* Transactions */}
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cash.received.create']} loading={permissionsLoading} />}>
               <Route path={routes.cash_received} element={<CashReceivedIndex />} />
@@ -590,7 +633,7 @@ function App() {
               <Route path={routes.cash_payment} element={<CashPaymentIndex />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.received.create']} loading={permissionsLoading} />}>
-              <Route path={routes.bank_receive} element={<BankReceived />} />
+              <Route path={routes.bank_receive} element={<BankReceivedIndex />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.payment.create']} loading={permissionsLoading} />}>
               <Route path={routes.bank_payment} element={<BankPayment />} />
@@ -935,6 +978,12 @@ function App() {
               <Route path={routes.product_unit_create} element={<AddProductUnit />} />
               <Route path={routes.product_unit_edit} element={<AddProductUnit />} />
             </Route>
+            {/* product.opening.edit, or products.edit -- the permission it is
+                seeded from, since the patch creates it without granting it.
+                The server accepts the same two. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.opening.edit', 'products.edit']} loading={permissionsLoading} />}>
+              <Route path={routes.product_opening_import} element={<ProductOpeningImport />} />
+            </Route>
             {/* The stock reports and the unit list are offered by the sidebar on
                 a permission of their own. They are guarded one screen at a time
                 rather than folded into the block above, which also creates and
@@ -968,9 +1017,21 @@ function App() {
                 path={routes.report_cashbook_two_column}
                 element={<CashBookTwoColumn user={me} />}
               />
+              {/* The day's paper day book: the same till read down two sides,
+                  with the bank and wallet balances beside it. Behind the same
+                  permission, because it is the cash book's own figures. */}
+              <Route
+                path={routes.report_daily_account_book}
+                element={<DailyAccountBook user={me} />}
+              />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.register']} loading={permissionsLoading} />}>
               <Route path={routes.report_voucher_register} element={<VoucherRegister user={me} />} />
+            </Route>
+            {/* Who recommended a sale. Its own permission, because the shop
+                keeps this list and the customer is never shown it. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.referrer']} loading={permissionsLoading} />}>
+              <Route path={routes.report_referrer} element={<SalesReferrer user={me} />} />
             </Route>
             {/* Each of these is offered by its own sidebar permission. Guarded
                 separately so 'bank.book' opens the bank book and nothing else. */}
@@ -1032,9 +1093,17 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.ledger']} loading={permissionsLoading} />}>
               <Route path={routes.purchase_ledger} element={<PurchaseLedger user={me} />} />
+              {/* The return ledger under the permission of the ledger it sits
+                  beneath: it is the same book read the other way, and a role
+                  that may open one may open both. Same rule on the sales side. */}
+              <Route path={routes.purchase_return_ledger} element={<ReturnLedger user={me} mode="purchase" />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.ledger']} loading={permissionsLoading} />}>
               <Route path={routes.sales_ledger} element={<SalesLedger user={me} />} />
+              <Route path={routes.sales_return_ledger} element={<ReturnLedger user={me} mode="sales" />} />
+              {/* The same permission as the ledger: it is the sales book read
+                  another way, and a role that may open one may open both. */}
+              <Route path={routes.report_customer_sales} element={<CustomerSalesReport user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['mitch.match']} loading={permissionsLoading} />}>
               <Route path={routes.mitch_match} element={<MitchMatch user={me} />} />
@@ -1168,6 +1237,12 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.recycle']} loading={permissionsLoading} />}>
               <Route path={routes.recyclebin} element={<Recyclebin />} />
             </Route>
+            {/* Report Mismatch. Gated on the mismatch permission the backend
+                already creates; a brand-new permission would be granted to
+                nobody, and a menu nobody may open is a menu nobody can use. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['mitmatch.report']} loading={permissionsLoading} />}>
+              <Route path={routes.report_mismatch} element={<ReportMismatch />} />
+            </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.history']} loading={permissionsLoading} />}>
               <Route path={routes.voucher_history} element={<ChangeHistory user={me} />} />
             </Route>
@@ -1197,6 +1272,13 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create', 'sales.return']} loading={permissionsLoading} />}>
               <Route path={routes.inv_sales_return} element={<GeneralBusinessSalesReturn />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['delivery.view']} loading={permissionsLoading} />}>
+              <Route path={routes.inv_delivery} element={<Delivery />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['delivery.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_delivery} element={<DeliveryReport />} />
+              <Route path={routes.delivery_dashboard} element={<DeliveryDashboard />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['labour.invoice.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_labour} element={<ConstructionLabourInvoice />} />

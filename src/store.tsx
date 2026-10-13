@@ -26,6 +26,7 @@ import productStockReducer from './components/modules/reports/productstock/produ
 import catWiseInOutReducer from './components/modules/reports/catwiseinout/catWiseInOutSlice';
 import purchaseLedgerReducer from './components/modules/reports/purchaseledger/purchaseLedgerSlice';
 import salesLedgerReducer from './components/modules/reports/salesledger/salesLedgerSlice';
+import customerSalesReducer from './components/modules/reports/customer-sales/customerSalesSlice';
 import cashReceivedReducer from './components/modules/transactions/cashreceived/cashReceivedSlice';
 import cashPaymentReducer from './components/modules/transactions/cashpayment/cashPaymentSlice';
 import warehouseDdlReducer from './components/modules/warehouse/ddlWarehouseSlider';
@@ -54,6 +55,7 @@ import employeeSlice from './components/modules/hrms/employee/employeeSlice';
 import designationLevelSlice from './components/modules/hrms/designation-level/designationLevelSlice';
 import hrmDesignationSlice from './components/modules/hrms/designation/hrmDesignationSlice';
 import electronicsSalesSlice from './components/modules/invoices/sales/electronicsSalesSlice';
+import deliverySlice from './components/modules/delivery/deliverySlice';
 import labourLedgerSlice from './components/modules/reports/ledger-labour/labourLedgerSlice';
 import requisitionSlice from './components/modules/Requisition/requisitionSlice';
 import bankReceivedReducer from './components/modules/transactions/bankreceived/bankReceivedSlice';
@@ -135,6 +137,7 @@ const store = configureStore({
     catWiseInOut: catWiseInOutReducer,
     purchaseLedger: purchaseLedgerReducer,
     salesLedger: salesLedgerReducer,
+    customerSales: customerSalesReducer,
     cashReceived: cashReceivedReducer,
     cashPayment: cashPaymentReducer,
     bankReceived: bankReceivedReducer,
@@ -144,6 +147,7 @@ const store = configureStore({
     trasingSales: tradingSalesReducer,
     generalSales: generalSalesSlice,
     electronicsSales: electronicsSalesSlice,
+    deliveries: deliverySlice,
     electronicsPurchase: electronicsPurchaseSlice,
     dayclose: dayCloseReducer,
     orders: orderReducer,

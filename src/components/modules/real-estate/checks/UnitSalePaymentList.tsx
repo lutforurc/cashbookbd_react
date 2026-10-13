@@ -104,7 +104,7 @@ export default function UnitSalePaymentList() {
     [dateTo]
   );
 
-  // âœ… backend keys only
+  // ✅ backend keys only
   const params = useMemo(() => {
     return {
       q: q || undefined,
@@ -114,7 +114,7 @@ export default function UnitSalePaymentList() {
       date_from: dateFromStr || undefined,
       date_to: dateToStr || undefined,
 
-      // âœ… add this
+      // ✅ add this
       cheque_collect_status: chequeStatus || undefined,
     };
   }, [q, customerId, paymentMode, status, dateFromStr, dateToStr, chequeStatus]);
@@ -171,7 +171,7 @@ export default function UnitSalePaymentList() {
     }
   };
 
-  /* âœ… Only ONE effect for initial load + perPage change */
+  /* ✅ Only ONE effect for initial load + perPage change */
   useEffect(() => {
     setPagination((p) => ({ ...p, current_page: 1 }));
     loadData(1, Number(perPage) || 20);
@@ -231,7 +231,7 @@ export default function UnitSalePaymentList() {
   const handleStartDate = (d: Date | null) => setDateFrom(d);
   const handleEndDate = (d: Date | null) => setDateTo(d);
 
-  /* âœ… Pagination variables */
+  /* ✅ Pagination variables */
   const currentPage = pagination.current_page || 1;
   const totalPages = pagination.last_page || 1;
 
@@ -239,7 +239,7 @@ export default function UnitSalePaymentList() {
     goPage(page);
   };
 
-  /* âœ… UI-only filtering (Cheque Status) */
+  /* ✅ UI-only filtering (Cheque Status) */
   const filteredRows = useMemo(() => {
     if (!chequeStatus) return rows;
     return rows.filter((r) => (r?.cheque_collect_status || "") === chequeStatus);

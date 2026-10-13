@@ -4,7 +4,7 @@ import { FaArrowDown, FaArrowUp, FaRegCalendarAlt, FaRegClock, FaWallet } from '
 
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import Sparkline from './Sparkline';
-import { CardTitle } from './dashboardKit';
+import { CARD_FOOT, CardTitle } from './dashboardKit';
 
 /**
  * The cash-book card: trx date, today's received and payment, and the running
@@ -128,9 +128,12 @@ const BalanceSummaryCard = ({
         </div>
       </div>
 
-      <div className="mt-auto flex items-center gap-1.5 bg-slate-50 px-4 py-2 text-xs text-slate-400 dark:bg-gray-700/50 dark:text-slate-400">
-        <FaRegClock className="text-[11px]" />
-        <span>Last updated: {dashboard?.data?.last_update}</span>
+      {/* ⚠️ THE CARD'S OWN NAME IS THE BRANCH'S, so this is the foot the owner
+          compares the other cards' feet against — it is the shared CARD_FOOT
+          height like every other card on the page. */}
+      <div className={`${CARD_FOOT} gap-1.5 border-t border-[rgb(var(--c-border))] bg-slate-50 text-slate-400 dark:bg-gray-700/50 dark:text-slate-400`}>
+        <FaRegClock className="shrink-0 text-[11px]" />
+        <span className="min-w-0 truncate">Last updated: {dashboard?.data?.last_update}</span>
       </div>
     </div>
   );

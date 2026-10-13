@@ -1,5 +1,13 @@
 import React from 'react';
-import { FiChevronDown, FiChevronUp, FiEye, FiEyeOff, FiMenu, FiTrash2 } from 'react-icons/fi';
+import {
+  FiChevronDown,
+  FiChevronUp,
+  FiEye,
+  FiEyeOff,
+  FiMenu,
+  FiMinus,
+  FiTrash2,
+} from 'react-icons/fi';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { Input, Select, Textarea } from '../../../utils/fields/FormControls';
 import {
@@ -18,12 +26,16 @@ import {
   TitleBand,
   TotalsBand,
   Valign,
+  RULE_FIELD,
+  RULE_SPACE,
   fieldName,
   fieldsFor,
   isNumericField,
   lineFieldsFor,
-  DEFAULT_PRODUCT_PATTERN,
+  DESCRIPTION_TOKENS,
   PRODUCT_TOKENS,
+  LEDGER_PRODUCT_TOKENS,
+  composedPattern,
   isComposedField,
 } from '../../../utils/print-designer/printTemplate';
 
@@ -188,13 +200,17 @@ export const FieldPicker: React.FC<{
   onPick: (key: string) => void;
   source?: 'info' | 'line';
   label?: string;
-}> = ({ onPick, source = 'info', label = 'Add a field' }) => {
+  /** Groups this band has no way to print, kept off its list. */
+  excludeGroups?: FieldGroup[];
+}> = ({ onPick, source = 'info', label = 'Add a field', excludeGroups }) => {
   const docType = useDocType();
   // ⚠️ The paper's OWN catalogue. A hotel money receipt offers no tax field and
   // no table column at all, and that absence is what stops a receipt turning
   // into a VAT invoice -- see HOTEL_RECEIPT_FIELDS. An order's list holds no
   // vehicle number and a challan's holds no order rate, for the same reason.
-  const catalog = source === 'line' ? lineFieldsFor(docType) : fieldsFor(docType);
+  const catalog = (source === 'line' ? lineFieldsFor(docType) : fieldsFor(docType)).filter(
+    (field) => !excludeGroups?.includes(field.group),
+  );
   const groups = catalog.reduce<Record<string, typeof catalog>>((map, field) => {
     (map[field.group] ||= []).push(field);
     return map;
@@ -402,7 +418,14 @@ const ItemList: React.FC<{
   onChange: (items: InfoItem[]) => void;
   /** Totals have nothing to leave off -- a zero total is still a total. */
   allowHideIfEmpty?: boolean;
-}> = ({ items, onChange, allowHideIfEmpty = true }) => {
+  /**
+   * ⚠️ TOTALS ONLY, and both of these are the same reason: the renderer draws a
+   * rule over a figure, and resolves a line that waits on another line, in the
+   * totals block and nowhere else. Offering either on an info line would be a
+   * control that changes nothing on the paper.
+   */
+  allowTotalsControls?: boolean;
+}> = ({ items, onChange, allowHideIfEmpty = true, allowTotalsControls = false }) => {
   const { handlers, rowClass } = useRowDrag();
 
   const move = (from: number, to: number) => onChange(reorder(items, from, to));
@@ -427,42 +450,235 @@ const ItemList: React.FC<{
             {fieldName(item.field)}
           </span>
 
-          {/* The label is the whole point of the designer: what this tenant's
-              paper calls the field, in whatever language they print in. */}
-          <Input
-            value={item.label ?? ''}
-            draggable={false}
-            // A blank line has no name of its own to fall back on -- naming it
-            // is the entire reason it was added -- so it asks rather than
-            // offering the catalogue's word for "a line to write on".
-            placeholder={item.field === 'blank' ? 'Type the label…' : fieldName(item.field)}
-            onChange={(event) => {
-              const next = items.slice();
-              next[index] = { ...item, label: event.target.value };
-              onChange(next);
-            }}
-            className="min-w-0 flex-1 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1.5 py-0.5 text-sm outline-none dark:bg-boxdark"
-          />
+          {/* ⚠️ A rule is not a figure. It has no label to rename and nothing
+              that can be empty, so the only things left to say about it are how
+              it is drawn and how much paper it stands clear of.
 
-          {allowHideIfEmpty ? (
-            <Button
-              type="button"
-              draggable={false}
-              title={
-                item.hideIfEmpty
-                  ? 'Hidden when the voucher has nothing for it'
-                  : 'Always printed, blank if empty'
-              }
-              onClick={() => {
-                const next = items.slice();
-                next[index] = { ...item, hideIfEmpty: !item.hideIfEmpty };
-                onChange(next);
-              }}
-              className="rounded p-1 hover:bg-gray-100 dark:hover:bg-meta-4"
-            >
-              {item.hideIfEmpty ? <FiEyeOff /> : <FiEye />}
-            </Button>
-          ) : null}
+              The handle, the move buttons and the bin are the row's own, which
+              is the whole reason a rule is a row: it can be dragged to any
+              position among the totals, and it stays there. */}
+          {item.field === RULE_FIELD ? (
+            <div className="flex flex-1 flex-wrap items-end gap-2">
+              <div className="w-28 shrink-0">
+                <span className={SUB_LABEL}>Line</span>
+                <Select
+                  value={item.ruleStyle ?? 'solid'}
+                  draggable={false}
+                  onChange={(event) => {
+                    const next = items.slice();
+                    next[index] = {
+                      ...item,
+                      ruleStyle: event.target.value as 'solid' | 'dashed',
+                    };
+                    onChange(next);
+                  }}
+                  className={CONTROL}
+                >
+                  <option value="solid">Solid</option>
+                  <option value="dashed">Dashed</option>
+                </Select>
+              </div>
+
+              {/* Pixels rather than millimetres, unlike a Blank Space: this gap
+                  is between two lines of text and has to keep its proportion as
+                  the paper's text size changes, not stay a fixed distance on the
+                  sheet. */}
+              <div className="w-24 shrink-0">
+                <NumberBox
+                  label="Space above"
+                  value={item.ruleSpaceAbove ?? RULE_SPACE}
+                  min={0}
+                  max={60}
+                  onChange={(ruleSpaceAbove) => {
+                    const next = items.slice();
+                    next[index] = { ...item, ruleSpaceAbove };
+                    onChange(next);
+                  }}
+                />
+              </div>
+
+              <div className="w-24 shrink-0">
+                <NumberBox
+                  label="Space below"
+                  value={item.ruleSpaceBelow ?? RULE_SPACE}
+                  min={0}
+                  max={60}
+                  onChange={(ruleSpaceBelow) => {
+                    const next = items.slice();
+                    next[index] = { ...item, ruleSpaceBelow };
+                    onChange(next);
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* The label is the whole point of the designer: what this tenant's
+                  paper calls the field, in whatever language they print in. */}
+              <Input
+                value={item.label ?? ''}
+                draggable={false}
+                // A blank line has no name of its own to fall back on -- naming it
+                // is the entire reason it was added -- so it asks rather than
+                // offering the catalogue's word for "a line to write on".
+                placeholder={item.field === 'blank' ? 'Type the label…' : fieldName(item.field)}
+                onChange={(event) => {
+                  const next = items.slice();
+                  next[index] = { ...item, label: event.target.value };
+                  onChange(next);
+                }}
+                className="min-w-0 flex-1 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-1.5 py-0.5 text-sm outline-none dark:bg-boxdark"
+              />
+
+              {allowHideIfEmpty ? (
+                <Button
+                  type="button"
+                  draggable={false}
+                  title={
+                    item.hideIfEmpty
+                      ? 'Hidden when the voucher has nothing for it'
+                      : 'Always printed, blank if empty'
+                  }
+                  onClick={() => {
+                    const next = items.slice();
+                    next[index] = { ...item, hideIfEmpty: !item.hideIfEmpty };
+                    onChange(next);
+                  }}
+                  className="rounded p-1 hover:bg-gray-100 dark:hover:bg-meta-4"
+                >
+                  {item.hideIfEmpty ? <FiEyeOff /> : <FiEye />}
+                </Button>
+              ) : null}
+
+              {/* ⚠️ THE LINE OVER A SUM IS THE TENANT'S, not the paper's. It used
+                  to be baked into the default layout, so a tenant who wanted the
+                  net ruled off but not the balance had no way to say so -- and
+                  one who wanted the whole footer unruled had to give up the
+                  defaults to get it. The same three knobs as a standalone Line,
+                  because it is drawn by the same code. */}
+              {allowTotalsControls ? (
+                <>
+                  {/* ⚠️ THE CONDITION IS THE TENANT'S TOO, and it is per line,
+                      which is what makes it usable by a branch that wants the
+                      pairing and harmless to the one that does not: a paper
+                      with nothing set here behaves exactly as it did before
+                      this control existed. "Always" is the shipped answer. */}
+                  <div className="w-36 shrink-0">
+                    <span className={SUB_LABEL}>Print only when</span>
+                    <Select
+                      value={item.hideUnlessShown ?? ''}
+                      draggable={false}
+                      onChange={(event) => {
+                        const next = items.slice();
+                        const changed = { ...item };
+                        // Cleared rather than set to '', so a layout saved after
+                        // a change of mind carries no condition at all -- see
+                        // InfoItem.hideUnlessShown.
+                        if (event.target.value) changed.hideUnlessShown = event.target.value;
+                        else delete changed.hideUnlessShown;
+                        next[index] = changed;
+                        onChange(next);
+                      }}
+                      className={CONTROL}
+                    >
+                      <option value="">Always</option>
+                      {/* The other lines of THIS band, by the words the paper
+                          prints -- the tenant is choosing a line they can see,
+                          not a field name. A rule is not offered: it can never
+                          be hidden, so a condition on it would be a no-op. */}
+                      {items.map((other, at) =>
+                        at === index || other.field === RULE_FIELD ? null : (
+                          <option key={at} value={other.field}>
+                            {other.label?.trim() || fieldName(other.field)} prints
+                          </option>
+                        ),
+                      )}
+                    </Select>
+                  </div>
+
+                  <Button
+                    type="button"
+                    draggable={false}
+                    title={
+                      item.ruleAbove
+                        ? 'A line above this figure — click to take it off'
+                        : 'Draw a line above this figure'
+                    }
+                    onClick={() => {
+                      const next = items.slice();
+                      next[index] = { ...item, ruleAbove: !item.ruleAbove };
+                      onChange(next);
+                    }}
+                    className={
+                      'rounded p-1 ' +
+                      (item.ruleAbove
+                        ? 'bg-gray-100 text-primary dark:bg-meta-4'
+                        : 'hover:bg-gray-100 dark:hover:bg-meta-4')
+                    }
+                  >
+                    <FiMinus />
+                  </Button>
+
+                  {item.ruleAbove ? (
+                    <div className="flex flex-wrap items-end gap-2">
+                      <div className="w-24 shrink-0">
+                        <span className={SUB_LABEL}>Line</span>
+                        <Select
+                          value={item.ruleStyle ?? 'solid'}
+                          draggable={false}
+                          onChange={(event) => {
+                            const next = items.slice();
+                            next[index] = {
+                              ...item,
+                              ruleStyle: event.target.value as 'solid' | 'dashed',
+                            };
+                            onChange(next);
+                          }}
+                          className={CONTROL}
+                        >
+                          <option value="solid">Solid</option>
+                          <option value="dashed">Dashed</option>
+                        </Select>
+                      </div>
+
+                      {/* ⚠️ Defaults of nought, unlike a standalone Line's six:
+                          the rule over a figure was drawn flush against it until
+                          now, and a paper saved before this control existed
+                          carries no margins. Six pixels there would move every
+                          such paper's net line the moment it was opened. */}
+                      <div className="w-24 shrink-0">
+                        <NumberBox
+                          label="Space above"
+                          value={item.ruleSpaceAbove ?? 0}
+                          min={0}
+                          max={60}
+                          onChange={(ruleSpaceAbove) => {
+                            const next = items.slice();
+                            next[index] = { ...item, ruleSpaceAbove };
+                            onChange(next);
+                          }}
+                        />
+                      </div>
+
+                      <div className="w-24 shrink-0">
+                        <NumberBox
+                          label="Space below"
+                          value={item.ruleSpaceBelow ?? 0}
+                          min={0}
+                          max={60}
+                          onChange={(ruleSpaceBelow) => {
+                            const next = items.slice();
+                            next[index] = { ...item, ruleSpaceBelow };
+                            onChange(next);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+            </>
+          )}
 
           <MoveButtons index={index} count={items.length} onMove={move} />
 
@@ -571,6 +787,10 @@ export const InfoBandEditor: React.FC<{
     <ItemList items={band.items} onChange={(items) => onChange({ ...band, items })} />
 
     <FieldPicker
+      // ⚠️ No lines here. This block prints every row as a label and a figure,
+      // and a rule has neither -- it would come out as the word "Line" followed
+      // by nothing. The totals block is where a rule can be drawn.
+      excludeGroups={['rule']}
       onPick={(field) =>
         onChange({
           ...band,
@@ -623,6 +843,7 @@ export const TotalsBandEditor: React.FC<{
     <ItemList
       items={band.items}
       allowHideIfEmpty={false}
+      allowTotalsControls
       onChange={(items) => onChange({ ...band, items })}
     />
     <FieldPicker onPick={(field) => onChange({ ...band, items: [...band.items, { field }] })} />
@@ -824,27 +1045,24 @@ export const TableBandEditor: React.FC<{
               ) : null}
             </div>
 
-            {/* HOW a composed column writes the product. Blank reads as the
-                default -- see tableColumns() -- so the box shows that rather
-                than standing empty; a one-line column shows it on one line. */}
+            {/* HOW a composed column writes its cell. Blank reads as this
+                paper's own default -- see composedPattern() -- so the box shows
+                that rather than standing empty; a one-line column shows it on
+                one line. */}
             {isComposedField(column.field) ? (
               <ComposedPattern
-                // own_format takes the textarea too: a line break in it is
-                // what makes the cell a stack.
+                // Everything but the flat product column takes the textarea: a
+                // line break in it is what makes the cell a stack.
                 stacked={column.field !== 'product_flat'}
-                pattern={
-                  column.pattern?.trim()
-                    ? column.pattern
-                    : column.field === 'own_format'
-                      ? '{qty} {unit}'
-                      : column.field === 'product_lines'
-                        ? DEFAULT_PRODUCT_PATTERN
-                        : DEFAULT_PRODUCT_PATTERN.replace(/\n/g, ' ')
-                }
+                pattern={composedPattern(column)}
                 tokens={
-                  column.field === 'own_format'
-                    ? lineFieldsFor(docType).filter((entry) => entry.key !== 'sl' && !isComposedField(entry.key))
-                    : PRODUCT_TOKENS
+                  column.field === 'description_format'
+                    ? DESCRIPTION_TOKENS
+                    : column.field === 'product_details_format'
+                      ? LEDGER_PRODUCT_TOKENS
+                      : column.field === 'own_format'
+                        ? lineFieldsFor(docType).filter((entry) => entry.key !== 'sl' && !isComposedField(entry.key))
+                        : PRODUCT_TOKENS
                 }
                 onChange={(pattern) => update(index, { pattern })}
               />

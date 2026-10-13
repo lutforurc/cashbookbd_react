@@ -281,6 +281,24 @@ export const reportLinks = (branchId: number | string | null | undefined, from: 
     reportUrl(ROUTES.product_ledger_data, { from, to, branch: branchId, product, productName: name }),
 });
 
+/**
+ * The page's own heading: the TRADE the branch is in -- "Trade Business",
+ * "Construction", "Tiles and Sanitary". `apiUserCurrentBranch` sends the
+ * business type's NAME beside its id (see UserController), and the trade
+ * dashboard has been reading the same name off its own payload all along.
+ *
+ * ⚠️ Read off the branch, never written into a page. One page serves many
+ * trades -- the shop's page is where "General Business", "LP Gas Business" and
+ * "Tiles and Sanitary" all land -- so a literal in the component would put one
+ * trade's name over another trade's figures.
+ *
+ * The branch's own name is the fallback, for a record answered before the
+ * business type was added, and `fallback` is the last resort: an empty heading
+ * reads as a page that failed to load.
+ */
+export const businessTypeName = (branch: any, fallback = 'Dashboard') =>
+  branch?.business_type || branch?.name || fallback;
+
 /** "1 Sep 2026 to 22 Sep 2026 · updated 11:32 AM", for a page's subtitle. */
 export const rangeCaption = (from?: string, to?: string, refreshedAt?: Date | null) =>
   (from && to ? `${dayjs(from).format('D MMM YYYY')} to ${dayjs(to).format('D MMM YYYY')}` : '') +

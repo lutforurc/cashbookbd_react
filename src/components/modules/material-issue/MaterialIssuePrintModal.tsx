@@ -88,7 +88,7 @@ const MaterialIssuePrintModal: React.FC<Props> = ({ id, onClose }) => {
         </div>
 
         <div className="max-h-[80vh] overflow-y-auto p-3">
-          {loading && <p className="py-8 text-center text-gray-500">Loadingâ€¦</p>}
+          {loading && <p className="py-8 text-center text-gray-500">Loading…</p>}
           {error && <p className="py-8 text-center text-red-600">{error}</p>}
 
           {!loading && !error && master && (

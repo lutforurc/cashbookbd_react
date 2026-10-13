@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
-import { API_BASE_URL } from './apiRoutes';
+import { API_BASE_URL, API_LOGIN_URL, API_CSRF_COOKIES } from './apiRoutes';
 import { getDeviceId } from './deviceId';
 
 const AUTH_TOKEN_COOKIE = '_trio_lead_token';
@@ -56,6 +56,15 @@ const markReported = (error: any) => {
     return error;
 };
 
+// A request that belongs to the sign-in flow itself. A failed sign-in must
+// never be mistaken for an expired session: redirecting here reloads the page
+// and throws away what the user typed. The login page is normally at `/login`,
+// but matching the endpoints as well keeps this true wherever it is served.
+const isSignInRequest = (config: any): boolean => {
+    const url = typeof config?.url === 'string' ? config.url : '';
+    return url.startsWith(API_LOGIN_URL) || url.startsWith(API_CSRF_COOKIES);
+};
+
 httpService.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -77,7 +86,7 @@ httpService.interceptors.response.use(
         // 401 while a token exists means the session/token expired → force re-login.
         // (No token, or already on /login, means it's a normal auth failure the
         // login flow handles itself — don't hijack it.)
-        if (status === 401 && getStoredToken() && !onLoginPage) {
+        if (status === 401 && getStoredToken() && !onLoginPage && !isSignInRequest(error.config)) {
             if (!sessionExpiredHandled) {
                 sessionExpiredHandled = true;
                 clearSession();

@@ -224,7 +224,7 @@ const CatWiseInOut = (user: any) => {
     if (selectedOption) {
       setCategoryId(selectedOption.value);
     } else {
-      setCategoryId(null); // Ã Â¦â€¦Ã Â¦Â¥Ã Â¦Â¬Ã Â¦Â¾ default value
+      setCategoryId(null); // অথবা default value
     }
   };
 

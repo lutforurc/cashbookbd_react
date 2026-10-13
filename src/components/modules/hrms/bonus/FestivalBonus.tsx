@@ -138,7 +138,7 @@ const FestivalBonus = ({ user }: any) => {
       return;
     }
 
-    toast.info("Print à¦•à¦°à¦¤à§‡ à¦†à¦—à§‡ à¦¨à¦¿à¦šà§‡à¦° Bonus Title à¦¥à§‡à¦•à§‡ detail sheet open à¦•à¦°à§à¦¨à¥¤");
+    toast.info("Print করতে আগে নিচের Bonus Title থেকে detail sheet open করুন।");
   };
 
   const handleOpenDetails = async (row: any, mode: "print" | "payment") => {

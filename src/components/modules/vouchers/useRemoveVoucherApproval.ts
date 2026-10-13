@@ -3,7 +3,14 @@ import { toast } from 'react-toastify';
 import httpService from '../../services/httpService';
 import { API_VOUCHER_APPROVAL_REMOVE_BY_ID_URL } from '../../services/apiRoutes';
 
-const getVoucherId = (row: any) => Number(
+/**
+ * Which voucher a report row is about.
+ *
+ * Exported because a row's approval is patched in place after the call, and
+ * that patch has to find the same row this posts for -- two lists of id keys
+ * would drift apart on the first row shape that gains another one.
+ */
+export const getVoucherId = (row: any) => Number(
   row?.mtm_id ??
   row?.smtm_id ??
   row?.mtmid ??

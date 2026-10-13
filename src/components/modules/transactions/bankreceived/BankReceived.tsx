@@ -53,7 +53,7 @@ interface ReceivedItem {
   bankReceivedAccountName: string;
   receiverAccount: string;
   receiverAccountName: string;
-  transactionList?: TransactionList[]; // âœ… object â†’ array
+  transactionList?: TransactionList[]; // ✅ object → array
 
   // The order this voucher answers to, if any. It belongs to the VOUCHER and
   // not to a row -- acc_transaction_master.order_no is one column, and the API
@@ -81,7 +81,6 @@ const BankReceived = () => {
   const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
   const coal3 = useSelector((s: any) => s.coal3);
-  const bankReceived = useSelector((s: any) => s.bankReceived);
   const [search, setSearch] = useState('');
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
@@ -139,8 +138,8 @@ const BankReceived = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [receivedData, setReceivedData] = useState<ReceivedItem | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // âœ… new
-  const searchingRef = useRef(false); // âœ… guard against concurrent searches
+  const [isLoading, setIsLoading] = useState(false); // ✅ new
+  const searchingRef = useRef(false); // ✅ guard against concurrent searches
   const [updateTransactionId, setUpdateTransactionId] = useState<number | null>(
     null,
   );
@@ -290,7 +289,7 @@ const BankReceived = () => {
       const mapped = mapReceivedData(response);
       setReceivedData(mapped);
       setTableData([mapped]);
-      setFormData({ ...mapped, transactionList: [] }); // âœ… Receiver set à¦•à¦°à§à¦¨, transactionList à¦–à¦¾à¦²à¦¿ à¦°à¦¾à¦–à§à¦¨ (fields à¦«à¦¾à¦à¦•à¦¾)
+      setFormData({ ...mapped, transactionList: [] }); // ✅ Receiver set করুন, transactionList খালি রাখুন (fields ফাঁকা)
       setIsUpdating(false);
       setIsUpdateButton(true);
 
@@ -302,7 +301,7 @@ const BankReceived = () => {
       toast.error(error?.message || 'Error searching invoice.');
       console.error('Error searching invoice:', error);
     } finally {
-      setIsLoading(false);   // âœ… hide Loader
+      setIsLoading(false);   // ✅ hide Loader
       searchingRef.current = false;
     }
   };
@@ -392,7 +391,7 @@ const BankReceived = () => {
           transactionList: [transactionToEdit],
         });
         setUpdateTransactionId(id);
-        setTimeout(() => document.getElementById('account')?.focus(), 100); // Optional: focus account-à¦
+        setTimeout(() => document.getElementById('account')?.focus(), 100); // Optional: focus account-এ
         setIsUpdating(true); // Update mode on
         toast.info('Transaction loaded for editing.'); // Optional: user feedback
       } else {
@@ -403,7 +402,7 @@ const BankReceived = () => {
     [tableData, formData],
   );
 
-  // âœ… Implement editReceivedVoucher like the example (local update)
+  // ✅ Implement editReceivedVoucher like the example (local update)
 
   const editReceivedVoucher = () => {
     if (updateTransactionId == null) {
@@ -453,7 +452,7 @@ const BankReceived = () => {
     setTableData(updatedTableData);
     setIsUpdating(false);
 
-    // âœ… Reset: header-à¦à¦° id/mtmId/receiver
+    // ✅ Reset: header-এর id/mtmId/receiver
     setFormData(prev => ({
       ...initialReceivedItem,
       id: prev?.id as any,
@@ -513,6 +512,17 @@ const BankReceived = () => {
     if (!transactions.length)
       return toast.warning('Add at least one transaction');
 
+    // ⚠️ The guard the update path has carried from the start, and the save path
+    // never did. The bank box starts on the placeholder option, whose id is '' --
+    // and an empty string arrives at the server as null (Laravel's
+    // ConvertEmptyStringsToNull), so the bank contra leg was inserted with
+    // coa4_id NULL and died on the desk's screen as
+    // "1048 Column 'coa4_id' cannot be null" (2026-09-27).
+    if (!formData.bankReceivedAccount) {
+      toast.warning('Please select Receiver Bank Account.');
+      return;
+    }
+
     setIsLoading(true);
     setSaveButtonLoading(true);
 
@@ -538,10 +548,10 @@ const BankReceived = () => {
       }
 
 
-      // âœ… Clear table
+      // ✅ Clear table
       setTableData([]);
 
-      // âœ… Reset form but keep account fields
+      // ✅ Reset form but keep account fields
       setFormData({
         ...initialReceivedItem,
         bankReceivedAccount: formData.bankReceivedAccount,
@@ -565,18 +575,17 @@ const BankReceived = () => {
   };
 
 
-  useEffect(() => {
-    if (bankReceived?.error) {
-      toast.error(bankReceived.error);
-    }
-  }, [bankReceived.error]);
+  // ⚠️ No effect toasting `bankReceived.error` here. Every rejection that
+  // reaches the slice is already spoken for by whoever asked -- the search's
+  // own catch, the save's, the update's -- so the effect said the same
+  // sentence a second time, one toast away. Same fix as TilesBankReceived.
 
   const handleBankReceivedUpdate = async () => {
 
     setUpdatingLoading(true);
     setIsLoading(true);
 
-    // âœ… Validation
+    // ✅ Validation
     const transactions = tableData.flatMap((item) => item.transactionList || []);
     if (!transactions.length) {
       toast.warning('No transactions to update.');
@@ -614,7 +623,7 @@ const BankReceived = () => {
       };
 
 
-      // âœ… API call or redux dispatch
+      // ✅ API call or redux dispatch
       const response = await dispatch(updateBankReceived(payload)).unwrap();
 
 
@@ -635,7 +644,7 @@ const BankReceived = () => {
       setReceivedData(null);
 
     } catch (error: any) {
-      console.error('âŒ Error updating transaction:', error);
+      console.error('❌ Error updating transaction:', error);
       toast.error(error?.message || 'Failed to update transaction.');
     } finally {
       setIsLoading(false);
@@ -749,7 +758,7 @@ const BankReceived = () => {
  className=""
  placeholder="Select Transaction Account"
  isDisabled={isAccountLockedByOrder}
- onSelect={transactionAccountHandler} // âœ… à¦ªà§à¦°à§‹à¦¨à§‹ handler à¦¬à¦¾à¦¦
+ onSelect={transactionAccountHandler} // ✅ পুরোনো handler বাদ
  value={
  formData.transactionList &&
  formData.transactionList[0]?.account

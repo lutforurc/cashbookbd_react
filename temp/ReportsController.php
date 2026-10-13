@@ -27,6 +27,7 @@ use App\Models\Inventory\InventoryPurchaseMaster;
 use App\Models\Labour\LabourItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -1654,6 +1655,11 @@ class ReportsController extends Controller
     private function dueListData(Request $request)
     {
         $branch_id = $request->branch_id;
+        // The classification filter -- a `cust_party_infos.party_type_id` as Add
+        // Customers saved it (1 Customer, 2 Supplier, 3 Supplier & Customer,
+        // 4 Advance). Empty/absent is "every party", which is not a value any
+        // row carries.
+        $partyTypeId = $request->party_type_id;
         if (request()->is('api/*')) {
             $endDate =  $request->enddate;
         } else {
@@ -1667,6 +1673,7 @@ class ReportsController extends Controller
                 'cpi.mobile',
                 'cpi.manual_address',
                 'cpi.area_id',
+                'cpi.party_type_id',
                 DB::raw('CASE WHEN cpi.idfr_code <> "" THEN CONCAT(cpi.name, " (", cpi.idfr_code, ")") ELSE cpi.name END as coa4_name'),
                 DB::raw('CASE WHEN SUM(atd.debit) - SUM(atd.credit) > 0 THEN SUM(atd.debit) - SUM(atd.credit) ELSE 0 END as debit'),
                 DB::raw('CASE WHEN SUM(atd.credit) - SUM(atd.debit) > 0 THEN SUM(atd.credit) - SUM(atd.debit) ELSE 0 END as credit')
@@ -1678,7 +1685,13 @@ class ReportsController extends Controller
             ->where('mtm.company_id', auth()->user()->company_id)
             ->where('mtm.branch_id', $branch_id)
             ->where('mtm.vr_date', '<=', $endDate)
-            ->groupBy('atd.coa4_id', 'cpi.id', 'cpi.name', 'cpi.manual_address', 'cpi.idfr_code', 'cpi.mobile', 'cpi.area_id');
+            // Applied here, inside the row source, so the SUM totals below and
+            // the running cumulative columns are computed over the selected
+            // classification only -- not over the whole branch and then cut.
+            ->when($partyTypeId !== null && $partyTypeId !== '', function ($query) use ($partyTypeId) {
+                $query->where('cpi.party_type_id', $partyTypeId);
+            })
+            ->groupBy('atd.coa4_id', 'cpi.id', 'cpi.name', 'cpi.manual_address', 'cpi.idfr_code', 'cpi.mobile', 'cpi.area_id', 'cpi.party_type_id');
 
         $results = DB::table(DB::raw('(' . $subQuery->toSql() . ') as a'))
             ->mergeBindings($subQuery)
@@ -1688,6 +1701,7 @@ class ReportsController extends Controller
                 DB::raw('REPLACE(a.coa4_name, "A/R", "") as coa4_name'),
                 'a.manual_address',
                 'a.area_id',
+                'a.party_type_id',
                 DB::raw('CASE WHEN a.mobile <> "" OR a.mobile IS NOT NULL THEN a.mobile ELSE "" END as mobile'),
                 'a.debit',
                 'a.credit'
@@ -1729,6 +1743,7 @@ class ReportsController extends Controller
                     'coa4_id'           => null,
                     'ledger_page'       => '',
                     'coa4_name'         => 'Total',
+                    'party_type_id'     => null,
                     'area_id'           => '',
                     'mobile'            => '',
                     'debit'             => $cumulativeDebit,
@@ -4734,6 +4749,13 @@ class ReportsController extends Controller
         $startDate = $request->startdate;
         $endDate   = $request->enddate;
 
+        // Brand -> Group -> Category's middle level. `group_id` and the
+        // `product_groups` table both arrive with a patch, so a database can
+        // have one without the other -- guarded exactly like the live
+        // controller, or an unguarded join would stop the whole report. Same
+        // test ItemController uses for the product picker.
+        $hasGroup = Schema::hasTable('product_groups') && Schema::hasColumn('product_items', 'group_id');
+
         // =========================
         // Opening Stock Information
         // =========================
@@ -4744,6 +4766,9 @@ class ReportsController extends Controller
             ->join('product_categories', 'product_categories.id', '=', 'product_items.category_id')
             ->join('sys_inv_units', 'product_items.unit_id', '=', 'sys_inv_units.id')
             ->leftJoin('product_manufacturers', 'product_manufacturers.id', '=', 'product_items.manufacture_id')
+            // The branch's own grouping level, so the report can nest Brand ->
+            // Group -> Category when it asks for that order.
+            ->when($hasGroup, fn($q) => $q->leftJoin('product_groups', 'product_groups.id', '=', 'product_items.group_id'))
             ->where('product_types.id', '<>', 2)
             ->where('main_trx_master.vr_date', '<', $startDate)
             ->where('main_trx_master.company_id', $user->company_id)
@@ -4756,6 +4781,13 @@ class ReportsController extends Controller
                 DB::raw('TRIM(product_categories.name) as cat_name'),
                 // ✅ ONLY_FULL_GROUP_BY safe
                 DB::raw('MAX(COALESCE(product_manufacturers.name, "")) as brand_name'),
+                // The id behind that name, so the client groups by id and not
+                // by a name two different records may share.
+                DB::raw('MAX(product_items.manufacture_id) as brand_id'),
+                ...($hasGroup ? [
+                    DB::raw('MAX(product_items.group_id) as group_id'),
+                    DB::raw('MAX(COALESCE(product_groups.name, "")) as group_name'),
+                ] : []),
                 'sys_inv_units.name as unit',
 
                 DB::raw('SUM(inventory_details.stock_in) - SUM(inventory_details.stock_out) as opening'),
@@ -4795,6 +4827,9 @@ class ReportsController extends Controller
             ->join('product_categories', 'product_categories.id', '=', 'product_items.category_id')
             ->join('sys_inv_units', 'product_items.unit_id', '=', 'sys_inv_units.id')
             ->leftJoin('product_manufacturers', 'product_manufacturers.id', '=', 'product_items.manufacture_id')
+            // Same grouping join as the opening half above, so both halves of
+            // the union answer with the same columns.
+            ->when($hasGroup, fn($q) => $q->leftJoin('product_groups', 'product_groups.id', '=', 'product_items.group_id'))
             ->where('product_types.id', '<>', 2)
             ->whereBetween('main_trx_master.vr_date', [$startDate, $endDate])
             ->where('main_trx_master.company_id', $user->company_id)
@@ -4807,6 +4842,13 @@ class ReportsController extends Controller
                 DB::raw('TRIM(product_categories.name) as cat_name'),
                 // ✅ ONLY_FULL_GROUP_BY safe
                 DB::raw('MAX(COALESCE(product_manufacturers.name, "")) as brand_name'),
+                // ✅ The id behind that name, for the Brand -> Group ->
+                // Category nesting the client may draw.
+                DB::raw('MAX(product_items.manufacture_id) as brand_id'),
+                ...($hasGroup ? [
+                    DB::raw('MAX(product_items.group_id) as group_id'),
+                    DB::raw('MAX(COALESCE(product_groups.name, "")) as group_name'),
+                ] : []),
                 'sys_inv_units.name as unit',
 
                 DB::raw('0 as opening'),
@@ -4852,7 +4894,10 @@ class ReportsController extends Controller
                 'product_id'   => $firstItem->product_id,
                 'category_id'  => $firstItem->category_id,
                 'cat_name'     => $firstItem->cat_name,
+                'brand_id'     => $firstItem->brand_id,
                 'brand_name'   => $firstItem->brand_name,
+                'group_id'     => $firstItem->group_id,
+                'group_name'   => $firstItem->group_name,
                 'product_name' => $firstItem->product_name,
                 'unit'         => $firstItem->unit,
                 'opening'      => $opening,

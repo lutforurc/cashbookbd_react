@@ -65,7 +65,7 @@ const GodownStockReport = ({ user }: any) => {
     }
   }, [branchDdlData?.protectedData, authUser?.branch_id]);
 
-  // The branch DDL selects id/name/address/phone only â€” it carries no godowns â€”
+  // The branch DDL selects id/name/address/phone only — it carries no godowns —
   // so the warehouses come from /active/warehouse, listed whole the way the
   // purchase and sales invoices list them. Ids are stringified so the print
   // header can match the selected value.
@@ -87,7 +87,7 @@ const GodownStockReport = ({ user }: any) => {
       setError("Branch select korun");
       return;
     }
-    // No warehouse chosen is a choice of its own â€” every warehouse â€” which the
+    // No warehouse chosen is a choice of its own — every warehouse — which the
     // report reads as an unfiltered godown_id.
     if (!endDate) {
       setError("End date din");

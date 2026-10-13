@@ -5,6 +5,7 @@ import { getDdlProduct } from '../../modules/product/productSlice';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { hasPermission } from '../permissionChecker';
+import { settingOn } from '../userFeatureSettings';
 import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 
 interface OptionType {
@@ -14,6 +15,18 @@ interface OptionType {
   label_3?: string;
   label_4?: string;
   label_5?: string;
+  /** The product's own code. Several products may share a name and differ
+      only by this, so it is shown beside the name -- never folded into
+      `label`, which the Excel imports match against as a plain name. */
+  code?: string;
+  /** Brand and group. Absent on a database that has not been patched with
+      them, which is why every use of them has to allow for nothing. */
+  brand?: string;
+  group_name?: string;
+  /** What is left in stock on this branch. Only sent -- and so only ever
+      present -- for a branch that turned the switch on, since working it out
+      is the one detail that costs the search anything. */
+  balance?: string;
 }
 
 interface DropdownProps {
@@ -64,11 +77,78 @@ const ProductDropdown: React.FC<DropdownProps> = ({
   // is open on the sales counter. The price still travels with the option --
   // the purchase screens fill their rate from it -- so this hides the line,
   // and only the line.
-  const permissions = useSelector((state: any) => state.settings?.data?.permissions) || [];
+  const settings = useSelector((state: any) => state.settings);
+  const permissions = settings?.data?.permissions || [];
   const canSeePurchasePrice = hasPermission(permissions, 'product.purchase.price.view');
+
+  // Branch Setup -> Product Dropdown: how many lines each product takes, and
+  // which of them the branch wants shown.
+  const branchSettings = settings?.data?.branch;
+  const singleLine = branchSettings?.product_ddl_lines === 'single';
+
+  /**
+   * One of those switches, as the server settled it.
+   *
+   * These read the opposite way round to most branch switches: the five the box
+   * has always shown have to be ON for a branch that has never been asked, and
+   * that is what getBranchEdit() answers. The `undefined` arm is the moment
+   * before settings arrive -- reading unset as off there would blank every
+   * detail line on a page that is a tick away from drawing them.
+   */
+  const ddlOn = (key: string) => {
+    const value = branchSettings?.[key];
+
+    return value === undefined ? true : settingOn(value);
+  };
+
+  // A single line IS the name, so it survives whatever the name switch says.
+  const showName = singleLine || ddlOn('product_ddl_show_name');
+
+  /**
+   * The details the branch wants beside a product's name, in the order Branch
+   * Setup lists the switches. One list for both modes: Multi Line stacks them
+   * under the name, one labelled line each; Single Line packs them onto the
+   * name's own line, where the full labels would not fit and `short` is used
+   * instead (`Purchase`, not `Purchase Price`).
+   *
+   * A field drops out when its switch is off, when the product has nothing for
+   * it, and -- for the cost price -- when this login may not see it.
+   */
+  const ddlDetails = (option: OptionType) =>
+    [
+      { setting: 'product_ddl_show_category', label: 'Category', short: 'Category', value: option.label_2, allowed: true },
+      { setting: 'product_ddl_show_brand', label: 'Brand', short: 'Brand', value: option.brand, allowed: true },
+      { setting: 'product_ddl_show_group', label: 'Group', short: 'Group', value: option.group_name, allowed: true },
+      { setting: 'product_ddl_show_purchase_price', label: 'Purchase Price', short: 'Purchase', value: option.label_3, allowed: canSeePurchasePrice },
+      { setting: 'product_ddl_show_sales_price', label: 'Sales Price', short: 'Sales', value: option.label_4, allowed: true },
+      { setting: 'product_ddl_show_unit', label: 'Unit', short: 'Unit', value: option.label_5, allowed: true },
+      { setting: 'product_ddl_show_balance', label: 'Balance', short: 'Balance', value: option.balance, allowed: true },
+    ].filter((field) => field.allowed && ddlOn(field.setting) && field.value);
   const themeMode = useLocalStorage('color-theme', 'light');
   const darkMode = themeMode[0] === 'dark';
   const controlHeight = getControlHeightFromClassName(className) || FIELD_HEIGHT_REM;
+
+  /**
+   * The code of every product that has been through the list, by id.
+   *
+   * The screens keep only the id and the name of the product they picked and
+   * hand the box back a `{value, label}` of their own making -- so a box that a
+   * moment ago read "VC4 - Verso Commode Blue" fell back to the bare name the
+   * instant it was filled. Their object wins over the option that was clicked,
+   * because it is the `value` prop, so the code has to be put back on it here.
+   */
+  const codeByValue = useRef<Record<string, string>>({});
+
+  /** The screen's own `{value, label}`, with the code the list already knows. */
+  const withCode = (option: OptionType | null | undefined): OptionType | null => {
+    if (!option || option.code || !option.value) {
+      return option ?? null;
+    }
+
+    const code = codeByValue.current[String(option.value)];
+
+    return code ? { ...option, code } : option;
+  };
 
   React.useEffect(() => {
     setInternalSelectedOption(value ?? defaultValue ?? null);
@@ -111,7 +191,21 @@ const ProductDropdown: React.FC<DropdownProps> = ({
             label_3: item.label_3,
             label_4: item.label_4,
             label_5: item.label_5,
+            code: item.code || '',
+            brand: item.brand,
+            group_name: item.group_name,
+            // The balance arrives as a number or a numeric string, and a real
+            // stock of zero has to keep its line: `0` would be dropped by the
+            // truthiness filter in ddlDetails above, `'0'` is not.
+            balance: item.balance === null || item.balance === undefined ? '' : String(item.balance),
           }));
+          // Remembered so the box keeps the code after the screen takes over
+          // the value -- see withCode().
+          formattedOptions.forEach((option) => {
+            if (option.code) {
+              codeByValue.current[String(option.value)] = option.code;
+            }
+          });
           callback(formattedOptions);
         } else {
           callback([]);
@@ -256,42 +350,51 @@ const ProductDropdown: React.FC<DropdownProps> = ({
         onBlur={() => setIsControlFocused(false)}
         onKeyDown={handleKeyDown}
         getOptionLabel={(option) => option.label}
-        formatOptionLabel={(option) => (
-          <div>
-            <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
-              {option.label}
-            </div>
-            {isSelected && (
-              <div className="additional-info">
-                {option.label_2 && (
-                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                    Category: {option.label_2}
-                  </div>
-                )}
-                {canSeePurchasePrice && option.label_3 && (
-                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                    Purchase Price: {option.label_3}
-                  </div>
-                )}
-                {option.label_4 && (
-                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                    Sales Price: {option.label_4}
-                  </div>
-                )}
-                {option.label_5 && (
-                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                    Unit: {option.label_5}
-                  </div>
-                )}
+        formatOptionLabel={(option) => {
+          const details = ddlDetails(option);
+
+          // getOptionLabel above is what the picked value and the search read,
+          // and it stays the plain name whatever the branch shows.
+          // "CODE - NAME" while there is a code, the bare name when there is
+          // none -- the same shape the invoice paper prints. With the name
+          // switched off the code carries the line, and a product with neither
+          // keeps its name rather than showing nothing. Code and name count as
+          // one item: Single Line puts the comma after them, not between.
+          const head = !showName
+            ? option.code || option.label
+            : option.code
+              ? `${option.code} - ${option.label}`
+              : option.label;
+
+          return (
+            <div>
+              <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
+                {/* Code and name are one item, so the comma comes after them.
+                    Each detail keeps its label: a row of bare numbers says
+                    nothing about which price is which. */}
+                {singleLine && isSelected
+                  ? [head, ...details.map((field) => `${field.short}: ${field.value}`)].join(', ')
+                  : head}
               </div>
-            )}
-          </div>
-        )}
+              {/* Single Line has already spent its one line, and there is
+                  nothing to add before the list is open. */}
+              {!singleLine && isSelected && (
+                <div className="additional-info">
+                  {details.map((field) => (
+                    <div key={field.label} className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
+                      {field.label}: {field.value}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        }}
         getOptionValue={(option) => option.value}
         placeholder="Select product"
         styles={withFieldHeight(customStyles, controlHeight)}
-        defaultValue={defaultValue}
-        value={value ?? internalSelectedOption}
+        defaultValue={withCode(defaultValue)}
+        value={withCode(value ?? internalSelectedOption)}
         menuPortalTarget={document.body}
         ref={selectRef} // রেফ যোগ করুন
         // components={{ DropdownIndicator: () => null }}

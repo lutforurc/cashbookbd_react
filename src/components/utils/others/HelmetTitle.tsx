@@ -5,6 +5,13 @@ import TutorialVideoLink, { deriveScreenKey } from './TutorialVideoLink';
 interface HelmetParam {
   title: string | null;
   /**
+   * Anything that belongs beside the heading -- a screen's own switch, say.
+   * It rides in the same centred row, immediately to the right of the text,
+   * rather than among the toolbar fields below where its caption reads as if
+   * it labelled the neighbouring field.
+   */
+  children?: React.ReactNode;
+  /**
    * Overrides the route-derived key for the walkthrough link.
    *
    * Needed only where one route renders several different forms -- a cash
@@ -23,7 +30,7 @@ interface HelmetParam {
  * the video list has never seen registers itself the first time a platform
  * operator opens it. See TutorialVideoLink.
  */
-const HelmetTitle: React.FC<HelmetParam> = ({ title = '', screen }) => {
+const HelmetTitle: React.FC<HelmetParam> = ({ title = '', screen, children }) => {
   // useLocation, not window.location. The browser URL changes the moment a
   // navigation starts, so a screen that navigates away -- a form redirecting to
   // its list after a save -- could render once more and read the path it was
@@ -41,6 +48,7 @@ const HelmetTitle: React.FC<HelmetParam> = ({ title = '', screen }) => {
             {title}
           </h1>
           <TutorialVideoLink screen={screenKey} title={String(title || '')} />
+          {children}
         </div>)
       }
 

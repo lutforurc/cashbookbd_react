@@ -27,7 +27,7 @@ const CompareSingleItem = ({
   });
 
   /* ===============================
-   Ã¢Å“â€¦ Dynamic API Call (SAFE)
+   ✅ Dynamic API Call (SAFE)
   ================================= */
   useEffect(() => {
     if (!branchId || !startDate1 || !endDate1) return;
@@ -62,7 +62,7 @@ const CompareSingleItem = ({
   ]);
 
   /* ===============================
-   Ã¢Å“â€¦ Chart Data Mapping (SAFE)
+   ✅ Chart Data Mapping (SAFE)
   ================================= */
   useEffect(() => {
     const compare = charts?.compareData?.data?.period1;
@@ -76,7 +76,7 @@ const CompareSingleItem = ({
   }, [charts]);
 
   /* ===============================
-   Ã¢Å“â€¦ Chart Options
+   ✅ Chart Options
   ================================= */
 
   const allValues = chartData.series.flatMap((s) => s.data);
@@ -99,14 +99,14 @@ const CompareSingleItem = ({
     },
 
     yaxis: {
-      min: 0, // Ã Â¦Â¨Ã Â¦Â¿Ã Â¦Å¡Ã Â§â€¡Ã Â¦Â° Ã Â¦Â¸Ã Â¦Â°Ã Â§ÂÃ Â¦Â¬Ã Â¦Â¨Ã Â¦Â¿Ã Â¦Â®Ã Â§ÂÃ Â¦Â¨ Ã Â¦Â­Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â¦Â²Ã Â§Â
-      max: maxValue, // Ã Â¦â€°Ã Â¦ÂªÃ Â¦Â°Ã Â§â€¡Ã Â¦Â° Ã Â¦Â¸Ã Â¦Â°Ã Â§ÂÃ Â¦Â¬Ã Â§â€¹Ã Â¦Å¡Ã Â§ÂÃ Â¦Å¡ Ã Â¦Â­Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â¦Â²Ã Â§Â Ã¢Å“â€¦ (Ã Â¦â€ Ã Â¦ÂªÃ Â¦Â¨Ã Â¦Â¾Ã Â¦Â° Ã Â¦Â¡Ã Â¦Â¾Ã Â¦Å¸Ã Â¦Â¾ Ã Â¦â€¦Ã Â¦Â¨Ã Â§ÂÃ Â¦Â¯Ã Â¦Â¾Ã Â§Å¸Ã Â§â‚¬ Ã Â¦Â¸Ã Â§â€¡Ã Â¦Å¸ Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¬Ã Â§â€¡Ã Â¦Â¨)
-      tickAmount: 10, // Ã¢Å“â€¦ Ã Â¦Â®Ã Â§â€¹Ã Â¦Å¸ 5Ã Â¦Å¸Ã Â¦Â¾ Ã Â¦Â¸Ã Â§ÂÃ Â¦Å¸Ã Â§â€¡Ã Â¦Âª Ã Â¦Â¹Ã Â¦Â¬Ã Â§â€¡ (gap control)
+      min: 0, // নিচের সর্বনিম্ন ভ্যালু
+      max: maxValue, // উপরের সর্বোচ্চ ভ্যালু ✅ (আপনার ডাটা অনুযায়ী সেট করবেন)
+      tickAmount: 10, // ✅ মোট 5টা স্টেপ হবে (gap control)
 
       labels: {
         // formatter: (value) => thousandSeparator(value),
         formatter: (value) => {
-          const rounded = Math.round(value / 100) * 100; // Ã¢Å“â€¦ 495 Ã¢â€ â€™ 500
+          const rounded = Math.round(value / 100) * 100; // ✅ 495 → 500
           return thousandSeparator(rounded);
         },
       },
@@ -124,7 +124,7 @@ const CompareSingleItem = ({
       y: {
         formatter: (value, { dataPointIndex }) => {
           const label = chartData.labels[dataPointIndex] || '';
-          return `${label} Ã¢â€ â€™ ${thousandSeparator(value)}`;
+          return `${label} → ${thousandSeparator(value)}`;
         },
       },
     },

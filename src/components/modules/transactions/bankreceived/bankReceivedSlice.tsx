@@ -74,7 +74,13 @@ export const saveBankReceived = createAsyncThunk<ReceivedItem,SaveBankReceivedRe
 
     return response.data as SaveBankReceivedResponse;
   } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.message || 'Failed to save data');
+    // ⚠️ The server's sentence first. A "No data found" or "This voucher
+    // already approved" arrives as a 404 whose body carries the words; read
+    // second, the desk got axios's "Request failed with status code 404"
+    // instead, which says nothing about what to do next.
+    return thunkAPI.rejectWithValue(
+      error?.response?.data?.message || error.message || 'Failed to save data',
+    );
   }
 });
 
@@ -84,8 +90,10 @@ export const editBankReceived = createAsyncThunk<ReceivedItem,ReceivedItem,{ rej
     const response = await httpService.get(`${API_BANK_GENERAL_EDIT_URL}/${payload.id}`,);
     return response.data;
   } catch (error: any) {
+    // The server's own sentence, as above -- "No data found" is what a wrong
+    // or unknown voucher number earns, and it is the words the desk needs.
     return thunkAPI.rejectWithValue(
-      error.message || 'Failed to update bank received',
+      error?.response?.data?.message || error.message || 'Failed to update bank received',
     );
   }
 });
@@ -95,10 +103,21 @@ export const updateBankReceived = createAsyncThunk<ReceivedItem,ReceivedItem,{ r
   try {
     const response = await httpService.post(API_BANK_GENERAL_UPDATE_URL, payload);
     // const response = await httpService.put(`${API_BANK_GENERAL_UPDATE_URL}/${payload.id}`,payload,);
+
+    // ⚠️ A refusal arrives on top of a 2xx as success:false -- the closed year,
+    // a missing head, a journal already approved. Without this the thunk
+    // resolves, the screen clears the form, and the clerk hears "saved" for a
+    // voucher nothing was written to. saveBankReceived carries the same guard.
+    if (response.data?.success === false) {
+      return thunkAPI.rejectWithValue(
+        response.data?.message || 'Could not update the voucher.',
+      );
+    }
+
     return response.data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
-      error.message || 'Failed to update bank received',
+      error?.response?.data?.message || error.message || 'Failed to update bank received',
     );
   }
 });

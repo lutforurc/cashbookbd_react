@@ -127,6 +127,16 @@ export const login = ({ loginId, password, remember, callback }: InitialLoginDat
         return;
       }
 
+      // The response interceptor has already put this message on screen
+      // (network failure, expired session, permission refusal). Dispatching an
+      // error here would show a second, vaguer toast for the same request, so
+      // settle the loading state without producing a message.
+      if (error?.toastReported) {
+        removeData();
+        dispatch({ type: 'AUTH/login/errorReported' });
+        return;
+      }
+
       const msg =
         payload?.message ??
         payload?.error?.message ??
@@ -257,6 +267,11 @@ const authReducer = (state = initialState, action: any): AuthState => {
 
     case 'AUTH/login/error':
       return { ...state, isLoading: false, isLoggedIn: false, me: {}, errors: normalizeError(action.payload), deviceLimit: null };
+
+    // The message was already shown by the response interceptor; only stop the
+    // spinner, don't set errors (which would toast a second time on SignIn).
+    case 'AUTH/login/errorReported':
+      return { ...state, isLoading: false, isLoggedIn: false, me: {}, errors: null, deviceLimit: null };
 
     case 'AUTH/login/deviceLimit':
       return { ...state, isLoading: false, isLoggedIn: false, me: {}, errors: null, deviceLimit: action.payload };

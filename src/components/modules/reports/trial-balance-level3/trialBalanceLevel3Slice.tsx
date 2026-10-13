@@ -6,6 +6,8 @@ export interface TrialBalanceLevel3Request {
   branch_id?: number;
   start_date?: string;
   end_date?: string;
+  /** The printed sheet's Detailed mode: send each group's ledgers with it. */
+  with_children?: number;
 }
 
 export interface TrialBalanceLevel3State {

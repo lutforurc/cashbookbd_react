@@ -9,6 +9,8 @@ type StockRow = {
   brand_name?: string;
   cat_name?: string;
   product_name?: string;
+  /** Absent on databases the product-code column has not reached. */
+  code?: string;
   opening?: number;
   stock_in?: number;
   stock_out?: number;
@@ -68,7 +70,7 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
       const out: PrintRow[] = [];
       let serial = 1;
 
-      // âœ… grand totals
+      // ✅ grand totals
       let gOpening = 0;
       let gIn = 0;
       let gOut = 0;
@@ -101,7 +103,7 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
           });
         }
 
-        // âœ… category subtotal
+        // ✅ category subtotal
         out.push({
           __type: 'CAT_TOTAL',
           cat_name: cat,
@@ -111,14 +113,14 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
           balance: tBal,
         });
 
-        // âœ… add into grand total
+        // ✅ add into grand total
         gOpening += tOpening;
         gIn += tIn;
         gOut += tOut;
         gBal += tBal;
       }
 
-      // âœ… add grand total at the end
+      // ✅ add grand total at the end
       out.push({
         __type: 'GRAND_TOTAL',
         opening: gOpening,
@@ -233,6 +235,7 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                             <span style={{ fontSize: fs }}  className="block">
                               {row.brand_name && <span className="text-xs text-gray-900">{row.brand_name} </span>}
+                              {row.code && <span className="text-xs text-gray-900">{row.code} - </span>}
                               {row.product_name && <span className="text-xs text-gray-900">{row.product_name}</span>}
                             </span>
                           </td>
@@ -268,7 +271,7 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
                           </td>
 
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                            {Number(row?.balance) !== 0 ? (  // balance 0 à¦¹à¦²à§‡ "-"
+                            {Number(row?.balance) !== 0 ? (  // balance 0 হলে "-"
                               <span style={{ fontSize: fs }}  className="text-sm">
                                 {thousandSeparator(Number(row.balance))} {row.unit ? `(${row.unit})` : ''}
                               </span>

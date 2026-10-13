@@ -30,6 +30,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   // offers a row that cannot be moved.
   'dashboard': [
     { id: 'dashboard', title: "Dashboard" },
+    { id: 'delivery_dashboard', title: "Delivery System" },
   ],
   'transaction': [
     { id: 'cash_receive', title: "Cash Received" },
@@ -51,6 +52,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'inv_sales_import', title: "Sales Import" },
     { id: 'inv_purchase_return', title: "Purchase Return" },
     { id: 'inv_sales_return', title: "Sales Return" },
+    { id: 'inv_delivery', title: "Delivery" },
     { id: 'invoice/labour-invoice', title: "Labour Invoice" },
     { id: 'inv_trading_combined', title: "Combined Invoice" },
   ],
@@ -74,7 +76,9 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   'reports': [
     { id: 'reports/cashbook', title: "Cash Book" },
     { id: 'reports/cash-book-two-column', title: "Cash & Bank Book" },
+    { id: 'reports/daily-account-book', title: "Daily Account Book" },
     { id: 'reports/voucher-register', title: "Voucher Register" },
+    { id: 'reports/sales-referrer', title: "Referer" },
     { id: 'report_bankbook', title: "Bank Book" },
     { id: 'ageing_report', title: "Ageing" },
     { id: 'audit_trail', title: "Audit Trail" },
@@ -105,12 +109,22 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'reports/cat-wise/in-out', title: "Cat-wise In\/Out" },
     { id: 'reports/purchase-ledger', title: "Purchase Ledger" },
     { id: 'reports/sales-ledger', title: "Sales Ledger" },
+    // Declared in this order so the two returns sit under the Sales Ledger they
+    // are read beside, not at the foot of the menu.
+    { id: 'reports/purchase-return-ledger', title: "Purchase Return" },
+    { id: 'reports/sales-return-ledger', title: "Sales Return" },
+    { id: 'reports/delivery', title: "Delivery Report" },
+    // Customer Sales is declared here so Arrange Menu lists it like every other
+    // report -- hide/show and reorder. Its route, label and `sales.ledger`
+    // permission are untouched; hiding it only hides the sidebar link.
+    { id: 'report_customer_sales', title: "Customer Sales" },
     { id: 'reports/group-report', title: "Group Report" },
     { id: 'reports/mitch-match', title: "Mismatch" },
   ],
   'legacy': [
     { id: 'legacy/records', title: "Old ERP Record" },
     { id: 'legacy/old-records', title: "Old ERP Record (পুরনো ভার্সন)" },
+    { id: 'legacy/accounts', title: "Old ERP Account" },
   ],
   'product_tracking': [
     { id: 'product_tracking_settings', title: "Product Tracking" },
@@ -165,6 +179,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'product-group/product-group-list', title: "Product Group" },
     { id: 'pack-size/pack-size-list', title: "Pack Size" },
     { id: 'product/product-list', title: "Product List" },
+    { id: 'product_opening_import', title: "Opening Import" },
     { id: 'product_low_stock', title: "Low Stock" },
     { id: 'product_negative_stock', title: "Negative Stock" },
     { id: 'product_slow_moving', title: "Slow Moving" },
@@ -187,6 +202,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'business_types', title: "Business Types" },
     { id: 'inventory_systems', title: "Inventory Systems" },
     { id: 'tutorial_videos', title: "Tutorial Videos" },
+    { id: 'website_templates', title: "Website Templates" },
     { id: 'highlight_rules', title: "Highlight Rules" },
     { id: 'roles', title: "Roles" },
     { id: 'add_role', title: "Add Roles" },
@@ -212,6 +228,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'recyclebin', title: "Recycle Bin" },
     { id: 'voucher_history', title: "History" },
     { id: 'voucher_activity', title: "Log Changes" },
+    { id: 'report_mismatch', title: "Report Mismatch" },
   ],
   'hrm': [
     { id: 'hrms/employees', title: "Employees" },
@@ -238,6 +255,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'customer-supplier': [
     { id: 'customer-supplier/list', title: "Customers" },
+    { id: 'customer_opening_import', title: "Opening Import" },
     { id: 'coal1/coal1-list', title: "CoA L1" },
     { id: 'coal2/coal2-list', title: "CoA L2" },
     { id: 'coal3/coal3-list', title: "CoA L3" },
@@ -324,7 +342,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   const isTopbar = mode === 'topbar';
   const [permissions, setPermissions] = useState<any>([]);
   const settings = useSelector((s: any) => s.settings);
+  // The API's own verdict on whether this account may use the platform tools
+  // (SettingsController sends it, from the same predicate PlatformAdmin
+  // enforces). The menu reads it instead of guessing from permissions, so a
+  // tenant user is never shown a platform screen the API would refuse.
+  const isPlatformAdmin = Boolean(settings?.data?.is_platform_admin);
   const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
+  // Whether the branch the books are in offers "Deduct stock on delivery". The
+  // Delivery menu and the dashboard's Delivery System entry exist only where it
+  // does; a branch without it reads exactly as it did before the feature. The
+  // value is the CURRENT branch's, so switching branches (which reloads) shows
+  // or hides them with the branch.
+  const deductStockOnDelivery =
+    Number(settings?.data?.branch?.deduct_stock_on_delivery) === 1;
   const companyName =
     settings?.data?.company?.name ||
     currentBranch?.company?.name ||
@@ -686,6 +716,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             Dashboard
                           </NavLink>
                         </li>
+                        {deductStockOnDelivery && hasPermission(permissions, 'delivery.view') && (
+                          <li style={subSlot('dashboard', 'delivery_dashboard')}>
+                            <NavLink
+                              to={routes.delivery_dashboard}
+                              className={subMenuLinkClass}
+                            >
+                              Delivery System
+                            </NavLink>
+                          </li>
+                        )}
                       </ul>
                     </div>
                     </React.Fragment>
@@ -989,6 +1029,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+                          {deductStockOnDelivery && hasPermission(permissions, 'delivery.view') && (
+                            <li style={subSlot('invoice', 'inv_delivery')}>
+                              <NavLink
+                                to={routes.inv_delivery}
+                                className={subMenuLinkClass}
+                              >
+                                Delivery
+                              </NavLink>
+                            </li>
+                          )}
 
 
                           {hasPermission(permissions, 'labour.invoice.create') && (
@@ -1286,6 +1336,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
+                          {hasPermission(permissions, 'cashbook.view') && (
+                            <li style={subSlot('reports', 'reports/daily-account-book')}>
+                              <NavLink
+                                to={routes.report_daily_account_book}
+                                className={subMenuLinkClass}
+                              >
+                                Daily Account Book
+                              </NavLink>
+                            </li>
+                          )}
+
                           {hasPermission(permissions, 'voucher.register') && (
                             <li style={subSlot('reports', 'reports/voucher-register')}>
                               <NavLink
@@ -1293,6 +1354,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Voucher Register
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'sales.referrer') && (
+                            <li style={subSlot('reports', 'reports/sales-referrer')}>
+                              <NavLink
+                                to={routes.report_referrer}
+                                className={subMenuLinkClass}
+                              >
+                                Referer
                               </NavLink>
                             </li>
                           )}
@@ -1616,6 +1688,50 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+                          {/* The two return ledgers, under the ledger they are
+                              read against and gated by its permission — the
+                              same book the other way round, so a role that may
+                              open a ledger may open its returns. */}
+                          {hasPermission(permissions, 'purchase.ledger') && (
+                            <li style={subSlot('reports', 'reports/purchase-return-ledger')}>
+                              <NavLink
+                                to="/reports/purchase-return-ledger"
+                                className={subMenuLinkClass}
+                              >
+                                Purchase Return
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'sales.ledger') && (
+                            <li style={subSlot('reports', 'reports/sales-return-ledger')}>
+                              <NavLink
+                                to="/reports/sales-return-ledger"
+                                className={subMenuLinkClass}
+                              >
+                                Sales Return
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'delivery.view') && (
+                            <li style={subSlot('reports', 'reports/delivery')}>
+                              <NavLink
+                                to={routes.report_delivery}
+                                className={subMenuLinkClass}
+                              >
+                                Delivery Report
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'sales.ledger') && (
+                            <li style={subSlot('reports', 'report_customer_sales')}>
+                              <NavLink
+                                to="/reports/customer-sales"
+                                className={subMenuLinkClass}
+                              >
+                                Customer Sales
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'group.report') && (
                             <li style={subSlot('reports', 'reports/group-report')}>
                               <NavLink
@@ -1715,7 +1831,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'legacy.record.view') && (
                             <li style={subSlot('legacy', 'legacy/records')}>
                               <NavLink to={routes.legacy_record} className={subMenuLinkClass}>
-                                Old ERP Record
+                                Old ERP Record 1
                               </NavLink>
                             </li>
                           )}
@@ -1723,7 +1839,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'legacy.old.record.view') && (
                             <li style={subSlot('legacy', 'legacy/old-records')}>
                               <NavLink to={routes.legacy_old_record} className={subMenuLinkClass}>
-                                Old ERP Record (পুরনো ভার্সন)
+                                Old ERP Record 2
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {/* The old shop's own cash and bank accounts. Same
+                              key as the record above -- same archive, same old
+                              system -- and read-only like it. */}
+                          {hasPermission(permissions, 'legacy.record.view') && (
+                            <li style={subSlot('legacy', 'legacy/accounts')}>
+                              <NavLink to={routes.legacy_accounts} className={subMenuLinkClass}>
+                                Old ERP Account
                               </NavLink>
                             </li>
                           )}
@@ -2549,6 +2676,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+                          {(hasPermission(permissions, 'product.opening.edit') ||
+                            hasPermission(permissions, 'products.edit')) && (
+                            <li style={subSlot('products', 'product_opening_import')}>
+                              <NavLink
+                                to={routes.product_opening_import}
+                                className={subMenuLinkClass}
+                              >
+                                Opening Import
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'low.stock') && (
                             <li style={subSlot('products', 'product_low_stock')}>
                               <NavLink
@@ -2919,6 +3057,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
+                          {/* The master website templates the platform offers to
+                              every company.
+                              
+                              ⚠️ Gated on the SERVER'S platform-admin verdict,
+                              not on permissions: these routes are behind
+                              platform.admin, so a permission check here would
+                              show the menu to a tenant user who holds
+                              reseller.view and then refuse every call. The
+                              verdict comes from the same predicate the
+                              middleware uses, so the two cannot disagree. */}
+                          {isPlatformAdmin && (
+                            <li style={subSlot('admin', 'website_templates')}>
+                              <NavLink
+                                to={routes.website_templates}
+                                className={subMenuLinkClass}
+                              >
+                                Website Templates
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'highlight.rules') && (
                             <li style={subSlot('admin', 'highlight_rules')}>
                               <NavLink
@@ -3218,6 +3376,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               >
 
                                 Log Changes
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'mitmatch.report') && (
+                            <li style={subSlot('vr_settings', 'report_mismatch')}>
+                              <NavLink
+                                to={routes.report_mismatch}
+                                className={subMenuLinkClass}
+                              >
+                                Report Mismatch
                               </NavLink>
                             </li>
                           )}
@@ -3556,6 +3724,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   className={subMenuLinkClass}
                                 >
                                   Customers
+                                </NavLink>
+                              </li>
+                            )}
+                            {(hasPermission(permissions, 'party.opening.edit') ||
+                              hasPermission(permissions, 'cs.edit')) && (
+                              <li style={subSlot('customer-supplier', 'customer_opening_import')}>
+                                <NavLink
+                                  to={routes.customer_opening_import}
+                                  className={subMenuLinkClass}
+                                >
+                                  Opening Import
                                 </NavLink>
                               </li>
                             )}

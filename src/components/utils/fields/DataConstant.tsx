@@ -43,6 +43,19 @@ export const moneySpellFormat = [
   { id: 4, name: 'Only Taka ...' },
 ];
 
+/**
+ * How the party ledger reads a bill that carries a discount.
+ *
+ * `''` is the first option and the default: the party's own line, net of the
+ * discount, one line a voucher -- the report as it has always read. `'1'`
+ * shows the bill at full value with the discount as a line of its own on the
+ * other side. Both are the same money; only the telling differs.
+ */
+export const ledgerDiscountSplit = [
+  { id: '', name: 'As it is now' },
+  { id: 1, name: 'Bill whole + discount line' },
+];
+
 export const printPadHeading = [
   { id: 1, name: 'Branch Pad Heading' },
   { id: 2, name: 'Company Pad Heading' },

@@ -4,6 +4,7 @@ import type { PrintBranch } from '../../../utils/utils-functions/printBranch';
 import SalesLedgerCalculator from '../../../utils/calculators/SalesLedgerCalculator';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
+import { ledgerProductLabel } from '../utils/ledgerProductLabel';
 
 /**
  * A Sales Ledger report, in the shape the print designer draws.
@@ -44,6 +45,15 @@ export type SalesLedgerDocumentOptions = {
   branchName?: string | null;
   /** settings.data.branch.stock_report_type === '1': prefix the category. */
   showCategory?: boolean;
+  /**
+   * Branch > Invoice Setup > "Show Product Information in Ledger Details".
+   * Undefined/false-y keeps the product lines (the report has always printed
+   * them); only an explicit `false` drops them from the cell's block, leaving
+   * the account and the note -- and collapses the numeric lines to ONE summary
+   * line: quantity and rate read a dash, and the total is the invoice's own
+   * total once. The discount is its own column and is never taken off the total.
+   */
+  showProductDetails?: boolean;
 };
 
 const num = (value: any) => {
@@ -85,6 +95,7 @@ export const toSalesLedgerDocumentData = ({
   branch,
   branchName,
   showCategory,
+  showProductDetails,
 }: SalesLedgerDocumentOptions): DocumentData => {
   const list = Array.isArray(rows) ? rows : [];
   const from = dateText(startDate);
@@ -97,12 +108,7 @@ export const toSalesLedgerDocumentData = ({
 
     const coaName = getRelevantCoaName(row) ?? '';
 
-    const label = (detail: any) => {
-      const category = String(detail?.product?.category?.name ?? '').trim();
-      const product = String(detail?.product?.name ?? '').trim();
-
-      return `${showCategory && category ? `${category} ` : ''}${product}`.trim();
-    };
+    const label = (detail: any) => ledgerProductLabel(detail, !!showCategory);
 
     // A dash rather than nothing, where the voucher has no lines to show --
     // which is what the paper this replaces has always printed in an empty
@@ -117,26 +123,65 @@ export const toSalesLedgerDocumentData = ({
       0,
     );
 
+    // The products alone, for the composed column's {products} token -- empty
+    // when the branch has switched product information off, so the cell keeps
+    // its account and its note and loses only the product lines.
+    const productLines = showProductDetails === false ? [] : details.map(label);
+
+    // The cell's block, the bespoke print's own order: the account, then a
+    // product per line, then the voucher's note. Blank parts dropped, so an
+    // account-less or note-less voucher leaves no empty line box behind.
+    const block = [
+      coaName,
+      ...productLines,
+      String(row?.sales_master?.notes ?? '').trim(),
+    ].filter(Boolean);
+
     return {
       id: row?.id ?? row?.mtmid,
       sl: row?.sl_number,
       challan_no: row?.challan_no ?? '',
       challan_date: row?.challan_date ?? '',
       coa_name: coaName,
+      // The products alone, for the composed column's {products} token.
+      products: productLines,
 
       // The account, then the products, then the voucher's own note: exactly
-      // the block the bespoke print draws in this cell, as lines.
-      product_lines: [coaName, ...details.map(label), String(row?.sales_master?.notes ?? '')],
+      // the block the bespoke print draws in this cell, handed over three ways
+      // (LEDGER_LINE_FIELDS) -- as lines, as one line, and as the parts a
+      // pattern may arrange.
+      product_details_lines: block,
+      product_details_flat: block.join(' '),
 
-      qty_lines: perLine((detail) => thousandSeparator(num(detail?.quantity))),
-      rate_lines: perLine((detail) =>
-        num(detail?.sales_price) ? thousandSeparator(num(detail.sales_price)) : '-',
-      ),
-      amount_lines: perLine((detail) =>
-        num(detail?.sales_price)
-          ? thousandSeparator(Math.floor(num(detail?.quantity) * num(detail.sales_price)))
-          : '-',
-      ),
+      // ⚠️ THE OLD NAME, KEPT FILLED. A layout saved before the ledger got its
+      // own Product & Details column still points at `product_lines`, whose
+      // composed pattern names the invoice's product facts and so composes to
+      // nothing on a ledger row. DocumentPrint draws the row's own lines
+      // wherever the pattern wrote nothing, so filling this too means such a
+      // layout prints its block instead of a blank cell -- migration or no
+      // migration. See retargetLedgerProductColumn in printTemplate.ts.
+      product_lines: block,
+
+      // With product information off the invoice is ONE summary line: quantity
+      // and rate read a dash, and the total is the invoice's own total once.
+      // The discount is a column of its own, so it is not taken off the total
+      // here -- a saved layout prints the gross total beside the discount it
+      // already carries, exactly as the screen does.
+      qty_lines: showProductDetails === false
+        ? ['-']
+        : perLine((detail) => thousandSeparator(num(detail?.quantity))),
+      rate_lines: showProductDetails === false
+        ? ['-']
+        : perLine((detail) =>
+            num(detail?.sales_price) ? thousandSeparator(num(detail.sales_price)) : '-',
+          ),
+      amount_lines: showProductDetails === false
+        ? [amount ? thousandSeparator(amount) : '-']
+        : perLine((detail) =>
+            num(detail?.sales_price)
+              ? thousandSeparator(Math.floor(num(detail?.quantity) * num(detail.sales_price)))
+              : '-',
+          ),
 
       qty: details.reduce((sum, detail) => sum + num(detail?.quantity), 0),
       amount,

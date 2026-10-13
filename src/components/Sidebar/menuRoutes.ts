@@ -16,6 +16,7 @@ import routes from '../services/appRoutes';
 export const MENU_ROUTES: Record<string, string[]> = {
   'dashboard': [
     '/dashboard',
+    routes.delivery_dashboard,
   ],
   'transaction': [
     routes.cash_receive,
@@ -56,6 +57,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
   'reports': [
     '/reports/cashbook',
     routes.report_cashbook_two_column,
+    routes.report_daily_account_book,
     routes.report_bankbook,
     routes.ageing_report,
     routes.audit_trail,
@@ -86,6 +88,8 @@ export const MENU_ROUTES: Record<string, string[]> = {
     '/reports/cat-wise/in-out',
     '/reports/purchase-ledger',
     '/reports/sales-ledger',
+    '/reports/purchase-return-ledger',
+    '/reports/sales-return-ledger',
     '/reports/group-report',
     '/reports/mitch-match',
     // Reached from a list on one of the screens above rather than from the menu
@@ -97,6 +101,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
   'legacy': [
     routes.legacy_record,
     routes.legacy_old_record,
+    routes.legacy_accounts,
   ],
   'product_tracking': [
     routes.product_tracking_settings,
@@ -161,6 +166,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     '/brand/brand-list',
     '/category/category-list',
     '/product/product-list',
+    routes.product_opening_import,
     routes.product_low_stock,
     routes.product_negative_stock,
     routes.product_slow_moving,
@@ -193,6 +199,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.business_types,
     routes.inventory_systems,
     routes.tutorial_videos,
+    routes.website_templates,
     routes.highlight_rules,
     routes.roles,
     routes.add_role,
@@ -221,6 +228,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.recyclebin,
     routes.voucher_history,
     routes.voucher_activity,
+    routes.report_mismatch,
   ],
   'hrm': [
     '/hrms/employees',
@@ -247,6 +255,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
   ],
   'customer-supplier': [
     '/customer-supplier/list',
+    routes.customer_opening_import,
     '/coal1/coal1-list',
     '/coal2/coal2-list',
     '/coal3/coal3-list',

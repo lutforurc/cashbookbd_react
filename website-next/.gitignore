@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+.env*.local
+.env.production
+test-results
+playwright-report
+.auth
+next-env.d.ts

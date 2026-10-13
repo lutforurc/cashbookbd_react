@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiBook, FiCheckSquare, FiClock, FiEdit2, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
+import { FiBook, FiCheckSquare, FiClock, FiEdit2, FiEye, FiList, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
+import DropdownCommon from "../../utils/utils-functions/DropdownCommon";
+import { ClientType } from "../../utils/fields/DataConstant";
 import SearchInput from "../../utils/fields/SearchInput";
-import { ButtonLoading, ROW_ACTION_BUTTON_CLASS } from "../../../pages/UiElements/CustomButtons";
+import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
+import { ButtonLoading, PrintButton } from "../../../pages/UiElements/CustomButtons";
 import Loader from "../../../common/Loader";
 import Pagination from "../../utils/utils-functions/Pagination";
 import Table from "../../utils/others/Table";
@@ -15,10 +18,40 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import ConfirmModal from "../../utils/components/ConfirmModalProps";
 import { hasPermission } from "../../utils/permissionChecker";
 import httpService from "../../services/httpService";
-import { API_CUSTOMER_HISTORY_URL, API_CUSTOMER_PROFILE_PDF_URL } from "../../services/apiRoutes";
+import { API_CONTACT_DETAILS_LIST_URL, API_CUSTOMER_HISTORY_URL, API_CUSTOMER_PROFILE_PDF_URL } from "../../services/apiRoutes";
 import routes from "../../services/appRoutes";
+import { useReactToPrint } from "react-to-print";
+import PrintFontInput from "../../utils/fields/PrintFontInput";
+import PrintRowsInput from "../../utils/fields/PrintRowsInput";
+import CustomerListPrint from "./CustomerListPrint";
+import PartyLedgerModal from "./PartyLedgerModal";
 import { formatMobile, useMobileFormat } from "../../utils/utils-functions/mobileFormat";
 import { Button } from '../../../pages/UiElements/CustomButtons';
+import { isBranchSettingOn } from "../../utils/userFeatureSettings";
+// The branch's own staff, for the "handled by" filter. The DDL endpoint is the
+// one the Installment screens already pick a field officer from.
+import { getEmployeesDDL } from "../hrms/employee/employeeSlice";
+
+/**
+ * The classification filter, built from the same constant the Due List draws its
+ * own from -- so the two screens offer the same four types, and a fifth added to
+ * Add Customers appears on both without either being opened.
+ *
+ * ClientType's own blank entry says "Select Client Type", which reads as a
+ * prompt on a form. Here the empty value means EVERY party, and it is worded
+ * that way.
+ */
+const CUSTOMER_TYPE_FILTER = [
+  { id: '', name: 'All Types' },
+  ...ClientType.filter((entry) => entry.id !== ''),
+];
+
+/**
+ * What the print toolbar starts on: thirty names to a sheet, set at ten point.
+ * The desk can change both, and clearing either box falls back to these.
+ */
+const PRINT_ROWS_PER_SHEET = 30;
+const PRINT_FONT_SIZE = 10;
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -48,6 +81,41 @@ const CustomerSupplier = () => {
   const search = searchParams.get("search") ?? "";
   const page = readNumber("page", 1);
   const perPage = readNumber("per_page", 10);
+  // The classification rides in the address bar with the rest of the list's
+  // position. Held in state alone it would be dropped the moment the reader
+  // paged, searched or came back from an edit -- each of those rewrites the
+  // query string, and only what is written there survives them.
+  const partyTypeId = searchParams.get("party_type_id") ?? "";
+  /**
+   * Whose customers the list is narrowed to -- an `hrm_employees.id`, in the
+   * address bar with the rest of the list's position and for the same reasons.
+   */
+  const employeeId = searchParams.get("handle_by_employee_id") ?? "";
+
+  /**
+   * What is IN the box, which is not the same as what has been searched for.
+   *
+   * The box used to write straight into the address bar, and the fetch effect
+   * below reads `search` from there -- so every keystroke dispatched a request.
+   * Typing "100" sent three of them, and the list under the desk flickered
+   * through two answers to reach a third. The box now holds its own text and the
+   * term is committed on Enter or on the Search button, which is when a search
+   * was ever meant to happen.
+   *
+   * ⚠️ `search` STILL IS WHAT WAS SEARCHED FOR, and it changes from outside this
+   * component too: the global search navigates here with a term already in it,
+   * and Back rewrites the address. The effect further down copies those in, so
+   * the box and the list never disagree about the last search.
+   */
+  const [searchText, setSearchText] = useState(search);
+
+  /**
+   * ⚠️ An Enter on the word already applied writes nothing new into the
+   * address, and the fetch effect keyed on the address would stay quiet -- so
+   * Search on a list somebody else has been editing since would appear to do
+   * nothing. This still asks it once.
+   */
+  const [searchRun, setSearchRun] = useState(0);
 
   /** Writes one part of the list's position, leaving the others as they are. */
   const setListParams = (next: Record<string, string | number | null>) => {
@@ -71,9 +139,17 @@ const CustomerSupplier = () => {
     );
   };
 
-  const setSearchValue = (value: string) => setListParams({ search: value, page: null });
   const setPage = (value: number) => setListParams({ page: value === 1 ? null : value });
   const setPerPage = (value: number) => setListParams({ per_page: value === 10 ? null : value, page: null });
+  // A new classification is a new list, so the page goes back to the first:
+  // page four of "every party" is not page four of the suppliers, and the
+  // shorter list would open past its own end.
+  const setPartyTypeId = (value: string) =>
+    setListParams({ party_type_id: value, page: null });
+  // Same rule: page four of one employee's customers is not page four of
+  // another's, so a new employee starts the list at the first page.
+  const setEmployeeId = (value: string) =>
+    setListParams({ handle_by_employee_id: value, page: null });
   const [editedRows, setEditedRows] = useState<Record<number, any>>({});
   const [buttonLoading, setButtonLoading] = useState(false);
   const [showGuarantorModal, setShowGuarantorModal] = useState(false);
@@ -91,19 +167,155 @@ const CustomerSupplier = () => {
   const [historyCustomer, setHistoryCustomer] = useState<any | null>(null);
   const [historyEvents, setHistoryEvents] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  // The party whose recent transactions are open in the popup, or null.
+  const [reportParty, setReportParty] = useState<any | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const customerPageData = customers?.customer || {};
   const tableData = Array.isArray(customerPageData?.data) ? customerPageData.data : [];
-		  const totalRecords = Number(customerPageData?.total || customers?.total || 0);
-		  const totalPages = Math.max(1, Number(customerPageData?.last_page || Math.ceil(totalRecords / perPage) || 1));
-		  const isOpeningEnabled = settings?.data?.branch?.is_opening == 1;
+  const totalRecords = Number(customerPageData?.total || customers?.total || 0);
+  const totalPages = Math.max(1, Number(customerPageData?.last_page || Math.ceil(totalRecords / perPage) || 1));
+  // One reading of the branch's opening switch, so the two places below cannot
+  // drift apart the way `settings?.data?.branch?.is_opening == 1` and
+  // isBranchSettingOn() had on the Product list.
+  const openingOn = isBranchSettingOn(settings, 'is_opening');
+  // The customer form only asks for a National ID when the branch says so, so
+  // where the switch is off the column would be a column of blanks.
+  const needNationalId = isBranchSettingOn(settings, 'need_customer_national_id');
+  /**
+   * Whether this list filters and shows by the employee a customer is handled
+   * by -- Branch Setup's "Customer Handle By Employee".
+   *
+   * ⚠️ AND IT STANDS DOWN ON THE SUPPLIER CLASSIFICATION. The field lives on
+   * the customer form alone, so a supplier row can never carry one: under the
+   * Supplier filter the picker could only offer choices that all come back
+   * empty, and the column would be a third column of blanks beside National ID
+   * and the ledger page -- which stand down for exactly this reason.
+   */
+  const handleByEmployeeOn =
+    isBranchSettingOn(settings, 'need_customer_handle_by_employee') && partyTypeId !== '2';
+  const employees = useSelector((state: any) => state.employees);
   const canEditCustomer = hasPermission(settings?.data?.permissions, 'cs.edit');
   const canDeleteCustomer = hasPermission(settings?.data?.permissions, 'cs.delete');
   // Deleting an opening balance deletes a voucher, so it answers to the voucher
   // permission -- the same one the API checks. Gating it on cs.delete instead
   // would offer a button that comes back 403.
   const canDeleteVoucher = hasPermission(settings?.data?.permissions, 'voucher.delete');
+  // The popup reads the Ledger's own endpoint, so it asks for the permissions
+  // that screen asks for -- the very same pair its route is guarded with.
+  // Deliberately not `cs.ledger`: that key is in the menu list but no route or
+  // component in the app reads it, so gating on it would hide the button from
+  // everybody.
+  const canViewLedger =
+    hasPermission(settings?.data?.permissions, 'ledger.view') ||
+    hasPermission(settings?.data?.permissions, 'ledger.customer');
+
+  /**
+   * Which row's action menu is open, and where its panel hangs.
+   *
+   * ⚠️ ONE panel for the whole table, not one per row. Ten rows would otherwise
+   * be ten panels, ten sets of listeners, and ten chances to leave two of them
+   * standing at once. The row the panel belongs to is this state; the items in
+   * it are built from that.
+   */
+  const [rowMenuRow, setRowMenuRow] = useState<any | null>(null);
+  const [rowMenuPos, setRowMenuPos] = useState<React.CSSProperties | null>(null);
+  const rowMenuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const rowMenuPanelRef = useRef<HTMLDivElement | null>(null);
+
+  /**
+   * ⚠️ `fixed`, and that is what makes it work rather than a matter of taste:
+   * the table sits inside two `overflow-x-auto` boxes, and an absolutely
+   * positioned panel would be clipped by the first of them. A fixed one hangs
+   * off the viewport instead -- the only thing that could pull it back in is a
+   * transform on an ancestor, and this screen has none.
+   *
+   * Anchored on the RIGHT, so a row with seven actions grows leftwards into the
+   * page instead of off the right edge. The threshold is one strip tall rather
+   * than the 160px a column panel needs: below the last rows there is nothing
+   * to hang into, so it flips up above the button.
+   */
+  const openRowMenu = (row: any, button: HTMLButtonElement) => {
+    const rect = button.getBoundingClientRect();
+    const GAP = 4;
+    const below = window.innerHeight - rect.bottom - GAP - 8;
+    const flip = below < 48;
+
+    rowMenuButtonRef.current = button;
+
+    setRowMenuPos({
+      position: 'fixed',
+      right: Math.max(8, window.innerWidth - rect.right),
+      maxWidth: window.innerWidth - 16,
+      ...(flip
+        ? { bottom: window.innerHeight - rect.top + GAP }
+        : { top: rect.bottom + GAP }),
+    });
+    setRowMenuRow(row);
+  };
+
+  const closeRowMenu = () => {
+    setRowMenuRow(null);
+    setRowMenuPos(null);
+  };
+
+  /**
+   * The four ways the panel goes away -- and the one click that must not.
+   *
+   * ⚠️ The trigger is asked about alongside the panel because it is NOT inside
+   * it. Without that, pressing the open row's own eye would close the panel on
+   * mousedown and open it again on click, and the button would read as dead.
+   * Table.tsx dodges the same trap by keeping its own trigger inside `menuRef`.
+   */
+  useEffect(() => {
+    if (!rowMenuRow) return undefined;
+
+    const inside = (target: Node) =>
+      Boolean(
+        rowMenuPanelRef.current?.contains(target) ||
+        rowMenuButtonRef.current?.contains(target),
+      );
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (!inside(event.target as Node)) closeRowMenu();
+    };
+
+    // Escape puts the keyboard back on the button it came from rather than at
+    // the top of the document.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      closeRowMenu();
+      rowMenuButtonRef.current?.focus();
+    };
+
+    // On the way down, because the page scrolls in a box rather than on the
+    // window. The panel's own scrollbar is not that, hence the exemption.
+    const onScroll = (event: Event) => {
+      if (rowMenuPanelRef.current?.contains(event.target as Node)) return;
+      closeRowMenu();
+    };
+
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', closeRowMenu);
+
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', closeRowMenu);
+    };
+  }, [rowMenuRow]);
+
+  /**
+   * A refetch, a new page or the branch turning opening on can take the row the
+   * panel was opened for out of the list -- and it would go on hanging there
+   * describing a party that is no longer on the screen.
+   */
+  useEffect(() => {
+    closeRowMenu();
+  }, [openingOn, search, page, partyTypeId]);
 
   useEffect(() => {
     const state = location.state as any;
@@ -116,32 +328,154 @@ const CustomerSupplier = () => {
     // One navigate, not a setSearchValue followed by a navigate that drops the
     // query string it had just written. The term goes into the address, the
     // page is left out (absent means the first), and the one-shot state that
-    // brought us here is cleared in the same step.
-    navigate(`${location.pathname}?search=${encodeURIComponent(customerSearch)}`, {
+    // brought us here is cleared in the same step. The classification is
+    // carried across -- arriving from the global search must not quietly widen
+    // the list back to every party.
+    const params = new URLSearchParams();
+    params.set("search", customerSearch);
+
+    if (partyTypeId) {
+      params.set("party_type_id", partyTypeId);
+    }
+
+    navigate(`${location.pathname}?${params.toString()}`, {
       replace: true,
       state: null,
     });
-  }, [location.pathname, location.state, navigate]);
+  }, [location.pathname, location.state, navigate, partyTypeId]);
 
 
+
+  /**
+   * The address bar is the other way in, and it does not go through the box --
+   * so the box has to be told what the list has ended up showing. Keyed on
+   * `search` alone: a change of page or of classification must not wipe what is
+   * half-typed in the box.
+   */
+  useEffect(() => {
+    setSearchText(search);
+  }, [search]);
 
   // 🔥 First API Call and on pagination change
   useEffect(() => {
-    dispatch(getCustomer({ page, per_page: perPage, search }));
-  }, [dispatch, page, perPage, search]);
+    dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId, employeeId }));
+  }, [dispatch, page, perPage, search, partyTypeId, employeeId, searchRun]);
+
+  /**
+   * The staff to filter by, fetched once for the branch.
+   *
+   * ⚠️ ONLY WHERE THE SWITCH IS ON. The picker is not drawn otherwise, and the
+   * endpoint answers 404 with "No employees found" on a branch that runs no
+   * HRMS at all -- a request per visit whose answer is thrown away, plus an
+   * error in a slice four other screens share.
+   */
+  useEffect(() => {
+    if (!handleByEmployeeOn) return;
+
+    dispatch(getEmployeesDDL({ branchId: String(settings?.data?.branch?.id ?? '') }));
+  }, [dispatch, handleByEmployeeOn, settings?.data?.branch?.id]);
+
+  /**
+   * The picker's rows: every party, then the ones nobody has been given to,
+   * then the branch's staff.
+   *
+   * ⚠️ "All Employees" IS NOT OPTIONAL. A branch that has just turned the
+   * switch on has nothing but customers with nobody on them; without this row
+   * the desk could never get back to the full list once it had picked a name.
+   *
+   * ⚠️ "No Employee" IS THE ONE THAT NEEDS THE SENTINEL. An empty value is
+   * already spoken for -- it is the "show everything" the row above means and
+   * the absence of a filter in the query string -- so the unassigned rows are
+   * asked for by the word 'none', which the API turns into `IS NULL`. A branch
+   * turning the switch on uses this row to work through its customers and hand
+   * each one to somebody.
+   */
+  const employeeFilterData = [
+    { id: '', name: 'All Employees' },
+    { id: 'none', name: 'No Employee' },
+    ...(Array.isArray(employees?.employeeDDL?.data?.data)
+      ? employees.employeeDDL.data.data.map((item: any) => ({
+          id: item?.id?.toString() ?? '',
+          name: item?.name ?? '',
+        }))
+      : []),
+  ];
+
+  /**
+   * Enter, or the Search button -- the two ways the term is committed.
+   *
+   * ⚠️ `page: null` is the reset to the first page, and it belongs here rather
+   * than in the button: page four of the old word is not page four of the new
+   * one, and a shorter list would open past its own end.
+   */
+  const submitSearch = () => {
+    setListParams({ search: searchText, page: null });
+    setSearchRun((n) => n + 1);
+  };
 
   // 🔥 Search Button
   const handleSearchButton = () => {
-    setPage(1);
+    submitSearch();
+  };
+
+  /**
+   * ⚠️ On the row, not on the box. SearchInput is on fifty screens and Enter is
+   * this one screen's business -- the same reason the placeholder lives at this
+   * call site. The guard keeps Enter on the per-page dropdown beside it out of
+   * the search: that control is a <select>, so it is not the input we are after.
+   *
+   * ⚠️ The print toolbar's two boxes ARE inputs, and stand on this row. Left in,
+   * Enter on a Rows figure typed and done with would search again -- and reset
+   * the list to its first page under the desk.
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "Enter" || !(e.target instanceof HTMLInputElement)) return;
+    if (e.target.id === "printRowsPerPage" || e.target.id === "printFontSize") return;
+    e.preventDefault(); // Enter inside a form submits it -- this is a search
+    submitSearch();
+  };
+
+  /**
+   * Choosing a classification asks the server again at once.
+   *
+   * ⚠️ THE NARROWING IS THE SERVER'S, not a sift over the ten rows in hand.
+   * Filtering here would answer one page of one type while the total and the
+   * page count still described every type, and the pages past the first would
+   * come back empty. The request goes out with the type, and the server cuts the
+   * set before it pages it.
+   */
+  const handlePartyTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPartyTypeId(e.target.value);
+  };
+
+  // The same narrowing, by employee -- written to the address bar by setEmployeeId
+  // and read by the fetch effect above. No local state: `employeeId` IS what has
+  // been asked for, and the box shows it.
+  const handleEmployeeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setEmployeeId(e.target.value);
   };
 
 
 
 
   // 🔥 Per Page Change
+  /**
+   * ⚠️ ONE setListParams CALL, NOT TWO.
+   *
+   * This used to be `setPerPage(...)` followed by `setPage(1)`, and the per-page
+   * never took: react-router's `setSearchParams` builds the next address from
+   * the search string of the LAST RENDER, so two calls in one handler do not
+   * stack -- the second navigates from the params as they were before the
+   * first, and the `per_page` the first had just written is not in them. Every
+   * choice, 20 through 100, was written and dropped in the same tick while the
+   * address bar briefly showed it.
+   *
+   * `setPerPage` above already sends `page: null` in its own call, which is the
+   * reset to page one this line was trying to make, so there is nothing to do
+   * here but hand it the number.
+   */
   const handleSelectChange = (e) => {
     setPerPage(Number(e.target.value));
-    setPage(1);
   };
 
   // 🔥 Page Change
@@ -190,7 +524,7 @@ const CustomerSupplier = () => {
         data: payload,
       })
     )
-        .unwrap()
+      .unwrap()
       .then((res) => {
         if (res?.message && res?.success) {
           setEditedRows((prev) => {
@@ -198,7 +532,7 @@ const CustomerSupplier = () => {
             delete copy[row.id];
             return copy;
           });
-          dispatch(getCustomer({ page, per_page: perPage, search }));
+          dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId, employeeId }));
           toast.success(res.message);
         } else {
           toast.info(res.message);
@@ -240,7 +574,7 @@ const CustomerSupplier = () => {
             }
             return copy;
           });
-          dispatch(getCustomer({ page, per_page: perPage, search }));
+          dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId, employeeId }));
           toast.success(res.message);
         } else {
           toast.info(res?.message || "No changes were made.");
@@ -268,7 +602,7 @@ const CustomerSupplier = () => {
         // The typed-but-unsaved figure would otherwise sit in the box looking
         // like the balance survived.
         handleCancelRow(openingDeleteRow);
-        dispatch(getCustomer({ page, per_page: perPage, search }));
+        dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId, employeeId }));
       })
       .catch((err) => {
         toast.error(err || 'Opening balance could not be deleted');
@@ -385,6 +719,115 @@ const CustomerSupplier = () => {
     }
   };
 
+  /**
+   * The whole list on paper, not the page of it on screen.
+   *
+   * ⚠️ THE FETCH IS ITS OWN, DELIBERATELY. The server pages this list, so the
+   * store holds ten rows -- printing from those would put ten customers on the
+   * sheet however many the report has. The same endpoint is asked for every row
+   * under the filters on screen, and the answer lands in this component's own
+   * state rather than in the slice, so the desk stays on the page it was
+   * reading: the address bar, the box and the table are all untouched.
+   *
+   * ponytail: every row in one request. A branch with several thousand parties
+   * waits on a heavier answer; fetch it page by page when that day comes.
+   */
+  const [printRows, setPrintRows] = useState<any[]>([]);
+  const [printFilterLine, setPrintFilterLine] = useState('');
+  const [printPending, setPrintPending] = useState(false);
+  const [printingList, setPrintingList] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * The two numbers the print toolbar carries, and they are NOT the screen's
+   * `per_page`.
+   *
+   * ⚠️ THAT NAME IS TAKEN, AND MEANS SOMETHING ELSE. `perPage` above is the
+   * list's own paging, read out of the address bar -- chunking the sheet by it
+   * would page a printed list ten rows at a time, whatever the desk asked the
+   * screen for. These two belong to the paper: the font it is set in, and how
+   * many rows go on a sheet. Both are read only by CustomerListPrint.
+   *
+   * Thirty rows rather than the "All" the other screens start on: this list is
+   * thousands of names, and a sheet per thirty of them keeps a heading, a page
+   * number and a footer on every sheet. Clearing the box falls back to it.
+   */
+  const [printRowsPerPage, setPrintRowsPerPage] = useState<number>(PRINT_ROWS_PER_SHEET);
+  const [printFontSize, setPrintFontSize] = useState<number>(PRINT_FONT_SIZE);
+
+  const handlePrintRowsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintRowsPerPage(Number.isFinite(value) && value > 0 ? value : PRINT_ROWS_PER_SHEET);
+  };
+
+  const handlePrintFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintFontSize(Number.isFinite(value) && value > 0 ? value : PRINT_FONT_SIZE);
+  };
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: 'Customer List',
+  });
+
+  const handlePrintList = async () => {
+    if (printingList) return;
+
+    setPrintingList(true);
+
+    try {
+      const body: Record<string, any> = {
+        // Never fewer than the screen's own page: a list that has not answered
+        // yet reads total 0, and asking for nought rows would print nothing
+        // rather than the row that is there.
+        per_page: Math.max(totalRecords, perPage),
+        page: 1,
+        search,
+      };
+
+      if (partyTypeId) body.party_type_id = partyTypeId;
+
+      const { data } = await httpService.post(API_CONTACT_DETAILS_LIST_URL, body);
+      const rows = data?.data?.data?.data;
+
+      if (!Array.isArray(rows) || !rows.length) {
+        toast.info('There is nothing to print for this list.');
+        return;
+      }
+
+      // The sheet says which list it is: an empty box and "All Types" are
+      // choices too, and four hundred names with no heading look like every
+      // customer the company has.
+      const typeName =
+        CUSTOMER_TYPE_FILTER.find((entry) => String(entry.id) === String(partyTypeId))?.name ||
+        'All Types';
+
+      setPrintRows(rows);
+      setPrintFilterLine(
+        [`Client Type: ${typeName}`, search.trim() ? `Search: ${search.trim()}` : null]
+          .filter(Boolean)
+          .join('  |  '),
+      );
+      setPrintPending(true);
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not load the list for printing.');
+    } finally {
+      setPrintingList(false);
+    }
+  };
+
+  /**
+   * ⚠️ ONE COMMIT LATER, or the sheet is blank. The rows above are state, and
+   * the print clones the node as it stands -- called in the same tick it would
+   * clone the sheet from before the fetch and print an empty page.
+   */
+  useEffect(() => {
+    if (!printPending) return;
+
+    setPrintPending(false);
+    handlePrint();
+  }, [printPending, handlePrint]);
+
   const handleDeleteConfirmed = () => {
     if (!deleteConfirmRow) return;
 
@@ -394,7 +837,7 @@ const CustomerSupplier = () => {
       .then((res) => {
         toast.success(res?.message || 'Customer deleted successfully');
         setDeleteConfirmRow(null);
-        dispatch(getCustomer({ page, per_page: perPage, search }));
+        dispatch(getCustomer({ page, per_page: perPage, search, partyTypeId, employeeId }));
       })
       .catch((err) => {
         toast.error(err || 'Customer delete failed');
@@ -430,106 +873,116 @@ const CustomerSupplier = () => {
   };
 
 
-  const isOpeningColumns = [
-      {
-      key: 'openingbalance',
-      header: 'Opening',
-      headerClass: 'text-left',
-      cellClass: 'text-center',
-      render: (row: any) => (
-        <div className="flex flex-col items-end gap-0.5">
-          <InputElement
-            type="number"   // 🔥 FIX HERE
-            placeholder="Opening"
-            value={editedRows[row.id]?.openingbalance ?? row.openingbalance ?? ""}
-            className="text-right w-20"
-            onChange={(e) =>
-              handleInputChange(row.id, "openingbalance", e.target.value)
-            }
+  // The figure the branch is here to enter. It stands at the end of the row with
+  // its own Save/Cancel/Delete next to it (`openingActionColumn` below), so the
+  // eyes travel from the box to the button that saves it without crossing the
+  // address and the mobile number.
+  const openingFigureColumn = {
+    key: 'openingbalance',
+    header: 'Opening',
+    headerClass: 'text-right w-40',
+    cellClass: 'text-center',
+    render: (row: any) => (
+      <div className="flex flex-col items-end gap-0.5">
+        <InputElement
+          type="number"   // 🔥 FIX HERE
+          placeholder="Opening"
+          value={editedRows[row.id]?.openingbalance ?? row.openingbalance ?? ""}
+          className="text-right w-20"
+          onChange={(e) =>
+            handleInputChange(row.id, "openingbalance", e.target.value)
+          }
+        />
+
+        {/* The voucher this figure sits on. Without it the balance is a
+            number nobody can trace; with it the ledger is one click away. */}
+        {row.opening_vr_no && (
+          <Button
+            type="button"
+            title={`Journal voucher ${row.opening_vr_no} — open ledger`}
+            onClick={() => handleOpenLedger(row)}
+            className="font-mono text-[10px] leading-tight text-blue-600 hover:underline dark:text-blue-400"
+          >
+            {row.opening_vr_no}
+          </Button>
+        )}
+      </div>
+    ),
+  };
+
+  /**
+   * The Opening group's own Save/Cancel/Delete, headed "Action" and standing
+   * last in the row like every other list's. It took the place of the two
+   * columns that sat here before: the customer's own actions stand down while
+   * opening is on (see the filter under `columns`), so one "Action" heading is
+   * all the row ever carries.
+   */
+  const openingActionColumn = {
+    key: 'opening_action',
+    header: 'Action',
+    headerClass: 'text-center',
+    // The table lays out fixed and honours no `width` of its own, so a column
+    // left without one takes an equal share of the page. Icons need far less
+    // than three labelled buttons did; the rest goes back to the columns that
+    // carry text.
+    cellClass: 'text-center w-32',
+    render: (row: any) => {
+      const dirty = isRowDirty(row);
+
+      // Icon alone, the word kept as a tooltip -- the Product list writes this
+      // same trio that way. "Save", "Cancel" and "Delete" spelled out came to
+      // some 220px, all of it taken off the customer's own name.
+      return (
+        <div className="flex items-center justify-center gap-1">
+          <ButtonLoading
+            icon={<FiCheckSquare />}
+            title="Save"
+            label=""
+            className="py-1 px-2"
+            type="button"
+            disabled={!dirty}
+            onClick={() => handleSaveRow(row)}
+          />
+          <ButtonLoading
+            icon={<FiX />}
+            title="Cancel"
+            label=""
+            className="py-1 px-2 mr-3"
+            type="button"
+            disabled={!editedRows[row.id]}
+            onClick={() => handleCancelRow(row)}
           />
 
-          {/* The voucher this figure sits on. Without it the balance is a
-              number nobody can trace; with it the ledger is one click away. */}
-          {row.opening_vr_no && (
-            <Button
-              type="button"
-              title={`Journal voucher ${row.opening_vr_no} — open ledger`}
-              onClick={() => handleOpenLedger(row)}
-              className="font-mono text-[10px] leading-tight text-blue-600 hover:underline dark:text-blue-400"
-            >
-              {row.opening_vr_no}
-            </Button>
-          )}
-        </div>
-      ),
-    },
-    {
-      // Beside the field they act on. At the far right of the row the clerk had
-      // to cross every other column to save the figure just typed, and on a
-      // narrow screen scroll to reach it at all.
-      key: 'opening_action',
-      header: '',
-      headerClass: 'text-center',
-      // The table lays out fixed and honours no `width` of its own, so a column
-      // left without one takes an equal share of the page. Held to what the
-      // three buttons need, the rest goes back to the columns that carry text.
-      cellClass: 'text-center w-72',
-      render: (row: any) => {
-        const dirty = isRowDirty(row);
-
-        return (
-          // Three slots of equal width, always three. Delete comes and goes as
-          // opening balances are saved and removed; were its slot to go with
-          // it, the other two would slide sideways row by row.
-          <div className="grid grid-cols-3 items-center gap-1.5">
-            <ButtonLoading
-              className={ROW_ACTION_BUTTON_CLASS}
-              size="sm"
-              label="Save"
-              type="button"
-              disabled={!dirty}
-              onClick={() => handleSaveRow(row)}
-              icon={<FiCheckSquare size={14} />}
-            />
-            <ButtonLoading
-              icon={<FiX size={14} />}
-              className={ROW_ACTION_BUTTON_CLASS}
-              size="sm"
-              label="Cancel"
-              type="button"
-              disabled={!editedRows[row.id]}
-              onClick={() => handleCancelRow(row)}
-            />
-
-            {/* Only where there is a voucher to delete. A row that never had an
-                opening balance has nothing to offer here, and saying so by
-                leaving the button out reads faster than grey-ing it. */}
-            <div>
-              {row.opening_vr_no && canDeleteVoucher ? (
-                <ButtonLoading
-                  icon={<FiTrash2 size={14} />}
-                  className={`${ROW_ACTION_BUTTON_CLASS} bg-red-600 hover:bg-red-700`}
-                  size="sm"
-                  label="Delete"
-                  type="button"
-                  buttonLoading={deletingOpeningId === row.id}
-                  disabled={deletingOpeningId === row.id}
-                  onClick={() => setOpeningDeleteRow(row)}
-                />
-              ) : null}
-            </div>
+          {/* Only where there is a voucher to delete, but its slot is held
+                either way so Save and Cancel do not slide sideways row by row.
+                A row that never had an opening balance says so by the bin being
+                absent, which reads faster than a greyed one. */}
+          <div className="flex w-9 shrink-0 justify-center">
+            {row.opening_vr_no && canDeleteVoucher ? (
+              <ButtonLoading
+                icon={<FiTrash2 />}
+                title="Delete opening balance"
+                label=""
+                variant="danger"
+                className="py-1 px-2 mr-2"
+                type="button"
+                buttonLoading={deletingOpeningId === row.id}
+                disabled={deletingOpeningId === row.id}
+                onClick={() => setOpeningDeleteRow(row)}
+              />
+            ) : null}
           </div>
-        );
-      },
+        </div>
+      );
     },
-  ]
+  };
 
   const columns = [
     {
       key: 'serial',
       header: 'Sl. No.',
       headerClass: 'text-center',
-      cellClass: 'text-center',
+      cellClass: 'text-center w-20',
     },
     {
       key: "name",
@@ -544,13 +997,33 @@ const CustomerSupplier = () => {
         </>
       )
     },
-  
-	    ...(isOpeningEnabled ? isOpeningColumns : []),
 
     {
       key: "manual_address",
       header: "Address",
     },
+    /**
+     * Who looks after this customer, beside the address -- which is where a
+     * name printed on a sheet handed to that person is read from.
+     *
+     * ⚠️ THE SERVER'S NAME, NOT A LOOKUP HERE. The list API left joins
+     * hrm_employees and sends `handle_by_employee_name` with the row; matching
+     * the id against the picker's own list would print blank for an employee
+     * who has since been made inactive, since the DDL endpoint only returns
+     * active staff -- exactly the rows a desk is most likely to be reading.
+     *
+     * ⚠️ Spread, never `handleByEmployeeOn && {...}`: a guard that fails leaves
+     * a `false` in this array and the table gives it its own heading and cell.
+     */
+    ...(handleByEmployeeOn
+      ? [
+          {
+            key: 'handle_by_employee_name',
+            header: 'Employee',
+            render: (row: any) => <>{row.handle_by_employee_name ?? ''}</>,
+          },
+        ]
+      : []),
     {
       key: 'ledger_page',
       header: 'Ledger Page',
@@ -573,7 +1046,7 @@ const CustomerSupplier = () => {
       ),
     },
 
-     {
+    {
       key: 'mobile',
       header: 'Mobile',
       headerClass: 'text-center',
@@ -583,107 +1056,70 @@ const CustomerSupplier = () => {
       render: (row: any) => formatMobile(row?.mobile, mobileFormat),
     },
     {
+      key: 'balance',
+      header: 'Balance',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      // The party's ledger, signed: a plain figure is what they owe, a leading
+      // minus is an advance -- the same language the Ledger and the invoice
+      // screens already speak. The server sends it with the row, so the column
+      // can be read against the ledger the row opens.
+      //
+      // Grouped the way the branch's own decimal setting asks, through the same
+      // helper the Ledger's running balance uses -- which is also what turns a
+      // nought (or a row with no ledger at all) into a dash.
+      render: (row: any) => thousandSeparator(Number(row?.balance ?? 0)),
+    },
+    {
       key: "action",
       header: "Action",
-      headerClass: 'text-center', 
-      render: (row: any) => {
-	        return (
-	        <div className="flex justify-center items-center gap-2">
-	          {/* Save and Cancel used to sit here; they now travel with the
-	              Opening column, next to the field they belong to. */}
-
-	          {/* ===== Guarantor Slot (fixed) ===== */}
-          <div className="w-4 flex justify-center">
-            {row.guarantors?.length > 0 && (
-              <Button
-                title="View guarantors"
-                onClick={() => {
-                  setSelectedGuarantors(row.guarantors);
-                  setShowGuarantorModal(true);
-                }}
-                className="text-indigo-600 hover:text-indigo-800"
-              >
-                <FiUsers size={16} />
-              </Button>
-            )}
-          </div>
-
-          <div className="w-4 flex justify-center">
-            {row.nominees?.length > 0 && (
-              <Button
-                title="View nominees"
-                onClick={() => {
-                  setSelectedNominees(row.nominees);
-                  setShowNomineeModal(true);
-                }}
-                className="text-emerald-600 hover:text-emerald-800"
-              >
-                <FiBook size={16} />
-              </Button>
-            )}
-          </div>
-
-          {/* ===== Print Slot ===== */}
-          <div className="w-4 flex justify-center">
-            <Button
-              title="Print profile (PDF)"
-              className="text-gray-500 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-300 dark:hover:text-white"
-              disabled={printingCustomerId === row.id}
-              onClick={() => handlePrintRow(row)}
-            >
-              <FiPrinter size={15} />
-            </Button>
-          </div>
-
-          {/* ===== Log Slot ===== */}
-          <div className="w-4 flex justify-center">
-            <Button
-              title="Change log"
-              className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
-              onClick={() => handleShowHistory(row)}
-            >
-              <FiClock size={15} />
-            </Button>
-          </div>
-
-          {/* ===== Edit Slot ===== */}
-          {canEditCustomer && (
-            <div className="w-4 flex justify-center">
-              <Button
-                title="Edit"
-                className="text-blue-600 hover:text-blue-800"
-                onClick={() =>
-                  navigate(`/customer-supplier/edit/${row.id}`, {
-                    // Where to come back to once the edit is saved. Cancel uses
-                    // the browser's own Back and finds this address anyway;
-                    // saving navigates forward, and needs telling.
-                    state: { returnTo: `${location.pathname}${location.search}` },
-                  })
-                }
-              >
-                <FiEdit2 size={15} />
-              </Button>
-            </div>
-          )}
-
-          {/* ===== Delete Slot ===== */}
-          {canDeleteCustomer && (
-            <div className="w-4 flex justify-center">
-              <Button
-                title="Delete"
-                className="text-red-600 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={deletingCustomerId === row.id}
-                onClick={() => handleDeleteRow(row)}
-              >
-                <FiTrash2 size={15} />
-              </Button>
-            </div>
-          )}
-
-        </div>
-      )},
+      headerClass: 'text-center',
+      // ⚠️ One icon where seven slots used to stand. Left without a width the
+      // column takes an equal share of the page -- the same ~188px Name and
+      // Address get -- to hold a 16px eye. `w-20` is what the heading itself
+      // needs ("ACTION" at text-xs plus the cell's own px-3); less than that
+      // and the word leaves the cell.
+      cellClass: 'text-center w-20',
+      // The actions themselves are in the panel below, built from the row the
+      // menu was opened for -- this is only the thing that opens it.
+      render: (row: any) => (
+        <Button
+          title="Actions"
+          aria-label="Actions"
+          aria-haspopup="true"
+          aria-expanded={rowMenuRow?.id === row.id}
+          className="text-gray-600 hover:text-gray-900 dark:text-gray-300"
+          onClick={(e) =>
+            rowMenuRow?.id === row.id
+              ? closeRowMenu()
+              : openRowMenu(row, e.currentTarget)
+          }
+        >
+          <FiEye size={20} />
+        </Button>
+      ),
     },
-  ];
+    // ⚠️ Spread, never `openingOn && {...}`: a guard that fails leaves a `false`
+    // in this array, and the table gives a false its own heading, cell and col.
+    // The figure first, its buttons next: the two belong together at the end of
+    // the row, after the name and the contacts the sheet is being filled in for.
+    ...(openingOn ? [openingFigureColumn, openingActionColumn] : []),
+  ]
+    // While the branch is still in opening, the list is a work sheet: the name,
+    // the figure, where they live and how to reach them. So the columns that
+    // carry no opening work stand down -- National ID, the ledger page, and the
+    // customer's own actions, which `openingActionColumn` above takes the place
+    // of. The Product list drops its price/action group for the same reason
+    // rather than head two groups "Action".
+    .filter(
+      (column: any) => {
+        // The branch's National ID switch stands the column down on its own:
+        // where the form never asks for it, every row here would be blank.
+        if (column.key === 'national_id') return needNationalId && !openingOn;
+
+        return !(openingOn && ['ledger_page', 'action'].includes(column.key));
+      },
+    );
 
   return (
     <div>
@@ -693,16 +1129,65 @@ const CustomerSupplier = () => {
 
       {/* Top Search Panel */}
       <div className="flex overflow-x-auto justify-between mb-1">
-        <div className="flex">
+        {/* Enter anywhere on this row is the same as pressing Search -- see
+            handleSearchKeyDown, which ignores every control here but the box. */}
+        <div className="flex items-end" onKeyDown={handleSearchKeyDown}>
+          {/* The classification, drawn and wired exactly as the Due List draws
+              its own: the same four values, the same field, the same wording on
+              the empty one. */}
+          <div className="mr-1 md:mr-2">
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Client Type
+            </label>
+            <DropdownCommon
+              id="party_type_id"
+              name="party_type_id"
+              value={partyTypeId}
+              onChange={handlePartyTypeChange}
+              className="font-medium text-sm"
+              data={CUSTOMER_TYPE_FILTER}
+            />
+          </div>
+
+          {/* Whose customers -- the branch's own staff, and only where Branch
+              Setup asked for the field at all. "All Employees" opens the list,
+              so the ones nobody holds are reachable too. Drawn beside the
+              classification because the two narrow the same list. */}
+          {handleByEmployeeOn && (
+            <div className="mr-1 md:mr-2">
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Employee
+              </label>
+              <DropdownCommon
+                id="handle_by_employee_id"
+                name="handle_by_employee_id"
+                value={employeeId}
+                onChange={handleEmployeeChange}
+                className="font-medium text-sm"
+                data={employeeFilterData}
+              />
+            </div>
+          )}
+
           <SelectOption
             onChange={handleSelectChange}
             className="mr-1 md:mr-2"
           />
 
+          {/* The box takes comparisons as well as a word -- "> 200" narrows to
+              the parties whose Balance meets it, and "> 0 and < 500" narrows to
+              a range; everything else is the search it has always been. The hint
+              is here rather than inside SearchInput because that component is on
+              fifty screens and this syntax belongs to one of them.
+
+              ⚠️ `searchText`, not `search`. Handed the applied term, the box
+              would be reset to it the moment the address was written -- and
+              every keystroke would be gone before the next one arrived. */}
           <SearchInput
-            search={search}
-            setSearchValue={setSearchValue}
+            search={searchText}
+            setSearchValue={setSearchText}
             className="text-nowrap"
+            placeholder="Search... or > 0 and < 500"
           />
 
           <ButtonLoading
@@ -710,7 +1195,47 @@ const CustomerSupplier = () => {
             buttonLoading={buttonLoading}
             label="Search"
             className="whitespace-nowrap"
-             icon={<FiSearch size={15} />}
+            icon={<FiSearch size={15} />}
+          />
+
+          {/* Beside Search, in the same row: everything below it is the answer
+              to what is above it, and the sheet it prints carries the same
+              filters -- see printFilterLine.
+
+              Rows and Font are the two boxes every print toolbar carries (the
+              Cash Book draws the same pair); Print stands last. Both belong to
+              the paper alone -- see the note over printRowsPerPage. */}
+          <div className="ml-2">
+            
+            <PrintRowsInput
+              id="printRowsPerPage"
+              name="printRowsPerPage"
+              label=""
+              value={printRowsPerPage.toString()}
+              onChange={handlePrintRowsChange}
+              type="text"
+              className="font-medium text-sm w-16! text-center"
+            />
+          </div>
+
+          <div className="ml-2">
+            
+            <PrintFontInput
+              id="printFontSize"
+              name="printFontSize"
+              label=""
+              value={printFontSize.toString()}
+              onChange={handlePrintFontSizeChange}
+              type="text"
+              className="font-medium text-sm w-16! text-center"
+            />
+          </div>
+
+          <PrintButton
+            onClick={handlePrintList}
+            label="Print"
+            className="ml-2 whitespace-nowrap"
+            disabled={printingList}
           />
         </div>
 
@@ -727,7 +1252,16 @@ const CustomerSupplier = () => {
       <div className="relative overflow-x-auto overflow-y-hidden">
         {customers.loading && <Loader />}
 
-        <Table columns={columns} data={tableData} />
+        <Table
+          columns={columns}
+          data={tableData}
+          // Named, so an empty table under a chosen classification says which
+          // one it is empty for rather than looking like a branch with no
+          // customers at all.
+          noDataMessage={
+            partyTypeId ? 'No records for the selected client type.' : undefined
+          }
+        />
 
         {totalPages > 1 && (
           <Pagination
@@ -737,6 +1271,134 @@ const CustomerSupplier = () => {
           />
         )}
       </div>
+
+      {/* The row's actions, one strip of the very icons the column used to hold
+          -- same colours, same conditions, name on hover. It is built HERE
+          rather than inside the column because it hangs off the viewport, not
+          off the cell (see openRowMenu), and because there is only ever one of
+          it while there are ten rows.
+
+          ⚠️ Every item closes the panel before it does anything. Delete and the
+          three popups raise an overlay of their own, and a panel left standing
+          would go on hanging over it. */}
+      {rowMenuRow && rowMenuPos ? (
+        <div
+          ref={rowMenuPanelRef}
+          style={rowMenuPos}
+          role="menu"
+          className="z-50 flex w-max flex-nowrap items-center gap-2 overflow-x-auto rounded-sm border border-[rgb(var(--c-border))] bg-white px-2 py-1 shadow-lg dark:bg-[rgb(var(--c-boxdark))]"
+        >
+          {rowMenuRow.guarantors?.length > 0 && (
+            <Button
+              role="menuitem"
+              title="View guarantors"
+              aria-label="View guarantors"
+              className="text-indigo-600 hover:text-indigo-800"
+              onClick={() => {
+                closeRowMenu();
+                setSelectedGuarantors(rowMenuRow.guarantors);
+                setShowGuarantorModal(true);
+              }}
+            >
+              <FiUsers size={20} />
+            </Button>
+          )}
+
+          {rowMenuRow.nominees?.length > 0 && (
+            <Button
+              role="menuitem"
+              title="View nominees"
+              aria-label="View nominees"
+              className="text-emerald-600 hover:text-emerald-800"
+              onClick={() => {
+                closeRowMenu();
+                setSelectedNominees(rowMenuRow.nominees);
+                setShowNomineeModal(true);
+              }}
+            >
+              <FiBook size={20} />
+            </Button>
+          )}
+
+          <Button
+            role="menuitem"
+            title="Print profile (PDF)"
+            aria-label="Print profile (PDF)"
+            className="text-gray-500 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-300 dark:hover:text-white"
+            disabled={printingCustomerId === rowMenuRow.id}
+            onClick={() => {
+              closeRowMenu();
+              handlePrintRow(rowMenuRow);
+            }}
+          >
+            <FiPrinter size={20} />
+          </Button>
+
+          <Button
+            role="menuitem"
+            title="Change log"
+            aria-label="Change log"
+            className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+            onClick={() => {
+              closeRowMenu();
+              handleShowHistory(rowMenuRow);
+            }}
+          >
+            <FiClock size={20} />
+          </Button>
+
+          {canViewLedger && (
+            <Button
+              role="menuitem"
+              title="Recent transactions"
+              aria-label="Recent transactions"
+              className="text-teal-600 hover:text-teal-800"
+              onClick={() => {
+                closeRowMenu();
+                setReportParty(rowMenuRow);
+              }}
+            >
+              <FiList size={20} />
+            </Button>
+          )}
+
+          {canEditCustomer && (
+            <Button
+              role="menuitem"
+              title="Edit"
+              aria-label="Edit"
+              className="text-blue-600 hover:text-blue-800"
+              onClick={() => {
+                closeRowMenu();
+                navigate(`/customer-supplier/edit/${rowMenuRow.id}`, {
+                  // Where to come back to once the edit is saved. Cancel uses
+                  // the browser's own Back and finds this address anyway;
+                  // saving navigates forward, and needs telling.
+                  state: { returnTo: `${location.pathname}${location.search}` },
+                });
+              }}
+            >
+              <FiEdit2 size={24} />
+            </Button>
+          )}
+
+          {canDeleteCustomer && (
+            <Button
+              role="menuitem"
+              title="Delete"
+              aria-label="Delete"
+              className="text-red-600 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={deletingCustomerId === rowMenuRow.id}
+              onClick={() => {
+                closeRowMenu();
+                handleDeleteRow(rowMenuRow);
+              }}
+            >
+              <FiTrash2 size={18} />
+            </Button>
+          )}
+        </div>
+      ) : null}
 
       <ConfirmModal
         show={Boolean(deleteConfirmRow)}
@@ -1045,7 +1707,7 @@ const CustomerSupplier = () => {
                         className="hover:bg-emerald-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         <td className="px-3 py-2 truncate">{n.name}</td>
-                        <td className="px-3 py-2 truncate">{ n.relation.toUpperCase() || ''}</td>
+                        <td className="px-3 py-2 truncate">{n.relation.toUpperCase() || ''}</td>
                         <td className="px-3 py-2">{n.mobile || ''}</td>
                         <td className="px-3 py-2 text-center">{n.share_percentage || ''}</td>
                         <td className="px-3 py-2 text-center">{n.priority_order || ''}</td>
@@ -1071,6 +1733,32 @@ const CustomerSupplier = () => {
         </div>
       )}
 
+      {/* The transactions popup: the party's last N days, N coming from Branch
+          Setup, with the dates editable inside. */}
+      {reportParty && (
+        <PartyLedgerModal
+          party={reportParty}
+          onClose={() => setReportParty(null)}
+        />
+      )}
+
+      {/* The sheet itself, drawn off-screen and cloned by react-to-print. ⚠️ The
+          ref is on the print node and the hiding on this wrapper: a `hidden` on
+          the node the ref points at is cloned with it and prints a blank page.
+          The three column flags are the screen's own conditions, so paper and
+          screen stand the same columns down. */}
+      <div className="hidden">
+        <CustomerListPrint
+          ref={printRef}
+          rows={printRows}
+          filterLine={printFilterLine}
+          rowsPerPage={printRowsPerPage}
+          fontSize={printFontSize}
+          showNationalId={needNationalId && !openingOn}
+          showLedgerPage={!openingOn}
+          showOpening={openingOn}
+        />
+      </div>
 
     </div>
   );

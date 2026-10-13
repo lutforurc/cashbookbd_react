@@ -492,7 +492,7 @@ const CollectionSheet = (user: any) => {
                       <div className="text-slate-950 dark:text-[rgb(var(--c-text))]">{withCode(row.name || '-', row.idfr_code)}</div>
                       {guardianName ? (
                         <div className="text-slate-600 dark:text-[rgb(var(--c-gray-300))]">
-                          à¦ªà¦¿:/à¦¸à§à¦¬à¦¾: <span className={hasBanglaText(guardianName) ? '' : 'sutonny-text text-[20px] leading-6'}>{guardianName}</span>
+                          পি:/স্বা: <span className={hasBanglaText(guardianName) ? '' : 'sutonny-text text-[20px] leading-6'}>{guardianName}</span>
                         </div>
                       ) : null}
                       {row.mobile ? <div>{formatMobile(row.mobile, mobileFormat)}</div> : null}

@@ -233,22 +233,12 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
           }
 
           /*
-            ⚠️ AND THE SOFTWARE LINE COMES WITH IT, at the foot of every sheet.
-            A table footer group is repeated by the browser at the bottom of
-            each sheet the table crosses, in the flow, which is the whole
-            reason it is the mechanism for this and position:fixed is not.
-
-            Nothing to repeat on a numbered run: each page there is its own
-            table with its own line under it, and the tfoot is not drawn at all.
-          */
-          tfoot { display: table-footer-group; }
-
-          /*
             ⚠️ AND NO FLOOR UNDER AN UNBROKEN RUN. min-height is a sheet's worth
             of height, which on a two-row ledger holds the block open to the
-            full sheet and pushes the repeated foot -- rows, totals and all --
-            down onto a second page that has nothing else on it. A run as tall
-            as its rows cannot do that.
+            full sheet and pushes the foot -- rows, totals and all -- down onto
+            a second page that has nothing else on it. A run as tall as its rows
+            cannot do that, and the software line no longer needs the height:
+            it is pinned to the paper rather than carried by the run.
           */
           .print-page.ledger-continuous {
             min-height: 0 !important;
@@ -388,10 +378,10 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
                 {/*
                   ⚠️ ON AN UNBROKEN RUN THE TOTALS ARE A ROW OF THE TABLE, not a
-                  bar underneath it. The software line below is a tfoot, and a
-                  tfoot prints AFTER everything the table holds -- so a summary
-                  left outside the table would have come after the line rather
-                  than above it, on the one page that carries both.
+                  bar underneath it. The run is one block the browser cuts, so
+                  the totals belong to the block and travel with it rather than
+                  sitting after it as a second thing that could land alone at
+                  the top of a sheet.
                 */}
                 {continuous && pageIndex === pages.length - 1 ? (
                   <tr>
@@ -402,31 +392,6 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                 ) : null}
               </tbody>
 
-              {/*
-                ⚠️ THE FOOT OF EVERY SHEET, AND THE BROWSER PUTS IT THERE.
-
-                position:fixed was tried and is not to be trusted: Chrome
-                repainted the line at the TOP of the second sheet and every one
-                after it, straight across the column headings. A table footer
-                group is the mechanism meant for this -- the browser repeats it
-                at the foot of each sheet the table crosses, IN FLOW, so it can
-                neither land in the wrong place nor be printed through by the
-                rows above it.
-
-                Space above it is real space for the same reason: pt-3 is white
-                the rows cannot enter, where padding on the page block reserved
-                nothing at all -- a block spanning eight sheets has one foot, at
-                the end of the eighth.
-              */}
-              {continuous ? (
-                <tfoot>
-                  <tr>
-                    <td colSpan={12} className="border-0 p-0 pt-3">
-                      <PrintFooter fontSize={fs} />
-                    </td>
-                  </tr>
-                </tfoot>
-              ) : null}
             </table>
 
             {!continuous && pageIndex === pages.length - 1 ? summaryBar : null}
@@ -440,16 +405,25 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               above it, and it can say which page of how many this is because we
               are the ones who decided.
 
-              AN UNBROKEN RUN is one block and the browser cuts it, so a line in
-              the flow appears once, at the very end -- which is what was
-              reported: eight sheets and the software line on the last of them.
-              The pinned form is repainted on every printed sheet instead, and
-              carries no page count, since nothing here can count pages somebody
-              else decided on. The space it needs is reserved above -- see
-              .ledger-continuous, and the note there about why this line was
-              taken out of the foot once before.
+              AN UNBROKEN RUN IS PINNED TO THE PAPER INSTEAD, and that is the
+              answer to a line that came out sitting where the report ended.
+              This foot used to be the table's own tfoot: the browser repeats a
+              tfoot at the bottom of every sheet the table CROSSES, and a table
+              shorter than a sheet crosses none of them -- its foot is simply
+              the next thing after its last row. Opening the block to a full
+              sheet's height, which is the other way to push it down, prints the
+              foot on a second page of its own -- see .ledger-continuous above.
+
+              A pinned line is measured from the edge of the PAPER rather than
+              from the report, so it lands at the foot of the sheet whether the
+              report is five rows or eight sheets, on every sheet, and without
+              holding any height open to do it. It carries no page count for the
+              same reason it is pinned: nothing here knows how many sheets the
+              browser decided on.
             */}
-            {continuous ? null : (
+            {continuous ? (
+              <PrintFooter fixed fontSize={fs} />
+            ) : (
               <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} />
             )}
           </div>

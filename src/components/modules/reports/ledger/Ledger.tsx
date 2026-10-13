@@ -20,6 +20,11 @@ import { generateTableData } from '../../../utils/utils-functions/generateTableD
 import { formatDate } from '../../../utils/utils-functions/formatDate';
 import { useReactToPrint } from 'react-to-print';
 import LedgerPrint from './LedgerPrint';
+import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
+import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
+import { normalizeTemplate } from '../../../utils/print-designer/printTemplate';
+import type { PrintTemplate } from '../../../utils/print-designer/printTemplate';
+import { toLedgerDocumentData } from './ledgerDocumentData';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import { getCoal4ById } from '../../chartofaccounts/levelfour/coal4Sliders';
@@ -32,17 +37,22 @@ import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import httpService from '../../../services/httpService';
-import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
+import {
+  API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL,
+  API_PRINT_TEMPLATE_URL,
+} from '../../../services/apiRoutes';
 import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { hasPermission } from '../../../utils/permissionChecker';
 import {
   buildVoucherAutoEditState,
   getCombinedVoucherOpenState,
+  getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { useRemoveVoucherApproval } from '../../vouchers';
 import routes from '../../../services/appRoutes';
+import ToggleSwitch from '../../../utils/utils-functions/ToggleSwitch';
 
 const LEDGER_FILTER_STORAGE_KEY = 'ledger-filter-state';
 
@@ -52,6 +62,9 @@ type LedgerSavedFilters = {
   selectedLedgerOption?: { value: any; label: any } | null;
   startDate?: string | null;
   endDate?: string | null;
+  /** Newest voucher first. Kept with the filters: a customer who reads it that
+   *  way reads it that way every day. */
+  descending?: boolean;
 };
 
 const toNullableNumber = (value: unknown) => {
@@ -101,6 +114,7 @@ const Ledger = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [descending, setDescending] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const voucherRegistryRef = useRef<any>(null);
   const restoredFilterRef = useRef(false);
@@ -147,7 +161,7 @@ const Ledger = (user: any) => {
     setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
   }, []);
 
-  const saveLedgerFilters = () => {
+  const saveLedgerFilters = (overrides: Partial<LedgerSavedFilters> = {}) => {
     if (typeof window === 'undefined') return;
 
     const filters: LedgerSavedFilters = {
@@ -156,6 +170,8 @@ const Ledger = (user: any) => {
       selectedLedgerOption,
       startDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : null,
       endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : null,
+      descending,
+      ...overrides,
     };
 
     window.sessionStorage.setItem(
@@ -174,13 +190,19 @@ const Ledger = (user: any) => {
     setSelectedLedgerOption(savedFilters.selectedLedgerOption || null);
     setStartDate(parseStoredDate(savedFilters.startDate));
     setEndDate(parseStoredDate(savedFilters.endDate));
+    setDescending(Boolean(savedFilters.descending));
   }, []);
 
   /**
    * Arrived from somewhere that already knows which account to look at -- the
-   * voucher number beside a customer's opening balance, for one. It wins over
-   * the restored filters above, which is why it runs after them; the dates are
-   * left to default to the current month so the effect below still fills them.
+   * voucher number beside a customer's opening balance, for one, or the
+   * transactions popup on List Customers. It wins over the restored filters
+   * above, which is why it runs after them.
+   *
+   * The dates come across too when the sender has them: the popup shows a
+   * window and hands it over, so this screen opens on what was being read
+   * rather than on the month it last remembered. A sender that names only the
+   * account leaves the dates to the branch lookup below, as before.
    */
   useEffect(() => {
     const account = (location.state as any)?.ledgerAccount;
@@ -191,6 +213,20 @@ const Ledger = (user: any) => {
     setLedgerAccount(ledgerAccountId);
     setSelectedLedgerOption({ value: ledgerAccountId, label: account.label ?? '' });
     autoSearchRef.current = true;
+
+    const from = parseStoredDate(account?.startDate);
+    const to = parseStoredDate(account?.endDate);
+
+    if (from || to) {
+      if (from) setStartDate(from);
+      if (to) setEndDate(to);
+
+      // ⚠️ SET, OR THE DATES ARE LOST. The branch lookup further down fills
+      // both dates with the current month unless this flag is up, and it runs
+      // after this effect -- the handed-over window would be replaced before
+      // the search that was asked for ever ran.
+      restoredFilterRef.current = true;
+    }
 
     // Cleared so a later reload of this page does not silently jump back to
     // the same account.
@@ -218,12 +254,14 @@ const Ledger = (user: any) => {
     }
 
     if (ledgerData && !(ledgerData.data?.data)) {
-      const tableRows = generateTableData(ledgerData.data);
+      const tableRows = generateTableData(ledgerData.data, descending);
       setTableData(tableRows);
     } else {
       setTableData([]); // safety fallback
     }
-  }, [ledgerData]);
+    // Flipping the switch re-lays the rows out of the answer already in hand, so
+    // the report does not have to be searched for again.
+  }, [ledgerData, descending]);
 
 
 
@@ -390,9 +428,18 @@ const Ledger = (user: any) => {
       return;
     }
 
-    const voucherNo = String(row?.vr_no || '').trim();
-    const editTarget = getVoucherEditTarget(voucherNo);
-    const editState = buildVoucherAutoEditState(voucherNo);
+    const voucherNo = getEditableVoucherNo(row);
+    /**
+     * ⚠️ The number cannot say which pair of screens. Its prefix is the voucher
+     * type -- 1 received, 2 paid -- so money banked on the Bank Received screen
+     * is numbered 1-... exactly as a cash receipt is, and the tiles pair's row
+     * names the receipt through `edit_vr_no` instead of being the receipt. The
+     * server reads the legs and marks the row; absent -- an older server -- it
+     * falls back to the cash screens rather than guessing.
+     */
+    const openOnBankScreen = row?.is_bank_voucher === true;
+    const editTarget = getVoucherEditTarget(voucherNo, { bank: openOnBankScreen });
+    const editState = buildVoucherAutoEditState(voucherNo, { bank: openOnBankScreen });
 
     if (!voucherNo || !editTarget || !editState) {
       toast.error('Edit route not found for this voucher.');
@@ -408,7 +455,7 @@ const Ledger = (user: any) => {
     {
       key: 'sl_number',
       header: 'Sl. No',
-      width: '100px',
+      width: '80px',
       headerClass: 'items-center text-center',
       cellClass: 'items-center text-center',
       render: (row: any) => (
@@ -419,12 +466,12 @@ const Ledger = (user: any) => {
       key: 'vr_date',
       header: 'Vr Date',
       render: (row: any) => <div className="">{row.vr_date && formatDate(row.vr_date)}</div>,
-      width: '80px',
+      width: '90px',
     },
     {
       key: 'vr_no',
-      header: 'Vr No',
-      width: '100px',
+      header: 'Vr No', 
+      width: '90px',
       render: (row: any) => (
         <div
           className="cursor-pointer hover:underline"
@@ -577,10 +624,106 @@ const Ledger = (user: any) => {
   };
 
 
-  const handlePrint = useReactToPrint({
+  const printBespoke = useReactToPrint({
     contentRef: printRef,
-    documentTitle: 'Due Report',
+    documentTitle: 'Ledger',
   });
+
+  // The report about to be printed through a saved layout, held with its data
+  // and cleared afterwards so a second print cannot go out carrying the first
+  // one's rows.
+  const [ledgerDoc, setLedgerDoc] = useState<{
+    template: PrintTemplate;
+    data: DocumentData;
+  } | null>(null);
+  const ledgerPrintRef = useRef<HTMLDivElement>(null);
+  const printLedgerDoc = useReactToPrint({
+    contentRef: ledgerPrintRef,
+    documentTitle: 'Ledger',
+    onAfterPrint: () => setLedgerDoc(null),
+  });
+
+  /**
+   * Prints once the report is actually on the page.
+   *
+   * react-to-print copies what is in the DOM the moment it is called, so
+   * calling it in the same breath as setLedgerDoc would copy nothing at all on
+   * the first print. An effect runs after React has committed, and the short
+   * wait after that is for the letterhead image, which PadPrinting loads rather
+   * than renders inline.
+   */
+  useEffect(() => {
+    if (!ledgerDoc) return undefined;
+    const timer = setTimeout(() => printLedgerDoc(), 250);
+    return () => clearTimeout(timer);
+  }, [ledgerDoc]);
+
+  /**
+   * Print: the branch's own Ledger layout where it has saved one, and the sheet
+   * this screen has always printed where it has not.
+   *
+   * ⚠️ THE LAYOUT IS FETCHED AT THE CLICK, not when the screen loaded. Somebody
+   * who has just changed a column in the designer and come straight back to the
+   * report to see it should not have to reload first.
+   *
+   * ⚠️ AND EVERY FAILURE FALLS THROUGH TO THE BESPOKE SHEET. No layout saved
+   * (the endpoint answers with null), a server a patch behind, a dropped
+   * connection -- all of them print LedgerPrint rather than an error or a blank
+   * page. The report is what somebody came here for; the arrangement is on top
+   * of it. The two knobs the screen still owns -- Rows per page and Font size --
+   * are applied over the layout; everything else is the layout's.
+   */
+  const handlePrint = async () => {
+    if (!Array.isArray(tableData) || tableData.length === 0) {
+      printBespoke();
+      return;
+    }
+
+    let layout: any = null;
+
+    try {
+      const response = await httpService.get(`${API_PRINT_TEMPLATE_URL}/ledger`, {
+        params: { branch_id: branchId ?? settings?.data?.branch?.id },
+      });
+      layout = response?.data?.data?.data?.layout ?? null;
+    } catch {
+      layout = null;
+    }
+
+    if (!layout) {
+      printBespoke();
+      return;
+    }
+
+    const template = normalizeTemplate(layout, 'ledger');
+    const party = coal4?.coal4ById || {};
+    const partyInfo = party?.cust_party_infos || {};
+    const selectedBranch = (dropdownData ?? []).find(
+      (branch: any) => Number(branch?.id) === Number(branchId),
+    );
+
+    setLedgerDoc({
+      template: { ...template, rowsPerPage: Number(perPage), fontSize: Number(fontSize) },
+      data: toLedgerDocumentData({
+        rows: tableData,
+        startDate,
+        endDate,
+        accountName: party?.name ?? selectedLedgerOption?.label ?? '',
+        accountCode: partyInfo?.idfr_code ?? party?.idfr_code ?? '',
+        address:
+          partyInfo?.manual_address ??
+          party?.manual_address ??
+          partyInfo?.address ??
+          party?.address ??
+          '',
+        mobile: partyInfo?.mobile ?? party?.mobile ?? '',
+        branchName: selectedBranch?.name ?? '',
+        // Listing every branch at once -- the report only does that when no
+        // branch is chosen -- so each row has to say which book it came from.
+        showBranchName: branchId === null,
+      }),
+    });
+  };
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
@@ -590,6 +733,22 @@ const Ledger = (user: any) => {
       setPerPage(10); // Reset if input is invalid
     }
   };
+  /**
+   * The same rows read the other way up.
+   *
+   * The customer asked for it as a choice rather than a change: some read a
+   * ledger oldest-first, some want the voucher they have just written on top,
+   * and both are the same report. Kept with the filters, because whichever way
+   * a customer reads it, they read it that way every day.
+   *
+   * Nothing is asked of the server: the rows are already here, so the list is
+   * only laid out again.
+   */
+  const handleDescendingChange = (checked: boolean) => {
+    setDescending(checked);
+    saveLedgerFilters({ descending: checked });
+  };
+
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
 
@@ -654,7 +813,16 @@ const Ledger = (user: any) => {
 
   return (
     <div className="">
-      <HelmetTitle title={'Ledger'} />
+      {/* The layout switch sits beside the heading, not down among the toolbar
+          fields: those carry captions of their own, and a switch among them
+          reads as if it labelled the field next to it. */}
+      <HelmetTitle title={'Ledger'}>
+        <ToggleSwitch
+          label="Descending"
+          checked={descending}
+          onChange={handleDescendingChange}
+        />
+      </HelmetTitle>
       <div className="py-3">
         {/* One wrapping row (owner, 2026-09-23): the fields stretch to fill
             it and the toolbar follows the last one, so a screen that fits
@@ -743,7 +911,7 @@ const Ledger = (user: any) => {
               <PrintRowsInput
                 id="perPage"
                 name="perPage"
-                label="Rows"
+                label=""
                 value={perPage.toString()}
                 onChange={handlePerPageChange}
                 type='text'
@@ -752,7 +920,7 @@ const Ledger = (user: any) => {
               <PrintFontInput
                 id="fontSize"
                 name="fontSize"
-                label="Font"
+                label=""
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
                 type='text'
@@ -784,7 +952,20 @@ const Ledger = (user: any) => {
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
             showBranchName={branchId === null}
+            descending={descending}
           />
+
+          {/* Mounted only while the designed ledger is being printed. Left
+              standing it would draw a whole document on every render of a
+              screen that re-renders as the filters are typed in -- and there is
+              nothing to draw between prints anyway. */}
+          {ledgerDoc ? (
+            <DocumentPrint
+              ref={ledgerPrintRef}
+              template={ledgerDoc.template}
+              data={ledgerDoc.data}
+            />
+          ) : null}
         </div>
       </div>
 

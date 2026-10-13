@@ -111,6 +111,13 @@ export const API_CSRF_COOKIES = `${API_REMOTE_URL}/sanctum/csrf-cookie`;
 export const API_BASE_URL = `${API_REMOTE_URL}/api`;
 export const API_PURCHASE_RETURN_STORE_URL = `${API_BASE_URL}/purchase-return/api-store`;
 export const API_SALES_RETURN_STORE_URL = `${API_BASE_URL}/sales-return/api-store`;
+// The edit lookup by Vr. No. and the correction that rebuilds the return in
+// place, both of them the general returns' own endpoints: a Tiles branch is a
+// branch, not a separate set of books.
+export const API_PURCHASE_RETURN_EDIT_URL = `${API_BASE_URL}/purchase-return/api-edit`;
+export const API_PURCHASE_RETURN_UPDATE_URL = `${API_BASE_URL}/purchase-return/api-update`;
+export const API_SALES_RETURN_EDIT_URL = `${API_BASE_URL}/sales-return/api-edit`;
+export const API_SALES_RETURN_UPDATE_URL = `${API_BASE_URL}/sales-return/api-update`;
 // export const API_BASE_URL = API_REMOTE_URL + '/api';
 export const API_LOGIN_URL = `${API_BASE_URL}/login`;
 export const API_FORGOT_PASSWORD_REQUEST_OTP_URL = `${API_BASE_URL}/forgot-password/request-otp`;
@@ -158,6 +165,9 @@ export const API_CUSTOMER_BASE_URL = `${API_BASE_URL}/customer`;
 export const API_CUSTOMER_FROM_UI_URL = `${API_BASE_URL}/contact/customer/update/ui/`;
 // Drops the opening balance and sends its journal voucher to the trash.
 export const API_CUSTOMER_OPENING_DELETE_URL = `${API_BASE_URL}/contact/customer/opening-balance/delete/`;
+// Opening balances from an Excel sheet: check every row, then save one per call.
+export const API_CUSTOMER_OPENING_IMPORT_CHECK_URL = `${API_BASE_URL}/contact/customer/opening-import/check`;
+export const API_CUSTOMER_OPENING_IMPORT_ROW_URL = `${API_BASE_URL}/contact/customer/opening-import/row`;
 
 // Settings url
 export const API_APP_SETTING_URL = `${API_BASE_URL}/settings/get-settings`;
@@ -222,6 +232,12 @@ export const API_ADMIN_TUTORIAL_VIDEOS_URL = `${API_BASE_URL}/admin/tutorial-vid
 export const API_ADMIN_HIGHLIGHT_RULES_URL = `${API_BASE_URL}/admin/highlight-rules`;
 export const API_HIGHLIGHT_RULES_ACTIVE_URL = `${API_BASE_URL}/highlight-rules/active`;
 
+// Master website templates -- the company-website catalogue the platform owns.
+// ⚠️ PLATFORM ADMIN ONLY on the server (platform.admin), and reachable only
+// through the Admin menu here. A company selects one through the website
+// builder in the Next.js app, not through this endpoint.
+export const API_ADMIN_WEBSITE_TEMPLATES_URL = `${API_BASE_URL}/admin/website-templates`;
+
 // Role Routes
 export const API_ROLE_LIST_URL = `${API_BASE_URL}/role/role-list`;
 export const API_DDL_ROLE_LIST_URL = `${API_BASE_URL}/ddl/role/role-list`;
@@ -233,6 +249,7 @@ export const API_COMPANY_UPDATE_URL = `${API_BASE_URL}/company/company-update`;
 
 // Branch Routes
 export const API_USER_CURRENT_BRANCH_URL = `${API_BASE_URL}/user/current-branch`;
+export const API_USER_SWITCH_BRANCH_URL = `${API_BASE_URL}/user/switch-branch`;
 export const API_BRANCH_LIST_URL = `${API_BASE_URL}/branch/branch-list`;
 export const API_BRANCH_EDIT_URL = `${API_BASE_URL}/branch/branch-edit/`;
 export const API_BRANCH_UPDATE_URL = `${API_BASE_URL}/branch/branch-update`;
@@ -303,6 +320,15 @@ export const API_REPORT_LEDGER_URL = `${API_BASE_URL}/reports/api-ledger`;
 export const API_REPORT_PURCHASE_LEDGER_URL = `${API_BASE_URL}/reports/purchase/ledger`;
 // Sales Ledger url
 export const API_REPORT_SALES_LEDGER_URL = `${API_BASE_URL}/reports/sales/ledger`;
+// Purchase Return / Sales Return ledger urls — the ledger's shape over vouchers
+// 12 and 13, which write their own masters rather than a negative invoice.
+export const API_REPORT_PURCHASE_RETURN_LEDGER_URL = `${API_BASE_URL}/reports/purchase/return-ledger`;
+export const API_REPORT_SALES_RETURN_LEDGER_URL = `${API_BASE_URL}/reports/sales/return-ledger`;
+
+// Customer Sales Report url
+// Every sales invoice line, filed by customer and then by the product's brand,
+// group and category.
+export const API_REPORT_CUSTOMER_SALES_URL = `${API_BASE_URL}/reports/customer-sales`;
 
 // Names the driver on a sale before its delivery challan is printed. Writes
 // two columns the accounts never read, so it is allowed to whoever may open
@@ -363,8 +389,16 @@ export const API_REPORT_EXPENSE_DETAILS_URL = `${API_BASE_URL}/reports/expense-r
 export const API_REPORT_DUE_LIST_URL = `${API_BASE_URL}/reports/duelist`;
 // The cash book with a bank column beside the cash one.
 export const API_REPORT_CASH_BOOK_TWO_COLUMN_URL = `${API_BASE_URL}/reports/cash-book-two-column`;
+// The day's paper day book: receipts and payments down the two sides, footed by
+// the kind of voucher that moved the till.
+export const API_REPORT_DAILY_ACCOUNT_BOOK_URL = `${API_BASE_URL}/reports/daily-account-book`;
 export const API_REPORT_VOUCHER_REGISTER_URL = `${API_BASE_URL}/reports/voucher-register`;
 export const API_REPORT_VOUCHER_REGISTER_VOUCHERS_URL = `${API_BASE_URL}/reports/voucher-register/vouchers`;
+// Who recommended a sale -- the totals, the bills behind one row, and the
+// referrer list the invoice popup picks from (kept on the report screen).
+export const API_REPORT_REFERRER_SALES_URL = `${API_BASE_URL}/reports/referrer-sales`;
+export const API_REPORT_REFERRER_BILLS_URL = `${API_BASE_URL}/reports/referrer-sales/bills`;
+export const API_REFERRERS_URL = `${API_BASE_URL}/referrers`;
 export const API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL = `${API_BASE_URL}/reports/ledger-with-product`;
 // Company & Product-wise financial tracking
 export const API_PRODUCT_TRACKING_SETTINGS_URL = `${API_BASE_URL}/product-tracking/settings`;
@@ -379,6 +413,9 @@ export const API_SOMITY_MONTHLY_REPORT_DATA_URL = `${API_BASE_URL}/somity-report
 
 // Mitch Match url
 export const API_REPORT_MITCH_MATCH_URL = `${API_BASE_URL}/reports/mitch-match/data`;
+// Report Mismatch url (VR Settings) -- the list and the repair for one row
+export const API_REPORT_MISMATCH_LIST_URL = `${API_BASE_URL}/reports/mismatch/list`;
+export const API_REPORT_MISMATCH_FIX_URL = `${API_BASE_URL}/reports/mismatch/fix`;
 // HRMS Mismatch Payment url
 export const API_REPORT_HRM_MISMATCH_PAYMENT_URL = `${API_BASE_URL}/reports/hrm-mismatch-payment/data`;
 export const API_REPORT_HRM_MISMATCH_PAYMENT_DELETE_URL = `${API_BASE_URL}/reports/hrm-mismatch-payment/delete`;
@@ -411,6 +448,7 @@ export const API_CASH_RECEIVED_URL = `${API_BASE_URL}/trading/cash/received`;
 export const API_CASH_RECEIVED_EDIT_URL = `${API_BASE_URL}/trading/cash/received/api-edit`;
 export const API_CASH_RECEIVED_UPDATE_URL = `${API_BASE_URL}/trading/cash/received/api-update`;
 export const API_CASH_RECEIVED_SUGGESTIONS_URL = `${API_BASE_URL}/cash/remarks/suggestions`;
+export const API_TILES_PREVIOUS_BALANCE_URL = `${API_BASE_URL}/trading/cash/received/previous-balance`;
 export const API_HEAD_OFFICE_CASH_RECEIVED_STORE_URL = `${API_BASE_URL}/accounts/received`;
 export const API_HEAD_OFFICE_CASH_RECEIVED_EDIT_URL = `${API_BASE_URL}/accounts/received/api-edit`;
 export const API_HEAD_OFFICE_CASH_RECEIVED_UPDATE_URL = `${API_BASE_URL}/accounts/received/api-update`;
@@ -476,6 +514,9 @@ export const API_PRODUCT_CHECK = `${API_BASE_URL}/product/product-check`;
 export const API_PRODUCT_UPDATE_BY_RATE_URL = `${API_BASE_URL}/product/update-qty-rate`;
 // Drops the opening stock and sends its voucher to the trash.
 export const API_PRODUCT_OPENING_DELETE_URL = `${API_BASE_URL}/product/opening/delete`;
+// Opening stock from an Excel sheet: check every row, then save one per call.
+export const API_PRODUCT_OPENING_IMPORT_CHECK_URL = `${API_BASE_URL}/product/opening-import/check`;
+export const API_PRODUCT_OPENING_IMPORT_ROW_URL = `${API_BASE_URL}/product/opening-import/row`;
 export const API_PRODUCT_DELETE_URL = `${API_BASE_URL}/product/delete`;
 
 
@@ -548,6 +589,16 @@ export const API_ELECTRONICS_SALES_STORE_URL = `${API_BASE_URL}/electronics/sale
 export const API_ELECTRONICS_SALES_EDIT_URL = `${API_BASE_URL}/electronics/sales/edit`;
 export const API_ELECTRONICS_SALES_UPDATE_URL = `${API_BASE_URL}/electronics/sales/update`;
 export const API_ELECTRONICS_SALES_INVOICE_PRINT_URL = `${API_BASE_URL}/electronics/sales/invoice-print`;
+
+// Delivery: the Tiles and Sanitary voucher that takes the stock out when the
+// shop sends the goods, rather than when it bills.
+export const API_DELIVERY_PENDING_URL = `${API_BASE_URL}/delivery/pending`;
+export const API_DELIVERY_STORE_URL = `${API_BASE_URL}/delivery/store`;
+export const API_DELIVERY_EDIT_URL = `${API_BASE_URL}/delivery/edit`;
+export const API_DELIVERY_CANCEL_URL = `${API_BASE_URL}/delivery/cancel`;
+export const API_DELIVERY_LIST_URL = `${API_BASE_URL}/delivery/list`;
+export const API_DELIVERY_REPORT_URL = `${API_BASE_URL}/delivery/report`;
+export const API_DELIVERY_PRINT_DATA_URL = `${API_BASE_URL}/delivery/print-data`;
 
 //
 export const API_CONSTRUCTION_DDL_LABOUR_URL = `${API_BASE_URL}/construction/ddl/labour-list`;
@@ -1208,6 +1259,12 @@ export const API_LEGACY_SOURCES_URL = `${API_BASE_URL}/legacy/sources`;
 export const API_LEGACY_PARTIES_URL = `${API_BASE_URL}/legacy/parties`;
 export const API_LEGACY_PARTY_URL = `${API_BASE_URL}/legacy/party`;
 export const API_LEGACY_INVOICE_URL = `${API_BASE_URL}/legacy/invoice`;
+
+// The old shop's own 48 accounts. Read-only, like everything else under
+// /legacy -- they are the old system's own cash and bank accounts, kept as a
+// backup and never posted to the new books.
+export const API_LEGACY_ACCOUNTS_URL = `${API_BASE_URL}/legacy/accounts`;
+export const API_LEGACY_ACCOUNT_URL = `${API_BASE_URL}/legacy/account`;
 
 // The same client's OLDER install -- its own tables behind its own prefix, so
 // the archive already in trial is never touched by work on this one.
