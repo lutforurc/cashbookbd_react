@@ -914,6 +914,8 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.create']} loading={permissionsLoading} />}>
               <Route path={routes.product_out} element={<ProductOut />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.report.view']} loading={permissionsLoading} />}>
               <Route path={routes.product_out_report} element={<ProductOutReport />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.reason.manage']} loading={permissionsLoading} />}>

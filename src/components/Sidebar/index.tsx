@@ -1032,9 +1032,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 hasPermission(permissions, 'branch.received.create') ||
                 hasPermission(permissions, 'inventory.received.create') ||
                 hasPermission(permissions, 'product.received.create') ||
-                // Product Out hangs off this group, so whoever is granted the
-                // write-off and nothing else still has to be able to open it.
+                // Product Out hangs off this group, so whoever is granted any
+                // one of its screens and nothing else still has to be able to
+                // open the group they live in.
                 hasPermission(permissions, 'product.out.create') ||
+                hasPermission(permissions, 'product.out.report.view') ||
+                hasPermission(permissions, 'product.out.approve') ||
                 hasPermission(permissions, 'product.out.reason.manage')) && (
                 <SidebarLinkGroup
                   activeCondition={isMenuActive('branch-transfer', pathname)}
@@ -1173,24 +1176,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'product.out.create') && (
-                            <>
-                              <li style={subSlot('branch-transfer', 'product_out')}>
-                                <NavLink
-                                  to={routes.product_out}
-                                  className={subMenuLinkClass}
-                                >
-                                  Product Out
-                                </NavLink>
-                              </li>
-                              <li style={subSlot('branch-transfer', 'product_out_report')}>
-                                <NavLink
-                                  to={routes.product_out_report}
-                                  className={subMenuLinkClass}
-                                >
-                                  Write-off Register
-                                </NavLink>
-                              </li>
-                            </>
+                            <li style={subSlot('branch-transfer', 'product_out')}>
+                              <NavLink
+                                to={routes.product_out}
+                                className={subMenuLinkClass}
+                              >
+                                Product Out
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.out.report.view') && (
+                            <li style={subSlot('branch-transfer', 'product_out_report')}>
+                              <NavLink
+                                to={routes.product_out_report}
+                                className={subMenuLinkClass}
+                              >
+                                Write-off Register
+                              </NavLink>
+                            </li>
                           )}
                           {hasPermission(permissions, 'product.out.reason.manage') && (
                             <li style={subSlot('branch-transfer', 'product_out_reason')}>
