@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Shell(php \"C:\\Users\\lutfo\\AppData\\Local\\Temp\\commandcode\\F--All-Database-cashbookbd-react\\0d02213f-8675-4b48-bba2-65b638ace616\\scratchpad\\product_out_alloc_test.php\")"
+      "Shell(php \"C:\\Users\\lutfo\\AppData\\Local\\Temp\\commandcode\\F--All-Database-cashbookbd-react\\0d02213f-8675-4b48-bba2-65b638ace616\\scratchpad\\product_out_alloc_test.php\")",
+      "Shell(node -v)",
+      "Shell(npm:*)",
+      "Shell(netstat:*)",
+      "Shell(findstr:*)",
+      "Shell(agent-browser:*)",
+      "powershell",
+      "Shell(agent-browser --session cbbd2 eval \"JSON.stringify({labels:Array.from(document.querySelectorAll('label')).map(l=>(l.textContent||'').trim()).filter(Boolean).slice(0,40),matches:(document.body.innerText.match(/(Role|Branch|Designation|Company)[^\\n]{0,45}/gi)||[]).slice(0,10)})\")",
+      "Shell(agent-browser --session cbbd2 wait 1500 & agent-browser --session cbbd2 eval \"JSON.stringify({headings:Array.from(document.querySelectorAll('h1,h2,h3')).map(h=>(h.textContent||'').trim()).filter(Boolean).slice(0,14),tail:(document.body.innerText||'').slice(-800)})\")"
     ],
     "deny": [],
     "defaultMode": "default"
