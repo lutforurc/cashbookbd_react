@@ -16,7 +16,7 @@ import httpService from '../../services/httpService';
 import { API_PRODUCT_OUT_PARTY_URL } from '../../services/apiRoutes';
 import { Select } from '../../utils/fields/FormControls';
 import { getDdlWarehouse } from '../warehouse/ddlWarehouseSlider';
-import { getProductOutReasons, storeProductOut } from './productOutSlice';
+import { getProductOutReasons, resolveReasonId, storeProductOut } from './productOutSlice';
 import ProductOutList from './ProductOutList';
 
 type Option = { value: string; label: string; label_2?: string; label_3?: string };
@@ -66,6 +66,16 @@ const ProductOut = () => {
     dispatch(getDdlWarehouse());
     dispatch(getProductOutReasons());
   }, [dispatch]);
+
+  // Open a new slip on the shop's own default reason, so the Reason field is
+  // never blank. It only fills an empty field -- a reason already chosen (an
+  // existing slip, or one the clerk picked) is left exactly as it is.
+  useEffect(() => {
+    setFormData((prev) => {
+      const next = resolveReasonId(prev.reasonId, reasons);
+      return next === prev.reasonId ? prev : { ...prev, reasonId: next };
+    });
+  }, [reasons]);
 
   // The reason itself says whether a name is owed -- a piece swapped back to a
   // customer has somebody at the other end of it, a breakage does not. Read off
@@ -130,7 +140,7 @@ const ProductOut = () => {
     setFormData({
       outDate: dayjs().format('YYYY-MM-DD'),
       warehouseId: '',
-      reasonId: '',
+      reasonId: resolveReasonId('', reasons),
       note: '',
       items: [],
     });

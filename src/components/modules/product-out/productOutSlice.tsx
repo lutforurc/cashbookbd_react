@@ -68,6 +68,24 @@ const normalizeListPayload = (payload: any): ProductOutListPayload => {
   };
 };
 
+// The reason a fresh write-off opens on. The shop's own list is the only set of
+// reasons the backend accepts, and it already arrives in the shop's order
+// (`sort`), so the first one still offered is the sensible default -- the field
+// is never left blank, and the clerk can still change it. A retired reason is
+// skipped: it exists to explain old slips, not to be picked on a new one.
+export const pickDefaultReasonId = (reasons: any[]): string => {
+  const rows = Array.isArray(reasons) ? reasons : [];
+  const offered = rows.find((r) => Number(r?.is_active) === 1) ?? rows[0];
+
+  return offered ? String(offered.id) : '';
+};
+
+// What the reason field should hold: whatever is already chosen, otherwise the
+// shop's default. So a new slip is never blank, and a reason already on the form
+// (an existing slip, or one the clerk picked) is never overwritten.
+export const resolveReasonId = (current: string, reasons: any[]): string =>
+  current ? current : pickDefaultReasonId(reasons);
+
 export const getProductOuts = createAsyncThunk<
   ProductOutListPayload,
   any,
