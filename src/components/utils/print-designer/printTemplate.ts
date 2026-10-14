@@ -1419,6 +1419,11 @@ export const SALES_INVOICE_LINE_FIELDS: FieldDef[] = [
   { key: 'qty_unit', name: 'Quantity + Unit', group: 'line' },
   { key: 'measurement_qty', name: 'Measurement', group: 'line', numeric: true },
   { key: 'measurement_unit', name: 'Measurement Unit', group: 'line' },
+  // The measured figure and its unit in one cell -- "256.06 sqf". The SAME key
+  // and the SAME renderer the Delivery Challan uses, so the three papers cannot
+  // word it differently. Offered beside the separate fields, never in place of
+  // them.
+  { key: 'measurement_qty_unit', name: 'Measurement + Unit', group: 'line' },
   { key: 'packaging_text', name: 'Packaging', group: 'line' },
   { key: 'price', name: 'Rate', group: 'line', numeric: true, format: 'money' },
   { key: 'amount', name: 'Amount', group: 'line', numeric: true, format: 'money' },
@@ -1498,6 +1503,13 @@ export const PURCHASE_INVOICE_LINE_FIELDS: FieldDef[] = [
   { key: 'qty', name: 'Quantity', group: 'line', numeric: true },
   { key: 'unit', name: 'Unit', group: 'line' },
   { key: 'qty_unit', name: 'Quantity + Unit', group: 'line' },
+  // Measurement and packaging, the same columns and the same renderer the Sales
+  // Invoice and the Delivery Challan offer. The combined "Meas." cell reads the
+  // same key as those two.
+  { key: 'measurement_qty', name: 'Measurement', group: 'line', numeric: true },
+  { key: 'measurement_unit', name: 'Measurement Unit', group: 'line' },
+  { key: 'measurement_qty_unit', name: 'Measurement + Unit', group: 'line' },
+  { key: 'packaging_text', name: 'Packaging', group: 'line' },
   { key: 'price', name: 'Rate', group: 'line', numeric: true, format: 'money' },
   { key: 'amount', name: 'Amount', group: 'line', numeric: true, format: 'money' },
 ];

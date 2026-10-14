@@ -104,6 +104,13 @@ export const toPurchaseInvoiceDocumentData = (data: any): DocumentData => {
       warranty: getWarranty(row?.product?.warranty_days),
       qty: Number(row?.quantity) || 0,
       unit: row?.product?.unit?.name || '',
+      // The measurement/packaging the purchase line was saved with -- the same
+      // snapshot columns the sales line carries (see salesInvoiceDocumentData).
+      // NULL on a line saved before the columns existed, which is what leaves
+      // the "Meas." cell empty rather than printing a current product value.
+      measurement_qty: row?.measurement_qty ?? null,
+      measurement_unit: row?.measurement_unit || '',
+      packaging_text: row?.packaging_text || '',
       price: Number(row?.purchase_price) || 0,
       amount: (Number(row?.quantity) || 0) * (Number(row?.purchase_price) || 0),
     })),

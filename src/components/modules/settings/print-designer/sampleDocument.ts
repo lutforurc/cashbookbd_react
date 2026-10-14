@@ -434,6 +434,11 @@ export const PURCHASE_INVOICE_SAMPLE: DocumentData = {
       description: '6 GB RAM, 128 GB storage',
       qty: 3,
       unit: 'pc',
+      // The measured figure and its unit, in the "Meas." cell's own shape. The
+      // second line below has none, so the preview shows the empty case too.
+      measurement_qty: 256.06,
+      measurement_unit: 'Sqft',
+      packaging_text: '2 Box',
       price: 24000,
       amount: 72000,
       serial_no: '',
