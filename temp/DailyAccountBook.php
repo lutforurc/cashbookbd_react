@@ -79,7 +79,7 @@ class DailyAccountBook
             ['key' => 'payment_to_supplier',    'title' => 'PAYMENT TO SUPPLIER',            'in_total' => true],
             ['key' => 'payment_to_customer',    'title' => 'PAYMENT TO CUSTOMER',            'in_total' => true],
             ['key' => 'contra_credit',          'title' => 'CASH CREDIT BY CONTRA VOUCHER',  'in_total' => true],
-            ['key' => 'journal_credit',         'title' => 'CASH CREDIT BY JOURNAL VOUCHER', 'in_total' => true],
+            ['key' => 'payment_to_others',      'title' => 'PAYMENT TO OTHERS',              'in_total' => true],
             ['key' => 'expenses',               'title' => 'EXPENSES',                       'in_total' => true],
             ['key' => 'due_sales',              'title' => 'TODAY DUE SALES',                'in_total' => false],
             ['key' => 'due_purchase',           'title' => 'TODAY DUE PURCHASE',             'in_total' => false],
@@ -386,7 +386,7 @@ class DailyAccountBook
         // reader expects an unexplained entry.
         return $in
             ? ['section' => 'journal_debit', 'amount' => $voucher['cash_in']]
-            : ['section' => 'journal_credit', 'amount' => $voucher['cash_out']];
+            : ['section' => 'payment_to_others', 'amount' => $voucher['cash_out']];
     }
 
     /**
