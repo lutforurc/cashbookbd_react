@@ -8,6 +8,7 @@
 
 ## Workflow
 - The user explicitly controls git operations: never commit, push, or deploy unless asked to. Confidence: 0.8
+- Database work must stay non-destructive: never run destructive database operations and never modify production data (instructs this explicitly in task specs). Read-only inspection of the schema/rows (e.g. `SHOW COLUMNS`, `db:table`, a `SELECT`/`CAST` probe) is expected and welcome. Confidence: 0.7
 - Takes the commit/push split literally: a bare "commit" instruction means commit only — push (and deploy) is never inferred from it, only from an explicit "push". Confidence: 0.6
 - Expects git conflict resolution to be a careful semantic merge, not a mechanical pick: read both sides and preserve the intended functionality and recent changes from each, and explicitly "do not blindly choose ours or theirs". Confidence: 0.55
 - Expects git work to stay non-destructive and bounded: preserve unrelated uncommitted work, do not start a new merge/rebase/pull, and never use destructive reset/clean commands. Confidence: 0.55
@@ -38,3 +39,4 @@
 - Scopes verification claims strictly to what was actually checked: never describes a page as "clean"/passing beyond the states and checks performed, and explicitly distinguishes sampled (representative breakpoint or dark-mode) checks from fully verified routes. Confidence: 0.8
 - Wants one consolidated final report (severity, evidence, recommended fixes) that also enumerates remaining coverage gaps. Confidence: 0.7
 - Wants each verification item reported as PASS / FAIL / NOT TESTED accurately; syntax, lint, build, or formula checks alone do not count as end-to-end verification, and untested areas must be called out rather than implied as passing. Confidence: 0.7
+ Confidence: 0.7
