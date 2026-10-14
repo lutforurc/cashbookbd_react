@@ -1277,6 +1277,14 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         ['packaging_text', 'packaging_text'],
       ]);
       const columns = templateColumns.filter((column) => {
+        // ⚠️ A COLUMN THE LAYOUT NAMED IS NOT OURS TO WITHDRAW. The hide below
+        // is for a paper nobody has drawn -- the built-in default, where an
+        // all-blank "Meas." or "Packaging" column is noise. Where a tenant put
+        // the column on their own sheet, a this-month's-empty bill must draw it
+        // (blank cells and all) rather than silently delete it; see
+        // TableColumn.explicit, set on read from a saved layout.
+        if (column.explicit) return true;
+
         const source = optionalLineFields.get(column.field);
         if (!source) return true;
 

@@ -308,6 +308,21 @@ export type TableColumn = {
    * existed asked for.
    */
   pattern?: string;
+  /**
+   * ⚠️ THE LAYOUT NAMED THIS COLUMN DELIBERATELY, so the renderer must draw it
+   * even where the paper's data has nothing to put in it.
+   *
+   * Set on read for the handful of line columns whose value may be absent from a
+   * whole paper (measurement, packaging) -- see OPTIONAL_LINE_KEYS. Those are the
+   * same columns the renderer would otherwise drop on its own account when every
+   * row is blank (see the optionalLineFields filter in DocumentPrint), which is
+   * right for the built-in default and wrong for a layout a tenant drew.
+   *
+   * Derived from the field name on every read, never stored on its own account:
+   * a layout saved before this existed still earns it, and the built-in default
+   * -- which never passes through normalizeTemplate -- does not.
+   */
+  explicit?: boolean;
 };
 
 /**
@@ -4498,6 +4513,23 @@ const infoItems = (value: any): InfoItem[] =>
           : bounded(item.ruleSpaceBelow, 0, 60, RULE_SPACE),
     }));
 
+/**
+ * The line columns whose value may be missing from an entire paper, and which
+ * the renderer therefore hides when no row carries one.
+ *
+ * ⚠️ A SAVED LAYOUT THAT NAMES ONE OF THESE OWNS IT. The hide is for the
+ * built-in default -- a paper nobody has drawn, where an all-blank "Meas." or
+ * "Packaging" column is noise. Where a tenant put the column on their own sheet
+ * it is a request, and a request is not withdrawn because this month's bill
+ * happens to have no measurement on it. See TableColumn.explicit.
+ */
+const OPTIONAL_LINE_KEYS = new Set<string>([
+  'measurement_qty',
+  'measurement_unit',
+  'measurement_qty_unit',
+  'packaging_text',
+]);
+
 const tableColumns = (value: any): TableColumn[] =>
   (Array.isArray(value) ? value : [])
     .filter((item) => item && typeof item.field === 'string' && item.field)
@@ -4522,6 +4554,8 @@ const tableColumns = (value: any): TableColumn[] =>
         const parts = Array.isArray(item.parts) ? item.parts.map(String).filter(Boolean) : [];
         return parts.length ? parts.map((key) => `{${key}}`).join('\n') : undefined;
       })(),
+      // A layout that names one of these has asked for it -- see TableColumn.explicit.
+      explicit: OPTIONAL_LINE_KEYS.has(String(item.field)) || undefined,
     }));
 
 /**
