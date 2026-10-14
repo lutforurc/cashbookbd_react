@@ -57,7 +57,8 @@ interface productItem {
 
 // ".67" is 0.67 written without its leading zero. The API asks for a digit
 // first, so it is given one on the way out -- the field keeps what was typed,
-// the request carries "0.67", and DECIMAL(18,2) stores 0.67.
+// the request carries "0.67". A measurement is stored in DECIMAL(18,3) and a
+// package size in DECIMAL(18,2).
 const withLeadingZero = (value: any): any => {
   const text = String(value ?? '').trim();
   return text.startsWith('.') ? `0${text}` : value;
@@ -240,24 +241,34 @@ const AddProduct = () => {
 
   // A leading dot -- ".67" -- is how a person may write 0.67, and it is
   // accepted; withLeadingZero() below gives it its digit before the request.
-  const decimalPattern = /^(?:\d+(?:\.\d{1,2})?|\.\d{1,2})$/;
+  // The two columns are different scales, so each has its own pattern: a
+  // measurement takes three decimals (0.667) and a package size two.
+  const measurementPattern = /^(?:\d+(?:\.\d{1,3})?|\.\d{1,3})$/;
+  const packageSizePattern = /^(?:\d+(?:\.\d{1,2})?|\.\d{1,2})$/;
 
   // The same rules the API keeps (ItemController::measurementValidationError):
-  // each pair is both-or-neither, and a value is a number with at most two
-  // decimals -- a third decimal is refused, not rounded away. Zero is a value
-  // like any other; empty is empty, and is never read as zero.
+  // each pair is both-or-neither, and a value is a number with at most the
+  // decimals its own column holds -- a measurement three, a package size two.
+  // A further decimal is refused, not rounded away. Zero is a value like any
+  // other; empty is empty, and is never read as zero.
   const measurementError = (): string | null => {
-    const decimal = (value: any, label: string): string | null => {
+    const decimal = (
+      value: any,
+      label: string,
+      pattern: RegExp,
+      maxDecimals: string,
+    ): string | null => {
       const text = String(value ?? '').trim();
       if (text === '') return null;
-      if (!decimalPattern.test(text)) {
-        return `${label} must be a number with at most two decimals.`;
+      if (!pattern.test(text)) {
+        return `${label} must be a number with at most ${maxDecimals} decimals.`;
       }
       return null;
     };
 
     const valueError =
-      decimal(formData.measurement, 'Measurement') || decimal(formData.package_size, 'Package size');
+      decimal(formData.measurement, 'Measurement', measurementPattern, 'three') ||
+      decimal(formData.package_size, 'Package size', packageSizePattern, 'two');
     if (valueError) return valueError;
 
     const hasMeasurement = String(formData.measurement ?? '').trim() !== '';
@@ -676,7 +687,8 @@ const AddProduct = () => {
         </div>
         {/* Measurement and packaging: additional information and nothing else.
             Left empty on a product they simply do not print. Each pair goes
-            together, and a value carries at most two decimals. */}
+            together. A measurement carries at most three decimals (0.667), a
+            package size two -- each column's own scale. */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           <InputElement
             id="measurement"
@@ -685,8 +697,10 @@ const AddProduct = () => {
             value={formData.measurement ?? ''}
             name="measurement"
             inputMode="decimal"
-            placeholder={'e.g. 0.67'}
+            step="0.001"
+            placeholder={'e.g. 0.667'}
             label={'Measurement'}
+            description={'A number with up to three decimals, e.g. 0.667.'}
             className={''}
             onChange={handleOnChange}
           />
@@ -706,8 +720,10 @@ const AddProduct = () => {
             value={formData.package_size ?? ''}
             name="package_size"
             inputMode="decimal"
+            step="0.01"
             placeholder={'e.g. 10'}
             label={'Package Size'}
+            description={'A number with up to two decimals.'}
             className={''}
             onChange={handleOnChange}
           />

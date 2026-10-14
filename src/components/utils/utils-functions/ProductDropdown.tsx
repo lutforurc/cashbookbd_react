@@ -200,6 +200,15 @@ const ProductDropdown: React.FC<DropdownProps> = ({
             code: item.code || '',
             brand: item.brand,
             group_name: item.group_name,
+            // The product's measurement and packaging, carried so a sales line
+            // can show them the moment a product is picked -- and so the API
+            // snapshots them onto the saved line. A measurement keeps its three
+            // decimals (0.667) through here untouched. Absent on a database the
+            // patch has not reached, which every downstream read allows for.
+            measurement: item.measurement,
+            measurement_unit: item.measurement_unit,
+            package_size: item.package_size,
+            package_unit: item.package_unit,
             // The balance arrives as a number or a numeric string, and a real
             // stock of zero has to keep its line: `0` would be dropped by the
             // truthiness filter in ddlDetails above, `'0'` is not.
