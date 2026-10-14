@@ -55,6 +55,14 @@ interface productItem {
   package_unit_id?: string | number;
 }
 
+// ".67" is 0.67 written without its leading zero. The API asks for a digit
+// first, so it is given one on the way out -- the field keeps what was typed,
+// the request carries "0.67", and DECIMAL(18,2) stores 0.67.
+const withLeadingZero = (value: any): any => {
+  const text = String(value ?? '').trim();
+  return text.startsWith('.') ? `0${text}` : value;
+};
+
 const AddProduct = () => {
   const [search, setSearch] = useState('');
   const category = useSelector((state) => state.category);
@@ -172,8 +180,15 @@ const AddProduct = () => {
       toast.info(measurementIssue);
       return;
     }
+    // ".67" is accepted on screen but sent as "0.67"; empty stays empty, which
+    // the API reads as NULL.
+    const payload = {
+      ...formData,
+      measurement: withLeadingZero(formData.measurement),
+      package_size: withLeadingZero(formData.package_size),
+    };
     dispatch(
-      updateProduct(formData, (d: any) => {
+      updateProduct(payload, (d: any) => {
         if (d?.success) {
           toast.success(d?.message || 'Product updated successfully');
           setTimeout(() => {
@@ -223,17 +238,21 @@ const AddProduct = () => {
   };
 
 
+  // A leading dot -- ".67" -- is how a person may write 0.67, and it is
+  // accepted; withLeadingZero() below gives it its digit before the request.
+  const decimalPattern = /^(?:\d+(?:\.\d{1,2})?|\.\d{1,2})$/;
+
   // The same rules the API keeps (ItemController::measurementValidationError):
-  // each pair is both-or-neither, and a value is a number greater than zero
-  // with at most two decimals -- a third decimal is refused, not rounded away.
+  // each pair is both-or-neither, and a value is a number with at most two
+  // decimals -- a third decimal is refused, not rounded away. Zero is a value
+  // like any other; empty is empty, and is never read as zero.
   const measurementError = (): string | null => {
     const decimal = (value: any, label: string): string | null => {
       const text = String(value ?? '').trim();
       if (text === '') return null;
-      if (!/^\d+(\.\d{1,2})?$/.test(text)) {
-        return `${label} must be a number greater than zero with at most two decimals.`;
+      if (!decimalPattern.test(text)) {
+        return `${label} must be a number with at most two decimals.`;
       }
-      if (Number(text) <= 0) return `${label} must be greater than zero.`;
       return null;
     };
 
@@ -282,9 +301,17 @@ const AddProduct = () => {
       return;
     }
 
+    // ".67" is accepted on screen but sent as "0.67"; empty stays empty, which
+    // the API reads as NULL.
+    const payload = {
+      ...formData,
+      measurement: withLeadingZero(formData.measurement),
+      package_size: withLeadingZero(formData.package_size),
+    };
+
     // ✅ async/await
     const result = await dispatch(
-      storeProduct(formData, (d: any) => {
+      storeProduct(payload, (d: any) => {
         if (d?.success) {
           toast.success(d?.message);
           setTimeout(() => {
@@ -653,10 +680,11 @@ const AddProduct = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           <InputElement
             id="measurement"
-            value={formData.measurement ? formData.measurement.toString() : ''}
+            // `?? ''`, not a truthy test: a measurement of 0 is a value, and a
+            // truthy check would render it as a blank box.
+            value={formData.measurement ?? ''}
             name="measurement"
-            type="number"
-            step="0.01"
+            inputMode="decimal"
             placeholder={'e.g. 0.67'}
             label={'Measurement'}
             className={''}
@@ -675,10 +703,9 @@ const AddProduct = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           <InputElement
             id="package_size"
-            value={formData.package_size ? formData.package_size.toString() : ''}
+            value={formData.package_size ?? ''}
             name="package_size"
-            type="number"
-            step="0.01"
+            inputMode="decimal"
             placeholder={'e.g. 10'}
             label={'Package Size'}
             className={''}
