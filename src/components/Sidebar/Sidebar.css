@@ -1,19 +1,58 @@
 /* Sidebar.css */
-.submenu {
-  overflow: hidden;
-  transition: max-height 0.3s ease-in-out;
-}
 
-.submenu.open {
-  max-height: 384px; /* Adjust based on content */
-}
-
-.submenu.closed {
-  max-height: 0;
+/* ---------------------------------------------------------------------------
+ * Opening and closing a menu group.
+ *
+ * The wrapper carries max-height:0 / max-height:45rem from Tailwind, but the
+ * panel must never be capped: Reports alone is taller than 45rem and would be
+ * cut off. The previous fix forced the open state to max-height:none, which the
+ * browser cannot interpolate -- so the group snapped open and shut, and only
+ * the chevron moved. Here the wrapper is a one-row grid and the row runs 0fr to
+ * 1fr: it animates both directions, and 1fr is the content's own height, so
+ * nothing is ever clipped however long the menu.
+ *
+ * The <ul> is the grid item; its own margins would count towards the row's
+ * minimum size and leave a gap when closed, so they are dropped and the same
+ * spacing is put on the first and last rows, inside the part that is clipped.
+ * ------------------------------------------------------------------------- */
+.app-sidebar-menu nav > div > ul > li > div[class*='max-h-'] {
+  display: grid;
+  grid-template-rows: 0fr;
+  max-height: none !important;
+  transition: grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-sidebar-menu nav > div > ul > li > div[class*='max-h-180'] {
-  max-height: none !important;
+  grid-template-rows: 1fr;
+}
+
+.app-sidebar-menu nav > div > ul > li > div[class*='max-h-'] > ul {
+  margin: 0 !important;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-sidebar-menu nav > div > ul > li > div[class*='max-h-'] > ul > li:first-child {
+  padding-top: 0.5rem;
+}
+
+.app-sidebar-menu nav > div > ul > li > div[class*='max-h-'] > ul > li:last-child {
+  padding-bottom: 1.375rem;
+}
+
+/* Hover settles at 150ms rather than 300ms. */
+.app-sidebar-menu nav > div > ul > li > a,
+.app-sidebar-menu nav > div > ul > li > div > ul > li > a {
+  transition-duration: 150ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-sidebar-menu nav > div > ul > li > div[class*='max-h-'],
+  .app-sidebar-menu nav > div > ul > li > a,
+  .app-sidebar-menu nav > div > ul > li > a svg,
+  .app-sidebar-menu nav > div > ul > li > div > ul > li > a {
+    transition-duration: 1ms !important;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -76,12 +115,37 @@
     box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
   }
 
-  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div[class*='max-h-0'] {
-    display: none !important;
+  /* The flyout fades in with a small slide instead of appearing at once. It is
+     taken out with visibility rather than display, so it can animate; the
+     panel is left at full height here and the fade is what shows or hides it. */
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div {
+    grid-template-rows: 1fr !important;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-5px);
+    transition:
+      opacity 150ms ease-out,
+      transform 150ms ease-out,
+      visibility 0s linear 150ms;
   }
 
   .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div[class*='max-h-180'] {
-    display: block !important;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 150ms ease-out,
+      transform 150ms ease-out,
+      visibility 0s;
+  }
+
+  /* The flyout keeps its own list spacing; undo the panel's row padding. */
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul > li:first-child {
+    padding-top: 0 !important;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul > li:last-child {
+    padding-bottom: 0 !important;
   }
 
   .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul {
