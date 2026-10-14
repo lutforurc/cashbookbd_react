@@ -149,14 +149,17 @@ const paymentOrder = PAYMENT.map((t) => service.indexOf(`'${t}'`));
 assert.deepEqual(receiptOrder, [...receiptOrder].sort((a, b) => a - b), 'the RECEIPT sections are out of order on the server');
 assert.deepEqual(paymentOrder, [...paymentOrder].sort((a, b) => a - b), 'the PAYMENT sections are out of order on the server');
 
-/* -- the PAYMENT TO OTHERS rename, on the REAL API service -------------------
+/* -- the two payment sections, on the REAL API service ------------------------
    The temp/DailyAccountBook.php above is this repo's own vendored copy, pinned
    only so the two sides' order cannot drift. The service that actually answers
    the endpoint lives in the API repo, and when it sits beside this one it is
    read too -- because the copy can be renamed while the service still says
-   CASH CREDIT BY JOURNAL VOUCHER, which is precisely the gap this check could
-   not see. The rename changed the key and the title, nothing else: the section
-   counts into the total exactly as before and keeps its place in the run. */
+   something else, which is precisely the gap this check could not see.
+
+   ⚠️ THE TWO SECTIONS SWAPPED NAMES, and are asserted SEPARATELY so a swap can
+   never pass: the CASH catch-all is PAYMENT TO OTHERS (counted into the payment
+   total), and the NO-CASH journal memorandum is PAYMENT BY JOURNAL VOUCHER
+   (kept out of it). Asserting one name alone would go green on a mis-swap. */
 const SERVICE =
   process.env.CASHBOOK_API_DAILY_ACCOUNT_BOOK ||
   '../cashbook_api/app/Services/Reports/DailyAccountBook.php';
@@ -165,24 +168,52 @@ if (existsSync(SERVICE)) {
   const api = read(SERVICE);
 
   assert.ok(
-    !/journal_credit/.test(api) && !/CASH CREDIT BY JOURNAL VOUCHER/.test(api),
-    'the API service still carries the old journal_credit key or its old title',
+    !/journal_credit/.test(api) &&
+      !/CASH CREDIT BY JOURNAL VOUCHER/.test(api) &&
+      !/NO CASH/.test(api) &&
+      !/journal_payment/.test(api),
+    'the API service still carries an obsolete section name',
   );
+
+  // The CASH catch-all: PAYMENT TO OTHERS, counted into the side total.
   assert.ok(
     /'key' => 'payment_to_others',\s*'title' => 'PAYMENT TO OTHERS',\s*'in_total' => true/.test(api),
-    'the API service does not define a PAYMENT TO OTHERS section that counts into the payment total',
+    'the API service does not define the PAYMENT TO OTHERS section that counts into the payment total',
   );
   assert.ok(
     /'section' => 'payment_to_others'/.test(api),
-    'the API service does not file its catch-all payments under payment_to_others',
+    'the API service does not file its catch-all cash payments under payment_to_others',
   );
 
-  // Same place in the run, so the same vouchers land in the same section and
-  // the totals are unmoved -- only the name has changed.
-  const at = api.indexOf("'payment_to_others'");
+  // The NO-CASH journal memorandum: PAYMENT BY JOURNAL VOUCHER, out of the totals.
   assert.ok(
-    at > api.indexOf("'payment_to_customer'") && at < api.indexOf("'expenses'"),
-    'the renamed section has moved in the payment run',
+    /'key' => 'payment_by_journal_voucher',\s*'title' => 'PAYMENT BY JOURNAL VOUCHER',\s*'in_total' => false/.test(api),
+    'the API service does not define the PAYMENT BY JOURNAL VOUCHER memorandum, kept out of the payment total',
+  );
+  assert.ok(
+    /'section' => 'payment_by_journal_voucher'/.test(api),
+    "the API service does not file the day's no-cash journals under payment_by_journal_voucher",
+  );
+
+  // Each in its own place in the run, so the same vouchers land in the same
+  // section and the totals are unmoved -- only the names have changed.
+  const cashAt = api.indexOf("'payment_to_others'");
+  assert.ok(
+    cashAt > api.indexOf("'payment_to_customer'") && cashAt < api.indexOf("'expenses'"),
+    'the cash catch-all has moved in the payment run',
+  );
+  const memoAt = api.indexOf("'payment_by_journal_voucher'");
+  assert.ok(
+    memoAt > api.indexOf("'sales_return_not_paid'"),
+    'the no-cash memorandum has moved in the payment run',
+  );
+
+  // No two sections may print the same heading, either.
+  const titles = [...api.matchAll(/'title' => '([^']+)'/g)].map((match) => match[1]);
+  assert.equal(
+    new Set(titles).size,
+    titles.length,
+    `two sections print the same heading: ${titles.join(', ')}`,
   );
 } else {
   console.log(`skip -- the API service is not at ${SERVICE}`);
