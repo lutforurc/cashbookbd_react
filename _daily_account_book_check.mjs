@@ -149,6 +149,45 @@ const paymentOrder = PAYMENT.map((t) => service.indexOf(`'${t}'`));
 assert.deepEqual(receiptOrder, [...receiptOrder].sort((a, b) => a - b), 'the RECEIPT sections are out of order on the server');
 assert.deepEqual(paymentOrder, [...paymentOrder].sort((a, b) => a - b), 'the PAYMENT sections are out of order on the server');
 
+/* -- the PAYMENT TO OTHERS rename, on the REAL API service -------------------
+   The temp/DailyAccountBook.php above is this repo's own vendored copy, pinned
+   only so the two sides' order cannot drift. The service that actually answers
+   the endpoint lives in the API repo, and when it sits beside this one it is
+   read too -- because the copy can be renamed while the service still says
+   CASH CREDIT BY JOURNAL VOUCHER, which is precisely the gap this check could
+   not see. The rename changed the key and the title, nothing else: the section
+   counts into the total exactly as before and keeps its place in the run. */
+const SERVICE =
+  process.env.CASHBOOK_API_DAILY_ACCOUNT_BOOK ||
+  '../cashbook_api/app/Services/Reports/DailyAccountBook.php';
+
+if (existsSync(SERVICE)) {
+  const api = read(SERVICE);
+
+  assert.ok(
+    !/journal_credit/.test(api) && !/CASH CREDIT BY JOURNAL VOUCHER/.test(api),
+    'the API service still carries the old journal_credit key or its old title',
+  );
+  assert.ok(
+    /'key' => 'payment_to_others',\s*'title' => 'PAYMENT TO OTHERS',\s*'in_total' => true/.test(api),
+    'the API service does not define a PAYMENT TO OTHERS section that counts into the payment total',
+  );
+  assert.ok(
+    /'section' => 'payment_to_others'/.test(api),
+    'the API service does not file its catch-all payments under payment_to_others',
+  );
+
+  // Same place in the run, so the same vouchers land in the same section and
+  // the totals are unmoved -- only the name has changed.
+  const at = api.indexOf("'payment_to_others'");
+  assert.ok(
+    at > api.indexOf("'payment_to_customer'") && at < api.indexOf("'expenses'"),
+    'the renamed section has moved in the payment run',
+  );
+} else {
+  console.log(`skip -- the API service is not at ${SERVICE}`);
+}
+
 assert.ok(
   /report\?\.sections\?\.receipt/.test(page) && /report\?\.sections\?\.payment/.test(page),
   'the screen does not render both sides from the server response',
