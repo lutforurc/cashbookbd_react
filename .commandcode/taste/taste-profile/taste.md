@@ -8,7 +8,7 @@
 
 ## Workflow
 - The user explicitly controls git operations: never commit, push, or deploy unless asked to. Confidence: 0.8
-- Database work must stay non-destructive: never run destructive database operations and never modify production data (instructs this explicitly in task specs). Read-only inspection of the schema/rows (e.g. `SHOW COLUMNS`, `db:table`, a `SELECT`/`CAST` probe) is expected and welcome. Confidence: 0.7
+- Database work must stay non-destructive: never run destructive database operations and never modify production data (instructs this explicitly in task specs). Read-only inspection of the schema/rows (e.g. `SHOW COLUMNS`, `db:table`, a `SELECT`/`CAST` probe) is expected and welcome. A defect is likewise never "fixed" by editing data — changing the record itself, its account classification or its approval status to force a record into (or out of) a report is explicitly ruled out. Confidence: 0.75
 - Takes the commit/push split literally: a bare "commit" instruction means commit only — push (and deploy) is never inferred from it, only from an explicit "push". Confidence: 0.6
 - Expects git conflict resolution to be a careful semantic merge, not a mechanical pick: read both sides and preserve the intended functionality and recent changes from each, and explicitly "do not blindly choose ours or theirs". Confidence: 0.55
 - Expects git work to stay non-destructive and bounded: preserve unrelated uncommitted work, do not start a new merge/rebase/pull, and never use destructive reset/clean commands. Confidence: 0.55
@@ -27,6 +27,8 @@
 - Wants to see/interact with the exact browser window being automated (foregrounded window or a streamed/dashboard view) rather than acting on a window they cannot observe. Confidence: 0.6
 - When fixing/resetting tooling, scope destructive actions tightly to the isolated task process — restart only the audit/agent session and never close, kill, or disturb the user's own personal browser or other unrelated processes. Confidence: 0.6
 - Expects prior work artifacts (audit findings, screenshots) to survive environment restarts/resets rather than being lost. Confidence: 0.5
+- For a rename/refactor, expects every related reference updated across both the API and React repos — response keys and data mapping, types/variables/calculation references/renderers, print/PDF/export, sample data, tests and configuration — followed by a sweep confirming no obsolete references remain (except explicitly required compatibility handling). Confidence: 0.6
+- Verifies a rename with distinct sample amounts per category so a silent swap cannot pass, confirming each category shows its correct label with its original data, screen/print/export agree, and grand totals are unchanged. Confidence: 0.6
 
 ## Communication & Reporting
 - Prefers report findings in English. Confidence: 0.75
@@ -39,4 +41,5 @@
 - Scopes verification claims strictly to what was actually checked: never describes a page as "clean"/passing beyond the states and checks performed, and explicitly distinguishes sampled (representative breakpoint or dark-mode) checks from fully verified routes. Confidence: 0.8
 - Wants one consolidated final report (severity, evidence, recommended fixes) that also enumerates remaining coverage gaps. Confidence: 0.7
 - Wants each verification item reported as PASS / FAIL / NOT TESTED accurately; syntax, lint, build, or formula checks alone do not count as end-to-end verification, and untested areas must be called out rather than implied as passing. Confidence: 0.7
+- For a rename, wants the final report to state the exact old→new key/label mappings, the modified files, the verification results, and the deployment compatibility requirements (whether a data patch/migration is needed and whether mixed old/new versions interoperate). Confidence: 0.6
  Confidence: 0.7
