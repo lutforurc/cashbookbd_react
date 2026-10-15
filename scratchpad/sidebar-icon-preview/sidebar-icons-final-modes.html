@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CashBookBD sidebar — final icons across modes</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 18px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #eef2f6; color: #0f172a; }
+  h1 { font-size: 15px; margin: 0 0 2px; }
+  .note { font-size: 11.5px; color: #64748b; margin: 0 0 14px; }
+  .themes { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .theme { flex: 1; min-width: 620px; border-radius: 12px; padding: 14px; border: 1px solid #e2e8f0; background: #f8fafc; }
+  .theme.dark { background: #0f172a; border-color: #1e293b; }
+  .theme > h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin: 0 0 10px; color: #334155; }
+  .theme.dark > h2 { color: #94a3b8; }
+  .mode { margin-bottom: 16px; }
+  .mode > .cap { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: #64748b; margin-bottom: 6px; }
+  .theme.dark .mode > .cap { color: #94a3b8; }
+
+  /* sidebar shells */
+  .shell { display: flex; align-items: flex-start; gap: 12px; }
+  .sidebar { width: 280px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #ffffff; }
+  .rail { width: 72px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #ffffff; }
+  .theme.dark .sidebar, .theme.dark .rail { background: #1e293b; border-color: #334155; }
+  .logo { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+  .logo .mark { width: 32px; height: 32px; border-radius: 8px; background: #4f46e5; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
+  .logo .name { font-weight: 700; font-size: 15px; }
+  .theme.dark .logo .name { color: #e2e8f0; }
+  .menus { padding: 6px 12px 12px; display: flex; flex-direction: column; gap: 4px; }
+  .row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; font-size: 13px; font-weight: 500; border-radius: 4px; color: #1e293b; }
+  .theme.dark .row { color: #cbd5e1; }
+  .row .chev { margin-left: auto; color: #94a3b8; }
+  .row.active { background: rgba(79,70,229,.10); color: #4f46e5; border-left: 3px solid #4f46e5; font-weight: 600; }
+  .theme.dark .row.active { color: #c7d2fe; background: rgba(79,70,229,.20); }
+  .row svg { flex: 0 0 auto; }
+  .expanded .row svg { width: 22px; height: 22px; }
+
+  /* collapsed rail */
+  .rail .logo { justify-content: center; padding: 12px 0; }
+  .rail .logo .name { display: none; }
+  .rail .menus { align-items: center; }
+  .rail .row { justify-content: center; padding: 9px 0; width: 44px; }
+  .rail .row .lbl, .rail .row .chev { display: none; }
+  .rail .row svg { width: 18px; height: 18px; }
+  .rail .row.active { border-left: none; }
+
+  /* flyout */
+  .flyout { width: 210px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; box-shadow: 0 18px 45px rgba(15,23,42,.18); padding: 6px 0; }
+  .theme.dark .flyout { background: #1e293b; border-color: #334155; }
+  .flyout .fi { padding: 6px 14px; font-size: 12.5px; color: #334155; }
+  .theme.dark .flyout .fi { color: #cbd5e1; }
+  .flyout .fi.active { background: rgba(79,70,229,.10); color: #4f46e5; font-weight: 600; }
+
+  /* topbar */
+  .topbar { border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .theme.dark .topbar { background: #1e293b; border-color: #334155; }
+  .topbar .ti { font-size: 12.5px; font-weight: 500; padding: 4px 6px; color: #1e293b; }
+  .theme.dark .topbar .ti { color: #cbd5e1; }
+  .topbar .ti.active { color: #4f46e5; font-weight: 600; }
+
+  /* mobile drawer */
+  .mobile { position: relative; width: 300px; height: 360px; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; background: #e2e8f0; }
+  .theme.dark .mobile { background: #020617; border-color: #334155; }
+  .mobile .scrim { position: absolute; inset: 0; background: rgba(15,23,42,.35); }
+  .mobile .drawer { position: absolute; left: 0; top: 0; bottom: 0; width: 232px; background: #fff; overflow-y: auto; }
+  .theme.dark .mobile .drawer { background: #1e293b; }
+  .mobile .menus { padding: 6px 10px 12px; }
+  .mobile .row { font-size: 12px; padding: 7px 8px; }
+  .mobile .row svg { width: 18px; height: 18px; }
+
+  .tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 999px; background: rgba(79,70,229,.14); color: #4f46e5; margin-left: 6px; vertical-align: middle; }
+  .theme.dark .tag { background: rgba(129,140,248,.2); color: #c7d2fe; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18",
+    "react-dom/client": "https://esm.sh/react-dom@18/client",
+    "react-icons/fi": "https://esm.sh/react-icons@5/fi?external=react"
+  }
+}
+</script>
+</head>
+<body>
+  <h1>CashBookBD — sidebar icons, final set across navigation modes</h1>
+  <p class="note">Rendered representation of the final main-menu icon set (the live app needs a backend/login). Light and dark; desktop expanded, collapsed rail with flyout, topbar, mobile drawer.</p>
+  <div class="themes">
+    <div class="theme" id="light"></div>
+    <div class="theme dark" id="dark"></div>
+  </div>
+  <script type="module">
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+    import * as Fi from 'react-icons/fi';
+
+    const menus = [
+      ['Dashboard', Fi.FiGrid],
+      ['Reseller Dashboard', Fi.FiBriefcase, 'changed'],
+      ['Transaction', Fi.FiDollarSign, 'changed'],
+      ['Invoice', Fi.FiShoppingCart],
+      ['Branch Transfer', Fi.FiTruck],
+      ['Reports', Fi.FiBook],
+      ['Old Software', Fi.FiArchive],
+      ['Product Tracking', Fi.FiActivity, 'changed'],
+      ['Company Scheme', Fi.FiTag],
+      ['Requisition', Fi.FiInbox, 'changed'],
+      ['Real Estate', Fi.FiMapPin, 'align'],
+      ['Assets', Fi.FiPackage, 'align'],
+      ['Hotel', Fi.FiKey, 'align'],
+      ['Products', Fi.FiLayers],
+      ['Labour Items', Fi.FiTool, 'changed'],
+      ['Admin', Fi.FiSettings, 'changed'],
+      ['VR Settings', Fi.FiFileText, 'changed'],
+      ['HRM', Fi.FiClipboard],
+      ['Customers', Fi.FiUsers],
+      ['Analytics', Fi.FiBarChart2],
+      ['Customer Dashboard', Fi.FiUser, 'changed'],
+    ];
+
+    const h = React.createElement;
+    const activeMenu = 'Reports';
+
+    function Sidebar({ variant }) {
+      return h('div', { className: 'sidebar ' + variant },
+        h('div', { className: 'logo' },
+          h('span', { className: 'mark' }, 'CB'),
+          h('span', { className: 'name' }, 'CashbookBD')),
+        h('div', { className: 'menus' },
+          menus.map(([label, Icon, changed], i) =>
+            h('div', { key: i, className: 'row' + (label === activeMenu ? ' active' : '') },
+              h(Icon),
+              h('span', { className: 'lbl' }, label),
+              (changed === 'changed') ? h('span', { className: 'tag' }, 'new') : null,
+              h(Fi.FiChevronRight, { className: 'chev', size: 14 })))),
+      );
+    }
+
+    function Rail() {
+      return h('div', { className: 'rail' },
+        h('div', { className: 'logo' }, h('span', { className: 'mark' }, 'CB')),
+        h('div', { className: 'menus' },
+          menus.map(([label, Icon], i) =>
+            h('div', { key: i, className: 'row' + (label === activeMenu ? ' active' : ''), title: label }, h(Icon)))));
+    }
+
+    function Flyout() {
+      const items = ['Cash Book', 'Cash & Bank Book', 'Daily Account Book', 'Voucher Register', 'Bank Book', 'Ageing', 'Ledger'];
+      return h('div', { className: 'flyout' }, items.map((t, i) => h('div', { key: i, className: 'fi' + (i === 0 ? ' active' : '') }, t)));
+    }
+
+    function Topbar() {
+      return h('div', { className: 'topbar' },
+        menus.map(([label], i) => h('span', { key: i, className: 'ti' + (label === activeMenu ? ' active' : '') }, label)));
+    }
+
+    function Mobile() {
+      const short = menus.slice(0, 10);
+      return h('div', { className: 'mobile' },
+        h('div', { className: 'scrim' }),
+        h('div', { className: 'drawer' },
+          h('div', { className: 'logo' }, h('span', { className: 'mark' }, 'CB'), h('span', { className: 'name' }, 'CashbookBD')),
+          h('div', { className: 'menus' },
+            short.map(([label, Icon], i) =>
+              h('div', { key: i, className: 'row' + (label === activeMenu ? ' active' : '') }, h(Icon), h('span', { className: 'lbl' }, label))))));
+    }
+
+    function Mode({ cap, children, style }) {
+      return h('div', { className: 'mode' },
+        h('div', { className: 'cap' }, cap),
+        h('div', { className: 'shell', style }, children));
+    }
+
+    function Theme({ dark }) {
+      return h(React.Fragment, null,
+        h('h2', null, dark ? 'Dark theme' : 'Light theme'),
+        h(Mode, { cap: 'Desktop — expanded sidebar (24px icons)' }, h(Sidebar, { variant: 'expanded' })),
+        h(Mode, { cap: 'Desktop — collapsed rail (18px icons) + hover flyout' }, h(Rail), h(Flyout)),
+        h(Mode, { cap: 'Topbar (icons hidden by CSS; labels only)' }, h(Topbar)),
+        h(Mode, { cap: 'Mobile drawer' }, h(Mobile)),
+      );
+    }
+
+    createRoot(document.getElementById('light')).render(h(Theme, { dark: false }));
+    createRoot(document.getElementById('dark')).render(h(Theme, { dark: true }));
+  </script>
+</body>
+</html>

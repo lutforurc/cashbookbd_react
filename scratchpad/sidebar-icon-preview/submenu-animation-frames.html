@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CashBookBD — submenu animation filmstrip</title>
+<style>
+  :root{--c-primary:43 95 217;--c-border:#e1e7ee;--ease:cubic-bezier(.4,0,.2,1)}
+  *{box-sizing:border-box}
+  body{margin:0;padding:18px;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#eef2f6;color:#0f172a}
+  h1{font-size:15px;margin:0 0 2px}
+  .note{font-size:11.5px;color:#64748b;margin:0 0 16px;max-width:960px;line-height:1.55}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#e2e8f0;padding:1px 4px;border-radius:3px}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#334155;margin:20px 0 8px}
+  h2 .k{color:#0f766e}
+  h2 .c{color:#b45309}
+  .strip{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+  .frame{background:#fff;border:1px solid var(--c-border);border-radius:10px;padding:8px 10px 10px;width:190px}
+  .frame .t{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  .row{display:flex;align-items:center;gap:8px;padding:7px 8px;font-size:12.5px;font-weight:600;color:#1a2029}
+  .row .grow{flex:1}
+  .chev{color:#94a3b8}
+  .panel{display:grid;overflow:hidden}
+  .panel .inner{overflow:hidden;min-height:0}
+  .item{padding:6px 8px 6px 18px;font-size:11.5px;color:#59636f}
+  .item.active{background:rgb(var(--c-primary)/.10);color:rgb(var(--c-primary));font-weight:600;box-shadow:inset 3px 0 0 rgb(var(--c-primary))}
+  .cap{font-size:10.5px;color:#0f766e;margin-top:8px;font-weight:600}
+
+  /* current "snap": only two states, no interpolation */
+  .snap-note{font-size:11px;color:#b45309;margin-top:6px}
+
+  /* flyout frames */
+  .flywrap{background:#fff;border:1px solid var(--c-border);border-radius:10px;padding:6px 0;width:170px;box-shadow:0 14px 34px rgba(15,23,42,.14)}
+  .flywrap .fi{padding:5px 12px;font-size:12px;color:#334155}
+  .flywrap .fi.active{background:rgb(var(--c-primary)/.10);color:rgb(var(--c-primary));font-weight:600}
+  .railmini{background:#fff;border:1px solid var(--c-border);border-radius:8px;padding:6px 0;width:44px;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .railmini .ri{width:30px;height:26px;display:flex;align-items:center;justify-content:center;color:#1a2029}
+  .railmini .ri.active{background:rgb(var(--c-primary)/.10);color:rgb(var(--c-primary))}
+  .flycell{display:flex;gap:8px;align-items:flex-start}
+</style>
+</head>
+<body>
+  <h1>Submenu animation — frame strip</h1>
+  <p class="note">No ffmpeg on this machine, so the motion is shown as frozen frames of the <b>proposed</b> animation. Open/close moves the panel <code>grid-template-rows 0fr → 1fr</code> over 200ms with <code>cubic-bezier(.4,0,.2,1)</code>; the chevron turns 0°→90° over the same 200ms; the collapsed flyout fades in with a 5px slide over 150ms. Long menus (Reports, 36 items) are never clipped, because <code>1fr</code> is the content height.</p>
+
+  <h2>Expand — proposed <span class="k">200ms, 0fr → 1fr (smooth, both directions)</span></h2>
+  <div class="strip" id="openStrip"></div>
+
+  <h2>Collapse — proposed <span class="k">200ms, 1fr → 0fr</span></h2>
+  <div class="strip" id="closeStrip"></div>
+
+  <h2>Current behaviour — <span class="c">max-height 0 ⇄ none: snaps, no in-between</span></h2>
+  <div class="strip" id="snapStrip"></div>
+
+  <h2>Collapsed flyout — proposed <span class="k">150ms fade + 5px slide</span></h2>
+  <div class="strip" id="flyStrip"></div>
+
+  <script>
+    const items = ['Cash Book','Cash & Bank Book','Daily Account Book','Voucher Register','Bank Book','Ledger','Ageing','Balance Sheet'];
+    const chev = a => `<svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(${a}deg)"><path d="M9 18l6-6-6-6"/></svg>`;
+
+    function frame(t, fr, angle, cap){
+      const rows = items.map((x,i)=>`<div class="item${i===0?' active':''}">${x}</div>`).join('');
+      return `<div class="frame"><div class="t">${t}</div>
+        <div class="row"><span class="grow">Reports</span>${chev(angle)}</div>
+        <div class="panel" style="grid-template-rows:${fr}"><div class="inner"><div style="padding:2px 0 4px">${rows}</div></div></div>
+        ${cap?`<div class="cap">${cap}</div>`:''}</div>`;
+    }
+
+    const openSteps=[[0,0],[0.33,30],[0.66,60],[1,90]];
+    document.getElementById('openStrip').innerHTML = openSteps.map(([fr,a],i)=>
+      frame(`t ≈ ${Math.round(200*i/3)}ms`, fr+'fr', a, i===3?'open (content height, not clipped)':'')).join('');
+
+    const closeSteps=[[1,90],[0.66,60],[0.33,30],[0,0]];
+    document.getElementById('closeStrip').innerHTML = closeSteps.map(([fr,a],i)=>
+      frame(`t ≈ ${Math.round(200*i/3)}ms`, fr+'fr', a, i===3?'closed (max-height 0, overflow hidden)':'')).join('');
+
+    // current: only closed then open
+    const rws = items.map((x,i)=>`<div class="item${i===0?' active':''}">${x}</div>`).join('');
+    document.getElementById('snapStrip').innerHTML = `
+      <div class="frame"><div class="t">before click</div>
+        <div class="row"><span class="grow">Reports</span>${chev(0)}</div>
+        <div class="panel" style="grid-template-rows:0fr"><div class="inner"><div style="padding:2px 0 4px">${rws}</div></div></div></div>
+      <div class="frame"><div class="t">after click (same frame)</div>
+        <div class="row"><span class="grow">Reports</span>${chev(90)}</div>
+        <div class="panel" style="grid-template-rows:1fr"><div class="inner"><div style="padding:2px 0 4px">${rws}</div></div></div>
+        <div class="snap-note">panel jumps instantly; only the chevron eases (200ms) → out of sync</div></div>`;
+
+    const fly = (o, x, a, t) => `<div class="frame"><div class="t">${t}</div><div class="flycell">
+      <div class="railmini"><div class="ri active">▤</div><div class="ri">🛒</div></div>
+      <div class="flywrap" style="opacity:${o};transform:translateX(${x}px)">
+        <div class="fi active">Cash Book</div><div class="fi">Cash & Bank Book</div><div class="fi">Daily Account Book</div>
+      </div></div></div>`;
+    document.getElementById('flyStrip').innerHTML =
+      fly(0,-5,0,'t = 0ms') + fly(.5,-2.5,0,'t ≈ 75ms') + fly(1,0,0,'t = 150ms (settled)');
+  </script>
+</body>
+</html>

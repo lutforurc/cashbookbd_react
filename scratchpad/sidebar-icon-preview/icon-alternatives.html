@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CashBookBD icon alternatives</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 20px;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #f1f5f9; color: #0f172a;
+  }
+  h1 { font-size: 16px; margin: 0 0 4px; }
+  .note { font-size: 12px; color: #64748b; margin: 0 0 14px; }
+  .themes { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .panel { border-radius: 10px; padding: 14px 18px; border: 1px solid #e2e8f0; background: #fff; min-width: 620px; flex: 1; }
+  .panel.dark { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 8px 10px; font-size: 13px; vertical-align: middle; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; border-bottom: 1px solid #e2e8f0; }
+  .panel.dark th { border-color: #334155; }
+  tr + tr td { border-top: 1px solid #f1f5f9; }
+  .panel.dark tr + tr td { border-color: #263449; }
+  .menucell { width: 180px; font-weight: 600; color: #0f172a; }
+  .panel.dark .menucell { color: #e2e8f0; }
+  .candcell { width: 200px; }
+  .samples { display: flex; gap: 22px; align-items: flex-end; }
+  .sample { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .iconbox { display: flex; align-items: center; justify-content: center; height: 30px; }
+  .iconbox svg { display: block; }
+  .cap { font-size: 10.5px; color: #64748b; letter-spacing: .02em; }
+  .panel.dark .cap { color: #94a3b8; }
+  .cand { font-size: 11px; color: #0f766e; font-weight: 600; margin-top: 2px; }
+  .cand.alt { color: #7c3aed; }
+  .badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+  .badge.p { background: rgba(15,118,110,.12); color: #0f766e; }
+  .badge.a { background: rgba(124,58,237,.12); color: #7c3aed; }
+  .panel.dark .badge.p { background: rgba(45,212,191,.16); color: #5eead4; }
+  .panel.dark .badge.a { background: rgba(167,139,250,.18); color: #c4b5fd; }
+  h2 { font-size: 13px; margin: 0 0 8px; letter-spacing: .04em; text-transform: uppercase; color: #64748b; }
+  .panel.dark h2 { color: #94a3b8; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18",
+    "react-dom/client": "https://esm.sh/react-dom@18/client",
+    "react-icons/fi": "https://esm.sh/react-icons@5/fi?external=react"
+  }
+}
+</script>
+</head>
+<body>
+  <h1>CashBookBD — icon alternatives</h1>
+  <p class="note">For each menu: the current proposal (teal) beside the alternative (purple), with the menu label, shown at 24px (desktop) and 18px (collapsed rail), in light and dark themes.</p>
+  <div class="themes">
+    <div class="panel" id="light"></div>
+    <div class="panel dark" id="dark"></div>
+  </div>
+  <script type="module">
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+    import * as Fi from 'react-icons/fi';
+
+    const menus = [
+      { label: 'Transaction',        proposal: ['FiDollarSign', Fi.FiDollarSign], alt: ['FiRepeat',    Fi.FiRepeat] },
+      { label: 'Product Tracking',   proposal: ['FiActivity',   Fi.FiActivity],   alt: ['FiCrosshair', Fi.FiCrosshair] },
+      { label: 'Customer Dashboard', proposal: ['FiUserCheck',  Fi.FiUserCheck],  alt: ['FiUser',      Fi.FiUser] },
+    ];
+
+    function Sample({ Comp, px }) {
+      return React.createElement('div', { className: 'sample' },
+        React.createElement('div', { className: 'iconbox' },
+          React.createElement(Comp, { size: px })),
+        React.createElement('div', { className: 'cap' }, px + 'px'));
+    }
+
+    function Candidate({ name, Comp, kind }) {
+      return React.createElement('td', { className: 'candcell' },
+        React.createElement('div', { className: 'samples' },
+          React.createElement(Sample, { Comp, px: 24 }),
+          React.createElement(Sample, { Comp, px: 18 })),
+        React.createElement('div', { className: 'cand ' + (kind === 'alt' ? 'alt' : '') }, name));
+    }
+
+    function Table() {
+      return React.createElement('div', null,
+        React.createElement('h2', null, ' '),
+        React.createElement('table', null,
+          React.createElement('thead', null,
+            React.createElement('tr', null,
+              React.createElement('th', null, 'Menu'),
+              React.createElement('th', null, React.createElement('span', null, 'Proposed', React.createElement('span', { className: 'badge p' }, 'current'))),
+              React.createElement('th', null, React.createElement('span', null, 'Alternative', React.createElement('span', { className: 'badge a' }, 'alt'))),
+            )),
+          React.createElement('tbody', null,
+            menus.map((m, i) =>
+              React.createElement('tr', { key: i },
+                React.createElement('td', { className: 'menucell' }, m.label),
+                React.createElement(Candidate, { name: m.proposal[0], Comp: m.proposal[1], kind: 'prop' }),
+                React.createElement(Candidate, { name: m.alt[0], Comp: m.alt[1], kind: 'alt' }),
+              ))),
+        ));
+    }
+
+    createRoot(document.getElementById('light')).render(React.createElement(Table));
+    createRoot(document.getElementById('dark')).render(React.createElement(Table));
+  </script>
+</body>
+</html>

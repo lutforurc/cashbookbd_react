@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CashBookBD — submenu animation: current vs proposed</title>
+<style>
+  :root{
+    --c-sidebar:#fff;
+    --c-text:#1a2029;
+    --c-muted:#59636f;
+    --c-border:#e1e7ee;
+    --c-primary:43 95 217;
+    --t-open:200ms;   /* proposed expand/collapse */
+    --ease:cubic-bezier(.4,0,.2,1);
+    --t-hover:150ms;  /* proposed hover */
+    --t-flyout:150ms; /* proposed flyout */
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:18px;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#eef2f6;color:#0f172a}
+  h1{font-size:15px;margin:0 0 2px}
+  .note{font-size:11.5px;color:#64748b;margin:0 0 12px;max-width:900px;line-height:1.5}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#e2e8f0;padding:1px 4px;border-radius:3px}
+  .bar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  button{font:inherit;font-size:12px;padding:6px 11px;border:1px solid #cbd5e1;background:#fff;border-radius:7px;cursor:pointer}
+  button:hover{background:#f1f5f9}
+  label{font-size:12px;color:#334155;display:flex;gap:6px;align-items:center}
+  .cols{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .col{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;min-width:340px}
+  .col h2{font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;color:#334155}
+  .col.proposed h2{color:#0f766e}
+  .col .sub{font-size:11px;color:#64748b;margin:-6px 0 10px}
+
+  /* ---- sidebar mock ---- */
+  .sidebar{background:var(--c-sidebar);border:1px solid var(--c-border);border-radius:10px;overflow:visible;width:300px}
+  .menus{padding:8px 12px 12px;display:flex;flex-direction:column;gap:4px}
+  .row{display:flex;align-items:center;gap:10px;padding:8px 10px;font-size:13px;font-weight:500;color:var(--c-text);border-radius:5px;position:relative}
+  .grow{flex:1}
+  .chev{color:#94a3b8;transition:transform var(--t-open) var(--ease)}
+  .row.open>.chev{transform:rotate(90deg)}
+  .row.active{background:rgb(var(--c-primary) / .10);color:rgb(var(--c-primary));border-left:3px solid rgb(var(--c-primary))}
+
+  /* hover (proposed): 150ms, colors only */
+  .proposed .row{transition:background-color var(--t-hover) ease,color var(--t-hover) ease}
+  .proposed .row:hover{background:rgba(15,23,42,.05)}
+  /* current: blanket 300ms on all */
+  .current .row{transition:all 300ms ease-in-out}
+  .current .row:hover{background:#d1d5db}
+  .hover-sim{background:rgba(15,23,42,.05) !important}
+
+  /* submenu panel */
+  .sm-item{display:block;padding:7px 10px 7px 22px;font-size:12.5px;color:var(--c-muted);border-radius:4px}
+  .sm-item.active{background:rgb(var(--c-primary) / .10);color:rgb(var(--c-primary));font-weight:600;box-shadow:inset 3px 0 0 rgb(var(--c-primary))}
+  .proposed .sm-item{transition:background-color var(--t-hover) ease,color var(--t-hover) ease}
+  .proposed .sm-item:hover{background:rgba(15,23,42,.05)}
+  .current .sm-item{transition:all 300ms ease-in-out}
+
+  /* CURRENT: max-height 0 <-> none (snaps) */
+  .current .wrap{overflow:hidden;max-height:0;transition:max-height 300ms ease-in-out}
+  .current .wrap.open{max-height:none}   /* the Sidebar.css override -> not interpolable */
+
+  /* PROPOSED: grid-template-rows 0fr <-> 1fr (smooth, never clips) */
+  .proposed .wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--t-open) var(--ease)}
+  .proposed .wrap.open{grid-template-rows:1fr}
+  .proposed .wrap>.inner{overflow:hidden;min-height:0}
+
+  /* ---- collapsed rail + flyout ---- */
+  .railwrap{display:flex;align-items:flex-start;gap:10px;margin-top:14px}
+  .rail{background:var(--c-sidebar);border:1px solid var(--c-border);border-radius:10px;padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:4px;width:56px}
+  .ricon{width:40px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:var(--c-text);cursor:pointer}
+  .ricon:hover{background:rgba(15,23,42,.05)}
+  .ricon.active{background:rgb(var(--c-primary) / .10);color:rgb(var(--c-primary))}
+  .flyout{background:#fff;border:1px solid var(--c-border);border-radius:10px;box-shadow:0 18px 45px rgba(15,23,42,.18);padding:6px 0;width:190px}
+  .flyout .fi{padding:6px 14px;font-size:12.5px;color:#334155}
+  .flyout .fi.active{background:rgb(var(--c-primary) / .10);color:rgb(var(--c-primary));font-weight:600}
+  /* CURRENT flyout: display toggle (instant) */
+  .current .flyout{display:none}
+  .current .flyout.open{display:block}
+  /* PROPOSED flyout: fade + 5px slide, 150ms */
+  .proposed .flyout{opacity:0;transform:translateX(-5px);visibility:hidden;
+    transition:opacity var(--t-flyout) ease-out,transform var(--t-flyout) ease-out,visibility 0s linear var(--t-flyout)}
+  .proposed .flyout.open{opacity:1;transform:none;visibility:visible;
+    transition:opacity var(--t-flyout) ease-out,transform var(--t-flyout) ease-out,visibility 0s}
+
+  .status{font-size:11px;color:#0f766e;min-height:14px;margin-top:8px}
+
+  /* Reduced motion: real media query + a manual class for the demo */
+  @media (prefers-reduced-motion: reduce){
+    .wrap,.chev,.row,.sm-item,.flyout{transition-duration:1ms !important}
+  }
+  html.reduce .wrap,html.reduce .chev,html.reduce .row,html.reduce .sm-item,html.reduce .flyout{transition-duration:1ms !important}
+</style>
+</head>
+<body>
+  <h1>Submenu animation — current vs proposed</h1>
+  <p class="note">Left <b>Current</b>: the wrapper animates <code>max-height 0→none</code>, which the browser cannot interpolate, so the panel snaps while the chevron turns over 200ms. Right <b>Proposed</b>: <code>grid-template-rows 0fr→1fr</code> over 200ms (never clips, works both ways); chevron synced at 200ms; row hover at 150ms; collapsed flyout fades with a 5px slide over 150ms.</p>
+  <div class="bar">
+    <button id="play">▶ Play demo</button>
+    <button id="openBoth">Open Reports (both)</button>
+    <button id="closeBoth">Close all</button>
+    <label><input type="checkbox" id="rm" /> Simulate prefers-reduced-motion</label>
+    <span class="status" id="status"></span>
+  </div>
+
+  <div class="cols">
+    <div class="col current" id="colCurrent"><h2>Current</h2>
+      <div class="sub">max-height 0 ⇄ none · chevron 200ms · hover 300ms · flyout instant</div>
+    </div>
+    <div class="col proposed" id="colProposed"><h2>Proposed</h2>
+      <div class="sub">grid 0fr ⇄ 1fr @200ms · chevron 200ms · hover 150ms · flyout fade+5px @150ms</div>
+    </div>
+  </div>
+
+  <script>
+    const longItems = ['Cash Book','Cash & Bank Book','Daily Account Book','Voucher Register','Referer','Bank Book','Ageing','Audit Trail','Cash & Bank Summary','Profit Loss','Product Profit Loss','Bank Information','Connected Member','Balance Sheet','Trial Balance Group','Trial Balance Details','Expense Report','Ledger','Ledger Details','Product In Out','Due List','Collection Sheet','Monthly Report','Datewise Cash Total','Product Stock','Stock Details','IMEI Stock','Godown Stock','Purchase Ledger','Sales Ledger','Purchase Return','Sales Return','Delivery Report','Customer Sales','Group Report','Mismatch'];
+    const shortItems = ['Cash Received','Cash Payment','Bank Received','Bank Payment','Bank Reconciliation','Cheque Register','Budget','Installments','Employee Loan','Journal'];
+
+    const chev = '<svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
+    const boxIcon = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+    const cartIcon = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>';
+
+    function group(id, title, icon, items){
+      const rows = items.map((t,i)=>`<a class="sm-item${i===0?' active':''}" href="#">${t}</a>`).join('');
+      return `<div class="row" data-group="${id}">${icon}<span class="grow">${title}</span>${chev}</div>
+        <div class="wrap" id="wrap-${id}"><div class="inner"><div style="padding:4px 0 8px">${rows}</div></div></div>`;
+    }
+
+    function build(col, prefix){
+      col.insertAdjacentHTML('beforeend', `
+        <div class="sidebar">
+          <div class="menus">
+            <div class="row">${boxIcon}<span class="grow">Dashboard</span>${chev}</div>
+            ${group(prefix+'reports','Reports',boxIcon,longItems)}
+            ${group(prefix+'tx','Transaction',cartIcon,shortItems)}
+          </div>
+        </div>
+        <div class="railwrap">
+          <div class="rail">
+            <div class="ricon ${prefix==='c'?'active':''}" data-rail="${prefix}">${boxIcon}</div>
+            <div class="ricon">${cartIcon}</div>
+          </div>
+          <div class="flyout" id="fly-${prefix}"><div class="fi active">Cash Book</div><div class="fi">Cash & Bank Book</div><div class="fi">Daily Account Book</div><div class="fi">Ledger</div></div>
+        </div>`);
+    }
+
+    const colCurrent = document.getElementById('colCurrent');
+    const colProposed = document.getElementById('colProposed');
+    build(colCurrent,'c'); build(colProposed,'p');
+
+    function wire(col, prefix){
+      col.querySelectorAll('[data-group]').forEach(h=>{
+        h.addEventListener('click',()=>{
+          const w = col.querySelector('#wrap-'+h.dataset.group);
+          w.classList.toggle('open'); h.classList.toggle('open');
+        });
+      });
+      const rail = col.querySelector('[data-rail="'+prefix+'"]');
+      const fly = col.querySelector('#fly-'+prefix);
+      rail.addEventListener('click',()=>fly.classList.toggle('open'));
+    }
+    wire(colCurrent,'c'); wire(colProposed,'p');
+
+    const set = (prefix,group,open)=>{['c','p'].forEach(p=>{const col=p==='c'?colCurrent:colProposed;const w=col.querySelector('#wrap-'+p+group);const h=col.querySelector('[data-group="'+p+group+'"]');w.classList.toggle('open',open);h.classList.toggle('open',open);});};
+    document.getElementById('openBoth').onclick=()=>set('','reports',true);
+    document.getElementById('closeBoth').onclick=()=>{['reports','tx'].forEach(g=>set('',g,false));document.querySelectorAll('.flyout').forEach(f=>f.classList.remove('open'));};
+    document.getElementById('rm').onchange=e=>document.documentElement.classList.toggle('reduce',e.target.checked);
+
+    const status=document.getElementById('status');
+    const wait=ms=>new Promise(r=>setTimeout(r,ms));
+    async function play(){
+      status.textContent='';
+      set('','reports',false); await wait(300);
+      set('','reports',true);  status.textContent='open Reports — watch Current snap / Proposed ease (200ms)'; await wait(1200);
+      set('','reports',false); status.textContent='close Reports'; await wait(900);
+      set('','tx',true);       status.textContent='open Transaction (11 items)'; await wait(1100);
+      set('','tx',false);      await wait(500);
+      // hover simulation on the first sub-item of each column
+      document.querySelectorAll('.col .sm-item').forEach(el=>el.classList.add('hover-sim'));
+      status.textContent='row hover (150ms)'; await wait(900);
+      document.querySelectorAll('.col .sm-item').forEach(el=>el.classList.remove('hover-sim'));
+      // flyout
+      document.querySelectorAll('.flyout').forEach(f=>f.classList.add('open'));
+      status.textContent='collapsed flyout — fade + 5px slide (150ms)'; await wait(1100);
+      document.querySelectorAll('.flyout').forEach(f=>f.classList.remove('open')); await wait(500);
+      status.textContent='done';
+    }
+    document.getElementById('play').onclick=play;
+    window.__playDemo = play;
+  </script>
+</body>
+</html>

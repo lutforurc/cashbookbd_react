@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CashBookBD sidebar icon preview</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+  h1 { font-size: 16px; margin: 0 0 4px; }
+  h2 { font-size: 13px; margin: 18px 0 8px; letter-spacing: .04em; text-transform: uppercase; color: #64748b; }
+  .note { font-size: 12px; color: #64748b; margin: 0 0 12px; }
+  .themes { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .panel { border-radius: 10px; padding: 14px 16px; border: 1px solid #e2e8f0; background: #fff; min-width: 560px; flex: 1; }
+  .panel.dark { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+  .panel.dark h2 { color: #94a3b8; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 5px 8px; font-size: 13px; vertical-align: middle; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; border-bottom: 1px solid #e2e8f0; }
+  .panel.dark th { border-color: #334155; }
+  tr + tr td { border-top: 1px solid #f1f5f9; }
+  .panel.dark tr + tr td { border-color: #263449; }
+  .iconcell { width: 74px; }
+  .iconcell svg { display: inline-block; vertical-align: middle; }
+  .nav-icon { display: inline-flex; align-items: center; gap: 10px; }
+  .expanded svg { width: 24px; height: 24px; }
+  .collapsed svg { width: 18px; height: 18px; }
+  .arrow { color: #94a3b8; font-size: 15px; }
+  .keep { color: #64748b; font-style: italic; font-size: 12px; }
+  .changed { color: #0f766e; font-size: 12px; font-weight: 600; }
+  .bad { color: #b91c1c; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  .legend { display: flex; gap: 18px; font-size: 12px; color: #64748b; margin-top: 6px; }
+  .legend b { color: #0f172a; font-weight: 600; }
+  .panel.dark .legend b { color: #e2e8f0; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18",
+    "react-dom/client": "https://esm.sh/react-dom@18/client",
+    "react-icons/fi": "https://esm.sh/react-icons@5/fi?external=react",
+    "react-icons/fa6": "https://esm.sh/react-icons@5/fa6?external=react"
+  }
+}
+</script>
+</head>
+<body>
+  <h1>CashBookBD — main-menu icon preview</h1>
+  <p class="note">Left = current, right = proposed. Icons shown at expanded (24px) and collapsed (18px) sizes, in light and dark themes.</p>
+  <div class="legend">
+    <span><b>changed</b> = replacement proposed</span>
+    <span><b>keep</b> = unchanged</span>
+  </div>
+  <div class="themes">
+    <div class="panel" id="light"></div>
+    <div class="panel dark" id="dark"></div>
+  </div>
+  <script type="module">
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+    import * as Fi from 'react-icons/fi';
+    import * as Fa6 from 'react-icons/fa6';
+
+    // Customer Dashboard currently renders an inline SVG (a chart mark), not a react-icon.
+    const InlineCustomerDash = (props) => React.createElement('svg',
+      { viewBox: '0 0 18 19', fill: 'none', stroke: 'currentColor', strokeWidth: 0, width: 1, height: 1, ...props },
+      React.createElement('path', { d: 'M8.27 2a7.8 7.8 0 1 0 7.8 7.8H8.27V2z', fill: 'currentColor' })
+    );
+
+    const rows = [
+      ['Dashboard',        Fi.FiGrid,          Fi.FiGrid,          false],
+      ['Reseller Dashboard',Fi.FiUsers,        Fi.FiBriefcase,     true],
+      ['Transaction',      Fa6.FaGear,         Fi.FiDollarSign,    true],
+      ['Invoice',          Fi.FiShoppingCart,  Fi.FiShoppingCart,  false],
+      ['Branch Transfer',  Fi.FiTruck,         Fi.FiTruck,         false],
+      ['Reports',          Fi.FiBook,          Fi.FiBook,          false],
+      ['Old Software',     Fi.FiArchive,       Fi.FiArchive,       false],
+      ['Product Tracking', Fi.FiTag,           Fi.FiActivity,      true],
+      ['Company Scheme',   Fi.FiTag,           Fi.FiTag,           false],
+      ['Requisition',      Fi.FiServer,        Fi.FiInbox,         true],
+      ['Real Estate',      Fi.FiMapPin,        Fi.FiMapPin,        false],
+      ['Assets',           Fi.FiPackage,       Fi.FiPackage,       false],
+      ['Hotel',            Fi.FiKey,           Fi.FiKey,           false],
+      ['Products',         Fi.FiLayers,        Fi.FiLayers,        false],
+      ['Labour Items',     Fi.FiUsers,         Fi.FiTool,          true],
+      ['Admin',            Fa6.FaGear,         Fi.FiSettings,      true],
+      ['VR Settings',      Fi.FiLayers,        Fi.FiFileText,      true],
+      ['HRM',              Fi.FiClipboard,     Fi.FiClipboard,     false],
+      ['Customers',        Fi.FiUsers,         Fi.FiUsers,         false],
+      ['Analytics',        Fi.FiBarChart2,     Fi.FiBarChart2,     false],
+      ['Customer Dashboard',InlineCustomerDash,Fi.FiUserCheck,     true],
+    ];
+
+    function Cell({ Comp, size }) {
+      return React.createElement('span', { className: 'nav-icon ' + size },
+        React.createElement(Comp));
+    }
+
+    function Table({ dark }) {
+      return React.createElement('div', null,
+        React.createElement('h2', null, dark ? 'Dark theme' : 'Light theme'),
+        React.createElement('table', null,
+          React.createElement('thead', null,
+            React.createElement('tr', null,
+              React.createElement('th', null, 'Menu'),
+              React.createElement('th', null, 'Current'),
+              React.createElement('th', null, ''),
+              React.createElement('th', null, 'Proposed'),
+              React.createElement('th', null, ''),
+            )),
+          React.createElement('tbody', null,
+            rows.map(([label, cur, prop, changed], i) =>
+              React.createElement('tr', { key: i },
+                React.createElement('td', null, label),
+                React.createElement('td', { className: 'iconcell' }, React.createElement(Cell, { Comp: cur, size: 'expanded' })),
+                React.createElement('td', { className: 'arrow' }, '\u2192'),
+                React.createElement('td', { className: 'iconcell' }, React.createElement(Cell, { Comp: prop, size: 'expanded' })),
+                React.createElement('td', null, changed
+                  ? React.createElement('span', { className: 'changed' }, 'changed')
+                  : React.createElement('span', { className: 'keep' }, 'keep')),
+              ))),
+        ),
+        React.createElement('h2', null, 'Collapsed rail (18px)'),
+        React.createElement('div', { style: { display: 'flex', gap: '18px', flexWrap: 'wrap', marginTop: '4px' } },
+          rows.map(([label, cur, prop], i) =>
+            React.createElement('span', { key: i, style: { display: 'inline-flex', gap: '6px', alignItems: 'center', opacity: 0.95 } },
+              React.createElement(Cell, { Comp: prop, size: 'collapsed' }),
+            ))),
+      );
+    }
+
+    createRoot(document.getElementById('light')).render(React.createElement(Table, { dark: false }));
+    createRoot(document.getElementById('dark')).render(React.createElement(Table, { dark: true }));
+  </script>
+</body>
+</html>

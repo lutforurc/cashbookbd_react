@@ -32,6 +32,7 @@
 
 ## Communication & Reporting
 - Prefers report findings in English. Confidence: 0.75
+- For a navigation/UX review, wants the deliverable structured as: the problems identified and their user impact; recommended improvements with the reasoning behind each; a current-vs-proposed comparison; a simple visual mockup/wireframe of the proposal; and an explicit prioritization of what should be done now vs what can wait. Confidence: 0.6
 - Wants findings delivered as a structured table with explicit columns: page/module + route, the specific inconsistency, evidence (screenshot or source file), user impact, severity (High/Medium/Low), recommended correction, and whether the fix belongs in a shared component/theme or an individual page. Confidence: 0.8
 - In a review/audit, expects findings grouped into distinct classes — confirmed bugs vs UI/usability improvements vs optional feature suggestions — and each finding tagged with the layer it needs (frontend, API, or database); explicitly wants missing features distinguished from features that already work. Confidence: 0.6
 - Prioritizes improvements that are practical for daily operators over speculative or cosmetic work when ranking review findings. Confidence: 0.55
