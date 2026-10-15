@@ -26,8 +26,7 @@ interface ProductOutListProps {
  * type here is approved through `approval-center/action`, and a write-off is a
  * voucher -- so this button posts there rather than opening a second door that
  * would approve stock without the permission and the trail the center applies.
- * Approving is also the moment the stock moves (ProductOutPosting), which is
- * why the row says so once it is done.
+ * The stock already moved at save; approving is only the sign-off.
  */
 const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
   const dispatch = useDispatch<any>();
@@ -111,10 +110,7 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
 
   const runApproval = async (row: any, action: 'approve' | 'remove') => {
     const verb = action === 'approve' ? 'Approve' : 'Take the approval back off';
-    const note =
-      action === 'approve'
-        ? 'The stock goes off the shelf the moment this is approved.'
-        : 'The stock comes back onto the shelf.';
+    const note = 'The stock already left the shelf at save; this does not change it.';
 
     if (!window.confirm(`${verb} ${row.out_no}?\n\n${note}`)) return;
 
@@ -208,11 +204,9 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
     },
     {
       key: 'status',
-      header: 'Stock',
+      header: 'Approval',
       headerClass: 'text-center w-32',
       cellClass: 'text-center w-32',
-      // The row has to say what the shelf currently thinks, because a pending
-      // slip is a breakage the stock does NOT yet know about.
       render: (row: any) => (
         <span
           className={
@@ -221,7 +215,7 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
               : 'rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800 dark:bg-amber-900 dark:text-amber-200'
           }
         >
-          {row?.is_approved ? 'Off the shelf' : 'Pending'}
+          {row?.is_approved ? 'Approved' : 'Pending'}
         </span>
       ),
     },
@@ -257,7 +251,7 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
                 type="button"
                 disabled={busyId === row?.id}
                 onClick={() => runApproval(row, 'approve')}
-                title="Approve — takes the stock off the shelf"
+                title="Approve"
                 className="text-green-600 hover:text-green-800 disabled:opacity-40"
               >
                 <FiCheckCircle className="cursor-pointer text-lg" />

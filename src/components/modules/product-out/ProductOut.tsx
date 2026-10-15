@@ -35,10 +35,8 @@ const emptyLine = { productId: '', productName: '', unit: '', quantity: '', note
 /**
  * Write off stock that left outside a purchase or a sale.
  *
- * ⚠️ NOTHING IS TAKEN OFF THE SHELF BY THIS SCREEN. The slip saves as pending
- * and the stock moves when the owner approves it in the Approval Center --
- * which is stated on the screen, because a clerk who believes they have just
- * emptied the shelf of 40 tiles will not go and approve anything.
+ * Saving takes the stock off the shelf (owner, 2026-10-15); approval is a
+ * separate sign-off in the Approval Center and no longer moves stock.
  */
 const ProductOut = () => {
   const dispatch = useDispatch<any>();
@@ -294,11 +292,6 @@ const ProductOut = () => {
   return (
     <div>
       <HelmetTitle title="Product Out" />
-
-      <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
-        Saving this slip does <b>not</b> take the stock off the shelf. It moves when the
-        write-off is approved in the Approval Center.
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-2 mb-4">
         <InputDatePicker

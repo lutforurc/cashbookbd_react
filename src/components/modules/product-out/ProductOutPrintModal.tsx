@@ -117,12 +117,10 @@ const ProductOutPrintModal: React.FC<Props> = ({ id, onClose }) => {
                 </div>
               </div>
 
-              {/* ⚠️ A pending slip says so on the paper. The cost column is filled
-                  by FIFO only when the write-off is approved, and ৳0 printed
-                  without a word would read as "this breakage was free". */}
+              {/* A pending slip says so on the paper. */}
               {!approved && (
                 <div className="mb-3 border border-black px-2 py-1 text-center font-semibold uppercase">
-                  Pending approval — stock not yet taken off the shelf
+                  Pending approval
                 </div>
               )}
 
