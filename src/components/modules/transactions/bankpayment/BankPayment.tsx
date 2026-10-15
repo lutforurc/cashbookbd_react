@@ -1,16 +1,14 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import type { KeyboardEvent } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import { FiEdit2, FiHome, FiPlus, FiSave, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiHome, FiPlus, FiSave, FiTrash2 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
-import { hasPermission } from '../../../utils/permissionChecker';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import useOrderFieldEnabled from '../../../utils/hooks/useOrderFieldEnabled';
 import useRemarkSuggestions from '../../../utils/hooks/useRemarkSuggestions';
 import Loader from '../../../../common/Loader';
-import InputOnly from '../../../utils/fields/InputOnly';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
@@ -73,7 +71,6 @@ const initialPaymentItem: PaymentItem = {
 const BankPayment = () => {
   const prevDataRef = useRef(null);
   const dispatch = useDispatch();
-  const settings = useSelector((s: any) => s.settings);
   const coal3 = useSelector((s: any) => s.coal3);
   const bankPayment = useSelector((s: any) => s.bankPayment);
   const [search, setSearch] = useState('');
@@ -655,42 +652,7 @@ const BankPayment = () => {
         {isLoading && <Loader />}
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">
-            {/* space-y-2 so the search row sits the same distance from the
-                fields below it as they sit from each other -- the grid spaces
-                those, and this block was spacing itself with its own mb-4. */}
             <div className="w-full space-y-2">
-              <div className="flex w-full items-end">
-                {hasPermission(
-                  settings.data.permissions,
-                  'cash.received.edit',
-                ) && (
-                    <>
-                      <div className="min-w-0 flex-1">
-                        <label htmlFor="search">
-                          Search Bank Payment Voucher
-                        </label>
-                        <InputOnly
-                          id="search"
-                          value={search}
-                          name="search"
-                          placeholder="Search Bank Payment Voucher"
-                          label=""
-                          className="py-1 w-full"
-                          onChange={(e) => setSearch(e.target.value)}
-                        />
-                      </div>
-                      {/* No gap, and -ml-px so the two borders sit on one line
-                          -- the box and its button read as one control. */}
-                      <ButtonLoading
-                        onClick={searchTransaction}
-                        buttonLoading={buttonLoading}
-                        label=" "
-                        className="-ml-px w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                        icon={<FiSearch className="text-lg ml-2" />}
-                      />
-                    </>
-                  )}
-              </div>
               {/* ⚠️ The order names the party, so choosing one fills the
                   account below in and locks it. Saved on the VOUCHER
                   (acc_transaction_master.order_no), not on a row -- one bank

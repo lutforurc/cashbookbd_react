@@ -9,7 +9,6 @@ import {
   FiHome,
   FiPlus,
   FiSave,
-  FiSearch,
   FiTrash2,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
@@ -18,8 +17,6 @@ import Loader from '../../../../common/Loader';
 import { toast } from 'react-toastify';
 import { toastRefusal } from '../../../utils/refusalToast';
 
-import InputOnly from '../../../utils/fields/InputOnly';
-import { hasPermission } from '../../../utils/permissionChecker';
 import { extractVoucherNo } from '../extractVoucherNo';
 import {
   editCashReceived,
@@ -97,7 +94,6 @@ const TilesCashReceived = () => {
   const dispatch = useDispatch();
   const cashReceived = useSelector((state: any) => state.cashReceived);
   const [formData, setFormData] = useState<ReceivedItem>(initialReceivedItem);
-  const settings = useSelector((s: any) => s.settings);
   // এই Company-তে কোনো Product tracked না থাকলে খালি তালিকা আসে এবং
   // dropdown render-ই হয় না — form তখন হুবহু আগের মতো।
   const { products: trackedProducts } = useTrackedProducts('received', undefined, false, formData.account);
@@ -468,44 +464,6 @@ const TilesCashReceived = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">
-            <div className="w-full">
-              <div className="flex w-full items-end">
-                {hasPermission(
-                  settings.data.permissions,
-                  'cash.received.edit',
-                ) && (
-                    <>
-                      <div className="min-w-0 flex-1">
-                        {/* No label: the box's own placeholder says the same
-                            words, and the button beside it is already a looking
-                            glass. */}
-                        <InputOnly
- id="search"
- value={search}
- name="search"
- placeholder="Search Received"
- label=""
-                          // The height is not stated here: it comes from
-                          // FIELD_HEIGHT, which is the 34px the search button
-                          // beside it stands at.
- className="w-full py-1"
- onChange={(e) => setSearch(e.target.value)}
-                        />
-                      </div>
-                      {/* Same flush pairing as Cash Payment -- no gap, and the
-                          two borders share one line. */}
-                      <ButtonLoading
-                        onClick={searchTransaction}
-                        buttonLoading={buttonLoading}
-                        label=" "
-                        className="-ml-px w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                        icon={<FiSearch className="text-lg ml-2" />}
-                      />
-                    </>
-                  )}
-              </div>
-            </div>
-
             <div className="">
               <label htmlFor="">Select cash received account</label>
               <DdlMultiline

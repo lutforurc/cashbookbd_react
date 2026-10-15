@@ -8,7 +8,6 @@ import {
   FiHome,
   FiPlus,
   FiSave,
-  FiSearch,
   FiTrash2,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
@@ -19,8 +18,6 @@ import { toastRefusal } from '../../../utils/refusalToast';
 import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
 import { validateForm } from '../../../utils/utils-functions/validationUtils';
 import { validationMessage } from '../../../utils/utils-functions/validationMessage';
-import InputOnly from '../../../utils/fields/InputOnly';
-import { hasPermission } from '../../../utils/permissionChecker';
 import {
   editCashReceived,
   storeCashReceived,
@@ -455,38 +452,6 @@ const TradingCashReceived = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">
-            <div className="w-full">
-              <div className="flex w-full items-end">
-                {hasPermission(
-                  settings.data.permissions,
-                  'cash.received.edit',
-                ) && (
-                    <>
-                      <div className="min-w-0 flex-1">
-                        <label htmlFor="search">Search Received</label>
-                        <InputOnly
-                          id="search"
-                          value={search}
-                          name="search"
-                          placeholder="Search Received"
-                          label=""
-                          className="py-1 w-full"
-                          onChange={(e) => setSearch(e.target.value)}
-                        />
-                      </div>
-                      {/* No gap, and -ml-px so the two borders sit on one line
-                          -- the box and its button read as one control. */}
-                      <ButtonLoading
-                        onClick={searchTransaction}
-                        buttonLoading={buttonLoading}
-                        label=" "
-                        className="-ml-px w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                        icon={<FiSearch className="text-lg ml-2" />}
-                      />
-                    </>
-                  )}
-              </div>
-            </div>
             <div className="relative">
               <div>
                 <label htmlFor="">Select Order (Optional) </label>
