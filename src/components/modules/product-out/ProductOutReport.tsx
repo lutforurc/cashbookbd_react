@@ -16,10 +16,9 @@ import { getProductOutReasons, getProductOutReport } from './productOutSlice';
 /**
  * The register: what was written off, why, and what it cost.
  *
- * ⚠️ APPROVED SLIPS ONLY, and that is the server's choice rather than a filter
- * here. Only an approved one has moved stock, so only an approved one has a
- * FIFO cost; printing a pending breakage as ৳0 would read as "this was free".
- * The pending count is what the list screen is for.
+ * Approved and pending slips alike, the server's choice rather than a filter
+ * here: the stock leaves at save, so a pending slip has already cost the shop
+ * (2026-10-16). Approval is a sign-off, and the list screen is where it is done.
  */
 const ProductOutReport = () => {
   const dispatch = useDispatch<any>();

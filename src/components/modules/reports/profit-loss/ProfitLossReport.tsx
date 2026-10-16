@@ -272,16 +272,6 @@ const ProfitLossReport = ({
           stock figures and the purchase at opposite ends of the page and never
           says what they come to; this says it. It is a reading of those same
           figures -- nothing here is added to the totals above or below. */}
-      {/* ⚠️ A NOTE UNDER THE TABLE, WITH NO FIGURE IN EITHER COLUMN. The money
-          is already gone -- the closing stock above is short by exactly this,
-          and the gross result has taken it off once. A row that put it in the
-          debit column would take it off a second time. */}
-      {toNum(report.productOut) > 0 ? (
-        <div className="mt-2 text-sm text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
-          <b>এ সময়ে নষ্ট / হারানো মাল ৳{thousandSeparator(toNum(report.productOut))}</b> — ক্লোজিং
-          স্টকের ভেতরে ইতিমধ্যে ধরা আছে; উপরের মুনাফা থেকে একবারই কাটা হয়েছে।
-        </div>
-      ) : null}
       <div className="text-center font-semibold mt-6 mb-2 text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
         COST OF GOODS SOLD
       </div>
@@ -297,7 +287,13 @@ const ProfitLossReport = ({
               sign: "+",
               note: "3",
             },
-            { label: "Closing Stock", value: report.cogs.closing, sign: "-" },
+            // [7] only when the period wrote goods off -- the note is absent otherwise.
+            {
+              label: "Closing Stock",
+              value: report.cogs.closing,
+              sign: "-",
+              note: toNum(report.productOut) > 0 ? "7" : undefined,
+            },
           ].map((line) => (
             <tr key={line.label} className="border-b border-[rgb(var(--c-border))]">
               <td className="p-2 pl-6">

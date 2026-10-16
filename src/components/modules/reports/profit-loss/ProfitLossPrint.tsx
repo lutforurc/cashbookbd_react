@@ -504,7 +504,13 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       sign: "+",
                       note: "3",
                     },
-                    { label: "Closing Stock", value: report?.cogs?.closing, sign: "-" },
+                    // [7] only when the period wrote goods off, as on screen.
+                    {
+                      label: "Closing Stock",
+                      value: report?.cogs?.closing,
+                      sign: "-",
+                      note: Number(report?.productOut) > 0 ? "7" : undefined,
+                    },
                   ].map((line: any) => (
                     <tr key={line.label} className="avoid-break">
                       <td

@@ -21,7 +21,9 @@ import type { ReportNote } from "../../../utils/utils-functions/ReportNotes";
  *
  * The numbering is fixed and the report's rows point at it: [1] the heading,
  * [2] the cost of goods sold, [3] direct acquisition costs, [4] the income
- * accounts, [5] the stock valuation, [6] what is unresolved.
+ * accounts, [5] the stock valuation, [6] what is unresolved, [7] the inventory
+ * loss -- written only when the period wrote goods off, and last, so leaving it
+ * out moves no other number.
  */
 const money = (value: any) => thousandSeparator(Number(value) || 0);
 
@@ -116,6 +118,37 @@ export const buildProfitLossNotes = (
           ? `, of which ${money(interest)} is the interest and ${money(commission)} the commission.`
           : ".")
       : "";
+
+  /**
+   * ⚠️ THE AMOUNT IS A LABEL, NEVER A DEDUCTION. The goods are already out of
+   * the closing stock, so the cost of goods sold carries them; a line taking
+   * the amount off again would charge it twice.
+   *
+   * ⚠️ IT NEED NOT EQUAL ITS EFFECT ON THE COST OF GOODS SOLD, and the last
+   * sentence says so. The write-off is priced FIFO at the oldest layer; the
+   * closing-stock walk (note 5) gives up the newest layer for the same units.
+   * Measured 2026-10-16: 100 @ 400 then 100 @ 500, ten written off -- slip
+   * 4,000, closing stock 5,000 lower. One price, and the two agree.
+   */
+  const inventoryLoss = Number(report?.productOut) || 0;
+
+  const inventoryLossNote: ReportNote[] =
+    inventoryLoss > 0
+      ? [
+          {
+            n: 7,
+            title: "Inventory loss — damaged or lost goods",
+            body:
+              `Goods written off as damaged or lost in this period are valued at ${money(inventoryLoss)}, ` +
+              "at the cost recorded on each write-off. Their quantity has been removed from the " +
+              "stock on hand, so they are not in the closing stock and their cost is already within " +
+              "the cost of goods sold (note 2); the amount is therefore not deducted again as a " +
+              "separate expense. Where a product was bought at more than one price, the " +
+              "closing-stock valuation (note 5) can price the same quantity differently, so the " +
+              "effect on the cost of goods sold may differ from this amount.",
+          },
+        ]
+      : [];
 
   return [
     {
@@ -222,5 +255,6 @@ export const buildProfitLossNotes = (
         "them in full." +
         asideNote,
     },
+    ...inventoryLossNote,
   ];
 };
