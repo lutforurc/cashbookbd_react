@@ -171,6 +171,7 @@ import HotelCalendar from './components/modules/hotel/calendar/HotelCalendar';
 import HousekeepingBoard from './components/modules/hotel/housekeeping/HousekeepingBoard';
 import AmenityIssue from './components/modules/hotel/amenity/AmenityIssue';
 import AmenityIssueForm from './components/modules/hotel/amenity/AmenityIssueForm';
+import HotelAssetPurchase from './components/modules/hotel/assets/HotelAssetPurchase';
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
@@ -948,6 +949,26 @@ function App() {
               <Route path={routes.hotel_housekeeping} element={<HousekeepingBoard />} />
               <Route path={routes.hotel_amenity_issue} element={<AmenityIssue />} />
               <Route path={routes.hotel_amenity_issue_new} element={<AmenityIssueForm />} />
+            </Route>
+            {/*
+              Buying what the hotel is furnished with. ⚠️ DESIGN ONLY — the form
+              is drawn and nothing is saved.
+
+              ⚠️ Gated on the Hotel menu's own permission list rather than on a
+              new one, so what the menu offers and what the route allows cannot
+              drift apart while the screen is only being looked at. When it is
+              wired for real it wants a permission of its own.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={MENU_PERMISSIONS.hotel}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_asset_purchase} element={<HotelAssetPurchase />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
               <Route path={routes.journal} element={<Journal />} />

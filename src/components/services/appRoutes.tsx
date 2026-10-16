@@ -477,6 +477,9 @@ const ROUTES = {
   // The form is a page of its own: the list is what somebody opens, and a form
   // above it made the first thing on screen the one thing nobody came to read.
   hotel_amenity_issue_new: '/hotel/amenity-issue/new',
+  // Buying what the hotel is furnished with -- beds, chairs, a generator.
+  // ⚠️ DESIGN ONLY so far: the form is drawn, nothing is saved.
+  hotel_asset_purchase: '/hotel/assets/purchase',
 
   notFound: '*',
 };

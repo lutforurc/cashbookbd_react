@@ -157,6 +157,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.hotel_calendar,
     routes.hotel_housekeeping,
     routes.hotel_amenity_issue,
+    routes.hotel_asset_purchase,
     // No menu entry of its own -- reached from the Issue button on the list.
     routes.hotel_amenity_issue_new,
     // No menu entry of its own -- it is reached from a booking. Listed so the
