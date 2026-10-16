@@ -24,7 +24,9 @@ export const reportSectionLabel = (name?: string): string =>
  * Which note each group's row points at. Same numbering as the list below —
  * [1] the basis, [2] supplier advances, [3] accounts payable, [4] customer
  * credit balances, [5] bank and finance balances in credit, [6] loans received,
- * [7] the current period's result, [8] what is unresolved.
+ * [7] the current period's result, [8] what is unresolved, [9] the inventory
+ * loss — written only when the period wrote goods off, and last, so leaving it
+ * out moves no other number.
  */
 const GROUP_NOTES: Record<string, number> = {
   "Supplier Advances": 2,
@@ -83,7 +85,15 @@ const groupAmount = (
 
 export const buildBalanceSheetNotes = (
   sections: Record<string, AnySection[]>,
-  period: { asOn?: string } = {},
+  period: {
+    asOn?: string;
+    /**
+     * Write-offs of the sheet's period at cost, read from the same read-only
+     * endpoint the Trial Balance uses. A figure that could not be read arrives
+     * as null and leaves the note out -- it is never taken for a zero.
+     */
+    productOut?: number | null;
+  } = {},
 ): ReportNote[] => {
   const supplierAdvances = groupAmount(sections, "Supplier Advances");
   const payables = groupAmount(sections, "Account Payable");
@@ -113,6 +123,13 @@ export const buildBalanceSheetNotes = (
   const ledgerResult = result - stockMovement;
 
   const asOn = period.asOn ? ` as at ${period.asOn}` : "";
+
+  /**
+   * The write-offs of the sheet's period at cost. Null is "not read" and writes
+   * no note; only a figure greater than zero does. A read that failed is not
+   * turned into a zero here -- it stays absent.
+   */
+  const inventoryLoss = Number(period.productOut) || 0;
 
   return [
     {
@@ -245,5 +262,21 @@ export const buildBalanceSheetNotes = (
         "business, both figures would fall by that amount, and no posting has been " +
         "changed in the meantime.",
     },
+    ...(inventoryLoss > 0
+      ? [
+          {
+            n: 9,
+            title: "Inventory loss — damaged or lost goods",
+            body:
+              `Goods written off as damaged or lost during the reporting period are valued at ${money(inventoryLoss)}, ` +
+              "at the cost recorded on each write-off. These write-offs reduce stock quantities without creating " +
+              "a separate ledger posting. The written-off quantities are excluded from closing inventory within " +
+              "assets, and their financial effect is reflected through inventory valuation and the current period’s " +
+              "profit or loss within equity (note 7). Accordingly, the disclosed amount is not deducted again as a " +
+              "separate adjustment to assets or equity. Where purchase costs vary, the inventory valuation method " +
+              "may cause the effect on the current period’s result to differ from the recorded write-off amount.",
+          },
+        ]
+      : []),
   ];
 };

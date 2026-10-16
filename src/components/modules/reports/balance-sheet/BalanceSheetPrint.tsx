@@ -51,6 +51,13 @@ type BalanceSheetPrintProps = {
     liabilities?: BalanceSheetSection[];
     equity?: BalanceSheetSection[];
   };
+  /**
+   * The period's write-offs at cost, for note 9. Null means the figure was not
+   * read (or read over another scope) and the note is left out -- it is never
+   * taken for a zero. The screen hands over the same figure it shows, so the
+   * printed note and the on-screen note cannot differ.
+   */
+  productOut?: number | null;
   totals: {
     assets: number;
     liabilities: number;
@@ -452,6 +459,7 @@ const BalanceSheetPrint = ({
   liabilities,
   equity,
   sections,
+  productOut,
   totals,
 }: BalanceSheetPrintProps) => {
   const fs = Number.isFinite(fontSize) ? Number(fontSize) : 12;
@@ -479,7 +487,7 @@ const BalanceSheetPrint = ({
   // The notes are a page of their own, and the page numbering counts it -- a
   // sheet whose footer says "page 1 of 1" over a two-page document is the kind
   // of thing that gets a stapled report handed back.
-  const notes = buildBalanceSheetNotes(sections ?? {}, { asOn: endDate });
+  const notes = buildBalanceSheetNotes(sections ?? {}, { asOn: endDate, productOut });
   const totalPages = pages.length + (notes.length ? 1 : 0);
 
   /** The six money cells of one line: Opening, Movement and Closing, Dr then Cr. */

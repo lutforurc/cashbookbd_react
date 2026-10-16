@@ -19,6 +19,8 @@ import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchBalanceSheet } from "./balanceSheetSlice";
+import httpService from "../../../services/httpService";
+import { API_REPORT_TRIAL_BALANCE_WRITE_OFF_URL } from "../../../services/apiRoutes";
 import BalanceSheetPrint from "./BalanceSheetPrint";
 import BalanceSheetStatement from "./BalanceSheetStatement";
 import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes";
@@ -99,6 +101,18 @@ const BalanceSheet = (user: any) => {
     title: string;
     group: ReportGroup;
   } | null>(null);
+  /**
+   * Note 9's figure and the scope it was read over. `amount` is null while the
+   * write-off read is in flight or when it could not be read -- null writes no
+   * note and is never treated as a confirmed zero. `key` is the branch and
+   * period the amount belongs to, so it can only be shown against the sheet it
+   * was read for.
+   */
+  const [writeOff, setWriteOff] = useState<{
+    key: string;
+    amount: number | null;
+    loading: boolean;
+  }>({ key: "", amount: null, loading: false });
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const printRef = useRef<HTMLDivElement>(null);
@@ -165,20 +179,6 @@ const BalanceSheet = (user: any) => {
 
   const hasSections =
     sections.assets.length > 0 || sections.liabilities.length > 0 || sections.equity.length > 0;
-
-  // The notes are built from the same sections the sheet is drawn from, so a
-  // note's amount is the row above it and never a figure of its own.
-  const balanceSheetNotes = useMemo(
-    () =>
-      buildBalanceSheetNotes(sections, {
-        asOn: apiData?.report_date?.as_on_date
-          ? dayjs(apiData.report_date.as_on_date).format("DD/MM/YYYY")
-          : endDate
-            ? dayjs(endDate).format("DD/MM/YYYY")
-            : undefined,
-      }),
-    [sections, apiData?.report_date?.as_on_date, endDate],
-  );
 
   const assets: ReportGroup[] = Array.isArray(apiData?.assets) ? apiData.assets : [];
   const liabilities: ReportGroup[] = Array.isArray(apiData?.liabilities)
@@ -290,6 +290,111 @@ const BalanceSheet = (user: any) => {
       },
     };
   }, [apiData, branchId, endDate, startDate]);
+
+  /**
+   * The branch and period the sheet's own current-period result was worked out
+   * over — read off the report's debug filters, not the date pickers. The
+   * pickers can show a period the applied report does not use, and note 9's
+   * figure has to be read over the same branch and dates as the result it
+   * explains.
+   */
+  const currentScope = useMemo(
+    () => ({
+      branchId: toNum(netProfitDebug.filters.branchId),
+      startDate: netProfitDebug.filters.startDate,
+      endDate: netProfitDebug.filters.endDate,
+    }),
+    [
+      netProfitDebug.filters.branchId,
+      netProfitDebug.filters.startDate,
+      netProfitDebug.filters.endDate,
+    ],
+  );
+
+  const currentScopeKey = `${currentScope.branchId}|${currentScope.startDate}|${currentScope.endDate}`;
+  const writeOffScopeReady = Boolean(
+    currentScope.branchId && currentScope.startDate && currentScope.endDate,
+  );
+
+  /**
+   * Note 9's figure: the write-offs of the same period at cost, read from the
+   * existing read-only endpoint the Trial Balance already uses.
+   *
+   * ⚠️ A FAILURE IS NOT A ZERO. A read that fails leaves the amount null, so the
+   * note is simply left out; the sheet keeps its own figures and is not failed
+   * or cleared, and a print is not held back by a read that will not come.
+   *
+   * ⚠️ THE AMOUNT BELONGS TO ONE REPORT. The request is abandoned the moment the
+   * displayed sheet's scope changes, so an older response cannot land on newer
+   * filters; and the figure is trusted only while its own scope key still
+   * matches the sheet on screen.
+   */
+  useEffect(() => {
+    if (!hasBalanceSheetResponse || !writeOffScopeReady) {
+      setWriteOff({ key: "", amount: null, loading: false });
+      return;
+    }
+
+    let cancelled = false;
+    setWriteOff({ key: currentScopeKey, amount: null, loading: true });
+
+    (async () => {
+      try {
+        const res = await httpService.get(API_REPORT_TRIAL_BALANCE_WRITE_OFF_URL, {
+          params: {
+            branch_id: currentScope.branchId,
+            start_date: currentScope.startDate,
+            end_date: currentScope.endDate,
+          },
+        });
+
+        if (cancelled) return;
+        setWriteOff({
+          key: currentScopeKey,
+          amount: Number(res?.data?.data?.data?.product_out) || 0,
+          loading: false,
+        });
+      } catch {
+        if (cancelled) return;
+        setWriteOff({ key: currentScopeKey, amount: null, loading: false });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentScope, currentScopeKey, hasBalanceSheetResponse, writeOffScopeReady]);
+
+  /**
+   * The figure as it stands for the sheet on screen: null unless it belongs to
+   * exactly this scope. Null writes no note.
+   */
+  const writeOffAmount = writeOff.key === currentScopeKey ? writeOff.amount : null;
+
+  /**
+   * True while note 9's figure for the sheet on screen is still unknown — the
+   * read is in flight, or has not run for this scope yet. The sheet is not
+   * printed in that state, so a printed report never loses the note to a read
+   * that was still running.
+   */
+  const writeOffPending =
+    hasReportData && writeOffScopeReady && (writeOff.loading || writeOff.key !== currentScopeKey);
+
+  // The notes are built from the same sections the sheet is drawn from, so a
+  // note's amount is the row above it and never a figure of its own. Note 9 is
+  // added only when the period's write-off figure was read and is above zero.
+  const balanceSheetNotes = useMemo(
+    () =>
+      buildBalanceSheetNotes(sections, {
+        asOn: apiData?.report_date?.as_on_date
+          ? dayjs(apiData.report_date.as_on_date).format("DD/MM/YYYY")
+          : endDate
+            ? dayjs(endDate).format("DD/MM/YYYY")
+            : undefined,
+        productOut: writeOffAmount,
+      }),
+    [sections, apiData?.report_date?.as_on_date, endDate, writeOffAmount],
+  );
 
   const showDifferenceDebug = useMemo(() => {
     return (
@@ -476,7 +581,7 @@ const BalanceSheet = (user: any) => {
                   label="Print"
                   onClick={handlePrint}
                   className="px-6"
-                  disabled={!hasReportData}
+                  disabled={!hasReportData || writeOffPending}
                 />
               </div>
             ) : (
@@ -519,7 +624,7 @@ const BalanceSheet = (user: any) => {
                     label="Print"
                     onClick={handlePrint}
                     className="px-6"
-                    disabled={!hasReportData}
+                    disabled={!hasReportData || writeOffPending}
                   />
                 </div>
               </div>
@@ -672,6 +777,7 @@ const BalanceSheet = (user: any) => {
             equity={equity.map(normalizeGroup)}
             sections={sections}
             totals={totals}
+            productOut={writeOffAmount}
           />
         </div>
       </div>
