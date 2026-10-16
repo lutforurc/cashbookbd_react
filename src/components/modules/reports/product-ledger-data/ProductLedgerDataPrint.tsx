@@ -27,6 +27,7 @@ export type ProductLedgerPrintRow = {
   purchase_return?: number | string | null;
   purchaseReturn?: number | string | null;
   product_out?: number | string | null;
+  product_in?: number | string | null;
   stock?: number | string | null;
   balance?: number | string | null;
   closing_stock?: number | string | null;
@@ -106,8 +107,11 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
         const sales = toNumber(getValue(row, ['sales', 'sale', 'sales_qty'], 0));
         const purchaseReturn = toNumber(getValue(row, ['purchase_return', 'purchaseReturn'], 0));
         const productOut = toNumber(row?.product_out);
+        // Stock that arrived outside a purchase. It joins the shelf, so like a
+        // purchase it ADDS to the running balance.
+        const productIn = toNumber(row?.product_in);
 
-        runningStock += purchase + salesReturn - sales - purchaseReturn - productOut;
+        runningStock += purchase + salesReturn + productIn - sales - purchaseReturn - productOut;
 
         return {
           ...row,
@@ -128,6 +132,7 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
         sales: '-',
         purchase_return: '-',
         product_out: '-',
+        product_in: '-',
         stock: getValue(openingRow || {}, ['stock', 'balance', 'opening', 'opening_qty'], '-'),
       },
       ...detailRows.map((row) => ({
@@ -141,6 +146,7 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
         sales: getValue(row, ['sales', 'sale', 'sales_qty'], '-'),
         purchase_return: getValue(row, ['purchase_return', 'purchaseReturn'], '-'),
         product_out: getValue(row, ['product_out'], '-'),
+        product_in: getValue(row, ['product_in'], '-'),
         stock: row.running_stock,
       })),
     ];
@@ -152,6 +158,7 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
       totalSales: detailRows.reduce((sum, row) => sum + toNumber(getValue(row, ['sales', 'sale', 'sales_qty'], 0)), 0),
       totalPurchaseReturn: detailRows.reduce((sum, row) => sum + toNumber(getValue(row, ['purchase_return', 'purchaseReturn'], 0)), 0),
       totalProductOut: detailRows.reduce((sum, row) => sum + toNumber(row?.product_out), 0),
+      totalProductIn: detailRows.reduce((sum, row) => sum + toNumber(row?.product_in), 0),
     };
 
     return (
@@ -203,6 +210,9 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
                     PURCHASE RETURN
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
+                    PRODUCT IN
+                  </th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
                     PRODUCT OUT
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
@@ -240,6 +250,9 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
                         {formatQty(row?.purchase_return)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                        {formatQty(row?.product_in)}
+                      </td>
+                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                         {formatQty(row?.product_out)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
@@ -249,7 +262,7 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={10} className="border border-gray-900 px-3 py-6 text-center text-gray-500">
+                    <td colSpan={11} className="border border-gray-900 px-3 py-6 text-center text-gray-500">
                       No data found
                     </td>
                   </tr>
@@ -295,6 +308,12 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
                       className="border border-gray-900 px-2 py-2 text-right font-bold"
                     >
                       {summary.totalPurchaseReturn > 0 ? thousandSeparator(summary.totalPurchaseReturn) : '-'}
+                    </td>
+                    <td
+                      style={{ fontSize: fs }}
+                      className="border border-gray-900 px-2 py-2 text-right font-bold"
+                    >
+                      {summary.totalProductIn > 0 ? thousandSeparator(summary.totalProductIn) : '-'}
                     </td>
                     <td
                       style={{ fontSize: fs }}

@@ -247,6 +247,9 @@ import MaterialIssue from './components/modules/material-issue/MaterialIssue';
 import ProductOut from './components/modules/product-out/ProductOut';
 import ProductOutReason from './components/modules/product-out/ProductOutReason';
 import ProductOutReport from './components/modules/product-out/ProductOutReport';
+import ProductIn from './components/modules/product-in/ProductIn';
+import ProductInReason from './components/modules/product-in/ProductInReason';
+import ProductInReport from './components/modules/product-in/ProductInReport';
 import SendSms from './components/modules/sms/SendSms';
 import SmsTemplateList from './components/modules/sms/SmsTemplateList';
 import SmsTemplateCreate from './components/modules/sms/SmsTemplateCreate';
@@ -963,6 +966,15 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.reason.manage']} loading={permissionsLoading} />}>
               <Route path={routes.product_out_reason} element={<ProductOutReason />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.create']} loading={permissionsLoading} />}>
+              <Route path={routes.product_in} element={<ProductIn />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.report.view']} loading={permissionsLoading} />}>
+              <Route path={routes.product_in_report} element={<ProductInReport />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.reason.manage']} loading={permissionsLoading} />}>
+              <Route path={routes.product_in_reason} element={<ProductInReason />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.create', 'inventory.received.create', 'product.received.create']} loading={permissionsLoading} />}>
               <Route path={routes.branch_received} element={<WarehouseReceived />} />

@@ -67,6 +67,9 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'product_out', title: "Product Out" },
     { id: 'product_out_reason', title: "Out Reasons" },
     { id: 'product_out_report', title: "Write-off Register" },
+    { id: 'product_in', title: "Product In" },
+    { id: 'product_in_reason', title: "In Reasons" },
+    { id: 'product_in_report', title: "Stock In Register" },
     { id: 'report_branch_transfer_list', title: "Transfer List" },
     { id: 'report_branch_receive_list', title: "Receive List" },
     { id: 'report_branch_transfer', title: "Issue Report" },
@@ -1093,7 +1096,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 hasPermission(permissions, 'product.out.create') ||
                 hasPermission(permissions, 'product.out.report.view') ||
                 hasPermission(permissions, 'product.out.approve') ||
-                hasPermission(permissions, 'product.out.reason.manage')) && (
+                hasPermission(permissions, 'product.out.reason.manage') ||
+                // Product In hangs off the same group, so the same rule: any
+                // one of its screens is enough to open the group they live in.
+                hasPermission(permissions, 'product.in.create') ||
+                hasPermission(permissions, 'product.in.report.view') ||
+                hasPermission(permissions, 'product.in.approve') ||
+                hasPermission(permissions, 'product.in.reason.manage')) && (
                 <SidebarLinkGroup
                   activeCondition={isMenuActive('branch-transfer', pathname)}
                   menuId="branch-transfer"
@@ -1257,6 +1266,36 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Out Reasons
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.in.create') && (
+                            <li style={subSlot('branch-transfer', 'product_in')}>
+                              <NavLink
+                                to={routes.product_in}
+                                className={subMenuLinkClass}
+                              >
+                                Product In
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.in.report.view') && (
+                            <li style={subSlot('branch-transfer', 'product_in_report')}>
+                              <NavLink
+                                to={routes.product_in_report}
+                                className={subMenuLinkClass}
+                              >
+                                Stock In Register
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.in.reason.manage') && (
+                            <li style={subSlot('branch-transfer', 'product_in_reason')}>
+                              <NavLink
+                                to={routes.product_in_reason}
+                                className={subMenuLinkClass}
+                              >
+                                In Reasons
                               </NavLink>
                             </li>
                           )}

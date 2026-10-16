@@ -284,8 +284,9 @@ export const API_MATERIAL_ISSUE_DETAILS_URL = `${API_BASE_URL}/material-issue/de
 export const API_MATERIAL_ISSUE_STORE_URL = `${API_BASE_URL}/material-issue/store`;
 
 // Product Out Routes (নষ্ট / হারানো মাল)
-// Nothing moves stock on these calls except `destroy` -- a write-off's stock
-// is posted when it is approved, in the Approval Center.
+// The stock moves on `store` -- a write-off is posted at SAVE (owner,
+// 2026-10-15) -- and `destroy` takes it back off. Approving one in the Approval
+// Center is a sign-off and moves nothing.
 export const API_PRODUCT_OUT_LIST_URL = `${API_BASE_URL}/product-out/list`;
 export const API_PRODUCT_OUT_DETAILS_URL = `${API_BASE_URL}/product-out/details`;
 export const API_PRODUCT_OUT_STORE_URL = `${API_BASE_URL}/product-out/store`;
@@ -297,6 +298,25 @@ export const API_PRODUCT_OUT_REASON_LIST_URL = `${API_BASE_URL}/product-out/reas
 export const API_PRODUCT_OUT_REASON_STORE_URL = `${API_BASE_URL}/product-out/reason/store`;
 export const API_PRODUCT_OUT_REASON_UPDATE_URL = `${API_BASE_URL}/product-out/reason/update`;
 export const API_PRODUCT_OUT_REASON_DESTROY_URL = `${API_BASE_URL}/product-out/reason/destroy`;
+
+// Product In Routes (ক্রয় ছাড়া মাল ঢোকা)
+// The mirror of the block above, and the same lifecycle: posted at SAVE,
+// reversed by `destroy`, signed off in the Approval Center.
+export const API_PRODUCT_IN_LIST_URL = `${API_BASE_URL}/product-in/list`;
+export const API_PRODUCT_IN_DETAILS_URL = `${API_BASE_URL}/product-in/details`;
+export const API_PRODUCT_IN_STORE_URL = `${API_BASE_URL}/product-in/store`;
+export const API_PRODUCT_IN_DESTROY_URL = `${API_BASE_URL}/product-in/destroy`;
+export const API_PRODUCT_IN_REPORT_URL = `${API_BASE_URL}/product-in/report`;
+// Answers cust_party_infos.id, which is what pim.party_id points at.
+export const API_PRODUCT_IN_PARTY_URL = `${API_BASE_URL}/product-in/party`;
+// ⚠️ The one route with no Product Out twin, and the reason the rate box can
+// behave at all: it answers what THIS product should be received at, and whether
+// the books hold a rate for it. `source: 'none'` is what opens the box.
+export const API_PRODUCT_IN_RATE_URL = `${API_BASE_URL}/product-in/rate`;
+export const API_PRODUCT_IN_REASON_LIST_URL = `${API_BASE_URL}/product-in/reason/list`;
+export const API_PRODUCT_IN_REASON_STORE_URL = `${API_BASE_URL}/product-in/reason/store`;
+export const API_PRODUCT_IN_REASON_UPDATE_URL = `${API_BASE_URL}/product-in/reason/update`;
+export const API_PRODUCT_IN_REASON_DESTROY_URL = `${API_BASE_URL}/product-in/reason/destroy`;
 
 // Chart of Accounts
 // COAL1

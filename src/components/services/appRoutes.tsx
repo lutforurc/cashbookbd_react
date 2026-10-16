@@ -86,6 +86,9 @@ const ROUTES = {
   product_out: '/inventory/product-out',
   product_out_reason: '/inventory/product-out/reasons',
   product_out_report: '/inventory/product-out/register',
+  product_in: '/inventory/product-in',
+  product_in_reason: '/inventory/product-in/reasons',
+  product_in_report: '/inventory/product-in/register',
 
   journal: '/accounts/journal',
 

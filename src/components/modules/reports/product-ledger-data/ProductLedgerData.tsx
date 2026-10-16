@@ -170,8 +170,12 @@ const ProductLedgerData = (user: any) => {
         const sales = numberOrZero(aliasValue(row, ['sales', 'sale', 'sales_qty'], 0));
         const purchaseReturn = numberOrZero(aliasValue(row, ['purchase_return', 'purchaseReturn'], 0));
         const productOut = numberOrZero(row?.product_out);
+        // Stock that arrived outside a purchase -- goods found in a count, a
+        // customer's return, a mason handing material back. It joins the shelf,
+        // so like a purchase it ADDS to the running balance.
+        const productIn = numberOrZero(row?.product_in);
 
-        runningStock += purchase + salesReturn - sales - purchaseReturn - productOut;
+        runningStock += purchase + salesReturn + productIn - sales - purchaseReturn - productOut;
 
         return {
           ...row,
@@ -185,6 +189,7 @@ const ProductLedgerData = (user: any) => {
     const totalSales = details.reduce((sum, row) => sum + numberOrZero(row?.sales), 0);
     const totalPurchaseReturn = details.reduce((sum, row) => sum + numberOrZero(row?.purchase_return), 0);
     const totalProductOut = details.reduce((sum, row) => sum + numberOrZero(row?.product_out), 0);
+    const totalProductIn = details.reduce((sum, row) => sum + numberOrZero(row?.product_in), 0);
 
     return {
       opening: openingRow ?? null,
@@ -195,6 +200,7 @@ const ProductLedgerData = (user: any) => {
         sales: totalSales,
         purchaseReturn: totalPurchaseReturn,
         productOut: totalProductOut,
+        productIn: totalProductIn,
       },
     };
   }, [tableData]);
@@ -280,6 +286,7 @@ const ProductLedgerData = (user: any) => {
       sales: '-',
       purchase_return: '-',
       product_out: '-',
+      product_in: '-',
       stock: aliasValue(reportRows.opening, ['stock', 'balance', 'opening'], '-'),
     };
 
@@ -379,6 +386,13 @@ const ProductLedgerData = (user: any) => {
       ),
     },
     {
+      key: 'product_in',
+      header: 'Product In',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => <div>{formatCellNumber(row?.product_in)}</div>,
+    },
+    {
       key: 'product_out',
       header: 'Product Out',
       headerClass: 'text-right',
@@ -420,6 +434,10 @@ const ProductLedgerData = (user: any) => {
           },
           {
             label: formatCellNumber(reportRows.totals.purchaseReturn > 0 ? reportRows.totals.purchaseReturn : '-'),
+            className: 'text-right',
+          },
+          {
+            label: formatCellNumber(reportRows.totals.productIn > 0 ? reportRows.totals.productIn : '-'),
             className: 'text-right',
           },
           {

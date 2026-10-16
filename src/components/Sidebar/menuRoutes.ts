@@ -53,6 +53,9 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.product_out,
     routes.product_out_reason,
     routes.product_out_report,
+    routes.product_in,
+    routes.product_in_reason,
+    routes.product_in_report,
   ],
   'reports': [
     '/reports/cashbook',

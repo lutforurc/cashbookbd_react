@@ -1,5 +1,6 @@
 ﻿import React, {
   useRef,
+  useState,
   useImperativeHandle,
   forwardRef,
 } from 'react';
@@ -8,12 +9,19 @@ import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-hot-toast';
 
 import { electronicsSalesPrint } from '../invoices/sales/electronicsSalesSlice';
+import httpService from '../../services/httpService';
+import {
+  API_PRODUCT_IN_DETAILS_URL,
+  API_PRODUCT_OUT_DETAILS_URL,
+} from '../../services/apiRoutes';
 
 import ElectronicsSalesInvoicePrint from '../invoices/sales/ElectronicsSalesInvoicePrint';
 import PurchaseInvoicePrint from './print_items/PurchaseInvoicePrint';
 import CashPaymentPrint from './print_items/CashPaymentPrint';
 import CashReceivedPrint from './print_items/CashReceivedPrint';
 import ReturnPrint from './print_items/ReturnPrint';
+import ProductInSlipPrint from '../product-in/ProductInSlipPrint';
+import ProductOutSlipPrint from '../product-out/ProductOutSlipPrint';
 
 type Props = {
   rowsPerPage: number;
@@ -121,6 +129,51 @@ export const VoucherPrintRegistry = forwardRef(
      * because only one of them is ever being printed -- the switch says which.
      */
     const activeRef = useRef<React.RefObject<HTMLDivElement | null> | null>(null);
+
+    /* ================= THE TWO STOCK SLIPS ================= */
+    /**
+     * ⚠️ THESE TWO DO NOT GO THROUGH `electronicsSalesPrint` LIKE THE OTHERS.
+     * That call answers with a sale's or a purchase's shape, and everything it
+     * loads -- salesMaster, purchaseMaster, both returns -- is null on a
+     * write-off or a receipt. The two slips have their own detail endpoints, so
+     * they fetch their own paper and hold it here.
+     *
+     * ⚠️ AND THEY ARE ASKED FOR `?by=trx`. A ledger row carries the VOUCHER id
+     * (`main_trx_master.id`) and nothing else -- it is a ledger of vouchers, not
+     * of slips -- so the endpoints are told to answer by that instead of by the
+     * slip's own id, which is what every other caller passes.
+     */
+    const inSlipRef = useRef<HTMLDivElement | null>(null);
+    const outSlipRef = useRef<HTMLDivElement | null>(null);
+    const [stockSlip, setStockSlip] = useState<{ kind: 'in' | 'out'; data: any } | null>(null);
+
+    const printStockSlip = async (kind: 'in' | 'out', mtmId: any) => {
+      if (!isValidMtmId(mtmId)) {
+        toast.error('Invalid voucher data');
+        return;
+      }
+
+      const url = kind === 'in' ? API_PRODUCT_IN_DETAILS_URL : API_PRODUCT_OUT_DETAILS_URL;
+
+      try {
+        const res = await httpService.get(`${url}/${Number(mtmId)}`, { params: { by: 'trx' } });
+        const payload = res?.data?.data?.data ?? res?.data?.data ?? null;
+
+        if (!payload?.master) {
+          toast.error('Voucher not found');
+          return;
+        }
+
+        setStockSlip({ kind, data: payload });
+        // The ref is read when the print runs, not now -- see the note on
+        // activeRef. The slip stands an empty div on the page until its payload
+        // renders, so the node found here is not the node that will be printed.
+        activeRef.current = kind === 'in' ? inSlipRef : outSlipRef;
+        setTimeout(printActive, 300);
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || 'Failed to load the voucher');
+      }
+    };
 
     /* ================= PRINT HANDLER ================= */
     /**
@@ -241,6 +294,27 @@ export const VoucherPrintRegistry = forwardRef(
             printAs(purchaseReturnRef);
             break;
 
+          /* ================= THE TWO STOCK DOCUMENTS ================= */
+          /**
+           * 25 is a receipt, 26 a write-off. Each has a paper of its own -- a
+           * Stock In Slip and a Damage / Loss Slip -- and neither is an invoice,
+           * so neither travels the sales call above. See printStockSlip().
+           *
+           * ⚠️ THIS SWITCH SIMPLY DID NOT KNOW THESE TWO NUMBERS. 26 was added
+           * when Product Out shipped and 25 when Product In did, and neither
+           * came back here -- so the Product In Out ledger listed a write-off,
+           * the number was clickable, and the click answered "Unknown voucher
+           * type: 26". Exactly the mistake the sales case above records for 10,
+           * made again by a feature that read the number somewhere new.
+           */
+          case '25':
+            printStockSlip('in', getPrintMtmId(row));
+            break;
+
+          case '26':
+            printStockSlip('out', getPrintMtmId(row));
+            break;
+
           default:
             toast.error(`Unknown voucher type: ${rawVoucherType || 'N/A'}`);
         }
@@ -297,6 +371,11 @@ export const VoucherPrintRegistry = forwardRef(
           rowsPerPage={rowsPerPage}
           fontSize={fontSize}
         />
+
+        {/* THE TWO STOCK SLIPS -- mounted only while one is being printed, so
+            they fetch nothing and cost nothing the rest of the time. */}
+        {stockSlip?.kind === 'in' && <ProductInSlipPrint ref={inSlipRef} data={stockSlip.data} />}
+        {stockSlip?.kind === 'out' && <ProductOutSlipPrint ref={outSlipRef} data={stockSlip.data} />}
       </div>
     );
   }
