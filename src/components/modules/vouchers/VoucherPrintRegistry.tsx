@@ -20,6 +20,7 @@ import PurchaseInvoicePrint from './print_items/PurchaseInvoicePrint';
 import CashPaymentPrint from './print_items/CashPaymentPrint';
 import CashReceivedPrint from './print_items/CashReceivedPrint';
 import ReturnPrint from './print_items/ReturnPrint';
+import JournalVoucherPrint from './print_items/JournalVoucherPrint';
 import ProductInSlipPrint from '../product-in/ProductInSlipPrint';
 import ProductOutSlipPrint from '../product-out/ProductOutSlipPrint';
 
@@ -110,6 +111,7 @@ export const VoucherPrintRegistry = forwardRef(
     const purchaseRef = useRef<HTMLDivElement | null>(null);
     const salesReturnRef = useRef<HTMLDivElement | null>(null);
     const purchaseReturnRef = useRef<HTMLDivElement | null>(null);
+    const journalRef = useRef<HTMLDivElement | null>(null);
 
     /* 👉 WHICH PRINT COMPONENT WAS ASKED FOR (KEY FIX)
      *
@@ -294,6 +296,23 @@ export const VoucherPrintRegistry = forwardRef(
             printAs(purchaseReturnRef);
             break;
 
+          /* ================= THE JOURNAL ================= */
+          /**
+           * ⚠️ THE ONE TYPE WITH NO PAPER ANYWHERE ELSE IN THE APP. Every other
+           * case above draws a layout some screen had already built; a journal
+           * voucher had none, so a `5-` number in the Daily Account Book -- where
+           * three whole sections are journals -- was clickable and answered
+           * "Unknown voucher type: 5".
+           *
+           * It travels the ordinary fetch, because `salesPrintData()` loads a
+           * voucher's accounting legs on every call whatever its type. See the
+           * note on JournalVoucherPrint: the LAYOUT is new and is expected to be
+           * adjusted once the owner has seen a sheet.
+           */
+          case '5':
+            printAs(journalRef);
+            break;
+
           /* ================= THE TWO STOCK DOCUMENTS ================= */
           /**
            * 25 is a receipt, 26 a write-off. Each has a paper of its own -- a
@@ -371,6 +390,9 @@ export const VoucherPrintRegistry = forwardRef(
           rowsPerPage={rowsPerPage}
           fontSize={fontSize}
         />
+
+        {/* JOURNAL */}
+        <JournalVoucherPrint ref={journalRef} data={voucherData} fontSize={fontSize} />
 
         {/* THE TWO STOCK SLIPS -- mounted only while one is being printed, so
             they fetch nothing and cost nothing the rest of the time. */}

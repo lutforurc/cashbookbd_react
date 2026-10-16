@@ -577,6 +577,58 @@ write-off or a receipt every one of its relations is null. So case `25`/`26`
 fetches its own details into local state and prints from there — the note on
 `printStockSlip()` says so.
 
+### 11.3 The Daily Account Book — two stock sections, and printing from it
+
+The owner asked for Product In and Product Out here too *("কারণ এটা প্রতি দিনের হিসাব")*,
+and for **every** voucher number on the page to print when clicked — *"এটা শুধুমাত্র
+দেখাবে; কোন হিসাবে যোগ বা বিয়োগ হবে না."*
+
+**Two sections, both memoranda.** `PRODUCT IN (STOCK)` on the receipt side and
+`PRODUCT OUT (STOCK)` on the payment side, each `in_total => false`. That is the
+whole of the owner's "no adding, no subtracting": neither figure reaches a side
+total, so the closing cannot move — and it must not, because neither document
+writes a ledger entry at all, so there is no till movement for a total to carry.
+Adding one would put the closing above the ledger the opening was read from, by
+exactly the goods it stands for.
+
+**They cannot be found the way every other row is found.** The rest of the book
+comes from `voucherIds()` — the vouchers that touched a cash head, plus the
+memoranda asked for by name, which are still found through their ledger legs.
+A stock document has no legs, so `foldLegs()` would build no record from it and
+asking for its id in `voucherIds()` would change nothing. `stockRows()` therefore
+gathers them by their own slips and merges them, fully formed, in `rows()`.
+
+⚠️ **Dated on the voucher**, like every other row, not on the slip. Change Date
+moves only the voucher, and a book dated on the other one would put a row on a
+day the ledger knows nothing about.
+
+⚠️ **The figure is the goods' value, not their quantity** — every other column on
+that page is money, and a column that silently changed units would be worse than
+no column. The quantity rides in the description, spelled out, so the reader can
+tell which he is reading. Product Out is valued the way the write-off register
+values it (`purchase_price + sales_price`); Product In at `stock_in ×
+purchase_price`, the rate `ProductInPosting` resolved.
+
+**React needed nothing** for the sections: the screen maps `report.sections`
+already, so both appear on screen and on paper the moment the API sends them.
+
+**Clicking a voucher number (§11.2's registry) is new to this screen.** The book
+had no print path at all. `SectionTable` now renders each description through a
+`VoucherDescription` that lifts the trailing ` - <vr_no>` off the sentence and
+puts it back as a button — the row reads exactly as it did, and the one part a
+click can act on is the part that looks clickable. The row carries `vr_no`
+separately, so this matches a string the server already sent rather than parsing
+a number out of prose.
+
+⚠️ **And a new paper was needed.** Three of this book's own sections are journals,
+and a journal voucher had **no paper anywhere in the app** — so its number was
+clickable and answered *"Unknown voucher type: 5"*. `JournalVoucherPrint` is
+therefore the first paper here that was not extracted from a screen that already
+drew one; it follows the conventions of the papers beside it and is expected to
+be adjusted once the owner has seen a sheet. Its data needs no endpoint of its
+own: `salesPrintData()` loads a voucher's accounting legs on every call, whatever
+its type.
+
 ## 12. Print
 
 `ProductInPrintModal`, mirroring `ProductOutPrintModal.tsx` — self-contained, no
@@ -761,6 +813,59 @@ Slip**; neither answered "Unknown voucher type"; and the two dialogs on the
 receipt list and the write-off list still draw the same paper after their
 layouts moved out.
 
+**And the Daily Account Book** (§11.3) — **20 checks on the service, all
+passing**: both sections present and both memoranda; a receipt and a write-off
+landing in them with their own voucher numbers and quantities; and ⚠️ **not one
+of the four totals moving** — receipt, payment, closing and opening all identical
+before and after, with the day still closing exactly where the next day opens
+(26,200 = 26,200). Then **14 in the browser**: every voucher number on the page
+is a button, and each prefix clicked printed its own paper — `25-` a Stock In
+Slip, `26-` a Damage / Loss Slip, and `3-` / `4-` / `10-` the invoice papers,
+each with the right endpoint answering 200 and none answering "Unknown voucher
+type".
+
+⚠️ **The journal paper is NOT verified against a real voucher** — this database
+holds no journal at all (four vouchers in total on the branch). What is verified
+is the shape it reads: the print payload carries
+`acc_transaction_master[0].acc_transaction_details[]` with `coa_l4.name`,
+`debit` and `credit` on every voucher that has legs, which is the same shape
+`CashVoucherPrintBase` has always read.
+
 **Not verified:** no paper has actually been produced by a printer — the browser
-run proves the slip reaches the print call with its content, not that a sheet
-came out. And nothing has been tried on any database other than the dev one.
+run proves a paper reaches the print call with its content, not that a sheet came
+out. And nothing has been tried on any database other than the dev one.
+
+---
+
+## 19. ⚠️ An incident on the dev database — read this before running any check here
+
+While testing §11.3, a **test script's cleanup deleted the wrong rows.** It
+removed vouchers by `transaction_type IN (25, 26)`, on the assumption that every
+such voucher was one the run had just created. It was not:
+
+**Four Product Out write-off slips belonging to the database were destroyed**
+(product 1019, dated 2026-10-13 — vouchers `4-261000002`, `4-261000003`,
+`26-261000001`, `26-261000004`, quantities 10, 20, 50 and 6), together with
+their slips and their stock rows. There is no backup and no binlog, and a
+write-off writes no ledger entry, so there was no ledger row to rebuild them
+from. They are gone.
+
+**What it changed:** only stock. Product 1019 stands 86 units higher than it did,
+so the closing stock and the P&L's closing stock are higher by those goods.
+**The ledger was not touched** — a write-off writes no `acc_transaction_details`
+row — so no money total moved anywhere, and the Daily Account Book's figures are
+unaffected.
+
+**The rule, for every check that runs against this database from now on:**
+
+1. Take a high-water mark first — `$high = MAX(main_trx_master.id)` — and delete
+   **only** `WHERE id > $high`.
+2. Never select test rows by `transaction_type`, `voucher_type`, `vr_no` prefix
+   or date. Rows of the same kind accumulate for years.
+3. Count before deleting. A number larger than the run created means stop and
+   look.
+4. Prefer the app's own delete where one exists.
+
+The same lesson is in the browser walk-through recipe in the agent's memory, and
+it was there before this happened. It is repeated here, in the document, because
+that is where the next person will be reading.

@@ -19,6 +19,8 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { Select } from '../../../utils/fields/FormControls';
 import { FIELD_SELECT } from '../../../../theme/fieldStyles';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers/useVoucherPrint';
 import DailyAccountBookPrint from './DailyAccountBookPrint';
 
 /**
@@ -57,7 +59,47 @@ const parseUrlDate = (said: string | null): Date | null => {
   return parts ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3])) : null;
 };
 
-const SectionTable = ({ section }: { section: any }) => {
+/**
+ * A row's description, with the voucher number at its end made clickable.
+ *
+ * ⚠️ THE NUMBER IS LIFTED OUT OF THE SENTENCE, NOT SHOWN TWICE. The server
+ * writes every description to end `... - <vr_no>` (see description() in
+ * DailyAccountBook), so the tail is cut off and put back as a button -- the row
+ * reads exactly as it did, and the one part of it a click can act on is the part
+ * that looks clickable.
+ *
+ * ⚠️ AND THE ROW CARRIES `vr_no` SEPARATELY ANYWAY, so this is matching a
+ * string the server has already sent rather than parsing a number out of prose.
+ * A description that does not end that way is printed whole and stays plain --
+ * better a row nobody can click than a row that lies about what it is.
+ */
+const VoucherDescription = ({ row, onPrint }: { row: any; onPrint: (row: any) => void }) => {
+  const said = String(row?.description ?? '');
+  const vrNo = String(row?.vr_no ?? '');
+  const tail = vrNo ? ` - ${vrNo}` : '';
+
+  if (tail === '' || !said.endsWith(tail)) {
+    return <>{said}</>;
+  }
+
+  const head = said.slice(0, said.length - tail.length).replace(/[\s-]+$/, '');
+
+  return (
+    <>
+      {head && `${head} - `}
+      <button
+        type="button"
+        onClick={() => onPrint(row)}
+        title={`Print ${vrNo}`}
+        className="cursor-pointer font-medium text-primary hover:underline dark:text-[rgb(var(--c-text))]"
+      >
+        {vrNo}
+      </button>
+    </>
+  );
+};
+
+const SectionTable = ({ section, onPrint }: { section: any; onPrint: (row: any) => void }) => {
   const rows: any[] = section?.rows ?? [];
 
   return (
@@ -80,7 +122,9 @@ const SectionTable = ({ section }: { section: any }) => {
               rows.map((row: any) => (
                 <tr key={row.mtm_id} className="align-top hover:bg-slate-50 dark:hover:bg-slate-800/60">
                   <td className="border border-slate-200 px-2 py-1 text-center dark:border-slate-700 dark:text-slate-300">{row.sl}</td>
-                  <td className="border border-slate-200 px-2 py-1 dark:border-slate-700 dark:text-slate-300">{row.description}</td>
+                  <td className="border border-slate-200 px-2 py-1 dark:border-slate-700 dark:text-slate-300">
+                    <VoucherDescription row={row} onPrint={onPrint} />
+                  </td>
                   <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
                     {money(row.amount)}
                   </td>
@@ -182,6 +226,12 @@ const DailyAccountBook = ({ user }: any) => {
   const [fontSize, setFontSize] = useState<number>(10);
 
   const printRef = useRef<HTMLDivElement>(null);
+
+  // ⚠️ THE SAME REGISTRY THE OTHER LEDGERS PRINT THROUGH, deliberately. It is
+  // what decides which paper a voucher number gets, and a second way of printing
+  // here would be a second place to teach the next voucher type to.
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const [params, setParams] = useSearchParams();
 
   // Whether the range in the address bar has already been run on this visit.
@@ -475,7 +525,7 @@ const DailyAccountBook = ({ user }: any) => {
                 RECEIPT
               </div>
               {receipt.map((section: any) => (
-                <SectionTable key={section.key} section={section} />
+                <SectionTable key={section.key} section={section} onPrint={handleVoucherPrint} />
               ))}
             </div>
 
@@ -484,7 +534,7 @@ const DailyAccountBook = ({ user }: any) => {
                 PAYMENT
               </div>
               {payment.map((section: any) => (
-                <SectionTable key={section.key} section={section} />
+                <SectionTable key={section.key} section={section} onPrint={handleVoucherPrint} />
               ))}
             </div>
           </div>
@@ -533,6 +583,10 @@ const DailyAccountBook = ({ user }: any) => {
           fontSize={fontSize}
           rowsPerPage={rowsPerPage}
         />
+
+        {/* The paper a clicked voucher number prints -- mounted hidden, and it
+            fetches nothing until a number is actually clicked. */}
+        <VoucherPrintRegistry ref={voucherRegistryRef} rowsPerPage={rowsPerPage} fontSize={fontSize} />
       </div>
     </div>
   );
