@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiCheckCircle, FiPrinter, FiRotateCcw, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
+import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -282,10 +283,12 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
 
       <div className="flex flex-wrap items-center gap-2 mb-2">
         <SelectOption onChange={handleSelectChange} className="mr-1 md:mr-2" />
+        {/* Same class as SelectOption beside it, so every control in the row
+            stands at the one --control-height. */}
         <select
           value={approval}
           onChange={handleFilterChange('approval')}
-          className="rounded border border-[rgb(var(--c-border))] bg-white px-2 text-sm dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-text))]"
+          className={`${FIELD_SELECT} block p-2 text-sm`}
         >
           <option value="all">All</option>
           <option value="pending">Pending only</option>
@@ -294,7 +297,7 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
         <select
           value={reasonId}
           onChange={handleFilterChange('reasonId')}
-          className="rounded border border-[rgb(var(--c-border))] bg-white px-2 text-sm dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-text))]"
+          className={`${FIELD_SELECT} block p-2 text-sm`}
         >
           <option value="">Every reason</option>
           {reasons.map((r) => (
