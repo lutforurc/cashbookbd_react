@@ -92,7 +92,9 @@ export const getProductOuts = createAsyncThunk<
   { rejectValue: string }
 >('productOut/getProductOuts', async (params = {}, thunkAPI) => {
   try {
-    const res = await httpService.get(API_PRODUCT_OUT_LIST_URL, params);
+    // ⚠️ `{ params }`, not `params`: axios reads get()'s second argument as its
+    // config, so the bare filters were dropped and the list never filtered.
+    const res = await httpService.get(API_PRODUCT_OUT_LIST_URL, { params });
     const responseData = res.data;
 
     if (responseData?.success) {
@@ -279,7 +281,8 @@ const getProductOutReportThunk = createAsyncThunk<
   { rejectValue: string }
 >('productOut/getProductOutReport', async ({ params, callback }, thunkAPI) => {
   try {
-    const res = await httpService.get(API_PRODUCT_OUT_REPORT_URL, params);
+    // `{ params }` -- see getProductOuts: bare, the dates never reached the API.
+    const res = await httpService.get(API_PRODUCT_OUT_REPORT_URL, { params });
     const responseData = res.data;
 
     if (responseData?.success) {
