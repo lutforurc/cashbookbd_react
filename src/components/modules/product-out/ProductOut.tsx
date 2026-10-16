@@ -16,6 +16,7 @@ import httpService from '../../services/httpService';
 import { API_PRODUCT_OUT_PARTY_URL } from '../../services/apiRoutes';
 import { Select } from '../../utils/fields/FormControls';
 import { getDdlWarehouse } from '../warehouse/ddlWarehouseSlider';
+import { trxDateToDate, trxDateToIso } from '../../utils/utils-functions/transactionDate';
 import { getProductOutReasons, resolveReasonId, storeProductOut } from './productOutSlice';
 import ProductOutList from './ProductOutList';
 
@@ -44,16 +45,25 @@ const ProductOut = () => {
   const warehouseState = useSelector((s: any) => s.activeWarehouse);
   const warehouseOptions = Array.isArray(warehouseState?.data) ? warehouseState.data : [];
   const reasons: any[] = Array.isArray(productOut?.reasons) ? productOut.reasons : [];
+  const settings = useSelector((s: any) => s.settings);
+
+  // The slip posts on the branch's open transaction date, not today: the books
+  // stay on trx_dt until day close advances it. Today only while settings loads.
+  const trxDt = settings?.data?.trx_dt;
+  const defaultOutIso = () => trxDateToIso(trxDt) || dayjs().format('YYYY-MM-DD');
+  const defaultOutDate = () => trxDateToDate(trxDt) ?? dayjs().toDate();
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [listRefreshKey, setListRefreshKey] = useState(0);
-  const [outDate, setOutDate] = useState<Date | null>(dayjs().toDate());
+  const [outDate, setOutDate] = useState<Date | null>(defaultOutDate);
+  // Once the clerk picks a date, stop overwriting it when settings refreshes.
+  const [outDateTouched, setOutDateTouched] = useState(false);
   const [isUpdatingLine, setIsUpdatingLine] = useState(false);
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
   const [lineItem, setLineItem] = useState({ ...emptyLine });
   const [party, setParty] = useState<Option | null>(null);
   const [formData, setFormData] = useState({
-    outDate: dayjs().format('YYYY-MM-DD'),
+    outDate: defaultOutIso(),
     warehouseId: '',
     reasonId: '',
     note: '',
@@ -64,6 +74,15 @@ const ProductOut = () => {
     dispatch(getDdlWarehouse());
     dispatch(getProductOutReasons());
   }, [dispatch]);
+
+  // trx_dt can arrive after first render; adopt it until the clerk picks a date.
+  useEffect(() => {
+    if (outDateTouched) return;
+    const iso = trxDateToIso(trxDt);
+    if (!iso) return;
+    setOutDate(trxDateToDate(trxDt));
+    setFormData((prev) => (prev.outDate === iso ? prev : { ...prev, outDate: iso }));
+  }, [trxDt, outDateTouched]);
 
   // Open a new slip on the shop's own default reason, so the Reason field is
   // never blank. It only fills an empty field -- a reason already chosen (an
@@ -103,6 +122,7 @@ const ProductOut = () => {
   };
 
   const handleOutDateChange = (date: Date | null) => {
+    setOutDateTouched(true);
     setOutDate(date);
     setFormData((prev) => ({
       ...prev,
@@ -136,13 +156,14 @@ const ProductOut = () => {
 
   const resetForm = () => {
     setFormData({
-      outDate: dayjs().format('YYYY-MM-DD'),
+      outDate: defaultOutIso(),
       warehouseId: '',
       reasonId: resolveReasonId('', reasons),
       note: '',
       items: [],
     });
-    setOutDate(dayjs().toDate());
+    setOutDate(defaultOutDate());
+    setOutDateTouched(false);
     setParty(null);
     clearLineForm();
   };
