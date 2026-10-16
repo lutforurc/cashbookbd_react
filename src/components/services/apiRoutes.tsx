@@ -1018,6 +1018,19 @@ export const API_HOTEL_RESOURCE_URL = `${API_BASE_URL}/hotel-setup/resources`;
 // ten rooms at a time.
 export const API_HOTEL_LAYOUT_URL = `${API_BASE_URL}/hotel-setup/layout`;
 
+/**
+ * Buying what the hotel is furnished with — beds, chairs, a generator.
+ *
+ * ⚠️ It saves an ORDINARY CASH PAYMENT voucher: same series, same `2-` number
+ * shape, the same paper as every other payment in the app. Only the asset head
+ * it debits is new. It is NOT a purchase invoice — nothing here touches stock.
+ */
+export const API_HOTEL_ASSET_PURCHASE_URL = `${API_BASE_URL}/hotel-setup/asset-purchases`;
+// The asset heads, level 4, under Assets. Read from the chart of accounts
+// rather than the fixed-asset module's categories: an asset head is what the
+// ledger understands, and the two are not the same list.
+export const API_HOTEL_ASSET_PURCHASE_ACCOUNTS_URL = `${API_HOTEL_ASSET_PURCHASE_URL}/accounts/ddl`;
+
 // Bookings. The stem suffixes /store, /edit/{id}, /cancel/{id}, and — for the
 // second stage of the form, on the day the guests arrive — /allotment/{id} and
 // /allot/{id}.

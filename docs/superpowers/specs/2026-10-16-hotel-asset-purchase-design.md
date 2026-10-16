@@ -1,18 +1,18 @@
 # Hotel Asset Purchase — the "Accounts Transaction" form (Design)
 
-**Status:** **DESIGN ONLY, 2026-10-16.** The form is drawn, laid out and reaches
-the screen. **Nothing is saved, sent or calculated server-side** — the owner
-asked for the shape first and the wiring afterwards: *"শুধুমাত্র এই ফরমটি ডিজাইন
-কর, ফাংশনালিটি পরে করব।"* Every control that would need the server says so when
-pressed rather than doing nothing quietly (§6).
-**Repo:** `cashbookbd_react` at `F:\All_Database\cashbookbd_react`, branch
-`Reseller-ui`. **The API repo is untouched.**
+**Status:** **STEP 5 BUILT, 2026-10-16.** §1–§11 describe the form as designed and
+drawn. **§10 records what was then built**: cash only, paid in full, saving an
+ordinary `2-` payment voucher. Bank, credit, discount and part payment are still
+not built, and each control that would need them is DISABLED with a line saying
+so rather than left to look as if it works.
+**Repos:** `cashbookbd_react` (branch `Reseller-ui`) and `cashbook_api` (branch
+`Reseller`).
 **Source:** `docs/Hotel Asset Transaction/CashBookBD furniture purchase entry.png`
 — the owner's own screenshot of the form to be reproduced.
 
-**How to read this:** *Drawn* = built and on screen. *My call* = a decision taken
-while drawing it that the owner may override. *Open* = waiting on the owner.
-Nothing here is wired to a database.
+**How to read this:** *Drawn* = on screen. *Built* = behind the screen, writing to
+the books. *My call* = a decision taken that the owner may override. *Open* =
+waiting on the owner.
 
 ---
 
@@ -57,11 +57,14 @@ That last row is the reason the form asks about payment mode at all (§4.1).
 | Component | `src/components/modules/hotel/assets/HotelAssetPurchase.tsx` |
 | Route | `/hotel/assets/purchase` — `routes.hotel_asset_purchase` |
 | Menu | **Hotel → Assets Purchase**, between *Amenity Issue* and *Reports* |
-| Route gate | `MENU_PERMISSIONS.hotel` — the Hotel menu's own five permissions |
+| Route gate (screen) | `MENU_PERMISSIONS.hotel` — the Hotel menu's own five permissions |
+| API gate | **`hotel.asset.purchase.create`**, its own key (§10.8) |
 
-⚠️ **The route gate is temporary.** It reuses the menu's own list so that what
-the menu offers and what the route allows cannot drift apart while the screen is
-only being looked at. A real screen wants a permission of its own (see §9).
+⚠️ **The screen's gate deliberately borrows the menu's list, and that is now
+settled rather than temporary.** `--hotel-grant` hands the whole Hotel group —
+the new key included — to the same roles, so whoever can see the Hotel menu is
+who holds the purchase permission. The two are granted together by construction
+and cannot drift apart.
 
 ---
 
@@ -73,14 +76,14 @@ only being looked at. A real screen wants a permission of its own (see §9).
 |---|---|
 | Title | `Accounts Transaction` |
 | Subtitle | `Furniture & equipment purchases` |
-| **List** | ghost button, bordered — *not wired* |
-| **Print** | ghost button, bordered — *not wired* |
+| **List** | ghost button, bordered — says *not built yet* |
+| **Print** | ghost button, bordered — says *not built yet*; the voucher already prints from the ledger |
 
 ### 3.2 Who, what head, when — one card, three columns
 
 | Field | Type | Notes |
 |---|---|---|
-| **Accounts Head \*** | dropdown | The asset head the money lands on. Help text says outright that nothing here moves a product's quantity. |
+| **Accounts Head \*** | dropdown | **Reads the real chart of accounts** — Fixed Asset heads only (§10.2). Help text says outright that nothing here moves a product's quantity. |
 | **Transaction Date \*** | date picker | The app's own `InputDatePicker`; speaks `Date` objects, the form speaks `YYYY-MM-DD`. |
 | **Voucher No** | text | **Disabled, placeholder "Auto-generated".** ⚠️ Deliberately not typeable — the number is the server's to give, and a box somebody could type one into would be a number the books do not have. |
 
@@ -88,7 +91,7 @@ only being looked at. A real screen wants a permission of its own (see §9).
 
 | Field | Type | Notes |
 |---|---|---|
-| **Select Item** | dropdown | 5 of 12 columns |
+| **Select Item** | **text box** | 5 of 12 columns. ⚠️ A dropdown in the picture; free text now, and the reason is in §10.3 — the name lands on the voucher line's remark. |
 | **Quantity** | number | 2 columns |
 | **Rate (Tk.)** | number | 2 columns |
 | **Add Item** | primary button | 3 columns; becomes **Save Item** while a line is being corrected, with a **✕ cancel** beside it |
@@ -110,84 +113,100 @@ only being looked at. A real screen wants a permission of its own (see §9).
 
 A **Cash · Bank · Credit** segmented control, then the fields below it.
 
-| Field | When it shows | Notes |
-|---|---|---|
-| **Bank Account** | only when **Bank** | A cash or credit purchase has no bank account to name. |
-| **Seller / Supplier** | always | Marked required only for **Credit**. Help text: *"Required when an outstanding balance remains."* |
-| **Payment Amount (Tk.)** | Cash and Bank | Hidden for Credit — nothing is being paid. |
-| **Notes** | always | Textarea, full width when Bank is picked. |
+| Field | State after step 5 (§10) |
+|---|---|
+| **Cash** | selected, enabled |
+| **Bank · Credit** | **disabled**, tooltip naming them as the next step |
+| **Bank Account** | not rendered — only Bank would need it |
+| **Seller / Supplier** | **not rendered** — see §10.4; it returns with credit |
+| **Payment Amount (Tk.)** | disabled, showing the Net Total — step 5 pays in full |
+| **Notes** | textarea, writes the voucher's note |
+
+⚠️ As drawn, Bank Account showed only for **Bank** and Seller / Supplier always,
+marked required for **Credit**. Both of those fields are gone until the modes
+that need them exist.
 
 ### 3.6 Transaction Totals
 
-| Row | Source |
+| Row | State after step 5 (§10) |
 |---|---|
 | **Subtotal (Tk.)** | sum of the lines |
-| **Discount Amount (Tk.)** | an input — the only editable figure in the panel |
-| **Net Total (Tk.)** | subtotal − discount, bold and larger |
-| **Paid Amount (Tk.)** | read from the Payment Amount box |
-| **Due Amount (Tk.)** | net − paid, in amber |
+| **Discount Amount (Tk.)** | **stated as zero, not typeable** — see §10.6 |
+| **Net Total (Tk.)** | the subtotal, bold and larger |
+| **Paid Amount (Tk.)** | the same figure |
+| **Due Amount (Tk.)** | zero — nothing is left owing on a cash purchase |
 
 ### 3.7 Footer
 
 **Reset** (ghost, bordered) at the right, **Save Transaction** (primary) at the
-far right. Both are for later; Save says so when pressed.
+far right. Save writes the voucher and the number it was given appears above the
+form.
 
 ---
 
 ## 4. Decisions taken while drawing it
 
-### 4.1 The three tabs really switch — *my call*
+### 4.1 The three tabs are three vouchers — settled
 
-The tabs are not three payment methods so much as **three different vouchers**:
-cash out, bank out, or a bill with nothing paid yet. Which one is picked decides
-what the ledger ends up holding once this is wired.
+Not three payment methods: cash out, bank out, or a bill with nothing paid yet.
+Which one is picked decides what the ledger holds. As drawn, the tabs changed
+what was on screen rather than being decorative.
 
-So the tabs change what is on screen rather than being decorative: Bank Account
-appears only for Bank, Payment Amount is hidden for Credit, and Seller / Supplier
-is marked required only for Credit. **A tab that changes nothing reads as a
-broken tab.**
+**After step 5 (§10.4) the other two are disabled instead** — the reading was
+sound, but a tab that cannot save what it shows is worse than a tab that says it
+is not ready.
 
-⚠️ **The exact field-per-mode rules are the owner's to settle** (§9). What is
-built is a sensible reading, not a settled design.
+⚠️ **The exact field-per-mode rules are still the owner's to settle** (§9).
 
-### 4.2 Two sample lines are seeded — *my call*
+### 4.2 Two sample lines were seeded — *withdrawn*
 
-The table opens with Office Chair 5 × 3,000 and Office Desk 1 × 10,000, and the
-discount with 1,000 — the figures in the screenshot — so the screen reads as a
-filled-in form rather than an empty grid on first look. **Reset clears them.**
+The design draft opened with Office Chair 5 × 3,000 and Office Desk 1 × 10,000,
+the figures in the screenshot, so the screen read as a filled-in form on first
+look.
 
-### 4.3 The buttons say they are not wired — *my call*
+⚠️ **They are gone now the screen saves.** A form that opens with figures nobody
+typed, one press away from a real voucher, is a trap — and the discount that went
+with them was one of the two figures that would have been written into the books
+wrongly. The form opens empty and says so.
 
-Save Transaction, List and Print raise `"<name> — not wired up yet."` A button
-that does nothing when pressed is worse than one that admits it, and this is the
-one thing a design-only screen must not lie about.
+### 4.3 What is not built says so — *my call*
 
----
-
-## 5. Placeholders — must be replaced before this is real
-
-⚠️ **Both dropdown lists are fake.** They are written into the component so the
-form can be read; **nothing should ever be saved against them.**
-
-| List | Now | Must become |
-|---|---|---|
-| Accounts Head | 4 hand-written names | the chart of accounts, level 4, asset group |
-| Select Item | 4 hand-written names | whatever a hotel's assets are set up as — see the Asset module (`routes.asset_setup`) |
-| Bank Account | 2 hand-written names | the branch's own bank accounts |
-| Seller / Supplier | 2 hand-written names | the party list |
+List and Print raise `"<name> — not built yet"`. Bank and Credit are disabled
+rather than clickable-and-ignored. Nothing that cannot work is left looking as
+though it can, which is the one thing a half-built screen must not do.
 
 ---
 
-## 6. What is deliberately not built
+## 5. Placeholders
 
-- **No API call of any kind.** No store, no update, no delete, no list.
-- **No save.** Save Transaction, List and Print are inert (§4.3).
-- **No voucher number.** It can never be filled, because nothing issues one.
-- **No approval.** The app has an approval centre; this form knows nothing of it.
-- **No print paper.** Print is a button and nothing behind it.
-- **No validation the server would keep.** The form refuses a line with no item
-  and a line with no quantity — that is so the screen behaves, not a rule.
-- **No day-close, no voucher-type prefix, no permission of its own.**
+✅ **Resolved by step 5** (§10): **Accounts Head** now reads the real chart of
+accounts. **Select Item** is now a **free-text box**, not a dropdown — see §10.3.
+
+⚠️ **Still fake, and reachable only on a screen that is disabled:** Bank Account
+and Seller / Supplier were hand-written lists in the design draft. Both are now
+**gone from the component** — Bank and Credit are disabled (§10.4) and the fields
+they would need are not rendered at all, so there is nothing left to save
+against them by accident.
+
+---
+
+## 6. What is still not built
+
+As of step 5 (§10), **the form saves**. What is still missing:
+
+- **Bank and credit.** Both are disabled tabs with a tooltip. A credit purchase
+  moves no money and is a journal, not a setting on this one (§10.5).
+- **Part payment.** Payment Amount mirrors the total and cannot be typed into;
+  nothing here can leave a balance owing to a seller.
+- **Discount.** No third ledger leg, because where a purchase discount lands is a
+  bookkeeping decision nobody has made (§10.6).
+- **Edit, update and delete.** A saved voucher can be changed from the ordinary
+  cash-payment screen, not from here.
+- **A list screen.** **List** says it is not built; the voucher number is shown
+  on the screen after saving, because there is nowhere else to read it.
+- **Approval.** The app has an approval centre; this form knows nothing of it.
+- **A paper of its own.** None is needed — a `2-` number already prints.
+- **The asset register link** (§9.4) — nothing is written to it.
 
 ---
 
@@ -204,7 +223,13 @@ form can be read; **nothing should ever be saved against them.**
 - `src/components/Sidebar/index.tsx` — the entry in `SIDEBAR_SUBMENUS.hotel`, and the `<li>` beside *Amenity Issue*
 - `src/components/Sidebar/menuRoutes.ts` — the route id added to the `hotel` group
 
-**Untouched:** the API repo. `git status` on `cashbook_api` is clean.
+**API — created by step 5 (§10)**
+
+- `app/Http/Controllers/Hotel/AssetPurchaseController.php`
+- routes in `routes/api.php`, under the `hotel-setup` prefix
+- `config/route_permissions.php` — two entries
+- `app/Console/Commands/AddUnitTypeToBuildingUnits.php` — one permission row in
+  `syncPermissions()`
 
 ---
 
@@ -214,16 +239,14 @@ form can be read; **nothing should ever be saved against them.**
 |---|---|
 | `npm run build` | exit 0 |
 | TypeScript diagnostics on the new file | none |
-| Dev server transforms all five touched modules | 200, no unresolved import, no transform error |
+| Dev server transforms both touched modules | 200, no unresolved import, no transform error |
+| The API route is registered | `route:list` shows both, and answers 302→login with no session |
+| **The controller run for real** | **28 checks, all passing — §10.7** |
 
-⚠️ **NOT SEEN RENDERED IN A BROWSER.** The build transpiles and Vite resolves
-every import, but no one has looked at the screen. There is no login or
-Playwright harness available in the session this was built in. It is a static
-component with no fetching and no effects, so a crash is unlikely — but that is a
-reason, not a check.
-
-**Nothing has been run against a database, because nothing in this screen
-touches one.**
+⚠️ **STILL NOT SEEN RENDERED IN A BROWSER.** The build transpiles, Vite resolves
+every import and the dev server serves the module, but no one has looked at the
+screen. There is no login or Playwright harness available in the sessions this
+was built in.
 
 ---
 
@@ -243,26 +266,159 @@ touches one.**
    categories and a register (`routes.asset_setup`). Does a purchase here
    *create* register rows, or is the register kept by hand and this is only the
    money?
-5. **What is its permission?** It currently borrows the Hotel menu's (§2).
-6. **Which voucher type?** A new `acc_vr_type` row and its printed prefix — see
-   the recurring trap recorded in the Product In spec: a new prefix prints
-   nothing until `VoucherPrintRegistry` is taught it.
+5. ✅ **What is its permission?** Answered by step 5: its own key,
+   **`hotel.asset.purchase.create`**, handed out with the Hotel group (§10.8).
+6. ✅ **Which voucher type?** Answered by step 5: **none**. It writes an ordinary
+   cash payment (`2-`), which already has a series and a printed paper — so the
+   recurring trap this question was written to warn about (a new prefix printing
+   nothing until `VoucherPrintRegistry` learns it) does not arise. Worth keeping
+   in mind for credit, which will need `5-` — already taught, in 2026-10-16.
+7. **What should Select Item offer, if it should be a dropdown at all?**
+   (§10.3) It is free text today.
 
 ---
 
-## 10. When it is wired — what has to change
+## 10. Step 5 — built, 2026-10-16
 
-1. Replace the four placeholder lists (§5).
-2. Decide the voucher type and add the prefix to the print registry.
-3. Give it its own permission, and move the route off `MENU_PERMISSIONS.hotel`.
-4. Decide whether it posts a GL entry, and against which heads — the asset head
-   on one side, cash / bank / supplier on the other.
-5. Decide the approval path (§9.3).
-6. Add the list screen behind **List**, and a paper behind **Print**.
+The owner chose the smallest first step and said to start: *"শুধু Cash, একটা লাইন
+… সেভ করলে একটা সাধারণ 2- ভাউচার, #346-এ ডিবিট, ক্যাশে ক্রেডিট।"*
+
+### 10.1 The accounting, settled by the code that already existed
+
+It writes an **ordinary cash payment voucher**. Nothing new was invented: no
+voucher type, no prefix, no paper, no register.
+
+| | |
+|---|---|
+| `transaction_type` | 2 — `VoucherNumber::TRX_PAYMENT` |
+| `vr_no` prefix | 2 — Cash Payment, which already has a printed paper |
+| `acc_transaction_master.voucher_type_id` | 1 — Cash |
+| Debit | the chosen asset head, **one line per item**, each carrying its own remark |
+| Credit | Cash (coa4 **17**), **one line for the voucher**, not one per item |
+
+**Why one credit line and not one per item:** the money left the till once. A
+credit line per item would say it left five times.
+
+**Why this rather than a new voucher type:**
+`ProjectExpenseController` already proves the pattern and says so in its own
+header — *"The voucher itself is an ordinary one… Only the dimension is new."*
+`VoucherNumber` says the rest: cash and part-paid purchases are payments;
+**a wholly-credit purchase moves no cash and is a journal** (`TRX_JOURNAL`).
+
+### 10.2 The asset heads — ⚠️ not the group you would guess
+
+**Level-1 "Assets" is the wrong filter and would have been a disaster.** In this
+chart it holds the whole asset side of the balance sheet: cash, every bank
+account, staff loans, the investors' advances, the inter-branch accounts and
+**one receivable per customer**. The dropdown would have offered four hundred
+names in which the six real ones are invisible.
+
+The filter is **`acc_coa_level2s.id = 2`, Fixed Asset**, by id rather than by
+name for the reason `AssetCategoryController` gives — group names are the
+tenant's own words, the seeded level-2 ids are not. Two exclusions:
+
+- **Cash**, which sits in the same group in some charts.
+- **Accumulated Depreciation**, a contra-asset written by the depreciation run
+  and never bought. Matched by group name, because nothing seeds it by id.
+
+It yields exactly four heads here: Furniture & Fixtures (#346), Vehicles (#348),
+Office Equipment (#350), Capital Work in Progress (#352).
+
+⚠️ **The dropdown and the save read ONE definition** (`assetHeads()`). A list
+built from one rule and a save checked against another is how a screen comes to
+offer something the server then refuses.
+
+### 10.3 The item is free text — *my call*, and a change from the picture
+
+The screenshot shows **Select Item** as a dropdown. It is now a **text box**.
+
+An office chair is not a product and there is no catalogue behind it: a hotel
+buys things it keeps, not things it resells. A dropdown here would have meant a
+hand-written list of four names being written into real vouchers as if it were
+data. What is typed lands on the voucher line's **remark**, which is the only
+place the ledger can say what was bought.
+
+If the owner wants a dropdown, the list it should offer is a question for them
+(§9.1), not a guess.
+
+### 10.4 Bank and Credit are disabled, not merely unbuilt — *my call*
+
+Three tabs, cash selected, the other two `disabled` with a tooltip naming them as
+the next step. ⚠️ They are not clickable-but-ignored: pressing **Bank** and
+getting a cash voucher anyway is the one thing this screen must not do. Their
+fields (Bank Account, Seller / Supplier) are not rendered at all.
+
+**Seller / Supplier is gone from the working path**, and that is deliberate. A
+cash purchase paid in full leaves no balance with anybody, and
+`acc_transaction_details` has **no party column** to record one in — checked, not
+assumed. It returns with Credit, which is the case that actually creates a
+balance owing.
+
+### 10.5 Payment Amount mirrors the total
+
+Disabled, showing the Net Total. Step 5 pays in full; a part payment is the thing
+that creates a supplier balance, and that is not built. Leaving the box typeable
+would have saved the full amount while the screen showed a smaller one.
+
+### 10.6 Discount is shown as zero and cannot be typed into
+
+A purchase discount is a **third ledger leg**, and where it lands is a
+bookkeeping decision nobody has made. Zero, and stated as not built, rather than
+a refusal met after the fact.
+
+### 10.7 Verification — 28 checks, all passing
+
+The real controller, called with a faked request, **inside a transaction that was
+rolled back** — including the temporary permission grant that let the gate open.
+Nothing was written and there was no cleanup step to get wrong. (The last time a
+test of mine cleaned up by a broad `WHERE`, it destroyed four real write-off
+slips; that is why this one leaves nothing to clean.)
+
+- **The dropdown** — four heads, all under Fixed Assets; Cash, Accumulated
+  Depreciation and the customer receivables all absent.
+- **The save** — accepted; a `2-` number came back.
+- **The voucher** — `transaction_type` 2, `voucher_type_id` 1, three lines: two
+  debits to #346 of 15,000 and 10,000 each keeping its own remark, one credit to
+  Cash of 25,000. Debits equal credits.
+- **The refusals** — cash as the head, an expense head, an accumulated
+  depreciation head, no lines, a zero amount, and no head at all: every one
+  refused with a message that says which.
+- **Nothing left behind** — the voucher and the permission both gone after the
+  rollback.
+
+**Still not verified: the screen itself, in a browser** (§8), and any database
+other than the one in the API's `.env`.
+
+### 10.8 To make it work on a database
+
+```
+php artisan patch:add-unit-type --hotel-grant
+php artisan route:clear
+php artisan permission:cache-reset
+```
+
+⚠️ The permission is **`hotel.asset.purchase.create`**, and it is created by
+`syncPermissions()` and handed out by `--hotel-grant` with the rest of the Hotel
+group — so whoever can see the Hotel menu is who holds it. Which is also why the
+screen's route gate is still `MENU_PERMISSIONS.hotel` (§2): the two are granted
+together by construction and cannot drift apart.
 
 ---
 
-## 11. ⚠️ Reaching the screen — the Hotel menu can hide silently
+## 11. What comes next, in order
+
+1. **Bank** — the same voucher with a bank head credited, and a bank chooser.
+2. **Credit** — a journal (`TRX_JOURNAL`, prefix `5-`), not a setting on this
+   one. This is what brings Seller / Supplier back, and it is the case that
+   creates a balance.
+3. **Part payment** — one payment voucher with two credit legs, cash and the
+   seller.
+4. **Discount** — once the owner says which head it lands on.
+5. **A list screen**, and the register link if §9.4 is answered yes.
+
+---
+
+## 12. ⚠️ Reaching the screen — the Hotel menu can hide silently
 
 Worth recording, because it cost time on the day this was built.
 
@@ -280,7 +436,7 @@ identical:
 | The user lacks the permission | `hasMenuPermission` returns false — check the role |
 | The user hid it themselves | `JSON.parse(localStorage['sidebar-menu-order']).hidden` names it |
 
-Checked on 2026-10-16 against the dev database (`stagingdatabase`): every user
-there holds 14–15 `hotel.*` permissions, so the Hotel menu was **not** hidden by
-permissions. The same trap is recorded for `MENU_PERMISSIONS` in the Product In
-spec §19.
+Checked on 2026-10-16 against the database in the API's `.env`
+(`stagingdatabase`): every user there holds 14–15 `hotel.*` permissions, so the
+Hotel menu was **not** hidden by permissions. The same trap is recorded for
+`MENU_PERMISSIONS` in the Product In spec §19.

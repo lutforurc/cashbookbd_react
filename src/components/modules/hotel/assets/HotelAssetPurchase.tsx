@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import {
@@ -21,77 +21,43 @@ import InputDatePicker from '../../../utils/fields/DatePicker';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import httpService from '../../../services/httpService';
+import {
+  API_HOTEL_ASSET_PURCHASE_ACCOUNTS_URL,
+  API_HOTEL_ASSET_PURCHASE_URL,
+} from '../../../services/apiRoutes';
 import { FIELD_HEIGHT, FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
 
 /**
  * Buying the things a hotel is furnished WITH -- beds, chairs, a generator.
  *
- * ⚠️ DESIGN ONLY. Every control below is drawn and laid out; nothing is sent
- * anywhere. Save, List and Print say so when pressed rather than doing nothing,
- * and the item and account lists are placeholders standing in for the real
- * dropdowns. What the owner asked for at this stage is the SHAPE of the form:
- * once that is agreed, the fields get wired to the voucher they raise.
+ * ⚠️ IT SAVES AN ORDINARY CASH PAYMENT VOUCHER. Same series, same `2-` number
+ * shape, the same paper as every other payment in the app. Only the asset head
+ * it debits is new. It is NOT a purchase invoice: nothing here touches
+ * inventory, and no product's quantity moves.
  *
- * ⚠️ This is the FF&E case of a general "accounts transaction": a purchase made
- * against an asset head rather than against stock. It is NOT a purchase invoice
- * -- nothing here lands in inventory or moves a product's quantity. What it is
- * meant to become is an asset purchase: money out of cash or bank, an amount
- * onto an asset head, and, when the seller is not paid in full, a balance owed
- * to them on the other side.
+ * ⚠️ CASH ONLY, paid in full -- THE FIRST STEP. Bank, credit, discounting and
+ * part payment are not built, and rather than pretend, each control that would
+ * need them is DISABLED with a line saying so. Nothing on this screen can put a
+ * figure in the books that the books do not mean.
  *
- * ⚠️ WHY THE FORM ASKS ABOUT PAYMENT MODE AT ALL. The screenshot this was drawn
- * from offers Cash, Bank and Credit as one choice. The three are not three
- * payment methods so much as three different vouchers -- cash out, bank out, or
- * a bill with nothing paid yet -- and which one is picked decides what the
- * ledger ends up holding.
+ * ⚠️ THE ITEM IS FREE TEXT. It is not a product and there is no catalogue behind
+ * it -- an office chair is a thing a hotel keeps, not something it resells. What
+ * is typed lands on the voucher line's remark, which is the only place the
+ * ledger can say WHAT was bought.
  */
 
-/** Cash is an account like any other in this chart; 17 is the one. */
+/** Cash, bank and credit are three vouchers, not three payment methods. */
 const CASH_MODE = 'cash';
 const BANK_MODE = 'bank';
 const CREDIT_MODE = 'credit';
 
 type Mode = typeof CASH_MODE | typeof BANK_MODE | typeof CREDIT_MODE;
 
-const MODES: { value: Mode; label: string; icon: React.ReactNode }[] = [
-  { value: CASH_MODE, label: 'Cash', icon: <FiDollarSign size={16} /> },
-  { value: BANK_MODE, label: 'Bank', icon: <FaUniversity size={15} /> },
-  { value: CREDIT_MODE, label: 'Credit', icon: <FiCreditCard size={16} /> },
-];
-
-/**
- * ⚠️ PLACEHOLDERS, both lists. The real ones are the chart of accounts (level 4,
- * asset group) and whatever a hotel's assets are set up as -- see the Asset
- * module. They are written out here so the form can be read; they are not a
- * list anything should ever save against.
- */
-const ACCOUNT_HEADS = [
-  { id: 'furniture', name: 'Furniture & Fixtures' },
-  { id: 'equipment', name: 'Equipment' },
-  { id: 'electrical', name: 'Electrical Fittings' },
-  { id: 'kitchen', name: 'Kitchen Equipment' },
-];
-
-const ITEMS = [
-  { id: 'chair', name: 'Office Chair' },
-  { id: 'desk', name: 'Office Desk' },
-  { id: 'bed', name: 'Bed (Queen)' },
-  { id: 'wardrobe', name: 'Wardrobe' },
-];
-
-const BANK_ACCOUNTS = [
-  { id: 'business', name: 'Business Bank Account' },
-  { id: 'current', name: 'Current Account' },
-];
-
-const SUPPLIERS = [
-  { id: 'abc', name: 'ABC Furniture' },
-  { id: 'xyz', name: 'XYZ Traders' },
-];
+const round2 = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
 type Line = {
   id: number;
-  itemId: string;
   itemName: string;
   quantity: string;
   rate: string;
@@ -105,41 +71,60 @@ const money = (value: number) => thousandSeparator(Number(value) || 0);
 
 const HotelAssetPurchase = () => {
   const [transactionDate, setTransactionDate] = useState(today());
-  const [accountHead, setAccountHead] = useState('furniture');
-  const [mode, setMode] = useState<Mode>(BANK_MODE);
 
-  const [line, setLine] = useState({ itemId: '', itemName: '', quantity: '', rate: '' });
+  const [accounts, setAccounts] = useState<{ id: number; name: string }[]>([]);
+  const [accountHead, setAccountHead] = useState('');
+
+  const [line, setLine] = useState({ itemName: '', quantity: '', rate: '' });
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [rows, setRows] = useState<Line[]>([]);
 
-  /**
-   * ⚠️ SEEDED, so the screen reads as a filled-in example rather than an empty
-   * grid. Two lines and a discount, exactly as in the picture this was drawn
-   * from. Reset clears them.
-   */
-  const [rows, setRows] = useState<Line[]>([
-    { id: 1, itemId: 'chair', itemName: 'Office Chair', quantity: '5', rate: '3000' },
-    { id: 2, itemId: 'desk', itemName: 'Office Desk', quantity: '1', rate: '10000' },
-  ]);
+  const [notes, setNotes] = useState('');
+  const [saving, setSaving] = useState(false);
+  /** The number the server gave the voucher it just wrote, if any. */
+  const [savedVoucher, setSavedVoucher] = useState('');
 
-  const [bankAccount, setBankAccount] = useState('business');
-  const [supplier, setSupplier] = useState('abc');
-  const [paidAmount, setPaidAmount] = useState('10000');
-  const [discount, setDiscount] = useState('1000');
-  const [notes, setNotes] = useState('Office furniture purchase');
+  useEffect(() => {
+    let cancelled = false;
+
+    httpService
+      .get(API_HOTEL_ASSET_PURCHASE_ACCOUNTS_URL)
+      .then((res: any) => {
+        if (cancelled) return;
+
+        const list = res?.data?.data?.data ?? res?.data?.data ?? [];
+
+        setAccounts(
+          Array.isArray(list)
+            ? list.map((row: any) => ({ id: Number(row.value), name: row.label }))
+            : [],
+        );
+      })
+      .catch(() => {
+        // The interceptor has already said what went wrong. An empty list is
+        // what the screen shows either way, and it cannot save without a head.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const subtotal = useMemo(
     () => rows.reduce((sum, row) => sum + Number(row.quantity || 0) * Number(row.rate || 0), 0),
     [rows],
   );
-  const netTotal = subtotal - Number(discount || 0);
-  const dueAmount = netTotal - Number(paidAmount || 0);
 
-  /** ⚠️ The whole point of the "design only" stage: nothing is wired, so say so. */
-  const notWired = (what: string) => toast.info(`${what} — not wired up yet.`);
+  /**
+   * ⚠️ THE VOUCHER PAYS THE WHOLE THING. There is no discount and no part
+   * payment yet, so net, paid and due are the subtotal and two zeros -- stated
+   * rather than left off, so the panel still says what it is going to do.
+   */
+  const netTotal = round2(subtotal);
 
   const addLine = () => {
-    if (!line.itemId) {
-      toast.error('Pick an item first');
+    if (!line.itemName.trim()) {
+      toast.error('What is being bought?');
       return;
     }
 
@@ -148,42 +133,94 @@ const HotelAssetPurchase = () => {
       return;
     }
 
+    if (!Number(line.rate)) {
+      toast.error('At what rate? A line worth nothing cannot be saved.');
+      return;
+    }
+
     if (editingId !== null) {
-      setRows((prev) =>
-        prev.map((row) => (row.id === editingId ? { ...row, ...line } : row)),
-      );
+      setRows((prev) => prev.map((row) => (row.id === editingId ? { ...row, ...line } : row)));
       setEditingId(null);
     } else {
       setRows((prev) => [...prev, { ...line, id: Date.now() }]);
     }
 
-    setLine({ itemId: '', itemName: '', quantity: '', rate: '' });
+    setLine({ itemName: '', quantity: '', rate: '' });
   };
 
   /** Back into the form to be corrected. The row stays put, greyed, so the total does not jump. */
   const editLine = (row: Line) => {
-    setLine({
-      itemId: row.itemId,
-      itemName: row.itemName,
-      quantity: row.quantity,
-      rate: row.rate,
-    });
+    setLine({ itemName: row.itemName, quantity: row.quantity, rate: row.rate });
     setEditingId(row.id);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setLine({ itemId: '', itemName: '', quantity: '', rate: '' });
+    setLine({ itemName: '', quantity: '', rate: '' });
   };
 
   const reset = () => {
     setRows([]);
-    setLine({ itemId: '', itemName: '', quantity: '', rate: '' });
+    setLine({ itemName: '', quantity: '', rate: '' });
     setEditingId(null);
-    setDiscount('0');
-    setPaidAmount('0');
     setNotes('');
+    setAccountHead('');
     setTransactionDate(today());
+  };
+
+  const save = async () => {
+    if (!accountHead) {
+      toast.error('Choose the asset head this is being bought against.');
+      return;
+    }
+
+    if (!rows.length) {
+      toast.error('Add at least one line before saving.');
+      return;
+    }
+
+    if (editingId !== null) {
+      toast.error('Finish the line you are correcting first — Save item, or cancel.');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const res = await httpService.post(`${API_HOTEL_ASSET_PURCHASE_URL}/store`, {
+        account: Number(accountHead),
+        vr_date: transactionDate,
+        note: notes || null,
+        rows: rows.map((row) => ({
+          // Rounded here rather than left to the server: the figure the clerk
+          // sees on the line is the figure that must be saved, and 3 × 33.33
+          // is not 99.99 in binary floating point.
+          amount: round2(Number(row.quantity) * Number(row.rate)),
+          remarks: row.itemName.trim() || null,
+        })),
+      });
+
+      // ⚠️ A refusal rides HTTP 200 with success:false, so the body has to be
+      // read rather than the status. Same shape every other screen here reads.
+      const body = res?.data;
+
+      if (!body?.success) {
+        toast.error(body?.message || 'The server refused that.');
+        return;
+      }
+
+      const saved = body?.data?.data ?? {};
+
+      setSavedVoucher(String(saved?.vr_no ?? ''));
+      toast.success(`Voucher ${saved?.vr_no} saved`);
+      reset();
+    } catch (error: any) {
+      if (!error?.toastReported) {
+        toast.error(error?.response?.data?.message || error?.message || 'Could not save');
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -201,15 +238,16 @@ const HotelAssetPurchase = () => {
         </div>
 
         <div className="flex gap-2">
+          {/* Both are for later, and say so rather than doing nothing. */}
           <ButtonLoading
-            onClick={() => notWired('List')}
+            onClick={() => toast.info('List — not built yet.')}
             label="List"
             variant="ghost"
             className="border border-stroke px-3 dark:border-strokedark"
             icon={<FiList size={16} />}
           />
           <ButtonLoading
-            onClick={() => notWired('Print')}
+            onClick={() => toast.info('Print — not built yet; the voucher prints from the ledger.')}
             label="Print"
             variant="ghost"
             className="border border-stroke px-3 dark:border-strokedark"
@@ -218,13 +256,32 @@ const HotelAssetPurchase = () => {
         </div>
       </div>
 
+      {/* The number the server gave the voucher just written. There is no list
+          screen yet, so this is the only place it can be read. */}
+      {savedVoucher ? (
+        <div className="mb-3 flex items-center justify-between gap-3 rounded border border-success bg-success/10 px-3 py-2">
+          <span className="text-sm font-medium text-black dark:text-white">
+            Saved — voucher <strong>{savedVoucher}</strong>. It is in the cash book and the ledger
+            like any other payment.
+          </span>
+          <button
+            type="button"
+            onClick={() => setSavedVoucher('')}
+            aria-label="Dismiss"
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400"
+          >
+            <FiX size={16} />
+          </button>
+        </div>
+      ) : null}
+
       {/* Who is being bought from, what head it lands on, and when. */}
       <div className="mb-3 grid grid-cols-1 gap-3 rounded border border-stroke p-3 md:grid-cols-3 dark:border-strokedark">
         <DropdownCommon
           id="accountHead"
           name="accountHead"
           label="Accounts Head *"
-          data={ACCOUNT_HEADS}
+          data={[{ id: '', name: 'Select an asset head' }, ...accounts]}
           value={accountHead}
           onChange={(e: any) => setAccountHead(e.target.value)}
           description="The asset head the money lands on. Not a stock purchase — nothing here moves a product's quantity."
@@ -240,9 +297,8 @@ const HotelAssetPurchase = () => {
           className="w-full"
         />
 
-        {/* ⚠️ Disabled on purpose, as in the picture: the number is the
-            server's to give, and a box somebody could type one into would be a
-            number the books do not have. */}
+        {/* ⚠️ Disabled on purpose: the number is the server's to give, and a box
+            somebody could type one into would be a number the books do not have. */}
         <InputElement
           id="voucherNo"
           name="voucherNo"
@@ -258,20 +314,14 @@ const HotelAssetPurchase = () => {
       <div className="mb-3 rounded border border-stroke p-3 dark:border-strokedark">
         <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-12">
           <div className="md:col-span-5">
-            <DropdownCommon
-              id="item"
-              name="item"
+            <InputElement
+              id="itemName"
+              name="itemName"
               label="Select Item"
-              data={ITEMS}
-              value={line.itemId}
-              onChange={(e: any) => {
-                const picked = ITEMS.find((item) => item.id === e.target.value);
-                setLine((prev) => ({
-                  ...prev,
-                  itemId: e.target.value,
-                  itemName: picked?.name ?? '',
-                }));
-              }}
+              placeholder="Office Chair"
+              value={line.itemName}
+              onChange={(e: any) => setLine((prev) => ({ ...prev, itemName: e.target.value }))}
+              description="What was bought. Written on the voucher line, since nothing here reaches a product list."
             />
           </div>
 
@@ -343,7 +393,7 @@ const HotelAssetPurchase = () => {
                   <td className="px-2 py-2 text-right">{row.quantity}</td>
                   <td className="px-2 py-2 text-right">{money(Number(row.rate))}</td>
                   <td className="px-2 py-2 text-right font-medium">
-                    {money(Number(row.quantity) * Number(row.rate))}
+                    {money(round2(Number(row.quantity) * Number(row.rate)))}
                   </td>
                   <td className="px-2 py-2">
                     <div className="flex items-center justify-center gap-3">
@@ -375,8 +425,11 @@ const HotelAssetPurchase = () => {
 
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-2 py-3 text-center text-xs text-gray-500 dark:text-gray-400">
-                    Nothing added yet — pick an item above and press Add Item.
+                  <td
+                    colSpan={6}
+                    className="px-2 py-3 text-center text-xs text-gray-500 dark:text-gray-400"
+                  >
+                    Nothing added yet — name what was bought above and press Add Item.
                   </td>
                 </tr>
               ) : null}
@@ -392,20 +445,26 @@ const HotelAssetPurchase = () => {
             Payment Details
           </h2>
 
-          {/* ⚠️ Three vouchers, not three payment methods — see the note at the
-              top of this file. Which one is picked decides what the ledger
-              holds, so the choice is not a display preference. */}
-          <div className="mb-3 grid grid-cols-3 overflow-hidden rounded border border-stroke dark:border-strokedark">
-            {MODES.map((item) => (
+          {/* ⚠️ Three vouchers, not three payment methods. Bank and credit are
+              DISABLED rather than merely unbuilt: pressing one and getting a
+              cash voucher anyway is the one thing this screen must not do. */}
+          <div className="mb-2 grid grid-cols-3 overflow-hidden rounded border border-stroke dark:border-strokedark">
+            <span
+              className={`${FIELD_HEIGHT} inline-flex items-center justify-center gap-2 bg-primary text-sm font-medium text-white`}
+            >
+              <FiDollarSign size={16} />
+              Cash
+            </span>
+            {[
+              { label: 'Bank', icon: <FaUniversity size={15} /> },
+              { label: 'Credit', icon: <FiCreditCard size={16} /> },
+            ].map((item) => (
               <button
-                key={item.value}
+                key={item.label}
                 type="button"
-                onClick={() => setMode(item.value)}
-                className={`${FIELD_HEIGHT} inline-flex items-center justify-center gap-2 text-sm font-medium transition-colors ${
-                  mode === item.value
-                    ? 'bg-primary text-white'
-                    : 'text-body hover:bg-gray-100 dark:text-bodydark dark:hover:bg-meta-4'
-                }`}
+                disabled
+                title={`${item.label} is the next step — not built yet.`}
+                className={`${FIELD_HEIGHT} inline-flex cursor-not-allowed items-center justify-center gap-2 text-sm font-medium text-gray-400 opacity-60 dark:text-gray-500`}
               >
                 {item.icon}
                 {item.label}
@@ -413,43 +472,23 @@ const HotelAssetPurchase = () => {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {/* Only a bank payment has an account to name. */}
-            {mode === BANK_MODE ? (
-              <DropdownCommon
-                id="bankAccount"
-                name="bankAccount"
-                label="Bank Account"
-                data={BANK_ACCOUNTS}
-                value={bankAccount}
-                onChange={(e: any) => setBankAccount(e.target.value)}
-              />
-            ) : null}
+          <p className="mb-3 text-xs leading-snug text-gray-500 dark:text-gray-400">
+            Paid out of cash, in full. Bank, credit and part payment come next — a credit purchase
+            moves no money at all and is a journal, not a setting on this one.
+          </p>
 
-            <DropdownCommon
-              id="supplier"
-              name="supplier"
-              label={mode === CREDIT_MODE ? 'Seller / Supplier *' : 'Seller / Supplier'}
-              data={SUPPLIERS}
-              value={supplier}
-              onChange={(e: any) => setSupplier(e.target.value)}
-              description="Required when an outstanding balance remains."
+          <div className="grid grid-cols-1 gap-3">
+            <InputElement
+              id="paidAmount"
+              name="paidAmount"
+              label="Payment Amount (Tk.)"
+              value={money(netTotal)}
+              disabled
+              onChange={() => undefined}
+              description="The whole of it. Part payment arrives with credit, and is what leaves a balance owing to the seller."
             />
 
-            {mode !== CREDIT_MODE ? (
-              <InputElement
-                id="paidAmount"
-                name="paidAmount"
-                type="number"
-                min={0}
-                label="Payment Amount (Tk.)"
-                placeholder="0.00"
-                value={paidAmount}
-                onChange={(e: any) => setPaidAmount(e.target.value)}
-              />
-            ) : null}
-
-            <div className={mode === BANK_MODE ? 'md:col-span-2' : ''}>
+            <div>
               <label htmlFor="notes" className={FIELD_LABEL}>
                 Notes
               </label>
@@ -459,7 +498,7 @@ const HotelAssetPurchase = () => {
                 rows={3}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Optional"
+                placeholder="Optional note for the whole voucher"
                 className={`${FIELD_TEXTAREA} w-full px-3 py-2`}
               />
             </div>
@@ -479,15 +518,14 @@ const HotelAssetPurchase = () => {
             </span>
           </div>
 
+          {/* ⚠️ No discount yet, and it is not merely unbuilt: a discount is a
+              third ledger leg, and where it goes is a bookkeeping decision
+              nobody has made. Zero, and not typeable, until it is. */}
           <div className="flex items-center justify-between py-1.5">
             <span className="text-sm text-gray-500 dark:text-gray-400">Discount Amount (Tk.)</span>
-            <input
-              type="number"
-              min={0}
-              value={discount}
-              onChange={(e) => setDiscount(e.target.value)}
-              className={`${FIELD_HEIGHT} w-32 rounded border border-[rgb(var(--c-border-strong))] bg-white px-2 text-right text-gray-700 outline-none dark:bg-boxdark dark:text-white`}
-            />
+            <span className="text-sm text-gray-400 dark:text-gray-500">
+              0 — not built yet
+            </span>
           </div>
 
           <div className="my-1 border-t border-stroke dark:border-strokedark" />
@@ -504,14 +542,14 @@ const HotelAssetPurchase = () => {
           <div className="flex items-center justify-between py-1.5">
             <span className="text-sm text-gray-500 dark:text-gray-400">Paid Amount (Tk.)</span>
             <span className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
-              {money(Number(paidAmount || 0))}
+              {money(netTotal)}
             </span>
           </div>
 
           <div className="flex items-center justify-between py-1.5">
             <span className="text-sm text-gray-500 dark:text-gray-400">Due Amount (Tk.)</span>
             <span className="font-semibold text-amber-600 dark:text-amber-400">
-              {money(dueAmount)}
+              {money(0)}
             </span>
           </div>
         </div>
@@ -526,9 +564,11 @@ const HotelAssetPurchase = () => {
           icon={<FiRefreshCcw size={16} />}
         />
         <ButtonLoading
-          onClick={() => notWired('Save Transaction')}
-          label="Save Transaction"
+          onClick={save}
+          buttonLoading={saving}
+          label={saving ? 'Saving...' : 'Save Transaction'}
           variant="primary"
+          disabled={saving}
           className="px-4"
           icon={<FiSave size={16} />}
         />
