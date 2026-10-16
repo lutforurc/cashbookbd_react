@@ -379,6 +379,7 @@ export const API_REPORT_BANK_INFORMATION_DATA_URL = `${API_BASE_URL}/reports/ban
 export const API_REPORT_CONNECTED_MEMBER_DATA_URL = `${API_BASE_URL}/reports/connected-member-data`;
 // Trial Balance Group url
 export const API_REPORT_TRIAL_BALANCE_LEVEL3_URL = `${API_BASE_URL}/reports/trialbalance-level3`;
+export const API_REPORT_TRIAL_BALANCE_WRITE_OFF_URL = `${API_BASE_URL}/reports/trialbalance-level3-write-off`;
 // Trial Balance Details url
 export const API_REPORT_TRIAL_BALANCE_LEVEL4_URL = `${API_BASE_URL}/reports/trialbalance-level4`;
 // Expense Report url

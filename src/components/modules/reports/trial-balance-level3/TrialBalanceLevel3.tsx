@@ -18,7 +18,10 @@ import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import Table from "../../../utils/others/Table";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import httpService from "../../../services/httpService";
-import { API_REPORT_TRIAL_BALANCE_LEVEL4_URL } from "../../../services/apiRoutes";
+import {
+  API_REPORT_TRIAL_BALANCE_LEVEL4_URL,
+  API_REPORT_TRIAL_BALANCE_WRITE_OFF_URL,
+} from "../../../services/apiRoutes";
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchTrialBalanceLevel3 } from "./trialBalanceLevel3Slice";
@@ -239,6 +242,8 @@ const TrialBalanceLevel3 = (user: any) => {
   const [level4Rows, setLevel4Rows] = useState<TrialBalanceLevel4Row[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+  // Write-offs of the loaded period at cost, for note 6 (0 = no note).
+  const [writeOff, setWriteOff] = useState(0);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -494,8 +499,9 @@ const TrialBalanceLevel3 = (user: any) => {
         branchName,
         startDate: startDate ? dayjs(startDate).format("DD/MM/YYYY") : undefined,
         endDate: endDate ? dayjs(endDate).format("DD/MM/YYYY") : undefined,
+        productOut: writeOff,
       }),
-    [branchName, startDate, endDate],
+    [branchName, startDate, endDate, writeOff],
   );
 
   const handleBranchChange = (e: any) => {
@@ -511,12 +517,17 @@ const TrialBalanceLevel3 = (user: any) => {
     setExpandedL3Id(null);
     setLevel4Rows([]);
     setDetailError(null);
+    setWriteOff(0);
+
+    const params = {
+      branch_id: Number(branchId),
+      start_date: dayjs(startDate).format("YYYY-MM-DD"),
+      end_date: dayjs(endDate).format("YYYY-MM-DD"),
+    };
 
     const action = await dispatch(
       fetchTrialBalanceLevel3({
-        branch_id: Number(branchId),
-        start_date: dayjs(startDate).format("YYYY-MM-DD"),
-        end_date: dayjs(endDate).format("YYYY-MM-DD"),
+        ...params,
         with_children: detailed ? 1 : undefined,
       }) as any,
     );
@@ -529,6 +540,15 @@ const TrialBalanceLevel3 = (user: any) => {
     }
 
     setFilterOpen(false);
+
+    // Note 6's figure. A failure only leaves the note out -- the report itself
+    // has already loaded and does not depend on it.
+    try {
+      const res = await httpService.get(API_REPORT_TRIAL_BALANCE_WRITE_OFF_URL, { params });
+      setWriteOff(Number(res?.data?.data?.data?.product_out) || 0);
+    } catch {
+      setWriteOff(0);
+    }
   };
 
   const handleLevel3RowClick = async (row: TrialBalanceRow) => {
@@ -1218,6 +1238,7 @@ const TrialBalanceLevel3 = (user: any) => {
           branchName={branchName}
           startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"}
           endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
+          productOut={writeOff}
           rows={printRows}
           rowsPerPage={Number(perPage)}
           fontSize={Number(fontSize)}

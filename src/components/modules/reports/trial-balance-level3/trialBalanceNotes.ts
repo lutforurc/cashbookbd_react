@@ -1,4 +1,5 @@
 import type { ReportNote } from "../../../utils/utils-functions/ReportNotes";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 /**
  * Notes to the Trial Balance (Group).
@@ -10,22 +11,29 @@ import type { ReportNote } from "../../../utils/utils-functions/ReportNotes";
  * instead of being left to add them into the Grand Total themselves.
  *
  * Numbering is fixed: [1] the heading, [2] the Movement column, [3] the
- * Description column (each row is a group), [4] and [5] the Grand Total.
+ * Description column (each row is a group), [4] and [5] the Grand Total, [6]
+ * the inventory loss -- written only when the period wrote goods off, and
+ * last, so leaving it out moves no other number.
  *
  * Nothing here is a figure of its own. The amounts a note names are the rows
- * above it, so no total can pick a note up a second time.
+ * above it, so no total can pick a note up a second time -- note 6's amount is
+ * in no row at all, which is the point it makes.
  */
 type Context = {
   branchName?: string;
   startDate?: string;
   endDate?: string;
+  /** Write-offs of the period at cost (reports/trialbalance-level3-write-off). */
+  productOut?: number;
 };
 
 export const buildTrialBalanceNotes = ({
   branchName,
   startDate,
   endDate,
+  productOut,
 }: Context = {}): ReportNote[] => {
+  const inventoryLoss = Number(productOut) || 0;
   const periodText =
     startDate && endDate && startDate !== "-" && endDate !== "-"
       ? `${startDate} to ${endDate}`
@@ -82,5 +90,19 @@ export const buildTrialBalanceNotes = ({
         "difference should be investigated in the underlying postings, opening " +
         "balances, report filters and calculation logic.",
     },
+    ...(inventoryLoss > 0
+      ? [
+          {
+            n: 6,
+            title: "Inventory loss — damaged or lost goods",
+            body:
+              `Goods written off as damaged or lost in this period are valued at ${thousandSeparator(inventoryLoss)}, ` +
+              "at the cost recorded on each write-off. A write-off moves stock only and makes no " +
+              "ledger posting, so it is in no balance on this Trial Balance. Its effect is in the " +
+              "inventory valuation and the cost of goods sold (note 4), and it is not deducted " +
+              "again as a separate expense.",
+          },
+        ]
+      : []),
   ];
 };

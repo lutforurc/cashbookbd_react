@@ -30,6 +30,8 @@ type TrialBalanceLevel3PrintProps = {
   endDate: string;
   fontSize?: number;
   rowsPerPage?: number;
+  /** Write-offs of the period, for note 6. */
+  productOut?: number;
   rows: TrialBalancePrintRow[];
   totals: {
     openingDebit: number;
@@ -101,6 +103,7 @@ const TrialBalanceLevel3Print = React.forwardRef<
   endDate,
   fontSize,
   rowsPerPage = 20,
+  productOut,
   rows,
   totals,
 }, ref) => {
@@ -114,7 +117,7 @@ const TrialBalanceLevel3Print = React.forwardRef<
   // The notes describe the paper in hand and nothing has to be passed in
   // beside it: whether ledgers are listed under their groups is the detailed
   // report's business, and the note says where to find them either way.
-  const notes = buildTrialBalanceNotes({ branchName, startDate, endDate });
+  const notes = buildTrialBalanceNotes({ branchName, startDate, endDate, productOut });
   const totalPages = pageCount + (notes.length ? 1 : 0);
 
   // Numbered over the whole list, once, so the serial a row carries does not
