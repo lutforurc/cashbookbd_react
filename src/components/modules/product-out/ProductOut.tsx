@@ -3,11 +3,9 @@ import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import dayjs from 'dayjs';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
-import InputDatePicker from '../../utils/fields/DatePicker';
 import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionItemsDropdown';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import WarehouseDropdown from '../../utils/utils-functions/WarehouseDropdown';
@@ -16,7 +14,6 @@ import httpService from '../../services/httpService';
 import { API_PRODUCT_OUT_PARTY_URL } from '../../services/apiRoutes';
 import { Select } from '../../utils/fields/FormControls';
 import { getDdlWarehouse } from '../warehouse/ddlWarehouseSlider';
-import { trxDateToDate, trxDateToIso } from '../../utils/utils-functions/transactionDate';
 import { getProductOutReasons, resolveReasonId, storeProductOut } from './productOutSlice';
 import ProductOutList from './ProductOutList';
 
@@ -38,6 +35,9 @@ const emptyLine = { productId: '', productName: '', unit: '', quantity: '', note
  *
  * Saving takes the stock off the shelf (owner, 2026-10-15); approval is a
  * separate sign-off in the Approval Center and no longer moves stock.
+ *
+ * No Date field: the slip is always dated on the branch's transaction date,
+ * which the server reads itself (owner, 2026-10-16).
  */
 const ProductOut = () => {
   const dispatch = useDispatch<any>();
@@ -45,25 +45,14 @@ const ProductOut = () => {
   const warehouseState = useSelector((s: any) => s.activeWarehouse);
   const warehouseOptions = Array.isArray(warehouseState?.data) ? warehouseState.data : [];
   const reasons: any[] = Array.isArray(productOut?.reasons) ? productOut.reasons : [];
-  const settings = useSelector((s: any) => s.settings);
-
-  // The slip posts on the branch's open transaction date, not today: the books
-  // stay on trx_dt until day close advances it. Today only while settings loads.
-  const trxDt = settings?.data?.trx_dt;
-  const defaultOutIso = () => trxDateToIso(trxDt) || dayjs().format('YYYY-MM-DD');
-  const defaultOutDate = () => trxDateToDate(trxDt) ?? dayjs().toDate();
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [listRefreshKey, setListRefreshKey] = useState(0);
-  const [outDate, setOutDate] = useState<Date | null>(defaultOutDate);
-  // Once the clerk picks a date, stop overwriting it when settings refreshes.
-  const [outDateTouched, setOutDateTouched] = useState(false);
   const [isUpdatingLine, setIsUpdatingLine] = useState(false);
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
   const [lineItem, setLineItem] = useState({ ...emptyLine });
   const [party, setParty] = useState<Option | null>(null);
   const [formData, setFormData] = useState({
-    outDate: defaultOutIso(),
     warehouseId: '',
     reasonId: '',
     note: '',
@@ -74,15 +63,6 @@ const ProductOut = () => {
     dispatch(getDdlWarehouse());
     dispatch(getProductOutReasons());
   }, [dispatch]);
-
-  // trx_dt can arrive after first render; adopt it until the clerk picks a date.
-  useEffect(() => {
-    if (outDateTouched) return;
-    const iso = trxDateToIso(trxDt);
-    if (!iso) return;
-    setOutDate(trxDateToDate(trxDt));
-    setFormData((prev) => (prev.outDate === iso ? prev : { ...prev, outDate: iso }));
-  }, [trxDt, outDateTouched]);
 
   // Open a new slip on the shop's own default reason, so the Reason field is
   // never blank. It only fills an empty field -- a reason already chosen (an
@@ -121,15 +101,6 @@ const ProductOut = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleOutDateChange = (date: Date | null) => {
-    setOutDateTouched(true);
-    setOutDate(date);
-    setFormData((prev) => ({
-      ...prev,
-      outDate: date ? dayjs(date).format('YYYY-MM-DD') : '',
-    }));
-  };
-
   const handleLineItemChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setLineItem((prev) => ({ ...prev, [name]: value }));
@@ -156,14 +127,11 @@ const ProductOut = () => {
 
   const resetForm = () => {
     setFormData({
-      outDate: defaultOutIso(),
       warehouseId: '',
       reasonId: resolveReasonId('', reasons),
       note: '',
       items: [],
     });
-    setOutDate(defaultOutDate());
-    setOutDateTouched(false);
     setParty(null);
     clearLineForm();
   };
@@ -242,7 +210,6 @@ const ProductOut = () => {
   };
 
   const buildPayload = (allowNegative: boolean) => ({
-    out_date: formData.outDate || null,
     from_warehouse_id: formData.warehouseId ? Number(formData.warehouseId) : null,
     reason_id: Number(formData.reasonId),
     party_id: party ? Number(party.value) : null,
@@ -315,15 +282,6 @@ const ProductOut = () => {
       <HelmetTitle title="Product Out" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-2 mb-4">
-        <InputDatePicker
-          id="outDate"
-          name="outDate"
-          label="Date"
-          selectedDate={outDate}
-          setSelectedDate={setOutDate}
-          setCurrentDate={handleOutDateChange}
-          className="w-full "
-        />
         <div>
           <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Reason</label>
           <Select
