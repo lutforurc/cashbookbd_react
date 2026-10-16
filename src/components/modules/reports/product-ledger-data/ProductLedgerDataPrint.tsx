@@ -26,6 +26,7 @@ export type ProductLedgerPrintRow = {
   sales_qty?: number | string | null;
   purchase_return?: number | string | null;
   purchaseReturn?: number | string | null;
+  product_out?: number | string | null;
   stock?: number | string | null;
   balance?: number | string | null;
   closing_stock?: number | string | null;
@@ -104,8 +105,9 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
         const salesReturn = toNumber(getValue(row, ['sales_return', 'salesReturn', 'sale_return'], 0));
         const sales = toNumber(getValue(row, ['sales', 'sale', 'sales_qty'], 0));
         const purchaseReturn = toNumber(getValue(row, ['purchase_return', 'purchaseReturn'], 0));
+        const productOut = toNumber(row?.product_out);
 
-        runningStock += purchase + salesReturn - sales - purchaseReturn;
+        runningStock += purchase + salesReturn - sales - purchaseReturn - productOut;
 
         return {
           ...row,
@@ -125,6 +127,7 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
         sales_return: '-',
         sales: '-',
         purchase_return: '-',
+        product_out: '-',
         stock: getValue(openingRow || {}, ['stock', 'balance', 'opening', 'opening_qty'], '-'),
       },
       ...detailRows.map((row) => ({
@@ -137,6 +140,7 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
         sales_return: getValue(row, ['sales_return', 'salesReturn', 'sale_return'], '-'),
         sales: getValue(row, ['sales', 'sale', 'sales_qty'], '-'),
         purchase_return: getValue(row, ['purchase_return', 'purchaseReturn'], '-'),
+        product_out: getValue(row, ['product_out'], '-'),
         stock: row.running_stock,
       })),
     ];
@@ -147,6 +151,7 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
       totalSalesReturn: detailRows.reduce((sum, row) => sum + toNumber(getValue(row, ['sales_return', 'salesReturn', 'sale_return'], 0)), 0),
       totalSales: detailRows.reduce((sum, row) => sum + toNumber(getValue(row, ['sales', 'sale', 'sales_qty'], 0)), 0),
       totalPurchaseReturn: detailRows.reduce((sum, row) => sum + toNumber(getValue(row, ['purchase_return', 'purchaseReturn'], 0)), 0),
+      totalProductOut: detailRows.reduce((sum, row) => sum + toNumber(row?.product_out), 0),
     };
 
     return (
@@ -198,6 +203,9 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
                     PURCHASE RETURN
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
+                    PRODUCT OUT
+                  </th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
                     STOCK
                   </th>
                 </tr>
@@ -232,13 +240,16 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
                         {formatQty(row?.purchase_return)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                        {formatQty(row?.product_out)}
+                      </td>
+                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                         {formatQty(row?.stock)}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={9} className="border border-gray-900 px-3 py-6 text-center text-gray-500">
+                    <td colSpan={10} className="border border-gray-900 px-3 py-6 text-center text-gray-500">
                       No data found
                     </td>
                   </tr>
@@ -284,6 +295,12 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
                       className="border border-gray-900 px-2 py-2 text-right font-bold"
                     >
                       {summary.totalPurchaseReturn > 0 ? thousandSeparator(summary.totalPurchaseReturn) : '-'}
+                    </td>
+                    <td
+                      style={{ fontSize: fs }}
+                      className="border border-gray-900 px-2 py-2 text-right font-bold"
+                    >
+                      {summary.totalProductOut > 0 ? thousandSeparator(summary.totalProductOut) : '-'}
                     </td>
                     <td
                       style={{ fontSize: fs }}

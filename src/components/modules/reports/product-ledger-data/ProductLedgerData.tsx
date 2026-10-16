@@ -169,8 +169,9 @@ const ProductLedgerData = (user: any) => {
         const salesReturn = numberOrZero(aliasValue(row, ['sales_return', 'salesReturn', 'sale_return'], 0));
         const sales = numberOrZero(aliasValue(row, ['sales', 'sale', 'sales_qty'], 0));
         const purchaseReturn = numberOrZero(aliasValue(row, ['purchase_return', 'purchaseReturn'], 0));
+        const productOut = numberOrZero(row?.product_out);
 
-        runningStock += purchase + salesReturn - sales - purchaseReturn;
+        runningStock += purchase + salesReturn - sales - purchaseReturn - productOut;
 
         return {
           ...row,
@@ -183,6 +184,7 @@ const ProductLedgerData = (user: any) => {
     const totalSalesReturn = details.reduce((sum, row) => sum + numberOrZero(row?.sales_return), 0);
     const totalSales = details.reduce((sum, row) => sum + numberOrZero(row?.sales), 0);
     const totalPurchaseReturn = details.reduce((sum, row) => sum + numberOrZero(row?.purchase_return), 0);
+    const totalProductOut = details.reduce((sum, row) => sum + numberOrZero(row?.product_out), 0);
 
     return {
       opening: openingRow ?? null,
@@ -192,6 +194,7 @@ const ProductLedgerData = (user: any) => {
         salesReturn: totalSalesReturn,
         sales: totalSales,
         purchaseReturn: totalPurchaseReturn,
+        productOut: totalProductOut,
       },
     };
   }, [tableData]);
@@ -276,6 +279,7 @@ const ProductLedgerData = (user: any) => {
       sales_return: '-',
       sales: '-',
       purchase_return: '-',
+      product_out: '-',
       stock: aliasValue(reportRows.opening, ['stock', 'balance', 'opening'], '-'),
     };
 
@@ -375,6 +379,13 @@ const ProductLedgerData = (user: any) => {
       ),
     },
     {
+      key: 'product_out',
+      header: 'Product Out',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => <div>{formatCellNumber(row?.product_out)}</div>,
+    },
+    {
       key: 'stock',
       header: 'Stock',
       headerClass: 'text-right',
@@ -409,6 +420,10 @@ const ProductLedgerData = (user: any) => {
           },
           {
             label: formatCellNumber(reportRows.totals.purchaseReturn > 0 ? reportRows.totals.purchaseReturn : '-'),
+            className: 'text-right',
+          },
+          {
+            label: formatCellNumber(reportRows.totals.productOut > 0 ? reportRows.totals.productOut : '-'),
             className: 'text-right',
           },
           {
