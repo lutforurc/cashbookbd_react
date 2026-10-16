@@ -20,7 +20,8 @@
       "Bash(gh api *)",
       "Bash(netstat -ano)",
       "Read(//f/All_Database/www/cashbook_api/app/Helpers/**)",
-      "Read(//f/All_Database/www/cashbook_api/app/Repositories/**)"
+      "Read(//f/All_Database/www/cashbook_api/app/Repositories/**)",
+      "Read(//f/All_Database/www/cashbook_api/app/**)"
     ],
     "additionalDirectories": [
       "F:\\All_Database\\www\\cashbook_api\\config",
