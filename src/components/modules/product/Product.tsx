@@ -12,7 +12,7 @@ import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import InputElement from '../../utils/fields/InputElement';
 import PrintFontInput from '../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../utils/fields/PrintRowsInput';
@@ -93,14 +93,24 @@ const Product = (user: any) => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [search, setSearchValue] = useState('');
   const [appliedSearch, setAppliedSearch] = useState(''); // ✅ Search চাপলে apply হবে
   const [searchRun, setSearchRun] = useState(0); // ✅ একই শব্দে আবার Enter চাপলেও একবার request যাবে
 
-  const [page, setPage] = useState(1);
+  // ⚠️ The page rides the address bar (`?page=5`), not a useState. An edit
+  // unmounts this list and comes back to it, and local state would start over
+  // at page one -- dumping the clerk on a page they were not reading. Held
+  // here, the number survives the trip, the browser's Back button and a
+  // refresh. Same reading as BookingsScreen.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Math.max(1, Number(searchParams.get('page')) || 1);
+
+  const goToPage = (p: number) =>
+    setSearchParams(p > 1 ? { page: String(p) } : {}, { replace: true });
+
   const [perPage, setPerPage] = useState<number>(10);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
   const [tableData, setTableData] = useState<any[]>([]);
@@ -223,8 +233,7 @@ const Product = (user: any) => {
   const submitSearch = () => {
     setTableData([]);
     setTotalPages(0);
-    setPage(1);
-    setCurrentPage(1);
+    goToPage(1);
     setAppliedSearch(search);
     // An Enter on the word already applied changes no state, so the fetch
     // effect above would stay quiet; this is what still asks it once.
@@ -241,8 +250,7 @@ const Product = (user: any) => {
   };
 
   const handlePageChange = (p: number) => {
-    setPage(p);
-    setCurrentPage(p);
+    goToPage(p);
   };
 
   const handleProductInputChange = (
@@ -380,7 +388,13 @@ const Product = (user: any) => {
 
   const handleProductEdit = (row: any) => {
     if (isGroupRow(row)) return;
-    navigate(`/product/edit/${row.product_id}`);
+
+    // The row being edited is on page five, and saving must put the clerk back
+    // there. The list hands its own address (page and all) to the edit screen,
+    // which returns to it -- see EditProduct's `backTo`.
+    navigate(`/product/edit/${row.product_id}`, {
+      state: { from: `${location.pathname}${location.search}` },
+    });
   };
 
   const handleOpeningDeleteConfirm = async () => {
@@ -449,23 +463,33 @@ const Product = (user: any) => {
     );
   };
 
+  /* ⚠️ A "change" to the value already chosen is not a change. These dropdowns
+     fire onChange once on their own as the lists arrive, and with the page
+     held in the address bar that spurious call stripped `?page=5` a second
+     after the list opened -- the clerk's page 5 was gone before they could
+     click anything. Compared as text, so '' and null are the same nothing. */
+  const filterChanged = (next: any, current: any) =>
+    String(next ?? '') !== String(current ?? '');
+
   const handleCategoryChange = (selectedOption: any) => {
-    setCategoryId(selectedOption ? selectedOption.value : null);
-    setPage(1);
-    setCurrentPage(1);
+    const next = selectedOption?.value ?? null;
+    if (!filterChanged(next, categoryId)) return;
+    setCategoryId(next);
+    goToPage(1);
   };
 
   const handleBrandChange = (selectedOption: any) => {
-    const selectedId = selectedOption?.value ?? null;
-    setBrandId(selectedId);
-    setPage(1);
-    setCurrentPage(1);
+    const next = selectedOption?.value ?? null;
+    if (!filterChanged(next, brandId)) return;
+    setBrandId(next);
+    goToPage(1);
   };
 
   const handleGroupChange = (selectedOption: any) => {
-    setGroupId(selectedOption?.value ?? null);
-    setPage(1);
-    setCurrentPage(1);
+    const next = selectedOption?.value ?? null;
+    if (!filterChanged(next, groupId)) return;
+    setGroupId(next);
+    goToPage(1);
   };
 
   /* ================= TABLE ================= */
@@ -691,7 +715,12 @@ const Product = (user: any) => {
       },
       ...(openingOn ? serialQtyRateColumns : priceActionColumns),
     ];
-  }, [settings, editedRows, openingDeleteRow, openingDeleteLoading, canDeleteVoucher, openingOn]);
+    // ⚠️ `location` belongs here. The Action column closes over
+    // handleProductEdit, which reads the list's own address -- and this memo
+    // does not rebuild when the page changes, so without it the pencil kept
+    // handing over the address from page one and the edit came back to page
+    // one. Cost me a walk-through to see it.
+  }, [settings, editedRows, openingDeleteRow, openingDeleteLoading, canDeleteVoucher, openingOn, location]);
 
   /* ================= RENDER ================= */
   const optionsWithAll = [
@@ -792,9 +821,9 @@ const Product = (user: any) => {
                 onChange={(e: any) => {
                   const v = Number(e.target.value); // ✅ string -> number
                   const next = Number.isFinite(v) ? v : 10;
+                  if (next === perPage) return; // its own on-mount call, see filterChanged
                   setPerPage(next);
-                  setPage(1);
-                  setCurrentPage(1);
+                  goToPage(1);
                 }}
               />
             </div>
@@ -860,7 +889,7 @@ const Product = (user: any) => {
           noDataMessage={product.errors ? product.errors : 'No products found.'}
         />
         {totalPages > 1 && (
-          <Pagination currentPage={currentPage} totalPages={totalPages} handlePageChange={handlePageChange} />
+          <Pagination currentPage={page} totalPages={totalPages} handlePageChange={handlePageChange} />
         )}
 
         <div className="hidden">

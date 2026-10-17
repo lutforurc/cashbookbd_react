@@ -11,7 +11,7 @@ import Loader from '../../../common/Loader';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { editProduct, storeProduct, updateProduct } from './productSlice';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { warrantyType } from '../../utils/fields/DataConstant';
 import { FiArrowLeft, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
@@ -113,6 +113,14 @@ const AddProduct = () => {
   // Whether the quantity is being counted rather than typed.
   const hasOpeningSerials = String(formData.opening_serial_no ?? '').trim() !== '';
   const { id } = useParams();
+  const location = useLocation();
+
+  // This one component is both Add and Edit, and the list that opened an edit
+  // hands over its own address -- page five included. Saving must land there,
+  // not on page one. A hand-typed edit URL carries no such state and falls back
+  // to the plain list.
+  const backTo =
+    (location.state as { from?: string } | null)?.from ?? '/product/product-list';
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
   const productGroupData = useSelector((state) => state.productGroup);
@@ -194,7 +202,7 @@ const AddProduct = () => {
           toast.success(d?.message || 'Product updated successfully');
           setTimeout(() => {
             setFormData(initialProduct);
-            navigate('/product/product-list');
+            navigate(backTo);
           }, 1000);
         } else {
           toast.error(d?.message || 'Product could not be updated.');
@@ -842,7 +850,7 @@ const AddProduct = () => {
           />
         )}
         <ButtonLoading
-          onClick={() => navigate('/product/product-list')}
+          onClick={() => navigate(backTo)}
           label="Go to back"
           className="whitespace-nowrap mr-2 py-1.5"
           icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
