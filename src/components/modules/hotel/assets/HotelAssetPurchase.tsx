@@ -436,7 +436,7 @@ const HotelAssetPurchase = () => {
           data={[{ id: '', name: 'Select an asset head' }, ...categories]}
           value={accountHead}
           onChange={(e: any) => setAccountHead(e.target.value)}
-          description="Assets → Category → List. The voucher debits the head that category nominates — nothing here moves a product's quantity."
+          // description="Assets → Category → List. The voucher debits the head that category nominates — nothing here moves a product's quantity."
         />
 
         <InputDatePicker
@@ -503,7 +503,7 @@ const HotelAssetPurchase = () => {
                   rate: picked ? (picked.last_rate > 0 ? String(picked.last_rate) : '') : '',
                 }));
               }}
-              description="The item decides where the cost lands — see its category above."
+              // description="The item decides where the cost lands — see its category above."
             />
           </div>
 

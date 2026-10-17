@@ -2603,7 +2603,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               ⚠️ The screen is drawn, not wired. */}
                           <li style={subSlot('hotel', 'hotel_asset_purchase')}>
                             <NavLink to={routes.hotel_asset_purchase} className={subMenuLinkClass}>
-                              Assets Purchase
+                              Accounts Transaction
                             </NavLink>
                           </li>
 
