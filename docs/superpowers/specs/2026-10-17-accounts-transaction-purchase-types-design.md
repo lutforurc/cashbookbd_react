@@ -1,6 +1,6 @@
 # Accounts Transaction — Purchase Types: Design
 
-**Status:** concept agreed 2026-10-17. **Phase 1 (Asset only) is BUILT, uncommitted** — an `asset_items` catalogue, the head resolved per line from the item's category, and one `asset_registers` row per unit on save. Inventory lines (§3, §9) are not built. Table names, columns and endpoints for Phase 2 remain undecided — see "Deferred".
+**Status:** concept agreed 2026-10-17. **Phase 1 (Asset) PUSHED** (React `36044207`/`a038e3d7`, API `64d3c6ca`); **Cash/Bank/Credit PUSHED** (React `c030b63d`, API `0ddada5e`). **Phase 2 BUILT 2026-10-17, uncommitted — but as EXPENSE items, not stock.** See "What was built" at the end; it overrides §3, §5 (inventory source) and §6 where they disagree.
 
 **Extends:** `docs/superpowers/specs/2026-10-16-hotel-asset-purchase-design.md` (the single-purpose asset-purchase screen).
 
@@ -159,3 +159,26 @@ The asset-purchase screen built on 2026-10-16 becomes one half of this screen:
 ## 10. Deferred (explicitly not decided here)
 
 Table names, columns, indexes, migrations/patch SQL, endpoints, permissions, screen layout and component choices. The owner asked for the idea first; the implementation plan comes after the decisions in §9.
+
+---
+
+## 11. What was built (2026-10-17) — supersedes §3, §5, §6, §9 where they differ
+
+**Owner decisions in this round:**
+- "Inventory" lines are **direct expense, not stock.** Nothing reaches `inventory_details`, FIFO or the Balance Sheet; the P&L carries the whole cost on the purchase date. The quantity is still kept, and an **issue** screen may come later.
+- **Credit** credits the **supplier's own head** (not one A/c Payable), and is numbered **`9-` Credit Purchase** (journal, `transaction_type` 5) like every ordinary credit purchase — `PurchaseVoucherKind`'s rule. Cash and Bank are `4-`.
+- **Bank** asks for a Bank Account head (level 3 = 2) and an optional cheque no (`main_trx_master.manual_voucher_no`).
+
+**Items:** one catalogue, `asset_items`, gains `kind` (`asset` | `expense`) and `expense_coa4_id`; `category_id` becomes nullable. An expense item names an Expense head (level 1 = 4) directly. Maintained **only** on Fixed Assets → Items (Kind + Expense Head) — the purchase screen's inline "New item" box and its `items/store` endpoint were removed 2026-10-17 at the owner's request. `product_items` is not used — that would put meat on the sales and stock screens.
+
+**Head box:** still a filter (asset category heads, plus expense heads that some expense item is filed under, labelled "(Expense)"). Each line shows its head and kind in the table; the server reads the head from the item.
+
+**Quantities:** new `item_purchase_lines` (voucher, item, kind, head, unit, quantity `decimal(14,3)`, rate, amount) — one row per line, both kinds. An asset quantity must be whole; an expense quantity may be fractional. A future issue screen counts down from here and moves no money.
+
+**Date:** the voucher (and its register rows) are dated on the branch's transaction date — the last day close, `VoucherNumber::businessDate(null)` — as Product Out is. The form has no date box, and a `vr_date` sent anyway is ignored.
+
+**Patch:** `cashbook_api/database/sql/2026_10_17_expense_items.sql`, once per database — also `runAssetItemSchema()` in `patch:add-unit-type`. Applied to `stagingdatabase` only.
+
+**Before use on a database:** create "Food Management A/c" and "Washing & Cleaning A/c" under an Expense group in the Chart of A/c — neither exists on staging.
+
+**Not built:** issue screen; discount; part payment; print of these vouchers from the ledger (the ordinary purchase print reads `inventory_purchase_masters`, which this screen does not write).

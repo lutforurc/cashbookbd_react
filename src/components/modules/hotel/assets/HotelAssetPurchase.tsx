@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import dayjs from 'dayjs';
 import {
   FiCreditCard,
   FiDollarSign,
@@ -17,7 +16,6 @@ import { FaUniversity } from 'react-icons/fa';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
-import InputDatePicker from '../../../utils/fields/DatePicker';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
@@ -54,6 +52,11 @@ import { FIELD_HEIGHT, FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fie
  * the line debits. The Accounts Head box above only filters the list; the
  * server reads each line's head from the item.
  *
+ * ⚠️ OR AN EXPENSE ITEM -- meat, oil, soap. Picked under its expense head (Food
+ * Management, Washing & Cleaning), it charges that head the day it is bought
+ * and nothing else: not stock, not on the register. One bill may mix both
+ * kinds; every line keeps its quantity on the server for a later issue screen.
+ *
  * ⚠️ SAVING WRITES TO TWO PLACES. The voucher goes to the ledger (asset head
  * debited, cash credited), and the register gets ONE ROW PER THING bought -- two
  * chairs are two rows, because they are moved, sold and written off one at a
@@ -73,6 +76,8 @@ const round2 = (value: number) => Math.round((value + Number.EPSILON) * 100) / 1
 type AssetItem = {
   id: number;
   name: string;
+  /** 'asset' goes on the register; 'expense' is charged and done. */
+  kind: 'asset' | 'expense';
   unit: string;
   last_rate: number;
   category_name: string;
@@ -83,19 +88,36 @@ type Line = {
   id: number;
   itemId: number;
   itemName: string;
+  kind: AssetItem['kind'];
+  /** Where the line's money lands -- shown, never chosen. */
+  headName: string;
   unit: string;
   quantity: string;
   rate: string;
 };
 
-const asDate = (value: string) => (value ? dayjs(value).toDate() : null);
-const asText = (date: Date | null) => (date ? dayjs(date).format('YYYY-MM-DD') : '');
-const today = () => dayjs().format('YYYY-MM-DD');
 
 const money = (value: number) => thousandSeparator(Number(value) || 0);
 
+const emptyLine = {
+  itemId: '',
+  itemName: '',
+  kind: 'asset' as AssetItem['kind'],
+  headName: '',
+  unit: '',
+  quantity: '',
+  rate: '',
+};
+
+/** The line form's fields, taken from a catalogue row. */
+const fromItem = (item: AssetItem | undefined) => ({
+  itemName: item?.name ?? '',
+  kind: item?.kind ?? ('asset' as AssetItem['kind']),
+  headName: item?.head_name ?? '',
+  unit: item?.unit ?? '',
+});
+
 const HotelAssetPurchase = () => {
-  const [transactionDate, setTransactionDate] = useState(today());
 
   // Assets -> Category -> List, but the value kept here is the ledger's: each
   // category nominates an asset head (`asset_coa4_id`), and that is what the
@@ -106,17 +128,8 @@ const HotelAssetPurchase = () => {
   /** The catalogue, narrowed to the head chosen above. */
   const [items, setItems] = useState<AssetItem[]>([]);
   const [itemsLoading, setItemsLoading] = useState(false);
-  /** The inline "new item" box -- adding one without leaving the screen. */
-  const [newItemName, setNewItemName] = useState('');
-  const [addingItem, setAddingItem] = useState(false);
 
-  const [line, setLine] = useState({
-    itemId: '',
-    itemName: '',
-    unit: '',
-    quantity: '',
-    rate: '',
-  });
+  const [line, setLine] = useState(emptyLine);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [rows, setRows] = useState<Line[]>([]);
 
@@ -236,16 +249,21 @@ const HotelAssetPurchase = () => {
   const paidAmount = mode === CREDIT_MODE ? 0 : netTotal;
   const dueAmount = round2(netTotal - paidAmount);
 
-  const emptyLine = { itemId: '', itemName: '', unit: '', quantity: '', rate: '' };
-
   const addLine = () => {
     if (!line.itemId) {
       toast.error('Pick an item.');
       return;
     }
 
-    if (!Number(line.quantity)) {
+    if (!(Number(line.quantity) > 0)) {
       toast.error('How many?');
+      return;
+    }
+
+    // The register gets one row per asset, so an asset is counted whole;
+    // 2.5 kg of meat is a fine quantity for an expense item.
+    if (line.kind === 'asset' && !Number.isInteger(Number(line.quantity))) {
+      toast.error(`${line.itemName} is an asset and is counted in whole units.`);
       return;
     }
 
@@ -257,6 +275,8 @@ const HotelAssetPurchase = () => {
     const row: Omit<Line, 'id'> = {
       itemId: Number(line.itemId),
       itemName: line.itemName,
+      kind: line.kind,
+      headName: line.headName,
       unit: line.unit,
       quantity: line.quantity,
       rate: line.rate,
@@ -277,6 +297,8 @@ const HotelAssetPurchase = () => {
     setLine({
       itemId: String(row.itemId),
       itemName: row.itemName,
+      kind: row.kind,
+      headName: row.headName,
       unit: row.unit,
       quantity: row.quantity,
       rate: row.rate,
@@ -289,81 +311,23 @@ const HotelAssetPurchase = () => {
     setLine(emptyLine);
   };
 
-  /**
-   * Add an item to the catalogue from here, so a first purchase does not need a
-   * screen that does not exist yet. The head chosen above decides the category,
-   * and the row the server wrote comes back selected -- with the head IT
-   * resolved, not one this screen guessed.
-   */
-  const addItem = async () => {
-    const name = newItemName.trim();
-
-    if (!accountHead) {
-      toast.error('Choose an Accounts Head first.');
-      return;
-    }
-
-    if (!name) {
-      toast.error('What is the item called?');
-      return;
-    }
-
-    setAddingItem(true);
-
-    try {
-      const res = await httpService.post(`${API_HOTEL_ASSET_PURCHASE_URL}/items/store`, {
-        name,
-        account: Number(accountHead),
-      });
-
-      const body = res?.data;
-
-      if (!body?.success) {
-        toast.error(body?.message || 'The server refused that.');
-        return;
-      }
-
-      const created: AssetItem = body?.data?.data;
-
-      setItems((prev) =>
-        [...prev, created].sort((a, b) => a.name.localeCompare(b.name)),
-      );
-      setNewItemName('');
-      setLine((prev) => ({
-        ...prev,
-        itemId: String(created.id),
-        itemName: created.name,
-        unit: created.unit,
-      }));
-      toast.success(`${created.name} added`);
-    } catch (error: any) {
-      if (!error?.toastReported) {
-        toast.error(error?.response?.data?.message || error?.message || 'Could not add the item');
-      }
-    } finally {
-      setAddingItem(false);
-    }
-  };
-
   const reset = () => {
     setRows([]);
     setLine(emptyLine);
     setEditingId(null);
     setNotes('');
     setAccountHead('');
-    setNewItemName('');
     // The mode and the bank are habits of the desk, so they stay; who this
     // bill was owed to and its cheque belong to the bill just saved.
     setSupplier(null);
     setChequeNo('');
-    setTransactionDate(today());
     // A fresh entry has no number yet, so the one just saved must leave the box.
     setSavedVoucher('');
   };
 
   const save = async () => {
     if (!accountHead) {
-      toast.error('Choose the asset head this is being bought against.');
+      toast.error('Choose the head this is being bought against.');
       return;
     }
 
@@ -393,7 +357,7 @@ const HotelAssetPurchase = () => {
       const res = await httpService.post(`${API_HOTEL_ASSET_PURCHASE_URL}/store`, {
         // The asset head the picked category nominates -- what the ledger writes.
         account: Number(accountHead),
-        vr_date: transactionDate,
+        // No date: the server books it on the branch's transaction date.
         note: notes || null,
         mode,
         bank_account: mode === BANK_MODE ? Number(bankAccount) : null,
@@ -444,7 +408,7 @@ const HotelAssetPurchase = () => {
             Accounts Transaction
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Furniture &amp; equipment purchases
+            Asset &amp; expense purchases
           </p>
         </div>
 
@@ -490,26 +454,17 @@ const HotelAssetPurchase = () => {
         </div>
       ) : null}
 
-      {/* Who is being bought from, what head it lands on, and when. */}
-      <div className="mb-3 grid grid-cols-1 gap-3 rounded border border-stroke p-3 md:grid-cols-3 dark:border-strokedark">
+      {/* What head it lands on. No date box: the server books every voucher on
+          the branch's transaction date. */}
+      <div className="mb-3 grid grid-cols-1 gap-3 rounded border border-stroke p-3 md:grid-cols-2 dark:border-strokedark">
         <DropdownCommon
           id="accountHead"
           name="accountHead"
           label="Accounts Head *"
-          data={[{ id: '', name: 'Select an asset head' }, ...categories]}
+          data={[{ id: '', name: 'Select a head' }, ...categories]}
           value={accountHead}
           onChange={(e: any) => setAccountHead(e.target.value)}
           // description="Assets → Category → List. The voucher debits the head that category nominates — nothing here moves a product's quantity."
-        />
-
-        <InputDatePicker
-          id="transactionDate"
-          name="transactionDate"
-          label="Transaction Date *"
-          selectedDate={asDate(transactionDate)}
-          setSelectedDate={(date: Date | null) => setTransactionDate(asText(date))}
-          setCurrentDate={(date: Date | null) => setTransactionDate(asText(date))}
-          className="w-full"
         />
 
         {/* ⚠️ Disabled on purpose: the number is the server's to give, and a box
@@ -544,7 +499,7 @@ const HotelAssetPurchase = () => {
                       ? 'Loading…'
                       : items.length
                         ? 'Select an item'
-                        : 'No items yet — add one below',
+                        : 'No items yet — add them in Fixed Assets → Items',
                 },
                 ...items.map((item) => ({
                   id: item.id,
@@ -559,8 +514,7 @@ const HotelAssetPurchase = () => {
                 setLine((prev) => ({
                   ...prev,
                   itemId: id,
-                  itemName: picked?.name ?? '',
-                  unit: picked?.unit ?? '',
+                  ...fromItem(picked),
                   // The last price paid is a starting figure, not a rule: the
                   // clerk overwrites it whenever this bill was dearer or cheaper.
                   rate: picked ? (picked.last_rate > 0 ? String(picked.last_rate) : '') : '',
@@ -576,6 +530,7 @@ const HotelAssetPurchase = () => {
               name="quantity"
               type="number"
               min={0}
+              step="any"
               label="Quantity"
               placeholder="0"
               value={line.quantity}
@@ -610,33 +565,9 @@ const HotelAssetPurchase = () => {
           </div>
         </div>
 
-        {/* ⚠️ THE CATALOGUE CAN BE EXTENDED FROM HERE. There is no asset-item
-            master screen yet, and a first purchase must not be blocked on one;
-            the head chosen above decides which category the item is filed
-            under. */}
-        {accountHead ? (
-          <div className="mt-3 flex flex-wrap items-end gap-2 border-t border-dashed border-stroke pt-3 dark:border-strokedark">
-            <div className="w-full max-w-xs">
-              <InputElement
-                id="newItemName"
-                name="newItemName"
-                label="New item — adds to the catalogue"
-                placeholder="Office chair, executive"
-                value={newItemName}
-                onChange={(e: any) => setNewItemName(e.target.value)}
-              />
-            </div>
-            <ButtonLoading
-              onClick={addItem}
-              buttonLoading={addingItem}
-              label="Add item"
-              variant="ghost"
-              className="border border-stroke px-3 dark:border-strokedark"
-              icon={<FiPlus size={16} />}
-            />
-          </div>
-        ) : null}
-
+        {/* No "new item" box here: the catalogue is kept in one place, Fixed
+            Assets → Items, where an item is filed under its category or
+            expense head on purpose rather than in the middle of a bill. */}
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-700 dark:text-gray-200">
@@ -661,7 +592,15 @@ const HotelAssetPurchase = () => {
                   }
                 >
                   <td className="px-2 py-2">{String(index + 1).padStart(2, '0')}</td>
-                  <td className="px-2 py-2 font-medium">{row.itemName}</td>
+                  <td className="px-2 py-2">
+                    <div className="font-medium">{row.itemName}</div>
+                    {/* Where the money lands, and whether it becomes property
+                        or is simply spent -- information, not a choice. */}
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {row.headName}
+                      {row.kind === 'expense' ? ' · Expense' : ' · Asset'}
+                    </div>
+                  </td>
                   <td className="px-2 py-2 text-right">
                     {row.quantity}
                     {row.unit ? <span className="ml-1 text-xs text-gray-500">{row.unit}</span> : null}

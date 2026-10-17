@@ -24,6 +24,10 @@ import { fetchProductUnitDdl } from '../product/unit/unitSlice';
  * category nominates the ledger head (`asset_coa4_id`) that a purchase line
  * debits, so an item without one cannot be bought.
  *
+ * ⚠️ OR AN EXPENSE ITEM -- meat, oil, soap. It names an Expense head (Food
+ * Management, Washing & Cleaning) instead of a category; buying it charges that
+ * head the same day, and it is never stock and never on the register.
+ *
  * ⚠️ THE LAST RATE IS A MEMORY, NOT A PRICE. It is what was paid the last time
  * this item was bought, offered as a starting figure on the purchase screen.
  * Nothing values anything from it, and leaving it at nought is honest for an
@@ -38,7 +42,9 @@ import { fetchProductUnitDdl } from '../product/unit/unitSlice';
 const blank = () => ({
   id: null as number | null,
   name: '',
+  kind: 'asset',
   category_id: '',
+  expense_coa4_id: '',
   code: '',
   unit_id: '',
   last_rate: '',
@@ -48,7 +54,9 @@ const blank = () => ({
 const draftOf = (row: any) => ({
   id: row.id,
   name: row.name,
+  kind: row.kind ?? 'asset',
   category_id: String(row.category_id ?? ''),
+  expense_coa4_id: row.expense_coa4_id ? String(row.expense_coa4_id) : '',
   code: row.code ?? '',
   unit_id: row.unit_id ? String(row.unit_id) : '',
   last_rate: String(row.last_rate ?? ''),
@@ -73,6 +81,7 @@ const AssetItemsTab = () => {
 
   const [rows, setRows] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [expenseHeads, setExpenseHeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<ReturnType<typeof blank> | null>(null);
@@ -86,6 +95,7 @@ const AssetItemsTab = () => {
 
       setRows(data.rows ?? []);
       setCategories(data.categories ?? []);
+      setExpenseHeads(data.expense_heads ?? []);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Could not read the items');
     } finally {
@@ -107,8 +117,15 @@ const AssetItemsTab = () => {
       return;
     }
 
-    if (!form?.category_id) {
+    const isExpense = form.kind === 'expense';
+
+    if (!isExpense && !form?.category_id) {
       toast.error('Choose the category — it decides where the cost lands.');
+      return;
+    }
+
+    if (isExpense && !form?.expense_coa4_id) {
+      toast.error('Choose the expense head — it is where the cost lands.');
       return;
     }
 
@@ -118,7 +135,9 @@ const AssetItemsTab = () => {
       const res = await httpService.post(`${API_ASSET_ITEM_URL}/store`, {
         id: form.id ?? null,
         name: form.name,
-        category_id: Number(form.category_id),
+        kind: form.kind,
+        category_id: isExpense ? null : Number(form.category_id),
+        expense_coa4_id: isExpense ? Number(form.expense_coa4_id) : null,
         code: form.code || null,
         unit_id: form.unit_id ? Number(form.unit_id) : null,
         last_rate: form.last_rate === '' ? 0 : Number(form.last_rate),
@@ -170,7 +189,9 @@ const AssetItemsTab = () => {
       // noticed before the voucher is written.
       render: (row: any) => (
         <div>
-          <div className="text-black dark:text-white">{row.category_name ?? '—'}</div>
+          <div className="text-black dark:text-white">
+            {row.kind === 'expense' ? 'Expense' : (row.category_name ?? '—')}
+          </div>
           <div className="text-xs text-gray-500 dark:text-gray-400">
             {row.head_name ?? 'no head nominated'}
           </div>
@@ -257,19 +278,49 @@ const AssetItemsTab = () => {
               />
             </div>
 
-            <div className="md:col-span-3">
+            <div className="md:col-span-2">
               <DropdownCommon
-                id="itemCategory"
-                name="itemCategory"
-                label="Category *"
+                id="itemKind"
+                name="itemKind"
+                label="Kind *"
                 data={[
-                  { id: '', name: 'Select a category' },
-                  ...categories.map((one: any) => ({ id: one.id, name: one.name })),
+                  { id: 'asset', name: 'Asset' },
+                  { id: 'expense', name: 'Expense' },
                 ]}
-                value={form.category_id}
-                onChange={(e: any) => setForm({ ...form, category_id: e.target.value })}
+                value={form.kind}
+                onChange={(e: any) => setForm({ ...form, kind: e.target.value })}
                 description=""
               />
+            </div>
+
+            <div className="md:col-span-3">
+              {form.kind === 'expense' ? (
+                <DropdownCommon
+                  id="itemExpenseHead"
+                  name="itemExpenseHead"
+                  label="Expense Head *"
+                  data={[
+                    { id: '', name: 'Select an expense head' },
+                    ...expenseHeads.map((one: any) => ({ id: one.id, name: one.name })),
+                  ]}
+                  value={form.expense_coa4_id}
+                  onChange={(e: any) => setForm({ ...form, expense_coa4_id: e.target.value })}
+                  description=""
+                />
+              ) : (
+                <DropdownCommon
+                  id="itemCategory"
+                  name="itemCategory"
+                  label="Category *"
+                  data={[
+                    { id: '', name: 'Select a category' },
+                    ...categories.map((one: any) => ({ id: one.id, name: one.name })),
+                  ]}
+                  value={form.category_id}
+                  onChange={(e: any) => setForm({ ...form, category_id: e.target.value })}
+                  description=""
+                />
+              )}
             </div>
 
             <div className="md:col-span-2">
