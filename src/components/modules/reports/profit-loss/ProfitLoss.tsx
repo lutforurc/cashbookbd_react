@@ -39,6 +39,8 @@ type TradingRow = {
 };
 
 type NetRow = {
+  /** The level-1 head the group hangs under: 3 Income, 4 Expense. */
+  id?: number | string;
   coal3_id?: number | string;
   /** Present only on the head-level rows (`netprofit_heads`), not the group rows. */
   coal4_id?: number | string;
@@ -317,8 +319,32 @@ const ProfitLoss = (user: any) => {
     const tradingTotalDebit = grossProfit > 0 ? debitBase + grossProfit : debitBase;
     const tradingTotalCredit = grossLoss > 0 ? creditBase + grossLoss : creditBase;
 
-    const expenseRows = netprofit.filter((r) => toNum(r.debit) > 0);
-    const incomeRows = netprofit.filter((r) => toNum(r.credit) > 0);
+    /**
+     * ⚠️ WHICH SIDE A GROUP SITS ON IS THE CHART'S ANSWER, NOT THE BALANCE'S.
+     * The level-1 head a group hangs under arrives as `id` -- 3 Income,
+     * 4 Expense. Splitting on "has a debit" / "has a credit" instead put every
+     * group with a posting on BOTH sides: Office Others Expense carries a
+     * 25,867 credit against a 19,723,313 debit, so the account printed it
+     * twice -- (-) under expenses and (+) under income -- and the income copy
+     * dragged every head under it onto the income page, including the ones
+     * that had never been used and showed 0.00.
+     *
+     * ⚠️ AND A GROUP'S FIGURE IS ITS NET. The credit side of an expense group
+     * is the reversal of an expense; the debit side of an income group is the
+     * reversal of income. Counting both sides gross charged the same money
+     * twice, against a bottom line the two sides are meant to add up to once.
+     */
+    const isIncomeGroup = (r: NetRow) => toNum(r.id) === 3;
+
+    const expenseRows = netprofit
+      .filter((r) => !isIncomeGroup(r))
+      .map((r) => ({ ...r, debit: toNum(r.debit) - toNum(r.credit) }))
+      .filter((r) => toNum(r.debit) > 0);
+
+    const incomeRows = netprofit
+      .filter(isIncomeGroup)
+      .map((r) => ({ ...r, credit: toNum(r.credit) - toNum(r.debit) }))
+      .filter((r) => toNum(r.credit) > 0);
 
     const totalExpense = expenseRows.reduce((s, r) => s + toNum(r.debit), 0);
 
@@ -349,14 +375,25 @@ const ProfitLoss = (user: any) => {
      * touched -- only the spelling the report prints, corrected here, once,
      * for the screen, the printed sheet and the note alike.
      */
+    /**
+     * ⚠️ A HEAD THAT EARNED NOTHING IS NOT A ROW. The list arrives per group
+     * with every head filed under it, and a branch carries heads it has never
+     * used -- so the screen printed a column of "0.00" under every income
+     * group. Only heads with a credit this period are kept; the group's own
+     * line is the server's figure and does not depend on this list.
+     */
     const incomesWithChildren = incomeRows.map((r) => ({
       ...r,
       children: headRows
         .filter((h) => toNum(h.coal3_id) === toNum(r.coal3_id))
         .map((h) => ({
           ...h,
+          // The head's net, read the same way as its group's above, so what
+          // shows under the group can be added up to the group's own figure.
+          credit: toNum(h.credit) - toNum(h.debit),
           name: (h.coal4_name ?? h.name)?.replace(/Comission/g, "Commission"),
-        })),
+        }))
+        .filter((h) => toNum(h.credit) > 0),
     }));
 
     /**
