@@ -867,7 +867,13 @@ const Product = (user: any) => {
                 its own beside a full-width filter group -- that cell was a
                 sliver, and the button sat squeezed against the edge. */}
             <ButtonLoading
-              onClick={() => navigate('/product/add-product')}
+              onClick={() =>
+                navigate('/product/add-product', {
+                  // Hand over this list's address, page five included, so Save
+                  // comes back here and not to page one.
+                  state: { from: `${location.pathname}${location.search}` },
+                })
+              }
               label="New"
               className="ml-2 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
               icon={<FiPlus className="h-5 w-5" />}

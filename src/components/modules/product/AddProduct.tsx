@@ -334,7 +334,7 @@ const AddProduct = () => {
         if (d?.success) {
           toast.success(d?.message);
           setTimeout(() => {
-            navigate('/product/product-list');
+            navigate(backTo);
           }, 300);
         } else {
           toast.error(d?.message || 'Failed');

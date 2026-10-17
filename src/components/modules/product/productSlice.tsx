@@ -365,7 +365,10 @@ const productReducer = (state = initialState, action: any) => {
         ...state,
         isLoading: false,
         isSave: true,
-        errors: {},
+        // `{}` here was a truthy object the list handed to
+        // noDataMessage and React refused to print -- adding a product then
+        // crashed the list with "Objects are not valid as a React child".
+        errors: null,
       };
 
     case PRODUCT_UPDATE_SUCCESS:
