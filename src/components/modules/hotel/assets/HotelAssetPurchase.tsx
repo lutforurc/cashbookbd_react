@@ -31,10 +31,11 @@ import { FIELD_HEIGHT, FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fie
 /**
  * Buying the things a hotel is furnished WITH -- beds, chairs, a generator.
  *
- * ⚠️ IT SAVES AN ORDINARY CASH PAYMENT VOUCHER. Same series, same `2-` number
- * shape, the same paper as every other payment in the app. Only the asset head
- * it debits is new. It is NOT a purchase invoice: nothing here touches
- * inventory, and no product's quantity moves.
+ * ⚠️ IT IS NUMBERED AS A PURCHASE. The invoice is given the Purchase Invoice
+ * number (`4-...`) by the same backend generator every purchase uses, so its
+ * number sits in the purchase series -- prefix, month segment and sequence.
+ * Only the asset head it debits is new. Nothing here touches inventory, and no
+ * product's quantity moves.
  *
  * ⚠️ CASH ONLY, paid in full -- THE FIRST STEP. Bank, credit, discounting and
  * part payment are not built, and rather than pretend, each control that would
@@ -166,6 +167,8 @@ const HotelAssetPurchase = () => {
     setNotes('');
     setAccountHead('');
     setTransactionDate(today());
+    // A fresh entry has no number yet, so the one just saved must leave the box.
+    setSavedVoucher('');
   };
 
   const save = async () => {
@@ -211,9 +214,10 @@ const HotelAssetPurchase = () => {
 
       const saved = body?.data?.data ?? {};
 
+      // Clear the form first, then put the number it was given back in the box.
+      reset();
       setSavedVoucher(String(saved?.vr_no ?? ''));
       toast.success(`Voucher ${saved?.vr_no} saved`);
-      reset();
     } catch (error: any) {
       if (!error?.toastReported) {
         toast.error(error?.response?.data?.message || error?.message || 'Could not save');
@@ -298,12 +302,14 @@ const HotelAssetPurchase = () => {
         />
 
         {/* ⚠️ Disabled on purpose: the number is the server's to give, and a box
-            somebody could type one into would be a number the books do not have. */}
+            somebody could type one into would be a number the books do not have.
+            It shows, read-only, the purchase number the server issued for the
+            voucher just saved. */}
         <InputElement
           id="voucherNo"
           name="voucherNo"
           label="Voucher No"
-          value=""
+          value={savedVoucher}
           placeholder="Auto-generated"
           disabled
           onChange={() => undefined}
@@ -321,7 +327,7 @@ const HotelAssetPurchase = () => {
               placeholder="Office Chair"
               value={line.itemName}
               onChange={(e: any) => setLine((prev) => ({ ...prev, itemName: e.target.value }))}
-              description="What was bought. Written on the voucher line, since nothing here reaches a product list."
+              description=""
             />
           </div>
 

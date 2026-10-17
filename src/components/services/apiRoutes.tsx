@@ -1021,9 +1021,10 @@ export const API_HOTEL_LAYOUT_URL = `${API_BASE_URL}/hotel-setup/layout`;
 /**
  * Buying what the hotel is furnished with — beds, chairs, a generator.
  *
- * ⚠️ It saves an ORDINARY CASH PAYMENT voucher: same series, same `2-` number
- * shape, the same paper as every other payment in the app. Only the asset head
- * it debits is new. It is NOT a purchase invoice — nothing here touches stock.
+ * ⚠️ It is numbered as a PURCHASE: the server gives it the Purchase Invoice
+ * number (`4-...`) from the same generator every purchase uses, so it sits in
+ * the purchase series. Only the asset head it debits is new. Nothing here
+ * touches stock.
  */
 export const API_HOTEL_ASSET_PURCHASE_URL = `${API_BASE_URL}/hotel-setup/asset-purchases`;
 // The asset heads, level 4, under Assets. Read from the chart of accounts

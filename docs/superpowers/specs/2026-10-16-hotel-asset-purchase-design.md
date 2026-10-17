@@ -1,10 +1,12 @@
 # Hotel Asset Purchase — the "Accounts Transaction" form (Design)
 
 **Status:** **STEP 5 BUILT, 2026-10-16.** §1–§11 describe the form as designed and
-drawn. **§10 records what was then built**: cash only, paid in full, saving an
-ordinary `2-` payment voucher. Bank, credit, discount and part payment are still
-not built, and each control that would need them is DISABLED with a line saying
-so rather than left to look as if it works.
+drawn. **§10 records what was then built**: cash only, paid in full, saving a
+voucher. Bank, credit, discount and part payment are still not built, and each
+control that would need them is DISABLED with a line saying so rather than left
+to look as if it works.
+**Update, 2026-10-17:** the voucher is now numbered as a purchase — `4-` — not as
+a `2-` payment. See §10.9.
 **Repos:** `cashbookbd_react` (branch `Reseller-ui`) and `cashbook_api` (branch
 `Reseller`).
 **Source:** `docs/Hotel Asset Transaction/CashBookBD furniture purchase entry.png`
@@ -402,6 +404,36 @@ php artisan permission:cache-reset
 group — so whoever can see the Hotel menu is who holds it. Which is also why the
 screen's route gate is still `MENU_PERMISSIONS.hotel` (§2): the two are granted
 together by construction and cannot drift apart.
+
+### 10.9 Invoice numbering — moved to the Purchase series (2026-10-17)
+
+⚠️ **The voucher is numbered as a purchase (`4-`), not as a `2-` payment.** §9.6
+answered "which voucher type?" with *none*, and step 5 wrote an ordinary cash
+payment voucher. That is reversed: the screen **is** a purchase form, so its
+invoice must be numbered like one.
+
+Nothing new was built to do it. `AssetPurchaseController` now opens its voucher
+through the purchase form's own generator — `App\Services\Voucher\VoucherSerial`,
+the service `apiTradingPurchaseInvoiceStore` and `PurchaseController` number with
+— as `VoucherSerial::open(VoucherNumber::VR_PURCHASE, VoucherNumber::TRX_PAYMENT,
+$date, $scope)`. So the number carries the **same prefix (`4`), month segment
+(`YYMM`) and sequence** as every other purchase, and is made unique against the
+branch's live vouchers for the month under the same `voucher_locks` row. The
+prefix and the run are the shared named constants, not figures typed here, so
+this cannot become a series of its own.
+
+What did **not** change:
+
+- Nothing here touches inventory (§1) — the goods are kept, not resold.
+- The legs are still the asset head debited and cash credited (§10.1).
+- **No historical voucher was renumbered.** The rule applies only to vouchers
+  written from here on; the numbers already on the books are not ours to move.
+- The number is read back from the save response and shown **read-only** in the
+  form's *Voucher No* box, and is never typed by the clerk.
+
+⚠️ A credit purchase will still be a journal under its own prefix (`9-`) when
+§11.2 is built, through the same service (`VoucherNumber::TRX_JOURNAL`). This
+form is cash-only today, so every number it issues is a `4-`.
 
 ---
 
