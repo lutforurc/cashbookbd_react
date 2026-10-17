@@ -4,7 +4,7 @@ import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes";
-import { buildProfitLossNotes } from "./profitLossNotes";
+import { buildProfitLossNotes, profitLossNoteIndex } from "./profitLossNotes";
 
 const fmtZero = (n: number) => thousandSeparator(n || 0);
 const fmtEmptyIfZero = (n: number) => (n ? thousandSeparator(n) : "");
@@ -24,6 +24,9 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
     ref
   ) => {
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 11;
+
+    // The numbers the rows carry, from the same place the notes are numbered.
+    const noteIndex = profitLossNoteIndex(report);
 
     // ✅ fs অনুযায়ী padding-y (9-11 => 0.5px, 12-15 => 0.7px, 16+ => 1)
     const cellPy = fs <= 11 ? "py-[0.5px]" : fs <= 15 ? "py-[.9px]" : "py-1";
@@ -57,7 +60,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
             {/* ===== TRADING ===== */}
             <div style={{ fontSize: (fs + 1) }} className="mb-2 text-center font-semibold">
               TRADING ACCOUNT
-              <NoteRef n={1} />
+              <NoteRef n={noteIndex.basis} />
             </div>
 
             <div className="w-full overflow-hidden">
@@ -102,7 +105,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
                       Opening Stock
-                      <NoteRef n={5} />
+                      <NoteRef n={noteIndex.stock} />
                     </td>
 
                     <td
@@ -131,7 +134,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
                       Closing Stock
-                      <NoteRef n={5} />
+                      <NoteRef n={noteIndex.stock} />
                     </td>
 
                     <td
@@ -502,14 +505,20 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       label: "Direct Acquisition Costs",
                       value: report?.cogs?.directAcquisitionCosts,
                       sign: "+",
-                      note: "3",
+                      note: String(noteIndex.acquisition),
                     },
-                    // [7] only when the period wrote goods off, as on screen.
+                    // The stock-movement note when the period moved stock
+                    // either way -- a write-off or a receipt -- as on screen.
+                    // The note explains both directions, so pointing at it for
+                    // one of them alone would print the row's pointer on only
+                    // half the periods that have the note.
                     {
                       label: "Closing Stock",
                       value: report?.cogs?.closing,
                       sign: "-",
-                      note: Number(report?.productOut) > 0 ? "7" : undefined,
+                      note: noteIndex.stockMovement
+                        ? String(noteIndex.stockMovement)
+                        : undefined,
                     },
                   ].map((line: any) => (
                     <tr key={line.label} className="avoid-break">
@@ -544,7 +553,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
                       = Cost of Goods Sold
-                      <NoteRef n={2} />
+                      <NoteRef n={noteIndex.cogs} />
                     </td>
                     <td
                       style={{ fontSize: fs }}
@@ -708,7 +717,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                             >
                               (+) {r?.name}
                               <span style={{ fontSize: fs - 2 }} className="align-super">
-                                [4]
+                                [{noteIndex.income}]
                               </span>
                             </td>
 

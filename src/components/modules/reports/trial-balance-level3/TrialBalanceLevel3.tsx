@@ -26,7 +26,7 @@ import {
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchTrialBalanceLevel3 } from "./trialBalanceLevel3Slice";
 import TrialBalanceLevel3Print from "./TrialBalanceLevel3Print";
-import ReportNotes from "../../../utils/utils-functions/ReportNotes";
+import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes";
 import { buildTrialBalanceNotes } from "./trialBalanceNotes";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
@@ -244,6 +244,9 @@ const TrialBalanceLevel3 = (user: any) => {
   const [detailError, setDetailError] = useState<string | null>(null);
   // Write-offs of the loaded period at cost, for note 6 (0 = no note).
   const [writeOff, setWriteOff] = useState(0);
+  // Goods received in the same period without a purchase, for the same note.
+  // Its own figure, never netted against the write-off above.
+  const [stockIn, setStockIn] = useState(0);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -500,9 +503,13 @@ const TrialBalanceLevel3 = (user: any) => {
         startDate: startDate ? dayjs(startDate).format("DD/MM/YYYY") : undefined,
         endDate: endDate ? dayjs(endDate).format("DD/MM/YYYY") : undefined,
         productOut: writeOff,
+        productIn: stockIn,
       }),
-    [branchName, startDate, endDate, writeOff],
+    [branchName, startDate, endDate, writeOff, stockIn],
   );
+
+  /** Note [6] is written only where stock moved outside the ledger. */
+  const hasStockNote = Number(writeOff) > 0 || Number(stockIn) > 0;
 
   const handleBranchChange = (e: any) => {
     const value = Number(e.target.value);
@@ -518,6 +525,7 @@ const TrialBalanceLevel3 = (user: any) => {
     setLevel4Rows([]);
     setDetailError(null);
     setWriteOff(0);
+    setStockIn(0);
 
     const params = {
       branch_id: Number(branchId),
@@ -541,13 +549,15 @@ const TrialBalanceLevel3 = (user: any) => {
 
     setFilterOpen(false);
 
-    // Note 6's figure. A failure only leaves the note out -- the report itself
-    // has already loaded and does not depend on it.
+    // Note 6's figures -- both directions. A failure only leaves the note out --
+    // the report itself has already loaded and does not depend on it.
     try {
       const res = await httpService.get(API_REPORT_TRIAL_BALANCE_WRITE_OFF_URL, { params });
       setWriteOff(Number(res?.data?.data?.data?.product_out) || 0);
+      setStockIn(Number(res?.data?.data?.data?.product_in) || 0);
     } catch {
       setWriteOff(0);
+      setStockIn(0);
     }
   };
 
@@ -655,9 +665,11 @@ const TrialBalanceLevel3 = (user: any) => {
   const headerRows = [
     [
       { label: "Sl. No", rowSpan: 2, className: "text-center" },
-      { label: "Description", rowSpan: 2 },
+      // The same references the printed sheet carries, put where each note's
+      // subject is: the columns are note 2, the group rows note 3.
+      { label: <>Description<NoteRef n={3} /></>, rowSpan: 2 },
       { label: "Opening", colSpan: 2, className: "text-center" },
-      { label: "Movement", colSpan: 2, className: "text-center" },
+      { label: <>Movement<NoteRef n={2} /></>, colSpan: 2, className: "text-center" },
       { label: "Closing", colSpan: 2, className: "text-center" },
     ],
     [
@@ -672,7 +684,18 @@ const TrialBalanceLevel3 = (user: any) => {
 
   const footerRows = [
     [
-      { label: "Grand Total", colSpan: 2, className: "text-right" },
+      {
+        label: (
+          <>
+            Grand Total
+            <NoteRef n={4} />
+            <NoteRef n={5} />
+            {hasStockNote && <NoteRef n={6} />}
+          </>
+        ),
+        colSpan: 2,
+        className: "text-right",
+      },
       { label: totals.openingDebit ? thousandSeparator(totals.openingDebit) : '-', className: "text-right" },
       { label: totals.openingCredit ? thousandSeparator(totals.openingCredit) : '-', className: "text-right" },
       { label: totals.movementDebit ? thousandSeparator(totals.movementDebit) : '-', className: "text-right" },
@@ -1084,6 +1107,10 @@ const TrialBalanceLevel3 = (user: any) => {
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                       Trial Balance Rows
+                      {/* [1] is the basis of the whole report and belongs to no
+                          row, so it hangs on the report's own title -- the same
+                          place the printed sheet puts it. */}
+                      <NoteRef n={1} />
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                       {branchName}, {startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"} to{" "}
@@ -1239,6 +1266,7 @@ const TrialBalanceLevel3 = (user: any) => {
           startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"}
           endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
           productOut={writeOff}
+          productIn={stockIn}
           rows={printRows}
           rowsPerPage={Number(perPage)}
           fontSize={Number(fontSize)}

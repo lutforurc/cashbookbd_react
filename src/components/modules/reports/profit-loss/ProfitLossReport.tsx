@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { NoteRef } from "../../../utils/utils-functions/ReportNotes";
+import { profitLossNoteIndex } from "./profitLossNotes";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 type NetRow = {
@@ -51,6 +52,12 @@ type ProfitLossReportData = {
    * it off twice.
    */
   productOut?: number;
+  /**
+   * Goods received without a purchase in the same period, at the rate the books
+   * held. The other direction, and the opposite sign: this one has already
+   * raised the profit by making the closing stock larger.
+   */
+  productIn?: number;
   net: {
     grossProfit: number;
     grossLoss: number;
@@ -86,13 +93,17 @@ const ProfitLossReport = ({
   loader,
   onNetExpenseClick,
 }: ProfitLossReportProps) => {
+  // The numbers the rows below carry, from the same place the notes are
+  // numbered: a pointer and its note cannot disagree.
+  const noteIndex = profitLossNoteIndex(report);
+
   return (
     <div className="overflow-x-auto dark:bg-gray-800 dark:text-gray-300 p-3 rounded">
       {loading ? loader : null}
 
       <div className="text-center font-semibold mb-2 dark:text-[rgb(var(--c-text))] text-[rgb(var(--c-text))] p-2">
         TRADING ACCOUNT
-        <NoteRef n={1} />
+        <NoteRef n={noteIndex.basis} />
       </div>
 
       <table className="w-full text-sm">
@@ -109,7 +120,7 @@ const ProfitLossReport = ({
           <tr className="border-b border-[rgb(var(--c-border))]">
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">
               Opening Stock
-              <NoteRef n={5} />
+              <NoteRef n={noteIndex.stock} />
             </td>
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(report.trading.opening)}</td>
@@ -119,7 +130,7 @@ const ProfitLossReport = ({
           <tr className="border-b border-[rgb(var(--c-border))]">
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2">
               Closing Stock
-              <NoteRef n={5} />
+              <NoteRef n={noteIndex.stock} />
             </td>
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right"></td>
             <td className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] p-2 text-right">{fmtZero(0)}</td>
@@ -285,14 +296,17 @@ const ProfitLossReport = ({
               label: "Direct Acquisition Costs",
               value: report.cogs.directAcquisitionCosts,
               sign: "+",
-              note: "3",
+              note: String(noteIndex.acquisition),
             },
-            // [7] only when the period wrote goods off -- the note is absent otherwise.
+            // The stock-movement note when the period moved stock either way
+            // -- the note is absent when it did neither, and so is the pointer.
             {
               label: "Closing Stock",
               value: report.cogs.closing,
               sign: "-",
-              note: toNum(report.productOut) > 0 ? "7" : undefined,
+              note: noteIndex.stockMovement
+                ? String(noteIndex.stockMovement)
+                : undefined,
             },
           ].map((line) => (
             <tr key={line.label} className="border-b border-[rgb(var(--c-border))]">
@@ -308,7 +322,7 @@ const ProfitLossReport = ({
           <tr className="border-t font-semibold border-gray-600 dark:border-gray-300">
             <td className="p-2">
               = Cost of Goods Sold
-              <NoteRef n={2} />
+              <NoteRef n={noteIndex.cogs} />
             </td>
             <td className="p-2 text-right">{fmtZero(report.cogs.total)}</td>
           </tr>
@@ -399,7 +413,7 @@ const ProfitLossReport = ({
                       ) : (
                         <>{r.name}</>
                       )}
-                      <NoteRef n={4} />
+                      <NoteRef n={noteIndex.income} />
                     </td>
                     <td className="p-2 text-right">{fmtZero(toNum(r.credit))}</td>
                     <td className="p-2 text-right"></td>

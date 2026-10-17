@@ -4,9 +4,11 @@ import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes";
 import {
+  balanceSheetNoteIndex,
   buildBalanceSheetNotes,
   reportGroupLabel,
   reportSectionLabel,
+  stockMoved,
 } from "./balanceSheetNotes";
 
 type ColumnAmounts = {
@@ -58,6 +60,8 @@ type BalanceSheetPrintProps = {
    * printed note and the on-screen note cannot differ.
    */
   productOut?: number | null;
+  /** Goods received without a purchase in the same period, for the same note. */
+  productIn?: number | null;
   totals: {
     assets: number;
     liabilities: number;
@@ -170,9 +174,16 @@ const buildLines = (
     equity: ColumnAmounts;
     liabilitiesAndEquity: ColumnAmounts;
   },
+  productOut?: number | null,
+  productIn?: number | null,
 ): PrintLine[] => {
   const lines: PrintLine[] = [];
   let serial = 0;
+
+  // The same numbering the notes are written under, so a row's [n] is a note
+  // that exists on this sheet -- see balanceSheetNoteIndex. The stock figures
+  // decide whether the Closing Stock row carries the stock-movement note.
+  const noteIndex = balanceSheetNoteIndex(sections, stockMoved(productOut, productIn));
 
   const pushSection = (
     title: string,
@@ -190,7 +201,7 @@ const buildLines = (
       lines.push({
         kind: "item",
         serial,
-        name: reportGroupLabel(group.group_name),
+        name: reportGroupLabel(group.group_name, noteIndex),
         side,
         amounts: groupAmounts(group),
       });
@@ -217,7 +228,7 @@ const buildLines = (
 
     shown.forEach((group) => {
       serial += 1;
-      lines.push({ kind: "item", serial, name: reportGroupLabel(group.group_name), side, amounts: groupAmounts(group) });
+      lines.push({ kind: "item", serial, name: reportGroupLabel(group.group_name, noteIndex), side, amounts: groupAmounts(group) });
     });
 
     const zero = { opening: 0, movement: 0, closing: 0 };
@@ -460,6 +471,7 @@ const BalanceSheetPrint = ({
   equity,
   sections,
   productOut,
+  productIn,
   totals,
 }: BalanceSheetPrintProps) => {
   const fs = Number.isFinite(fontSize) ? Number(fontSize) : 12;
@@ -475,19 +487,31 @@ const BalanceSheetPrint = ({
   const equityColumns = totals.equityColumns || { opening: 0, movement: 0, closing: totals.equity };
   const liabilitiesAndEquityColumns = addAmounts(liabilitiesColumns, equityColumns);
 
-  const lines = buildLines(assets, liabilities, equity, sections ?? {}, {
-    assets: assetsColumns,
-    liabilities: liabilitiesColumns,
-    equity: equityColumns,
-    liabilitiesAndEquity: liabilitiesAndEquityColumns,
-  });
+  const lines = buildLines(
+    assets,
+    liabilities,
+    equity,
+    sections ?? {},
+    {
+      assets: assetsColumns,
+      liabilities: liabilitiesColumns,
+      equity: equityColumns,
+      liabilitiesAndEquity: liabilitiesAndEquityColumns,
+    },
+    productOut,
+    productIn,
+  );
   const pages = chunkLines(lines, askedRows > 0 ? askedRows : 0);
   const isUnbalanced = Math.abs(totals.difference) > 0.009;
 
   // The notes are a page of their own, and the page numbering counts it -- a
   // sheet whose footer says "page 1 of 1" over a two-page document is the kind
   // of thing that gets a stapled report handed back.
-  const notes = buildBalanceSheetNotes(sections ?? {}, { asOn: endDate, productOut });
+  const notes = buildBalanceSheetNotes(sections ?? {}, {
+    asOn: endDate,
+    productOut,
+    productIn,
+  });
   const totalPages = pages.length + (notes.length ? 1 : 0);
 
   /** The six money cells of one line: Opening, Movement and Closing, Dr then Cr. */
@@ -532,14 +556,15 @@ const BalanceSheetPrint = ({
                 Balance Sheet
                 {/* ⚠️ NOTE 1 HANGS ON THE SHEET'S OWN TITLE, which is the only
                     thing on the page it explains. Every other note is pointed at
-                    by a row -- reportGroupLabel puts "[2]".."[7]" after the group
-                    they belong to -- while note 1 is the basis of the whole
-                    sheet and belongs to no row. Without this reference the notes
-                    listed 1..8 while nothing on the sheet pointed at 1, so a
-                    reader counting the references found one missing. The Profit &
-                    Loss and the Trial Balance both hang theirs here
-                    (ProfitLossReport's "TRADING ACCOUNT", TrialBalanceLevel3Print's
-                    "Trial Balance Group"); this is the third of the three. */}
+                    by the row it explains — reportGroupLabel puts the number the
+                    note is listed under after the group — while note 1 is the
+                    basis of the whole sheet and belongs to no row. Without this
+                    reference the notes listed from 1 while nothing on the sheet
+                    pointed at 1, so a reader counting the references found one
+                    missing. The Profit & Loss and the Trial Balance both hang
+                    theirs here (ProfitLossReport's "TRADING ACCOUNT",
+                    TrialBalanceLevel3Print's "Trial Balance"); this is the third
+                    of the three. */}
                 <NoteRef n={1} />
               </h1>
               <p>

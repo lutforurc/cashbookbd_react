@@ -1,4 +1,5 @@
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import { stockMovementNote } from "../../../utils/utils-functions/ReportNotes";
 import type { ReportNote } from "../../../utils/utils-functions/ReportNotes";
 
 /**
@@ -21,28 +22,34 @@ export const reportSectionLabel = (name?: string): string =>
   SECTION_LABELS[name || ""] || name || "-";
 
 /**
- * Which note each group's row points at. Same numbering as the list below —
- * [1] the basis, [2] supplier advances, [3] accounts payable, [4] customer
- * credit balances, [5] bank and finance balances in credit, [6] loans received,
- * [7] the current period's result, [8] what is unresolved, [9] the inventory
- * loss — written only when the period wrote goods off, and last, so leaving it
- * out moves no other number.
+ * Which groups carry a note, in the order the notes are numbered.
+ *
+ * ⚠️ THE NUMBER IS NOT FIXED HERE ANY MORE. A note is written only where the
+ * sheet has the row that points at it, so a group this sheet does not carry
+ * takes its note — and its number — with it, and the rest close up. The numbers
+ * are therefore worked out from the sheet in hand by balanceSheetNoteIndex(),
+ * and the row labels and the note list read that one answer; a fixed map would
+ * have the rows pointing at numbers the notes no longer use.
  */
-const GROUP_NOTES: Record<string, number> = {
-  "Supplier Advances": 2,
-  "Account Payable": 3,
-  "Customer Advances": 4,
-  "Bank & Finance Borrowings": 5,
-  "Loans Received": 6,
-  "Current Period Profit": 7,
-  "Current Period Loss": 7,
-};
+const GROUP_NOTE_ORDER = [
+  "Supplier Advances",
+  "Account Payable",
+  "Customer Advances",
+  "Bank & Finance Borrowings",
+  "Loans Received",
+] as const;
 
-/** The group's own name with its note number after it, where it has one. */
-export const reportGroupLabel = (name?: string): string => {
+/** Either name the server gives the period's result, whichever side it landed. */
+const RESULT_GROUPS = ["Current Period Profit", "Current Period Loss"] as const;
+
+/** The group's own name with its note number after it, where this sheet has one. */
+export const reportGroupLabel = (
+  name: string | undefined,
+  index: Record<string, number> = {},
+): string => {
   const label = name || "-";
 
-  return GROUP_NOTES[label] ? `${label} [${GROUP_NOTES[label]}]` : label;
+  return index[label] ? `${label} [${index[label]}]` : label;
 };
 
 type AnyGroup = {
@@ -83,6 +90,61 @@ const groupAmount = (
   return Number(group?.closing ?? group?.total) || 0;
 };
 
+/**
+ * Which note number each group on THIS sheet points at, [1] being the basis.
+ *
+ * ⚠️ ONE ANSWER FOR BOTH SIDES OF THE SHEET. The rows take their `[n]` from
+ * here and buildBalanceSheetNotes() numbers its list the same way, so a note
+ * can never be listed under one number while the row that explains it carries
+ * another. A group the sheet does not carry gets no entry and no note; the
+ * groups after it move up.
+ *
+ * The result is one note for both names the server may give it — it names the
+ * group after the sign of its closing column, so only one of the two exists,
+ * and the row that does exist reads the same number.
+ */
+/**
+ * Did the period move stock outside the ledger — either direction?
+ *
+ * ⚠️ EITHER, NOT ONLY A WRITE-OFF. Both directions are explained by the same
+ * note, so a period that only received goods has as much to say. Shared by the
+ * sheet's line builder, the printed sheet and the note list, so all three agree
+ * on whether that note exists.
+ */
+export const stockMoved = (
+  productOut?: number | null,
+  productIn?: number | null,
+): boolean => (Number(productOut) || 0) > 0 || (Number(productIn) || 0) > 0;
+
+export const balanceSheetNoteIndex = (
+  sections: Record<string, AnySection[]>,
+  hasStockNote = false,
+): Record<string, number> => {
+  const index: Record<string, number> = {};
+  let n = 1; // [1] is the basis, and it hangs on the sheet's title
+
+  for (const name of GROUP_NOTE_ORDER) {
+    if (findGroup(sections, name)) index[name] = ++n;
+  }
+
+  if (RESULT_GROUPS.some((name) => findGroup(sections, name))) {
+    const result = ++n;
+    for (const name of RESULT_GROUPS) index[name] = result;
+  }
+
+  /**
+   * ⚠️ THE STOCK-MOVEMENT NOTE HAS NO ROW OF ITS OWN. The Closing Stock group
+   * is where the stock it talks about stands, so that row carries its number --
+   * and only when the note exists. Numbered without a row it was a note nothing
+   * on the sheet pointed at, which is the one thing a note may not be.
+   */
+  if (hasStockNote && findGroup(sections, "Closing Stock")) {
+    index["Closing Stock"] = ++n;
+  }
+
+  return index;
+};
+
 export const buildBalanceSheetNotes = (
   sections: Record<string, AnySection[]>,
   period: {
@@ -93,6 +155,8 @@ export const buildBalanceSheetNotes = (
      * as null and leaves the note out -- it is never taken for a zero.
      */
     productOut?: number | null;
+    /** Goods received without a purchase in the same period, at their rate. */
+    productIn?: number | null;
   } = {},
 ): ReportNote[] => {
   const supplierAdvances = groupAmount(sections, "Supplier Advances");
@@ -125,33 +189,63 @@ export const buildBalanceSheetNotes = (
   const asOn = period.asOn ? ` as at ${period.asOn}` : "";
 
   /**
-   * The write-offs of the sheet's period at cost. Null is "not read" and writes
-   * no note; only a figure greater than zero does. A read that failed is not
-   * turned into a zero here -- it stays absent.
+   * The write-offs of the sheet's period at cost, and the goods received without
+   * a purchase in the same period. Null is "not read" and writes no note; only a
+   * figure greater than zero does. A read that failed is not turned into a zero
+   * here -- it stays absent.
    */
   const inventoryLoss = Number(period.productOut) || 0;
+  const stockReceipts = Number(period.productIn) || 0;
 
-  return [
-    {
-      n: 1,
-      title: "Basis of preparation",
-      body:
-        `The sheet${asOn} is drawn from posted vouchers, including a year-end ` +
-        "closing voucher where a year has been closed, so the capital accounts carry " +
-        "the years already closed and the current period carries only what is left " +
-        "standing. Every account is placed by its own closing balance and by what " +
-        "the account is: a head carrying a debit is shown among the assets, a head " +
-        "carrying a credit among what is owed, wherever in the chart the head is " +
-        "filed. Where that puts an account on the opposite side to the one the chart " +
-        "files it in, it is shown once, under a group named for what it is on that " +
-        "side — a customer ledger and a party loan account both sit in the chart's " +
-        "asset branch, and both are money owed. Assets, liabilities and the owners' " +
-        "stake are shown gross, with no account netted against another; only the " +
-        "sign of a balance decides its side, and no balance is moved for any other " +
-        "reason.",
-    },
-    {
-      n: 2,
+  // The numbers this sheet's rows carry, worked out once from the sheet itself.
+  // The stock-movement note takes the Closing Stock row's number, so the row
+  // and the note are numbered from the same place.
+  const index = balanceSheetNoteIndex(
+    sections,
+    stockMoved(period.productOut, period.productIn),
+  );
+  const resultNote = Number(index["Current Period Profit"] || index["Current Period Loss"] || 0);
+
+  const stockNote = stockMovementNote(
+    inventoryLoss,
+    stockReceipts,
+    "The written-off quantities are excluded from closing inventory within assets and the " +
+      "received quantities are inside it, and their financial effect is reflected through " +
+      "inventory valuation and the current period's profit or loss within equity" +
+      (resultNote ? ` (note ${resultNote})` : "") +
+      ". Accordingly, neither disclosed amount is adjusted again against assets or equity. " +
+      "Where purchase costs vary, the inventory valuation method may cause the effect on the " +
+      "current period's result to differ from the recorded write-off amount; and a receipt " +
+      "taken in at no rate, which happens where the books held none, adds nothing to closing " +
+      "inventory even though the goods are on the shelf."
+  );
+
+  const notes: ReportNote[] = [];
+
+  notes.push({
+    n: 1,
+    title: "Basis of preparation",
+    body:
+      `The sheet${asOn} is drawn from posted vouchers, including a year-end ` +
+      "closing voucher where a year has been closed, so the capital accounts carry " +
+      "the years already closed and the current period carries only what is left " +
+      "standing. Every account is placed by its own closing balance and by what " +
+      "the account is: a head carrying a debit is shown among the assets, a head " +
+      "carrying a credit among what is owed, wherever in the chart the head is " +
+      "filed. Where that puts an account on the opposite side to the one the chart " +
+      "files it in, it is shown once, under a group named for what it is on that " +
+      "side — a customer ledger and a party loan account both sit in the chart's " +
+      "asset branch, and both are money owed. Assets, liabilities and the owners' " +
+      "stake are shown gross, with no account netted against another; only the " +
+      "sign of a balance decides its side, and no balance is moved for any other " +
+      "reason.",
+  });
+
+  // The rest is written only where the sheet carries the row that points at it;
+  // `index` is the same numbering those rows carry, so the two cannot disagree.
+  if (index["Supplier Advances"]) {
+    notes.push({
+      n: index["Supplier Advances"],
       title: "Supplier advances",
       body:
         `${money(supplierAdvances)} in the business's favour with suppliers — ` +
@@ -164,18 +258,24 @@ export const buildBalanceSheetNotes = (
         "goods still to come, as a refund, or against a bill already raised is not " +
         "recorded anywhere, so the report does not say — it reports the balance as it " +
         "stands and leaves the reason to the ledger behind it.",
-    },
-    {
-      n: 3,
+    });
+  }
+
+  if (index["Account Payable"]) {
+    notes.push({
+      n: index["Account Payable"],
       title: "Accounts payable",
       body:
         `${money(payables)} owed to suppliers — the credit balances of the supplier ` +
-        "ledgers, in full. They are not reduced by the advances in note 2: the two are " +
-        "different suppliers' balances, and one party's debit does not settle another's " +
-        "credit.",
-    },
-    {
-      n: 4,
+        "ledgers, in full. They are not reduced by a debit balance standing on " +
+        "another supplier's ledger: the two are different parties' balances, and one " +
+        "party's debit does not settle another's credit.",
+    });
+  }
+
+  if (index["Customer Advances"]) {
+    notes.push({
+      n: index["Customer Advances"],
       title: "Customer credit balances",
       body:
         `${money(customerCredits)} held for customers — customer ledgers standing in ` +
@@ -186,9 +286,12 @@ export const buildBalanceSheetNotes = (
         "with interest, and the two have nothing in common but the side of the sheet " +
         "they land on. No repayment terms are recorded for it and the books do not say " +
         "which of the two is expected, so the amount is reported as it stands.",
-    },
-    {
-      n: 5,
+    });
+  }
+
+  if (index["Bank & Finance Borrowings"]) {
+    notes.push({
+      n: index["Bank & Finance Borrowings"],
       title: "Bank and finance borrowings",
       body:
         `${money(bankCredits)} of bank and finance ledgers standing in credit, on ` +
@@ -203,9 +306,12 @@ export const buildBalanceSheetNotes = (
         "establish and leaves the nature of each account to the reader. Interest " +
         "charged on such an account is posted to Bank Interest as an expense of the " +
         "period; it does not change the classification of the balance.",
-    },
-    {
-      n: 6,
+    });
+  }
+
+  if (index["Loans Received"]) {
+    notes.push({
+      n: index["Loans Received"],
       title: "Loans received",
       body:
         `${money(loans)} borrowed from parties, filed in the chart under the heading ` +
@@ -218,9 +324,12 @@ export const buildBalanceSheetNotes = (
         "the period — the report shows the balance and does not sort it. No repayment " +
         "date or term is recorded for any of them, so the sheet does not divide them " +
         "between current and non-current.",
-    },
-    {
-      n: 7,
+    });
+  }
+
+  if (resultNote) {
+    notes.push({
+      n: resultNote,
       title: "Current period result",
       body:
         `${money(result)} — the result of the period, carried to the owners' stake ` +
@@ -242,41 +351,15 @@ export const buildBalanceSheetNotes = (
         "closing voucher has already emptied that year's income and expense into " +
         "capital, so this line then carries only what the period itself has left " +
         "standing.",
-    },
-    {
-      n: 8,
-      title: "Unresolved classifications",
-      body:
-        "The following are reported as the books have them and are not changed by " +
-        "this report. (a) No borrowing carries a repayment date or term anywhere in " +
-        "the books, so none is divided between current and non-current and no " +
-        "maturity is shown (notes 5 and 6). (b) Whether a bank or finance ledger in " +
-        "credit is an overdraft, a cash-credit facility or a loan cannot be settled " +
-        "from the books, and the report does not settle it (note 5). (c) Whether a " +
-        "supplier debit will come back as goods or as money is not recorded (note 2). " +
-        "(d) The interest income standing in the Profit & Loss Account is charged on " +
-        "a loan account whose ownership the books do not settle — whether it belongs " +
-        "to the business or to its owner; see note 4 to that report. It is left where " +
-        "it is posted, and until that is decided the period's result, and the owners' " +
-        "stake shown here, include it in full: were it found not to belong to the " +
-        "business, both figures would fall by that amount, and no posting has been " +
-        "changed in the meantime.",
-    },
-    ...(inventoryLoss > 0
-      ? [
-          {
-            n: 9,
-            title: "Inventory loss — damaged or lost goods",
-            body:
-              `Goods written off as damaged or lost during the reporting period are valued at ${money(inventoryLoss)}, ` +
-              "at the cost recorded on each write-off. These write-offs reduce stock quantities without creating " +
-              "a separate ledger posting. The written-off quantities are excluded from closing inventory within " +
-              "assets, and their financial effect is reflected through inventory valuation and the current period’s " +
-              "profit or loss within equity (note 7). Accordingly, the disclosed amount is not deducted again as a " +
-              "separate adjustment to assets or equity. Where purchase costs vary, the inventory valuation method " +
-              "may cause the effect on the current period’s result to differ from the recorded write-off amount.",
-          },
-        ]
-      : []),
-  ];
+    });
+  }
+
+  // Written only where the sheet has the row that points at it. With no Closing
+  // Stock group there is nothing to point at, and the note is left out rather
+  // than listed under a number no row carries.
+  if (stockNote && index["Closing Stock"]) {
+    notes.push({ n: index["Closing Stock"], title: stockNote.title, body: stockNote.body });
+  }
+
+  return notes;
 };

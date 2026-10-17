@@ -1,5 +1,5 @@
+import { stockMovementNote } from "../../../utils/utils-functions/ReportNotes";
 import type { ReportNote } from "../../../utils/utils-functions/ReportNotes";
-import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 /**
  * Notes to the Trial Balance (Group).
@@ -12,12 +12,17 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
  *
  * Numbering is fixed: [1] the heading, [2] the Movement column, [3] the
  * Description column (each row is a group), [4] and [5] the Grand Total, [6]
- * the inventory loss -- written only when the period wrote goods off, and
- * last, so leaving it out moves no other number.
+ * stock that moved without a purchase or a sale -- written only when the period
+ * has such a movement, and last, so leaving it out moves no other number.
  *
  * Nothing here is a figure of its own. The amounts a note names are the rows
- * above it, so no total can pick a note up a second time -- note 6's amount is
+ * above it, so no total can pick a note up a second time -- note 6's amounts are
  * in no row at all, which is the point it makes.
+ *
+ * ⚠️ BOTH DIRECTIONS SINCE 2026-10-17. Note 6 named the write-off alone while a
+ * write-off was the only way stock could move without a voucher. Product In
+ * arrived on 2026-10-16 and moves stock the other way -- in, with no purchase --
+ * so a note naming one of them would be explaining the gap with half its causes.
  */
 type Context = {
   branchName?: string;
@@ -25,6 +30,8 @@ type Context = {
   endDate?: string;
   /** Write-offs of the period at cost (reports/trialbalance-level3-write-off). */
   productOut?: number;
+  /** Goods received without a purchase, at the rate they went in at. */
+  productIn?: number;
 };
 
 export const buildTrialBalanceNotes = ({
@@ -32,8 +39,19 @@ export const buildTrialBalanceNotes = ({
   startDate,
   endDate,
   productOut,
+  productIn,
 }: Context = {}): ReportNote[] => {
   const inventoryLoss = Number(productOut) || 0;
+  const stockReceipts = Number(productIn) || 0;
+
+  const stockNote = stockMovementNote(
+    inventoryLoss,
+    stockReceipts,
+    "Neither figure is a balance on this Trial Balance: a write-off and a receipt each " +
+      "move stock only and make no ledger posting, so neither is in any line above. Their " +
+      "effect is in the inventory valuation and the cost of goods sold (note 4), and " +
+      "neither is deducted or added again as a separate adjustment."
+  );
   const periodText =
     startDate && endDate && startDate !== "-" && endDate !== "-"
       ? `${startDate} to ${endDate}`
@@ -90,19 +108,6 @@ export const buildTrialBalanceNotes = ({
         "difference should be investigated in the underlying postings, opening " +
         "balances, report filters and calculation logic.",
     },
-    ...(inventoryLoss > 0
-      ? [
-          {
-            n: 6,
-            title: "Inventory loss — damaged or lost goods",
-            body:
-              `Goods written off as damaged or lost in this period are valued at ${thousandSeparator(inventoryLoss)}, ` +
-              "at the cost recorded on each write-off. A write-off moves stock only and makes no " +
-              "ledger posting, so it is in no balance on this Trial Balance. Its effect is in the " +
-              "inventory valuation and the cost of goods sold (note 4), and it is not deducted " +
-              "again as a separate expense.",
-          },
-        ]
-      : []),
+    ...(stockNote ? [{ n: 6, title: stockNote.title, body: stockNote.body }] : []),
   ];
 };

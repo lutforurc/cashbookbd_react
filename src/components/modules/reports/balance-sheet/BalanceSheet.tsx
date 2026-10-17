@@ -102,17 +102,20 @@ const BalanceSheet = (user: any) => {
     group: ReportGroup;
   } | null>(null);
   /**
-   * Note 9's figure and the scope it was read over. `amount` is null while the
-   * write-off read is in flight or when it could not be read -- null writes no
-   * note and is never treated as a confirmed zero. `key` is the branch and
-   * period the amount belongs to, so it can only be shown against the sheet it
-   * was read for.
+   * Note 9's two figures and the scope they were read over. `amount` is the
+   * write-off and `received` the goods taken in without a purchase; each is
+   * null while its read is in flight or when it could not be read -- null
+   * writes no note and is never treated as a confirmed zero. `key` is the
+   * branch and period both amounts belong to, so they can only be shown against
+   * the sheet they were read for. One key for both, because one request read
+   * both and neither may land on a sheet the other does not belong to.
    */
   const [writeOff, setWriteOff] = useState<{
     key: string;
     amount: number | null;
+    received: number | null;
     loading: boolean;
-  }>({ key: "", amount: null, loading: false });
+  }>({ key: "", amount: null, received: null, loading: false });
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const printRef = useRef<HTMLDivElement>(null);
@@ -236,12 +239,6 @@ const BalanceSheet = (user: any) => {
     assets.length > 0 || liabilities.length > 0 || equity.length > 0;
   const hasBalanceSheetResponse = Boolean(apiData);
 
-  // Built once, here, and handed to whichever view is showing.
-  const sheetLines = useMemo(
-    () => buildSheetLines({ assets, liabilities, equity, sections, hasSections, totals }),
-    [assets, equity, hasSections, liabilities, sections, totals],
-  );
-
   const netProfitDebug = useMemo(() => {
     const filters = apiData?.debug?.filters || {};
     const profitLoss = apiData?.debug?.profit_loss || {};
@@ -331,12 +328,12 @@ const BalanceSheet = (user: any) => {
    */
   useEffect(() => {
     if (!hasBalanceSheetResponse || !writeOffScopeReady) {
-      setWriteOff({ key: "", amount: null, loading: false });
+      setWriteOff({ key: "", amount: null, received: null, loading: false });
       return;
     }
 
     let cancelled = false;
-    setWriteOff({ key: currentScopeKey, amount: null, loading: true });
+    setWriteOff({ key: currentScopeKey, amount: null, received: null, loading: true });
 
     (async () => {
       try {
@@ -352,11 +349,12 @@ const BalanceSheet = (user: any) => {
         setWriteOff({
           key: currentScopeKey,
           amount: Number(res?.data?.data?.data?.product_out) || 0,
+          received: Number(res?.data?.data?.data?.product_in) || 0,
           loading: false,
         });
       } catch {
         if (cancelled) return;
-        setWriteOff({ key: currentScopeKey, amount: null, loading: false });
+        setWriteOff({ key: currentScopeKey, amount: null, received: null, loading: false });
       }
     })();
 
@@ -370,6 +368,8 @@ const BalanceSheet = (user: any) => {
    * exactly this scope. Null writes no note.
    */
   const writeOffAmount = writeOff.key === currentScopeKey ? writeOff.amount : null;
+  /** The receipts of the same scope, on the same terms. Never netted against it. */
+  const stockInAmount = writeOff.key === currentScopeKey ? writeOff.received : null;
 
   /**
    * True while note 9's figure for the sheet on screen is still unknown — the
@@ -380,9 +380,28 @@ const BalanceSheet = (user: any) => {
   const writeOffPending =
     hasReportData && writeOffScopeReady && (writeOff.loading || writeOff.key !== currentScopeKey);
 
+  // Built once, here, and handed to whichever view is showing. It needs the
+  // stock figures because the Closing Stock row carries the stock-movement
+  // note's number, and that note exists only in a period that moved stock.
+  const sheetLines = useMemo(
+    () =>
+      buildSheetLines({
+        assets,
+        liabilities,
+        equity,
+        sections,
+        hasSections,
+        totals,
+        productOut: writeOffAmount,
+        productIn: stockInAmount,
+      }),
+    [assets, equity, hasSections, liabilities, sections, totals, writeOffAmount, stockInAmount],
+  );
+
   // The notes are built from the same sections the sheet is drawn from, so a
   // note's amount is the row above it and never a figure of its own. Note 9 is
-  // added only when the period's write-off figure was read and is above zero.
+  // added only when the period's figures were read and one of them is above
+  // zero -- a period that only took stock in has the note too.
   const balanceSheetNotes = useMemo(
     () =>
       buildBalanceSheetNotes(sections, {
@@ -392,8 +411,9 @@ const BalanceSheet = (user: any) => {
             ? dayjs(endDate).format("DD/MM/YYYY")
             : undefined,
         productOut: writeOffAmount,
+        productIn: stockInAmount,
       }),
-    [sections, apiData?.report_date?.as_on_date, endDate, writeOffAmount],
+    [sections, apiData?.report_date?.as_on_date, endDate, writeOffAmount, stockInAmount],
   );
 
   const showDifferenceDebug = useMemo(() => {
@@ -778,6 +798,7 @@ const BalanceSheet = (user: any) => {
             sections={sections}
             totals={totals}
             productOut={writeOffAmount}
+            productIn={stockInAmount}
           />
         </div>
       </div>

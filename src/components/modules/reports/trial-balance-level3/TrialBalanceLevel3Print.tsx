@@ -32,6 +32,8 @@ type TrialBalanceLevel3PrintProps = {
   rowsPerPage?: number;
   /** Write-offs of the period, for note 6. */
   productOut?: number;
+  /** Goods received without a purchase in the same period, for note 6. */
+  productIn?: number;
   rows: TrialBalancePrintRow[];
   totals: {
     openingDebit: number;
@@ -104,6 +106,7 @@ const TrialBalanceLevel3Print = React.forwardRef<
   fontSize,
   rowsPerPage = 20,
   productOut,
+  productIn,
   rows,
   totals,
 }, ref) => {
@@ -117,7 +120,13 @@ const TrialBalanceLevel3Print = React.forwardRef<
   // The notes describe the paper in hand and nothing has to be passed in
   // beside it: whether ledgers are listed under their groups is the detailed
   // report's business, and the note says where to find them either way.
-  const notes = buildTrialBalanceNotes({ branchName, startDate, endDate, productOut });
+  const notes = buildTrialBalanceNotes({
+    branchName,
+    startDate,
+    endDate,
+    productOut,
+    productIn,
+  });
   const totalPages = pageCount + (notes.length ? 1 : 0);
 
   // Numbered over the whole list, once, so the serial a row carries does not
@@ -253,6 +262,10 @@ const TrialBalanceLevel3Print = React.forwardRef<
                 Grand Total
                 <NoteRef n={4} />
                 <NoteRef n={5} />
+                {/* [6] exists only where stock moved outside the ledger; the note
+                    says as much, and a period with no such movement has no note
+                    to point at. */}
+                {(Number(productOut) > 0 || Number(productIn) > 0) && <NoteRef n={6} />}
               </td>
               {/* <td className="border border-gray-900 px-2 py-0.5"></td> */}
               <td

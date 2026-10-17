@@ -1,5 +1,10 @@
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
-import { reportGroupLabel, reportSectionLabel } from "./balanceSheetNotes";
+import {
+  balanceSheetNoteIndex,
+  reportGroupLabel,
+  reportSectionLabel,
+  stockMoved,
+} from "./balanceSheetNotes";
 
 /**
  * The balance sheet's shape, and the one list of lines both views draw from.
@@ -128,6 +133,8 @@ export const buildSheetLines = ({
   equity,
   sections,
   hasSections,
+  productOut,
+  productIn,
   totals,
 }: {
   assets: ReportGroup[];
@@ -135,6 +142,13 @@ export const buildSheetLines = ({
   equity: ReportGroup[];
   sections: ReportSections;
   hasSections: boolean;
+  /**
+   * The period's stock that moved outside the ledger. They decide whether the
+   * Closing Stock row carries the stock-movement note's number -- the note has
+   * no row of its own, and a note nothing points at must not be written.
+   */
+  productOut?: number | null;
+  productIn?: number | null;
   totals: {
     assetsColumns: ColumnTotals;
     liabilitiesColumns: ColumnTotals;
@@ -143,6 +157,10 @@ export const buildSheetLines = ({
 }): SheetLine[] => {
   const out: SheetLine[] = [];
   let serial = 0;
+
+  // The note numbers this sheet's rows carry -- worked out once, from the same
+  // sections the sheet is drawn from, so a row points at the note that exists.
+  const noteIndex = balanceSheetNoteIndex(sections, stockMoved(productOut, productIn));
 
   const pushSection = (
     title: string,
@@ -164,7 +182,7 @@ export const buildSheetLines = ({
         section: title,
         side,
         group,
-        label: reportGroupLabel(group.group_name),
+        label: reportGroupLabel(group.group_name, noteIndex),
         itemCount: (group.items || []).length,
         columns: {
           opening: toNum(group.opening),
@@ -203,7 +221,7 @@ export const buildSheetLines = ({
         section: parent,
         side,
         group,
-        label: reportGroupLabel(group.group_name),
+        label: reportGroupLabel(group.group_name, noteIndex),
         itemCount: (group.items || []).length,
         columns: {
           opening: toNum(group.opening),

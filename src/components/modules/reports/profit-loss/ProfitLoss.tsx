@@ -426,6 +426,12 @@ const ProfitLoss = (user: any) => {
       // off once. Shown only as note 7 (see profitLossNotes), because a shop
       // that cannot see the number asks why the month was thin.
       productOut: toNum(apiData?.product_out),
+      // ⚠️ THE OTHER DIRECTION, AND THE OPPOSITE SIGN. Goods received without a
+      // purchase are inside the closing stock and have already raised the
+      // profit. Kept as its own figure rather than netted against productOut:
+      // a month that wrote 50,000 off and took 50,000 back in is not a month in
+      // which nothing happened. Same rule otherwise -- not added to any total.
+      productIn: toNum(apiData?.product_in),
       net: {
         grossProfit,
         grossLoss,

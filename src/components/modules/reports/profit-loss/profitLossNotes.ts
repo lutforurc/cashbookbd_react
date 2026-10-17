@@ -1,4 +1,5 @@
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import { stockMovementNote } from "../../../utils/utils-functions/ReportNotes";
 import type { ReportNote } from "../../../utils/utils-functions/ReportNotes";
 
 /**
@@ -10,7 +11,7 @@ import type { ReportNote } from "../../../utils/utils-functions/ReportNotes";
  * ⚠️ EVERY CLAIM HERE WAS READ OFF THE CODE OR THE BOOKS, NOT ASSUMED. Where a
  * policy is unsettled the note says so and names the effect of settling it --
  * it does not choose a policy, and it does not present an unverified method as
- * the validated one. The stock walk, the discount postings, the two income
+ * the validated one. The stock walk, the discount postings and the two income
  * vouchers and their approval flags were all read for this revision.
  *
  * ⚠️ NO FIGURE IS WRITTEN IN AS TEXT. What a note names comes from the report
@@ -19,24 +20,59 @@ import type { ReportNote } from "../../../utils/utils-functions/ReportNotes";
  * ships to every client and the numbers of one database are not the numbers of
  * another.
  *
- * The numbering is fixed and the report's rows point at it: [1] the heading,
- * [2] the cost of goods sold, [3] direct acquisition costs, [4] the income
- * accounts, [5] the stock valuation, [6] what is unresolved, [7] the inventory
- * loss -- written only when the period wrote goods off, and last, so leaving it
- * out moves no other number.
+ * ⚠️ A NOTE EXISTS ONLY WHERE A ROW POINTS AT IT, and the notes that remain are
+ * numbered [1] to [n] with nothing skipped. Basis [1], the cost of goods sold
+ * [2] and direct acquisition costs [3] always have rows and always print; the
+ * income note prints only where the account has income rows; the stock note
+ * always does; and the stock-movement note comes last, only for a period that
+ * moved stock outside the ledger. `profitLossNoteIndex()` is the one place that
+ * decides the numbers, and the screen and the paper both label their rows from
+ * it -- a pointer that disagrees with the list underneath is worse than none.
+ *
+ * Until 2026-10-17 there was a sixth note, "Unresolved items", and no row
+ * pointed at it. What was worth keeping moved into the notes that are pointed
+ * at: the purchase-discount caveat into the stock note, and the effect of
+ * setting the two income postings aside into the income note.
  */
 const money = (value: any) => thousandSeparator(Number(value) || 0);
 
 type Period = { startDate?: string; endDate?: string };
 
+const incomeRows = (report: any): any[] =>
+  Array.isArray(report?.net?.incomes) ? report.net.incomes : [];
+
+const stockMoved = (report: any) =>
+  (Number(report?.productOut) || 0) > 0 || (Number(report?.productIn) || 0) > 0;
+
+/**
+ * The number each note will carry, keyed by what the note is about.
+ *
+ * ⚠️ THE SCREEN AND THE PAPER BOTH READ THIS. Written out by hand at the four
+ * call sites it would be four chances to disagree -- and the income note is
+ * absent on a branch that earned nothing outside the trading account, which
+ * moves the stock note's own number.
+ */
+export const profitLossNoteIndex = (report: any): Record<string, number> => {
+  const index: Record<string, number> = { basis: 1, cogs: 2, acquisition: 3 };
+
+  let n = 4;
+  if (incomeRows(report).length > 0) index.income = n++;
+  index.stock = n++;
+  if (stockMoved(report)) index.stockMovement = n++;
+
+  return index;
+};
+
 export const buildProfitLossNotes = (
   report: any,
   period: Period = {}
 ): ReportNote[] => {
+  const index = profitLossNoteIndex(report);
+
   const cogs = report?.cogs || {};
   const net = report?.net || {};
   const trading = report?.trading || {};
-  const incomes: any[] = Array.isArray(net.incomes) ? net.incomes : [];
+  const incomes = incomeRows(report);
 
   const periodText =
     period.startDate && period.endDate
@@ -81,7 +117,10 @@ export const buildProfitLossNotes = (
    * interest must not read a note about it.
    */
   const interest = earnedBy(/Personal Interest/);
-  const commission = earnedBy(/Comi?ssion/);
+  // ⚠️ `m+`, not `mi?`: the corrected spelling is "Commission" and the misspelt
+  // chart head is "Comission". The old pattern matched the misspelling only, so
+  // the commission paragraph fell off every report that uses the corrected name.
+  const commission = earnedBy(/Co(m+)i?ssion/);
 
   const interestNote = interest
     ? " Personal Interest is interest charged on a loan the business carries as" +
@@ -109,7 +148,10 @@ export const buildProfitLossNotes = (
         " account has been moved, and no historical posting has been changed."
       : "";
 
-  /** The same two accounts, for the effect of setting them aside. */
+  /**
+   * The same two accounts, for the effect of setting them aside -- the one
+   * sentence of the old "Unresolved items" note worth keeping.
+   */
   const asideNote =
     interest || commission
       ? " Setting them aside would reduce the result by " +
@@ -120,39 +162,53 @@ export const buildProfitLossNotes = (
       : "";
 
   /**
+   * ⚠️ THE DISCOUNT CAVEAT HAS NO ROW OF ITS OWN. A purchase discount is taken
+   * to the trading account in full while the stock layer keeps the gross price
+   * on the bill line, so the stock still held stands above its net cost. It is
+   * said inside the stock note because that is the note a reader follows when
+   * the closing stock looks high. It is written only for a period that granted
+   * a discount: with no discount the layer's price IS the net cost, and the
+   * sentence would raise a doubt that is not there.
+   */
+  const discountCaveat = Number(trading.purchaseDiscountCredit)
+    ? " Purchase discounts are taken to the trading account in full and are not" +
+      " allocated between goods sold and goods still held, while the stock layer" +
+      " keeps the gross price on the bill line -- so the stock held is carried" +
+      " above its net cost by the share of the discount attributable to it. The" +
+      ` discounts of this period are ${money(trading.purchaseDiscountCredit)} in` +
+      " all, and any allocation would have to take the same amount out of net" +
+      " purchase for the goods sold, or the discount is deducted twice."
+    : "";
+
+  /**
    * ⚠️ THE AMOUNT IS A LABEL, NEVER A DEDUCTION. The goods are already out of
    * the closing stock, so the cost of goods sold carries them; a line taking
    * the amount off again would charge it twice.
    *
    * ⚠️ IT NEED NOT EQUAL ITS EFFECT ON THE COST OF GOODS SOLD, and the last
    * sentence says so. The write-off is priced FIFO at the oldest layer; the
-   * closing-stock walk (note 5) gives up the newest layer for the same units.
-   * Measured 2026-10-16: 100 @ 400 then 100 @ 500, ten written off -- slip
-   * 4,000, closing stock 5,000 lower. One price, and the two agree.
+   * closing-stock walk (the stock note) gives up the newest layer for the same
+   * units. Measured 2026-10-16: 100 @ 400 then 100 @ 500, ten written off --
+   * slip 4,000, closing stock 5,000 lower. One price, and the two agree.
    */
   const inventoryLoss = Number(report?.productOut) || 0;
+  const stockReceipts = Number(report?.productIn) || 0;
 
-  const inventoryLossNote: ReportNote[] =
-    inventoryLoss > 0
-      ? [
-          {
-            n: 7,
-            title: "Inventory loss — damaged or lost goods",
-            body:
-              `Goods written off as damaged or lost in this period are valued at ${money(inventoryLoss)}, ` +
-              "at the cost recorded on each write-off. Their quantity has been removed from the " +
-              "stock on hand, so they are not in the closing stock and their cost is already within " +
-              "the cost of goods sold (note 2); the amount is therefore not deducted again as a " +
-              "separate expense. Where a product was bought at more than one price, the " +
-              "closing-stock valuation (note 5) can price the same quantity differently, so the " +
-              "effect on the cost of goods sold may differ from this amount.",
-          },
-        ]
-      : [];
+  const stockNote = stockMovementNote(
+    inventoryLoss,
+    stockReceipts,
+    "The written-off quantity has left the stock on hand and the received quantity has joined " +
+      "it, so both are already inside the closing stock the cost of goods sold is worked out " +
+      `from (note ${index.cogs}) -- the loss has raised that cost and the receipt has lowered it -- and ` +
+      "neither is adjusted again as a separate expense. Where a product was bought at more " +
+      `than one price, the closing-stock valuation (note ${index.stock}) can price the same quantity ` +
+      "differently, so the effect on the cost of goods sold may differ from the write-off " +
+      "amount."
+  );
 
-  return [
+  const notes: ReportNote[] = [
     {
-      n: 1,
+      n: index.basis,
       title: "Basis of preparation",
       body:
         `The account covers ${periodText} for the branch selected. Income and ` +
@@ -170,7 +226,7 @@ export const buildProfitLossNotes = (
         "consolidation in which the two sides would meet and have to be eliminated.",
     },
     {
-      n: 2,
+      n: index.cogs,
       title: "Cost of goods sold",
       body:
         `Opening stock ${money(cogs.opening)}, plus net purchase ${money(cogs.netPurchase)}, ` +
@@ -181,7 +237,7 @@ export const buildProfitLossNotes = (
         "shown beside it.",
     },
     {
-      n: 3,
+      n: index.acquisition,
       title: "Direct acquisition costs",
       body:
         "No freight, unloading or handling cost is carried into the value of the " +
@@ -197,20 +253,25 @@ export const buildProfitLossNotes = (
         "The treatment is therefore a limitation of this account as it stands, and " +
         "the figures are as the vouchers posted them.",
     },
+    ...(index.income
+      ? [
+          {
+            n: index.income,
+            title: "Income accounts",
+            body:
+              `The income of the period is ${money(net.totalIncome)}` +
+              (incomeLines ? `: ${incomeLines}. ` : ". ") +
+              "The accounts shown inside a group are part of that group's own figure and " +
+              "are not added to it a second time." +
+              interestNote +
+              commissionNote +
+              unapprovedNote +
+              asideNote,
+          },
+        ]
+      : []),
     {
-      n: 4,
-      title: "Income accounts",
-      body:
-        `The income of the period is ${money(net.totalIncome)}` +
-        (incomeLines ? `: ${incomeLines}. ` : ". ") +
-        "The accounts shown inside a group are part of that group's own figure and " +
-        "are not added to it a second time." +
-        interestNote +
-        commissionNote +
-        unapprovedNote,
-    },
-    {
-      n: 5,
+      n: index.stock,
       title: "Stock valuation",
       body:
         `Closing stock ${money(cogs.closing)}. The layers are the purchase records, ` +
@@ -226,35 +287,18 @@ export const buildProfitLossNotes = (
         "it consumes at the whole-number part of the quantity on hand, so a product " +
         "held in a fractional quantity can be valued over too few layers with part " +
         "of its quantity left unpriced; a layer is valued at the price recorded on " +
-        "the purchase line, less any rebate recorded on that line, and carries no " +
-        "acquisition cost (note 3); and stock is carried at cost, because there is " +
-        "no net realisable value review and no write-down mechanism, so stock that " +
-        "has fallen in value or become unsaleable is not reduced until a stock-out " +
-        "voucher takes it out.",
+        `the purchase line, less any rebate recorded on that line, and carries no ` +
+        `acquisition cost (note ${index.acquisition}); and stock is carried at ` +
+        "cost, because there is no net realisable value review and no write-down " +
+        "mechanism, so stock that has fallen in value or become unsaleable is not " +
+        "reduced until a stock-out voucher takes it out." +
+        discountCaveat,
     },
-    {
-      n: 6,
-      title: "Unresolved items",
-      body:
-        "These are reported as the books and the code have them, and are not " +
-        "changed by this report. (a) The stock method: the walk described in note " +
-        "5 does not match the first-in, first-out method the account is labelled " +
-        "with; the difference is measured and the correction is not applied. " +
-        "(b) Purchase discounts are taken to the trading account in full and are " +
-        "not allocated between goods sold and goods still held, while the stock " +
-        "layer keeps the gross price on the bill line -- so the stock held is " +
-        "carried above its net cost by the share of the discount attributable to " +
-        `it. The discounts of this period are ${money(trading.purchaseDiscountCredit)} ` +
-        "in all, and any allocation would have to take the same amount out of net " +
-        "purchase for the sold part, or the discount is deducted twice. " +
-        "(c) Acquisition costs are unallocated, for the reason in note 3. " +
-        "(d) There is no net realisable value review and no write-down mechanism. " +
-        "(e) The interest and the commission in note 4 are recognised in this " +
-        "period although their own remarks date them to earlier years, and both " +
-        "postings are unapproved; left as posted, the period's result includes " +
-        "them in full." +
-        asideNote,
-    },
-    ...inventoryLossNote,
   ];
+
+  if (stockNote) {
+    notes.push({ n: index.stockMovement, title: stockNote.title, body: stockNote.body });
+  }
+
+  return notes;
 };

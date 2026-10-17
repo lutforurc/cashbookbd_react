@@ -16,11 +16,68 @@
  * amounts named in a note are the rows above it, never a second copy that a
  * total could pick up.
  */
+import thousandSeparator from "./thousandSeparator";
+
 export type ReportNote = {
   /** The number the report's own rows point at. */
   n: number;
   title: string;
   body: string;
+};
+
+/**
+ * The wording for the note on stock that changed hands with no purchase and no
+ * sale behind it — write-offs out, Product In receipts back.
+ *
+ * Shared by the Trial Balance (Group), the Profit & Loss and the Balance Sheet,
+ * where it is the last note on each. The three differ only in the closing sentence,
+ * which says in that report's own terms where the effect has already landed; it
+ * comes in as `closing`. Everything above it is the same paragraph, and three
+ * copies of it would drift.
+ *
+ * ⚠️ TWO AMOUNTS, NEVER A NET, and the amounts are passed in un-netted for that
+ * reason. A period that wrote 50,000 off and took 50,000 back in is not a period
+ * in which nothing happened — one figure would say it was, and that is exactly
+ * the month somebody is reading the note to understand.
+ *
+ * ⚠️ A NOTE IS DRAWN WHEN EITHER IS ABOVE ZERO, not only when stock was written
+ * off. A period that received goods without buying them has as much explaining
+ * to do as the other way round, and until 2026-10-17 the write-off was the only
+ * case the three notes knew about.
+ *
+ * ⚠️ API — `null` means write no note. The caller spreads the result, so a
+ * period with neither movement leaves the note out and thereby moves no other
+ * note's number.
+ */
+export const stockMovementNote = (
+  inventoryLoss: number,
+  stockReceipts: number,
+  closing: string
+): { title: string; body: string } | null => {
+  const loss = Number(inventoryLoss) || 0;
+  const receipts = Number(stockReceipts) || 0;
+
+  if (loss <= 0 && receipts <= 0) return null;
+
+  const title =
+    loss > 0 && receipts > 0
+      ? "Stock moved without a purchase or a sale"
+      : loss > 0
+        ? "Inventory loss — damaged or lost goods"
+        : "Goods received without a purchase";
+
+  const body =
+    (loss > 0
+      ? `Goods written off as damaged or lost in this period are valued at ${thousandSeparator(loss)}, ` +
+        "at the cost recorded on each write-off. "
+      : "") +
+    (receipts > 0
+      ? `Goods received in the same period without being bought are valued at ${thousandSeparator(receipts)}, ` +
+        "at the rate the books held for them. "
+      : "") +
+    closing;
+
+  return { title, body };
 };
 
 /**
