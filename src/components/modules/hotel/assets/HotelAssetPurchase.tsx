@@ -19,10 +19,12 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
+import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import httpService from '../../../services/httpService';
 import {
+  API_COAL3_ID_BY_L4_URL,
   API_HOTEL_ASSET_PURCHASE_ACCOUNTS_URL,
   API_HOTEL_ASSET_PURCHASE_ITEMS_URL,
   API_HOTEL_ASSET_PURCHASE_URL,
@@ -38,10 +40,12 @@ import { FIELD_HEIGHT, FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fie
  * Only the asset head it debits is new. Nothing here touches inventory, and no
  * product's quantity moves.
  *
- * ⚠️ CASH ONLY, paid in full -- THE FIRST STEP. Bank, credit, discounting and
- * part payment are not built, and rather than pretend, each control that would
- * need them is DISABLED with a line saying so. Nothing on this screen can put a
- * figure in the books that the books do not mean.
+ * ⚠️ CASH, BANK OR CREDIT -- three vouchers, the ordinary purchase form's three.
+ * Cash and bank are `4-` purchases paid in full out of the till or a bank
+ * account; credit is a `9-` Credit Purchase journal owed to the supplier's own
+ * head, so the Supplier Ledger carries it and the payment screens settle it.
+ * Discounting and part payment are not built, and stay DISABLED rather than
+ * pretend.
  *
  * ⚠️ THE ITEM COMES FROM `asset_items`, NOT FROM products. An office chair is a
  * thing a hotel keeps, not something it resells, so it has no stock, no FIFO
@@ -116,10 +120,19 @@ const HotelAssetPurchase = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [rows, setRows] = useState<Line[]>([]);
 
+  /** How the bill was settled -- and so which voucher the server writes. */
+  const [mode, setMode] = useState<Mode>(CASH_MODE);
+  const [bankList, setBankList] = useState<{ id: number; name: string }[]>([]);
+  const [bankAccount, setBankAccount] = useState('');
+  const [chequeNo, setChequeNo] = useState('');
+  const [supplier, setSupplier] = useState<{ value: string; label: string } | null>(null);
+
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   /** The number the server gave the voucher it just wrote, if any. */
   const [savedVoucher, setSavedVoucher] = useState('');
+  /** How that voucher was settled -- it decides which book the banner names. */
+  const [savedMode, setSavedMode] = useState<Mode>(CASH_MODE);
 
   useEffect(() => {
     let cancelled = false;
@@ -140,6 +153,31 @@ const HotelAssetPurchase = () => {
       .catch(() => {
         // The interceptor has already said what went wrong. An empty list is
         // what the screen shows either way, and it cannot save without a head.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /** The company's bank accounts -- the Bank Account group (level 3, id 2), as Bank Payment lists them. */
+  useEffect(() => {
+    let cancelled = false;
+
+    httpService
+      .get(`${API_COAL3_ID_BY_L4_URL}2`)
+      .then((res: any) => {
+        if (cancelled) return;
+
+        const list = res?.data?.data?.data ?? [];
+        const banks = Array.isArray(list) ? list : [];
+
+        setBankList(banks);
+        // Most companies keep one bank; picking it saves the clerk a click.
+        if (banks.length === 1) setBankAccount(String(banks[0].id));
+      })
+      .catch(() => {
+        // The interceptor has already said what went wrong.
       });
 
     return () => {
@@ -190,11 +228,13 @@ const HotelAssetPurchase = () => {
   );
 
   /**
-   * ⚠️ THE VOUCHER PAYS THE WHOLE THING. There is no discount and no part
-   * payment yet, so net, paid and due are the subtotal and two zeros -- stated
-   * rather than left off, so the panel still says what it is going to do.
+   * ⚠️ ALL OR NOTHING. There is no discount and no part payment yet: cash and
+   * bank pay the whole of it, credit pays none -- stated rather than left off,
+   * so the panel still says what it is going to do.
    */
   const netTotal = round2(subtotal);
+  const paidAmount = mode === CREDIT_MODE ? 0 : netTotal;
+  const dueAmount = round2(netTotal - paidAmount);
 
   const emptyLine = { itemId: '', itemName: '', unit: '', quantity: '', rate: '' };
 
@@ -312,6 +352,10 @@ const HotelAssetPurchase = () => {
     setNotes('');
     setAccountHead('');
     setNewItemName('');
+    // The mode and the bank are habits of the desk, so they stay; who this
+    // bill was owed to and its cheque belong to the bill just saved.
+    setSupplier(null);
+    setChequeNo('');
     setTransactionDate(today());
     // A fresh entry has no number yet, so the one just saved must leave the box.
     setSavedVoucher('');
@@ -333,6 +377,16 @@ const HotelAssetPurchase = () => {
       return;
     }
 
+    if (mode === BANK_MODE && !bankAccount) {
+      toast.error('Which bank account was it paid from?');
+      return;
+    }
+
+    if (mode === CREDIT_MODE && !supplier?.value) {
+      toast.error('Bought on credit from whom? Choose the supplier.');
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -341,6 +395,10 @@ const HotelAssetPurchase = () => {
         account: Number(accountHead),
         vr_date: transactionDate,
         note: notes || null,
+        mode,
+        bank_account: mode === BANK_MODE ? Number(bankAccount) : null,
+        cheque_no: mode === BANK_MODE ? chequeNo.trim() || null : null,
+        supplier: mode === CREDIT_MODE ? Number(supplier?.value) : null,
         // ⚠️ THE ITEM, NOT A TYPED NAME. The server reads the head from the
         // item's category and writes one register row per unit, so the id is
         // the only thing it needs besides the figures.
@@ -365,6 +423,7 @@ const HotelAssetPurchase = () => {
       // Clear the form first, then put the number it was given back in the box.
       reset();
       setSavedVoucher(String(saved?.vr_no ?? ''));
+      setSavedMode(mode);
       toast.success(`Voucher ${saved?.vr_no} saved`);
     } catch (error: any) {
       if (!error?.toastReported) {
@@ -413,8 +472,12 @@ const HotelAssetPurchase = () => {
       {savedVoucher ? (
         <div className="mb-3 flex items-center justify-between gap-3 rounded border border-success bg-success/10 px-3 py-2">
           <span className="text-sm font-medium text-black dark:text-white">
-            Saved — voucher <strong>{savedVoucher}</strong>. It is in the cash book and the ledger
-            like any other payment.
+            Saved — voucher <strong>{savedVoucher}</strong>.{' '}
+            {savedMode === CREDIT_MODE
+              ? "It is owed to the supplier — see the Supplier Ledger."
+              : savedMode === BANK_MODE
+                ? 'It is in the bank book and the ledger like any other payment.'
+                : 'It is in the cash book and the ledger like any other payment.'}
           </span>
           <button
             type="button"
@@ -657,26 +720,29 @@ const HotelAssetPurchase = () => {
             Payment Details
           </h2>
 
-          {/* ⚠️ Three vouchers, not three payment methods. Bank and credit are
-              DISABLED rather than merely unbuilt: pressing one and getting a
-              cash voucher anyway is the one thing this screen must not do. */}
-          <div className="mb-2 grid grid-cols-3 overflow-hidden rounded border border-stroke dark:border-strokedark">
-            <span
-              className={`${FIELD_HEIGHT} inline-flex items-center justify-center gap-2 bg-primary text-sm font-medium text-white`}
-            >
-              <FiDollarSign size={16} />
-              Cash
-            </span>
+          {/* ⚠️ Three vouchers, not three payment methods: each button decides
+              the voucher the server writes -- see the note at the top. */}
+          <div
+            role="radiogroup"
+            aria-label="Payment mode"
+            className="mb-2 grid grid-cols-3 overflow-hidden rounded border border-stroke dark:border-strokedark"
+          >
             {[
-              { label: 'Bank', icon: <FaUniversity size={15} /> },
-              { label: 'Credit', icon: <FiCreditCard size={16} /> },
+              { value: CASH_MODE, label: 'Cash', icon: <FiDollarSign size={16} /> },
+              { value: BANK_MODE, label: 'Bank', icon: <FaUniversity size={15} /> },
+              { value: CREDIT_MODE, label: 'Credit', icon: <FiCreditCard size={16} /> },
             ].map((item) => (
               <button
-                key={item.label}
+                key={item.value}
                 type="button"
-                disabled
-                title={`${item.label} is the next step — not built yet.`}
-                className={`${FIELD_HEIGHT} inline-flex cursor-not-allowed items-center justify-center gap-2 text-sm font-medium text-gray-400 opacity-60 dark:text-gray-500`}
+                role="radio"
+                aria-checked={mode === item.value}
+                onClick={() => setMode(item.value as Mode)}
+                className={`${FIELD_HEIGHT} inline-flex items-center justify-center gap-2 text-sm font-medium ${
+                  mode === item.value
+                    ? 'bg-primary text-white'
+                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-meta-4'
+                }`}
               >
                 {item.icon}
                 {item.label}
@@ -685,19 +751,67 @@ const HotelAssetPurchase = () => {
           </div>
 
           <p className="mb-3 text-xs leading-snug text-gray-500 dark:text-gray-400">
-            Paid out of cash, in full. Bank, credit and part payment come next — a credit purchase
-            moves no money at all and is a journal, not a setting on this one.
+            {mode === CREDIT_MODE
+              ? 'Nothing paid now — the whole bill is owed to the supplier and is settled later from the payment screens.'
+              : mode === BANK_MODE
+                ? 'Paid in full from the bank account below.'
+                : 'Paid out of cash, in full.'}
           </p>
 
           <div className="grid grid-cols-1 gap-3">
+            {mode === BANK_MODE ? (
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <DropdownCommon
+                  id="bankAccount"
+                  name="bankAccount"
+                  label="Bank Account *"
+                  data={[{ id: '', name: 'Select a bank account' }, ...bankList]}
+                  value={bankAccount}
+                  onChange={(e: any) => setBankAccount(e.target.value)}
+                />
+                <InputElement
+                  id="chequeNo"
+                  name="chequeNo"
+                  label="Cheque No"
+                  placeholder="Optional"
+                  value={chequeNo}
+                  onChange={(e: any) => setChequeNo(e.target.value)}
+                />
+              </div>
+            ) : null}
+
+            {mode === CREDIT_MODE ? (
+              <div>
+                <label htmlFor="supplier" className={FIELD_LABEL}>
+                  Supplier *
+                </label>
+                <DdlMultiline
+                  id="supplier"
+                  name="supplier"
+                  placeholder="Select Supplier"
+                  acType={'3'}
+                  value={supplier}
+                  onSelect={(option: any) =>
+                    setSupplier(
+                      option ? { value: String(option.value), label: String(option.label) } : null,
+                    )
+                  }
+                />
+              </div>
+            ) : null}
+
             <InputElement
               id="paidAmount"
               name="paidAmount"
               label="Payment Amount (Tk.)"
-              value={money(netTotal)}
+              value={money(paidAmount)}
               disabled
               onChange={() => undefined}
-              description="The whole of it. Part payment arrives with credit, and is what leaves a balance owing to the seller."
+              description={
+                mode === CREDIT_MODE
+                  ? 'Nothing now. Part payment is not built yet.'
+                  : 'The whole of it. Part payment is not built yet.'
+              }
             />
 
             <div>
@@ -754,14 +868,14 @@ const HotelAssetPurchase = () => {
           <div className="flex items-center justify-between py-1.5">
             <span className="text-sm text-gray-500 dark:text-gray-400">Paid Amount (Tk.)</span>
             <span className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
-              {money(netTotal)}
+              {money(paidAmount)}
             </span>
           </div>
 
           <div className="flex items-center justify-between py-1.5">
             <span className="text-sm text-gray-500 dark:text-gray-400">Due Amount (Tk.)</span>
             <span className="font-semibold text-amber-600 dark:text-amber-400">
-              {money(0)}
+              {money(dueAmount)}
             </span>
           </div>
         </div>
