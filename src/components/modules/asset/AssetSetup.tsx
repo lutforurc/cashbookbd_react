@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import {
   FiCheckSquare,
   FiFileText,
+  FiList,
   FiPackage,
   FiRepeat,
   FiTag,
@@ -16,6 +17,7 @@ import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 
 import AssetCategoriesTab from './AssetCategoriesTab';
+import AssetItemsTab from './AssetItemsTab';
 import AssetCwipTab from './AssetCwipTab';
 import AssetDepreciationTab from './AssetDepreciationTab';
 import AssetRegisterTab from './AssetRegisterTab';
@@ -45,6 +47,7 @@ import AssetVerificationTab from './AssetVerificationTab';
 
 type TabKey =
   | 'categories'
+  | 'items'
   | 'register'
   | 'cwip'
   | 'depreciation'
@@ -54,6 +57,10 @@ type TabKey =
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[] = [
   { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: 'Rates and heads' },
+  // ⚠️ Between the two, because an item belongs to a category and is what a
+  // purchase is picked from -- the register records the thing bought, not the
+  // short list it was chosen from.
+  { key: 'items', label: 'Items', icon: <FiList size={15} />, hint: 'What a purchase is picked from' },
   { key: 'register', label: 'Register', icon: <FiPackage size={15} />, hint: 'What the company owns' },
   // ⚠️ Between the register and the charge, because that is where it sits in
   // life: a thing being built is not in the register yet and is not depreciated
@@ -209,6 +216,7 @@ const AssetSetup = ({ user }: any) => {
       </div>
 
       {tab === 'categories' ? <AssetCategoriesTab /> : null}
+      {tab === 'items' ? <AssetItemsTab /> : null}
       {tab === 'register' ? <AssetRegisterTab branchId={branchId} /> : null}
       {tab === 'cwip' ? <AssetCwipTab branchId={branchId} /> : null}
       {tab === 'depreciation' ? <AssetDepreciationTab branchId={branchId} /> : null}

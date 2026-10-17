@@ -1031,6 +1031,9 @@ export const API_HOTEL_ASSET_PURCHASE_URL = `${API_BASE_URL}/hotel-setup/asset-p
 // rather than the fixed-asset module's categories: an asset head is what the
 // ledger understands, and the two are not the same list.
 export const API_HOTEL_ASSET_PURCHASE_ACCOUNTS_URL = `${API_HOTEL_ASSET_PURCHASE_URL}/accounts/ddl`;
+// The catalogue a line is picked from. `asset_items`, not products: a chair is
+// not stock, and its category is what decides the head the line debits.
+export const API_HOTEL_ASSET_PURCHASE_ITEMS_URL = `${API_HOTEL_ASSET_PURCHASE_URL}/items/ddl`;
 
 // Bookings. The stem suffixes /store, /edit/{id}, /cancel/{id}, and — for the
 // second stage of the form, on the day the guests arrive — /allotment/{id} and
@@ -1185,6 +1188,10 @@ export const API_HOTEL_AMENITY_VARIANCE_URL = `${API_BASE_URL}/hotel-setup/repor
 // bookkeeping decision for the whole company; an asset stands somewhere and is
 // depreciated into that branch's accounts.
 export const API_ASSET_CATEGORY_URL = `${API_BASE_URL}/asset/categories`;
+// The catalogue a purchase line is picked from. Each item's category decides
+// which ledger head the purchase debits -- it is not stock, and not a register
+// row; those are the two neighbours it is easiest to confuse it with.
+export const API_ASSET_ITEM_URL = `${API_BASE_URL}/asset/items`;
 export const API_ASSET_REGISTER_URL = `${API_BASE_URL}/asset/register`;
 
 // The yearly charge. The stem suffixes /plan, /run and /reverse/{id}.
