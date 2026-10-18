@@ -106,7 +106,7 @@ const ProductStatementPrint = React.forwardRef<HTMLDivElement, Props>(
             <table className="w-full border-collapse">
               <thead className="bg-gray-100">
                 <tr>
-                  {['SL. NO.', 'NAME', 'TYPE', 'INV. NO.', 'INV. DATE', 'QTY', 'PURCHASE PRICE', 'SALES PRICE', 'AMOUNT', 'STOCK'].map(
+                  {['#', 'NAME', 'TYPE', 'INV. NO.', 'INV. DATE', 'QTY', 'PUR PRICE', 'SAL PRICE', 'AMOUNT', 'STOCK'].map(
                     (header, index) => (
                       <th
                         key={header}
@@ -145,16 +145,16 @@ const ProductStatementPrint = React.forwardRef<HTMLDivElement, Props>(
                         {formatQty(row?.qty)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {formatQty(row?.purchase_price)}
+                        { thousandSeparator( Number(row?.purchase_price) )}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {formatQty(row?.sales_price)}
+                        {thousandSeparator( Number(row?.sales_price) )}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {formatQty(row?.amount)}
+                        { thousandSeparator( Number(row?.amount) )}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {formatQty(row?.stock)}
+                        {thousandSeparator( Number(row?.stock) )}
                       </td>
                     </tr>
                   ))
