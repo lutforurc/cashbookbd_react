@@ -30,6 +30,16 @@ import { isBranchSettingOn } from '../../utils/userFeatureSettings';
 
 const isGroupRow = (row: any) => row?.__type === 'CAT_HEADER';
 
+/* A quantity is not money. thousandSeparator rounds by the branch's
+   decimal_places -- a branch set to 0 printed 12.5 kg as 13 -- so stock reads
+   with its own three decimals (the column is decimal(14,3)), trailing zeros
+   dropped, and zero still prints a dash like every other figure here. */
+const formatQty = (value: any) => {
+  const qty = Number(value ?? 0);
+  if (!Number.isFinite(qty) || qty === 0) return '-';
+  return qty.toLocaleString('en-IN', { maximumFractionDigits: 3 });
+};
+
 /** The word over a filter box, written as Stock Details writes it. */
 const FILTER_LABEL = 'mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200';
 
@@ -733,6 +743,16 @@ const Product = (user: any) => {
         header: 'Unit',
         cellClass: 'w-24',
         render: (row: any) => (isGroupRow(row) ? '' : row.unit),
+      },
+      // What this branch holds right now — bought, opened and sold netted out
+      // by the API. Not the opening column below: that one is the quantity the
+      // opening voucher was raised with, and it never moves again.
+      {
+        key: 'current_stock',
+        header: 'Stock Qty',
+        headerClass: 'text-right',
+        cellClass: 'text-right w-24',
+        render: (row: any) => (isGroupRow(row) ? '' : formatQty(row.current_stock)),
       },
       ...(openingOn ? serialQtyRateColumns : priceActionColumns),
     ];
