@@ -1,11 +1,11 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteProduct, deleteProductOpening, getProduct, updateProductQtyRate } from './productSlice';
+import { deleteProduct, deleteProductOpening, deleteProductWithPurchase, getProduct, updateProductQtyRate } from './productSlice';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiCheckSquare, FiClock, FiEdit2, FiPlus, FiTrash2, FiX } from 'react-icons/fi';
+import { FiCheckSquare, FiClock, FiEdit2, FiPlus, FiTrash, FiTrash2, FiX } from 'react-icons/fi';
 import httpService from '../../services/httpService';
 import { API_PRODUCT_HISTORY_URL } from '../../services/apiRoutes';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -159,6 +159,8 @@ const Product = (user: any) => {
   const didInitRef = useRef(false);
   const [deleteRow, setDeleteRow] = useState<any>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [purchaseDeleteRow, setPurchaseDeleteRow] = useState<any>(null);
+  const [purchaseDeleteLoading, setPurchaseDeleteLoading] = useState(false);
   const [openingDeleteRow, setOpeningDeleteRow] = useState<any>(null);
   const [openingDeleteLoading, setOpeningDeleteLoading] = useState(false);
 
@@ -497,6 +499,27 @@ const Product = (user: any) => {
     );
   };
 
+  const handlePurchaseDeleteConfirm = () => {
+    if (!purchaseDeleteRow?.product_id) return;
+
+    setPurchaseDeleteLoading(true);
+    dispatch(
+      deleteProductWithPurchase(purchaseDeleteRow.product_id, (res: any) => {
+        setPurchaseDeleteLoading(false);
+        setPurchaseDeleteRow(null);
+
+        if (res?.success) {
+          toast.success(res?.message || 'Product deleted successfully.');
+          dispatch(
+            getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch }) as any,
+          );
+        } else {
+          toast.error(res?.message || 'Product and its opening invoice could not be deleted.');
+        }
+      }) as any,
+    );
+  };
+
   /* ⚠️ A "change" to the value already chosen is not a change. These dropdowns
      fire onChange once on their own as the lists arrive, and with the page
      held in the address bar that spurious call stripped `?page=5` a second
@@ -690,6 +713,17 @@ const Product = (user: any) => {
             </Button>
             <Button type="button" onClick={() => setDeleteRow(row)} className="text-red-500" title="Delete">
               <FiTrash2 className="cursor-pointer" />
+            </Button>
+            {/* The deeper delete: the product AND the one old opening invoice
+                that brought it in. The server refuses unless the owner's
+                conditions all hold. */}
+            <Button
+              type="button"
+              onClick={() => setPurchaseDeleteRow(row)}
+              className="text-red-700 dark:text-red-400"
+              title="Delete with opening invoice"
+            >
+              <FiTrash className="cursor-pointer" />
             </Button>
           </div>
         );
@@ -1136,6 +1170,51 @@ const Product = (user: any) => {
                 disabled={deleteLoading}
                 label="Delete"
                 icon={<FiTrash2 className="mr-2" />}
+                variant="danger"
+                className="px-6"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {purchaseDeleteRow && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-xl">
+            <div className="flex items-center gap-3 border-b border-[rgb(var(--c-border))] px-5 py-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 text-red-500">
+                <FiTrash />
+              </span>
+              <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Delete Product with Opening Invoice</h3>
+            </div>
+
+            <div className="px-5 py-4 text-sm text-slate-600 dark:text-[rgb(var(--c-text-muted))]">
+              Delete
+              <span className="font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"> {purchaseDeleteRow.name}</span>
+              {' '}and the one old opening invoice that brought it in?
+              <p className="mt-2 text-xs text-slate-400">
+                Only where the product has never been sold, sits in at most one
+                opening invoice with no other product on it, and that invoice is
+                dated before 01/10/2026. The invoice's stock and ledger voucher go
+                with it. This cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-[rgb(var(--c-border))] px-5 py-3">
+              <Button
+                type="button"
+                onClick={() => setPurchaseDeleteRow(null)}
+                className="border border-[rgb(var(--c-border))] px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
+              >
+                Cancel
+              </Button>
+              <ButtonLoading
+                type="button"
+                onClick={handlePurchaseDeleteConfirm}
+                buttonLoading={purchaseDeleteLoading}
+                disabled={purchaseDeleteLoading}
+                label="Delete"
+                icon={<FiTrash className="mr-2" />}
                 variant="danger"
                 className="px-6"
               />

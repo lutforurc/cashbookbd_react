@@ -22,6 +22,7 @@ import httpService from '../../services/httpService';
 import {
   API_PRODUCT_DDL_LIST_URL,
   API_PRODUCT_DELETE_URL,
+  API_PRODUCT_DELETE_WITH_PURCHASE_URL,
   API_PRODUCT_EDIT_URL,
   API_PRODUCT_LIST_URL,
   API_PRODUCT_STORE_URL,
@@ -275,6 +276,29 @@ export const deleteProduct = (productId: string, callback: any) => () => {
           success: false,
           message:
             er?.response?.data?.message || 'Product could not be deleted.',
+        });
+      }
+    });
+};
+
+/* The product AND the one old purchase invoice that brought it in. The server
+   refuses unless every one of the owner's conditions holds -- sold once, two
+   invoices, a multi-line invoice, or a 01/10/2026-or-later invoice all stop it. */
+export const deleteProductWithPurchase = (productId: string, callback: any) => () => {
+  httpService
+    .post(API_PRODUCT_DELETE_WITH_PURCHASE_URL, { product_id: productId })
+    .then((res) => {
+      if ('function' === typeof callback) {
+        callback(res.data);
+      }
+    })
+    .catch((er) => {
+      if ('function' === typeof callback) {
+        callback({
+          success: false,
+          message:
+            er?.response?.data?.message ||
+            'Product and its opening invoice could not be deleted.',
         });
       }
     });

@@ -539,6 +539,9 @@ export const API_PRODUCT_OPENING_DELETE_URL = `${API_BASE_URL}/product/opening/d
 export const API_PRODUCT_OPENING_IMPORT_CHECK_URL = `${API_BASE_URL}/product/opening-import/check`;
 export const API_PRODUCT_OPENING_IMPORT_ROW_URL = `${API_BASE_URL}/product/opening-import/row`;
 export const API_PRODUCT_DELETE_URL = `${API_BASE_URL}/product/delete`;
+// The same delete, but takes the one old purchase invoice that brought the
+// product in -- only when the owner's conditions hold.
+export const API_PRODUCT_DELETE_WITH_PURCHASE_URL = `${API_BASE_URL}/product/delete-with-purchase`;
 
 
 // Brand Route
