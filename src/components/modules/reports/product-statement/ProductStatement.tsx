@@ -178,13 +178,15 @@ const ProductStatement = (user: any) => {
     {
       key: 'type',
       header: 'Type',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
+      headerClass: 'text-left',
+      cellClass: 'text-left',
       render: (row: any) => <div>{row?.type || '-'}</div>,
     },
     {
       key: 'invoice_no',
       header: 'Inv. No.',
+      headerClass: 'text-left',
+      cellClass: 'text-left',
       render: (row: any) => (
         <div
           className={`${
@@ -208,8 +210,8 @@ const ProductStatement = (user: any) => {
     {
       key: 'invoice_date',
       header: 'Inv. Date',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
+      headerClass: 'text-left',
+      cellClass: 'text-left',
       render: (row: any) => <div>{formatDisplayDate(row?.invoice_date)}</div>,
     },
     {
@@ -219,7 +221,7 @@ const ProductStatement = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => (
         <div className={Number(row?.qty) < 0 ? 'text-red-600 dark:text-red-400' : ''}>
-          {formatCellNumber(row?.qty)}
+          {thousandSeparator( Number(row?.qty) )}
         </div>
       ),
     },
@@ -228,28 +230,28 @@ const ProductStatement = (user: any) => {
       header: 'Purchase Price',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div>{formatCellNumber(row?.purchase_price)}</div>,
+      render: (row: any) => <div>{thousandSeparator( Number(row?.purchase_price) )}</div>,
     },
     {
       key: 'sales_price',
       header: 'Sales Price',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div>{formatCellNumber(row?.sales_price)}</div>,
+      render: (row: any) => <div>{thousandSeparator( Number(row?.sales_price) )}</div>,
     },
     {
       key: 'amount',
       header: 'Amount',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div>{formatCellNumber(row?.amount)}</div>,
+      render: (row: any) => <div>{thousandSeparator( Number(row?.amount) )}</div>,
     },
     {
       key: 'stock',
       header: 'Stock',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div>{formatCellNumber(row?.stock)}</div>,
+      render: (row: any) => <div>{thousandSeparator( Number(row?.stock) )}</div>,
     },
   ];
 
@@ -266,11 +268,11 @@ const ProductStatement = (user: any) => {
     ? [
         [
           { label: 'Total', colSpan: 5, className: 'text-right' },
-          { label: formatCellNumber(netQty), className: 'text-right' },
+          { label: thousandSeparator(netQty), className: 'text-right' },
           { label: '-', className: 'text-right' },
           { label: '-', className: 'text-right' },
           { label: totalAmount ? thousandSeparator(totalAmount) : '-', className: 'text-right' },
-          { label: formatCellNumber(totals?.closing), className: 'text-right' },
+          { label: thousandSeparator(totals?.closing), className: 'text-right' },
         ],
       ]
     : undefined;
