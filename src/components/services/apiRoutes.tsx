@@ -1040,6 +1040,10 @@ export const API_HOTEL_ASSET_PURCHASE_ITEMS_URL = `${API_HOTEL_ASSET_PURCHASE_UR
 // write, with the clerk's own number kept in manual_voucher_no.
 export const API_HOTEL_PAYMENT_ENTRY_URL = `${API_BASE_URL}/hotel-setup/payment-entries/store`;
 
+// The hotel's Received Entry — the mirror of the payment one: money in, against
+// one head. It writes the accounts' `1-` receipt voucher.
+export const API_HOTEL_RECEIVED_ENTRY_URL = `${API_BASE_URL}/hotel-setup/received-entries/store`;
+
 // Bookings. The stem suffixes /store, /edit/{id}, /cancel/{id}, and — for the
 // second stage of the form, on the day the guests arrive — /allotment/{id} and
 // /allot/{id}.

@@ -484,6 +484,7 @@ const ROUTES = {
   // Paying a supplier or a person from cash or bank.
   // ⚠️ DESIGN ONLY so far: the screen is drawn, nothing is saved.
   hotel_payment_entry: '/hotel/payment-entry',
+  hotel_received_entry: '/hotel/received-entry',
 
   notFound: '*',
 };
