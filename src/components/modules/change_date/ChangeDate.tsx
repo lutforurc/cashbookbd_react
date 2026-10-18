@@ -141,7 +141,7 @@ const ChangeDate = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full 2xl:w-2/3 mx-auto mt-5">
               <div className="w-full">
-                <label htmlFor="present_date">Enter Current Date</label>
+                <label htmlFor="present_date">Enter From Date</label>
                 <InputDatePicker
                   setCurrentDate={handleStartDate}
                   className="font-medium text-sm w-full "
@@ -154,7 +154,7 @@ const ChangeDate = () => {
               </div>
 
               <div className="w-full">
-                <label htmlFor="change_date">Enter Change Date</label>
+                <label htmlFor="change_date">Enter To Date</label>
                 <InputDatePicker
                   setCurrentDate={handleStartDate}
                   className="font-medium text-sm w-full "
