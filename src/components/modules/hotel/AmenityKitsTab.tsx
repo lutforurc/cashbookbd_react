@@ -6,22 +6,25 @@ import { FIELD_LABEL } from '../../../theme/fieldStyles';
 import ActionButtons from '../../utils/fields/ActionButton';
 import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
-import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionItemsDropdown';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 
 import SetupShell from './SetupShell';
+import ExpenseItemSelect, { ExpenseItem } from './amenity/ExpenseItemSelect';
 import httpService from '../../services/httpService';
-import { API_HOTEL_AMENITY_KIT_URL } from '../../services/apiRoutes';
+import { API_HOTEL_AMENITY_KIT_URL, API_HOTEL_ITEM_STOCK_URL } from '../../services/apiRoutes';
 
 /**
  * What a room of each kind is made up with -- §4.3.
  *
- * ⚠️ NOTHING HERE ISSUES ANYTHING. Soap, towels and tissue leave the store the
- * way they always have -- by hand, through Material Issue, on one voucher. What
- * is written here is the STANDARD those issues are measured against, and until
- * somebody fills it in the variance report has nothing to compare and says so.
- * The screen has to lead with that, or the first person to open it will expect
- * saving a kit to move stock.
+ * ⚠️ NOTHING HERE ISSUES ANYTHING. Soap, towels and tissue leave the store on
+ * the Amenity Issue screen. What is written here is the STANDARD those issues
+ * are measured against, and until somebody fills it in the variance report has
+ * nothing to compare and says so. The screen has to lead with that, or the
+ * first person to open it will expect saving a kit to move stock.
+ *
+ * ⚠️ A KIT LINE IS AN EXPENSE ITEM (Assets → Items, kind Expense) -- the same
+ * catalogue the hotel buys and issues from -- not a shop product. A line saved
+ * before that change shows as "pick again".
  *
  * ⚠️ PER ROOM AND PER GUEST ARE DIFFERENT NUMBERS, and choosing wrongly is the
  * one mistake this form can make quietly. A tissue box is per ROOM whether one
@@ -41,16 +44,16 @@ const BASIS_OPTIONS = [
 ];
 
 type KitLine = {
-  product_id: number | string;
-  product_name: string;
+  item_id: number | string;
+  item_name: string;
   unit_name?: string | null;
   quantity: string;
   basis: string;
 };
 
 const blankLine = (): KitLine => ({
-  product_id: '',
-  product_name: '',
+  item_id: '',
+  item_name: '',
   unit_name: '',
   quantity: '',
   basis: 'room',
@@ -66,7 +69,7 @@ const blankKit = () => ({
 
 /** "Soap 2 per guest" -- what a line says in one line of a table. */
 const lineWords = (line: any) =>
-  `${line.product_name ?? '#' + line.product_id} ${Number(line.quantity)}${
+  `${line.item_name ?? (line.item_id ? '#' + line.item_id : 'Old product — pick again')} ${Number(line.quantity)}${
     line.unit_name ? ' ' + line.unit_name : ''
   } ${line.basis === 'guest' ? 'per guest' : 'per room'}`;
 
@@ -81,6 +84,18 @@ const AmenityKitsTab = ({ branchId }: { branchId: number }) => {
   const [form, setForm] = useState<any>(null);
   const [lines, setLines] = useState<KitLine[]>([]);
   const [line, setLine] = useState<KitLine>(blankLine());
+  const [items, setItems] = useState<ExpenseItem[]>([]);
+
+  // The expense items a kit may name -- loaded once, searched as typed.
+  useEffect(() => {
+    httpService
+      .get(`${API_HOTEL_ITEM_STOCK_URL}/items`, { params: { branch_id: branchId } })
+      .then((res: any) => {
+        const list = res?.data?.data?.data ?? res?.data?.data ?? [];
+        setItems(Array.isArray(list) ? list : []);
+      })
+      .catch(() => setItems([]));
+  }, [branchId]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -146,20 +161,24 @@ const AmenityKitsTab = ({ branchId }: { branchId: number }) => {
       status: row.status,
     });
     setLines(
-      (row.items ?? []).map((item: any) => ({
-        product_id: item.product_id,
-        product_name: item.product_name ?? '#' + item.product_id,
-        unit_name: item.unit_name,
-        quantity: String(item.quantity),
-        basis: item.basis,
-      })),
+      // A line still on an old shop product has no item and cannot be saved
+      // back; it is left off, and the kit is saved with what is picked again.
+      (row.items ?? [])
+        .filter((item: any) => item.item_id)
+        .map((item: any) => ({
+          item_id: item.item_id,
+          item_name: item.item_name ?? '#' + item.item_id,
+          unit_name: item.unit_name,
+          quantity: String(item.quantity),
+          basis: item.basis,
+        })),
     );
     setLine(blankLine());
   };
 
   const addLine = () => {
-    if (!line.product_id) {
-      toast.error('Pick a product first');
+    if (!line.item_id) {
+      toast.error('Pick an item first');
       return;
     }
 
@@ -171,8 +190,8 @@ const AmenityKitsTab = ({ branchId }: { branchId: number }) => {
     // One product once. Two lines for the same soap -- one per room, one per
     // guest -- is not a richer standard; it is two expectations added together
     // that nobody can read apart. The server refuses it too.
-    if (lines.some((row) => Number(row.product_id) === Number(line.product_id))) {
-      toast.error('That product is already on this kit');
+    if (lines.some((row) => Number(row.item_id) === Number(line.item_id))) {
+      toast.error('That item is already on this kit');
       return;
     }
 
@@ -201,7 +220,7 @@ const AmenityKitsTab = ({ branchId }: { branchId: number }) => {
         notes: form.notes || null,
         status: Number(form.status ?? 1),
         items: lines.map((row) => ({
-          product_id: Number(row.product_id),
+          item_id: Number(row.item_id),
           quantity: Number(row.quantity),
           basis: row.basis,
         })),
@@ -366,28 +385,21 @@ const AmenityKitsTab = ({ branchId }: { branchId: number }) => {
                   <label
                     htmlFor="kitProduct"
                     className={`${FIELD_LABEL} cursor-help text-left text-sm decoration-dotted underline-offset-2 hover:underline`}
-                    title="Type three letters to search. Only the products a kit names are measured by the variance report — anything else that leaves the store is somebody else's material."
+                    title="An expense item from Fixed Assets → Items. Only the items a kit names are measured by the variance report — anything else that leaves the store is somebody else's material."
                   >
-                    Product
+                    Item
                   </label>
-                  <RequisitionItemsDropdown
+                  <ExpenseItemSelect
                     id="kitProduct"
-                    name="kitProduct"
-                    onSelect={(option: any) =>
+                    items={items}
+                    value={line.item_id || null}
+                    onSelect={(item) =>
                       setLine((prev) => ({
                         ...prev,
-                        product_id: option?.value ?? '',
-                        product_name: option?.label ?? '',
-                        unit_name: option?.label_3 ?? '',
+                        item_id: item?.id ?? '',
+                        item_name: item?.name ?? '',
+                        unit_name: item?.unit_name ?? '',
                       }))
-                    }
-                    defaultValue={
-                      line.product_id
-                        ? { value: line.product_id, label: line.product_name }
-                        : null
-                    }
-                    value={
-                      line.product_id ? { value: line.product_id, label: line.product_name } : null
                     }
                   />
                 </div>
@@ -440,7 +452,7 @@ const AmenityKitsTab = ({ branchId }: { branchId: number }) => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-stroke text-left dark:border-strokedark">
-                        <th className="py-1 pr-2">Product</th>
+                        <th className="py-1 pr-2">Item</th>
                         <th className="py-1 pr-2 text-right">How many</th>
                         <th className="py-1 pr-2">Counted</th>
                         <th className="w-16 py-1 text-center">Out</th>
@@ -448,8 +460,8 @@ const AmenityKitsTab = ({ branchId }: { branchId: number }) => {
                     </thead>
                     <tbody>
                       {lines.map((row, index) => (
-                        <tr key={`${row.product_id}`} className="border-b border-stroke dark:border-strokedark">
-                          <td className="py-1 pr-2">{row.product_name}</td>
+                        <tr key={`${row.item_id}`} className="border-b border-stroke dark:border-strokedark">
+                          <td className="py-1 pr-2">{row.item_name}</td>
                           <td className="py-1 pr-2 text-right">
                             {Number(row.quantity)} {row.unit_name ?? ''}
                           </td>

@@ -1,6 +1,6 @@
 # Accounts Transaction — Purchase Types: Design
 
-**Status:** concept agreed 2026-10-17. **Phase 1 (Asset) PUSHED** (React `36044207`/`a038e3d7`, API `64d3c6ca`); **Cash/Bank/Credit PUSHED** (React `c030b63d`, API `0ddada5e`). **Phase 2 BUILT 2026-10-17, uncommitted — but as EXPENSE items, not stock.** See "What was built" at the end; it overrides §3, §5 (inventory source) and §6 where they disagree.
+**Status:** concept agreed 2026-10-17. **Phase 1 (Asset) PUSHED** (React `36044207`/`a038e3d7`, API `64d3c6ca`); **Cash/Bank/Credit PUSHED** (React `c030b63d`, API `0ddada5e`). **Phase 2 PUSHED 2026-10-17 as EXPENSE items, not stock** (React `35988106`, API `4e38a376`). **Store stock BUILT 2026-10-18, uncommitted** — §12. §11 overrides §3, §5 and §6; §12 overrides §11's "Not built".
 
 **Extends:** `docs/superpowers/specs/2026-10-16-hotel-asset-purchase-design.md` (the single-purpose asset-purchase screen).
 
@@ -182,3 +182,27 @@ Table names, columns, indexes, migrations/patch SQL, endpoints, permissions, scr
 **Before use on a database:** create "Food Management A/c" and "Washing & Cleaning A/c" under an Expense group in the Chart of A/c — neither exists on staging.
 
 **Not built:** issue screen; discount; part payment; print of these vouchers from the ledger (the ordinary purchase print reads `inventory_purchase_masters`, which this screen does not write).
+
+---
+
+## 12. What was built (2026-10-18) — the store of expense items
+
+**Owner decisions:** expense items are spent when bought (unchanged) **but the hotel needs a Stock Balance**. The Amenity Issue screen drops shop products (`product_items`) and uses **only Assets → Items of kind Expense**; amenity kits follow.
+
+**Ledger safety (the bills of this screen share `4-`/`9-` with ordinary purchases but not their tables):**
+- **Print:** `salesPrintData()` sends `item_purchase_lines` when there is no purchase master; `VoucherPrintRegistry` picks `ItemPurchasePrint` by that, not by prefix. The screen's own Print button prints the last saved bill (by `main_trx_id`).
+- **Edit:** `PurchaseEditRepository` refuses (HttpResponseException) — every report's Edit button reaches it. Delete and re-enter.
+- **Delete / restore:** `Services/Asset/PurchaseVoucherAssets` — refuses while a register row bought on it is depreciated or disposed; otherwise soft-deletes its register rows stamped with the voucher's `delete_at`, and restore brings back exactly those. Hooked in `VoucherSettingsController` (React) and `VoucherModificationController` (old web routes).
+
+**Stock (quantity only, nothing posts):**
+- `item_stock_moves` + `item_stock_move_lines` — kind `issue` (stored negative), `opening` (once per item), `adjust` (the count is entered; the difference from the book on that date is stored, `counted` kept).
+- balance = `item_purchase_lines` (kind expense, live vouchers) + move lines (live moves). `Services/Hotel/ItemStock` is the one place the arithmetic lives.
+- An issue may go below nought; the save names the items.
+- `ItemStockController` under `/hotel-setup/item-stock`: items (with on hand), moves, moves/{id}, store, delete/{id}, balance, ledger/{itemId}.
+- Amenity kit lines: new `item_id` (asset_items); `product_id` kept, NULLable, unread. Variance and event cost read the new issues; event cost is valued at the **average price paid**.
+
+**Screens:** Amenity Issue & Stock — Entries tab (filters, expand, delete) and Stock Balance tab (Opening / Bought / Opening-Count / Issued / Balance / approx. value, item ledger on click). One form for Issue, Opening and Count Adjustment (`?kind=`).
+
+**Patch:** `database/sql/2026_10_18_item_stock_moves.sql` and `runItemStockSchema()` in `patch:add-unit-type` (after the amenity schema). Applied to `stagingdatabase` only.
+
+**Old data:** the hotel's two material issues of shop products stay on the Material Issue screens as history; they are not in the Stock Balance.

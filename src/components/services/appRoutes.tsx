@@ -468,14 +468,15 @@ const ROUTES = {
   // sitting done once, and this is opened every morning by somebody who does
   // nothing else in the system.
   hotel_housekeeping: '/hotel/housekeeping',
-  // Soap, towels and kitchen material leaving the store. A screen of the
-  // hotel's own rather than two fields on the construction issue form: a site
-  // issues against a project and writes a work item per line; a hotel issues
-  // against a building, sometimes for an event, and works its quantities out
-  // from the amenity kits. It saves an ordinary material issue either way.
+  // Soap, towels and kitchen material leaving the store, and what is left --
+  // the expense items (Assets → Items, kind Expense) bought on Accounts
+  // Transaction. Issues go to a building, sometimes for an event, and work
+  // their quantities out from the amenity kits. Quantity only; nothing posts.
+  // Two tabs: the entries, and the Stock Balance.
   hotel_amenity_issue: '/hotel/amenity-issue',
   // The form is a page of its own: the list is what somebody opens, and a form
   // above it made the first thing on screen the one thing nobody came to read.
+  // ?kind=issue | opening | adjust picks which entry it makes.
   hotel_amenity_issue_new: '/hotel/amenity-issue/new',
   // Buying what the hotel is furnished with -- beds, chairs, a generator.
   // ⚠️ DESIGN ONLY so far: the form is drawn, nothing is saved.

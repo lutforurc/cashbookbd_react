@@ -93,8 +93,8 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
   // tabs, because it is still a fact about the room rather than about the bill.
   //
   // ⚠️ It issues nothing. The kit is the standard an issue is measured against
-  // -- see AmenityKitsTab -- and soap goes on leaving the store through Material
-  // Issue exactly as before.
+  // -- see AmenityKitsTab -- and soap leaves the store on Amenity Issue, as an
+  // expense item from Assets → Items.
   { key: 'kits', label: 'Amenity Kits', icon: <FiPackage size={15} />, hint: 'What a room is made up with' },
   { key: 'layout', label: 'Layout', icon: <FiMap size={15} />, hint: 'The property drawn' },
   // Last, because it is the only tab that is optional: a property that never

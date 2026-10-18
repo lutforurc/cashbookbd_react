@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import {
   FiCreditCard,
@@ -28,6 +28,7 @@ import {
   API_HOTEL_ASSET_PURCHASE_URL,
 } from '../../../services/apiRoutes';
 import { FIELD_HEIGHT, FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 
 /**
  * Buying the things a hotel is furnished WITH -- beds, chairs, a generator.
@@ -144,6 +145,10 @@ const HotelAssetPurchase = () => {
   const [saving, setSaving] = useState(false);
   /** The number the server gave the voucher it just wrote, if any. */
   const [savedVoucher, setSavedVoucher] = useState('');
+  // Kept after the banner is dismissed: Print still means "the one just saved".
+  const [lastVoucher, setLastVoucher] = useState('');
+  const [lastVoucherId, setLastVoucherId] = useState<number | null>(null);
+  const printRegistryRef = useRef<any>(null);
   /** How that voucher was settled -- it decides which book the banner names. */
   const [savedMode, setSavedMode] = useState<Mode>(CASH_MODE);
 
@@ -387,6 +392,8 @@ const HotelAssetPurchase = () => {
       // Clear the form first, then put the number it was given back in the box.
       reset();
       setSavedVoucher(String(saved?.vr_no ?? ''));
+      setLastVoucher(String(saved?.vr_no ?? ''));
+      setLastVoucherId(Number(saved?.main_trx_id) || null);
       setSavedMode(mode);
       toast.success(`Voucher ${saved?.vr_no} saved`);
     } catch (error: any) {
@@ -422,8 +429,15 @@ const HotelAssetPurchase = () => {
             icon={<FiList size={16} />}
           />
           <ButtonLoading
-            onClick={() => toast.info('Print — not built yet; the voucher prints from the ledger.')}
-            label="Print"
+            onClick={() =>
+              lastVoucher
+                ? printRegistryRef.current?.printVoucher({
+                    vr_no: lastVoucher,
+                    main_trx_id: lastVoucherId,
+                  })
+                : toast.info('Save a voucher first — an older one prints from the ledger.')
+            }
+            label={lastVoucher ? `Print ${lastVoucher}` : 'Print'}
             variant="ghost"
             className="border border-stroke px-3 dark:border-strokedark"
             icon={<FiPrinter size={16} />}
@@ -837,6 +851,11 @@ const HotelAssetPurchase = () => {
           className="px-4"
           icon={<FiSave size={16} />}
         />
+      </div>
+
+      {/* The same papers the ledger prints from -- this bill's included. */}
+      <div className="hidden">
+        <VoucherPrintRegistry ref={printRegistryRef} rowsPerPage={20} fontSize={11} />
       </div>
     </div>
   );

@@ -21,6 +21,7 @@ import CashPaymentPrint from './print_items/CashPaymentPrint';
 import CashReceivedPrint from './print_items/CashReceivedPrint';
 import ReturnPrint from './print_items/ReturnPrint';
 import JournalVoucherPrint from './print_items/JournalVoucherPrint';
+import ItemPurchasePrint from './print_items/ItemPurchasePrint';
 import ProductInSlipPrint from '../product-in/ProductInSlipPrint';
 import ProductOutSlipPrint from '../product-out/ProductOutSlipPrint';
 
@@ -112,6 +113,13 @@ export const VoucherPrintRegistry = forwardRef(
     const salesReturnRef = useRef<HTMLDivElement | null>(null);
     const purchaseReturnRef = useRef<HTMLDivElement | null>(null);
     const journalRef = useRef<HTMLDivElement | null>(null);
+    const itemPurchaseRef = useRef<HTMLDivElement | null>(null);
+
+    // The store's latest voucher, for a choice that can only be made once the
+    // fetch has landed -- see the purchase case below. The closure's
+    // `voucherData` is the render before the click.
+    const voucherDataRef = useRef<any>(null);
+    voucherDataRef.current = voucherData;
 
     /* 👉 WHICH PRINT COMPONENT WAS ASKED FOR (KEY FIX)
      *
@@ -219,7 +227,11 @@ export const VoucherPrintRegistry = forwardRef(
          * only thing that ever differed between them was the ref, and six
          * copies of a 300ms delay is six places to forget to change it.
          */
-        const printAs = (target: React.RefObject<HTMLDivElement | null>) => {
+        const printAs = (
+          target: React.RefObject<HTMLDivElement | null>,
+          // A paper that depends on what came back rather than on the number.
+          pick?: (data: any) => React.RefObject<HTMLDivElement | null>,
+        ) => {
           activeRef.current = target;
 
           dispatch(
@@ -229,7 +241,10 @@ export const VoucherPrintRegistry = forwardRef(
               } else {
                 // The delay is the store write landing; the paper is drawn
                 // from what the reducer put there a tick from now.
-                setTimeout(printActive, 300);
+                setTimeout(() => {
+                  if (pick) activeRef.current = pick(voucherDataRef.current);
+                  printActive();
+                }, 300);
               }
             })
           );
@@ -268,10 +283,21 @@ export const VoucherPrintRegistry = forwardRef(
             break;
 
           /* ================= PURCHASE ================= */
-          /** 4 is a cash purchase, 9 a credit one -- one paper, as above. */
+          /**
+           * 4 is a cash purchase, 9 a credit one -- one paper, as above.
+           *
+           * ⚠️ UNLESS THE HOTEL'S ACCOUNTS TRANSACTION SCREEN WROTE IT. That
+           * screen numbers in the same two series but keeps no purchase master,
+           * so the Purchase Invoice came out empty; the server sends its lines
+           * as `item_purchase_lines`, and their presence picks the other paper.
+           */
           case '4':
           case '9':
-            printAs(purchaseRef);
+            printAs(purchaseRef, (data) =>
+              Array.isArray(data?.item_purchase_lines) && data.item_purchase_lines.length
+                ? itemPurchaseRef
+                : purchaseRef,
+            );
             break;
 
           /* ================= THE TWO RETURNS ================= */
@@ -393,6 +419,9 @@ export const VoucherPrintRegistry = forwardRef(
 
         {/* JOURNAL */}
         <JournalVoucherPrint ref={journalRef} data={voucherData} fontSize={fontSize} />
+
+        {/* THE HOTEL ACCOUNTS TRANSACTION BILL */}
+        <ItemPurchasePrint ref={itemPurchaseRef} data={voucherData} fontSize={fontSize} />
 
         {/* THE TWO STOCK SLIPS -- mounted only while one is being printed, so
             they fetch nothing and cost nothing the rest of the time. */}

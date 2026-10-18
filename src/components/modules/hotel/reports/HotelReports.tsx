@@ -525,7 +525,7 @@ const HotelReports = () => {
    */
   const varianceColumns = useMemo(
     () => [
-      { key: 'product_name', header: 'Product' },
+      { key: 'item_name', header: 'Item' },
       {
         key: 'basis',
         header: 'Counted',
@@ -798,7 +798,7 @@ const HotelReports = () => {
                 <Figure
                   label="Issued this range"
                   value={money(amenity.issues?.value)}
-                  working={`${amenity.issues?.count ?? 0} issue(s), at what the stock left at`}
+                  working={`${amenity.issues?.count ?? 0} issue(s), at the average price paid`}
                 />
                 {/* ⚠️ The lead figure of this half, and §6.7 made it a condition
                     of building the column at all. A per-event food cost read off
@@ -843,10 +843,10 @@ const HotelReports = () => {
                 Expected is <strong>per night</strong>: per-room lines once for each room-night,
                 per-guest lines for every person in the room that night — from the guest register
                 where the desk has filled it in, and from the beds held where it has not. Issued is
-                every material issue of those products from this property in the range, whoever it
+                every Amenity Issue of those items from this property in the range, whoever it
                 went to. Amenities are issued in <strong>batches</strong>, so a month issued on the
                 1st reads over on the 1st and under afterwards — only the range as a whole means
-                anything. A product on no kit is not counted here at all.
+                anything. An item on no kit is not counted here at all.
               </p>
 
               <div className="mb-2 text-sm font-semibold text-black dark:text-white">

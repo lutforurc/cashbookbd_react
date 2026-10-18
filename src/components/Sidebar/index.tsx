@@ -172,7 +172,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'hotel_hall_bookings', title: "Hall Booking" },
     { id: 'hotel_calendar', title: "Calendar" },
     { id: 'hotel_housekeeping', title: "Housekeeping" },
-    { id: 'hotel_amenity_issue', title: "Amenity Issue" },
+    { id: 'hotel_amenity_issue', title: "Amenity Issue & Stock" },
     { id: 'hotel_asset_purchase', title: "Assets Purchase" },
     { id: 'hotel_reports', title: "Reports" },
     { id: 'hotel_setup', title: "Rooms & Seats Setup" },
@@ -2588,13 +2588,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </NavLink>
                           </li>
 
-                          {/* What the housekeeper actually hands out. Beside the
-                              board because it is the same person's morning, and
-                              its quantities come from the amenity kits set up on
-                              the setup screen below. */}
+                          {/* What the housekeeper and the kitchen take out of the
+                              store, and what is left -- the Stock Balance of the
+                              expense items bought on Accounts Transaction. Its
+                              issue quantities come from the amenity kits set up
+                              on the setup screen below. */}
                           <li style={subSlot('hotel', 'hotel_amenity_issue')}>
                             <NavLink to={routes.hotel_amenity_issue} className={subMenuLinkClass}>
-                              Amenity Issue
+                              Amenity Issue &amp; Stock
                             </NavLink>
                           </li>
 

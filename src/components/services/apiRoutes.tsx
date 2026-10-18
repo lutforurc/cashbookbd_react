@@ -1166,8 +1166,8 @@ export const API_HOTEL_HOUSEKEEPING_URL = `${API_BASE_URL}/hotel-setup/housekeep
 // The standard a room of each kind is made up with — soap, towels, tissue —
 // with each line counted per ROOM or per GUEST (§4.3, §6.1).
 //
-// ⚠️ It issues nothing and moves no stock. Amenities leave the store through
-// Material Issue exactly as they always have; this is the yardstick those
+// ⚠️ It issues nothing and moves no stock. Amenities leave the store on the
+// Amenity Issue screen (API_HOTEL_ITEM_STOCK_URL); this is the yardstick those
 // issues are measured against, and a property that never opens it goes on
 // exactly as before with no expectation to compare.
 export const API_HOTEL_AMENITY_KIT_URL = `${API_BASE_URL}/hotel-setup/amenity-kits`;
@@ -1180,6 +1180,15 @@ export const API_HOTEL_AMENITY_KIT_URL = `${API_BASE_URL}/hotel-setup/amenity-ki
 // no rooms. A community centre issues kitchen material for its events and needs
 // the tagging half; the room half simply comes back empty.
 export const API_HOTEL_AMENITY_VARIANCE_URL = `${API_BASE_URL}/hotel-setup/reports/amenity-variance`;
+
+// The store of expense items (Assets → Items, kind Expense): issue, opening,
+// count adjustment, Stock Balance and an item's ledger. Quantity only -- the
+// cost was charged to the expense head when the item was bought.
+//   GET  /items            expense items with what is on hand
+//   GET  /moves, /moves/:id  issues, openings, adjustments
+//   POST /store, /delete/:id
+//   GET  /balance, /ledger/:itemId
+export const API_HOTEL_ITEM_STOCK_URL = `${API_BASE_URL}/hotel-setup/item-stock`;
 
 // Fixed assets — the categories that decide how fast a kind of thing wears out,
 // and the register of the things themselves.
