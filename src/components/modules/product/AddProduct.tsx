@@ -333,9 +333,18 @@ const AddProduct = () => {
       storeProduct(payload, (d: any) => {
         if (d?.success) {
           toast.success(d?.message);
-          setTimeout(() => {
-            navigate(backTo);
-          }, 300);
+          // Stay on this form: products are usually entered in runs, and the
+          // next one wants the same category, unit and brand. Only the five
+          // fields that differ product to product are cleared (owner's rule,
+          // 2026-10-18).
+          setFormData((prev) => ({
+            ...prev,
+            code: '',
+            name: '',
+            description: '',
+            purchase_price: '',
+            sales_price: '',
+          }));
         } else {
           toast.error(d?.message || 'Failed');
         }
