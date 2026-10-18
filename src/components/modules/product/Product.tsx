@@ -101,6 +101,10 @@ const Product = (user: any) => {
   // dropdown on Stock Details.
   const needProductGroup = isBranchSettingOn(settings, 'need_product_group');
 
+  // Branch Setup -> Product Setup. Off, the list offers only the plain delete;
+  // the delete-with-opening-invoice button is not there at all.
+  const deleteWithOpeningInvoice = isBranchSettingOn(settings, 'delete_with_opening_invoice');
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -717,14 +721,16 @@ const Product = (user: any) => {
             {/* The deeper delete: the product AND the one old opening invoice
                 that brought it in. The server refuses unless the owner's
                 conditions all hold. */}
-            <Button
-              type="button"
-              onClick={() => setPurchaseDeleteRow(row)}
-              className="text-red-700 dark:text-red-400"
-              title="Delete with opening invoice"
-            >
-              <FiTrash className="cursor-pointer" />
-            </Button>
+            {deleteWithOpeningInvoice && (
+              <Button
+                type="button"
+                onClick={() => setPurchaseDeleteRow(row)}
+                className="text-red-700 dark:text-red-400"
+                title="Delete with opening invoice"
+              >
+                <FiTrash className="cursor-pointer" />
+              </Button>
+            )}
           </div>
         );
       },

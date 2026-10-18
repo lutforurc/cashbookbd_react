@@ -202,6 +202,10 @@ interface branchItem {
   multi_product_order: boolean;
   /** Whether the cash forms ask which product a receipt or payment was for. */
   product_tracking: boolean;
+  /** Whether Product List shows its second delete button (product + opening invoice). */
+  delete_with_opening_invoice: boolean;
+  /** Invoices dated before this day may be deleted with their product. */
+  delete_with_opening_invoice_date: string;
   company_scheme: boolean;
   company_scheme_due_days: NumberField;
   /** '' = no fixed day (the days rule); '0'..'6' = Sunday..Saturday. */
@@ -570,6 +574,8 @@ const AddBranch = () => {
     show_voucher_image: false,
     multi_product_order: false,
     product_tracking: false,
+    delete_with_opening_invoice: false,
+    delete_with_opening_invoice_date: '',
     company_scheme: false,
     company_scheme_due_days: defaultCompanySchemeDueDays,
     company_scheme_due_weekday: '',
@@ -847,6 +853,8 @@ const AddBranch = () => {
         show_voucher_image: toBooleanFlag(b.show_voucher_image),
         multi_product_order: toBooleanFlag(b.multi_product_order),
         product_tracking: toBooleanFlag(b.product_tracking),
+        delete_with_opening_invoice: toBooleanFlag(b.delete_with_opening_invoice),
+        delete_with_opening_invoice_date: metaTextOr(b.delete_with_opening_invoice_date, '').slice(0, 10),
         company_scheme: toBooleanFlag(b.company_scheme),
         company_scheme_due_days: metaNumberOr(b.company_scheme_due_days, defaultCompanySchemeDueDays),
         default_report_days: metaNumberOr(b.default_report_days, defaultReportDays),
@@ -978,6 +986,14 @@ const AddBranch = () => {
     setFormData((prevFormData) => ({
       ...prevFormData,
       letter_ref_date: toIsoDate(date),
+    }));
+  };
+
+  /** The cutoff for deleting a product with its opening invoice, as YYYY-MM-DD. */
+  const handleOpeningInvoiceDateChange = (date: Date | null) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      delete_with_opening_invoice_date: toIsoDate(date),
     }));
   };
 
@@ -1969,6 +1985,39 @@ const AddBranch = () => {
                         checked={Boolean(formData.product_tracking)}
                         onChange={(checked) => handleToggleFieldChange('product_tracking', checked)}
                       />
+                      {/* Only user 1 -- the account owner -- may turn this on.
+                          The API drops both keys for anyone else, so hiding
+                          the switch and posting it by hand changes nothing. */}
+                      {settings?.data?.user?.id === 1 && (
+                        <>
+                          <FormToggleField
+                            label="Delete With Opening Invoice?"
+                            description="Product List's second delete button removes a product together with the one old opening invoice that brought it in. Off, only the plain delete is shown. Only user 1 can change this."
+                            checked={Boolean(formData.delete_with_opening_invoice)}
+                            onChange={(checked) =>
+                              handleToggleFieldChange('delete_with_opening_invoice', checked)
+                            }
+                          />
+                          {formData.delete_with_opening_invoice && (
+                            <div>
+                              <InputDatePicker
+                                id="delete_with_opening_invoice_date"
+                                name="delete_with_opening_invoice_date"
+                                label="Opening Invoice Cutoff Date"
+                                className="w-full text-sm"
+                                selectedDate={parseIsoDate(formData.delete_with_opening_invoice_date)}
+                                setSelectedDate={handleOpeningInvoiceDateChange}
+                                setCurrentDate={handleOpeningInvoiceDateChange}
+                              />
+                              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                Only an invoice dated <strong>before</strong> this day
+                                can be deleted with its product. Set it before
+                                switching the button on.
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )}
                       <FormToggleField
                         label="Company Scheme?"
                         description="Invoice -> Sales opens the Company Scheme sale form on an electronics branch: the brand pays the balance later, and what it still owes is tracked IMEI by IMEI."
