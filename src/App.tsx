@@ -227,6 +227,7 @@ import ImeiStock from './components/modules/reports/imei-stock/ImeiStock';
 import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 import ProductProfitLoss from './components/modules/reports/product-profit-loss/ProductProfitLoss';
 import ProductLedgerData from './components/modules/reports/product-ledger-data/ProductLedgerData';
+import ProductStatement from './components/modules/reports/product-statement/ProductStatement';
 import DateWiseInOut from './components/modules/reports/date-wise-in-out/DateWiseInOut';
 import BankInformation from './components/modules/reports/bank-information/BankInformation';
 import ConnectedMember from './components/modules/reports/connected-member/ConnectedMember';
@@ -1124,6 +1125,12 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.view', 'ledger.customer', 'product.in.out']} loading={permissionsLoading} />}>
               <Route path={routes.product_ledger_data} element={<ProductLedgerData user={me} />} />
+            </Route>
+            {/* Product Statement sits under the Products menu, so it rides the
+                same gate that menu does -- a product user need not hold any of
+                the ledger permissions above. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['products.view']} loading={permissionsLoading} />}>
+              <Route path={routes.product_statement} element={<ProductStatement user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.labour']} loading={permissionsLoading} />}>
               <Route path={routes.report_labour_ledger} element={<LabourLedger user={me} />} />

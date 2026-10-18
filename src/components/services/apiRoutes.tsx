@@ -391,6 +391,7 @@ export const API_REPORT_PROFIT_LOSS_URL = `${API_BASE_URL}/reports/profit-loss`;
 export const API_REPORT_PROFIT_LOSS_EXPENSE_SUMMARY_URL = `${API_BASE_URL}/reports/profit-loss-expense-summary`;
 export const API_REPORT_PRODUCT_PROFIT_LOSS_URL = `${API_BASE_URL}/reports/product-profit-loss`;
 export const API_REPORT_PRODUCT_LEDGER_DATA_URL = `${API_BASE_URL}/reports/product-ledger-data`;
+export const API_REPORT_PRODUCT_STATEMENT_URL = `${API_BASE_URL}/reports/product-statement`;
 export const API_REPORT_DATE_WISE_IN_OUT_URL = `${API_BASE_URL}/reports/in-out/date-wise/data`;
 export const API_REPORT_DATE_WISE_IN_OUT_DETAILS_URL = `${API_BASE_URL}/reports/in-out/date-wise/details`;
 // Balance Sheet url

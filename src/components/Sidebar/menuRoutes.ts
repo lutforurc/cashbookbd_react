@@ -176,6 +176,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.product_slow_moving,
     routes.product_warehouse_difference,
     routes.product_unit_list,
+    routes.product_statement,
     // Reached from a list on one of the screens above rather than from the menu
     // itself; the old hand-written condition knew about it and this keeps that.
     '/category/edit',
