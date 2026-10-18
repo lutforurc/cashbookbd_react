@@ -6,6 +6,7 @@ import { FiEdit2, FiPlus, FiX } from 'react-icons/fi';
 import Table from '../../utils/others/Table';
 import Loader from '../../../common/Loader';
 import InputElement from '../../utils/fields/InputElement';
+import SearchInput from '../../utils/fields/SearchInput';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
@@ -85,6 +86,47 @@ const AssetItemsTab = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<ReturnType<typeof blank> | null>(null);
+
+  // Filters work on the list already loaded -- the catalogue is a few dozen
+  // rows, and a round trip per keystroke would buy nothing.
+  const [search, setSearch] = useState('');
+  const [kindFilter, setKindFilter] = useState('');
+  const [headFilter, setHeadFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
+  // Only the heads some item of the chosen kind actually lands on.
+  const headOptions = useMemo(
+    () => [
+      { id: '', name: 'All heads' },
+      ...Array.from(
+        new Set(
+          rows
+            .filter((row) => !kindFilter || (row.kind ?? 'asset') === kindFilter)
+            .map((row) => row.head_name)
+            .filter(Boolean),
+        ),
+      )
+        .sort()
+        .map((name) => ({ id: name, name })),
+    ],
+    [rows, kindFilter],
+  );
+
+  const filteredRows = useMemo(() => {
+    const term = search.trim().toLowerCase();
+
+    return rows.filter(
+      (row) =>
+        (!term ||
+          String(row.name ?? '').toLowerCase().includes(term) ||
+          String(row.code ?? '').toLowerCase().includes(term)) &&
+        (!kindFilter || (row.kind ?? 'asset') === kindFilter) &&
+        (!headFilter || row.head_name === headFilter) &&
+        (statusFilter === '' || String(row.status) === statusFilter),
+    );
+  }, [rows, search, kindFilter, headFilter, statusFilter]);
+
+  const filtering = Boolean(search.trim() || kindFilter || headFilter || statusFilter);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -400,10 +442,81 @@ const AssetItemsTab = () => {
         </div>
       )}
 
+      <div className="mb-2 grid grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-12">
+        <div className="lg:col-span-4">
+          <SearchInput
+            id="itemSearch"
+            label="Search"
+            placeholder="Item name or code"
+            search={search}
+            setSearchValue={setSearch}
+            className="w-full"
+          />
+        </div>
+
+        <div className="lg:col-span-2">
+          <DropdownCommon
+            id="itemKindFilter"
+            name="itemKindFilter"
+            label="Kind"
+            data={[
+              { id: '', name: 'All kinds' },
+              { id: 'asset', name: 'Asset' },
+              { id: 'expense', name: 'Expense' },
+            ]}
+            value={kindFilter}
+            onChange={(e: any) => {
+              setKindFilter(e.target.value);
+              // A head of the other kind would leave the list empty for no
+              // reason the reader can see.
+              setHeadFilter('');
+            }}
+            description=""
+          />
+        </div>
+
+        <div className="lg:col-span-3">
+          <DropdownCommon
+            id="itemHeadFilter"
+            name="itemHeadFilter"
+            label="Head"
+            data={headOptions}
+            value={headFilter}
+            onChange={(e: any) => setHeadFilter(e.target.value)}
+            description=""
+          />
+        </div>
+
+        <div className="lg:col-span-2">
+          <DropdownCommon
+            id="itemStatusFilter"
+            name="itemStatusFilter"
+            label="Status"
+            data={[
+              { id: '', name: 'All' },
+              { id: '1', name: 'In use' },
+              { id: '0', name: 'Switched off' },
+            ]}
+            value={statusFilter}
+            onChange={(e: any) => setStatusFilter(e.target.value)}
+            description=""
+          />
+        </div>
+
+        <div className="text-sm text-gray-600 dark:text-gray-400 lg:col-span-1 lg:pb-2 lg:text-right">
+          {filteredRows.length} / {rows.length}
+        </div>
+      </div>
+
       <Table
         columns={columns}
-        data={rows}
-        noDataMessage="No items yet. Add one under a category — that category is what decides where its cost lands."
+        data={filteredRows}
+        perPage={10}
+        noDataMessage={
+          filtering
+            ? 'No item matches these filters.'
+            : 'No items yet. Add one under a category — that category is what decides where its cost lands.'
+        }
       />
     </div>
   );
