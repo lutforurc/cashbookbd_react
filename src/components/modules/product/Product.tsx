@@ -752,7 +752,17 @@ const Product = (user: any) => {
         header: 'Stock Qty',
         headerClass: 'text-right',
         cellClass: 'text-right w-24',
-        render: (row: any) => (isGroupRow(row) ? '' : formatQty(row.current_stock)),
+        // A negative figure means more went out than came in; it is a fault,
+        // so it reads red and bold instead of sitting quietly among the rest.
+        render: (row: any) => {
+          if (isGroupRow(row)) return '';
+          const qty = Number(row.current_stock ?? 0);
+          return (
+            <span className={qty < 0 ? 'font-bold text-red-600 dark:text-red-400' : undefined}>
+              {formatQty(qty)}
+            </span>
+          );
+        },
       },
       ...(openingOn ? serialQtyRateColumns : priceActionColumns),
     ];
