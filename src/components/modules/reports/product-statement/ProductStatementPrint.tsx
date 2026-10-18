@@ -199,7 +199,7 @@ const ProductStatementPrint = React.forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-2 text-right font-bold"
                     >
-                      {formatQty(totals?.closing)}
+                      {thousandSeparator(Number(totals?.closing))}
                     </td>
                   </tr>
                 </tfoot>
