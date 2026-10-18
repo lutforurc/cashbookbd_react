@@ -172,6 +172,7 @@ import HousekeepingBoard from './components/modules/hotel/housekeeping/Housekeep
 import AmenityIssue from './components/modules/hotel/amenity/AmenityIssue';
 import AmenityIssueForm from './components/modules/hotel/amenity/AmenityIssueForm';
 import HotelAssetPurchase from './components/modules/hotel/assets/HotelAssetPurchase';
+import HotelPaymentEntry from './components/modules/hotel/payments/HotelPaymentEntry';
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
@@ -969,6 +970,7 @@ function App() {
               }
             >
               <Route path={routes.hotel_asset_purchase} element={<HotelAssetPurchase />} />
+              <Route path={routes.hotel_payment_entry} element={<HotelPaymentEntry />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
               <Route path={routes.journal} element={<Journal />} />

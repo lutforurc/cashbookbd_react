@@ -174,6 +174,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'hotel_housekeeping', title: "Housekeeping" },
     { id: 'hotel_amenity_issue', title: "Amenity Issue & Stock" },
     { id: 'hotel_asset_purchase', title: "Assets Purchase" },
+    { id: 'hotel_payment_entry', title: "Payment Entry" },
     { id: 'hotel_reports', title: "Reports" },
     { id: 'hotel_setup', title: "Rooms & Seats Setup" },
   ],
@@ -2605,6 +2606,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           <li style={subSlot('hotel', 'hotel_asset_purchase')}>
                             <NavLink to={routes.hotel_asset_purchase} className={subMenuLinkClass}>
                               Accounts Transaction
+                            </NavLink>
+                          </li>
+
+                          {/* Money going out to a supplier or a person.
+                              ⚠️ The screen is drawn, not wired. */}
+                          <li style={subSlot('hotel', 'hotel_payment_entry')}>
+                            <NavLink to={routes.hotel_payment_entry} className={subMenuLinkClass}>
+                              Payment Entry
                             </NavLink>
                           </li>
 

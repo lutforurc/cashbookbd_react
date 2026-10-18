@@ -1035,6 +1035,11 @@ export const API_HOTEL_ASSET_PURCHASE_ACCOUNTS_URL = `${API_HOTEL_ASSET_PURCHASE
 // not stock, and its category is what decides the head the line debits.
 export const API_HOTEL_ASSET_PURCHASE_ITEMS_URL = `${API_HOTEL_ASSET_PURCHASE_URL}/items/ddl`;
 
+// The hotel's Payment Entry — one head paid from cash or a bank. It writes the
+// same `2-` payment voucher the accounts Cash Payment and Bank Payment screens
+// write, with the clerk's own number kept in manual_voucher_no.
+export const API_HOTEL_PAYMENT_ENTRY_URL = `${API_BASE_URL}/hotel-setup/payment-entries/store`;
+
 // Bookings. The stem suffixes /store, /edit/{id}, /cancel/{id}, and — for the
 // second stage of the form, on the day the guests arrive — /allotment/{id} and
 // /allot/{id}.

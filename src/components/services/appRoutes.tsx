@@ -481,6 +481,9 @@ const ROUTES = {
   // Buying what the hotel is furnished with -- beds, chairs, a generator.
   // ⚠️ DESIGN ONLY so far: the form is drawn, nothing is saved.
   hotel_asset_purchase: '/hotel/assets/purchase',
+  // Paying a supplier or a person from cash or bank.
+  // ⚠️ DESIGN ONLY so far: the screen is drawn, nothing is saved.
+  hotel_payment_entry: '/hotel/payment-entry',
 
   notFound: '*',
 };
