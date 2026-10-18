@@ -56,12 +56,15 @@ type TabKey =
   | 'verification';
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[] = [
-  { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: 'Rates and heads' },
+  // { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: 'Rates and heads' },
+  { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: '' },
   // ⚠️ Between the two, because an item belongs to a category and is what a
   // purchase is picked from -- the register records the thing bought, not the
   // short list it was chosen from.
-  { key: 'items', label: 'Items', icon: <FiList size={15} />, hint: 'What a purchase is picked from' },
-  { key: 'register', label: 'Register', icon: <FiPackage size={15} />, hint: 'What the company owns' },
+  // { key: 'items', label: 'Items', icon: <FiList size={15} />, hint: 'What a purchase is picked from' },
+  { key: 'items', label: 'Items', icon: <FiList size={15} />, hint: '' },
+  // { key: 'register', label: 'Register', icon: <FiPackage size={15} />, hint: 'What the company owns' },
+  { key: 'register', label: 'Register', icon: <FiPackage size={15} />, hint: '' },
   // ⚠️ Between the register and the charge, because that is where it sits in
   // life: a thing being built is not in the register yet and is not depreciated
   // yet. The day it is finished it joins the first and starts answering to the
@@ -70,7 +73,8 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
     key: 'cwip',
     label: 'Under construction',
     icon: <FiTool size={15} />,
-    hint: 'Not an asset yet',
+    // hint: 'Not an asset yet',
+    hint: '',
   },
   // Last, because it cannot be done until the other two are: an asset needs a
   // category to take its rate from, and a category needs its ledger heads.
@@ -78,7 +82,8 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
     key: 'depreciation',
     label: 'Depreciation',
     icon: <FiTrendingDown size={15} />,
-    hint: 'The yearly charge',
+    // hint: 'The yearly charge',
+    hint: '',
   },
   // ⚠️ The paper an auditor asks for first, and the only place the register
   // and the ledger can be seen agreeing. Last because it reads what the other
@@ -87,7 +92,8 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
     key: 'schedule',
     label: 'Schedule',
     icon: <FiFileText size={15} />,
-    hint: 'The year-end note',
+    // hint: 'The year-end note',
+    hint: '',
   },
   // ⚠️ Beside the count rather than beside the register, because the two are
   // the same kind of work: both are about where a thing physically is, both are
@@ -99,7 +105,8 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
     key: 'handovers',
     label: 'Handovers',
     icon: <FiRepeat size={15} />,
-    hint: 'Who has what',
+    // hint: 'Who has what',
+    hint: '',
   },
   // ⚠️ Counting is not accounting, which is why it sits at the end and answers
   // to the register's permission rather than the one that writes vouchers.
@@ -110,7 +117,8 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
     key: 'verification',
     label: 'Verification',
     icon: <FiCheckSquare size={15} />,
-    hint: 'Is it still there',
+    // hint: 'Is it still there',
+    hint: '',
   },
 ];
 
