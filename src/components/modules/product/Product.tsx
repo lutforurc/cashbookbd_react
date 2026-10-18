@@ -104,11 +104,38 @@ const Product = (user: any) => {
   // at page one -- dumping the clerk on a page they were not reading. Held
   // here, the number survives the trip, the browser's Back button and a
   // refresh. Same reading as BookingsScreen.
+  //
+  // The three filters ride it for the same reason: they were useStates, so
+  // every edit-and-save came back to a list that had forgotten which Brand,
+  // Category or Group the clerk was working in.
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
 
-  const goToPage = (p: number) =>
-    setSearchParams(p > 1 ? { page: String(p) } : {}, { replace: true });
+  const brandId = searchParams.get('brand') || null;
+  const categoryId = searchParams.get('category') || null;
+  const groupId = searchParams.get('group') || null;
+
+  /* One writer for the whole query, so setting a filter cannot drop the page
+     and turning a page cannot drop the filters. '' means "not set". */
+  const setQuery = (patch: Record<string, any>) => {
+    const next: Record<string, string> = {
+      brand: searchParams.get('brand') ?? '',
+      category: searchParams.get('category') ?? '',
+      group: searchParams.get('group') ?? '',
+      page: searchParams.get('page') ?? '',
+    };
+
+    for (const [key, value] of Object.entries(patch)) {
+      next[key] = value === null || value === undefined || value === '' ? '' : String(value);
+    }
+
+    setSearchParams(
+      Object.fromEntries(Object.entries(next).filter(([, value]) => value)),
+      { replace: true },
+    );
+  };
+
+  const goToPage = (p: number) => setQuery({ page: p > 1 ? p : '' });
 
   const [perPage, setPerPage] = useState<number>(10);
   const [totalPages, setTotalPages] = useState(0);
@@ -117,9 +144,6 @@ const Product = (user: any) => {
   const [editedRows, setEditedRows] = useState<Record<string, any>>({}); // ✅ product_id hash string
 
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
-  const [categoryId, setCategoryId] = useState<number | string | null>(null);
-  const [brandId, setBrandId] = useState<number | string | null>(null);
-  const [groupId, setGroupId] = useState<number | string | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
   const didInitRef = useRef(false);
@@ -474,22 +498,19 @@ const Product = (user: any) => {
   const handleCategoryChange = (selectedOption: any) => {
     const next = selectedOption?.value ?? null;
     if (!filterChanged(next, categoryId)) return;
-    setCategoryId(next);
-    goToPage(1);
+    setQuery({ category: next, page: '' });
   };
 
   const handleBrandChange = (selectedOption: any) => {
     const next = selectedOption?.value ?? null;
     if (!filterChanged(next, brandId)) return;
-    setBrandId(next);
-    goToPage(1);
+    setQuery({ brand: next, page: '' });
   };
 
   const handleGroupChange = (selectedOption: any) => {
     const next = selectedOption?.value ?? null;
     if (!filterChanged(next, groupId)) return;
-    setGroupId(next);
-    goToPage(1);
+    setQuery({ group: next, page: '' });
   };
 
   /* ================= TABLE ================= */
@@ -779,6 +800,7 @@ const Product = (user: any) => {
               onChange={handleBrandChange}
               className="w-full text-sm !"
               categoryDdl={brandOptions}
+              value={brandId ?? ''}
             />
           </div>
 
@@ -791,6 +813,7 @@ const Product = (user: any) => {
                 onChange={handleCategoryChange}
                 className="w-full text-sm !"
                 categoryDdl={optionsWithAll}
+                value={categoryId ?? ''}
               />
             )}
           </div>
@@ -802,6 +825,7 @@ const Product = (user: any) => {
                 onChange={handleGroupChange}
                 className="w-full text-sm !"
                 categoryDdl={groupOptions}
+                value={groupId ?? ''}
               />
             </div>
           ) : null}
