@@ -100,10 +100,10 @@ const DemoLoginAccounts: React.FC<DemoLoginAccountsProps> = ({ onUseLogin }) => 
               <tr key={account.loginId}>
                 <td className={cell}>{index + 1}</td>
                 <td className={cell}>{account.businessType}</td>
-                <td className={`whitespace-nowrap ${cell}`}>{account.loginId}</td>
+                {/* <td className={`whitespace-nowrap ${cell}`}>{account.loginId}</td>
                 <td className={`whitespace-nowrap ${cell}`}>
                   <span className="font-mono">{account.password}</span>
-                </td>
+                </td> */}
                 <td className={`whitespace-nowrap ${cell}`}>
                   <ButtonLoading
                     type="button"
