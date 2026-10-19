@@ -90,8 +90,8 @@ const DemoLoginAccounts: React.FC<DemoLoginAccountsProps> = ({ onUseLogin }) => 
             <tr>
               <th className={`whitespace-nowrap font-semibold ${cell}`}>Sl. No.</th>
               <th className={`font-semibold ${cell}`}>Business Type</th>
-              <th className={`whitespace-nowrap font-semibold ${cell}`}>User</th>
-              <th className={`whitespace-nowrap font-semibold ${cell}`}>Password</th>
+              {/* <th className={`whitespace-nowrap font-semibold ${cell}`}>User</th>
+              <th className={`whitespace-nowrap font-semibold ${cell}`}>Password</th> */}
               <th className={`whitespace-nowrap font-semibold ${cell}`}>Action</th>
             </tr>
           </thead>
