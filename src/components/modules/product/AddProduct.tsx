@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -180,10 +180,16 @@ const AddProduct = () => {
   }, [id, dispatch]);
 
 
+  // One save at a time: a held Ctrl+U repeats keydown, and `buttonLoading` is
+  // a render behind -- the ref is immediate.
+  const savingRef = useRef(false);
+
   // Waits for the answer. It used to announce success and leave for the list
   // before the server had replied, so a refused edit -- a code or a name
   // already taken -- looked saved and was lost.
   const handleBranchUpdate = () => {
+    if (savingRef.current) return;
+
     const measurementIssue = measurementError();
     if (measurementIssue) {
       toast.info(measurementIssue);
@@ -196,8 +202,10 @@ const AddProduct = () => {
       measurement: withLeadingZero(formData.measurement),
       package_size: withLeadingZero(formData.package_size),
     };
+    savingRef.current = true;
     dispatch(
       updateProduct(payload, (d: any) => {
+        savingRef.current = false;
         if (d?.success) {
           toast.success(d?.message || 'Product updated successfully');
           setTimeout(() => {
@@ -845,7 +853,7 @@ const AddProduct = () => {
           <ButtonLoading
             onClick={handleBranchUpdate}
             buttonLoading={buttonLoading}
-            label="Update"
+            label="Update (Ctrl + U)"
             className="whitespace-nowrap mr-2 py-1.5"
             icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
           />

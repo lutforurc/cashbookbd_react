@@ -109,19 +109,12 @@ const Product = (user: any) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [search, setSearchValue] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState(''); // ✅ Search চাপলে apply হবে
-  const [searchRun, setSearchRun] = useState(0); // ✅ একই শব্দে আবার Enter চাপলেও একবার request যাবে
-
-  // ⚠️ The page rides the address bar (`?page=5`), not a useState. An edit
-  // unmounts this list and comes back to it, and local state would start over
-  // at page one -- dumping the clerk on a page they were not reading. Held
-  // here, the number survives the trip, the browser's Back button and a
-  // refresh. Same reading as BookingsScreen.
-  //
-  // The three filters ride it for the same reason: they were useStates, so
-  // every edit-and-save came back to a list that had forgotten which Brand,
-  // Category or Group the clerk was working in.
+  // ⚠️ The page, the three filters AND the search ride the address bar, not a
+  // useState. An edit unmounts this list and comes back to it, and local state
+  // would start over -- the page dumped back to one, the filters forgotten, and
+  // (the one the clerk notices) the search word gone, so a search for "demo"
+  // came back showing the whole catalogue. Held here, all of it survives the
+  // trip, the browser's Back button, a refresh, and the edit screen's return.
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
 
@@ -129,13 +122,33 @@ const Product = (user: any) => {
   const categoryId = searchParams.get('category') || null;
   const groupId = searchParams.get('group') || null;
 
-  /* One writer for the whole query, so setting a filter cannot drop the page
-     and turning a page cannot drop the filters. '' means "not set". */
+  // The applied word -- what the API is actually searching with. Derived, so it
+  // and the box cannot drift apart.
+  const appliedSearch = searchParams.get('search') ?? '';
+
+  const [search, setSearchValue] = useState(appliedSearch); // the box's own text
+  const [searchRun, setSearchRun] = useState(0); // ✅ একই শব্দে আবার Enter চাপলেও একবার request যাবে
+
+  /* ⚠️ Only when the APPLIED word changes does the box follow it -- a Reset, a
+     Back button, or coming home from an edit. Following every searchParams
+     change instead would rub out what is being typed the moment a filter beside
+     the box is touched, which is exactly when the box must keep its own text. */
+  const prevAppliedSearch = useRef(appliedSearch);
+  useEffect(() => {
+    if (prevAppliedSearch.current === appliedSearch) return;
+    prevAppliedSearch.current = appliedSearch;
+    setSearchValue(appliedSearch);
+  }, [appliedSearch]);
+
+  /* One writer for the whole query, so setting a filter cannot drop the page,
+     the search or another filter -- and turning a page cannot drop any of them.
+     '' means "not set". */
   const setQuery = (patch: Record<string, any>) => {
     const next: Record<string, string> = {
       brand: searchParams.get('brand') ?? '',
       category: searchParams.get('category') ?? '',
       group: searchParams.get('group') ?? '',
+      search: searchParams.get('search') ?? '',
       page: searchParams.get('page') ?? '',
     };
 
@@ -273,10 +286,25 @@ const Product = (user: any) => {
   const submitSearch = () => {
     setTableData([]);
     setTotalPages(0);
-    goToPage(1);
-    setAppliedSearch(search);
+    // The applied word lives in the address bar, so Enter writes it there --
+    // that is what carries it through an edit and back. Page one, because a new
+    // search has its own first page. Emptying the box and pressing Enter is the
+    // explicit clear; nothing else takes the word away.
+    setQuery({ search: search.trim(), page: '' });
     // An Enter on the word already applied changes no state, so the fetch
     // effect above would stay quiet; this is what still asks it once.
+    setSearchRun((n) => n + 1);
+  };
+
+  /* The one deliberate "show me everything": search, filters and page together,
+     back to the branch's whole catalogue. Nothing else clears the search. */
+  const handleReset = () => {
+    setSearchValue('');
+    setTableData([]);
+    setTotalPages(0);
+    setSearchParams({}, { replace: true });
+    // Every param may already have been empty, in which case setSearchParams
+    // changes no state; this still asks the API once.
     setSearchRun((n) => n + 1);
   };
 
@@ -955,6 +983,17 @@ const Product = (user: any) => {
                 className="font-medium text-sm w-12!"
               />
             </div>
+            {/* The explicit clear. Without it the only way back to the whole
+                catalogue was to empty the box and press Enter -- and, worse,
+                nothing said so. Beside Print, at the filters' own height. */}
+            <Button
+              type="button"
+              title="Clear search, filters and page"
+              onClick={handleReset}
+              className="ml-2 whitespace-nowrap border border-[rgb(var(--c-border))] px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
+            >
+              Reset
+            </Button>
             <PrintButton onClick={handlePrint} label="Print" className="ml-2" />
 
             {/* Beside Print, at Print's own size, rather than in a cell of

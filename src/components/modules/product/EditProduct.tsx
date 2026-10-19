@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getCategoryDdl } from '../category/categorySlice';
 import Loader from '../../../common/Loader';
 import { toast } from 'react-toastify';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { warrantyType } from '../../utils/fields/DataConstant';
 import { editProduct, updateProduct } from './productSlice';
 import { isBranchSettingOn } from '../../utils/userFeatureSettings';
@@ -40,6 +40,15 @@ const EditProduct = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams(); // product ID from URL
+  const location = useLocation();
+
+  // The list that opened this edit hands over its own address -- the search
+  // word, the filters and the page all ride in the query string. Saving (or
+  // going back) must land there, not on a bare list that has forgotten the
+  // clerk was searching "demo". A hand-typed edit URL carries no such state and
+  // falls back to the plain list. Same reading as AddProduct's `backTo`.
+  const backTo =
+    (location.state as { from?: string } | null)?.from ?? '/product/product-list';
   const category = useSelector((state) => state.category);
   const settings = useSelector((state) => state.settings);
   const product = useSelector((state) => state.product);
@@ -159,8 +168,15 @@ const EditProduct = () => {
     }
   };
 
+  // Guards one submission at a time. The spinner is not a lock -- a state
+  // update lands after the fact -- so a held Ctrl+U could start a second save
+  // before `buttonLoading` had even been seen by a render.
+  const savingRef = useRef(false);
+
   const handleUpdate = (e) => {
     e.preventDefault();
+
+    if (savingRef.current) return;
 
     if (!(formData.category_id || '').trim()) {
       toast.error('Please enter category.');
@@ -179,14 +195,19 @@ const EditProduct = () => {
       return;
     }
 
+    savingRef.current = true;
     setButtonLoading(true);
 
     dispatch(
       updateProduct({ id, ...formData }, (res: any) => {
+        savingRef.current = false;
         setButtonLoading(false);
         if (res?.success) {
           toast.success('Product updated successfully!');
-          navigate('/product/product-list');
+          // Back to the list the clerk came from -- its search word, filters and
+          // page included, so the filtered results are still on screen when it
+          // returns (and a product that no longer matches "demo" is gone).
+          navigate(backTo);
           return;
         }
 
@@ -194,6 +215,37 @@ const EditProduct = () => {
       }),
     );
   };
+
+  /* Ctrl+U is this screen's Update. The button's own handler is reused, so the
+     validation and the save are the ones the cursor would run -- nothing is
+     written twice.
+
+     ⚠️ Bound on the WINDOW, so it fires with the focus in any field, and taken
+     off again in the cleanup: the shortcut belongs to this page and must not
+     follow the clerk to the list or anywhere else. Ctrl+U is View Source in
+     every browser, so the default is suppressed here -- and only here.
+
+     ⚠️ Bound ONCE, reading the handler through a ref. Re-binding on every
+     keystroke would work too, but the listener would be torn down and rebuilt
+     on each character typed into a field; the ref keeps the one listener
+     pointed at the newest state. */
+  const updateRef = useRef(handleUpdate);
+  useEffect(() => {
+    updateRef.current = handleUpdate;
+  });
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return;
+      if (event.key !== 'u' && event.key !== 'U') return;
+
+      event.preventDefault();
+      updateRef.current(event as any);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   return (
     <div>
@@ -310,11 +362,12 @@ const EditProduct = () => {
         <ButtonLoading
           onClick={handleUpdate}
           buttonLoading={buttonLoading}
-          label="Update"
+          disabled={buttonLoading}
+          label="Update (Ctrl + U)"
           className="whitespace-nowrap mr-2 py-1.5"
         />
         <ButtonLoading
-          onClick={() => navigate('/product/product-list')}
+          onClick={() => navigate(backTo)}
           buttonLoading={false}
           label="Go to back"
           className="whitespace-nowrap text-center mr-0"
