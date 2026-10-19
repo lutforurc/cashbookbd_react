@@ -1,13 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
-import { FiDollarSign, FiList, FiPrinter, FiRefreshCcw, FiSave } from 'react-icons/fi';
+import {
+  FiDollarSign,
+  FiList,
+  FiPlus,
+  FiPrinter,
+  FiRefreshCcw,
+  FiSave,
+  FiTrash2,
+} from 'react-icons/fi';
 import { FaUniversity } from 'react-icons/fa';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, IconButton } from '../../../../pages/UiElements/CustomButtons';
 import { FIELD_HEIGHT, FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
 import httpService from '../../../services/httpService';
 import {
@@ -16,17 +24,22 @@ import {
 } from '../../../services/apiRoutes';
 
 /**
- * Money coming in to the hotel's cash or bank, against one head.
+ * Money coming in to the hotel's cash or bank, against one or more heads.
  *
- * ⚠️ IT WRITES A REAL VOUCHER, the same `1-` receipt the accounts Cash Received
- * and Bank Received screens write -- cash debits head 17, bank debits the chosen
- * bank head, and the chosen account head is credited -- so it lands in the
- * ledger, the Cash Book and the Bank Book like any other receipt. See
- * ReceivedEntryController.
+ * ⚠️ IT WRITES ONE REAL VOUCHER -- the same `1-` receipt the accounts Cash
+ * Received and Bank Received screens write -- with a head line for every row
+ * and a single debit for the money that came into the till or the bank, so it
+ * lands in the ledger, the Cash Book and the Bank Book like any other receipt.
+ * See ReceivedEntryController.
  *
- * ⚠️ THE MIRROR OF HotelPaymentEntry. Same single head, same single amount, the
+ * ⚠️ SEVERAL HEADS, ONE VOUCHER. Each row is a head, an amount and who paid; a
+ * row is ALL OR NOTHING -- a head with no amount, or an amount with no head, is
+ * refused before the server is asked. The totals shown are the sum of the rows,
+ * and the two sides balance by construction: the debit is that same sum.
+ *
+ * ⚠️ THE MIRROR of HotelPaymentEntry. Same rows, same single contra leg, the
  * money going the other way; a receipt has no clerk-typed voucher number, only
- * who paid.
+ * who paid -- which rides on that row's line as its remark.
  */
 const CASH = 'cash';
 const BANK = 'bank';
@@ -34,18 +47,29 @@ const BANK = 'bank';
 const money = (value: number) =>
   value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+type Account = { value: string; label: string };
+
+type Row = {
+  id: number;
+  account: Account | null;
+  amount: string;
+  remarks: string;
+};
+
+const makeRow = (id: number): Row => ({ id, account: null, amount: '', remarks: '' });
+
 const HotelReceivedEntry = () => {
   const [mode, setMode] = useState<string>(CASH);
-  const [account, setAccount] = useState<{ value: string; label: string } | null>(null);
-  const [receivedFrom, setReceivedFrom] = useState('');
-  const [amount, setAmount] = useState('');
+  const [rows, setRows] = useState<Row[]>([makeRow(1)]);
   const [bankList, setBankList] = useState<{ id: number; name: string }[]>([]);
   const [bankAccount, setBankAccount] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const nextId = useRef(2);
+
   const isCash = mode === CASH;
-  const total = Number(amount) || 0;
+  const total = rows.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
   const bankName = bankList.find((b) => String(b.id) === String(bankAccount))?.name ?? '';
 
   useEffect(() => {
@@ -72,30 +96,49 @@ const HotelReceivedEntry = () => {
     };
   }, []);
 
+  /** One more head on this receipt. */
+  const addRow = () => setRows((prev) => [...prev, makeRow(nextId.current++)]);
+
+  /** Take a head off -- never the last one, so the voucher always has a line. */
+  const removeRow = (id: number) =>
+    setRows((prev) => (prev.length <= 1 ? prev : prev.filter((row) => row.id !== id)));
+
+  const updateRow = (id: number, patch: Partial<Row>) =>
+    setRows((prev) => prev.map((row) => (row.id === id ? { ...row, ...patch } : row)));
+
   const reset = () => {
     setMode(CASH);
-    setAccount(null);
-    setReceivedFrom('');
-    setAmount('');
+    setRows([makeRow(nextId.current++)]);
     setBankAccount('');
     setNotes('');
   };
 
   const save = async () => {
-    if (!account) return toast.error('Select the account head the money came in against.');
-    if (!(total > 0)) return toast.error('Enter the received amount.');
     if (!isCash && !bankAccount) return toast.error('Select the bank account the money is received into.');
+
+    // Every row before any of them: a head with no amount, or an amount with no
+    // head, would otherwise reach the server and be refused as one line.
+    for (let index = 0; index < rows.length; index++) {
+      if (!rows[index].account) {
+        return toast.error(`Row ${index + 1}: select the account head the money came in against.`);
+      }
+      if (!(Number(rows[index].amount) > 0)) {
+        return toast.error(`Row ${index + 1}: enter the received amount.`);
+      }
+    }
 
     setSaving(true);
 
     try {
       const res = await httpService.post(API_HOTEL_RECEIVED_ENTRY_URL, {
         mode,
-        account: account.value,
-        amount: total,
-        received_from: receivedFrom.trim() || null,
         bank_account: isCash ? null : bankAccount,
         notes: notes.trim() || null,
+        rows: rows.map((row) => ({
+          account: row.account?.value,
+          amount: Number(row.amount),
+          remarks: row.remarks.trim() || null,
+        })),
       });
 
       // ⚠️ A refusal rides HTTP 200 with success:false, so the body has to be
@@ -147,34 +190,82 @@ const HotelReceivedEntry = () => {
         </div>
       </div>
 
-      {/* What it comes in against, and who paid. */}
-      <div className="mb-3 grid grid-cols-1 gap-3 rounded border border-stroke p-3 md:grid-cols-2 dark:border-strokedark">
-        <div>
-          <label htmlFor="account" className={FIELD_LABEL}>
-            Account Head *
-          </label>
-          <DdlMultiline
-            id="account"
-            name="account"
-            placeholder="Select Account Head"
-            value={account}
-            onSelect={(option: any) =>
-              setAccount(
-                option ? { value: String(option.value), label: String(option.label) } : null,
-              )
-            }
+      {/* What came in, and how much -- one row per head, all on one voucher. */}
+      <div className="mb-3 rounded border border-stroke p-3 dark:border-strokedark">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-black dark:text-white">Account Heads</h2>
+          <ButtonLoading
+            onClick={addRow}
+            label="Add Row"
+            variant="ghost"
+            size="sm"
+            className="border border-stroke dark:border-strokedark"
+            icon={<FiPlus size={15} />}
           />
         </div>
 
-        <InputElement
-          id="receivedFrom"
-          name="receivedFrom"
-          label="Received From"
-          value={receivedFrom}
-          placeholder="Optional"
-          onChange={(e: any) => setReceivedFrom(e.target.value)}
-          description="Optional. Who the money was received from."
-        />
+        <div className="grid grid-cols-1 gap-3">
+          {rows.map((row) => (
+            <div
+              key={row.id}
+              className="grid grid-cols-1 items-end gap-3 rounded border border-stroke p-2 md:grid-cols-12 dark:border-strokedark"
+            >
+              <div className="md:col-span-5">
+                <label htmlFor={`account-${row.id}`} className={FIELD_LABEL}>
+                  Account Head *
+                </label>
+                <DdlMultiline
+                  id={`account-${row.id}`}
+                  name="account"
+                  placeholder="Search and select Account Head"
+                  value={row.account}
+                  onSelect={(option: any) =>
+                    updateRow(row.id, {
+                      account: option
+                        ? { value: String(option.value), label: String(option.label) }
+                        : null,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="md:col-span-3">
+                <InputElement
+                  id={`amount-${row.id}`}
+                  name="amount"
+                  type="number"
+                  min={0}
+                  step="any"
+                  label="Received Amount (Tk.) *"
+                  placeholder="0.00"
+                  value={row.amount}
+                  onChange={(e: any) => updateRow(row.id, { amount: e.target.value })}
+                />
+              </div>
+
+              <div className="md:col-span-3">
+                <InputElement
+                  id={`remarks-${row.id}`}
+                  name="remarks"
+                  label="Received From"
+                  placeholder="Who paid (optional)"
+                  value={row.remarks}
+                  onChange={(e: any) => updateRow(row.id, { remarks: e.target.value })}
+                />
+              </div>
+
+              <div className="flex items-end justify-end pb-1.5 md:col-span-1">
+                <IconButton
+                  icon={<FiTrash2 size={16} />}
+                  title="Remove this head"
+                  tone="danger"
+                  disabled={rows.length <= 1}
+                  onClick={() => removeRow(row.id)}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -225,18 +316,6 @@ const HotelReceivedEntry = () => {
               />
             ) : null}
 
-            <InputElement
-              id="receivedAmount"
-              name="receivedAmount"
-              type="number"
-              min={0}
-              step="any"
-              label="Received Amount (Tk.) *"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e: any) => setAmount(e.target.value)}
-            />
-
             <div>
               <label htmlFor="notes" className={FIELD_LABEL}>
                 Notes
@@ -275,9 +354,35 @@ const HotelReceivedEntry = () => {
           </div>
 
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Account Head</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Account Heads</span>
             <span className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
-              {account?.label || '—'}
+              {rows.length}
+            </span>
+          </div>
+
+          <div className="my-1 border-t border-stroke dark:border-strokedark" />
+
+          {/* The two sides of the voucher. They come to the same figure by
+              construction -- the debit is the sum of the rows -- and the
+              Difference is shown so that is visible rather than assumed. */}
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Total Debit (Tk.)</span>
+            <span className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
+              {money(total)}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Total Credit (Tk.)</span>
+            <span className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
+              {money(total)}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Difference (Tk.)</span>
+            <span className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
+              {money(total - total)}
             </span>
           </div>
 

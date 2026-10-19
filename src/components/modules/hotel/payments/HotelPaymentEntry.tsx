@@ -1,13 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
-import { FiDollarSign, FiList, FiPrinter, FiRefreshCcw, FiSave } from 'react-icons/fi';
+import {
+  FiDollarSign,
+  FiList,
+  FiPlus,
+  FiPrinter,
+  FiRefreshCcw,
+  FiSave,
+  FiTrash2,
+} from 'react-icons/fi';
 import { FaUniversity } from 'react-icons/fa';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, IconButton } from '../../../../pages/UiElements/CustomButtons';
 import { FIELD_HEIGHT, FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
 import httpService from '../../../services/httpService';
 import {
@@ -16,12 +24,18 @@ import {
 } from '../../../services/apiRoutes';
 
 /**
- * Paying one head from the hotel's cash or bank.
+ * Paying one or more heads from the hotel's cash or bank.
  *
- * ⚠️ IT WRITES A REAL VOUCHER, the same `2-` payment the accounts Cash Payment
- * and Bank Payment screens write -- cash credits head 17, bank credits the
- * chosen bank head -- so it lands in the ledger, the Cash Book and the Bank Book
- * like any other payment. See PaymentEntryController.
+ * ⚠️ IT WRITES ONE REAL VOUCHER -- the same `2-` payment the accounts Cash
+ * Payment and Bank Payment screens write -- with a head line for every row and
+ * a single credit for the money that left the till or the bank, so it lands in
+ * the ledger, the Cash Book and the Bank Book like any other payment. See
+ * PaymentEntryController.
+ *
+ * ⚠️ SEVERAL HEADS, ONE VOUCHER. Each row is a head and an amount; a row is ALL
+ * OR NOTHING -- a head with no amount, or an amount with no head, is refused
+ * before the server is asked. The totals shown are the sum of the rows, and the
+ * two sides balance by construction: the credit is that same sum.
  *
  * ⚠️ THE VOUCHER NO IS TYPED BY THE CLERK and kept in `manual_voucher_no`, the
  * column the Tiles screens keep their handwritten number in. The `2-...` number
@@ -34,18 +48,30 @@ const BANK = 'bank';
 const money = (value: number) =>
   value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+type Account = { value: string; label: string };
+
+type Row = {
+  id: number;
+  account: Account | null;
+  amount: string;
+  remarks: string;
+};
+
+const makeRow = (id: number): Row => ({ id, account: null, amount: '', remarks: '' });
+
 const HotelPaymentEntry = () => {
   const [mode, setMode] = useState<string>(CASH);
-  const [account, setAccount] = useState<{ value: string; label: string } | null>(null);
+  const [rows, setRows] = useState<Row[]>([makeRow(1)]);
   const [manualNo, setManualNo] = useState('');
-  const [amount, setAmount] = useState('');
   const [bankList, setBankList] = useState<{ id: number; name: string }[]>([]);
   const [bankAccount, setBankAccount] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const nextId = useRef(2);
+
   const isCash = mode === CASH;
-  const total = Number(amount) || 0;
+  const total = rows.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
   const bankName = bankList.find((b) => String(b.id) === String(bankAccount))?.name ?? '';
 
   useEffect(() => {
@@ -72,30 +98,51 @@ const HotelPaymentEntry = () => {
     };
   }, []);
 
+  /** One more head on this payment. */
+  const addRow = () => setRows((prev) => [...prev, makeRow(nextId.current++)]);
+
+  /** Take a head off -- never the last one, so the voucher always has a line. */
+  const removeRow = (id: number) =>
+    setRows((prev) => (prev.length <= 1 ? prev : prev.filter((row) => row.id !== id)));
+
+  const updateRow = (id: number, patch: Partial<Row>) =>
+    setRows((prev) => prev.map((row) => (row.id === id ? { ...row, ...patch } : row)));
+
   const reset = () => {
     setMode(CASH);
-    setAccount(null);
+    setRows([makeRow(nextId.current++)]);
     setManualNo('');
-    setAmount('');
     setBankAccount('');
     setNotes('');
   };
 
   const save = async () => {
-    if (!account) return toast.error('Select the account head the money is paid to.');
-    if (!(total > 0)) return toast.error('Enter the payment amount.');
     if (!isCash && !bankAccount) return toast.error('Select the bank account paid from.');
+
+    // Every row before any of them: a head with no amount, or an amount with no
+    // head, would otherwise reach the server and be refused as one line.
+    for (let index = 0; index < rows.length; index++) {
+      if (!rows[index].account) {
+        return toast.error(`Row ${index + 1}: select the account head the money is paid to.`);
+      }
+      if (!(Number(rows[index].amount) > 0)) {
+        return toast.error(`Row ${index + 1}: enter the payment amount.`);
+      }
+    }
 
     setSaving(true);
 
     try {
       const res = await httpService.post(API_HOTEL_PAYMENT_ENTRY_URL, {
         mode,
-        account: account.value,
-        amount: total,
-        manual_voucher_no: manualNo.trim() || null,
         bank_account: isCash ? null : bankAccount,
+        manual_voucher_no: manualNo.trim() || null,
         notes: notes.trim() || null,
+        rows: rows.map((row) => ({
+          account: row.account?.value,
+          amount: Number(row.amount),
+          remarks: row.remarks.trim() || null,
+        })),
       });
 
       // ⚠️ A refusal rides HTTP 200 with success:false, so the body has to be
@@ -147,38 +194,86 @@ const HotelPaymentEntry = () => {
         </div>
       </div>
 
-      {/* Who is paid, and the number the clerk writes on the paper. */}
-      <div className="mb-3 grid grid-cols-1 gap-3 rounded border border-stroke p-3 md:grid-cols-2 dark:border-strokedark">
-        <div>
-          <label htmlFor="account" className={FIELD_LABEL}>
-            Account Head *
-          </label>
-          <DdlMultiline
-            id="account"
-            name="account"
-            placeholder="Select Account Head"
-            value={account}
-            onSelect={(option: any) =>
-              setAccount(
-                option ? { value: String(option.value), label: String(option.label) } : null,
-              )
-            }
+      {/* What is paid, and how much -- one row per head, all on one voucher. */}
+      <div className="mb-3 rounded border border-stroke p-3 dark:border-strokedark">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-black dark:text-white">Account Heads</h2>
+          <ButtonLoading
+            onClick={addRow}
+            label="Add Row"
+            variant="ghost"
+            size="sm"
+            className="border border-stroke dark:border-strokedark"
+            icon={<FiPlus size={15} />}
           />
         </div>
 
-        <InputElement
-          id="voucherNo"
-          name="voucherNo"
-          label="Voucher No"
-          value={manualNo}
-          placeholder="Optional"
-          onChange={(e: any) => setManualNo(e.target.value)}
-          description="Optional. Your own number for this payment; the system numbers it 2-… either way."
-        />
+        <div className="grid grid-cols-1 gap-3">
+          {rows.map((row) => (
+            <div
+              key={row.id}
+              className="grid grid-cols-1 items-end gap-3 rounded border border-stroke p-2 md:grid-cols-12 dark:border-strokedark"
+            >
+              <div className="md:col-span-5">
+                <label htmlFor={`account-${row.id}`} className={FIELD_LABEL}>
+                  Account Head *
+                </label>
+                <DdlMultiline
+                  id={`account-${row.id}`}
+                  name="account"
+                  placeholder="Search and select Account Head"
+                  value={row.account}
+                  onSelect={(option: any) =>
+                    updateRow(row.id, {
+                      account: option
+                        ? { value: String(option.value), label: String(option.label) }
+                        : null,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="md:col-span-3">
+                <InputElement
+                  id={`amount-${row.id}`}
+                  name="amount"
+                  type="number"
+                  min={0}
+                  step="any"
+                  label="Amount (Tk.) *"
+                  placeholder="0.00"
+                  value={row.amount}
+                  onChange={(e: any) => updateRow(row.id, { amount: e.target.value })}
+                />
+              </div>
+
+              <div className="md:col-span-3">
+                <InputElement
+                  id={`remarks-${row.id}`}
+                  name="remarks"
+                  label="Notes"
+                  placeholder="Optional"
+                  value={row.remarks}
+                  onChange={(e: any) => updateRow(row.id, { remarks: e.target.value })}
+                />
+              </div>
+
+              <div className="flex items-end justify-end pb-1.5 md:col-span-1">
+                <IconButton
+                  icon={<FiTrash2 size={16} />}
+                  title="Remove this head"
+                  tone="danger"
+                  disabled={rows.length <= 1}
+                  onClick={() => removeRow(row.id)}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        {/* Where the money came from. */}
+        {/* Where the money came from, and the number the clerk writes on the paper. */}
         <div className="rounded border border-stroke p-3 dark:border-strokedark">
           <h2 className="mb-2 text-base font-semibold text-black dark:text-white">
             Payment Details
@@ -226,15 +321,13 @@ const HotelPaymentEntry = () => {
             ) : null}
 
             <InputElement
-              id="paymentAmount"
-              name="paymentAmount"
-              type="number"
-              min={0}
-              step="any"
-              label="Payment Amount (Tk.) *"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e: any) => setAmount(e.target.value)}
+              id="voucherNo"
+              name="voucherNo"
+              label="Voucher No"
+              value={manualNo}
+              placeholder="Optional"
+              onChange={(e: any) => setManualNo(e.target.value)}
+              description="Optional. Your own number for this payment; the system numbers it 2-… either way."
             />
 
             <div>
@@ -275,9 +368,35 @@ const HotelPaymentEntry = () => {
           </div>
 
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Account Head</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Account Heads</span>
             <span className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
-              {account?.label || '—'}
+              {rows.length}
+            </span>
+          </div>
+
+          <div className="my-1 border-t border-stroke dark:border-strokedark" />
+
+          {/* The two sides of the voucher. They come to the same figure by
+              construction -- the credit is the sum of the rows -- and the
+              Difference is shown so that is visible rather than assumed. */}
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Total Debit (Tk.)</span>
+            <span className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
+              {money(total)}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Total Credit (Tk.)</span>
+            <span className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
+              {money(total)}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Difference (Tk.)</span>
+            <span className="font-medium text-gray-900 dark:text-[rgb(var(--c-text))]">
+              {money(total - total)}
             </span>
           </div>
 
