@@ -14,6 +14,7 @@ import DeviceLimitNotice from '../../components/modules/devices/DeviceLimitNotic
 import { FIELD_BASE, FIELD_LABEL } from '../../theme/fieldStyles';
 import ToggleSwitch from '../../components/utils/fields/ToggleSwitch';
 import { Input } from '../../components/utils/fields/FormControls';
+import DemoLoginAccounts from './DemoLoginAccounts';
 
 /**
  * Forgot password and Register: the quiet way out of this screen, so they are
@@ -66,6 +67,15 @@ const SignIn: React.FC = () => {
   };
 
   const handleCheckPassword = () => setCheckPassword((p) => !p);
+
+  /**
+   * Fills the form from a demo account. It stops at the fields on purpose: the
+   * visitor reads what was entered and presses Sign In themselves, so a stray
+   * tap on the demo table never signs anyone in.
+   */
+  const handleUseDemoAccount = (loginId: string, password: string) => {
+    setFormData((prev) => ({ ...prev, loginId, password }));
+  };
 
   const submitLogin = () => {
     dispatch(
@@ -415,6 +425,10 @@ const SignIn: React.FC = () => {
 
                 </form>
               </div>
+
+              {/* Staging only, and only on the exact demo hostname -- see
+                  DemoLoginAccounts, which renders nothing anywhere else. */}
+              <DemoLoginAccounts onUseLogin={handleUseDemoAccount} />
 
               {/* Was black-at-80% in light and white-at-20% in dark -- the same
                   line, near-solid on one theme and almost gone on the other. */}
