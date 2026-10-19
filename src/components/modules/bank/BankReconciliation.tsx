@@ -277,7 +277,7 @@ const BankReconciliation = () => {
             type="number"
             value={balance}
             onChange={(e: any) => setBalance(e.target.value)}
-            description="The closing balance on the statement."
+            description=""
           />
         </div>
 

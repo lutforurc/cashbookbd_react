@@ -430,16 +430,25 @@ const EditCustomerSupplier = () => {
     (opt: any) => opt.value === formik.values.area_id?.toString()
   );
 
+  // One submission at a time: a held Ctrl+U repeats keydown, and `updating`
+  // reaches this component a render late.
+  const submittingRef = useRef(false);
+  useEffect(() => {
+    if (!updating) submittingRef.current = false;
+  }, [updating]);
+
   /**
    * Formik silently swallows a failed validation, so surface it: touch every
    * offending field and show the first message instead of doing nothing.
    */
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const submitUpdate = async () => {
+    if (submittingRef.current || updating) return;
+    submittingRef.current = true;
 
     const errors = await formik.validateForm();
 
     if (Object.keys(errors).length > 0) {
+      submittingRef.current = false;
       formik.setTouched(setNestedObjectValues(errors, true));
 
       // The offending field may sit in the tab that is out of view.
@@ -456,6 +465,11 @@ const EditCustomerSupplier = () => {
     }
 
     formik.submitForm();
+  };
+
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await submitUpdate();
   };
 
   const handleResetForm = () => {
@@ -1195,7 +1209,7 @@ const EditCustomerSupplier = () => {
               type="submit"
               disabled={updating}
               buttonLoading={updating}
-              label="Update"
+              label="Update (Ctrl + U)"
               className="whitespace-nowrap text-center pt-2 pb-2"
               icon={<FiSave className="text-lg ml-2 mr-2" />}
             />

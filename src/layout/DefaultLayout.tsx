@@ -9,6 +9,7 @@ import { fetchCurrentSubscription } from '../components/modules/subscription/sub
 import SubscriptionStatusBanner from '../components/modules/subscription/SubscriptionStatusBanner';
 import InAppMessageHost from '../components/modules/in-app-messages/InAppMessageHost';
 import { isUserFeatureEnabled } from '../components/utils/userFeatureSettings';
+import useCtrlUUpdate from '../components/utils/hooks/useCtrlUUpdate';
 
 interface DefaultLayoutProps {
   isLoggedIn: boolean;
@@ -23,6 +24,9 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, us
   const subscription = useSelector((state: any) => state.subscription);
   const settings = useSelector((state: any) => state.settings);
   const useSidebarMenu = isUserFeatureEnabled(settings, 'sidebar_menu');
+
+  // Ctrl+U presses the screen's own Update button -- every screen that has one.
+  useCtrlUUpdate();
 
   useEffect(() => {
     if (!isLoggedIn || isLoading || !user) return;
