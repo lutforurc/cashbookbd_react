@@ -139,7 +139,7 @@ const AddCoaL3 = () => {
     }
 
     if (!formData.name.trim()) {
-      toast.error('Chart of Accounts (Level-3) is required.');
+      toast.error('Accounts Group Head is required.');
       return;
     }
 
@@ -230,14 +230,15 @@ const AddCoaL3 = () => {
 
           <div>
             <label className={fieldLabelClass}>
-              Chart of Accounts (Level-3)<span className="text-red-500">*</span>
+              Accounts Group Head
+              <span className="text-red-500">*</span>
             </label>
             <InputElement
               id="name"
               name="name"
               value={formData.name}
               onChange={handleInputChange('name')}
-              placeholder="Chart of Accounts (Level-3)"
+              placeholder="Accounts Group Head"
             />
           </div>
 

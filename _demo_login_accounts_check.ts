@@ -20,20 +20,20 @@
  * fills the fields -- the existing login flow is untouched.
  */
 
-// Before any module is evaluated: the component reads window.location.hostname.
-(globalThis as any).window = { location: { hostname: 'accounts.staging.cashbookbd.com' } };
+// Before any module is evaluated: the component reads window.location.host.
+(globalThis as any).window = { location: { host: 'accounts.staging.cashbookbd.com' } };
 
 import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import DemoLoginAccounts, {
-  DEMO_ACCOUNTS_HOSTNAME,
+  DEMO_ACCOUNTS_HOSTS,
   DEMO_LOGIN_ACCOUNTS,
   shouldShowDemoLoginAccounts,
 } from './src/pages/Authentication/DemoLoginAccounts';
 
-const setHost = (hostname: string) => {
-  (globalThis as any).window = { location: { hostname } };
+const setHost = (host: string) => {
+  (globalThis as any).window = { location: { host } };
 };
 
 let pass = 0;
@@ -52,10 +52,13 @@ const check = (label: string, ok: boolean, detail = '') => {
 const render = () =>
   renderToStaticMarkup(React.createElement(DemoLoginAccounts, { onUseLogin: () => {} }));
 
-/** Every hostname the table must stay hidden on. */
+/** Every host (hostname plus port) the table must stay hidden on. */
 const HIDDEN_HOSTS = [
   'localhost',
+  'localhost:3000',
   '127.0.0.1',
+  '127.0.0.1:5173',
+  'localhost:5173.evil.example',
   'app.cashbookbd.com',
   'www.cashbookbd.com',
   'cashbookbd.com',
@@ -77,13 +80,22 @@ const main = () => {
   console.log('Demo Login Accounts — exact-hostname gate\n');
 
   check(
-    'the gate names the staging accounts host',
-    DEMO_ACCOUNTS_HOSTNAME === 'accounts.staging.cashbookbd.com',
-    DEMO_ACCOUNTS_HOSTNAME,
+    'the gate names the staging accounts host and the Vite dev server',
+    DEMO_ACCOUNTS_HOSTS.includes('accounts.staging.cashbookbd.com') &&
+      DEMO_ACCOUNTS_HOSTS.includes('localhost:5173'),
+    DEMO_ACCOUNTS_HOSTS.join(', '),
   );
   check(
-    'the exact hostname is allowed',
+    'the exact staging host is allowed',
     shouldShowDemoLoginAccounts('accounts.staging.cashbookbd.com') === true,
+  );
+  check(
+    'the Vite dev server (host with port) is allowed',
+    shouldShowDemoLoginAccounts('localhost:5173') === true,
+  );
+  check(
+    'the same hostname without the dev port is NOT enough',
+    shouldShowDemoLoginAccounts('localhost') === false,
   );
 
   for (const host of HIDDEN_HOSTS) {
@@ -100,17 +112,20 @@ const main = () => {
 
   check('the table renders on the staging host', shown.includes('Demo Login Accounts'));
 
-  for (const header of ['Sl. No.', 'Business Type', 'User', 'Password']) {
+  for (const header of ['Sl. No.', 'Business Type', 'Action']) {
     check(`column "${header}" is present`, shown.includes(header));
+  }
+
+  // The credentials are filled in by the button, not printed in the table.
+  for (const header of ['User', 'Password']) {
+    check(`column "${header}" is not printed`, !shown.includes(header));
   }
 
   check('the first row names the business type', shown.includes('Rod, Cement, Bricks'));
 
-  const emails = (shown.match(/rodcement@gmail\.com/g) || []).length;
   check(
-    'the demo email and password are both shown in full',
-    emails === 2,
-    `saw ${emails} occurrence(s)`,
+    'the credentials still travel with the row',
+    DEMO_LOGIN_ACCOUNTS.every((account) => account.loginId && account.password),
   );
 
   const buttons = (shown.match(/Use Login/g) || []).length;

@@ -168,11 +168,11 @@ const CoaL4 = () => {
         },
         {
             key: 'name',
-            header: 'Chart of Account L4', 
+            header: 'Accounts Head', 
         },
         {
             key: 'l3_name',
-            header: 'COA L3', 
+            header: 'Group Head', 
         },
         // {
         //     key: 'l2_name',
@@ -220,7 +220,7 @@ const CoaL4 = () => {
 
     return (
         <div>
-            <HelmetTitle title={'Chart of Accounts L4'} />
+            <HelmetTitle title={'Accounts Head List'} />
             <div className="flex overflow-x-auto justify-between mb-1">
                 <div className="flex">
                     <Select
@@ -292,7 +292,7 @@ const CoaL4 = () => {
                 <ButtonLoading
                   onClick={() => navigate(routes.coal4_add)}
                   buttonLoading={false}
-                  label="New COA L4"
+                  label="New Head Entry"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiPlus className="text-lg ml-2 mr-2" />}
                 />

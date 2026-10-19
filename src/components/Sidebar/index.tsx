@@ -3805,7 +3805,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   to="/customer-supplier/list"
                                   className={subMenuLinkClass}
                                 >
-                                  Customers
+                                  Customer & Supplier
                                 </NavLink>
                               </li>
                             )}
@@ -3856,7 +3856,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   to="/coal4/coal4-list"
                                   className={subMenuLinkClass}
                                 >
-                                  CoA L4
+                                  Accounts Head List
                                 </NavLink>
                               </li>
                             )}

@@ -1193,7 +1193,7 @@ const TrialBalanceLevel3 = (user: any) => {
                                   Sl. No
                                 </th>
                                 <th rowSpan={2} className="w-80 px-3 pt-3 pb-3 align-middle">
-                                  COA L4 Name
+                                  Accounts Head Name
                                 </th>
                                 <th colSpan={2} className="w-64 px-3 pt-3 pb-1 text-center">
                                   Opening

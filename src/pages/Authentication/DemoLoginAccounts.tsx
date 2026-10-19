@@ -3,15 +3,23 @@ import { FiLogIn } from 'react-icons/fi';
 import { ButtonLoading } from '../UiElements/CustomButtons';
 
 /**
- * The one hostname whose sign-in page carries the public demo credentials.
+ * The hosts whose sign-in page carries the public demo credentials: staging,
+ * and the Vite dev server on this machine.
  *
  * ⚠️ MATCHED BY EXACT EQUALITY, never by suffix or substring. A
  * `endsWith('staging.cashbookbd.com')` or `includes('cashbookbd')` test would
- * light this table up on production, on localhost, and on every tenant
- * subdomain under accounts.*.cashbookbd.com -- none of which should publish a
- * set of working logins.
+ * light this table up on production and on every tenant subdomain under
+ * accounts.*.cashbookbd.com -- none of which should publish a set of working
+ * logins.
+ *
+ * ⚠️ The port is part of the match, so this is compared against
+ * `location.host` -- `location.hostname` drops the port, and `localhost:5173`
+ * would never match it.
  */
-export const DEMO_ACCOUNTS_HOSTNAME = 'accounts.staging.cashbookbd.com';
+export const DEMO_ACCOUNTS_HOSTS: readonly string[] = [
+  'accounts.staging.cashbookbd.com',
+  'localhost:5173',
+];
 
 /** One demo business a visitor may sign in as. */
 export interface DemoLoginAccount {
@@ -50,9 +58,9 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
   },
 ];
 
-/** Whether this hostname is the one whose sign-in page shows the demo logins. */
-export const shouldShowDemoLoginAccounts = (hostname: string): boolean =>
-  hostname === DEMO_ACCOUNTS_HOSTNAME;
+/** Whether this host (hostname plus port) is one whose sign-in page shows the demo logins. */
+export const shouldShowDemoLoginAccounts = (host: string): boolean =>
+  DEMO_ACCOUNTS_HOSTS.includes(host);
 
 interface DemoLoginAccountsProps {
   /**
@@ -74,7 +82,7 @@ interface DemoLoginAccountsProps {
  * body --c-table-body, ruled in --c-border.
  */
 const DemoLoginAccounts: React.FC<DemoLoginAccountsProps> = ({ onUseLogin }) => {
-  if (!shouldShowDemoLoginAccounts(window.location.hostname)) return null;
+  if (!shouldShowDemoLoginAccounts(window.location.host)) return null;
 
   const cell = 'border border-[rgb(var(--c-border))] px-2 py-1.5 sm:px-3 sm:py-2 align-middle';
 
@@ -93,7 +101,7 @@ const DemoLoginAccounts: React.FC<DemoLoginAccountsProps> = ({ onUseLogin }) => 
         <table className="min-w-full text-left text-xs text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] sm:text-sm">
           <thead className="bg-[rgb(var(--c-table-head))] text-[11px] uppercase sm:text-xs">
             <tr>
-              <th className={`whitespace-nowrap font-semibold ${cell}`}>Sl. No.</th>
+              <th className={`whitespace-nowrap text-center font-semibold ${cell}`}>Sl. No.</th>
               <th className={`font-semibold ${cell}`}>Business Type</th>
               {/* <th className={`whitespace-nowrap font-semibold ${cell}`}>User</th>
               <th className={`whitespace-nowrap font-semibold ${cell}`}>Password</th> */}

@@ -167,7 +167,7 @@ const AddCoaL4 = () => {
     e.preventDefault();
 
     if (!formData.coal3_id) {
-      toast.error('Chart of Accounts (Level-3) is required.');
+      toast.error('Group Head is required.');
       return;
     }
 
@@ -177,7 +177,7 @@ const AddCoaL4 = () => {
     }
 
     if (!formData.name.trim()) {
-      toast.error('Chart of Accounts (Level-4) is required.');
+      toast.error('Accounts Head is required.');
       return;
     }
 
@@ -215,11 +215,11 @@ const AddCoaL4 = () => {
 
   return (
     <div>
-      <HelmetTitle title={isEditMode ? 'Edit Chart of Accounts (L-4)' : 'New Chart of Accounts (L-4)'} />
+      <HelmetTitle title={isEditMode ? 'Edit Accounts Head' : 'New Accounts Head'} />
 
       <div className="mx-auto max-w-4xl rounded-sm border border-[rgb(var(--c-border))] p-4 shadow-sm dark:bg-gray-800">
         <h1 className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-100">
-          {isEditMode ? 'Edit Chart of Accounts (L-4)' : 'New Chart of Accounts (L-4)'}
+          {isEditMode ? 'Edit Accounts Head' : 'New Accounts Head'}
         </h1>
 
         {isEditLoading ? <Loader /> : null}
@@ -227,7 +227,8 @@ const AddCoaL4 = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className={fieldLabelClass}>
-              Chart of Accounts (Level-3)<span className="text-red-500">*</span>
+              Accounts Group Head
+              <span className="text-red-500">*</span>
             </label>
             <ChartOfAccountsL3
               id="coal3_id"
@@ -256,14 +257,14 @@ const AddCoaL4 = () => {
           </div>
           <div>
             <label className={fieldLabelClass}>
-              Chart of Accounts (Level-4) <span className="text-red-500">*</span>
+              Accounts Head Name <span className="text-red-500">*</span>
             </label>
             <InputElement
               id="name"
               name="name"
               value={formData.name}
               onChange={handleInputChange('name')}
-              placeholder="Chart of Accounts (Level-4)"
+              placeholder="Accounts Head"
               className={''}
             />
           </div>
