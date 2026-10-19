@@ -43,6 +43,11 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
     loginId: 'rodcement@gmail.com',
     password: 'rodcement@gmail.com',
   },
+  {
+    businessType: 'Electronics Business',
+    loginId: 'abcelectronics@gmail.com',
+    password: 'abcelectronics@gmail.com',
+  },
 ];
 
 /** Whether this hostname is the one whose sign-in page shows the demo logins. */
