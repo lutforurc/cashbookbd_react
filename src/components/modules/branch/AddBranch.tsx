@@ -113,6 +113,13 @@ interface branchItem {
   need_product_group: boolean;
   need_package: boolean;
   need_code: boolean;
+  /**
+   * Branch Setup -> Product Setup -> "Editable Measurement on Product List?".
+   * On, the Product List draws Measurement, Measurement Unit, Package Size and
+   * Package Type as inputs that save as each box is left. Off, the four columns
+   * are not drawn at all.
+   */
+  product_list_inline_edit: boolean;
   is_opening: boolean;
   /** Opening চলাকালীন movement থাকা সত্ত্বেও opening বদলানোর ছাড়। */
   multiple_opening_allow: boolean;
@@ -499,6 +506,7 @@ const AddBranch = () => {
     need_product_group: false,
     need_package: false,
     need_code: false,
+    product_list_inline_edit: false,
     is_opening: false,
     multiple_opening_allow: false,
     use_bangla: false,
@@ -819,6 +827,7 @@ const AddBranch = () => {
         need_product_group: toBooleanFlag(b.need_product_group),
         need_package: toBooleanFlag(b.need_package),
         need_code: toBooleanFlag(b.need_code),
+        product_list_inline_edit: toBooleanFlag(b.product_list_inline_edit),
         use_bangla: toBooleanFlag(b.use_bangla),
         show_instalment_list: toBooleanFlag(b.show_instalment_list),
         show_spelling_of_money: toBooleanFlag(b.show_spelling_of_money),
@@ -1958,6 +1967,12 @@ const AddBranch = () => {
                         description="Adds a Product Code box to the Add / Edit Product form -- a code of your own, unique within the company."
                         checked={Boolean(formData.need_code)}
                         onChange={(checked) => handleToggleFieldChange('need_code', checked)}
+                      />
+                      <FormToggleField
+                        label="Editable Measurement on Product List?"
+                        description="Product List draws Measurement, Measurement Unit, Package Size and Package Type as columns, each saving as soon as its box is left. Off, the list does not show them."
+                        checked={Boolean(formData.product_list_inline_edit)}
+                        onChange={(checked) => handleToggleFieldChange('product_list_inline_edit', checked)}
                       />
                       <FormToggleField
                         label="Stock: Brand->Group->Category->Item"

@@ -130,6 +130,26 @@ export const updateProductQtyRate = (
 };
 
 
+/* The Product List's other inline save: the four measurement/package fields,
+   each written as its box is left. It rides the same endpoint as the
+   opening-stock save -- the server tells the two apart by what the payload
+   carries, and a request with no quantity never touches an opening voucher.
+   No redux state is dispatched: this is one cell, and a full-table loader over
+   it would be noise. */
+export const saveProductInlineFields = (
+  data: {
+    product_id: number | string;
+    measurement: string | number;
+    measurement_unit_id: string | number;
+    package_size: string | number;
+    package_unit_id: string | number;
+  }
+) => async () => {
+  const res = await httpService.post(API_PRODUCT_UPDATE_BY_RATE_URL, data);
+  return res.data;
+};
+
+
 /* Removes the opening stock and sends its voucher to the trash. The product
    itself stays; deleteProduct() is the one that removes that. */
 export const deleteProductOpening =

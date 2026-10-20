@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteProduct, deleteProductOpening, deleteProductWithPurchase, getProduct, updateProductQtyRate } from './productSlice';
+import { deleteProduct, deleteProductOpening, deleteProductWithPurchase, getProduct, saveProductInlineFields, updateProductQtyRate } from './productSlice';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
@@ -18,6 +18,7 @@ import PrintFontInput from '../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import { toast } from 'react-toastify';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
+import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { hasPermission } from '../../utils/permissionChecker';
 import { getCategoryDdl } from '../category/categorySlice';
 import { fetchBrandDdl } from './brand/brandSlice';
@@ -105,6 +106,20 @@ const Product = (user: any) => {
   // the delete-with-opening-invoice button is not there at all.
   const deleteWithOpeningInvoice = isBranchSettingOn(settings, 'delete_with_opening_invoice');
 
+  // Branch Setup -> Product Setup -> "Editable Measurement on Product List?".
+  // On, the four measurement/package columns are drawn, each box saving as it
+  // is left. Off, the list draws none of them.
+  const inlineEditOn = isBranchSettingOn(settings, 'product_list_inline_edit');
+
+  // The two unit pickers read the same authorized unit list the Add / Edit
+  // forms use -- no second endpoint, and never a unit the branch cannot reach.
+  // Memoized so the columns below are not rebuilt on every render.
+  const unitDdl = categoryData?.ddlData?.data?.unit;
+  const unitSelectOptions = useMemo(
+    () => [{ id: '', name: 'Not applicable' }, ...(Array.isArray(unitDdl) ? unitDdl : [])],
+    [unitDdl],
+  );
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -169,6 +184,11 @@ const Product = (user: any) => {
 
   const [tableData, setTableData] = useState<any[]>([]);
   const [editedRows, setEditedRows] = useState<Record<string, any>>({}); // ✅ product_id hash string
+
+  // Drafts for the four list-editable measurement/package fields, keyed by
+  // product_id. Kept apart from `editedRows`, which belongs to the opening
+  // stock Save beside them -- a measurement edit must not light that button up.
+  const [fieldEdits, setFieldEdits] = useState<Record<string, any>>({});
 
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
 
@@ -352,6 +372,147 @@ const Product = (user: any) => {
         qty: serialArray.length,
       },
     }));
+  };
+
+  /* ================= INLINE MEASUREMENT / PACKAGE ================= */
+  // The same two scales the Add / Edit forms and the API keep: a measurement
+  // takes three decimals, a package size two, and ".67" goes out as "0.67".
+  const MEASUREMENT_PATTERN = /^(?:\d+(?:\.\d{1,3})?|\.\d{1,3})$/;
+  const PACKAGE_SIZE_PATTERN = /^(?:\d+(?:\.\d{1,2})?|\.\d{1,2})$/;
+
+  const withLeadingZero = (value: any) =>
+    typeof value === 'string' && value.trim().startsWith('.') ? `0${value.trim()}` : value;
+
+  // What a box shows: the draft while the row is being edited, else the row's
+  // own value. `?? ''` so a null reads as an empty box, never as 0.
+  const fieldValue = (row: any, field: string) => {
+    const draft = fieldEdits[row.product_id];
+    if (draft && field in draft) return draft[field];
+    return row[field] ?? '';
+  };
+
+  const handleFieldEdit = (productId: string, field: string, value: any) => {
+    setFieldEdits((prev) => ({
+      ...prev,
+      [productId]: { ...(prev[productId] || {}), [field]: value },
+    }));
+  };
+
+  // The four fields as one row's answer, the drafts laid over the row's values.
+  const mergedFields = (row: any) => {
+    const draft = fieldEdits[row.product_id] || {};
+    return {
+      measurement: draft.measurement ?? row.measurement ?? '',
+      measurement_unit_id: draft.measurement_unit_id ?? row.measurement_unit_id ?? '',
+      package_size: draft.package_size ?? row.package_size ?? '',
+      package_unit_id: draft.package_unit_id ?? row.package_unit_id ?? '',
+    };
+  };
+
+  // The rules the API refuses on, said here first so a bad figure never leaves
+  // the screen. Each pair goes together and each value keeps its own scale --
+  // the same sentences the Add / Edit forms use.
+  const inlineFieldError = (fields: any): string | null => {
+    const decimal = (value: any, label: string, pattern: RegExp, word: string) => {
+      const text = String(value ?? '').trim();
+      if (text === '') return null;
+      return pattern.test(text) ? null : `${label} must be a number with at most ${word} decimals.`;
+    };
+
+    const valueError =
+      decimal(fields.measurement, 'Measurement', MEASUREMENT_PATTERN, 'three') ||
+      decimal(fields.package_size, 'Package size', PACKAGE_SIZE_PATTERN, 'two');
+    if (valueError) return valueError;
+
+    const hasMeasurement = String(fields.measurement ?? '').trim() !== '';
+    const hasMeasurementUnit = String(fields.measurement_unit_id ?? '').trim() !== '';
+    if (hasMeasurement !== hasMeasurementUnit) {
+      return 'Measurement and measurement unit must be given together.';
+    }
+
+    const hasPackageSize = String(fields.package_size ?? '').trim() !== '';
+    const hasPackageUnit = String(fields.package_unit_id ?? '').trim() !== '';
+    if (hasPackageSize !== hasPackageUnit) {
+      return 'Package size and package type must be given together.';
+    }
+
+    return null;
+  };
+
+  // The save itself, on blur. A blur with nothing changed is not a save.
+  const handleFieldBlur = async (row: any) => {
+    if (isGroupRow(row)) return;
+
+    const productId = row.product_id;
+    if (!fieldEdits[productId]) return;
+
+    const fields = mergedFields(row);
+
+    const unchanged =
+      String(fields.measurement ?? '') === String(row.measurement ?? '') &&
+      String(fields.measurement_unit_id ?? '') === String(row.measurement_unit_id ?? '') &&
+      String(fields.package_size ?? '') === String(row.package_size ?? '') &&
+      String(fields.package_unit_id ?? '') === String(row.package_unit_id ?? '');
+    if (unchanged) return;
+
+    const issue = inlineFieldError(fields);
+    if (issue) {
+      toast.info(issue);
+      return;
+    }
+
+    try {
+      const result: any = await dispatch(
+        saveProductInlineFields({
+          product_id: productId,
+          measurement: withLeadingZero(fields.measurement),
+          measurement_unit_id: fields.measurement_unit_id,
+          package_size: withLeadingZero(fields.package_size),
+          package_unit_id: fields.package_unit_id,
+        }) as any,
+      );
+
+      if (result?.success) {
+        // The server's own reading wins: it has just turned '' into a stored
+        // NULL, and the row reads as a blank box either way.
+        const saved = result?.data?.data ?? {};
+        const pick = (key: string, fallback: any) =>
+          saved[key] === undefined ? fallback : saved[key];
+
+        setTableData((prev) =>
+          prev.map((item) => {
+            if (isGroupRow(item) || item.product_id !== productId) return item;
+
+            return {
+              ...item,
+              measurement: pick('measurement', fields.measurement),
+              measurement_unit_id: pick('measurement_unit_id', fields.measurement_unit_id),
+              package_size: pick('package_size', fields.package_size),
+              package_unit_id: pick('package_unit_id', fields.package_unit_id),
+            };
+          }),
+        );
+
+        // The draft has been written; the row carries the answer now.
+        setFieldEdits((prev) => {
+          const copy = { ...prev };
+          delete copy[productId];
+          return copy;
+        });
+
+        toast.success(result?.message || 'Product updated successfully.');
+      } else {
+        toast.error(result?.message || 'Could not save the measurement.');
+      }
+    } catch (err: any) {
+      // A refusal from this endpoint rides a 4xx; the interceptor has already
+      // spoken for the ones that are its own (no permission, no network).
+      if (!err?.toastReported) {
+        toast.error(
+          err?.response?.data?.message || err?.message || 'Could not save the measurement.',
+        );
+      }
+    }
   };
 
   const isRowDirty = (row: any) => {
@@ -812,34 +973,131 @@ const Product = (user: any) => {
         cellClass: 'w-24',
         render: (row: any) => (isGroupRow(row) ? '' : row.unit),
       },
-      // What this branch holds right now — bought, opened and sold netted out
-      // by the API. Not the opening column below: that one is the quantity the
-      // opening voucher was raised with, and it never moves again.
-      {
-        key: 'current_stock',
-        header: 'Stock Qty',
-        headerClass: 'text-right',
-        cellClass: 'text-right w-24',
-        // A negative figure means more went out than came in; it is a fault,
-        // so it reads red and bold instead of sitting quietly among the rest.
-        render: (row: any) => {
-          if (isGroupRow(row)) return '';
-          const qty = Number(row.current_stock ?? 0);
-          return (
-            <span className={qty < 0 ? 'font-bold text-red-600 dark:text-red-400' : undefined}>
-              {formatQty(qty)}
-            </span>
-          );
-        },
-      },
-      ...(openingOn ? serialQtyRateColumns : priceActionColumns),
+      // Branch Setup -> "Editable Measurement on Product List?". Drawn only
+      // where the branch asked for them, each box saving as it is left. The
+      // value is display-only information -- it never touches quantity, price
+      // or stock.
+      ...(inlineEditOn
+        ? [
+            {
+              key: 'measurement',
+              header: 'Measurement',
+              cellClass: 'w-28',
+              render: (row: any) => {
+                if (isGroupRow(row)) return '';
+                return (
+                  <InputElement
+                    type="text"
+                    inputMode="decimal"
+                    className="w-24"
+                    placeholder="e.g. 0.667"
+                    value={fieldValue(row, 'measurement')}
+                    onChange={(e) => handleFieldEdit(row.product_id, 'measurement', e.target.value)}
+                    onBlur={() => handleFieldBlur(row)}
+                  />
+                );
+              },
+            },
+            {
+              key: 'measurement_unit_id',
+              header: 'Measurement Unit',
+              cellClass: 'w-40',
+              render: (row: any) => {
+                if (isGroupRow(row)) return '';
+                return (
+                  <DropdownCommon
+                    name={`measurement_unit_${row.product_id}`}
+                    className="w-32"
+                    data={unitSelectOptions}
+                    value={String(fieldValue(row, 'measurement_unit_id') ?? '')}
+                    onChange={(e) =>
+                      handleFieldEdit(row.product_id, 'measurement_unit_id', e.target.value)
+                    }
+                    onBlur={() => handleFieldBlur(row)}
+                  />
+                );
+              },
+            },
+            {
+              key: 'package_size',
+              header: 'Package Size',
+              cellClass: 'w-28',
+              render: (row: any) => {
+                if (isGroupRow(row)) return '';
+                return (
+                  <InputElement
+                    type="text"
+                    inputMode="decimal"
+                    className="w-24"
+                    placeholder="e.g. 10"
+                    value={fieldValue(row, 'package_size')}
+                    onChange={(e) => handleFieldEdit(row.product_id, 'package_size', e.target.value)}
+                    onBlur={() => handleFieldBlur(row)}
+                  />
+                );
+              },
+            },
+            {
+              key: 'package_unit_id',
+              header: 'Package Type',
+              cellClass: 'w-40',
+              render: (row: any) => {
+                if (isGroupRow(row)) return '';
+                return (
+                  <DropdownCommon
+                    name={`package_unit_${row.product_id}`}
+                    className="w-32"
+                    data={unitSelectOptions}
+                    value={String(fieldValue(row, 'package_unit_id') ?? '')}
+                    onChange={(e) =>
+                      handleFieldEdit(row.product_id, 'package_unit_id', e.target.value)
+                    }
+                    onBlur={() => handleFieldBlur(row)}
+                  />
+                );
+              },
+            },
+          ]
+        : []),
+      // ⚠️ Where the branch edits the measurement from this list, those four
+      // columns ARE the row and everything after them stands down: the stock
+      // figure, the two prices, and the row's own Change log / Edit / Delete
+      // buttons. A branch that leaves the switch off gets the table it has
+      // always had, word for word.
+      ...(inlineEditOn
+        ? []
+        : [
+            // What this branch holds right now — bought, opened and sold netted
+            // out by the API. Not the opening column below: that one is the
+            // quantity the opening voucher was raised with, and it never moves
+            // again.
+            {
+              key: 'current_stock',
+              header: 'Stock Qty',
+              headerClass: 'text-right',
+              cellClass: 'text-right w-24',
+              // A negative figure means more went out than came in; it is a
+              // fault, so it reads red and bold instead of sitting quietly among
+              // the rest.
+              render: (row: any) => {
+                if (isGroupRow(row)) return '';
+                const qty = Number(row.current_stock ?? 0);
+                return (
+                  <span className={qty < 0 ? 'font-bold text-red-600 dark:text-red-400' : undefined}>
+                    {formatQty(qty)}
+                  </span>
+                );
+              },
+            },
+            ...(openingOn ? serialQtyRateColumns : priceActionColumns),
+          ]),
     ];
     // ⚠️ `location` belongs here. The Action column closes over
     // handleProductEdit, which reads the list's own address -- and this memo
     // does not rebuild when the page changes, so without it the pencil kept
     // handing over the address from page one and the edit came back to page
     // one. Cost me a walk-through to see it.
-  }, [settings, editedRows, openingDeleteRow, openingDeleteLoading, canDeleteVoucher, openingOn, location]);
+  }, [settings, editedRows, fieldEdits, unitSelectOptions, inlineEditOn, openingDeleteRow, openingDeleteLoading, canDeleteVoucher, openingOn, location]);
 
   /* ================= RENDER ================= */
   const optionsWithAll = [
