@@ -56,6 +56,14 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
     const receipt: any[] = report.sections?.receipt ?? [];
     const payment: any[] = report.sections?.payment ?? [];
 
+    // ⚠️ A side whose every section is empty is dropped whole, banner and all,
+    // so the side that has entries takes the full width of the sheet instead of
+    // printing beside a column of nothing.
+    const receiptSections = receipt.filter((section: any) => (section.rows ?? []).length > 0);
+    const paymentSections = payment.filter((section: any) => (section.rows ?? []).length > 0);
+    const showReceipt = receiptSections.length > 0;
+    const showPayment = paymentSections.length > 0;
+
     // One day reads as one date; a range reads as a range. The desk prints the
     // day book for a single day far more often than for a span, so the common
     // sheet must not carry a "to" that repeats its own date.
@@ -65,7 +73,14 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
       from && to && from !== to ? `${from} to ${to}` : to || from || '-';
 
     const Section = ({ section }: { section: any }) => {
-      const blocks = chunkRows<any>(section.rows ?? [], rowsPerPage);
+      const rows: any[] = section.rows ?? [];
+
+      // ⚠️ A SECTION WITH NO ENTRIES PRINTS NOTHING -- not the heading, not the
+      // column headers, not the Total. A heading over an empty grid with a
+      // nought under it is a block of the sheet spent saying nothing.
+      if (!rows.length) return null;
+
+      const blocks = chunkRows<any>(rows, rowsPerPage);
 
       return (
         <>
@@ -120,48 +135,57 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
       );
     };
 
-    const BalanceTable = ({ title, table }: { title: string; table: any }) => (
-      <table
-        className="mb-2 w-full border-collapse avoid-break"
-        style={{ fontSize: fs }}
-      >
-        <thead>
-          <tr>
-            <th
-              colSpan={5}
-              className={`${cell} bg-gray-100 text-left`}
-              style={{ fontSize: small }}
-            >
-              {title}
-            </th>
-          </tr>
-          <tr>
-            <th className={`${cell} w-8 text-center`}>SL</th>
-            <th className={`${cell} text-left`}>Account Name</th>
-            <th className={`${cell} text-left`}>Account Number</th>
-            <th className={`${cell} text-left`}>Details</th>
-            <th className={`${cell} w-28 text-center`}>Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(table?.rows ?? []).map((row: any) => (
-            <tr key={`${title}-${row.sl}`}>
-              <td className={`${cell} text-center`}>{row.sl}</td>
-              <td className={cell}>{row.name}</td>
-              <td className={cell}>{row.account_number}</td>
-              <td className={cell}>{row.details}</td>
-              <td className={figure}>{money(row.balance)}</td>
+    const BalanceTable = ({ title, table }: { title: string; table: any }) => {
+      const rows: any[] = table?.rows ?? [];
+
+      // Same rule as a section: an account table with no accounts is not
+      // printed, so an empty Closing Bank / Mobile Bank balance leaves no
+      // heading and no Total on the paper.
+      if (!rows.length) return null;
+
+      return (
+        <table
+          className="mb-2 w-full border-collapse avoid-break"
+          style={{ fontSize: fs }}
+        >
+          <thead>
+            <tr>
+              <th
+                colSpan={5}
+                className={`${cell} bg-gray-100 text-left`}
+                style={{ fontSize: small }}
+              >
+                {title}
+              </th>
             </tr>
-          ))}
-          <tr className="font-bold">
-            <td colSpan={4} className={`${cell} text-right`}>
-              Total
-            </td>
-            <td className={figure}>{money(table?.total)}</td>
-          </tr>
-        </tbody>
-      </table>
-    );
+            <tr>
+              <th className={`${cell} w-8 text-center`}>SL</th>
+              <th className={`${cell} text-left`}>Account Name</th>
+              <th className={`${cell} text-left`}>Account Number</th>
+              <th className={`${cell} text-left`}>Details</th>
+              <th className={`${cell} w-28 text-center`}>Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row: any) => (
+              <tr key={`${title}-${row.sl}`}>
+                <td className={`${cell} text-center`}>{row.sl}</td>
+                <td className={cell}>{row.name}</td>
+                <td className={cell}>{row.account_number}</td>
+                <td className={cell}>{row.details}</td>
+                <td className={figure}>{money(row.balance)}</td>
+              </tr>
+            ))}
+            <tr className="font-bold">
+              <td colSpan={4} className={`${cell} text-right`}>
+                Total
+              </td>
+              <td className={figure}>{money(table?.total)}</td>
+            </tr>
+          </tbody>
+        </table>
+      );
+    };
 
     return (
       <div ref={ref} className="text-gray-900 print-root">
@@ -247,31 +271,37 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
 
                   {/* Receipts left, payments right -- the paper's own arrangement, and
               the reason the two sides are read as two books rather than one. */}
-                  <div className="flex gap-3">
-                    <div className="w-1/2">
-                      <div
-                        className={`${cell} mb-1 text-center font-bold`}
-                        style={{ fontSize: fs }}
-                      >
-                        RECEIPT
-                      </div>
-                      {receipt.map((section) => (
-                        <Section key={section.key} section={section} />
-                      ))}
-                    </div>
+                  {showReceipt || showPayment ? (
+                    <div className="flex gap-3">
+                      {showReceipt ? (
+                        <div className={showReceipt && showPayment ? 'w-1/2' : 'w-full'}>
+                          <div
+                            className={`${cell} mb-1 text-center font-bold`}
+                            style={{ fontSize: fs }}
+                          >
+                            RECEIPT
+                          </div>
+                          {receiptSections.map((section) => (
+                            <Section key={section.key} section={section} />
+                          ))}
+                        </div>
+                      ) : null}
 
-                    <div className="w-1/2">
-                      <div
-                        className={`${cell} mb-1 text-center font-bold`}
-                        style={{ fontSize: fs }}
-                      >
-                        PAYMENT
-                      </div>
-                      {payment.map((section) => (
-                        <Section key={section.key} section={section} />
-                      ))}
+                      {showPayment ? (
+                        <div className={showReceipt && showPayment ? 'w-1/2' : 'w-full'}>
+                          <div
+                            className={`${cell} mb-1 text-center font-bold`}
+                            style={{ fontSize: fs }}
+                          >
+                            PAYMENT
+                          </div>
+                          {paymentSections.map((section) => (
+                            <Section key={section.key} section={section} />
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
-                  </div>
+                  ) : null}
 
                   {/* ⚠️ TWO TABLES, NOT TWO FLEX BOXES, spaced by the same gap the
               RECEIPT and PAYMENT columns are spaced by. The label and the figure

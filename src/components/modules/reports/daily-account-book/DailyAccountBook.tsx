@@ -102,6 +102,11 @@ const VoucherDescription = ({ row, onPrint }: { row: any; onPrint: (row: any) =>
 const SectionTable = ({ section, onPrint }: { section: any; onPrint: (row: any) => void }) => {
   const rows: any[] = section?.rows ?? [];
 
+  // ⚠️ A SECTION WITH NO ENTRIES IS NOT DRAWN AT ALL -- its heading, column
+  // headers, Total and the "No entry" line all go with it. The parent keeps
+  // this out of the grid too, so no empty frame is left behind.
+  if (!rows.length) return null;
+
   return (
     <div className="mb-4">
       <div className="border-b border-slate-300 bg-slate-100 px-2 py-1 text-xs font-bold tracking-wide text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
@@ -154,26 +159,33 @@ const SectionTable = ({ section, onPrint }: { section: any; onPrint: (row: any) 
   );
 };
 
-const BalanceTable = ({ title, table }: { title: string; table: any }) => (
-  <div className="mb-4">
-    <div className="border-b border-slate-300 bg-slate-100 px-2 py-1 text-xs font-bold tracking-wide text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
-      {title}
-    </div>
+const BalanceTable = ({ title, table }: { title: string; table: any }) => {
+  const rows: any[] = table?.rows ?? [];
 
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-xs md:text-sm">
-        <thead>
-          <tr className="bg-slate-50 text-slate-600 dark:bg-slate-900 dark:text-slate-300">
-            <th className="w-10 border border-slate-200 px-2 py-1 text-center dark:border-slate-700">SL</th>
-            <th className="border border-slate-200 px-2 py-1 text-left dark:border-slate-700">Account Name</th>
-            <th className="border border-slate-200 px-2 py-1 text-left dark:border-slate-700">Account Number</th>
-            <th className="border border-slate-200 px-2 py-1 text-left dark:border-slate-700">Details</th>
-            <th className="w-28 border border-slate-200 px-2 py-1 text-right dark:border-slate-700">Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(table?.rows ?? []).length ? (
-            (table?.rows ?? []).map((row: any) => (
+  // ⚠️ AN ACCOUNT TABLE WITH NO ACCOUNTS IS NOT PRINTED AT ALL -- title,
+  // column headers and its own Total go with it, so an empty Closing Bank or
+  // Mobile Bank balance leaves no heading over an empty grid.
+  if (!rows.length) return null;
+
+  return (
+    <div className="mb-4">
+      <div className="border-b border-slate-300 bg-slate-100 px-2 py-1 text-xs font-bold tracking-wide text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+        {title}
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-xs md:text-sm">
+          <thead>
+            <tr className="bg-slate-50 text-slate-600 dark:bg-slate-900 dark:text-slate-300">
+              <th className="w-10 border border-slate-200 px-2 py-1 text-center dark:border-slate-700">SL</th>
+              <th className="border border-slate-200 px-2 py-1 text-left dark:border-slate-700">Account Name</th>
+              <th className="border border-slate-200 px-2 py-1 text-left dark:border-slate-700">Account Number</th>
+              <th className="border border-slate-200 px-2 py-1 text-left dark:border-slate-700">Details</th>
+              <th className="w-28 border border-slate-200 px-2 py-1 text-right dark:border-slate-700">Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row: any) => (
               <tr key={row.sl} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
                 <td className="border border-slate-200 px-2 py-1 text-center dark:border-slate-700 dark:text-slate-300">{row.sl}</td>
                 <td className="border border-slate-200 px-2 py-1 dark:border-slate-700 dark:text-slate-300">{row.name}</td>
@@ -183,29 +195,23 @@ const BalanceTable = ({ title, table }: { title: string; table: any }) => (
                   {money(row.balance)}
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={5} className="border border-slate-200 px-2 py-1 text-center text-slate-400 dark:border-slate-700 dark:text-slate-300">
-                No account
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="font-bold">
+              <td colSpan={4} className="border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
+                Total
+              </td>
+              <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
+                {money(table?.total)}
               </td>
             </tr>
-          )}
-        </tbody>
-        <tfoot>
-          <tr className="font-bold">
-            <td colSpan={4} className="border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
-              Total
-            </td>
-            <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
-              {money(table?.total)}
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+          </tfoot>
+        </table>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const DailyAccountBook = ({ user }: any) => {
   const dispatch = useDispatch();
@@ -376,9 +382,17 @@ const DailyAccountBook = ({ user }: any) => {
   const receipt: any[] = report?.sections?.receipt ?? [];
   const payment: any[] = report?.sections?.payment ?? [];
 
-  const hasAnyRow =
-    receipt.some((section: any) => (section.rows ?? []).length > 0) ||
-    payment.some((section: any) => (section.rows ?? []).length > 0);
+  // ⚠️ A SECTION WITH NO ENTRIES IS DROPPED BEFORE IT IS DRAWN, and a side
+  // whose every section is empty is dropped whole -- banner included -- so the
+  // side that does have entries takes the width instead of leaving half a page
+  // of white. The figures the book is read from (Opening, the two totals, the
+  // closing line) are untouched.
+  const receiptSections = receipt.filter((section: any) => (section.rows ?? []).length > 0);
+  const paymentSections = payment.filter((section: any) => (section.rows ?? []).length > 0);
+  const showReceipt = receiptSections.length > 0;
+  const showPayment = paymentSections.length > 0;
+
+  const hasAnyRow = showReceipt || showPayment;
 
   if (!dropdownData.length) return <Loader />;
 
@@ -518,26 +532,36 @@ const DailyAccountBook = ({ user }: any) => {
 
           {/* ⚠️ TWO SIDES, STACKED ON A NARROW SCREEN. Held side by side on a
               phone each table is a quarter of the width and every figure wraps,
-              so below xl the payments follow the receipts down the page. */}
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-            <div>
-              <div className="mb-2 rounded bg-slate-200 py-1 text-center text-sm font-bold tracking-wide text-slate-800 dark:bg-slate-700 dark:text-slate-100">
-                RECEIPT
-              </div>
-              {receipt.map((section: any) => (
-                <SectionTable key={section.key} section={section} onPrint={handleVoucherPrint} />
-              ))}
-            </div>
+              so below xl the payments follow the receipts down the page.
 
-            <div>
-              <div className="mb-2 rounded bg-slate-200 py-1 text-center text-sm font-bold tracking-wide text-slate-800 dark:bg-slate-700 dark:text-slate-100">
-                PAYMENT
-              </div>
-              {payment.map((section: any) => (
-                <SectionTable key={section.key} section={section} onPrint={handleVoucherPrint} />
-              ))}
+              A side with nothing in it is not rendered at all -- its banner
+              goes with it -- and the side that remains fills the width instead
+              of sitting beside an empty column. */}
+          {showReceipt || showPayment ? (
+            <div className={`grid grid-cols-1 gap-4 ${showReceipt && showPayment ? 'xl:grid-cols-2' : ''}`}>
+              {showReceipt ? (
+                <div>
+                  <div className="mb-2 rounded bg-slate-200 py-1 text-center text-sm font-bold tracking-wide text-slate-800 dark:bg-slate-700 dark:text-slate-100">
+                    RECEIPT
+                  </div>
+                  {receiptSections.map((section: any) => (
+                    <SectionTable key={section.key} section={section} onPrint={handleVoucherPrint} />
+                  ))}
+                </div>
+              ) : null}
+
+              {showPayment ? (
+                <div>
+                  <div className="mb-2 rounded bg-slate-200 py-1 text-center text-sm font-bold tracking-wide text-slate-800 dark:bg-slate-700 dark:text-slate-100">
+                    PAYMENT
+                  </div>
+                  {paymentSections.map((section: any) => (
+                    <SectionTable key={section.key} section={section} onPrint={handleVoucherPrint} />
+                  ))}
+                </div>
+              ) : null}
             </div>
-          </div>
+          ) : null}
 
           <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
             <div className="flex items-center justify-between rounded border border-slate-300 bg-slate-100 px-3 py-2 dark:border-slate-600 dark:bg-slate-800">
