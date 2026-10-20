@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { FiPrinter } from 'react-icons/fi';
+import { FiLogIn, FiLogOut, FiPrinter } from 'react-icons/fi';
 
 import Loader from '../../../common/Loader';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
@@ -251,44 +251,56 @@ const LayoutTab = ({ branchId }: { branchId: number }) => {
           looking at the rooms.
 
           Printed too -- it is the first thing a guest asks at the desk. */}
-        {times ? (
-          <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
-            Check in <strong className="text-black dark:text-white">{clockTime(times.check_in)}</strong>
-            {' · '}
-            Check out <strong className="text-black dark:text-white">{clockTime(times.check_out)}</strong>
-            {times.branch_ref ? (
-              <Link
-                to={`/branch/branch-edit/${times.branch_ref}`}
-                className="ml-2 text-primary hover:underline dark:text-secondary print:hidden"
-              >
-                Change
-              </Link>
-            ) : null}
-          </p>
-        ) : null}
-
-        {/* The key. It carries the badge as well as the colour, because the
-            colour is the half that does not survive a grey printer. */}
-        <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-          {legend.map((entry) => (
-            <span key={entry.badge + entry.label} className="flex items-center gap-1.5 text-xs">
-              <span
-                className={`flex h-4 w-6 items-center justify-center rounded border text-[0.5rem] font-bold ${entry.className}`}
-              >
-                {entry.badge}
+        <div className="mb-4 rounded-md border border-stroke bg-gray-50 dark:border-strokedark dark:bg-boxdark-2">
+          {times ? (
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-stroke px-3 py-2 text-xs text-gray-500 dark:border-strokedark dark:text-gray-400">
+              <span className="flex items-center gap-1.5">
+                <FiLogIn size={13} className="text-emerald-500" />
+                Check in
+                <strong className="text-black dark:text-white">{clockTime(times.check_in)}</strong>
               </span>
-              <span className="text-gray-600 dark:text-gray-300">{entry.label}</span>
-            </span>
-          ))}
-
-          {/* This row is NOT print:hidden, and the note belongs in it rather
-              than up beside the switch: a plan carried to the front desk on
-              paper has to say that rooms were left out of it. */}
-          {hideInactive && inactiveCount ? (
-            <span className="text-xs italic text-gray-400">
-              {inactiveCount} inactive {inactiveCount === 1 ? 'room' : 'rooms'} hidden
-            </span>
+              <span className="flex items-center gap-1.5">
+                <FiLogOut size={13} className="text-rose-500" />
+                Check out
+                <strong className="text-black dark:text-white">{clockTime(times.check_out)}</strong>
+              </span>
+              {times.branch_ref ? (
+                <Link
+                  to={`/branch/branch-edit/${times.branch_ref}`}
+                  className="text-primary hover:underline dark:text-secondary print:hidden"
+                >
+                  Change
+                </Link>
+              ) : null}
+            </div>
           ) : null}
+
+          {/* The key. It carries the badge as well as the colour, because the
+              colour is the half that does not survive a grey printer. */}
+          <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
+            {legend.map((entry) => (
+              <span
+                key={entry.badge + entry.label}
+                className="flex items-center gap-2 rounded-full border border-stroke bg-white py-0.5 pl-0.5 pr-3 text-xs dark:border-strokedark dark:bg-boxdark"
+              >
+                <span
+                  className={`inline-flex h-5 min-w-9 items-center justify-center whitespace-nowrap rounded-full border px-1.5 text-[0.625rem] font-bold leading-none ${entry.className}`}
+                >
+                  {entry.badge}
+                </span>
+                <span className="whitespace-nowrap text-gray-700 dark:text-gray-300">{entry.label}</span>
+              </span>
+            ))}
+
+            {/* This row is NOT print:hidden, and the note belongs in it rather
+                than up beside the switch: a plan carried to the front desk on
+                paper has to say that rooms were left out of it. */}
+            {hideInactive && inactiveCount ? (
+              <span className="text-xs italic text-gray-400">
+                {inactiveCount} inactive {inactiveCount === 1 ? 'room' : 'rooms'} hidden
+              </span>
+            ) : null}
+          </div>
         </div>
 
         {drawn.length ? (
