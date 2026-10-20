@@ -3809,6 +3809,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
+                            {hasPermission(permissions, 'coa.l4.view') && (
+                              <li style={subSlot('customer-supplier', 'coal4/coal4-list')}>
+                                <NavLink
+                                  to="/coal4/coal4-list"
+                                  className={subMenuLinkClass}
+                                >
+                                  Accounts Head List
+                                </NavLink>
+                              </li>
+                            )}
                             {(hasPermission(permissions, 'party.opening.edit') ||
                               hasPermission(permissions, 'cs.edit')) && (
                               <li style={subSlot('customer-supplier', 'customer_opening_import')}>
@@ -3850,16 +3860,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                            {hasPermission(permissions, 'coa.l4.view') && (
-                              <li style={subSlot('customer-supplier', 'coal4/coal4-list')}>
-                                <NavLink
-                                  to="/coal4/coal4-list"
-                                  className={subMenuLinkClass}
-                                >
-                                  Accounts Head List
-                                </NavLink>
-                              </li>
-                            )}
+                            
                             {/* Opening balances for cash, the banks and mobile
                                 banking. Kept off the CoA L4 list itself, where
                                 most rows are expense and sales heads that open
