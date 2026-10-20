@@ -343,6 +343,10 @@ export const PRODUCT_TOKENS: { key: string; name: string }[] = [
   // See sourceKeyFor() below.
   { key: 'product_description', name: 'Product Description' },
   { key: 'serial_no', name: 'Serial No' },
+  // The warranty the invoice line carries ("365 day"), the same key the
+  // product table's own Warranty column reads -- so it is a real row key, not
+  // an alias, and shows the value the separate column would.
+  { key: 'warranty', name: 'Warranty' },
 ];
 
 /** All five naming facts, the broad thing first, one to a line. */
