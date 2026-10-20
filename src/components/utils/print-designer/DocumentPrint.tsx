@@ -33,6 +33,7 @@ import {
   fieldName,
   isNumericField,
   isNumericLineField,
+  sourceKeyFor,
 } from './printTemplate';
 
 /**
@@ -642,9 +643,12 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         default: {
           // The same union as the info band above: a declared format first,
           // then the plain numeric columns.
-          if (fieldFormat(key)?.format) return declared(key, row?.[key], row);
+          // A field offered under an alias (`product_description`) reads the
+          // one row key that holds the fact -- see sourceKeyFor.
+          const source = sourceKeyFor(key);
+          if (fieldFormat(key)?.format) return declared(key, row?.[source], row);
 
-          const raw = row?.[key];
+          const raw = row?.[source];
 
           if (blank(raw)) return '';
 

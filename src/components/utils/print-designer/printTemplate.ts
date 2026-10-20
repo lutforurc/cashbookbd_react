@@ -336,11 +336,38 @@ export const PRODUCT_TOKENS: { key: string; name: string }[] = [
   { key: 'product_name', name: 'Product Name' },
   { key: 'code', name: 'Code' },
   { key: 'description', name: 'Description' },
+  // ⚠️ THE SAME FACT AS `description`, offered under the name a tenant looks
+  // for. The product's own description is what the Product screen calls
+  // "Product Description", and the invoices already carry it on the row as
+  // `description` -- so this token is an ALIAS, not a second copy of the fact.
+  // See sourceKeyFor() below.
+  { key: 'product_description', name: 'Product Description' },
   { key: 'serial_no', name: 'Serial No' },
 ];
 
 /** All five naming facts, the broad thing first, one to a line. */
 export const DEFAULT_PRODUCT_PATTERN = '{brand}\n{category}\n{group}\n{product_name}\n{serial_no}';
+
+/**
+ * A line field whose NAME differs from the row key that holds its value.
+ *
+ * ⚠️ AN ALIAS RATHER THAN A SECOND KEY. `product_description` is the product's
+ * own description -- the fact every invoice adapter already lays on the row as
+ * `description` -- so the catalogue offers the name a tenant looks for while
+ * the value stays in the one place it has always been. Writing it as a second
+ * key would be a duplicate of the same fact to keep in step on every paper; an
+ * alias cannot drift, because there is nothing to keep in step.
+ *
+ * Every read of a line value goes through sourceKeyFor(): the composed product
+ * patterns (resolvePattern) and a plain column or sub-field (DocumentPrint's
+ * cell).
+ */
+export const LINE_KEY_ALIASES: Record<string, string> = {
+  product_description: 'description',
+};
+
+/** The row key a line field's value lives under -- itself, or its alias. */
+export const sourceKeyFor = (key: string): string => LINE_KEY_ALIASES[key] ?? key;
 
 /**
  * The facts a DESCRIPTION pattern may name -- the parts the ledger's own
@@ -445,7 +472,8 @@ export const resolvePattern = (
   // closes up onto one line, space-separated. The stacked case is composeProduct
   // below, which lays the same list out one entry to a line.
   const valueOf = (key: string) => {
-    const raw = row?.[key.trim()];
+    // An alias token ({product_description}) reads the key that holds the fact.
+    const raw = row?.[sourceKeyFor(key.trim())];
 
     if (Array.isArray(raw)) {
       return raw
@@ -1425,6 +1453,12 @@ export const SALES_INVOICE_LINE_FIELDS: FieldDef[] = [
   // Any facts at all, the tenant's way: "{qty} / {unit}", "{product_name} @ {price}".
   { key: 'own_format', name: 'Own format (any facts)', group: 'line' },
   { key: 'description', name: 'Description', group: 'line' },
+  // The product's own description, the field the Product screen calls "Product
+  // Description". The SAME fact as `description` above -- an alias reading the
+  // one row key, offered so a tenant finds it under the name they know (see
+  // sourceKeyFor). Neither is in the built-in default, so adding this changes
+  // no saved layout.
+  { key: 'product_description', name: 'Product Description', group: 'line' },
   { key: 'serial_no', name: 'Serial No', group: 'line' },
   // The second line under the product name -- see TableColumn.subField.
   // "X day" the way the old component's getWarrantyInfo() read it.
