@@ -1551,6 +1551,11 @@ export const PURCHASE_INVOICE_LINE_FIELDS: FieldDef[] = [
   { key: 'product_lines', name: 'Product — stacked (own format)', group: 'line' },
   { key: 'own_format', name: 'Own format (any facts)', group: 'line' },
   { key: 'description', name: 'Description', group: 'line' },
+  // Full parity with the sales invoice's product table: the same
+  // "Product Description" name over the product's own description, an alias
+  // for the `description` key above (see sourceKeyFor). Warranty is already
+  // here, and both are off in the built-in default.
+  { key: 'product_description', name: 'Product Description', group: 'line' },
   { key: 'serial_no', name: 'Serial No', group: 'line' },
   { key: 'warranty', name: 'Warranty', group: 'line' },
   { key: 'qty', name: 'Quantity', group: 'line', numeric: true },
