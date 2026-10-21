@@ -173,7 +173,7 @@ const PaymentSubmit: React.FC = () => {
   /**
    * The height is fixed rather than left to the padding: a select and an input
    * given the same padding do not come out the same height, and the date picker
-   * sets its own h-10. Stating it once keeps the row level. The note is left out
+   * forces h-10 over its own. Stating it once keeps the row level. The note is left out
    * -- it is sized by its rows.
    */
   const fieldClassName = `h-10 ${fieldBaseClassName}`;
@@ -311,11 +311,13 @@ const PaymentSubmit: React.FC = () => {
           <div>
             <label className={labelClassName}>Payment Date</label>
             <InputDatePicker
- id="paid_at"
- name="paid_at"
- className="w-full text-sm font-medium"
- selectedDate={paymentDateObj}
- setSelectedDate={(date: Date | null) => {
+              id="paid_at"
+              name="paid_at"
+              // `!` because the picker's own FIELD_BASE height (--control-height)
+              // otherwise wins, and the box stood shorter than the fields beside it.
+              className={`h-10! ${fieldBaseClassName}`}
+              selectedDate={paymentDateObj}
+              setSelectedDate={(date: Date | null) => {
                 setPaymentDateObj(date);
                 setForm((prev) => ({
                   ...prev,
