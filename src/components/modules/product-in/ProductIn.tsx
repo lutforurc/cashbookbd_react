@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
@@ -85,6 +85,8 @@ const ProductIn = () => {
     note: '',
     items: [] as InItem[],
   });
+  // The product the newest rate lookup is for.
+  const rateFor = useRef('');
 
   useEffect(() => {
     dispatch(getDdlWarehouse());
@@ -146,10 +148,15 @@ const ProductIn = () => {
   const loadRate = async (productId: string) => {
     if (!productId) return;
 
+    rateFor.current = productId;
     setRateLoading(true);
     try {
       const res: any = await httpService.get(`${API_PRODUCT_IN_RATE_URL}/${productId}`);
       const payload = res?.data?.data?.data ?? res?.data?.data ?? null;
+
+      // A slower answer for a product the clerk has already moved on from
+      // must not land on the line now showing.
+      if (rateFor.current !== productId) return;
 
       if (payload) {
         setLineItem((prev) => ({
@@ -161,6 +168,7 @@ const ProductIn = () => {
         setLineItem((prev) => ({ ...prev, rate: '', rateSource: 'none' }));
       }
     } catch {
+      if (rateFor.current !== productId) return;
       setLineItem((prev) => ({ ...prev, rate: '', rateSource: 'none' }));
     }
     setRateLoading(false);
@@ -168,7 +176,16 @@ const ProductIn = () => {
 
   const handleProductSelect = (option: Option | null) => {
     if (!option) {
-      setLineItem((prev) => ({ ...prev, productId: '', productName: '', unit: '' }));
+      rateFor.current = '';
+      setRateLoading(false);
+      setLineItem((prev) => ({
+        ...prev,
+        productId: '',
+        productName: '',
+        unit: '',
+        rate: '',
+        rateSource: '',
+      }));
       return;
     }
 
@@ -190,6 +207,8 @@ const ProductIn = () => {
   const rateIsEditable = (source: RateSource) => source === 'none';
 
   const clearLineForm = () => {
+    rateFor.current = '';
+    setRateLoading(false);
     setLineItem({ ...emptyLine });
     setIsUpdatingLine(false);
     setEditingLineId(null);
@@ -213,6 +232,12 @@ const ProductIn = () => {
     }
     if (!lineItem.quantity || Number(lineItem.quantity) <= 0) {
       toast.error('Please enter valid quantity');
+      return false;
+    }
+    // Added before the lookup answered, the line showed ৳0 and was flagged as
+    // unpriced while the server went on to price it from the books.
+    if (lineItem.rateSource === '') {
+      toast.error('Wait for the rate to load');
       return false;
     }
     // A typed rate has to be a number, and not a negative one. Blank is a real
@@ -290,7 +315,9 @@ const ProductIn = () => {
     return {
       to_warehouse_id: formData.warehouseId ? Number(formData.warehouseId) : null,
       reason_id: Number(formData.reasonId),
-      party_id: party ? Number(party.value) : null,
+      // Only while the reason still asks for one: a name picked under one
+      // reason and left behind by switching to another would be saved anyway.
+      party_id: needsParty && party ? Number(party.value) : null,
       note: formData.note || null,
       rates,
       items: formData.items.map((item) => ({
@@ -329,8 +356,11 @@ const ProductIn = () => {
         if (response?.success) {
           toast.success(response?.message || 'Receipt saved');
 
-          const unpriced: string[] = Array.isArray(response?.data?.unpriced)
-            ? response.data.unpriced
+          // ⚠️ data.data: foundData() wraps the payload one level deeper than it
+          // looks. Read at data.unpriced, the list was never found and the ৳0
+          // warning below never fired.
+          const unpriced: string[] = Array.isArray(response?.data?.data?.unpriced)
+            ? response.data.data.unpriced
             : [];
 
           if (unpriced.length) {

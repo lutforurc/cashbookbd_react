@@ -212,7 +212,9 @@ const ProductOut = () => {
   const buildPayload = (allowNegative: boolean) => ({
     from_warehouse_id: formData.warehouseId ? Number(formData.warehouseId) : null,
     reason_id: Number(formData.reasonId),
-    party_id: party ? Number(party.value) : null,
+    // Only while the reason still asks for one: a name picked under one reason
+    // and left behind by switching to another would be saved anyway.
+    party_id: needsParty && party ? Number(party.value) : null,
     note: formData.note || null,
     allow_negative: allowNegative,
     items: formData.items.map((item) => ({
