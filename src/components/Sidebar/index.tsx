@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import {
@@ -492,9 +492,64 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
       .map((entry) => ({
         id: entry.id,
         title: dividerLabel(entry.id),
-        style: { order: entry.index } as CSSProperties,
+        dataKey: `${menuId}/${entry.id}`,
+        style: {
+          order: entry.index,
+          display: emptyDividers.includes(`${menuId}/${entry.id}`) ? 'none' : undefined,
+        } as CSSProperties,
       }));
   };
+
+  /**
+   * Headings with nothing under them, hidden.
+   *
+   * Which entries show is decided inline, one condition per entry -- a
+   * permission, a trade, a branch setting -- so the only place that knows
+   * whether a group came out empty is the list as drawn. Read after every
+   * render: entries in display order (flex order, then document order),
+   * and a heading counts as empty when no visible entry follows it before
+   * the next heading. Stored as one string so an unchanged answer does not
+   * render again.
+   */
+  const [emptyDividersKey, setEmptyDividersKey] = useState('');
+  const emptyDividers = emptyDividersKey ? emptyDividersKey.split('|') : [];
+
+  useLayoutEffect(() => {
+    const root = sidebar.current;
+    if (!root) return;
+
+    const lists = new Set<HTMLElement>();
+    root.querySelectorAll<HTMLElement>('li[data-divider]').forEach((li) => {
+      if (li.parentElement) lists.add(li.parentElement);
+    });
+
+    const empty: string[] = [];
+    lists.forEach((list) => {
+      const rows = (Array.from(list.children) as HTMLElement[])
+        .map((el, index) => ({ el, index, order: Number(el.style.order || 0), divider: el.dataset.divider }))
+        .sort((a, b) => a.order - b.order || a.index - b.index);
+
+      let heading: string | undefined;
+      let filled = false;
+      const close = () => {
+        if (heading && !filled) empty.push(heading);
+      };
+
+      rows.forEach((row) => {
+        if (row.divider) {
+          close();
+          heading = row.divider;
+          filled = false;
+        } else if (row.el.style.display !== 'none') {
+          filled = true;
+        }
+      });
+      close();
+    });
+
+    const next = empty.sort().join('|');
+    setEmptyDividersKey((current) => (current === next ? current : next));
+  });
   useEffect(() => {
     setPermissions(settings.data.permissions ?? []);
   }, [settings.data.permissions]);
@@ -728,6 +783,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -814,6 +870,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -988,6 +1045,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -1161,6 +1219,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -1367,6 +1426,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -1880,6 +1940,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -1972,6 +2033,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -2059,6 +2121,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -2135,6 +2198,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -2224,6 +2288,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -2485,6 +2550,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -2561,6 +2627,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -2705,6 +2772,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -2883,6 +2951,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -2961,6 +3030,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -3405,6 +3475,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -3532,6 +3603,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -3807,6 +3879,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (
@@ -3943,6 +4016,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li
                               key={entry.id}
                               style={entry.style}
+                              data-divider={entry.dataKey}
                               className="mt-2 flex items-center gap-2 first:mt-0"
                             >
                               {entry.title ? (

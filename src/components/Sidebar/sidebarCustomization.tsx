@@ -356,6 +356,74 @@ export const useSidebarCustomization = (
 };
 
 /**
+ * The arrangement a menu has before its user arranges it: its entries in
+ * groups, each under a heading.
+ *
+ * Written in the same ids a saved arrangement uses, dividers included -- the
+ * key in the middle of each divider is fixed, so it is the same divider for
+ * everyone and survives a rename on the arrange page. It only applies while
+ * the user's saved order says nothing about the menu: the moment they arrange
+ * it themselves, theirs is used instead, and Reset brings this back.
+ *
+ * An entry the list does not name keeps its place after everything listed,
+ * so a report added later is never lost -- it just has no group until it is
+ * given one here. A heading whose group shows nothing (a trade without
+ * installments, a role without stock rights) is hidden by the sidebar.
+ */
+export const SIDEBAR_SUB_DEFAULTS: Record<string, string[]> = {
+  reports: [
+    'divider:rcash:Cash & Bank',
+    'reports/cashbook',
+    'reports/cash-book-two-column',
+    'reports/daily-account-book',
+    'report_bankbook',
+    'cash_bank_received_payment',
+    'bank_information',
+    'reports/date-wise-total-data',
+    'reports/voucher-register',
+    'divider:rledg:Ledger & Due',
+    'reports/ledger',
+    'customer_supplier_statement',
+    'reports/labour/ledger',
+    'reports/due-list',
+    'ageing_report',
+    'connected_member',
+    'reports/group-report',
+    'divider:rsale:Purchase & Sales',
+    'reports/purchase-ledger',
+    'reports/sales-ledger',
+    'reports/purchase-return-ledger',
+    'reports/sales-return-ledger',
+    'report_customer_sales',
+    'reports/delivery',
+    'reports/sales-referrer',
+    'divider:rstock:Stock',
+    'reports/product/stock',
+    'somity_stock_details',
+    'report_godown_stock',
+    'report_imei_stock',
+    'product_ledger_data',
+    'report_date_wise_in_out',
+    'reports/cat-wise/in-out',
+    'divider:rinst:Installment & Somity',
+    'reports/due-installments',
+    'reports/employee-installment',
+    'somity_collection_sheet',
+    'somity_monthly_report',
+    'divider:raudit:Audit',
+    'audit_trail',
+    'reports/mitch-match',
+    'divider:rfin:Financial Statements',
+    'profit_loss',
+    'product_profit_loss',
+    'balance_sheet',
+    'trial_balance_level3',
+    'trial_balance_level4',
+    'expense_report',
+  ],
+};
+
+/**
  * The same thing for the entries inside a menu.
  *
  * One record holds every menu's inner order, not one per menu: twelve records
@@ -425,6 +493,12 @@ export const useSidebarSubCustomization = (storageKey: string) => {
 
   const key = (menuId: string, itemId: string) => `${menuId}/${itemId}`;
 
+  /** Whether the user's saved order says anything about this menu yet. */
+  const arranged = useCallback(
+    (menuId: string) => preferences.order.some((id) => id.startsWith(`${menuId}/`)),
+    [preferences.order],
+  );
+
   /**
    * Where an entry sits inside its menu, and whether it is hidden.
    *
@@ -433,18 +507,24 @@ export const useSidebarSubCustomization = (storageKey: string) => {
    * since equal flex order falls back to document order. A menu entry added in
    * a later release therefore lands at the bottom of its menu rather than
    * jumping to the top or vanishing.
+   *
+   * A menu the user has never arranged takes its place from
+   * SIDEBAR_SUB_DEFAULTS instead, when it has one there.
    */
   const slot = useCallback(
     (menuId: string, itemId: string): CSSProperties => {
       const id = key(menuId, itemId);
-      const position = preferences.order.indexOf(id);
+      const defaults = SIDEBAR_SUB_DEFAULTS[menuId];
+      const position = !arranged(menuId) && defaults
+        ? defaults.indexOf(itemId)
+        : preferences.order.indexOf(id);
 
       return {
         order: position < 0 ? 999 : position,
         display: preferences.hidden.includes(id) ? 'none' : undefined,
       };
     },
-    [preferences],
+    [preferences, arranged],
   );
 
   /**
@@ -453,19 +533,20 @@ export const useSidebarSubCustomization = (storageKey: string) => {
    * Dividers the user has put inside this menu come through too. They are not
    * in `declared` -- nothing declares them -- so they are kept on the strength
    * of being dividers, while an entry that no longer exists in the code is
-   * dropped.
+   * dropped. A menu never arranged starts from its SIDEBAR_SUB_DEFAULTS, so
+   * the arrange page shows -- and edits from -- what the sidebar shows.
    */
   const idsOf = useCallback(
     (menuId: string, declared: string[]) => {
       const prefix = `${menuId}/`;
-      const saved = preferences.order
-        .filter((id) => id.startsWith(prefix))
-        .map((id) => id.slice(prefix.length))
-        .filter((id) => declared.includes(id) || isDivider(id));
+      const source = !arranged(menuId) && SIDEBAR_SUB_DEFAULTS[menuId]
+        ? SIDEBAR_SUB_DEFAULTS[menuId]
+        : preferences.order.filter((id) => id.startsWith(prefix)).map((id) => id.slice(prefix.length));
+      const saved = source.filter((id) => declared.includes(id) || isDivider(id));
 
       return [...saved, ...declared.filter((id) => !saved.includes(id))];
     },
-    [preferences.order],
+    [preferences.order, arranged],
   );
 
   /** Write one menu's order back, leaving every other menu's untouched. */
