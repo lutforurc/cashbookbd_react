@@ -1,14 +1,19 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
-import { FiPrinter, FiRefreshCcw, FiSearch } from 'react-icons/fi';
+import { FiRefreshCcw, FiSearch } from 'react-icons/fi';
+import { useReactToPrint } from 'react-to-print';
+import dayjs from 'dayjs';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
-import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
+import Table from '../../utils/others/Table';
+import PrintRowsInput from '../../utils/fields/PrintRowsInput';
+import PrintFontInput from '../../utils/fields/PrintFontInput';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import httpService from '../../services/httpService';
 import { API_DELIVERY_REPORT_URL } from '../../services/apiRoutes';
+import DeliveryReportPrint, { deliveryDate, deliveryStatusLabel } from './DeliveryReportPrint';
 
 /** 'YYYY-MM-DD' <-> Date, the translation the rest of the app makes. */
 const asDate = (value: string) => (value ? new Date(value) : null);
@@ -19,16 +24,19 @@ const asText = (date: Date | null) =>
     ).padStart(2, '0')}`
     : '';
 
+// The words come from the print, so the screen and the paper cannot disagree;
+// only the colour is the screen's own.
 const statusMeta = (status: string) => {
+  const label = deliveryStatusLabel(status);
   switch (status) {
     case 'complete':
-      return { label: 'Complete', cls: 'text-green-600 font-semibold' };
+      return { label, cls: 'text-green-600 font-semibold' };
     case 'partial':
-      return { label: 'Partial', cls: 'text-amber-600 font-semibold' };
+      return { label, cls: 'text-amber-600 font-semibold' };
     case 'none':
-      return { label: 'Not delivered', cls: 'text-red-600 font-semibold' };
+      return { label, cls: 'text-red-600 font-semibold' };
     default:
-      return { label: 'Invoice (stock taken)', cls: 'text-gray-500' };
+      return { label, cls: 'text-gray-500' };
   }
 };
 
@@ -48,6 +56,25 @@ const DeliveryReport = () => {
   const [mode, setMode] = useState('delivery');
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  // The Cash Book's two print boxes: 0 rows = one block, the browser breaks it.
+  const [perPage, setPerPage] = useState<number>(0);
+  const [fontSize, setFontSize] = useState<number>(10);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: 'Delivery Report',
+  });
+
+  const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPerPage(Number.isNaN(value) ? 0 : value);
+  };
+
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setFontSize(Number.isNaN(value) ? 10 : value);
+  };
 
   const fetchReport = () => {
     setLoading(true);
@@ -106,6 +133,66 @@ const DeliveryReport = () => {
       ),
     [rows],
   );
+
+  const columns = [
+    {
+      key: 'sl',
+      header: 'Sl. No',
+      width: '70px',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (_row: any, index: number) => <span>{index + 1}</span>,
+    },
+    { key: 'vr_no', header: 'Invoice No', width: '130px', headerClass: 'text-center', cellClass: 'text-center' },
+    {
+      key: 'vr_date',
+      header: 'Date',
+      width: '100px',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => deliveryDate(row.vr_date),
+    },
+    {
+      key: 'customer_name',
+      header: 'Customer',
+      render: (row: any) => <span>{row.customer_name || '-'}</span>,
+    },
+    {
+      key: 'ordered',
+      header: 'Ordered',
+      width: '100px',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => thousandSeparator(Number(row.ordered || 0)),
+    },
+    {
+      key: 'delivered',
+      header: 'Delivered',
+      width: '100px',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => thousandSeparator(Number(row.delivered || 0)),
+    },
+    {
+      key: 'pending',
+      header: 'Pending',
+      width: '100px',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => thousandSeparator(Number(row.pending || 0)),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: '160px',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => {
+        const meta = statusMeta(row.status);
+        return <span className={meta.cls}>{meta.label}</span>;
+      },
+    },
+  ];
 
   return (
     <>
@@ -174,7 +261,7 @@ const DeliveryReport = () => {
         />
       </div>
 
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
         <div className="text-sm">
           <span className="text-green-600">Complete: {summary.complete}</span>
           {'  ·  '}
@@ -182,65 +269,61 @@ const DeliveryReport = () => {
           {'  ·  '}
           <span className="text-red-600">Not delivered: {summary.none}</span>
         </div>
-        <Button onClick={() => window.print()} className="print:hidden">
-          <span className="flex items-center gap-1">
-            <FiPrinter /> Print
-          </span>
-        </Button>
+
+        {/* Rows, Font and Print -- the Cash Book's own three controls. */}
+        <div className="grid grid-cols-[minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2">
+          <PrintRowsInput
+            id="perPage"
+            name="perPage"
+            label=""
+            value={perPage.toString()}
+            onChange={handlePerPageChange}
+            type="text"
+            className="font-medium text-sm w-20! text-center"
+          />
+          <PrintFontInput
+            id="fontSize"
+            name="fontSize"
+            label=""
+            value={fontSize.toString()}
+            onChange={handleFontSizeChange}
+            type="text"
+            className="font-medium text-sm w-20! text-center"
+          />
+          <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={rows.length === 0} />
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left">
-          <thead className="text-xs uppercase bg-[rgb(var(--c-table-head))]">
-            <tr>
-              <th className="px-2 py-2 text-center">Sl.</th>
-              <th className="px-2 py-2">Invoice No.</th>
-              <th className="px-2 py-2">Date</th>
-              <th className="px-2 py-2">Customer</th>
-              <th className="px-2 py-2 text-right">Ordered</th>
-              <th className="px-2 py-2 text-right">Delivered</th>
-              <th className="px-2 py-2 text-right">Pending</th>
-              <th className="px-2 py-2 text-center">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={8} className="px-2 py-4 text-center text-gray-500">
-                  {loading ? 'Loading...' : 'No invoices found.'}
-                </td>
-              </tr>
-            )}
-            {rows.map((row, index) => {
-              const meta = statusMeta(row.status);
-              return (
-                <tr key={row.mtm_id} className="border-b bg-[rgb(var(--c-table-body))]">
-                  <td className="px-2 py-2 text-center">{index + 1}</td>
-                  <td className="px-2 py-2">{row.vr_no}</td>
-                  <td className="px-2 py-2">{row.vr_date}</td>
-                  <td className="px-2 py-2">{row.customer_name || '-'}</td>
-                  <td className="px-2 py-2 text-right">{row.ordered}</td>
-                  <td className="px-2 py-2 text-right">{row.delivered}</td>
-                  <td className="px-2 py-2 text-right">{row.pending}</td>
-                  <td className={`px-2 py-2 text-center ${meta.cls}`}>{meta.label}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-          {rows.length > 0 && (
-            <tfoot>
-              <tr className="font-semibold">
-                <td className="px-2 py-2" colSpan={4}>
-                  Total
-                </td>
-                <td className="px-2 py-2 text-right">{thousandSeparator(totals.ordered)}</td>
-                <td className="px-2 py-2 text-right">{thousandSeparator(totals.delivered)}</td>
-                <td className="px-2 py-2 text-right">{thousandSeparator(totals.pending)}</td>
-                <td className="px-2 py-2" />
-              </tr>
-            </tfoot>
-          )}
-        </table>
+      <Table
+        columns={columns}
+        data={rows}
+        getRowKey={(row) => row.mtm_id}
+        noDataMessage={loading ? 'Loading...' : 'No invoices found.'}
+        footerRows={
+          rows.length
+            ? [
+                [
+                  { label: 'Total', colSpan: 4, className: 'text-right' },
+                  { label: thousandSeparator(totals.ordered), className: 'text-right' },
+                  { label: thousandSeparator(totals.delivered), className: 'text-right' },
+                  { label: thousandSeparator(totals.pending), className: 'text-right' },
+                  { label: '' },
+                ],
+              ]
+            : undefined
+        }
+      />
+
+      {/* === Hidden Print Component === */}
+      <div className="hidden">
+        <DeliveryReportPrint
+          ref={printRef}
+          rows={rows}
+          startDate={from ? dayjs(from).format('DD/MM/YYYY') : undefined}
+          endDate={to ? dayjs(to).format('DD/MM/YYYY') : undefined}
+          rowsPerPage={Number(perPage)}
+          fontSize={Number(fontSize)}
+        />
       </div>
     </>
   );
