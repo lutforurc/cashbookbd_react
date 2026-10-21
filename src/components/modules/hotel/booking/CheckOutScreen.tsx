@@ -253,9 +253,9 @@ const CheckOutScreen = () => {
         <button
           type="button"
           onClick={() => navigate(routes.hotel_bookings)}
-          className="mb-3 flex items-center gap-1.5 text-sm font-medium text-primary hover:underline dark:text-secondary"
+          className="mb-3 -ml-1 flex items-center gap-2 rounded px-1 py-1 text-base font-semibold text-primary hover:underline dark:text-secondary"
         >
-          <FiArrowLeft size={15} /> Back to bookings
+          <FiArrowLeft size={18} /> Back to bookings
         </button>
 
         {/* The server refuses a departure it cannot make sense of -- a day
@@ -305,9 +305,9 @@ const CheckOutScreen = () => {
       <button
         type="button"
         onClick={() => navigate(routes.hotel_bookings)}
-        className="mb-3 flex items-center gap-1.5 text-sm font-medium text-primary hover:underline dark:text-secondary"
+        className="mb-3 -ml-1 flex items-center gap-2 rounded px-1 py-1 text-base font-semibold text-primary hover:underline dark:text-secondary"
       >
-        <FiArrowLeft size={15} /> Back to bookings
+        <FiArrowLeft size={18} /> Back to bookings
       </button>
 
       {/* ⚠️ The amber "not in the accounts" banner came down on 2026-08-26,

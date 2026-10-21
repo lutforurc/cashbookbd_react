@@ -79,7 +79,7 @@ const SlotsTab = ({ branchId }: { branchId: number }) => {
     }
 
     if (!form.start_time || !form.end_time) {
-      toast.error('A sitting needs a start and an end');
+      toast.error('A shift needs a start and an end');
       return;
     }
 
@@ -108,7 +108,7 @@ const SlotsTab = ({ branchId }: { branchId: number }) => {
   const columns = useMemo(
     () => [
       { key: 'serial_no', header: '#', headerClass: 'w-14 text-center', cellClass: 'text-center' },
-      { key: 'name', header: 'Sitting' },
+      { key: 'name', header: 'Shift' },
       {
         key: 'code',
         header: 'Code',
@@ -181,7 +181,7 @@ const SlotsTab = ({ branchId }: { branchId: number }) => {
 
   return (
     <SetupShell
-      noun="Sitting"
+      noun="Shift"
       // note="Only halls and community centres use these — rooms are sold by the night. Two sittings may not share an hour, or one hall could hold two events at once."
       note=""
       toolbar={
@@ -212,14 +212,14 @@ const SlotsTab = ({ branchId }: { branchId: number }) => {
       page={slots?.current_page ?? page}
       perPage={slots?.per_page ?? 10}
       onPage={setPage}
-      emptyMessage="No sittings yet. A property that lets a hall needs at least one — an evening, usually."
+      emptyMessage="No shifts yet. A property that lets a hall needs at least one — an evening, usually."
       fields={
         form ? (
           <>
             <InputElement
               id="slot_name"
               name="name"
-              label="Sitting"
+              label="Shift"
               placeholder="Evening"
               value={form.name}
               onChange={set('name')}

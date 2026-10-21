@@ -1005,9 +1005,9 @@ const BookingFormScreen = ({ user }: any) => {
       <button
         type="button"
         onClick={() => navigate(backTo())}
-        className="mb-3 flex items-center gap-1.5 text-sm font-medium text-primary hover:underline dark:text-secondary"
+        className="mb-3 -ml-1 flex items-center gap-2 rounded px-1 py-1 text-base font-semibold text-primary hover:underline dark:text-secondary"
       >
-        <FiArrowLeft size={16} />
+        <FiArrowLeft size={18} />
         Back to bookings
       </button>
 
@@ -1076,7 +1076,7 @@ const BookingFormScreen = ({ user }: any) => {
                 <DropdownCommon
                   id="booking_type"
                   name="booking_type"
-                  label="Type"
+                  label="Guest Type"
                   data={TYPE_OPTIONS}
                   value={form.booking_type}
                   onChange={chooseType}
@@ -1090,7 +1090,7 @@ const BookingFormScreen = ({ user }: any) => {
                   <DropdownCommon
                     id="stay_kind"
                     name="stay_kind"
-                    label="Stay"
+                    label="Payment Type"
                     data={
                       mayGiveRooms
                         ? STAY_KIND_OPTIONS
@@ -1120,7 +1120,7 @@ const BookingFormScreen = ({ user }: any) => {
                     <InputDatePicker
                       id="check_in_date"
                       name="check_in_date"
-                      label="Arriving"
+                      label="Arrival"
                       selectedDate={asDate(form.check_in_date)}
                       setSelectedDate={setDate('check_in_date')}
                       setCurrentDate={setDate('check_in_date')}
@@ -1129,7 +1129,7 @@ const BookingFormScreen = ({ user }: any) => {
                     <InputDatePicker
                       id="check_out_date"
                       name="check_out_date"
-                      label="Leaving"
+                      label="Departure"
                       selectedDate={asDate(form.check_out_date)}
                       setSelectedDate={setDate('check_out_date')}
                       setCurrentDate={setDate('check_out_date')}
@@ -1139,7 +1139,7 @@ const BookingFormScreen = ({ user }: any) => {
                       id="booking_building"
                       name="booking_building"
                       label="Building"
-                      data={[{ id: '', name: 'Anywhere on the property' }, ...buildingChoices]}
+                      data={[{ id: '', name: 'All' }, ...buildingChoices]}
                       value={building}
                       onChange={(e: any) => {
                         setBuilding(e.target.value);
@@ -1153,7 +1153,7 @@ const BookingFormScreen = ({ user }: any) => {
                       <ButtonLoading
                         onClick={check}
                         buttonLoading={checking}
-                        label="See what is free"
+                        label="Search"
                         variant="primary"
                         icon={<FiSearch size={16} />}
                       />

@@ -51,7 +51,7 @@ const NEUTRAL =
   'bg-gray-100 border-gray-300 text-gray-700 dark:bg-gray-500/20 dark:border-gray-500/50 dark:text-gray-200';
 
 const SALE_LOOKS: Record<string, { className: string; badge: string; label: string }> = {
-  whole: { className: NEUTRAL, badge: 'W', label: 'Whole room only' },
+  whole: { className: NEUTRAL, badge: 'R', label: 'Whole Room' },
   seat: {
     className:
       'bg-violet-100 border-violet-300 text-violet-900 dark:bg-violet-500/20 dark:border-violet-500/50 dark:text-violet-100',
@@ -62,7 +62,7 @@ const SALE_LOOKS: Record<string, { className: string; badge: string; label: stri
     className:
       'bg-amber-100 border-amber-300 text-amber-900 dark:bg-amber-500/20 dark:border-amber-500/50 dark:text-amber-100',
     badge: 'B',
-    label: 'Either way',
+    label: 'Shared Bed',
   },
 };
 
@@ -85,7 +85,7 @@ const BOOKING_LOOKS: Record<string, TileLook> = {
     className:
       'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-500/25 dark:border-teal-400/60 dark:text-teal-50',
     badge: 'FREE',
-    label: 'Free — can be taken',
+    label: 'Free',
   },
   held: {
     className:
@@ -111,7 +111,7 @@ const BOOKING_LOOKS: Record<string, TileLook> = {
     className:
       'bg-orange-100 border-orange-400 text-orange-900 dark:bg-orange-500/25 dark:border-orange-400/60 dark:text-orange-50',
     badge: 'PART',
-    label: 'Some beds sold — cannot be let whole',
+    label: 'Partially Book',
   },
   closed: {
     // Not a fault and not a booking. A dormitory that cannot be sold whole,
@@ -216,9 +216,9 @@ export const COLOUR_MODES: { id: ColourMode; name: string }[] = [
  * every room the same green and answer nothing.
  */
 export const BOOKING_COLOUR_MODES: { id: ColourMode; name: string }[] = [
-  { id: 'booking_state', name: 'What is free' },
+  { id: 'booking_state', name: 'Free' },
   { id: 'room_type', name: 'Room type' },
-  { id: 'sale_mode', name: 'How it is sold' },
+  { id: 'sale_mode', name: 'Unit Type' },
 ];
 
 export { SALE_LOOKS, STATUS_LOOKS, BOOKING_LOOKS, PALETTE, NEUTRAL };

@@ -56,7 +56,7 @@ const RoomPanel: React.FC<RoomPanelProps> = ({ summary, detail, onClose, onChang
   const isHall = summary.kind === 'hall' || summary.kind === 'community_centre';
 
   const saleLabel = isHall
-    ? 'Let by the sitting'
+    ? 'Let by the shift'
     : SALE_MODE_OPTIONS.find((o) => o.id === summary.sale_mode)?.name ?? summary.sale_mode;
 
   const switchedOff = Math.max(0, (summary.beds ?? 0) - (summary.active_beds ?? 0));
@@ -72,13 +72,13 @@ const RoomPanel: React.FC<RoomPanelProps> = ({ summary, detail, onClose, onChang
   const facts: { label: string; value: React.ReactNode }[] = [
     { label: 'Sold', value: saleLabel },
     {
-      label: isHall ? 'Per sitting' : 'Whole room',
+      label: isHall ? 'Per shift' : 'Whole room',
       // A dash, not 0.00. A room sold only by the bed has no whole-room price,
       // and a zero would read as free. The same for a hall with no rate.
       value:
         summary.rent === null
           ? '—'
-          : `${money(summary.rent)} / ${isHall ? 'sitting' : 'night'}`,
+          : `${money(summary.rent)} / ${isHall ? 'shift' : 'night'}`,
     },
     ...(summary.seat_rent_min !== null
       ? [

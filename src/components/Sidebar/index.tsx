@@ -2567,11 +2567,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               different question with a different answer, so a
                               screen of its own rather than a mode on the one
                               above. */}
-                          <li style={subSlot('hotel', 'hotel_hall_bookings')}>
+                          {/* <li style={subSlot('hotel', 'hotel_hall_bookings')}>
                             <NavLink to={routes.hotel_hall_bookings} className={subMenuLinkClass}>
                               Hall Booking
                             </NavLink>
-                          </li>
+                          </li> */}
 
                           {/* The month at a glance, and the tape chart the desk
                               reads for gaps. Beside Bookings because it answers

@@ -164,7 +164,7 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
     taken
       ? null
       : isHall
-        ? 'let by the sitting'
+        ? 'let by the shift'
         : room.sale_mode === 'seat'
           ? 'sold by the seat'
           : room.sale_mode === 'both'
@@ -223,7 +223,7 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
         <div className="font-normal text-slate-400 dark:text-slate-500">
           {sittings.length
             ? sittings.map((one: any) => one.name).join(', ')
-            : 'no sittings set — cannot be let'}
+            : 'no shifts set — cannot be let'}
         </div>
       ) : null}
 
@@ -324,8 +324,8 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
           <span className="text-[0.55rem] leading-none opacity-75">
             {seats ? `${seats} seats` : 'no seating'}
             {sittings.length
-              ? ` · ${sittings.length} ${sittings.length === 1 ? 'sitting' : 'sittings'}`
-              : ' · no sittings'}
+              ? ` · ${sittings.length} ${sittings.length === 1 ? 'shift' : 'shifts'}`
+              : ' · no shifts'}
           </span>
         ) : backOn ? (
           // ⚠️ INSTEAD OF THE PIPS, not beside them. The tile holds three things

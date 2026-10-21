@@ -87,7 +87,7 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
   { key: 'rooms', label: 'Rooms & Seats', icon: <FiGrid size={15} />, hint: 'The inventory' },
   // After the inventory, because a sitting is a way of SELLING something that
   // has to exist first -- and only halls and community centres use them.
-  { key: 'slots', label: 'Sittings', icon: <FiClock size={15} />, hint: 'How a hall is sold' },
+  { key: 'slots', label: 'Shift', icon: <FiClock size={15} />, hint: 'How a hall is sold' },
   // After the rooms, because a kit is written against a room TYPE and there is
   // nothing to stock until the property has been described. Before the money
   // tabs, because it is still a fact about the room rather than about the bill.
