@@ -1,11 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import { FiHome, FiSave, FiSearch } from 'react-icons/fi';
-import { useDispatch, useSelector } from 'react-redux';
+import { FiHome, FiSave } from 'react-icons/fi';
+import { useDispatch } from 'react-redux';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
-import { hasPermission } from '../../../utils/permissionChecker';
 import Loader from '../../../../common/Loader';
-import InputOnly from '../../../utils/fields/InputOnly';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import InputElement from '../../../utils/fields/InputElement';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
@@ -27,6 +25,8 @@ interface LoanPayload {
   accountName: string;   // employee name
   remarks: string;
   amount: number | string;
+  /** The number written on the paper voucher. Optional. */
+  manualVoucherNo: string;
 }
 
 interface LoanEditInfo {
@@ -38,12 +38,9 @@ interface LoanEditInfo {
 const EmployeeLoan = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const settings = useSelector((s: any) => s.settings);
 
-  const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
-  const [searchLoading, setSearchLoading] = useState(false);
 
   // When set, the form is editing an existing loan disbursement.
   const [editInfo, setEditInfo] = useState<LoanEditInfo | null>(null);
@@ -55,6 +52,7 @@ const EmployeeLoan = () => {
     accountName: '',
     remarks: '',
     amount: '',
+    manualVoucherNo: '',
   });
 
 
@@ -84,21 +82,18 @@ const EmployeeLoan = () => {
       accountName: '',
       remarks: '',
       amount: '',
+      manualVoucherNo: '',
     });
     setEditInfo(null);
-    setSearch('');
   };
 
-  // `forVoucher` is the number Cash Book's Edit hands over (see the hook
-  // below); typed searches read the box.
-  const searchTransaction = async (forVoucher?: string) => {
-    const vrNo = (forVoucher ?? search).trim();
-    if (vrNo === '') {
-      toast.error('Please enter a voucher number to search.');
-      return;
-    }
+  // Load a loan for editing by its voucher number -- the number Cash Book's
+  // Edit button hands over (see the hook below). There is no search box.
+  const loadLoan = async (voucherNo: string) => {
+    const vrNo = voucherNo.trim();
+    if (vrNo === '') return;
 
-    setSearchLoading(true);
+    setIsLoading(true);
     try {
       const data = await dispatch(employeeLoanSearch({ vr_no: vrNo })).unwrap();
 
@@ -113,6 +108,7 @@ const EmployeeLoan = () => {
         accountName: String(data.accountName ?? ''),
         remarks: data.remarks ?? '',
         amount: data.amount ?? '',
+        manualVoucherNo: data.manual_voucher_no ?? '',
       });
       setEditInfo({
         loan_detail_id: data.loan_detail_id,
@@ -123,15 +119,14 @@ const EmployeeLoan = () => {
     } catch (error: any) {
       toast.info(typeof error === 'string' ? error : error?.message || 'No employee loan found.');
     } finally {
-      setSearchLoading(false);
+      setIsLoading(false);
     }
   };
 
-  // Opened from Cash Book's Edit on a loan voucher: put the number in the box
-  // and load it, the way every other voucher screen does.
+  // Opened from Cash Book's Edit on a loan voucher: load it, the way every
+  // other voucher screen does.
   useVoucherAutoEditSearch({
-    setSearch,
-    triggerSearch: (vrNo) => searchTransaction(vrNo),
+    triggerSearch: (vrNo) => loadLoan(vrNo),
   });
 
   const handleSave = useCallback(async () => {
@@ -155,6 +150,8 @@ const EmployeeLoan = () => {
             accountName: tx.accountName,
             remarks: tx.remarks ?? '',
             amount: Number(tx.amount),
+            // Always sent, '' included: blank on an edit means "cleared".
+            manual_voucher_no: tx.manualVoucherNo.trim(),
           })
         ).unwrap();
 
@@ -170,6 +167,7 @@ const EmployeeLoan = () => {
         accountName: tx.accountName,
         remarks: tx.remarks ?? '',
         amount: Number(tx.amount),
+        manual_voucher_no: tx.manualVoucherNo.trim(),
       };
 
 
@@ -190,6 +188,7 @@ const EmployeeLoan = () => {
           accountName: '',
           remarks: '',
           amount: '',
+          manualVoucherNo: '',
         });
       }
     } catch (error: any) {
@@ -213,45 +212,8 @@ const EmployeeLoan = () => {
           <div className="">
             <div className="">
               <div className="w-full">
-                <div className="flex w-full items-end">
-                  {hasPermission(settings?.data?.permissions, 'cash.received.edit') && (
-                    <>
-                      <div className="min-w-0 flex-1 mb-4">
-                        <label htmlFor="search" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
-                          Search Employee Loan (Vr. No.)
-                        </label>
-                        <InputOnly
-                          id="search"
-                          value={search}
-                          name="search"
-                          placeholder="Enter voucher no. e.g. 2-260600035"
-                          label=""
-                          className="py-1 w-full"
-                          onChange={(e) => setSearch(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              searchTransaction();
-                            }
-                          }}
-                        />
-                      </div>
-
-                      {/* No gap, and -ml-px so the two borders sit on one line
-                          -- the box and its button read as one control. */}
-                      <ButtonLoading
-                        // A wrapper, not the function: the click event would
-                        // otherwise arrive as the voucher number.
-                        onClick={() => searchTransaction()}
-                        buttonLoading={searchLoading}
-                        label=" "
-                        className="-ml-px mb-4 w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                        icon={<FiSearch className="text-lg ml-2" />}
-                      />
-                    </>
-                  )}
-                </div>
-
+                {/* No search box: a loan is opened for editing from Cash Book's
+                    Edit button, which loads it here (see loadLoan). */}
                 <div className="mt-0 mb-2">
                   <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Select Employee</label>
                   <EmployeeDropdownSearch
@@ -289,8 +251,22 @@ const EmployeeLoan = () => {
                   placeholder="Enter Amount"
                   label="Amount (Tk.)"
                   onChange={(e) => setTx((prev) => ({ ...prev, amount: e.target.value }))}
-                  onKeyDown={(e) => handleInputKeyDown(e, 'save_button')}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'manual_voucher_no')}
                 />
+                {/* The number on the paper voucher -- the same box, label and
+                    column the Tiles cash screens use, and printed beside the
+                    name on the Cash Book. */}
+                <div className="mt-2">
+                  <InputElement
+                    id="manual_voucher_no"
+                    value={tx.manualVoucherNo}
+                    name="manual_voucher_no"
+                    placeholder="Enter Manual Voucher Number"
+                    label="Manual Voucher Number"
+                    onChange={(e) => setTx((prev) => ({ ...prev, manualVoucherNo: e.target.value }))}
+                    onKeyDown={(e) => handleInputKeyDown(e, 'save_button')}
+                  />
+                </div>
               </div>
 
               {editInfo && (

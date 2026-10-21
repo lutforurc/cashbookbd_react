@@ -46,8 +46,12 @@ console.log('\nThe screens\n');
 const cashBook = readFileSync('src/components/modules/reports/cashbook/CashBook.tsx', 'utf8');
 const loan = readFileSync('src/components/modules/hrms/loan/EmployeeLoan.tsx', 'utf8');
 check('Cash Book Edit asks by the row', /getVoucherEditTargetForRow\(row\)/.test(cashBook) && /buildVoucherAutoEditStateForRow\(row\)/.test(cashBook));
-check('Employee Loan picks up the auto-edit and searches it', /useVoucherAutoEditSearch\(\{/.test(loan) && /triggerSearch: \(vrNo\) => searchTransaction\(vrNo\)/.test(loan));
-check('Search button does not pass the click event as the number', /onClick=\{\(\) => searchTransaction\(\)\}/.test(loan));
+check('Employee Loan picks up the auto-edit and loads it', /useVoucherAutoEditSearch\(\{/.test(loan) && /triggerSearch: \(vrNo\) => loadLoan\(vrNo\)/.test(loan));
+check('no "Search Employee Loan" box any more', !/Search Employee Loan/.test(loan) && !/id="search"/.test(loan));
+check('Employee Loan has a Manual Voucher Number box', /id="manual_voucher_no"/.test(loan) && /label="Manual Voucher Number"/.test(loan));
+check('it is sent on save and on update, and filled back on search',
+  (loan.match(/manual_voucher_no: tx\.manualVoucherNo\.trim\(\)/g) || []).length === 2 &&
+  /manualVoucherNo: data\.manual_voucher_no/.test(loan));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

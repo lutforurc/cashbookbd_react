@@ -118,6 +118,10 @@ Employee Loan-এর voucher নম্বর "2-" দিয়ে শুরু �
 
 এখন Cash Book-এর API প্রতিটা loan voucher-এর row-এ `edit_screen = 'employee_loan'` চিহ্ন দেয়। Edit চাপলে row দেখে গন্তব্য ঠিক হয় (`getVoucherEditTargetForRow`), তাই loan voucher **Employee Loan** পাতায় খোলে। সেখানে voucher নম্বর দিয়ে নিজে থেকেই search হয়ে loan-টা edit-এর জন্য লোড হয়।
 
+Employee Loan পাতায় এখন আর "Search Employee Loan (Vr. No.)" ঘর নেই। কোনো loan edit করতে হলে Cash Book থেকে Edit চাপতে হয়।
+
+Employee Loan ফর্মে **Manual Voucher Number**-এর ঘরও আছে, সব branch-এ। নম্বরটা voucher-এর `manual_voucher_no`-তে থাকে, Cash Book নামের পাশে দেখায়, আর edit-এ বদলানো বা মুছে ফেলা যায়।
+
 অন্য voucher-এর আচরণ বদলায়নি। নতুন কোনো পাতা এভাবে যোগ করতে চাইলে `voucherEditNavigation.ts`-এর `EDIT_SCREEN_TARGETS`-এ একটা লাইন যোগ করতে হবে, আর report-কে row-এ সেই `edit_screen` দিতে হবে।
 
 ---

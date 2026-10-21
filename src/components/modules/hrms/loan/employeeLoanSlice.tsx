@@ -28,6 +28,7 @@ export type LoanDisbursementPayload = {
   amount: number;
   disbursement_date?: string; // "YYYY-MM-DD"
   remarks?: string;
+  manual_voucher_no?: string;
 };
 
 export type LoanDisbursementResponse = {
@@ -192,6 +193,8 @@ export type LoanEditData = {
   accountName: string;
   remarks: string;
   amount: number;
+  /** The number on the paper voucher; '' where none was written. */
+  manual_voucher_no?: string;
 };
 
 // ===== Thunk: Loan Search by voucher number (edit lookup) =====
@@ -231,6 +234,7 @@ export const employeeLoanUpdate = createAsyncThunk<
     accountName: string;
     remarks: string;
     amount: number;
+    manual_voucher_no?: string;
   },
   { rejectValue: string }
 >('employeeLoan/employeeLoanUpdate', async (payload, thunkAPI) => {
