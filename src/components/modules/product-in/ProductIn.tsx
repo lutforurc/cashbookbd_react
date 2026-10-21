@@ -249,6 +249,20 @@ const ProductIn = () => {
         return false;
       }
     }
+    // ⚠️ ONE RATE PER PRODUCT. The server keeps the clerk's rates keyed by
+    // product, so the same unpriced product on two lines at two rates was saved
+    // at whichever came last while the table showed both.
+    if (rateIsEditable(lineItem.rateSource)) {
+      const other = formData.items.find(
+        (item) => item.productId === lineItem.productId && item.id !== editingLineId,
+      );
+      if (other && (Number(other.rate) || 0) !== (Number(lineItem.rate) || 0)) {
+        toast.error(
+          `${lineItem.productName} is already on this receipt at ৳${Number(other.rate) || 0}. Use the same rate.`,
+        );
+        return false;
+      }
+    }
     return true;
   };
 
