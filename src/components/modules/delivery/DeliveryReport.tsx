@@ -197,7 +197,7 @@ const DeliveryReport = () => {
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Delivery Report" screen="delivery" />
+        <HelmetTitle title="Delivery Report" />
       </div>
 
       <div className="print:hidden mb-3 grid grid-cols-1 md:grid-cols-6 gap-2 items-end rounded border border-[rgb(var(--c-border))] p-3">
