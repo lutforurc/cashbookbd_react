@@ -251,6 +251,10 @@ const BookingFormScreen = ({ user }: any) => {
   // Whose beds are on show. One room at a time -- six dormitories opened at
   // once is a wall of beds under a grid that was drawn to be glanced at.
   const [openBeds, setOpenBeds] = useState<LayoutRoom | null>(null);
+  // Arriving and leaving on the same date: a day booking. Only halls are sold
+  // by the day (by the shift) -- a room still needs a night, so the room read
+  // is not made and the halls are shown on their own.
+  const [dayOnly, setDayOnly] = useState(false);
 
   /**
    * What dropping these nights would cost, read before the clerk confirms.
@@ -448,6 +452,7 @@ const BookingFormScreen = ({ user }: any) => {
    */
   const forget = () => {
     dispatch(clearAvailability());
+    setDayOnly(false);
     setPicked([]);
     setPickedSeats([]);
     setOpenBeds(null);
@@ -610,21 +615,32 @@ const BookingFormScreen = ({ user }: any) => {
       setPickedSittings([]);
     }
 
-    try {
-      const result = await dispatch(
-        availabilityRead({
-          branch_id: branchId,
-          check_in_date: from,
-          check_out_date: to,
-          building_id: building || undefined,
-        }),
-      ).unwrap();
+    // ⚠️ THE SAME DATE TWICE IS A DAY BOOKING -- halls only. The room read
+    // insists on a night ("A stay has to be at least one night"), which is
+    // right for a room and nothing to do with a hall's morning or afternoon
+    // shift. So it is not asked; the rooms are left exactly as they are.
+    const sameDay = from === to;
+    setDayOnly(sameDay);
 
-      if (!result.free_count) {
-        toast.info('Nothing is free on those dates.');
+    if (sameDay) {
+      dispatch(clearAvailability());
+    } else {
+      try {
+        const result = await dispatch(
+          availabilityRead({
+            branch_id: branchId,
+            check_in_date: from,
+            check_out_date: to,
+            building_id: building || undefined,
+          }),
+        ).unwrap();
+
+        if (!result.free_count) {
+          toast.info('Nothing is free on those dates.');
+        }
+      } catch (error: any) {
+        toast.error(String(error));
       }
-    } catch (error: any) {
-      toast.error(String(error));
     }
 
     // ⚠️ THE SITTINGS INSIDE THE SAME NIGHTS, in one read rather than one
@@ -635,15 +651,17 @@ const BookingFormScreen = ({ user }: any) => {
     // hall, or no sittings defined, answers 404 with a sentence saying so --
     // which is true and completely uninteresting to a clerk booking rooms. It
     // is swallowed, and the hall section simply does not appear.
+    //
+    // ⚠️ THE DEPARTURE DAY COUNTS FOR A HALL (owner, 2026-10-21). A room's
+    // stay ends the morning it leaves; a hall is used on the last date too --
+    // 21 to 23 is three days of a wedding, and 21 to 21 is one day. So the
+    // halls are read from Arrival to Departure, both included.
     try {
-      const lastNight = new Date(to);
-      lastNight.setDate(lastNight.getDate() - 1);
-
       await dispatch(
         hallsRead({
           branch_id: branchId,
           date_from: from,
-          date_to: asText(lastNight),
+          date_to: to,
           building_id: building || undefined,
         }),
       ).unwrap();
@@ -1263,8 +1281,12 @@ const BookingFormScreen = ({ user }: any) => {
               ) : null}
 
               {/* 2 -- the answer */}
-              {availability && !isWalkIn ? (
+              {(availability || dayOnly) && !isWalkIn ? (
                 <div className="mt-4">
+                  {/* The rooms, only when a stay of nights was asked. A day
+                      booking shows the halls alone, with a line saying why. */}
+                  {availability ? (
+                  <>
                   <div className="mb-2 flex flex-wrap items-baseline gap-x-3 text-sm">
                     <span className="font-medium text-black dark:text-white">
                       {availability.free_count} free
@@ -1403,6 +1425,13 @@ const BookingFormScreen = ({ user }: any) => {
                       </div>
                     </div>
                   ) : null}
+                  </>
+                  ) : (
+                    <p className="mb-2 rounded border border-dashed border-stroke p-3 text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
+                      Arriving and leaving on the same date — a day booking. Halls are shown below by
+                      shift; a room needs at least one night, so set Departure to a later date to book one.
+                    </p>
+                  )}
 
                   {/* ⚠️ THE HALLS, INSIDE THE SAME STAY. A room is picked once
               for the whole booking; a hall is picked per DAY, because

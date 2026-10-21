@@ -5067,6 +5067,28 @@ export const ADDABLE_BANDS: AddableBand[] = [
  * leaves the paper with no date at all, the booking date goes back in, because
  * an undated bill is not a bill.
  */
+/**
+ * A hall let by the shift alone: the bill keeps its dates and drops the
+ * Nights line.
+ *
+ * A hall is sold by the part of the day, not the night, so "Nights" has no
+ * honest answer -- 0 reads as a mistake and 1 was simply wrong. The server
+ * already prints the dates the shifts were held on (`by_shift` on the bill's
+ * basic block); this takes away only that one row, from whatever layout the
+ * branch uses.
+ */
+export const asShiftBill = (template: PrintTemplate): PrintTemplate => ({
+  ...template,
+  bands: template.bands.map((band) =>
+    band.type === 'info'
+      ? ({
+          ...band,
+          items: (band as InfoBand).items.filter((item) => item.field !== 'nights'),
+        } as InfoBand)
+      : band,
+  ),
+});
+
 export const asWalkInBill = (template: PrintTemplate): PrintTemplate => {
   /** Facts that exist only because somebody slept here. */
   const stayOnly = new Set([

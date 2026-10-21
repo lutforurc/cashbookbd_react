@@ -34,6 +34,7 @@ import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
 import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
 import {
   PrintTemplate,
+  asShiftBill,
   asWalkInBill,
   defaultTemplate,
   normalizeTemplate,
@@ -474,10 +475,16 @@ const FolioScreen = () => {
         // keeps ONE bill layout, customised however it likes; the meal simply
         // does not print the four questions -- check-in, check-out, nights,
         // room -- that a room's bill asks and a plate of food cannot answer.
+        //
+        // ⚠️ And a hall let by the shift alone loses its Nights line -- the
+        // server says so (`by_shift`) and has already printed the dates the
+        // shifts were held on rather than a room's departure-the-day-after.
         template:
           docType === 'hotel_bill' && folio?.booking?.booking_type === 'walk_in'
             ? asWalkInBill(layout)
-            : layout,
+            : docType === 'hotel_bill' && payload.basic?.by_shift
+              ? asShiftBill(layout)
+              : layout,
         data: {
           basic: payload.basic ?? null,
           products: payload.products ?? [],
