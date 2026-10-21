@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiCheckCircle, FiPrinter, FiRotateCcw, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiCheckCircle, FiEdit2, FiPrinter, FiRotateCcw, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -15,9 +15,12 @@ import httpService from '../../services/httpService';
 import { API_APPROVAL_CENTER_ACTION_URL } from '../../services/apiRoutes';
 import { destroyProductIn, getProductInReasons, getProductIns } from './productInSlice';
 import ProductInPrintModal from './ProductInPrintModal';
+import ConfirmModal from '../../utils/components/ConfirmModalProps';
 
 interface ProductInListProps {
   refreshKey?: number;
+  /** Open this receipt in the form above for changing. */
+  onEdit?: (id: number) => void;
 }
 
 /**
@@ -29,7 +32,7 @@ interface ProductInListProps {
  * would sign one off without the permission and the trail the center applies.
  * The stock is already on the shelf; approving is only the sign-off.
  */
-const ProductInList = ({ refreshKey = 0 }: ProductInListProps) => {
+const ProductInList = ({ refreshKey = 0, onEdit }: ProductInListProps) => {
   const dispatch = useDispatch<any>();
   const productIn = useSelector((s: any) => s.productIn);
   const settings = useSelector((s: any) => s.settings);
@@ -109,11 +112,16 @@ const ProductInList = ({ refreshKey = 0 }: ProductInListProps) => {
     setCurrentPage(nextPage);
   };
 
-  const runApproval = async (row: any, action: 'approve' | 'remove') => {
-    const verb = action === 'approve' ? 'Approve' : 'Take the approval back off';
-    const note = 'The stock went on the shelf at save; this does not change it.';
+  // The approval being asked about, put in the voucher screens' ConfirmModal
+  // rather than the browser's confirm() box.
+  const [approvalAsk, setApprovalAsk] = useState<{ row: any; action: 'approve' | 'remove' } | null>(null);
 
-    if (!window.confirm(`${verb} ${row.in_no}?\n\n${note}`)) return;
+  const runApproval = (row: any, action: 'approve' | 'remove') => setApprovalAsk({ row, action });
+
+  const handleApprovalConfirmed = async () => {
+    if (!approvalAsk) return;
+    const { row, action } = approvalAsk;
+    const verb = action === 'approve' ? 'Approve' : 'Take the approval back off';
 
     setBusyId(row.id);
     try {
@@ -129,11 +137,19 @@ const ProductInList = ({ refreshKey = 0 }: ProductInListProps) => {
       toast.error(error?.response?.data?.message || error?.message || `${verb} failed`);
     } finally {
       setBusyId(null);
+      setApprovalAsk(null);
     }
   };
 
-  const handleDelete = (row: any) => {
-    if (!window.confirm(`Delete ${row.in_no}?`)) return;
+  // The row the delete question is being asked about. The voucher screens' own
+  // ConfirmModal puts it, rather than the browser's confirm() box.
+  const [deleteRow, setDeleteRow] = useState<any | null>(null);
+
+  const handleDelete = (row: any) => setDeleteRow(row);
+
+  const handleDeleteConfirmed = () => {
+    const row = deleteRow;
+    if (!row) return;
 
     setBusyId(row.id);
     dispatch(
@@ -145,6 +161,7 @@ const ProductInList = ({ refreshKey = 0 }: ProductInListProps) => {
           toast.error(response?.message || 'Delete failed');
         }
         setBusyId(null);
+        setDeleteRow(null);
       }),
     );
   };
@@ -279,6 +296,20 @@ const ProductInList = ({ refreshKey = 0 }: ProductInListProps) => {
               </Button>
             ))}
 
+          {/* Edit sits under the same rule as Delete: the receipt's own
+              permission, and not once it is signed off. */}
+          {canDelete && !row?.is_approved && onEdit && (
+            <Button
+              type="button"
+              disabled={busyId === row?.id}
+              onClick={() => onEdit(row.id)}
+              title="Edit"
+              className="text-green-600 hover:text-green-800 disabled:opacity-40"
+            >
+              <FiEdit2 className="cursor-pointer text-lg" />
+            </Button>
+          )}
+
           {canDelete && !row?.is_approved && (
             <Button
               type="button"
@@ -351,6 +382,47 @@ const ProductInList = ({ refreshKey = 0 }: ProductInListProps) => {
       </div>
 
       {printId !== null && <ProductInPrintModal id={printId} onClose={() => setPrintId(null)} />}
+
+      <ConfirmModal
+        show={approvalAsk !== null}
+        title={approvalAsk?.action === 'remove' ? 'Remove Approval' : 'Confirm Approval'}
+        message={
+          <>
+            {approvalAsk?.action === 'remove'
+              ? 'Take the approval back off receipt'
+              : 'Are you sure you want to approve receipt'}
+            <span className="block font-bold mt-1">{approvalAsk?.row?.in_no} ?</span>
+            <span className="mt-2 block text-sm text-gray-500 dark:text-gray-400">
+              The stock went on the shelf at save; this does not change it.
+            </span>
+          </>
+        }
+        confirmLabel={approvalAsk?.action === 'remove' ? 'Remove Approval' : 'Approve'}
+        loading={approvalAsk !== null && busyId === approvalAsk?.row?.id}
+        onCancel={() => setApprovalAsk(null)}
+        onConfirm={handleApprovalConfirmed}
+        className={
+          approvalAsk?.action === 'remove'
+            ? 'bg-amber-600 hover:bg-amber-700'
+            : 'bg-green-600 hover:bg-green-700'
+        }
+      />
+
+      {/* The same dialog the Voucher Delete screen asks with. */}
+      <ConfirmModal
+        show={deleteRow !== null}
+        title="Confirm Deletion"
+        message={
+          <>
+            Are you sure you want to delete receipt
+            <span className="block font-bold mt-1">{deleteRow?.in_no} ?</span>
+          </>
+        }
+        loading={deleteRow !== null && busyId === deleteRow?.id}
+        onCancel={() => setDeleteRow(null)}
+        onConfirm={handleDeleteConfirmed}
+        className="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 };

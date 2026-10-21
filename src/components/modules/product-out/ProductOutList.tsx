@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiCheckCircle, FiPrinter, FiRotateCcw, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiCheckCircle, FiEdit2, FiPrinter, FiRotateCcw, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -15,9 +15,13 @@ import httpService from '../../services/httpService';
 import { API_APPROVAL_CENTER_ACTION_URL } from '../../services/apiRoutes';
 import { destroyProductOut, getProductOutReasons, getProductOuts } from './productOutSlice';
 import ProductOutPrintModal from './ProductOutPrintModal';
+import ConfirmModal from '../../utils/components/ConfirmModalProps';
+import ImagePopup from '../../utils/others/ImagePopup';
 
 interface ProductOutListProps {
   refreshKey?: number;
+  /** Open this slip in the form above for changing. */
+  onEdit?: (id: number) => void;
 }
 
 /**
@@ -29,7 +33,7 @@ interface ProductOutListProps {
  * would approve stock without the permission and the trail the center applies.
  * The stock already moved at save; approving is only the sign-off.
  */
-const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
+const ProductOutList = ({ refreshKey = 0, onEdit }: ProductOutListProps) => {
   const dispatch = useDispatch<any>();
   const productOut = useSelector((s: any) => s.productOut);
   const settings = useSelector((s: any) => s.settings);
@@ -109,11 +113,16 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
     setCurrentPage(nextPage);
   };
 
-  const runApproval = async (row: any, action: 'approve' | 'remove') => {
-    const verb = action === 'approve' ? 'Approve' : 'Take the approval back off';
-    const note = 'The stock already left the shelf at save; this does not change it.';
+  // The approval being asked about, put in the voucher screens' ConfirmModal
+  // rather than the browser's confirm() box.
+  const [approvalAsk, setApprovalAsk] = useState<{ row: any; action: 'approve' | 'remove' } | null>(null);
 
-    if (!window.confirm(`${verb} ${row.out_no}?\n\n${note}`)) return;
+  const runApproval = (row: any, action: 'approve' | 'remove') => setApprovalAsk({ row, action });
+
+  const handleApprovalConfirmed = async () => {
+    if (!approvalAsk) return;
+    const { row, action } = approvalAsk;
+    const verb = action === 'approve' ? 'Approve' : 'Take the approval back off';
 
     setBusyId(row.id);
     try {
@@ -129,11 +138,19 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
       toast.error(error?.response?.data?.message || error?.message || `${verb} failed`);
     } finally {
       setBusyId(null);
+      setApprovalAsk(null);
     }
   };
 
-  const handleDelete = (row: any) => {
-    if (!window.confirm(`Delete ${row.out_no}?`)) return;
+  // The row the delete question is being asked about. The voucher screens' own
+  // ConfirmModal puts it, rather than the browser's confirm() box.
+  const [deleteRow, setDeleteRow] = useState<any | null>(null);
+
+  const handleDelete = (row: any) => setDeleteRow(row);
+
+  const handleDeleteConfirmed = () => {
+    const row = deleteRow;
+    if (!row) return;
 
     setBusyId(row.id);
     dispatch(
@@ -145,6 +162,7 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
           toast.error(response?.message || 'Delete failed');
         }
         setBusyId(null);
+        setDeleteRow(null);
       }),
     );
   };
@@ -204,6 +222,25 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
       render: (row: any) => <span>{thousandSeparator(Number(row?.total_qty || 0))}</span>,
     },
     {
+      // The photos on the slip's voucher, opened in the same viewer the Cash
+      // Book's Voucher column uses. Empty when there are none.
+      key: 'voucher_image',
+      header: 'Photos',
+      headerClass: 'text-center w-24',
+      cellClass: 'text-center w-24',
+      render: (row: any) =>
+        row?.voucher_image ? (
+          <ImagePopup
+            title={row?.out_no || ''}
+            branchPad={row?.branch_pad || ''}
+            voucher_image={row.voucher_image}
+            openPdfInNewTab
+          />
+        ) : (
+          <span className="text-gray-400">-</span>
+        ),
+    },
+    {
       key: 'status',
       header: 'Approval',
       headerClass: 'text-center w-32',
@@ -258,6 +295,20 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
                 <FiCheckCircle className="cursor-pointer text-lg" />
               </Button>
             ))}
+
+          {/* Edit sits under the same rule as Delete: the slip's own
+              permission, and not once it is signed off. */}
+          {canDelete && !row?.is_approved && onEdit && (
+            <Button
+              type="button"
+              disabled={busyId === row?.id}
+              onClick={() => onEdit(row.id)}
+              title="Edit"
+              className="text-green-600 hover:text-green-800 disabled:opacity-40"
+            >
+              <FiEdit2 className="cursor-pointer text-lg" />
+            </Button>
+          )}
 
           {canDelete && !row?.is_approved && (
             <Button
@@ -333,6 +384,47 @@ const ProductOutList = ({ refreshKey = 0 }: ProductOutListProps) => {
       {printId !== null && (
         <ProductOutPrintModal id={printId} onClose={() => setPrintId(null)} />
       )}
+
+      <ConfirmModal
+        show={approvalAsk !== null}
+        title={approvalAsk?.action === 'remove' ? 'Remove Approval' : 'Confirm Approval'}
+        message={
+          <>
+            {approvalAsk?.action === 'remove'
+              ? 'Take the approval back off write-off'
+              : 'Are you sure you want to approve write-off'}
+            <span className="block font-bold mt-1">{approvalAsk?.row?.out_no} ?</span>
+            <span className="mt-2 block text-sm text-gray-500 dark:text-gray-400">
+              The stock already left the shelf at save; this does not change it.
+            </span>
+          </>
+        }
+        confirmLabel={approvalAsk?.action === 'remove' ? 'Remove Approval' : 'Approve'}
+        loading={approvalAsk !== null && busyId === approvalAsk?.row?.id}
+        onCancel={() => setApprovalAsk(null)}
+        onConfirm={handleApprovalConfirmed}
+        className={
+          approvalAsk?.action === 'remove'
+            ? 'bg-amber-600 hover:bg-amber-700'
+            : 'bg-green-600 hover:bg-green-700'
+        }
+      />
+
+      {/* The same dialog the Voucher Delete screen asks with. */}
+      <ConfirmModal
+        show={deleteRow !== null}
+        title="Confirm Deletion"
+        message={
+          <>
+            Are you sure you want to delete write-off
+            <span className="block font-bold mt-1">{deleteRow?.out_no} ?</span>
+          </>
+        }
+        loading={deleteRow !== null && busyId === deleteRow?.id}
+        onCancel={() => setDeleteRow(null)}
+        onConfirm={handleDeleteConfirmed}
+        className="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { FIELD_SELECT } from '../../../theme/fieldStyles';
+import React, { useEffect, useRef, useState } from 'react';
+import { FIELD_FILE_BUTTON, FIELD_SELECT } from '../../../theme/fieldStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
@@ -11,11 +11,18 @@ import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import WarehouseDropdown from '../../utils/utils-functions/WarehouseDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import httpService from '../../services/httpService';
-import { API_PRODUCT_OUT_PARTY_URL } from '../../services/apiRoutes';
+import { API_IMAGE_UPLOAD_URL, API_PRODUCT_OUT_PARTY_URL } from '../../services/apiRoutes';
 import { Select } from '../../utils/fields/FormControls';
 import { getDdlWarehouse } from '../warehouse/ddlWarehouseSlider';
-import { getProductOutReasons, resolveReasonId, storeProductOut } from './productOutSlice';
+import {
+  getProductOutDetails,
+  getProductOutReasons,
+  resolveReasonId,
+  storeProductOut,
+  updateProductOut,
+} from './productOutSlice';
 import ProductOutList from './ProductOutList';
+import StockShortageModal, { StockShortage } from '../../utils/components/StockShortageModal';
 
 type Option = { value: string; label: string; label_2?: string; label_3?: string };
 
@@ -47,6 +54,8 @@ const ProductOut = () => {
   const reasons: any[] = Array.isArray(productOut?.reasons) ? productOut.reasons : [];
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  // The shortage the server came back with, waiting on the clerk's answer.
+  const [stockWarning, setStockWarning] = useState<StockShortage | null>(null);
   const [listRefreshKey, setListRefreshKey] = useState(0);
   const [isUpdatingLine, setIsUpdatingLine] = useState(false);
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
@@ -58,11 +67,83 @@ const ProductOut = () => {
     note: '',
     items: [] as OutItem[],
   });
+  // The saved slip open in the form for changing; null for a new one.
+  const [editing, setEditing] = useState<{ id: number; outNo: string } | null>(null);
+  // Photos of the damage, uploaded to the slip's voucher after it saves.
+  const [photos, setPhotos] = useState<File[]>([]);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+
+  /**
+   * Attach the chosen photos to the slip's voucher, through the same endpoint
+   * the Image Upload screen uses. Resolves either way: the slip is already
+   * saved, so a failed upload is reported, never thrown.
+   */
+  const uploadPhotos = async (mainTrxId: number) => {
+    if (!photos.length || !mainTrxId) return;
+
+    const data = new FormData();
+    photos.forEach((file) => data.append('images[]', file));
+    data.append('voucher_id', String(mainTrxId));
+
+    try {
+      const res: any = await httpService.post(`${API_IMAGE_UPLOAD_URL}${mainTrxId}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res?.data?.success) {
+        toast.success(`${photos.length} photo(s) attached`);
+      } else {
+        toast.error(res?.data?.message || 'The photos could not be attached');
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'The photos could not be attached');
+    }
+  };
 
   useEffect(() => {
     dispatch(getDdlWarehouse());
     dispatch(getProductOutReasons());
   }, [dispatch]);
+
+  /**
+   * Open a saved slip in the form. Everything the save sends is filled back from
+   * the slip's own details, so Update sends exactly what the clerk sees.
+   */
+  const handleEditSlip = (id: number) => {
+    dispatch(
+      getProductOutDetails(id, (response: any) => {
+        if (!response?.success) {
+          toast.error(response?.message || 'Could not open the write-off');
+          return;
+        }
+
+        const master = response.data?.master ?? {};
+        const details: any[] = Array.isArray(response.data?.details) ? response.data.details : [];
+
+        if (master.is_approved) {
+          toast.error(`${master.out_no} is approved. Take the approval off first, then change it.`);
+          return;
+        }
+
+        setFormData({
+          warehouseId: master.warehouse_id ? String(master.warehouse_id) : '',
+          reasonId: master.reason_id ? String(master.reason_id) : '',
+          note: master.note || '',
+          items: details.map((line, index) => ({
+            id: Date.now() + index,
+            productId: String(line.product_id),
+            productName: line.product_name || '',
+            unit: line.unit_name || '',
+            quantity: String(Number(line.quantity)),
+            note: line.note || '',
+          })),
+        });
+        setParty(master.party_id ? { value: String(master.party_id), label: master.party_name || '' } : null);
+        clearLineForm();
+        setEditing({ id: Number(master.id), outNo: master.out_no || '' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }),
+    );
+  };
 
   // Open a new slip on the shop's own default reason, so the Reason field is
   // never blank. It only fills an empty field -- a reason already chosen (an
@@ -134,6 +215,9 @@ const ProductOut = () => {
     });
     setParty(null);
     clearLineForm();
+    setEditing(null);
+    setPhotos([]);
+    if (photoInputRef.current) photoInputRef.current.value = '';
   };
 
   const validateLineItem = () => {
@@ -226,38 +310,52 @@ const ProductOut = () => {
 
   const submit = (allowNegative: boolean) => {
     setSaveButtonLoading(true);
+    const payload = buildPayload(allowNegative);
+    // A slip open for changing goes to update; anything else is a new slip.
+    const send = (callback: (response: any) => void) =>
+      editing ? updateProductOut(editing.id, payload, callback) : storeProductOut(payload, callback);
+
     dispatch(
-      storeProductOut(buildPayload(allowNegative), (response: any) => {
+      send((response: any) => {
         // ⚠️ The shortage refusal is success:FALSE and carries a list, and the
         // clerk is asked ONCE. Sending it again with allow_negative is the
         // house shape for every stock document here (see the branch transfer
         // screen): warn, and let whoever is looking at the shelf decide.
+        //
+        // Asked in StockShortageModal, the dialog the invoice and the delivery
+        // ask the same question with. Never blocked: a write-off is how a shop
+        // corrects a book that has drifted from the shelf.
         if (!response?.success && Array.isArray(response?.shortages) && response.shortages.length) {
-          const lines = response.shortages
-            .map((s: any) => `${s.name}: book ${s.available}, asked ${s.requested}`)
-            .join('\n');
-
-          const goAhead = window.confirm(
-            `Not enough stock on the book:\n\n${lines}\n\n` +
-              `Write it off anyway? The shelf is the truth for a breakage -- ` +
-              `check it, then say yes.`,
-          );
-
-          if (goAhead) {
-            submit(true);
-          } else {
-            setSaveButtonLoading(false);
-          }
+          setStockWarning({
+            rows: response.shortages.map((s: any) => ({
+              name: s.name,
+              available: Number(s.available),
+              requested: Number(s.requested),
+            })),
+            shortages: [],
+            message: response?.message || 'Not enough stock on the book.',
+            blocked: false,
+          });
+          setSaveButtonLoading(false);
           return;
         }
 
         if (response?.success) {
-          toast.success(response?.message || 'Write-off saved');
-          resetForm();
-          setListRefreshKey((prev) => prev + 1);
-        } else {
-          toast.error(response?.message || 'Failed to save write-off');
+          toast.success(response?.message || (editing ? 'Write-off updated' : 'Write-off saved'));
+
+          // The photos go on once the slip has a voucher to hang them on. A
+          // failed upload is said but does not undo the write-off -- the slip
+          // is saved, and the photos can be added again from Edit.
+          const mainTrxId = Number(response?.data?.data?.main_trx_id || 0);
+          uploadPhotos(mainTrxId).finally(() => {
+            resetForm();
+            setListRefreshKey((prev) => prev + 1);
+            setSaveButtonLoading(false);
+          });
+          return;
         }
+
+        toast.error(response?.message || 'Failed to save write-off');
         setSaveButtonLoading(false);
       }),
     );
@@ -282,6 +380,18 @@ const ProductOut = () => {
   return (
     <div>
       <HelmetTitle title="Product Out" />
+
+      {/* Said out loud, so a change is never mistaken for a new slip. */}
+      {editing && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700/50 dark:bg-amber-500/10 dark:text-amber-300">
+          <span>
+            Editing <strong>{editing.outNo}</strong> — Update saves the change and moves the stock with it.
+          </span>
+          <button type="button" onClick={resetForm} className="font-medium underline">
+            Cancel edit
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-2 mb-4">
         <div>
@@ -345,6 +455,29 @@ const ProductOut = () => {
           onChange={handleFormInput}
           className="w-full "
         />
+
+        {/* Photos of the damage, attached to the slip's voucher on save -- the
+            same store every voucher's attachments use, so they show wherever
+            voucher images are shown. */}
+        <div>
+          <label htmlFor="outPhotos" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
+            Photos {editing ? '(added to the ones already on the slip)' : ''}
+          </label>
+          <input
+            ref={photoInputRef}
+            id="outPhotos"
+            type="file"
+            multiple
+            accept="image/*,.pdf"
+            onChange={(e) => setPhotos(Array.from(e.target.files || []))}
+            className={`block w-full text-sm text-slate-600 dark:text-[rgb(var(--c-text))] ${FIELD_FILE_BUTTON}`}
+          />
+          {photos.length > 0 && (
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+              {photos.length} file(s) will be attached on {editing ? 'Update' : 'Save'}.
+            </p>
+          )}
+        </div>
 
         <div className="md:col-span-2 mt-2 border-t border-[rgb(var(--c-border))] pt-3">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
@@ -417,14 +550,14 @@ const ProductOut = () => {
         <ButtonLoading
           onClick={handleSave}
           buttonLoading={saveButtonLoading}
-          label={saveButtonLoading ? 'Saving...' : 'Save'}
+          label={saveButtonLoading ? 'Saving...' : editing ? 'Update' : 'Save'}
           className="whitespace-nowrap text-center mr-0 py-2"
           icon={<FiSave className="text-lg ml-2 mr-2" />}
         />
         <ButtonLoading
           onClick={resetForm}
           buttonLoading={false}
-          label="Reset All"
+          label={editing ? 'Cancel Edit' : 'Reset All'}
           className="whitespace-nowrap text-center mr-0 py-2"
           icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
         />
@@ -477,7 +610,18 @@ const ProductOut = () => {
         </table>
       </div>
 
-      <ProductOutList refreshKey={listRefreshKey} />
+      <ProductOutList refreshKey={listRefreshKey} onEdit={handleEditSlip} />
+
+      <StockShortageModal
+        warning={stockWarning}
+        action="write it off"
+        saving={saveButtonLoading}
+        onCancel={() => setStockWarning(null)}
+        onContinue={() => {
+          setStockWarning(null);
+          submit(true);
+        }}
+      />
     </div>
   );
 };

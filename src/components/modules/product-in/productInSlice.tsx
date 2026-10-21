@@ -9,6 +9,7 @@ import {
   API_PRODUCT_IN_REASON_UPDATE_URL,
   API_PRODUCT_IN_REPORT_URL,
   API_PRODUCT_IN_STORE_URL,
+  API_PRODUCT_IN_UPDATE_URL,
 } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
 
@@ -188,6 +189,19 @@ const storeProductInThunk = createAsyncThunk<
 export const storeProductIn =
   (data: any, callback?: (response: any) => void) => (dispatch: any) =>
     dispatch(storeProductInThunk({ data, callback }));
+
+// Change a receipt not yet approved. The callback gets the RAW body, as the
+// store does.
+export const updateProductIn =
+  (id: number | string, data: any, callback?: (response: any) => void) => async () => {
+    try {
+      const res = await httpService.post(`${API_PRODUCT_IN_UPDATE_URL}/${id}`, data);
+      if (typeof callback === 'function') callback(res.data);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || err?.message || 'Something went wrong';
+      if (typeof callback === 'function') callback({ success: false, message });
+    }
+  };
 
 const destroyProductInThunk = createAsyncThunk<
   any,

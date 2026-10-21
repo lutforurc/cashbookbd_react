@@ -290,6 +290,8 @@ export const API_MATERIAL_ISSUE_STORE_URL = `${API_BASE_URL}/material-issue/stor
 export const API_PRODUCT_OUT_LIST_URL = `${API_BASE_URL}/product-out/list`;
 export const API_PRODUCT_OUT_DETAILS_URL = `${API_BASE_URL}/product-out/details`;
 export const API_PRODUCT_OUT_STORE_URL = `${API_BASE_URL}/product-out/store`;
+// A slip not yet approved, changed in place: `${URL}/${id}`.
+export const API_PRODUCT_OUT_UPDATE_URL = `${API_BASE_URL}/product-out/update`;
 export const API_PRODUCT_OUT_DESTROY_URL = `${API_BASE_URL}/product-out/destroy`;
 export const API_PRODUCT_OUT_REPORT_URL = `${API_BASE_URL}/product-out/report`;
 // Answers cust_party_infos.id, which is what pom.party_id points at.
@@ -305,6 +307,8 @@ export const API_PRODUCT_OUT_REASON_DESTROY_URL = `${API_BASE_URL}/product-out/r
 export const API_PRODUCT_IN_LIST_URL = `${API_BASE_URL}/product-in/list`;
 export const API_PRODUCT_IN_DETAILS_URL = `${API_BASE_URL}/product-in/details`;
 export const API_PRODUCT_IN_STORE_URL = `${API_BASE_URL}/product-in/store`;
+// A receipt not yet approved, changed in place: `${URL}/${id}`.
+export const API_PRODUCT_IN_UPDATE_URL = `${API_BASE_URL}/product-in/update`;
 export const API_PRODUCT_IN_DESTROY_URL = `${API_BASE_URL}/product-in/destroy`;
 export const API_PRODUCT_IN_REPORT_URL = `${API_BASE_URL}/product-in/report`;
 // Answers cust_party_infos.id, which is what pim.party_id points at.

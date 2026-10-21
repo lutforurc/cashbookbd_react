@@ -9,6 +9,7 @@ import {
   API_PRODUCT_OUT_REASON_UPDATE_URL,
   API_PRODUCT_OUT_REPORT_URL,
   API_PRODUCT_OUT_STORE_URL,
+  API_PRODUCT_OUT_UPDATE_URL,
 } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
 
@@ -189,6 +190,19 @@ const storeProductOutThunk = createAsyncThunk<
 export const storeProductOut =
   (data: any, callback?: (response: any) => void) => (dispatch: any) =>
     dispatch(storeProductOutThunk({ data, callback }));
+
+// Change a slip not yet approved. The callback gets the RAW body, as the store
+// does, so a shortage still reaches the form with its list.
+export const updateProductOut =
+  (id: number | string, data: any, callback?: (response: any) => void) => async () => {
+    try {
+      const res = await httpService.post(`${API_PRODUCT_OUT_UPDATE_URL}/${id}`, data);
+      if (typeof callback === 'function') callback(res.data);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || err?.message || 'Something went wrong';
+      if (typeof callback === 'function') callback({ success: false, message });
+    }
+  };
 
 const destroyProductOutThunk = createAsyncThunk<
   any,

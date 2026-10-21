@@ -9,6 +9,7 @@ import Checkbox from '../../utils/fields/Checkbox';
 import Table from '../../utils/others/Table';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { destroyReason, getProductInReasons, saveReason } from './productInSlice';
+import ConfirmModal from '../../utils/components/ConfirmModalProps';
 
 const emptyForm = { id: null as number | null, name: '', needs_party: false, sort: '' };
 
@@ -69,20 +70,30 @@ const ProductInReason = () => {
     );
   };
 
-  const handleDelete = (row: any) => {
+  // The reason being asked about, in the voucher screens' ConfirmModal rather
+  // than the browser's confirm() box.
+  const [removeRow, setRemoveRow] = useState<any | null>(null);
+  const [removing, setRemoving] = useState(false);
+
+  const handleDelete = (row: any) => setRemoveRow(row);
+
+  const handleRemoveConfirmed = () => {
     // ⚠️ A reason already used on a slip is retired, not deleted -- the server
     // decides that, and says which happened, because the old slips still have to
     // explain themselves.
-    if (!window.confirm(`Remove "${row.name}"?`)) return;
+    if (!removeRow) return;
 
+    setRemoving(true);
     dispatch(
-      destroyReason(row.id, (response: any) => {
+      destroyReason(removeRow.id, (response: any) => {
         if (response?.success) {
           toast.success(response?.message || 'Removed');
           dispatch(getProductInReasons());
         } else {
           toast.error(response?.message || 'Remove failed');
         }
+        setRemoving(false);
+        setRemoveRow(null);
       }),
     );
   };
@@ -215,6 +226,25 @@ const ProductInReason = () => {
       </div>
 
       <Table columns={columns} data={reasons} className="" noDataMessage="No reason yet" />
+
+      <ConfirmModal
+        show={removeRow !== null}
+        title="Remove Reason"
+        message={
+          <>
+            Are you sure you want to remove the reason
+            <span className="block font-bold mt-1">"{removeRow?.name}" ?</span>
+            <span className="mt-2 block text-sm text-gray-500 dark:text-gray-400">
+              A reason already used on a slip is retired rather than deleted.
+            </span>
+          </>
+        }
+        confirmLabel="Remove"
+        loading={removing}
+        onCancel={() => setRemoveRow(null)}
+        onConfirm={handleRemoveConfirmed}
+        className="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 };

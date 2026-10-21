@@ -14,7 +14,13 @@ import httpService from '../../services/httpService';
 import { API_PRODUCT_IN_PARTY_URL, API_PRODUCT_IN_RATE_URL } from '../../services/apiRoutes';
 import { Select } from '../../utils/fields/FormControls';
 import { getDdlWarehouse } from '../warehouse/ddlWarehouseSlider';
-import { getProductInReasons, resolveReasonId, storeProductIn } from './productInSlice';
+import {
+  getProductInDetails,
+  getProductInReasons,
+  resolveReasonId,
+  storeProductIn,
+  updateProductIn,
+} from './productInSlice';
 import ProductInList from './ProductInList';
 
 type Option = { value: string; label: string; label_2?: string; label_3?: string };
@@ -87,11 +93,81 @@ const ProductIn = () => {
   });
   // The product the newest rate lookup is for.
   const rateFor = useRef('');
+  // The saved receipt open in the form for changing; null for a new one.
+  const [editing, setEditing] = useState<{ id: number; inNo: string } | null>(null);
 
   useEffect(() => {
     dispatch(getDdlWarehouse());
     dispatch(getProductInReasons());
   }, [dispatch]);
+
+  /**
+   * Open a saved receipt in the form.
+   *
+   * ⚠️ EACH LINE'S RATE IS ASKED AGAIN, not taken from the receipt. Whether the
+   * box is open is a question about the books today -- the same question a new
+   * line asks -- and the server re-prices every line on Update by that rule. A
+   * line the books still cannot price keeps the figure the clerk typed.
+   */
+  const handleEditReceipt = (id: number) => {
+    dispatch(
+      getProductInDetails(id, async (response: any) => {
+        if (!response?.success) {
+          toast.error(response?.message || 'Could not open the receipt');
+          return;
+        }
+
+        const master = response.data?.master ?? {};
+        const details: any[] = Array.isArray(response.data?.details) ? response.data.details : [];
+
+        if (master.is_approved) {
+          toast.error(`${master.in_no} is approved. Take the approval off first, then change it.`);
+          return;
+        }
+
+        const items: InItem[] = await Promise.all(
+          details.map(async (line, index) => {
+            let rate = String(Number(line.rate) || '');
+            let rateSource: RateSource = 'none';
+
+            try {
+              const res: any = await httpService.get(`${API_PRODUCT_IN_RATE_URL}/${line.product_id}`);
+              const payload = res?.data?.data?.data ?? res?.data?.data ?? null;
+              if (payload && payload.source !== 'none') {
+                rateSource = payload.source as RateSource;
+                rate = payload.rate ? String(payload.rate) : '';
+              }
+            } catch {
+              // Treated as 'none', as loadRate does: the box opens on the
+              // receipt's own figure, and the server still applies a book rate.
+            }
+
+            return {
+              id: Date.now() + index,
+              productId: String(line.product_id),
+              productName: line.product_name || '',
+              unit: line.unit_name || '',
+              quantity: String(Number(line.quantity)),
+              rate: rate === '0' ? '' : rate,
+              rateSource,
+              note: line.note || '',
+            };
+          }),
+        );
+
+        setFormData({
+          warehouseId: master.warehouse_id ? String(master.warehouse_id) : '',
+          reasonId: master.reason_id ? String(master.reason_id) : '',
+          note: master.note || '',
+          items,
+        });
+        setParty(master.party_id ? { value: String(master.party_id), label: master.party_name || '' } : null);
+        clearLineForm();
+        setEditing({ id: Number(master.id), inNo: master.in_no || '' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }),
+    );
+  };
 
   // Open a new receipt on the shop's own default reason, so the Reason field is
   // never blank. It only fills an empty field -- a reason already chosen is left
@@ -223,6 +299,7 @@ const ProductIn = () => {
     });
     setParty(null);
     clearLineForm();
+    setEditing(null);
   };
 
   const validateLineItem = () => {
@@ -365,10 +442,15 @@ const ProductIn = () => {
     });
 
     setSaveButtonLoading(true);
+    const payload = buildPayload();
+    // A receipt open for changing goes to update; anything else is a new one.
+    const send = (callback: (response: any) => void) =>
+      editing ? updateProductIn(editing.id, payload, callback) : storeProductIn(payload, callback);
+
     dispatch(
-      storeProductIn(buildPayload(), (response: any) => {
+      send((response: any) => {
         if (response?.success) {
-          toast.success(response?.message || 'Receipt saved');
+          toast.success(response?.message || (editing ? 'Receipt updated' : 'Receipt saved'));
 
           // ⚠️ data.data: foundData() wraps the payload one level deeper than it
           // looks. Read at data.unpriced, the list was never found and the ৳0
@@ -409,6 +491,18 @@ const ProductIn = () => {
   return (
     <div>
       <HelmetTitle title="Product In" />
+
+      {/* Said out loud, so a change is never mistaken for a new receipt. */}
+      {editing && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700/50 dark:bg-amber-500/10 dark:text-amber-300">
+          <span>
+            Editing <strong>{editing.inNo}</strong> — Update saves the change and moves the stock with it.
+          </span>
+          <button type="button" onClick={resetForm} className="font-medium underline">
+            Cancel edit
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-2 mb-4">
         <div>
@@ -561,14 +655,14 @@ const ProductIn = () => {
         <ButtonLoading
           onClick={handleSave}
           buttonLoading={saveButtonLoading}
-          label={saveButtonLoading ? 'Saving...' : 'Save'}
+          label={saveButtonLoading ? 'Saving...' : editing ? 'Update' : 'Save'}
           className="whitespace-nowrap text-center mr-0 py-2"
           icon={<FiSave className="text-lg ml-2 mr-2" />}
         />
         <ButtonLoading
           onClick={resetForm}
           buttonLoading={false}
-          label="Reset All"
+          label={editing ? 'Cancel Edit' : 'Reset All'}
           className="whitespace-nowrap text-center mr-0 py-2"
           icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
         />
@@ -642,7 +736,7 @@ const ProductIn = () => {
         </table>
       </div>
 
-      <ProductInList refreshKey={listRefreshKey} />
+      <ProductInList refreshKey={listRefreshKey} onEdit={handleEditReceipt} />
     </div>
   );
 };
