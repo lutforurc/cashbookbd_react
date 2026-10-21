@@ -7,7 +7,7 @@ import { hasAnyPermission, Permission } from '../Sidebar/permissionUtils';
 import { getVoucherEditTarget } from '../utils/utils-functions/voucherEditNavigation';
 import { VoucherPrintRegistry } from '../modules/vouchers/VoucherPrintRegistry';
 import routes from '../services/appRoutes';
-import globalSearchItems, { GlobalSearchItem } from './globalSearchItems';
+import globalSearchItems, { GlobalSearchCondition, GlobalSearchItem } from './globalSearchItems';
 import { Button } from '../../pages/UiElements/CustomButtons';
 import { Input } from '../utils/fields/FormControls';
 
@@ -34,7 +34,12 @@ const QUICK_ACTION_LABELS: Record<string, string> = {
   'Add Product': 'New Product',
 };
 
-const canShowItem = (permissions: Permission[] | undefined, item: GlobalSearchItem) => {
+const canShowItem = (
+  permissions: Permission[] | undefined,
+  item: GlobalSearchItem,
+  conditions: Record<GlobalSearchCondition, boolean>,
+) => {
+  if (item.when && !conditions[item.when]) return false;
   if (!item.permissions || item.permissions.length === 0) return true;
   return hasAnyPermission(permissions, item.permissions);
 };
@@ -48,10 +53,24 @@ const GlobalSearch = () => {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const permissions = useSelector((state: any) => state.settings?.data?.permissions ?? []);
+  const settingsData = useSelector((state: any) => state.settings?.data);
+  const currentBranch = useSelector((state: any) => state.branchList?.currentBranch);
+
+  // Read exactly as the sidebar reads them, so search offers what the menu offers.
+  const conditions = useMemo<Record<GlobalSearchCondition, boolean>>(
+    () => ({
+      deliveryStock: Number(settingsData?.branch?.deduct_stock_on_delivery) === 1,
+      yearClosing: Number(currentBranch?.company?.year_closing_enabled) === 1,
+      tradingCombined: currentBranch?.business_type_id === 8,
+      installmentTrade: currentBranch?.business_type_id == 4,
+      platformAdmin: Boolean(settingsData?.is_platform_admin),
+    }),
+    [settingsData, currentBranch],
+  );
 
   const availableItems = useMemo(
-    () => globalSearchItems.filter((item) => canShowItem(permissions, item)),
-    [permissions],
+    () => globalSearchItems.filter((item) => canShowItem(permissions, item, conditions)),
+    [permissions, conditions],
   );
 
   const quickActions = useMemo(() => {
