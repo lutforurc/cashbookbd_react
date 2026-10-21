@@ -367,6 +367,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   // or hides them with the branch.
   const deductStockOnDelivery =
     Number(settings?.data?.branch?.deduct_stock_on_delivery) === 1;
+
+  // ⚠️ THE INVOICE MENU OPENS ON EXACTLY WHAT ITS ITEMS SHOW ON. The generic
+  // list (MENU_PERMISSIONS.invoice) counted delivery.view on its own, so on a
+  // branch without "Deduct stock on delivery" a user holding it for the
+  // Delivery Report -- a hotel manager -- got an Invoice menu with nothing in
+  // it. And it left out the import and return keys, so a user holding only
+  // Sales Return could never reach the item. Read off the items below instead.
+  const showInvoiceMenu =
+    [
+      'purchase.create',
+      'purchase.import',
+      'sales.create',
+      'sales.import',
+      'purchase.return.view',
+      'sales.return',
+      'labour.invoice.create',
+    ].some((key) => hasPermission(permissions, key)) ||
+    (deductStockOnDelivery && hasPermission(permissions, 'delivery.view'));
   const companyName =
     settings?.data?.company?.name ||
     currentBranch?.company?.name ||
@@ -932,7 +950,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               )}
 
               {/* Invoice */}
-              {hasMenuPermission(permissions, 'invoice') && (
+              {showInvoiceMenu && (
                 <SidebarLinkGroup
                   activeCondition={isMenuActive('invoice', pathname)}
                   menuId="invoice"
