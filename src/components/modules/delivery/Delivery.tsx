@@ -7,13 +7,13 @@ import { FiPrinter, FiSearch, FiXCircle } from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
-import InputDatePicker from '../../utils/fields/DatePicker';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { hasPermission } from '../../utils/permissionChecker';
 import httpService from '../../services/httpService';
 import { API_DELIVERY_PRINT_DATA_URL } from '../../services/apiRoutes';
+import StockShortageModal, { StockShortage } from '../../utils/components/StockShortageModal';
 
 import {
   deliveryCancel,
@@ -22,15 +22,6 @@ import {
   deliveryStore,
 } from './deliverySlice';
 import DeliveryPrint from './DeliveryPrint';
-
-/** 'YYYY-MM-DD' <-> Date, the same translation the sales screen makes. */
-const asDate = (value: string) => (value ? new Date(value) : null);
-const asText = (date: Date | null) =>
-  date
-    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
-      date.getDate(),
-    ).padStart(2, '0')}`
-    : '';
 
 const newIdempotencyKey = () =>
   typeof window !== 'undefined' && window.crypto && 'randomUUID' in window.crypto
@@ -52,7 +43,6 @@ const productLabel = (line: any) => {
 };
 
 const emptyHeader = {
-  delivery_date: asText(new Date()),
   challan_no: '',
   vehicle_no: '',
   driver_name: '',
@@ -91,6 +81,8 @@ const Delivery = () => {
   const [header, setHeader] = useState<any>({ ...emptyHeader });
   const [idempotencyKey, setIdempotencyKey] = useState('');
   const [saving, setSaving] = useState(false);
+  // A delivery held back for want of stock, with the question put about it.
+  const [stockWarning, setStockWarning] = useState<(StockShortage & { payload: any }) | null>(null);
   const [list, setList] = useState<any[]>([]);
   const [printData, setPrintData] = useState<any>(null);
   const printRef = useRef<HTMLDivElement>(null);
@@ -187,22 +179,50 @@ const Delivery = () => {
       return;
     }
 
+    sendDelivery({
+      mtmId: invoiceId,
+      idempotency_key: idempotencyKey,
+      ...header,
+      lines: payloadLines,
+    });
+  };
+
+  /**
+   * The save itself, kept apart so the shortage question can send the very
+   * same delivery again -- with allow_negative -- once the dispatcher has said
+   * to go on. The same shape the sales invoice uses.
+   */
+  const sendDelivery = (payload: any, allowNegative = false) => {
     setSaving(true);
     dispatch(
       deliveryStore(
-        {
-          mtmId: invoiceId,
-          idempotency_key: idempotencyKey,
-          ...header,
-          lines: payloadLines,
-        },
-        (message: string) => {
+        allowNegative ? { ...payload, allow_negative: true } : payload,
+        (message: string, saved?: any, response?: any) => {
           setSaving(false);
-          if (message) {
-            toast.error(message);
+
+          // Not enough stock on the book: nothing saved, nothing wrong. Hold
+          // the delivery and put the question -- or, where the branch blocks,
+          // say so with the figures.
+          if (response?.stock_shortage) {
+            setStockWarning({
+              rows: Array.isArray(response?.shortage_rows) ? response.shortage_rows : [],
+              shortages: Array.isArray(response?.shortages) ? response.shortages : [],
+              message: response?.message || 'Not enough stock.',
+              blocked: Boolean(response?.stock_blocked),
+              payload,
+            });
             return;
           }
-          toast.success('Delivery saved');
+
+          // ⚠️ Judged by what came back, not by whether a message did: a save
+          // carries one too ("Delivery saved. Vr. No. …"), and testing the
+          // message showed every successful delivery as a red error and left
+          // the form full.
+          if (!saved) {
+            toast.error(message || 'Failed to save the delivery');
+            return;
+          }
+          toast.success(message || 'Delivery saved');
           setSearchInvoice('');
           setInvoiceId('');
           setLines([]);
@@ -345,16 +365,17 @@ const Delivery = () => {
               )}
 
               <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
-                <InputDatePicker
+                {/* ⚠️ Shown, not chosen. A delivery is always dated on the
+                    branch's transaction date -- the server reads it itself and
+                    ignores any date sent (owner, 2026-10-21). */}
+                <InputElement
                   id="delivery_date"
                   name="delivery_date"
                   label="Delivery Date"
-                  className="font-medium text-sm w-full"
-                  selectedDate={asDate(header.delivery_date)}
-                  setSelectedDate={(date: Date | null) =>
-                    setHeader((prev: any) => ({ ...prev, delivery_date: asText(date) }))
-                  }
-                  setCurrentDate={() => undefined}
+                  value={settings?.data?.trx_dt || ''}
+                  className="py-1 w-full"
+                  disabled
+                  onChange={() => undefined}
                 />
                 <InputElement
                   id="challan_no"
@@ -511,6 +532,18 @@ const Delivery = () => {
       <div className="hidden">
         <DeliveryPrint ref={printRef} data={printData} />
       </div>
+
+      <StockShortageModal
+        warning={stockWarning}
+        action="deliver"
+        saving={saving}
+        onCancel={() => setStockWarning(null)}
+        onContinue={() => {
+          const pending = stockWarning;
+          setStockWarning(null);
+          if (pending) sendDelivery(pending.payload, true);
+        }}
+      />
     </>
   );
 };

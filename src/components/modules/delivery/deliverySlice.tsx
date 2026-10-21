@@ -42,7 +42,10 @@ export const deliveryLoadPending = (
     });
 };
 
-export const deliveryStore = (data: any, callback?: (message: string, saved?: any) => void) => (dispatch: any) => {
+export const deliveryStore = (
+  data: any,
+  callback?: (message: string, saved?: any, response?: any) => void,
+) => (dispatch: any) => {
   dispatch({ type: DELIVERY_PENDING });
   httpService
     .post(API_DELIVERY_STORE_URL, data)
@@ -53,7 +56,9 @@ export const deliveryStore = (data: any, callback?: (message: string, saved?: an
         if (typeof callback === 'function') callback(_data.message, _data.data.data);
       } else {
         dispatch({ type: DELIVERY_ERROR, payload: _data.message });
-        if (typeof callback === 'function') callback(_data.message);
+        // The whole body too: a stock shortage carries its rows and whether
+        // the branch blocks, and the screen needs both to put the question.
+        if (typeof callback === 'function') callback(_data.message, undefined, _data);
       }
     })
     .catch((err) => {
@@ -110,7 +115,9 @@ export const deliveryCancel = (data: { id: string }, callback?: (message: string
       const _data = res.data;
       if (_data.success) {
         dispatch({ type: DELIVERY_SAVED, payload: {} });
-        if (typeof callback === 'function') callback(_data.message);
+        // '' on success, as list and edit do: the screen reads any message as a
+        // failure, and "Delivery cancelled." came up as a red error.
+        if (typeof callback === 'function') callback('');
       } else {
         dispatch({ type: DELIVERY_ERROR, payload: _data.message });
         if (typeof callback === 'function') callback(_data.message);
