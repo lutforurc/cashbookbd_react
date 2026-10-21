@@ -1454,7 +1454,7 @@ const FolioScreen = () => {
               onClick={() => saveBillName(naming)}
               buttonLoading={saving}
               icon={<FiTag className="h-5 w-5" />}
-              label={naming.trim() ? `Make it out to ${naming.trim()}` : 'Back to the guest’s own name'}
+              label={naming.trim() ? `Bill to ${naming.trim()}` : 'Back to the guest’s own name'}
               variant="primary"
             />
             {/* The way back, where a name is already on it: one press rather
