@@ -536,6 +536,7 @@ const Delivery = () => {
       <StockShortageModal
         warning={stockWarning}
         action="deliver"
+        blockedAction="delivering"
         saving={saving}
         onCancel={() => setStockWarning(null)}
         onContinue={() => {

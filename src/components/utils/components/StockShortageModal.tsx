@@ -20,6 +20,9 @@ type Props = {
   warning: StockShortage | null;
   /** What the operator is about to do: "sell", "transfer". */
   action?: string;
+  /** What a blocking branch refuses, for the sentence under the figures.
+      Every screen but the delivery is a sale, hence the default. */
+  blockedAction?: string;
   saving?: boolean;
   onCancel: () => void;
   onContinue: () => void;
@@ -45,6 +48,7 @@ type Props = {
 const StockShortageModal = ({
   warning,
   action = 'save',
+  blockedAction = 'selling',
   saving = false,
   onCancel,
   onContinue,
@@ -59,7 +63,7 @@ const StockShortageModal = ({
   // product, how much is there, how much was asked for. What changes is the
   // sentence under them and whether there is a way forward.
   const closing = blocked
-    ? 'This branch does not allow selling below stock.'
+    ? `This branch does not allow ${blockedAction} below stock.`
     : `You can ${action} anyway.`;
 
   return (

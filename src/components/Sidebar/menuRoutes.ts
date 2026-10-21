@@ -95,6 +95,8 @@ export const MENU_ROUTES: Record<string, string[]> = {
     '/reports/sales-return-ledger',
     '/reports/group-report',
     '/reports/mitch-match',
+    // Listed under Reports in the sidebar, so opening it has to light Reports.
+    routes.report_delivery,
     // Reached from a list on one of the screens above rather than from the menu
     // itself; the old hand-written condition knew about it and this keeps that.
     '/reports/closing-stock',
