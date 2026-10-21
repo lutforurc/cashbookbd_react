@@ -19,6 +19,7 @@ import {
   employeeLoanUpdate,
 } from './employeeLoanSlice';
 import { useNavigate } from 'react-router-dom';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 
 interface LoanPayload {
   id: string | number;
@@ -88,8 +89,10 @@ const EmployeeLoan = () => {
     setSearch('');
   };
 
-  const searchTransaction = async () => {
-    const vrNo = search.trim();
+  // `forVoucher` is the number Cash Book's Edit hands over (see the hook
+  // below); typed searches read the box.
+  const searchTransaction = async (forVoucher?: string) => {
+    const vrNo = (forVoucher ?? search).trim();
     if (vrNo === '') {
       toast.error('Please enter a voucher number to search.');
       return;
@@ -123,6 +126,13 @@ const EmployeeLoan = () => {
       setSearchLoading(false);
     }
   };
+
+  // Opened from Cash Book's Edit on a loan voucher: put the number in the box
+  // and load it, the way every other voucher screen does.
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: (vrNo) => searchTransaction(vrNo),
+  });
 
   const handleSave = useCallback(async () => {
     if (saveButtonLoading) return;
@@ -230,7 +240,9 @@ const EmployeeLoan = () => {
                       {/* No gap, and -ml-px so the two borders sit on one line
                           -- the box and its button read as one control. */}
                       <ButtonLoading
-                        onClick={searchTransaction}
+                        // A wrapper, not the function: the click event would
+                        // otherwise arrive as the voucher number.
+                        onClick={() => searchTransaction()}
                         buttonLoading={searchLoading}
                         label=" "
                         className="-ml-px mb-4 w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"

@@ -112,6 +112,16 @@ Delivery স্ক্রিন আগেও বাকির বেশি নি�
 
 ---
 
+## ৫ক. Cash Book → Edit → Employee Loan
+
+Employee Loan-এর voucher নম্বর "2-" দিয়ে শুরু হয়, সাধারণ cash payment-এর মতোই। তাই Cash Book-এর Edit বোতাম নম্বর দেখে সেটা Cash Payment পাতায় খুলত।
+
+এখন Cash Book-এর API প্রতিটা loan voucher-এর row-এ `edit_screen = 'employee_loan'` চিহ্ন দেয়। Edit চাপলে row দেখে গন্তব্য ঠিক হয় (`getVoucherEditTargetForRow`), তাই loan voucher **Employee Loan** পাতায় খোলে। সেখানে voucher নম্বর দিয়ে নিজে থেকেই search হয়ে loan-টা edit-এর জন্য লোড হয়।
+
+অন্য voucher-এর আচরণ বদলায়নি। নতুন কোনো পাতা এভাবে যোগ করতে চাইলে `voucherEditNavigation.ts`-এর `EDIT_SCREEN_TARGETS`-এ একটা লাইন যোগ করতে হবে, আর report-কে row-এ সেই `edit_screen` দিতে হবে।
+
+---
+
 ## ৬. মালিকের সিদ্ধান্ত (পরিবর্তন করবেন না)
 
 - **Customer ফেরতের দুটো পথই থাকবে:**

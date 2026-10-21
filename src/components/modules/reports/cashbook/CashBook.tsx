@@ -36,9 +36,11 @@ import { hasPermission } from '../../../utils/permissionChecker';
 import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import {
   buildVoucherAutoEditState,
+  buildVoucherAutoEditStateForRow,
   getCombinedVoucherOpenState,
   getEditableVoucherNo,
   getVoucherEditTarget,
+  getVoucherEditTargetForRow,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import routes from '../../../services/appRoutes';
@@ -348,9 +350,11 @@ const CashBook = (user: any) => {
       return;
     }
 
+    // By the row, not the number alone: an Employee Loan is a "2-" voucher
+    // but is edited on its own screen (the report marks it `edit_screen`).
     const voucherNo = getEditableVoucherNo(row);
-    const editTarget = getVoucherEditTarget(voucherNo);
-    const editState = buildVoucherAutoEditState(voucherNo);
+    const editTarget = getVoucherEditTargetForRow(row);
+    const editState = buildVoucherAutoEditStateForRow(row);
 
     if (!voucherNo || !editTarget || !editState) {
       toast.error('Edit route not found for this voucher.');

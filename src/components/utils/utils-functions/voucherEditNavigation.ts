@@ -121,6 +121,44 @@ export const getVoucherEditTarget = (
   return VOUCHER_EDIT_TARGETS[prefix] || null;
 };
 
+/**
+ * Screens a voucher is edited on that its NUMBER cannot name.
+ *
+ * An Employee Loan is a "2-" payment voucher like any other, so the prefix
+ * sent it to Cash Payment. The report says which screen wrote it, as
+ * `edit_screen` on the row, and that wins over the prefix.
+ */
+const EDIT_SCREEN_TARGETS: Record<string, VoucherEditTarget> = {
+  employee_loan: { route: routes.employee_loan, label: 'Employee Loan', prefix: '2' },
+};
+
+/** Where a report row's voucher is edited: its own screen first, then the prefix. */
+export const getVoucherEditTargetForRow = (
+  row: any,
+  options?: { bank?: boolean },
+): VoucherEditTarget | null =>
+  EDIT_SCREEN_TARGETS[String(row?.edit_screen ?? '')] ||
+  getVoucherEditTarget(getEditableVoucherNo(row), options);
+
+/** The auto-edit state for a report row, opened on the screen above. */
+export const buildVoucherAutoEditStateForRow = (
+  row: any,
+  options?: { bank?: boolean },
+): VoucherAutoEditState | null => {
+  const voucherNo = getEditableVoucherNo(row);
+  const target = getVoucherEditTargetForRow(row, options);
+
+  if (!voucherNo || !target) {
+    return null;
+  }
+
+  return {
+    voucherAutoEdit: true,
+    voucherAutoEditNo: voucherNo,
+    voucherAutoEditPrefix: target.prefix,
+  };
+};
+
 export const buildVoucherAutoEditState = (
   vrNo: string | number | null | undefined,
   options?: { bank?: boolean },
