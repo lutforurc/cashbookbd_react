@@ -183,11 +183,16 @@ check(
   /if \(!formData\.reasonId\) \{[\s\S]{0,80}Please pick a reason/.test(form),
 );
 
-// The view flow: the slip that is read back and printed names the reason.
+// The view flow: the slip that is read back and printed names the reason. The
+// paper moved out of the modal into ProductOutSlipPrint (one paper, shared with
+// the Product In Out ledger), so that is where the line is looked for -- and the
+// modal is held to drawing that paper rather than one of its own.
 const printModal = read('src/components/modules/product-out/ProductOutPrintModal.tsx');
+const slipPaper = read('src/components/modules/product-out/ProductOutSlipPrint.tsx');
 check(
   'the view / print slip shows the saved reason',
-  /<b>Reason:<\/b> \{master\.reason_name \|\| '-'\}/.test(printModal),
+  /<b>Reason:<\/b> \{master\.reason_name \|\| '-'\}/.test(slipPaper) &&
+    /<ProductOutSlipPrint\b/.test(printModal),
 );
 
 // The route: /inventory/product-out renders this very component, so the field
