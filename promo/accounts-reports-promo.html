@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CashbookBD – লাভ-ক্ষতি, ট্রায়াল ব্যালেন্স ও ব্যালেন্স শিট</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg1: #0b1b3a; --bg2: #14307a; --accent: #38bdf8; --good: #34d399; --warn: #fbbf24;
+    --card: #ffffff; --ink: #0f172a; --muted: #64748b; --line: #e2e8f0; --dr: #1d4ed8; --cr: #b45309;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: #05060a; font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Nirmala UI', sans-serif; }
+  body { display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+  #stage { width: 1280px; height: 720px; position: relative; overflow: hidden; flex: none;
+    background: radial-gradient(1200px 700px at 20% 0%, var(--bg2), var(--bg1)); color: #fff; }
+  .scene { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .6s ease; padding: 48px 64px; }
+  .scene.on { opacity: 1; visibility: visible; }
+  h1 { font-size: 66px; line-height: 1.25; font-weight: 700; }
+  h2 { font-size: 44px; line-height: 1.25; font-weight: 700; }
+  p.sub { font-size: 26px; color: #cbd5e1; margin-top: 14px; }
+  .accent { color: var(--accent); } .good { color: var(--good); } .warn { color: var(--warn); }
+  .brand { font-size: 24px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 18px; }
+  .tag { display: inline-block; font-size: 22px; font-weight: 600; background: rgba(56,189,248,.18); color: var(--accent); border-radius: 999px; padding: 4px 18px; margin-bottom: 10px; }
+  .note { position: absolute; right: 28px; bottom: 16px; font-size: 15px; color: #94a3b8; }
+
+  .rise { opacity: 0; transform: translateY(24px); }
+  .on .rise { animation: rise .6s cubic-bezier(.2,.8,.2,1) forwards; animation-delay: calc(var(--i, 0) * 0.14s + var(--d, 0s)); }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  .pop { opacity: 0; transform: scale(.8); }
+  .on .pop { animation: pop .55s cubic-bezier(.2,1.4,.4,1) forwards; animation-delay: var(--d, 0s); }
+  @keyframes pop { to { opacity: 1; transform: none; } }
+
+  .center { display: flex; flex-direction: column; justify-content: center; }
+  .head { display: flex; align-items: baseline; gap: 22px; margin-bottom: 20px; }
+  .head p { font-size: 24px; color: #cbd5e1; }
+
+  /* white report card */
+  .sheet { background: var(--card); color: var(--ink); border-radius: 16px; box-shadow: 0 26px 70px rgba(0,0,0,.45); padding: 20px 26px; }
+  .sheet .title { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: var(--muted); padding-bottom: 8px; border-bottom: 2px solid var(--line); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .row { display: flex; justify-content: space-between; font-size: 22px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .row.tot { font-weight: 700; border-bottom: 0; border-top: 2px solid var(--ink); margin-top: 4px; }
+  .row.hl { background: #dcfce7; border-radius: 8px; padding: 7px 10px; margin: 4px -10px 0; font-weight: 700; border: 0; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* Profit & Loss: two sides */
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+  .callout { margin-top: 22px; display: flex; gap: 18px; }
+  .chip { flex: 1; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.18); border-radius: 14px; padding: 12px 20px; font-size: 22px; color: #e2e8f0; }
+  .chip b { color: var(--accent); }
+
+  /* Trial balance table */
+  table { width: 100%; border-collapse: collapse; font-size: 21px; }
+  th { text-align: right; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 8px 6px; border-bottom: 2px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  td { padding: 7px 6px; text-align: right; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  td.dr { color: var(--dr); } td.cr { color: var(--cr); }
+  tr.tot td { font-weight: 700; border-top: 2px solid var(--ink); border-bottom: 0; }
+  .badge { display: inline-block; margin-top: 16px; background: var(--good); color: #052e1b; font-weight: 700; font-size: 26px; border-radius: 999px; padding: 8px 26px; }
+
+  /* flow scene */
+  .flow { display: flex; align-items: center; justify-content: center; gap: 22px; margin-top: 40px; }
+  .node { background: rgba(255,255,255,.1); border: 2px solid rgba(255,255,255,.25); border-radius: 18px; padding: 22px 28px; text-align: center; min-width: 270px; }
+  .node b { display: block; font-size: 32px; color: var(--accent); }
+  .node span { font-size: 20px; color: #cbd5e1; }
+  .arrow { font-size: 48px; color: var(--accent); }
+
+  #bar { position: absolute; left: 0; bottom: 0; height: 5px; width: 0; background: var(--accent); }
+  #start { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; gap: 18px; align-items: center; justify-content: center; background: rgba(5,10,25,.9); }
+  #start.hide { display: none; }
+  #start h2 { font-size: 38px; text-align: center; }
+  .btn { font: inherit; font-size: 24px; font-weight: 600; border: 0; border-radius: 999px; padding: 14px 36px; cursor: pointer; background: var(--accent); color: #06283d; }
+  .btn.alt { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.5); }
+  #hint { font-size: 18px; color: #94a3b8; max-width: 760px; text-align: center; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <div id="start">
+    <h2>লাভ-ক্ষতি · ট্রায়াল ব্যালেন্স · ব্যালেন্স শিট<br><small style="font-size:24px;color:#94a3b8">১ মিনিটের ভিডিও</small></h2>
+    <button class="btn" id="play">▶ প্লে করুন</button>
+    <button class="btn alt" id="rec">⏺ রেকর্ড করে .webm ডাউনলোড</button>
+    <div id="hint">রেকর্ডে ক্লিক করলে ব্রাউজার "কোন ট্যাব শেয়ার করবেন" জিজ্ঞেস করবে — এই ট্যাবটি বেছে নিন। ভিডিও শেষ হলে নিজে থেকেই ফাইল নামবে। (Chrome/Edge)</div>
+  </div>
+
+  <!-- 1 intro (5s) -->
+  <section class="scene center" id="s1">
+    <div class="brand rise" style="--i:0">CashbookBD · হিসাবের রিপোর্ট</div>
+    <h1 class="rise" style="--i:1">তিনটি রিপোর্ট,<br><span class="accent">ব্যবসার পুরো চিত্র</span></h1>
+    <p class="sub rise" style="--i:3">লাভ-ক্ষতি · ট্রায়াল ব্যালেন্স (গ্রুপ) · ব্যালেন্স শিট</p>
+  </section>
+
+  <!-- 2 profit loss (15s) -->
+  <section class="scene" id="s2">
+    <div class="head rise" style="--i:0"><span class="tag">১</span><h2>লাভ-ক্ষতি <span class="accent">(Profit Loss)</span></h2><p>নির্দিষ্ট সময়ে কত আয়, কত খরচ — লাভ হলো কত?</p></div>
+    <div class="two">
+      <div class="sheet rise" style="--i:1">
+        <div class="title"><span>খরচের দিক</span><span>টাকা</span></div>
+        <div class="row rise" style="--d:1.2s"><span>ওপেনিং স্টক</span><span class="num" data-n="200000"></span></div>
+        <div class="row rise" style="--d:2.0s"><span>নিট ক্রয়</span><span class="num" data-n="800000"></span></div>
+        <div class="row rise" style="--d:2.8s"><span>খরচ</span><span class="num" data-n="150000"></span></div>
+        <div class="row hl rise" style="--d:7.5s"><span>নিট লাভ</span><span class="num" data-n="200000"></span></div>
+        <div class="row tot rise" style="--d:8.2s"><span>মোট</span><span class="num" data-n="1350000"></span></div>
+      </div>
+      <div class="sheet rise" style="--i:2">
+        <div class="title"><span>আয়ের দিক</span><span>টাকা</span></div>
+        <div class="row rise" style="--d:1.6s"><span>ক্লোজিং স্টক</span><span class="num" data-n="250000"></span></div>
+        <div class="row rise" style="--d:2.4s"><span>নিট বিক্রয়</span><span class="num" data-n="1050000"></span></div>
+        <div class="row rise" style="--d:3.2s"><span>অন্যান্য আয়</span><span class="num" data-n="50000"></span></div>
+        <div class="row tot rise" style="--d:8.2s"><span>মোট</span><span class="num" data-n="1350000"></span></div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="chip rise" style="--d:4.5s">নিট ক্রয় = ক্রয় − ক্রয় ফেরত − ক্রয় ডিসকাউন্ট</div>
+      <div class="chip rise" style="--d:5.5s">নিট বিক্রয় = বিক্রয় − বিক্রয় ফেরত − ডিসকাউন্ট</div>
+      <div class="chip rise" style="--d:6.5s">দুই দিক মিললে <b>নিট লাভ</b></div>
+    </div>
+    <div class="note">* নমুনা সংখ্যা</div>
+  </section>
+
+  <!-- 3 trial balance group (14s) -->
+  <section class="scene" id="s3">
+    <div class="head rise" style="--i:0"><span class="tag">২</span><h2>ট্রায়াল ব্যালেন্স <span class="accent">(গ্রুপ)</span></h2><p>গ্রুপ ধরে সব অ্যাকাউন্টের ডেবিট-ক্রেডিট এক পাতায়</p></div>
+    <div class="sheet rise" style="--i:1">
+      <table>
+        <thead><tr><th>অ্যাকাউন্ট গ্রুপ</th><th>ডেবিট (Dr)</th><th>ক্রেডিট (Cr)</th></tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+    <div style="display:flex; gap:20px; align-items:center;">
+      <div class="badge pop" style="--d:9.5s">✓ ডেবিট = ক্রেডিট — হিসাব মিলেছে</div>
+      <div class="chip pop" style="--d:11s; margin-top:16px">আরও গভীরে যেতে: <b>Trial Balance Details</b></div>
+    </div>
+    <div class="note">* নমুনা সংখ্যা</div>
+  </section>
+
+  <!-- 4 balance sheet (15s) -->
+  <section class="scene" id="s4">
+    <div class="head rise" style="--i:0"><span class="tag">৩</span><h2>ব্যালেন্স শিট <span class="accent">(Balance Sheet)</span></h2><p>ব্যবসার কী আছে, কী দেনা — আজকের অবস্থান</p></div>
+    <div class="two">
+      <div class="sheet rise" style="--i:1">
+        <div class="title"><span>সম্পদ (Assets)</span><span>টাকা</span></div>
+        <div class="row rise" style="--d:1.2s"><span>ক্যাশ ও ব্যাংক</span><span class="num" data-n="300000"></span></div>
+        <div class="row rise" style="--d:2.0s"><span>পাওনা (কাস্টমার)</span><span class="num" data-n="400000"></span></div>
+        <div class="row rise" style="--d:2.8s"><span>স্টক</span><span class="num" data-n="250000"></span></div>
+        <div class="row rise" style="--d:3.6s"><span>স্থায়ী সম্পদ</span><span class="num" data-n="650000"></span></div>
+        <div class="row tot rise" style="--d:9.5s"><span>মোট সম্পদ</span><span class="num" data-n="1600000"></span></div>
+      </div>
+      <div class="sheet rise" style="--i:2">
+        <div class="title"><span>দায় ও মালিকানা</span><span>টাকা</span></div>
+        <div class="row rise" style="--d:1.6s"><span>দেনা (সাপ্লায়ার)</span><span class="num" data-n="350000"></span></div>
+        <div class="row rise" style="--d:2.4s"><span>ঋণ</span><span class="num" data-n="250000"></span></div>
+        <div class="row rise" style="--d:3.2s"><span>মূলধন</span><span class="num" data-n="800000"></span></div>
+        <div class="row hl rise" style="--d:5.5s"><span>চলতি বছরের নিট লাভ</span><span class="num" data-n="200000"></span></div>
+        <div class="row tot rise" style="--d:9.5s"><span>মোট দায় + মালিকানা</span><span class="num" data-n="1600000"></span></div>
+      </div>
+    </div>
+    <div style="margin-top:18px"><div class="badge pop" style="--d:10.8s">✓ সম্পদ = দায় + মালিকানা</div></div>
+    <div class="note">* নমুনা সংখ্যা</div>
+  </section>
+
+  <!-- 5 flow (6s) -->
+  <section class="scene center" id="s5">
+    <h2 class="rise" style="--i:0">তিনটি রিপোর্ট <span class="accent">একসূত্রে বাঁধা</span></h2>
+    <div class="flow">
+      <div class="node pop" style="--d:.6s"><b>ট্রায়াল ব্যালেন্স</b><span>হিসাব ঠিক আছে কিনা যাচাই</span></div>
+      <div class="arrow pop" style="--d:1.4s">→</div>
+      <div class="node pop" style="--d:1.8s"><b>লাভ-ক্ষতি</b><span>নিট লাভ বের হয়</span></div>
+      <div class="arrow pop" style="--d:2.6s">→</div>
+      <div class="node pop" style="--d:3s"><b>ব্যালেন্স শিট</b><span>লাভসহ অবস্থান দেখায়</span></div>
+    </div>
+  </section>
+
+  <!-- 6 outro (5s) -->
+  <section class="scene center" id="s6" style="align-items:center; text-align:center">
+    <div class="brand rise" style="--i:0">CashbookBD</div>
+    <h1 class="rise" style="--i:1">হিসাব মেলে,<br><span class="accent">সিদ্ধান্ত হয় সহজ</span></h1>
+  </section>
+
+  <div id="bar"></div>
+</div>
+
+<script>
+  const bn = n => Number(n).toLocaleString('bn-BD');   // Bengali digits, lakh grouping
+
+  const tbRows = [
+    ['নগদ ও ব্যাংক', 300000, 0],
+    ['পাওনা (কাস্টমার)', 400000, 0],
+    ['স্থায়ী সম্পদ', 650000, 0],
+    ['ক্রয় ও ওপেনিং স্টক', 1000000, 0],
+    ['খরচ', 150000, 0],
+    ['দেনা (সাপ্লায়ার)', 0, 350000],
+    ['ঋণ', 0, 250000],
+    ['মূলধন', 0, 800000],
+    ['বিক্রয় ও অন্যান্য আয়', 0, 1100000],
+  ];
+  const dr = tbRows.reduce((a, r) => a + r[1], 0), cr = tbRows.reduce((a, r) => a + r[2], 0);
+  document.getElementById('tb').innerHTML = tbRows.map(([n, d, c], i) =>
+    `<tr class="rise" style="--d:${(1.2 + i * 0.7).toFixed(1)}s"><td>${n}</td><td class="dr">${d ? bn(d) : ''}</td><td class="cr">${c ? bn(c) : ''}</td></tr>`).join('') +
+    `<tr class="tot rise" style="--d:8s"><td>মোট</td><td class="dr">${bn(dr)}</td><td class="cr">${bn(cr)}</td></tr>`;
+
+  // plain figures
+  document.querySelectorAll('[data-n]').forEach(el => { el.textContent = bn(el.dataset.n); });
+
+  // ---- timeline: 5 + 15 + 14 + 15 + 6 + 5 = 60 seconds ----
+  const lengths = [5, 15, 14, 15, 6, 5];
+  const total = lengths.reduce((a, b) => a + b, 0);
+  const scenes = [...document.querySelectorAll('.scene')];
+  const bar = document.getElementById('bar');
+  const stage = document.getElementById('stage');
+  let timers = [], raf = 0;
+
+  function fit() { stage.style.transform = `scale(${Math.min(innerWidth / 1280, innerHeight / 720)})`; }
+  addEventListener('resize', fit); fit();
+
+  function play(done) {
+    timers.forEach(clearTimeout); cancelAnimationFrame(raf);
+    scenes.forEach(s => s.classList.remove('on'));
+    let t = 0;
+    lengths.forEach((len, i) => {
+      timers.push(setTimeout(() => {
+        scenes.forEach(s => s.classList.remove('on'));
+        void scenes[i].offsetWidth;            // restart this scene's animations
+        scenes[i].classList.add('on');
+      }, t * 1000));
+      t += len;
+    });
+    timers.push(setTimeout(() => { if (done) done(); }, total * 1000));
+    const t0 = performance.now();
+    const tick = now => { const p = Math.min((now - t0) / (total * 1000), 1); bar.style.width = p * 100 + '%'; if (p < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+  }
+
+  const start = document.getElementById('start');
+  document.getElementById('play').onclick = () => { start.classList.add('hide'); play(() => start.classList.remove('hide')); };
+
+  document.getElementById('rec').onclick = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, preferCurrentTab: true });
+      const rec = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8_000_000 });
+      const chunks = [];
+      rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+      rec.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
+        a.download = 'cashbookbd-accounts-reports.webm';
+        a.click();
+        start.classList.remove('hide');
+      };
+      start.classList.add('hide');
+      await new Promise(r => setTimeout(r, 800));
+      rec.start();
+      play(() => setTimeout(() => rec.stop(), 600));
+    } catch (e) { alert('রেকর্ড শুরু করা যায়নি: ' + e.message); }
+  };
+</script>
+</body>
+</html>

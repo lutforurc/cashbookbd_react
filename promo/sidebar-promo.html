@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CashbookBD – নতুন গোছানো মেনু</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg1: #0b1b3a; --bg2: #14307a; --accent: #38bdf8; --accent2: #34d399;
+    --card: #ffffff; --ink: #0f172a; --muted: #64748b; --line: #e2e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: #05060a; font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Nirmala UI', sans-serif; }
+  body { display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+  /* 1280x720 stage, scaled to fit the window */
+  #stage { width: 1280px; height: 720px; position: relative; overflow: hidden; transform-origin: center;
+    background: radial-gradient(1200px 700px at 20% 0%, var(--bg2), var(--bg1)); color: #fff; }
+  .scene { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .6s ease; padding: 56px 72px; }
+  .scene.on { opacity: 1; visibility: visible; }
+  h1 { font-size: 68px; line-height: 1.25; font-weight: 700; }
+  h2 { font-size: 46px; line-height: 1.3; font-weight: 700; }
+  p.sub { font-size: 28px; color: #cbd5e1; margin-top: 18px; }
+  .accent { color: var(--accent); }
+  .ok { color: var(--accent2); }
+
+  /* reveal helpers: only animate while scene is on */
+  .rise { opacity: 0; transform: translateY(26px); }
+  .on .rise { animation: rise .7s cubic-bezier(.2,.8,.2,1) forwards; animation-delay: calc(var(--i, 0) * 0.12s + var(--d, 0s)); }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  /* scene 1 */
+  #s1 { display: flex; flex-direction: column; justify-content: center; }
+  .brand { font-size: 26px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 20px; }
+
+  /* scene 2: the messy flat list */
+  #s2 { display: flex; gap: 56px; align-items: center; }
+  #s2 .copy { flex: 1; }
+  .flat { width: 440px; height: 560px; background: var(--card); border-radius: 18px; padding: 16px 22px; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+  .flat::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(transparent, #fff); }
+  .flat .track { color: var(--ink); font-size: 21px; }
+  .on .flat .track { animation: scrollup 7s linear forwards; }
+  @keyframes scrollup { from { transform: translateY(0); } to { transform: translateY(-640px); } }
+  .flat .track div { padding: 9px 0; border-bottom: 1px solid var(--line); }
+
+  /* scene 3: grouped sidebar */
+  #s3 { display: flex; gap: 56px; align-items: center; }
+  #s3 .copy { width: 440px; }
+  .panel { flex: 1; height: 608px; background: var(--card); border-radius: 18px; padding: 22px 30px; box-shadow: 0 30px 80px rgba(0,0,0,.45); color: var(--ink);
+    columns: 2; column-gap: 34px; overflow: hidden; }
+  .grp { break-inside: avoid; margin-bottom: 16px; }
+  .grp .hd { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .grp .hd::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  .grp .it { font-size: 18px; padding: 3px 0 3px 14px; }
+
+  /* scene 4: menu cards */
+  #s4 { display: flex; flex-direction: column; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 30px; }
+  .card { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-radius: 16px; padding: 20px 24px; }
+  .card h3 { font-size: 28px; color: var(--accent); margin-bottom: 8px; }
+  .card li { list-style: none; font-size: 19px; color: #e2e8f0; padding: 2px 0; }
+
+  /* scene 5: features */
+  #s5 { display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+  .feat { display: flex; align-items: center; gap: 26px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-radius: 18px; padding: 24px 32px; }
+  .feat .ic { width: 64px; height: 64px; border-radius: 16px; background: var(--accent); color: #06283d; display: grid; place-items: center; font-size: 34px; font-weight: 700; flex: none; }
+  .feat b { font-size: 33px; display: block; }
+  .feat span { font-size: 23px; color: #cbd5e1; }
+
+  /* scene 6 */
+  #s6 { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .cta { margin-top: 34px; display: inline-block; background: var(--accent); color: #06283d; font-weight: 700; font-size: 30px; padding: 16px 42px; border-radius: 999px; }
+
+  /* progress + controls */
+  #bar { position: absolute; left: 0; bottom: 0; height: 5px; width: 0; background: var(--accent); }
+  #start { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; gap: 18px; align-items: center; justify-content: center;
+    background: rgba(5,10,25,.88); }
+  #start.hide { display: none; }
+  #start h2 { font-size: 40px; }
+  .btn { font: inherit; font-size: 24px; font-weight: 600; border: 0; border-radius: 999px; padding: 14px 36px; cursor: pointer; background: var(--accent); color: #06283d; }
+  .btn.alt { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.5); }
+  #hint { font-size: 18px; color: #94a3b8; max-width: 760px; text-align: center; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <div id="start">
+    <h2>CashbookBD প্রোডাক্ট প্রমো</h2>
+    <button class="btn" id="play">▶ প্লে করুন</button>
+    <button class="btn alt" id="rec">⏺ রেকর্ড করে .webm ডাউনলোড</button>
+    <div id="hint">রেকর্ডে ক্লিক করলে ব্রাউজার "কোন ট্যাব শেয়ার করবেন" জিজ্ঞেস করবে — এই ট্যাবটি বেছে নিন। ভিডিও শেষ হলে নিজে থেকেই ফাইল নামবে। (Chrome/Edge)</div>
+  </div>
+
+  <!-- 1 -->
+  <section class="scene" id="s1">
+    <div class="brand rise" style="--i:0">CashbookBD</div>
+    <h1 class="rise" style="--i:1">মেনু এখন আরও <span class="accent">গোছানো</span>,<br>কাজ এখন আরও <span class="ok">দ্রুত</span></h1>
+    <p class="sub rise" style="--i:3">যা দরকার, ঠিক সেখানেই পাবেন।</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="scene" id="s2">
+    <div class="copy">
+      <h2 class="rise" style="--i:0">আগে সবকিছু<br><span class="accent">এক লম্বা লিস্টে</span></h2>
+      <p class="sub rise" style="--i:2">একটা রিপোর্ট খুঁজতে স্ক্রল আর স্ক্রল…</p>
+    </div>
+    <div class="flat rise" style="--i:1"><div class="track" id="flat"></div></div>
+  </section>
+
+  <!-- 3 -->
+  <section class="scene" id="s3">
+    <div class="copy">
+      <h2 class="rise" style="--i:0">এখন <span class="ok">গ্রুপ ধরে</span><br>সাজানো</h2>
+      <p class="sub rise" style="--i:2">ক্যাশ ও ব্যাংক, লেজার, স্টক, অডিট, আর্থিক বিবরণী — প্রতিটির আলাদা হেডিং।</p>
+    </div>
+    <div class="panel" id="panel"></div>
+  </section>
+
+  <!-- 4 -->
+  <section class="scene" id="s4">
+    <h2 class="rise" style="--i:0">প্রতিটি মেনুতেই <span class="accent">একই গোছানো ধাঁচ</span></h2>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <!-- 5 -->
+  <section class="scene" id="s5">
+    <h2 class="rise" style="--i:0">আপনার মতো করেও <span class="accent">সাজাতে পারবেন</span></h2>
+    <div class="feat rise" style="--i:1"><div class="ic">⇅</div><div><b>নিজের মতো সাজান</b><span>"মেনু সাজান" পেজ থেকে ক্রম ও হেডিং বদলান</span></div></div>
+    <div class="feat rise" style="--i:2"><div class="ic">↺</div><div><b>এক ক্লিকে রিসেট</b><span>পছন্দ না হলে আগের গোছানো ডিফল্টে ফিরে যান</span></div></div>
+    <div class="feat rise" style="--i:3"><div class="ic">✓</div><div><b>যা দরকার শুধু তা-ই দেখুন</b><span>অনুমতি নেই এমন আইটেম ও খালি হেডিং আপনা-আপনি লুকানো</span></div></div>
+  </section>
+
+  <!-- 6 -->
+  <section class="scene" id="s6">
+    <div class="brand rise" style="--i:0">CashbookBD</div>
+    <h1 class="rise" style="--i:1">গোছানো হিসাব,<br><span class="accent">সহজ ব্যবসা</span></h1>
+    <div class="cta rise" style="--i:3">আজই ব্যবহার করে দেখুন</div>
+  </section>
+
+  <div id="bar"></div>
+</div>
+
+<script>
+  // ---- content, taken from the real default arrangement of the sidebar ----
+  const reports = [
+    ['ক্যাশ ও ব্যাংক', ['ক্যাশবুক', 'ব্যাংকবুক', 'ডে-বুক', 'ভাউচার রেজিস্টার']],
+    ['লেজার ও বাকি', ['লেজার', 'কাস্টমার/সাপ্লায়ার স্টেটমেন্ট', 'বাকির তালিকা', 'এজিং রিপোর্ট']],
+    ['ক্রয়-বিক্রয়', ['ক্রয় লেজার', 'বিক্রয় লেজার', 'ক্রয় ফেরত', 'বিক্রয় ফেরত']],
+    ['স্টক', ['প্রোডাক্ট স্টক', 'গোডাউন স্টক', 'প্রোডাক্ট লেজার']],
+    ['কিস্তি ও সমিতি', ['বাকি কিস্তি', 'কালেকশন শিট']],
+    ['অডিট', ['অডিট ট্রেইল', 'মিসম্যাচ রিপোর্ট']],
+    ['আর্থিক বিবরণী', ['লাভ-ক্ষতি', 'ব্যালেন্স শিট', 'ট্রায়াল ব্যালেন্স', 'খরচের রিপোর্ট']],
+  ];
+  const cards = [
+    ['লেনদেন', ['ক্যাশ', 'ব্যাংক', 'জার্নাল ও অন্যান্য', 'বছর শেষ']],
+    ['ইনভয়েস', ['বিক্রয়', 'ক্রয়', 'অন্যান্য']],
+    ['ব্রাঞ্চ ট্রান্সফার', ['ট্রান্সফার', 'ট্রান্সফার রিপোর্ট', 'প্রোডাক্ট আউট / ইন']],
+    ['প্রোডাক্ট', ['প্রোডাক্ট', 'ক্যাটাগরি ও ব্র্যান্ড', 'স্টক সতর্কতা']],
+    ['অ্যাডমিন', ['দৈনিক নিয়ন্ত্রণ', 'ইউজার ও অ্যাক্সেস', 'সেটিংস']],
+    ['এইচআরএম', ['কর্মচারী', 'হাজিরা', 'বেতন ও বোনাস', 'লোন']],
+  ];
+  const flatNames = reports.flatMap(r => r[1]).concat(reports.flatMap(r => r[1]));
+  document.getElementById('flat').innerHTML = flatNames.map(n => `<div>${n}</div>`).join('');
+  document.getElementById('panel').innerHTML = reports.map(([h, items], g) =>
+    `<div class="grp rise" style="--i:${g}; --d:.5s"><div class="hd">${h}</div>${items.map(i => `<div class="it">${i}</div>`).join('')}</div>`).join('');
+  document.getElementById('cards').innerHTML = cards.map(([h, items], c) =>
+    `<div class="card rise" style="--i:${c + 1}"><h3>${h}</h3><ul>${items.map(i => `<li>• ${i}</li>`).join('')}</ul></div>`).join('');
+
+  // ---- timeline (seconds per scene) ----
+  const lengths = [5, 8, 9, 8, 8, 5];
+  const total = lengths.reduce((a, b) => a + b, 0);
+  const scenes = [...document.querySelectorAll('.scene')];
+  const bar = document.getElementById('bar');
+  const stage = document.getElementById('stage');
+  let timers = [], raf = 0, onEnd = null;
+
+  function fit() { stage.style.transform = `scale(${Math.min(innerWidth / 1280, innerHeight / 720)})`; }
+  addEventListener('resize', fit); fit();
+
+  function play(done) {
+    timers.forEach(clearTimeout); cancelAnimationFrame(raf);
+    scenes.forEach(s => s.classList.remove('on'));
+    onEnd = done || null;
+    let t = 0;
+    lengths.forEach((len, i) => {
+      timers.push(setTimeout(() => {
+        scenes.forEach(s => s.classList.remove('on'));
+        void scenes[i].offsetWidth;            // restart this scene's animations
+        scenes[i].classList.add('on');
+      }, t * 1000));
+      t += len;
+    });
+    timers.push(setTimeout(() => { scenes[scenes.length - 1].classList.add('on'); if (onEnd) onEnd(); }, total * 1000));
+    const t0 = performance.now();
+    const tick = now => { const p = Math.min((now - t0) / (total * 1000), 1); bar.style.width = p * 100 + '%'; if (p < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+  }
+
+  const start = document.getElementById('start');
+  document.getElementById('play').onclick = () => { start.classList.add('hide'); play(() => start.classList.remove('hide')); };
+
+  // ---- optional: record this tab to a .webm file ----
+  document.getElementById('rec').onclick = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, preferCurrentTab: true });
+      const rec = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8_000_000 });
+      const chunks = [];
+      rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+      rec.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
+        a.download = 'cashbookbd-sidebar-promo.webm';
+        a.click();
+      };
+      start.classList.add('hide');
+      await new Promise(r => setTimeout(r, 800));
+      rec.start();
+      play(() => setTimeout(() => rec.stop(), 800));
+    } catch (e) { alert('রেকর্ড শুরু করা যায়নি: ' + e.message); }
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales Invoice এন্ট্রি – টিউটোরিয়াল</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg1:#0b1b3a; --bg2:#14307a; --accent:#38bdf8; --good:#34d399; --warn:#fbbf24;
+    --ink:#0f172a; --muted:#64748b; --line:#cbd5e1; --paper:#f8fafc; --btn:#2563eb; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: #05060a; font-family: 'Hind Siliguri','Noto Sans Bengali','Nirmala UI',sans-serif; }
+  body { display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  #stage { width: 1280px; height: 720px; position: relative; overflow: hidden; flex: none; color: #fff;
+    background: radial-gradient(1200px 700px at 20% 0%, var(--bg2), var(--bg1)); }
+
+  /* ---------- title / outro cards ---------- */
+  .card { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+    opacity: 0; visibility: hidden; transition: opacity .5s; z-index: 4; background: radial-gradient(1200px 700px at 20% 0%, var(--bg2), var(--bg1)); }
+  .card.on { opacity: 1; visibility: visible; }
+  .brand { font-size: 24px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 16px; }
+  .card h1 { font-size: 64px; line-height: 1.25; }
+  .card p { font-size: 27px; color: #cbd5e1; margin-top: 16px; }
+  .accent { color: var(--accent); }
+  .tips { text-align: left; margin-top: 22px; font-size: 28px; line-height: 1.9; color: #e2e8f0; }
+  .tips b { color: var(--accent); }
+  kbd { background: #fff; color: var(--ink); border-radius: 8px; padding: 1px 12px; font: 600 24px/1.4 inherit; box-shadow: 0 3px 0 #94a3b8; }
+
+  /* ---------- app mock ---------- */
+  #app { position: absolute; left: 0; top: 0; width: 1280px; height: 630px; background: var(--paper); color: var(--ink); display: flex; }
+  #side { width: 210px; background: #fff; border-right: 1px solid var(--line); padding: 14px 12px; font-size: 17px; }
+  #side .logo { font-weight: 700; color: var(--btn); font-size: 20px; margin-bottom: 14px; }
+  #side .m { padding: 7px 10px; border-radius: 6px; color: #334155; }
+  #side .m.act { background: #e0f2fe; color: #075985; font-weight: 600; border-left: 4px solid var(--btn); }
+  #side .sub { padding: 5px 10px 5px 26px; color: #475569; font-size: 16px; display: none; }
+  #side.open .sub { display: block; }
+  #side .sub.hl { background: #fef08a; border-radius: 6px; color: #713f12; font-weight: 700; }
+  #side .gh { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; padding: 6px 10px 0 26px; display: none; }
+  #side.open .gh { display: block; }
+  #main { flex: 1; padding: 12px 22px; position: relative; }
+  #main h3 { text-align: center; font-size: 22px; margin-bottom: 8px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .f { margin-bottom: 7px; }
+  .f label { display: block; font-size: 14px; color: #334155; font-weight: 500; margin-bottom: 2px; }
+  .f .in { height: 34px; border: 1.5px solid var(--line); background: #fff; border-radius: 6px; padding: 4px 10px; font-size: 17px; display: flex; align-items: center; justify-content: space-between; transition: box-shadow .2s, border-color .2s; }
+  .f .in.focus { border-color: var(--btn); box-shadow: 0 0 0 4px rgba(37,99,235,.28); }
+  .f .in .caret::after { content: '|'; animation: blink 1s steps(1) infinite; color: var(--btn); }
+  @keyframes blink { 50% { opacity: 0; } }
+  .f .in.dd::after { content: '▾'; color: #64748b; }
+  .f .in span.v { white-space: nowrap; overflow: hidden; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .total { font-weight: 700; font-size: 17px; margin-top: 6px; display: flex; gap: 40px; }
+  .btns { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 4px; }
+  .b { height: 36px; background: var(--btn); color: #fff; border-radius: 6px; display: grid; place-items: center; font-size: 15px; font-weight: 600; transition: transform .15s, box-shadow .2s; }
+  .b.gray { background: #475569; }
+  .b.press { transform: scale(.92); box-shadow: 0 0 0 5px rgba(251,191,36,.7); }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 16px; }
+  thead th { background: #e2e8f0; text-align: right; padding: 6px 8px; font-size: 12px; text-transform: uppercase; }
+  thead th:nth-child(1), thead th:nth-child(2) { text-align: left; }
+  thead th:last-child { text-align: center; }
+  td { padding: 6px 8px; text-align: right; border-bottom: 1px solid #e2e8f0; }
+  td:nth-child(1), td:nth-child(2) { text-align: left; }
+  td:last-child { text-align: center; color: var(--btn); }
+  tr.newrow { animation: flash 1.4s; }
+  @keyframes flash { from { background: #bbf7d0; } to { background: transparent; } }
+  #ddlist { position: absolute; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 14px 34px rgba(0,0,0,.22); font-size: 16px; width: 330px; display: none; z-index: 3; }
+  #ddlist div { padding: 7px 12px; border-bottom: 1px solid #f1f5f9; }
+  #ddlist div.sel { background: #dbeafe; font-weight: 600; }
+  #ddlist div.act { color: var(--btn); font-weight: 600; }
+  #toast { position: absolute; right: 24px; top: 14px; background: #16a34a; color: #fff; border-radius: 10px; padding: 12px 22px; font-size: 20px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,.3); transform: translateX(130%); transition: transform .4s; z-index: 6; }
+  #toast.show { transform: none; }
+  #keyhint { position: absolute; z-index: 5; display: none; background: var(--ink); color: #fff; border-radius: 8px; padding: 4px 12px; font-size: 16px; font-weight: 600; }
+  #keyhint.show { display: block; animation: bob .8s ease-in-out infinite alternate; }
+  @keyframes bob { to { transform: translateX(6px); } }
+
+  /* ---------- caption bar ---------- */
+  #cap { position: absolute; left: 0; right: 0; bottom: 5px; height: 85px; background: rgba(5,10,25,.96); display: flex; align-items: center; gap: 22px; padding: 0 36px; z-index: 3; }
+  #cap .n { flex: none; width: 54px; height: 54px; border-radius: 50%; background: var(--accent); color: #06283d; font-weight: 700; font-size: 30px; display: grid; place-items: center; }
+  #cap .t { font-size: 31px; font-weight: 600; line-height: 1.25; }
+  #cap .t small { display: block; font-size: 21px; font-weight: 400; color: #94a3b8; }
+  #cap.swap .t, #cap.swap .n { animation: swap .5s; }
+  @keyframes swap { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  #bar { position: absolute; left: 0; bottom: 0; height: 5px; width: 0; background: var(--accent); z-index: 7; }
+  #start { position: absolute; inset: 0; z-index: 9; display: flex; flex-direction: column; gap: 18px; align-items: center; justify-content: center; background: rgba(5,10,25,.92); }
+  #start.hide { display: none; }
+  #start h2 { font-size: 38px; text-align: center; }
+  .btnx { font: inherit; font-size: 24px; font-weight: 600; border: 0; border-radius: 999px; padding: 14px 36px; cursor: pointer; background: var(--accent); color: #06283d; }
+  .btnx.alt { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.5); }
+  #hint { font-size: 18px; color: #94a3b8; max-width: 760px; text-align: center; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <div id="start">
+    <h2>Sales Invoice – ব্রাউজারে এন্ট্রির নিয়ম<br><small style="font-size:24px;color:#94a3b8">ধাপে ধাপে টিউটোরিয়াল</small></h2>
+    <button class="btnx" id="play">▶ প্লে করুন</button>
+    <button class="btnx alt" id="rec">⏺ রেকর্ড করে .webm ডাউনলোড</button>
+    <div id="hint">রেকর্ডে ক্লিক করলে ব্রাউজার "কোন ট্যাব শেয়ার করবেন" জিজ্ঞেস করবে — এই ট্যাবটি বেছে নিন। ভিডিও শেষ হলে নিজে থেকেই ফাইল নামবে। (Chrome/Edge)</div>
+  </div>
+
+  <div class="card" id="c-title">
+    <div class="brand">CashbookBD · টিউটোরিয়াল</div>
+    <h1>Sales Invoice<br><span class="accent">কীভাবে এন্ট্রি করবেন</span></h1>
+    <p>কাস্টমার বেছে, পণ্য যোগ করে, সেভ — ধাপে ধাপে</p>
+  </div>
+
+  <div class="card" id="c-end">
+    <div class="brand">মনে রাখুন</div>
+    <div class="tips">
+      <div>① প্রতিটি ঘরে লিখে <kbd>Enter</kbd> চাপুন — কার্সর পরের ঘরে যাবে</div>
+      <div>② পণ্য যোগ করতে <b>Add New</b>, শেষে <b>Save</b></div>
+      <div>③ ভুল হলে তালিকার <b>Action</b> থেকে এডিট; সব মুছতে <b>Reset</b></div>
+    </div>
+  </div>
+
+  <div id="app">
+    <div id="side">
+      <div class="logo">CashbookBD</div>
+      <div class="m">Dashboard</div>
+      <div class="m">Transaction</div>
+      <div class="m act" id="m-inv">Invoice</div>
+      <div class="gh">Sales</div>
+      <div class="sub" id="s-sales">Sales</div>
+      <div class="sub">Sales Import</div>
+      <div class="sub">Delivery</div>
+      <div class="sub">Sales Return</div>
+      <div class="gh">Purchase</div>
+      <div class="sub">Purchase</div>
+      <div class="m">Branch Transfer</div>
+      <div class="m">Reports</div>
+      <div class="m">Products</div>
+    </div>
+    <div id="main">
+      <h3>Sales Invoice</h3>
+      <div class="cols">
+        <div>
+          <div class="f"><label>Select Customer</label><div class="in dd" id="f-cust"><span class="v"></span></div></div>
+          <div class="row2">
+            <div class="f"><label>Vehicle Number</label><div class="in" id="f-veh"><span class="v"></span></div></div>
+            <div class="f"><label>Received Amount</label><div class="in" id="f-rec"><span class="v"></span></div></div>
+          </div>
+          <div class="row2">
+            <div class="f"><label>Discount Amount</label><div class="in" id="f-dis"><span class="v"></span></div></div>
+            <div class="f"><label>Notes</label><div class="in" id="f-note"><span class="v"></span></div></div>
+          </div>
+          <div class="total"><span>Total Tk.</span><span id="total">০</span></div>
+        </div>
+        <div>
+          <div class="row2">
+            <div class="f"><label>Select Product</label><div class="in dd" id="f-prod"><span class="v"></span></div></div>
+            <div class="f"><label>Select Warehouse</label><div class="in dd" id="f-wh"><span class="v"></span></div></div>
+          </div>
+          <div class="row2">
+            <div class="f"><label>Enter Quantity</label><div class="in" id="f-qty"><span class="v"></span></div></div>
+            <div class="f"><label>Enter Price</label><div class="in" id="f-price"><span class="v"></span></div></div>
+          </div>
+          <div class="btns">
+            <div class="b" id="b-add">＋ Add New</div><div class="b" id="b-save">💾 Save</div>
+            <div class="b gray" id="b-reset">↻ Reset</div><div class="b gray" id="b-print">🖨 Print</div><div class="b gray">⌂ Home</div>
+          </div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th style="width:70px">Sl. No.</th><th>Product Name</th><th>Quantity</th><th>Rate</th><th>Total</th><th style="width:80px">Action</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="ddlist"></div>
+      <div id="keyhint">Enter ⏎</div>
+      <div id="toast"></div>
+    </div>
+  </div>
+
+  <div id="cap"><div class="n" id="cap-n">1</div><div class="t" id="cap-t"></div></div>
+  <div id="bar"></div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const bn = n => Number(n).toLocaleString('bn-BD');
+  const stage = $('stage');
+  function fit() { stage.style.transform = `scale(${Math.min(innerWidth / 1280, innerHeight / 720)})`; }
+  addEventListener('resize', fit); fit();
+
+  // ----- little UI helpers -----
+  const val = id => $(id).querySelector('.v');
+  let items = [], typing = 0;
+  function caption(n, text, small) {
+    const c = $('cap'); c.classList.remove('swap'); void c.offsetWidth; c.classList.add('swap');
+    $('cap-n').textContent = bn(n); $('cap-t').innerHTML = text + (small ? `<small>${small}</small>` : '');
+  }
+  function focus(id, hintEnter) {
+    document.querySelectorAll('.in.focus').forEach(e => { e.classList.remove('focus'); e.querySelector('.v').classList.remove('caret'); });
+    const el = $(id); el.classList.add('focus'); val(id).classList.add('caret');
+    const h = $('keyhint'), r = el.getBoundingClientRect(), m = $('main').getBoundingClientRect(), k = 1280 / stage.getBoundingClientRect().width;
+    if (hintEnter) { h.style.left = ((r.right - m.left) * k - 110) + 'px'; h.style.top = ((r.top - m.top) * k - 14) + 'px'; h.classList.add('show'); } else h.classList.remove('show');
+  }
+  function type(id, text, ms) {
+    const v = val(id), step = ms / Math.max(text.length, 1); let i = 0; v.textContent = '';
+    const iv = setInterval(() => { v.textContent = text.slice(0, ++i); if (i >= text.length) clearInterval(iv); }, step); timers.push(iv);
+  }
+  function dropdown(id, options, pick, action) {
+    const el = $(id), l = $('ddlist'), r = el.getBoundingClientRect(), m = $('main').getBoundingClientRect(), k = 1280 / stage.getBoundingClientRect().width;
+    l.style.left = ((r.left - m.left) * k) + 'px'; l.style.top = ((r.bottom - m.top) * k + 2) + 'px';
+    l.innerHTML = options.map((o, i) => `<div class="${i === pick ? 'sel' : ''}">${o}</div>`).join('') + (action ? `<div class="act">${action}</div>` : '');
+    l.style.display = 'block';
+  }
+  const closeDd = () => { $('ddlist').style.display = 'none'; };
+  function press(id) { const b = $(id); b.classList.add('press'); setTimeout(() => b.classList.remove('press'), 700); }
+  function toast(t) { const e = $('toast'); e.textContent = t; e.classList.add('show'); setTimeout(() => e.classList.remove('show'), 3200); }
+  function addRow(name, q, p) {
+    items.push([name, q, p]);
+    $('rows').insertAdjacentHTML('beforeend', `<tr class="newrow"><td>${bn(items.length)}</td><td>${name}</td><td>${bn(q)}</td><td>${bn(p)}</td><td>${bn(q * p)}</td><td>✎ 🗑</td></tr>`);
+    $('total').textContent = bn(items.reduce((a, r) => a + r[1] * r[2], 0));
+  }
+  function clearProduct() { ['f-prod', 'f-wh', 'f-qty', 'f-price'].forEach(i => val(i).textContent = ''); }
+  function resetUI() {
+    items = []; $('rows').innerHTML = ''; $('total').textContent = bn(0);
+    document.querySelectorAll('.v').forEach(v => { v.textContent = ''; v.classList.remove('caret'); });
+    document.querySelectorAll('.in.focus').forEach(e => e.classList.remove('focus'));
+    $('side').classList.remove('open'); $('s-sales').classList.remove('hl'); closeDd(); $('keyhint').classList.remove('show');
+  }
+
+  // ----- the script: [second, action] -----
+  const cards = ['c-title', 'c-end'];
+  const showCard = id => { cards.forEach(c => $(c).classList.toggle('on', c === id)); };
+  const script = [
+    [0,   () => { showCard('c-title'); resetUI(); caption(0, ''); }],
+    [5,   () => { showCard(null); caption(1, 'মেনু থেকে Invoice → Sales খুলুন', 'বাঁ দিকের সাইডবারে Invoice মেনু'); $('side').classList.add('open'); }],
+    [8,   () => $('s-sales').classList.add('hl')],
+    [11,  () => { caption(2, 'Select Customer থেকে কাস্টমার বেছে নিন', 'নতুন কাস্টমার হলে তালিকার নিচে "+ Add New Customer"'); focus('f-cust'); dropdown('f-cust', ['রহিম এন্টারপ্রাইজ', 'করিম ট্রেডার্স', 'সালমা স্টোর'], 0, '+ Add New Customer'); }],
+    [15,  () => { closeDd(); val('f-cust').textContent = 'রহিম এন্টারপ্রাইজ'; focus('f-cust', true); }],
+    [18,  () => { caption(3, 'গাড়ির নম্বর লিখে Enter চাপুন', 'ঐচ্ছিক — না থাকলে Enter দিয়ে এগিয়ে যান'); focus('f-veh', true); type('f-veh', 'ঢাকা মেট্রো-ট ১২-৩৪৫৬', 2200); }],
+    [22,  () => { caption(4, 'কত টাকা পেলেন — Received Amount', 'পরে প্রোডাক্ট যোগ হলেও এখানকার অঙ্ক বদলানো যায়'); focus('f-rec', true); type('f-rec', bn(30000), 1000); }],
+    [26,  () => { caption(5, 'ডিসকাউন্ট ও নোট লিখুন', 'নোট আগে লিখলে suggestion তালিকা থেকেও বেছে নেওয়া যায়'); focus('f-dis', true); type('f-dis', bn(800), 700); }],
+    [29,  () => { focus('f-note', true); type('f-note', 'নগদ + বাকি', 1000); }],
+    [33,  () => { caption(6, 'ডান পাশে Select Product থেকে পণ্য বাছুন', 'নামের কিছু অংশ লিখলেই তালিকা ছোট হয়ে আসে'); focus('f-prod'); dropdown('f-prod', ['সিমেন্ট (৫০ কেজি)', 'রড ১০ মি.মি.', 'ইট (প্রথম শ্রেণি)'], 0); }],
+    [37,  () => { closeDd(); val('f-prod').textContent = 'সিমেন্ট (৫০ কেজি)'; caption(7, 'Warehouse (গোডাউন) নির্বাচন করুন', 'কোন গোডাউন থেকে মাল যাবে'); focus('f-wh'); val('f-wh').textContent = 'প্রধান গোডাউন'; }],
+    [40,  () => { caption(8, 'Quantity ও Price লিখুন', 'Enter চাপলেই কার্সর Quantity → Price → Add New-এ যায়'); focus('f-qty', true); type('f-qty', bn(20), 500); }],
+    [43,  () => { focus('f-price', true); type('f-price', bn(540), 600); }],
+    [46,  () => { caption(9, 'Add New চাপুন — পণ্য নিচের তালিকায় যোগ হবে'); focus('f-price'); $('keyhint').classList.remove('show'); press('b-add'); }],
+    [47,  () => { addRow('সিমেন্ট (৫০ কেজি)', 20, 540); clearProduct(); }],
+    [49,  () => { caption(10, 'আরেকটি পণ্য — একই নিয়মে', 'কার্সর নিজে থেকে আবার Select Product-এ ফিরে আসে'); focus('f-prod'); val('f-prod').textContent = 'রড ১০ মি.মি.'; val('f-wh').textContent = 'প্রধান গোডাউন'; }],
+    [52,  () => { focus('f-qty', true); type('f-qty', bn(5), 300); }],
+    [54,  () => { focus('f-price', true); type('f-price', bn(7200), 600); }],
+    [56,  () => { press('b-add'); $('keyhint').classList.remove('show'); }],
+    [57,  () => { addRow('রড ১০ মি.মি.', 5, 7200); clearProduct(); caption(11, 'নিচের তালিকায় সব পণ্য ও মোট টাকা দেখুন', 'ভুল হলে Action ঘরের ✎ দিয়ে এডিট, 🗑 দিয়ে মুছুন'); focus('f-prod'); }],
+    [62,  () => { caption(12, 'সব ঠিক থাকলে Save চাপুন'); document.querySelectorAll('.in.focus').forEach(e => e.classList.remove('focus')); press('b-save'); }],
+    [63.5,() => { toast('Voucher No.: ১০২৪ (নমুনা)'); caption(13, 'সেভ হলে ভাউচার নম্বর দেখা যায়', 'পাশে সবুজ বার্তা — এই নম্বরটি খাতায় টুকে রাখতে পারেন'); }],
+    [68,  () => { caption(14, 'Print – ইনভয়েস প্রিন্ট', 'আগে সেভ করুন, অথবা Search Invoice দিয়ে পুরনোটি খুলে প্রিন্ট'); press('b-print'); }],
+    [72,  () => { caption(15, 'নতুন ইনভয়েসের জন্য Reset চাপুন'); press('b-reset'); }],
+    [73.5,() => { resetUI(); $('side').classList.add('open'); }],
+    [75,  () => showCard('c-end')],
+  ];
+  const total = 82;
+
+  let timers = [], raf = 0;
+  function stop() { timers.forEach(t => { clearTimeout(t); clearInterval(t); }); timers = []; cancelAnimationFrame(raf); }
+  function play(done) {
+    stop(); resetUI();
+    script.forEach(([t, fn]) => timers.push(setTimeout(fn, t * 1000)));
+    timers.push(setTimeout(() => done && done(), total * 1000));
+    const t0 = performance.now();
+    const tick = now => { const p = Math.min((now - t0) / (total * 1000), 1); $('bar').style.width = p * 100 + '%'; if (p < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+  }
+
+  $('play').onclick = () => { $('start').classList.add('hide'); play(() => $('start').classList.remove('hide')); };
+  $('rec').onclick = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, preferCurrentTab: true });
+      const rec = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8_000_000 });
+      const chunks = [];
+      rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+      rec.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
+        a.download = 'cashbookbd-sales-invoice-tutorial.webm'; a.click();
+        $('start').classList.remove('hide');
+      };
+      $('start').classList.add('hide');
+      await new Promise(r => setTimeout(r, 800));
+      rec.start();
+      play(() => setTimeout(() => rec.stop(), 600));
+    } catch (e) { alert('রেকর্ড শুরু করা যায়নি: ' + e.message); }
+  };
+</script>
+</body>
+</html>

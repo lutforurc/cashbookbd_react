@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales Invoice – How to enter</title>
+<style>
+  /* The app's own typeface, loaded from the project's font folder. */
+  @font-face { font-family: Satoshi; font-weight: 400; src: url('../src/fonts/Satoshi-Regular.woff2') format('woff2'); }
+  @font-face { font-family: Satoshi; font-weight: 500; src: url('../src/fonts/Satoshi-Medium.woff2') format('woff2'); }
+  @font-face { font-family: Satoshi; font-weight: 700; src: url('../src/fonts/Satoshi-Bold.woff2') format('woff2'); }
+
+  /* Colours are the app's own light-theme tokens (src/theme/tokens.css, themeDefaults.ts). */
+  :root {
+    --primary: #2B5FD9; --secondary: #7FBEEA; --success: #17804C; --warning: #F0A000;
+    --text: #1A2029; --body: #59636F; --border: #E1E7EE; --page: #F4F7FA; --surface: #FFFFFF;
+    --thead: #CBD3DE; --btn: #2F3844; --btn-hover: #2563EB; --focus: #3B82F6;
+    --dark: #171D25; --dark2: #212932; --control: 34px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: #05060a; font-family: Satoshi, 'Segoe UI', system-ui, sans-serif; }
+  body { display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  #stage { width: 1280px; height: 720px; position: relative; overflow: hidden; flex: none; background: var(--page); color: var(--text); }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---------- title / outro cards ---------- */
+  .card { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+    opacity: 0; visibility: hidden; transition: opacity .5s; z-index: 6; background: var(--dark); color: #fff; }
+  .card.on { opacity: 1; visibility: visible; }
+  .card .brand { font-size: 22px; letter-spacing: .14em; text-transform: uppercase; color: var(--secondary); font-weight: 700; margin-bottom: 18px; }
+  .card h1 { font-size: 68px; line-height: 1.15; font-weight: 700; }
+  .card h1 em { font-style: normal; color: #5B8DEF; }
+  .card p { font-size: 26px; color: #A3ADB9; margin-top: 18px; }
+  .tips { text-align: left; margin-top: 20px; font-size: 28px; line-height: 1.95; color: #E6EAF0; }
+  .tips b { color: #5B8DEF; font-weight: 700; }
+  kbd { background: #fff; color: var(--text); padding: 1px 12px; font: 700 23px/1.4 Satoshi, sans-serif; box-shadow: 0 3px 0 #9AA6B4; }
+
+  /* ---------- app shell ---------- */
+  #app { position: absolute; left: 0; top: 0; width: 1280px; height: 636px; display: flex; background: var(--page); }
+  #side { width: 232px; flex: none; background: var(--surface); border-right: 1px solid var(--border); padding: 14px 10px; font-size: 15.5px; overflow: hidden; }
+  #side .logo { font-weight: 700; font-size: 21px; color: var(--primary); padding: 2px 8px 14px; }
+  #side .m { padding: 8px 14px; font-weight: 500; color: var(--text); }
+  #side .m.act { background: #E1E7EE; border-left: 4px solid var(--focus); }
+  #side .gh { display: none; align-items: center; gap: 8px; margin: 6px 0 0 14px; font-size: 9.6px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8590A0; }
+  #side .gh::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  #side .sub { display: none; position: relative; padding: 5px 14px 5px 30px; font-weight: 500; color: var(--body); font-size: 15px; }
+  #side.open .gh { display: flex; } #side.open .sub { display: block; }
+  #side .sub.act { background: rgba(43,95,217,.10); color: var(--primary); font-weight: 700; }
+  #side .sub.act::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); }
+  #side .sub.hl { outline: 3px solid var(--warning); outline-offset: -3px; }
+
+  #col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  #hdr { height: 46px; flex: none; background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.12); display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding: 0 20px; font-size: 14px; color: var(--body); }
+  #hdr .av { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+  #main { flex: 1; padding: 10px 24px; position: relative; overflow: hidden; }
+  #main h3 { text-align: center; font-size: 20px; font-weight: 700; color: #0B0E12; margin-bottom: 8px; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .f { margin-bottom: 6px; }
+  .f label { display: block; font-size: 14px; font-weight: 500; color: #000; margin-bottom: 2px; }
+  /* A field: square, 34px, one-pixel border, white surface -- as fieldStyles.ts describes it. */
+  .in { height: var(--control); border: 1px solid var(--border); background: #fff; padding: 0 12px; font-size: 14.5px; color: #374151;
+    display: flex; align-items: center; justify-content: space-between; outline: none; transition: border-color .15s; }
+  .in .v { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .in.focus { border-color: var(--focus); }
+  .in .v.caret::after { content: ''; display: inline-block; width: 1px; height: 17px; background: var(--text); margin-left: 1px; vertical-align: -3px; animation: blink 1s steps(1) infinite; }
+  .in.dd::after { content: ''; width: 7px; height: 7px; border-right: 2px solid #9AA6B4; border-bottom: 2px solid #9AA6B4; transform: rotate(45deg) translate(-2px,-2px); flex: none; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .total { display: grid; grid-template-columns: 1fr 1fr; margin-top: 12px; font-size: 14px; font-weight: 700; }
+
+  .btns { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 2px; }
+  .b { height: var(--control); background: var(--btn); color: #fff; display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 13.5px; font-weight: 700; transition: background-color .15s, transform .15s, box-shadow .2s; white-space: nowrap; }
+  .b.press { background: var(--btn-hover); transform: scale(.94); box-shadow: 0 0 0 4px rgba(240,160,0,.65); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14.5px; }
+  thead th { background: var(--thead); color: #374151; text-transform: uppercase; font-size: 11.5px; font-weight: 700; padding: 7px 8px; text-align: right; }
+  thead th:nth-child(1), thead th:nth-child(2) { text-align: left; } thead th:last-child { text-align: center; }
+  td { padding: 7px 8px; text-align: right; background: #fff; border-bottom: 1px solid var(--border); }
+  td:nth-child(1), td:nth-child(2) { text-align: left; } td:last-child { text-align: center; color: var(--body); }
+  td:last-child svg { margin: 0 4px; }
+  tr.newrow td { animation: flash 1.4s; } @keyframes flash { from { background: #BBF7D0; } to { background: #fff; } }
+
+  #ddlist { position: absolute; display: none; z-index: 4; width: 300px; background: #F3F4F6; border: 1px solid var(--border); box-shadow: 0 10px 28px rgba(0,0,0,.2); font-size: 14.5px; color: #4B5563; }
+  #ddlist div { padding: 8px 12px; } #ddlist div.sel { background: #D1D5DB; } #ddlist div.act { color: var(--primary); font-weight: 700; border-top: 1px solid var(--border); }
+  #keyhint { position: absolute; z-index: 5; display: none; background: var(--text); color: #fff; padding: 3px 11px; font-size: 14px; font-weight: 700; }
+  #keyhint.show { display: block; animation: bob .8s ease-in-out infinite alternate; } @keyframes bob { to { transform: translateX(6px); } }
+
+  /* toast, drawn like react-toastify with the app's success colour */
+  #toast { position: absolute; right: 18px; top: 10px; z-index: 7; width: 320px; background: #fff; color: var(--text); box-shadow: 0 6px 22px rgba(0,0,0,.25); padding: 14px 16px 18px; font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: transform .35s; overflow: hidden; }
+  #toast.show { transform: none; }
+  #toast .ok { width: 22px; height: 22px; border-radius: 50%; background: var(--success); color: #fff; display: grid; place-items: center; flex: none; }
+  #toast .ok svg { width: 13px; height: 13px; stroke-width: 3; }
+  #toast .pg { position: absolute; left: 0; bottom: 0; height: 4px; width: 100%; background: var(--success); transform-origin: left; }
+  #toast.show .pg { animation: shrink 3s linear forwards; } @keyframes shrink { to { transform: scaleX(0); } }
+
+  /* ---------- caption bar ---------- */
+  #cap { position: absolute; left: 0; right: 0; bottom: 4px; height: 80px; background: var(--dark); color: #fff; display: flex; align-items: center; gap: 22px; padding: 0 34px; z-index: 5; border-top: 3px solid var(--primary); }
+  #cap .n { flex: none; width: 48px; height: 48px; background: var(--primary); color: #fff; font-weight: 700; font-size: 26px; display: grid; place-items: center; }
+  #cap .t { font-size: 29px; font-weight: 700; line-height: 1.2; }
+  #cap .t small { display: block; font-size: 19px; font-weight: 400; color: #A3ADB9; margin-top: 2px; }
+  #cap.swap .t, #cap.swap .n { animation: swap .45s; } @keyframes swap { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  #bar { position: absolute; left: 0; bottom: 0; height: 4px; width: 0; background: var(--secondary); z-index: 8; }
+  #start { position: absolute; inset: 0; z-index: 9; display: flex; flex-direction: column; gap: 18px; align-items: center; justify-content: center; background: rgba(23,29,37,.96); color: #fff; }
+  #start.hide { display: none; }
+  #start h2 { font-size: 40px; text-align: center; line-height: 1.2; } #start h2 small { font-size: 22px; color: #A3ADB9; font-weight: 400; }
+  .btnx { font: inherit; font-size: 22px; font-weight: 700; border: 0; padding: 12px 34px; cursor: pointer; background: var(--primary); color: #fff; }
+  .btnx.alt { background: transparent; border: 2px solid rgba(255,255,255,.45); }
+  #hint { font-size: 17px; color: #A3ADB9; max-width: 760px; text-align: center; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <div id="start">
+    <h2>Sales Invoice – how to enter one<br><small>Step-by-step tutorial · about 80 seconds</small></h2>
+    <button class="btnx" id="play">▶ Play</button>
+    <button class="btnx alt" id="rec">⏺ Record and download .webm</button>
+    <div id="hint">Recording asks which tab to share — choose this one. The file downloads by itself when the video ends. (Chrome / Edge)</div>
+  </div>
+
+  <div class="card" id="c-title">
+    <div class="brand">CashbookBD · Tutorial</div>
+    <h1>Sales Invoice<br><em>entry, step by step</em></h1>
+    <p>Pick a customer, add products, save.</p>
+  </div>
+
+  <div class="card" id="c-end">
+    <div class="brand">Remember</div>
+    <div class="tips">
+      <div>① Type in a field, press <kbd>Enter</kbd> — the cursor moves on</div>
+      <div>② <b>Add New</b> for every product, then <b>Save</b> once</div>
+      <div>③ Wrong line? Edit it from <b>Action</b>. Start over with <b>Reset</b></div>
+    </div>
+  </div>
+
+  <div id="app">
+    <div id="side">
+      <div class="logo">CashbookBD</div>
+      <div class="m">Dashboard</div>
+      <div class="m">Transaction</div>
+      <div class="m act">Invoice</div>
+      <div class="gh">Sales</div>
+      <div class="sub act" id="s-sales">Sales</div>
+      <div class="sub">Sales Import</div>
+      <div class="sub">Delivery</div>
+      <div class="sub">Sales Return</div>
+      <div class="gh">Purchase</div>
+      <div class="sub">Purchase</div>
+      <div class="sub">Purchase Return</div>
+      <div class="m">Branch Transfer</div>
+      <div class="m">Reports</div>
+      <div class="m">Products</div>
+    </div>
+    <div id="col">
+      <div id="hdr"><span>Main Branch</span><div class="av">A</div></div>
+      <div id="main">
+        <h3>Sales Invoice</h3>
+        <div class="cols">
+          <div>
+            <div class="g2">
+              <div class="f"><label>Select Customer</label><div class="in dd" id="f-cust"><span class="v"></span></div></div>
+              <div class="f"><label>Vehicle Number</label><div class="in" id="f-veh"><span class="v"></span></div></div>
+            </div>
+            <div class="g2">
+              <div class="f"><label>Received Amount</label><div class="in" id="f-rec"><span class="v"></span></div></div>
+              <div class="f"><label>Discount Amount</label><div class="in" id="f-dis"><span class="v"></span></div></div>
+            </div>
+            <div class="f"><label>Notes</label><div class="in" id="f-note"><span class="v"></span></div></div>
+            <div class="total"><span>Total Tk.</span><span id="total">0</span></div>
+          </div>
+          <div>
+            <div class="g2">
+              <div class="f"><label>Select Product</label><div class="in dd" id="f-prod"><span class="v"></span></div></div>
+              <div class="f"><label>Select Warehouse</label><div class="in dd" id="f-wh"><span class="v"></span></div></div>
+            </div>
+            <div class="g2">
+              <div class="f"><label>Enter Quantity</label><div class="in" id="f-qty"><span class="v"></span></div></div>
+              <div class="f"><label>Enter Price</label><div class="in" id="f-price"><span class="v"></span></div></div>
+            </div>
+            <div class="btns">
+              <div class="b" id="b-add"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add New</div>
+              <div class="b" id="b-save"><svg class="i" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Save</div>
+              <div class="b" id="b-reset"><svg class="i" viewBox="0 0 24 24"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>Reset</div>
+              <div class="b" id="b-print"><svg class="i" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print</div>
+              <div class="b"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>Home</div>
+            </div>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th style="width:80px">Sl. No.</th><th>Product Name</th><th>Quantity</th><th>Rate</th><th>Total</th><th style="width:90px">Action</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div id="ddlist"></div>
+        <div id="keyhint">Enter ⏎</div>
+      </div>
+    </div>
+    <div id="toast"><div class="ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div><span id="toast-t"></span><div class="pg"></div></div>
+  </div>
+
+  <div id="cap"><div class="n" id="cap-n">1</div><div class="t" id="cap-t"></div></div>
+  <div id="bar"></div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const num = n => Number(n).toLocaleString('en-IN');
+  const stage = $('stage');
+  function fit() { stage.style.transform = `scale(${Math.min(innerWidth / 1280, innerHeight / 720)})`; }
+  addEventListener('resize', fit); fit();
+
+  const val = id => $(id).querySelector('.v');
+  let items = [], timers = [], raf = 0;
+  const ICON_EDIT = '<svg class="i" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
+  const ICON_DEL = '<svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+  function caption(n, text, small) {
+    const c = $('cap'); c.classList.remove('swap'); void c.offsetWidth; c.classList.add('swap');
+    $('cap-n').textContent = n; $('cap-t').innerHTML = text + (small ? `<small>${small}</small>` : '');
+  }
+  const k = () => 1280 / stage.getBoundingClientRect().width;
+  function place(el, id, dx, dy, below) {
+    const r = $(id).getBoundingClientRect(), m = $('main').getBoundingClientRect();
+    el.style.left = ((r.left - m.left) * k() + dx) + 'px';
+    el.style.top = (((below ? r.bottom : r.top) - m.top) * k() + dy) + 'px';
+  }
+  function focus(id, hintEnter) {
+    document.querySelectorAll('.in.focus').forEach(e => { e.classList.remove('focus'); e.querySelector('.v').classList.remove('caret'); });
+    const el = $(id); el.classList.add('focus'); val(id).classList.add('caret');
+    const h = $('keyhint');
+    if (hintEnter) { place(h, id, el.getBoundingClientRect().width * k() - 100, -13); h.classList.add('show'); } else h.classList.remove('show');
+  }
+  function type(id, text, ms) {
+    const v = val(id), step = ms / Math.max(text.length, 1); let i = 0; v.textContent = '';
+    const iv = setInterval(() => { v.textContent = text.slice(0, ++i); if (i >= text.length) clearInterval(iv); }, step); timers.push(iv);
+  }
+  function dropdown(id, options, pick, action) {
+    const l = $('ddlist'); place(l, id, 0, 2, true);
+    l.innerHTML = options.map((o, i) => `<div class="${i === pick ? 'sel' : ''}">${o}</div>`).join('') + (action ? `<div class="act">${action}</div>` : '');
+    l.style.display = 'block';
+  }
+  const closeDd = () => { $('ddlist').style.display = 'none'; };
+  function press(id) { const b = $(id); b.classList.add('press'); setTimeout(() => b.classList.remove('press'), 800); }
+  function toast(t) {
+    const e = $('toast'); $('toast-t').textContent = t; e.classList.remove('show'); void e.offsetWidth; e.classList.add('show');
+    timers.push(setTimeout(() => e.classList.remove('show'), 3300));
+  }
+  function addRow(name, q, p) {
+    items.push([name, q, p]);
+    $('rows').insertAdjacentHTML('beforeend', `<tr class="newrow"><td>${items.length}</td><td>${name}</td><td>${num(q)}</td><td>${num(p)}</td><td>${num(q * p)}</td><td>${ICON_EDIT}${ICON_DEL}</td></tr>`);
+    $('total').textContent = num(items.reduce((a, r) => a + r[1] * r[2], 0));
+  }
+  const clearProduct = () => ['f-prod', 'f-wh', 'f-qty', 'f-price'].forEach(i => val(i).textContent = '');
+  function resetUI() {
+    items = []; $('rows').innerHTML = ''; $('total').textContent = '0';
+    document.querySelectorAll('.v').forEach(v => { v.textContent = ''; v.classList.remove('caret'); });
+    document.querySelectorAll('.in.focus').forEach(e => e.classList.remove('focus'));
+    $('side').classList.remove('open'); $('s-sales').classList.remove('hl'); $('toast').classList.remove('show');
+    closeDd(); $('keyhint').classList.remove('show');
+  }
+
+  // ----- the script: [second, action] -----
+  const cards = ['c-title', 'c-end'];
+  const showCard = id => cards.forEach(c => $(c).classList.toggle('on', c === id));
+  const script = [
+    [0,    () => { resetUI(); showCard('c-title'); caption(1, 'Open the form'); }],
+    [5,    () => { showCard(null); caption(1, 'Open Invoice → Sales from the sidebar', 'The Invoice menu groups Sales and Purchase entries under headings'); $('side').classList.add('open'); }],
+    [8,    () => $('s-sales').classList.add('hl')],
+    [11,   () => { caption(2, 'Select the customer', 'New customer? Choose "+ Add New Customer" at the bottom of the list'); focus('f-cust'); dropdown('f-cust', ['Rahim Enterprise', 'Karim Traders', 'Salma Store'], 0, '+ Add New Customer'); }],
+    [15,   () => { closeDd(); val('f-cust').textContent = 'Rahim Enterprise'; focus('f-cust', true); }],
+    [18,   () => { caption(3, 'Type the vehicle number, press Enter', 'Optional — press Enter to skip it'); focus('f-veh', true); type('f-veh', 'Dhaka Metro Ta-12-3456', 2200); }],
+    [22,   () => { caption(4, 'Received Amount — what the customer paid now', 'Leave it empty for a fully-credit sale'); focus('f-rec', true); type('f-rec', '30,000', 1000); }],
+    [26,   () => { caption(5, 'Discount Amount, then Notes', 'Notes you used before are suggested as you type'); focus('f-dis', true); type('f-dis', '800', 700); }],
+    [29,   () => { focus('f-note', true); type('f-note', 'Part cash, part credit', 1000); }],
+    [33,   () => { caption(6, 'On the right, Select Product', 'Type part of the name to narrow the list'); focus('f-prod'); dropdown('f-prod', ['Cement (50 kg)', 'MS Rod 10 mm', 'Brick (1st class)'], 0); }],
+    [37,   () => { closeDd(); val('f-prod').textContent = 'Cement (50 kg)'; caption(7, 'Select the warehouse', 'The godown the goods leave from'); focus('f-wh'); val('f-wh').textContent = 'Main Warehouse'; }],
+    [40,   () => { caption(8, 'Enter Quantity and Price', 'Enter moves the cursor Quantity → Price → Add New'); focus('f-qty', true); type('f-qty', '20', 500); }],
+    [43,   () => { focus('f-price', true); type('f-price', '540', 600); }],
+    [46,   () => { caption(9, 'Press Add New — the product joins the list below'); focus('f-price'); $('keyhint').classList.remove('show'); press('b-add'); }],
+    [47,   () => { addRow('Cement (50 kg)', 20, 540); clearProduct(); }],
+    [49,   () => { caption(10, 'Add the next product the same way', 'The cursor returns to Select Product on its own'); focus('f-prod'); val('f-prod').textContent = 'MS Rod 10 mm'; val('f-wh').textContent = 'Main Warehouse'; }],
+    [52,   () => { focus('f-qty', true); type('f-qty', '5', 300); }],
+    [54,   () => { focus('f-price', true); type('f-price', '7,200', 600); }],
+    [56,   () => { press('b-add'); $('keyhint').classList.remove('show'); }],
+    [57,   () => { addRow('MS Rod 10 mm', 5, 7200); clearProduct(); caption(11, 'Check the lines and the total', 'Wrong line? Use the edit icon in Action; the bin icon removes it'); focus('f-prod'); }],
+    [62,   () => { caption(12, 'All correct? Press Save'); document.querySelectorAll('.in.focus').forEach(e => e.classList.remove('focus')); press('b-save'); }],
+    [63.5, () => { toast('Voucher No.: 1024 (sample)'); caption(13, 'A voucher number confirms it is saved', 'The green message shows it for a few seconds'); }],
+    [68,   () => { caption(14, 'Print the invoice', 'Save first — or search an old invoice and print that'); press('b-print'); }],
+    [72,   () => { caption(15, 'Reset clears the form for the next invoice'); press('b-reset'); }],
+    [73.5, () => { resetUI(); $('side').classList.add('open'); }],
+    [75,   () => showCard('c-end')],
+  ];
+  const total = 82;
+
+  function stop() { timers.forEach(t => { clearTimeout(t); clearInterval(t); }); timers = []; cancelAnimationFrame(raf); }
+  function play(done) {
+    stop(); resetUI();
+    script.forEach(([t, fn]) => timers.push(setTimeout(fn, t * 1000)));
+    timers.push(setTimeout(() => done && done(), total * 1000));
+    const t0 = performance.now();
+    const tick = now => { const p = Math.min((now - t0) / (total * 1000), 1); $('bar').style.width = p * 100 + '%'; if (p < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+  }
+
+  $('play').onclick = () => { $('start').classList.add('hide'); play(() => $('start').classList.remove('hide')); };
+  $('rec').onclick = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, preferCurrentTab: true });
+      const rec = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8_000_000 });
+      const chunks = [];
+      rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+      rec.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
+        a.download = 'cashbookbd-sales-invoice-tutorial-en.webm'; a.click();
+        $('start').classList.remove('hide');
+      };
+      $('start').classList.add('hide');
+      await new Promise(r => setTimeout(r, 800));
+      rec.start();
+      play(() => setTimeout(() => rec.stop(), 600));
+    } catch (e) { alert('Could not start recording: ' + e.message); }
+  };
+</script>
+</body>
+</html>
