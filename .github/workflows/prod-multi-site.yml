@@ -28,6 +28,7 @@ jobs:
             cashbookbdaccountskbr,
             cashbookbdaccountsaft,
             cashbookbdaccountsemporium,
+            cashbookbd-accounts-ppd,
             cashbookbdappsaasuser,
           ]
 
@@ -64,6 +65,7 @@ jobs:
             cashbookbdaccountskbr) URL="https://kbr.cashbookbd.com" ;;
             cashbookbdaccountsaft) URL="https://aft.cashbookbd.com" ;;
             cashbookbdaccountsemporium) URL="https://emporium.cashbookbd.com" ;;
+            cashbookbd-accounts-ppd) URL="https://ppd.cashbookbd.com" ;;
             cashbookbdappsaasuser) URL="https://my.cashbookbd.com" ;;
             *) echo "Unknown site"; exit 1 ;;
           esac
@@ -121,6 +123,8 @@ jobs:
               echo "dir=/home/cashbookbdaccountsaft/htdocs/accounts.aft.cashbookbd.com" ;;
             cashbookbdaccountsemporium)
               echo "dir=/home/cashbookbdaccountsemporium/htdocs/accounts.emporium.cashbookbd.com" ;;
+            cashbookbd-accounts-ppd)
+              echo "dir=/home/cashbookbd-accounts-ppd/htdocs/accounts.ppd.cashbookbd.com" ;;
             cashbookbdappsaasuser)
               echo "dir=/home/cashbookbdappsaasuser/htdocs/app.cashbookbd.com" ;;
             *) echo "Unknown site"; exit 1 ;;
