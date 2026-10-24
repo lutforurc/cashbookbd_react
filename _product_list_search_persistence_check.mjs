@@ -46,18 +46,30 @@ assert.ok(
 
 /* The fetch asks the API with the applied word, so the round trip re-runs it. */
 assert.ok(
-  /getProduct\(\{ page, perPage, categoryId, brandId, groupId, search: appliedSearch \}\)/.test(list),
+  /getProduct\(\{[^}]*search: appliedSearch[^}]*\}\)/.test(list),
   'the list does not search with the applied word',
 );
+// ⚠️ The same call carries the list's SORT now, and it has to: the order is the
+// API's to apply (see _product_list_sort_check.tsx), so a fetch that asked for
+// the search but not the sort would hand back the applied word in the wrong
+// order. Named here, beside the search, so the two cannot drift apart.
 assert.ok(
-  /\}, \[page, perPage, categoryId, brandId, groupId, appliedSearch, searchRun\]\);/.test(list),
+  /getProduct\(\{[^}]*sortBy[^}]*sortDir[^}]*\}\)/.test(list),
+  'the list does not carry its sort into the fetch',
+);
+assert.ok(
+  /\}, \[page, perPage, categoryId, brandId, groupId, appliedSearch, searchRun[^\]]*\]\);/.test(list),
   'the fetch effect does not depend on the applied word -- a return would not refresh',
 );
 
 /* -- one writer keeps search, filters and page from dropping each other ------- */
 
 const setQuery = list.slice(list.indexOf('const setQuery'), list.indexOf('const goToPage'));
-for (const key of ['brand', 'category', 'group', 'search', 'page']) {
+// ⚠️ `sort` and `dir` are part of this contract too. The order decides which
+// rows a page holds, so a filter change or a turn of the page that dropped it
+// would silently reorder the list under the clerk -- the same failure the five
+// above are here to catch.
+for (const key of ['brand', 'category', 'group', 'search', 'sort', 'dir', 'page']) {
   assert.ok(
     new RegExp(`${key}: searchParams\\.get\\('${key}'\\)`).test(setQuery),
     `setQuery does not preserve \`${key}\` -- a filter change would drop it`,

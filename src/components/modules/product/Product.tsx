@@ -10,7 +10,7 @@ import httpService from '../../services/httpService';
 import { API_PRODUCT_HISTORY_URL } from '../../services/apiRoutes';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import Table from '../../utils/others/Table';
+import Table, { SortChoice, SortDirection } from '../../utils/others/Table';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import InputElement from '../../utils/fields/InputElement';
@@ -44,14 +44,32 @@ const formatQty = (value: any) => {
 /** The word over a filter box, written as Stock Details writes it. */
 const FILTER_LABEL = 'mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200';
 
-const buildCategoryWiseRows = (rows: any[]) => {
+/**
+ * The rows under their category headings.
+ *
+ * ⚠️ `preserveOrder` IS THE SORT, and it is the whole reason this takes an
+ * argument. The API orders by category first and then by whatever column the
+ * clerk chose; sorting the rows again here -- by category and then by NAME, as
+ * this always did -- threw that away, so a list sorted by S. Price came back on
+ * the screen in the order it had before anybody touched it.
+ *
+ * With no sort chosen the default order is still worked out here, exactly as it
+ * always was, so an unsorted list reads word for word as it did.
+ *
+ * Grouping either way is by first appearance, so the categories come out in the
+ * order the API put them in -- which is the group order a Category sort is
+ * asking to change.
+ */
+const buildCategoryWiseRows = (rows: any[], preserveOrder = false) => {
   if (!Array.isArray(rows)) return [];
 
-  const sorted = [...rows].sort((a, b) => {
-    const c1 = String(a.category || '').localeCompare(String(b.category || ''));
-    if (c1 !== 0) return c1;
-    return String(a.name || '').localeCompare(String(b.name || ''));
-  });
+  const sorted = preserveOrder
+    ? rows
+    : [...rows].sort((a, b) => {
+        const c1 = String(a.category || '').localeCompare(String(b.category || ''));
+        if (c1 !== 0) return c1;
+        return String(a.name || '').localeCompare(String(b.name || ''));
+      });
 
   const map = new Map<string, any[]>();
   for (const r of sorted) {
@@ -137,6 +155,14 @@ const Product = (user: any) => {
   const categoryId = searchParams.get('category') || null;
   const groupId = searchParams.get('group') || null;
 
+  /* ⚠️ The sort rides the address bar with the filters, and for the same
+     reason they do: it decides which rows a page holds. Coming home from an
+     edit with the sort forgotten would put the clerk back on page one of an
+     order they did not choose. Empty key = no sort, the list's own order. */
+  const sortBy = searchParams.get('sort') ?? '';
+  const sortDir: SortDirection = searchParams.get('dir') === 'desc' ? 'desc' : 'asc';
+  const sort: SortChoice | null = sortBy ? { key: sortBy, dir: sortDir } : null;
+
   // The applied word -- what the API is actually searching with. Derived, so it
   // and the box cannot drift apart.
   const appliedSearch = searchParams.get('search') ?? '';
@@ -164,6 +190,8 @@ const Product = (user: any) => {
       category: searchParams.get('category') ?? '',
       group: searchParams.get('group') ?? '',
       search: searchParams.get('search') ?? '',
+      sort: searchParams.get('sort') ?? '',
+      dir: searchParams.get('dir') ?? '',
       page: searchParams.get('page') ?? '',
     };
 
@@ -178,6 +206,19 @@ const Product = (user: any) => {
   };
 
   const goToPage = (p: number) => setQuery({ page: p > 1 ? p : '' });
+
+  /**
+   * A column's arrows, or the panel's Reset.
+   *
+   * ⚠️ PAGE ONE, always -- chosen or cleared. The order decides which rows a
+   * page holds, so page five of the old order is not page five of the new one,
+   * and staying there would drop the reader into the middle of a list they have
+   * not seen the start of. `null` is Reset: both params go, and the list is back
+   * in the order it opens in.
+   */
+  const handleSortChange = (next: SortChoice | null) => {
+    setQuery({ sort: next?.key ?? '', dir: next?.dir ?? '', page: '' });
+  };
 
   const [perPage, setPerPage] = useState<number>(10);
   const [totalPages, setTotalPages] = useState(0);
@@ -277,15 +318,23 @@ const Product = (user: any) => {
 
   /* ================= FETCH ================= */
   useEffect(() => {
-    dispatch(getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch }) as any);
-  }, [page, perPage, categoryId, brandId, groupId, appliedSearch, searchRun]);
+    dispatch(
+      getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch, sortBy, sortDir }) as any,
+    );
+    // ⚠️ sortBy and sortDir belong here. The order is the API's to apply, so a
+    // changed sort is a changed request -- without them the arrows would move
+    // the address bar and leave the rows exactly as they were.
+  }, [page, perPage, categoryId, brandId, groupId, appliedSearch, searchRun, sortBy, sortDir]);
 
   /* ✅ এখানে per_page=0 (showAll) + paginate দুটোই handle হবে */
   useEffect(() => {
     if (!product?.data) return;
 
     const flatRows = normalizeProductRows({ data: product.data });
-    const grouped = buildCategoryWiseRows(flatRows);
+    // A sorted list is already in the order it should be read in, and grouping
+    // it must keep that order rather than impose one of its own -- see
+    // buildCategoryWiseRows.
+    const grouped = buildCategoryWiseRows(flatRows, Boolean(sortBy));
     setTableData(grouped);
 
     const paginationOff = product?.data?.meta?.pagination === false || perPage === 0;
@@ -296,7 +345,9 @@ const Product = (user: any) => {
       const total = product?.data?.total ?? 0;
       setTotalPages(Math.ceil(total / perPage));
     }
-  }, [product?.data, perPage]);
+    // sortBy is here because it decides whether the grouping keeps the API's
+    // order or works one out -- see buildCategoryWiseRows.
+  }, [product?.data, perPage, sortBy]);
 
   /* ================= HANDLERS ================= */
   /* Enter is the only way in. The box keeps its own text while the filters
@@ -683,7 +734,7 @@ const Product = (user: any) => {
         if (res?.success) {
           toast.success(res?.message || 'Product deleted successfully.');
           dispatch(
-            getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch }) as any,
+            getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch, sortBy, sortDir }) as any,
           );
         } else {
           toast.error(res?.message || 'Product could not be deleted.');
@@ -704,7 +755,7 @@ const Product = (user: any) => {
         if (res?.success) {
           toast.success(res?.message || 'Product deleted successfully.');
           dispatch(
-            getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch }) as any,
+            getProduct({ page, perPage, categoryId, brandId, groupId, search: appliedSearch, sortBy, sortDir }) as any,
           );
         } else {
           toast.error(res?.message || 'Product and its opening invoice could not be deleted.');
@@ -865,6 +916,7 @@ const Product = (user: any) => {
       header: 'P. Price',
       headerClass: 'text-right',
       cellClass: 'text-right',
+      sortKey: 'purchase',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
         return row.purchase > 0 ? thousandSeparator(row.purchase) : '-';
@@ -875,6 +927,7 @@ const Product = (user: any) => {
       header: 'S. Price',
       headerClass: 'text-right',
       cellClass: 'text-right',
+      sortKey: 'sales',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
         return row.sales > 0 ? thousandSeparator(row.sales) : '-';
@@ -938,6 +991,10 @@ const Product = (user: any) => {
       {
         key: 'name',
         header: 'Product',
+        // The API's own name for the field. ⚠️ `serial` above carries none on
+        // purpose: Sl is a row number the API mints as it reads the page, so
+        // "sorting by it" would be sorting the numbering.
+        sortKey: 'name',
         render: (row: any) => {
           if (isGroupRow(row)) {
             return (
@@ -965,12 +1022,16 @@ const Product = (user: any) => {
         key: 'category',
         header: 'Category',
         cellClass: 'w-32',
+        // Sorting by this one reorders the category HEADINGS rather than the
+        // products inside them -- see ProductListSort on the API.
+        sortKey: 'category',
         render: (row: any) => (isGroupRow(row) ? '' : row.category),
       },
       {
         key: 'unit',
         header: 'Unit',
         cellClass: 'w-24',
+        sortKey: 'unit',
         render: (row: any) => (isGroupRow(row) ? '' : row.unit),
       },
       // Branch Setup -> "Editable Measurement on Product List?". Drawn only
@@ -1076,6 +1137,11 @@ const Product = (user: any) => {
               header: 'Stock Qty',
               headerClass: 'text-right',
               cellClass: 'text-right w-24',
+              // ⚠️ The stock the API WORKED OUT for this branch -- bought,
+              // opened and sold netted out -- not the opening balance column
+              // beside it. Sorting on anything else would order the list by a
+              // figure the reader cannot see.
+              sortKey: 'current_stock',
               // A negative figure means more went out than came in; it is a
               // fault, so it reads red and bold instead of sitting quietly among
               // the rest.
@@ -1283,6 +1349,13 @@ const Product = (user: any) => {
         <Table
           columns={columns}
           data={tableData}
+          // ⚠️ Both, or neither. The order is the API's to decide (the list is
+          // paged there, so a sort of the page in hand would be a sort of ten
+          // rows), so the Table reports the choice and this screen refetches.
+          // Every other table in the app passes neither and keeps the panel it
+          // has always had.
+          sort={sort}
+          onSortChange={handleSortChange}
           noDataMessage={product.errors ? product.errors : 'No products found.'}
         />
         {totalPages > 1 && (

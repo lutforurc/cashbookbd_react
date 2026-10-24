@@ -39,6 +39,14 @@ interface productParam {
   brandId: number | string | null;
   groupId: number | string | null;
   search: string;
+  /**
+   * The column the list is ordered by, named the way the API names it, and
+   * which way. Optional and empty by default, so every caller that has no sort
+   * -- and the list on first open -- asks for exactly the request it always
+   * asked for.
+   */
+  sortBy?: string | null;
+  sortDir?: string | null;
 }
 interface productStoreData {
   product_name: string;
@@ -58,16 +66,28 @@ interface productStoreData {
 let latestListRequest = 0;
 
 export const getProduct =
-  ({ page, perPage, categoryId, brandId, groupId, search = '' }: productParam) =>
+  ({ page, perPage, categoryId, brandId, groupId, search = '', sortBy, sortDir }: productParam) =>
     (dispatch: any) => {
       dispatch({ type: PRODUCT_LIST_PENDING });
 
       const requestId = ++latestListRequest;
 
+      /* ⚠️ SORTING TRAVELS WITH THE REQUEST, never with the rows. The list is
+         paged by the API, so the order has to be decided there -- over the whole
+         filtered set, before the page is cut. Sorting the page the screen is
+         holding would order ten rows and call it sorted.
+
+         Absent (or empty) leaves the URL byte for byte what it always was, so a
+         screen that has never chosen a sort sends the request it always did. */
+      const sortQuery = sortBy
+        ? `&sort_by=${encodeURIComponent(sortBy)}&sort_dir=${sortDir === 'desc' ? 'desc' : 'asc'}`
+        : '';
+
       httpService
         .get(
           API_PRODUCT_LIST_URL +
-          `?page=${page}&per_page=${perPage}&category_id=${categoryId}&brand_id=${brandId}&group_id=${groupId}&search=${search}`,
+          `?page=${page}&per_page=${perPage}&category_id=${categoryId}&brand_id=${brandId}&group_id=${groupId}&search=${search}` +
+          sortQuery,
         )
         .then((res) => {
           if (requestId !== latestListRequest) return; // a newer filter already asked

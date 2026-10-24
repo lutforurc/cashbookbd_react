@@ -32,7 +32,25 @@ export interface Column {
    */
   width?: string | number;
   render?: (row: any, index: number) => React.ReactNode;
+  /**
+   * The name this column sorts under.
+   *
+   * ⚠️ NO `sortKey` MEANS NOT SORTABLE, and nothing is drawn beside that
+   * column's switch. The screen states the key rather than the Table guessing
+   * one from `key`, because the key is what the SCREEN'S API will accept --
+   * a page whose endpoint orders by `current_stock` cannot be sorted by sending
+   * it `stock`, and the Table has no way to know which of the two it is.
+   *
+   * A screen that sets `sortKey` on nothing, or passes no `onSortChange`, gets
+   * the menu it has always had: not one control more.
+   */
+  sortKey?: string;
 }
+
+export type SortDirection = 'asc' | 'desc';
+
+/** Which column is sorted, and which way -- the shape a screen keeps and sends. */
+export type SortChoice = { key: string; dir: SortDirection };
 
 interface TableProps {
   columns: Column[];
@@ -73,6 +91,24 @@ interface TableProps {
    * before it existed, so nothing doubles up.
    */
   bordered?: boolean;
+  /**
+   * The sort in force, and what changing it means.
+   *
+   * ⚠️ OMIT `onSortChange` AND THE TABLE OFFERS NO SORTING AT ALL -- no arrows,
+   * no reset line, not one pixel different from before any of this existed.
+   * Sorting is a capability a screen opts into rather than something that turned
+   * itself on across ninety-odd reports.
+   *
+   * ⚠️ AND THE TABLE DOES NOT SORT ITS OWN `data`, deliberately. The lists that
+   * want this are paged by the server, so the order has to be decided there, on
+   * the whole filtered set, before the page is cut -- a table that sorted the
+   * page it happened to be holding would put ten rows in order and call it
+   * sorted, while the column the reader chose stayed spread over every page.
+   * What it does instead is say which column and direction were asked for, and
+   * the screen fetches again.
+   */
+  sort?: SortChoice | null;
+  onSortChange?: (next: SortChoice | null) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -127,6 +163,212 @@ const writeHidden = (key: string, hidden: string[]) => {
  */
 const isActionColumn = (column: Column) => /^action/i.test(String(column.key || ''));
 
+/**
+ * A column's heading said in words, for the sort buttons to name themselves by.
+ *
+ * A heading is usually a string and occasionally a node, and a screen reader
+ * cannot read a node -- so an unnamed one falls back to the column's key, which
+ * is at worst a developer's word for the field and never an empty label.
+ */
+const headerText = (column: Column): string =>
+  typeof column.header === 'string' && column.header.trim()
+    ? column.header.trim()
+    : String(column.key);
+
+const SORT_BUTTON_BASE =
+  'flex h-5 w-5 items-center justify-center rounded-sm border text-[10px] leading-none transition-colors';
+
+const SORT_BUTTON_ON = 'border-indigo-600 bg-indigo-600 text-white';
+const SORT_BUTTON_OFF =
+  'border-[rgb(var(--c-border))] text-gray-500 hover:bg-indigo-50 dark:text-gray-400 dark:hover:bg-gray-700';
+
+/**
+ * The pair of arrows beside one column's switch.
+ *
+ * ⚠️ BOTH ARE DRAWN, ALWAYS, for a column that can be sorted -- not only once
+ * the column has been chosen. A pair that appeared on hover, or only on the
+ * column already sorted, would leave the reader looking at a panel of switches
+ * with no sign that any of them could be ordered, and this panel is opened
+ * precisely to find out what can be done to the table.
+ *
+ * The one in force is filled; the other stays quiet. The pair is a radio in all
+ * but name, so each button reports its own state with aria-pressed rather than
+ * leaving the highlight to colour alone.
+ */
+const SortArrows: React.FC<{
+  columnLabel: string;
+  active: boolean;
+  dir: SortDirection;
+  onPick: (dir: SortDirection) => void;
+}> = ({ columnLabel, active, dir, onPick }) => {
+  const arrow = (direction: SortDirection, glyph: string, word: string) => {
+    const chosen = active && dir === direction;
+
+    return (
+      <button
+        type="button"
+        title={`Sort ${columnLabel} ${word}`}
+        aria-label={`Sort ${columnLabel} ${word}`}
+        aria-pressed={chosen}
+        onClick={() => onPick(direction)}
+        className={`${SORT_BUTTON_BASE} ${chosen ? SORT_BUTTON_ON : SORT_BUTTON_OFF}`}
+      >
+        {glyph}
+      </button>
+    );
+  };
+
+  return (
+    <span className="flex shrink-0 items-center gap-0.5">
+      {arrow('asc', '↑', 'ascending')}
+      {arrow('desc', '↓', 'descending')}
+    </span>
+  );
+};
+
+/**
+ * Everything the column menu draws.
+ *
+ * ⚠️ TAKEN OUT OF Table ON PURPOSE, and sorting is what pulled it out. The panel
+ * is the only part of this component a reader interacts with, and a panel that
+ * cannot be opened without a browser cannot be checked without one either -- the
+ * arrows, what each of them says, which one is lit, and the line that puts the
+ * sort back would all have to be read out of the source instead of drawn. It
+ * holds no state of its own: the Table passes every one of these in, so it
+ * renders the same for a check as it does on the page.
+ */
+export const TableColumnsPanel: React.FC<{
+  /** The columns the menu offers -- the action column never reaches it. */
+  columns: Column[];
+  hiddenColumns: string[];
+  /** How many the reader has put away, for the "Show all" button's own state. */
+  hiddenCount: number;
+  /** The one switch that will not move, or null when more than one is shown. */
+  lastShownMenuKey: string | null;
+  menuId: string;
+  menuPos: React.CSSProperties;
+  panelRef: React.RefObject<HTMLDivElement | null>;
+  onToggle: (key: string) => void;
+  onShowAll: () => void;
+  /** Whether this table offers sorting at all -- see TableProps.onSortChange. */
+  sortingOn: boolean;
+  sortedKey: string | null;
+  sortedDir: SortDirection;
+  onSortChange?: (next: SortChoice | null) => void;
+}> = ({
+  columns,
+  hiddenColumns,
+  hiddenCount,
+  lastShownMenuKey,
+  menuId,
+  menuPos,
+  panelRef,
+  onToggle,
+  onShowAll,
+  sortingOn,
+  sortedKey,
+  sortedDir,
+  onSortChange,
+}) => (
+  <div
+    ref={panelRef}
+    style={menuPos}
+    // ⚠️ WIDER ONLY WHERE SORTING IS OFFERED. The arrows need the room -- and a
+    // panel grown for every one of ninety-odd reports, none of which asked for
+    // them, would be a layout change nobody made a decision about.
+    className={`z-50 overflow-y-auto rounded-sm border border-[rgb(var(--c-border))] bg-white p-2 shadow-lg dark:bg-[rgb(var(--c-boxdark))] ${
+      sortingOn ? 'w-72' : 'w-64'
+    }`}
+  >
+    <div className="mb-1 flex items-center justify-between border-b border-[rgb(var(--c-border))] pb-1">
+      <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Columns</span>
+      <button
+        type="button"
+        onClick={onShowAll}
+        disabled={!hiddenCount}
+        className="text-xs text-indigo-600 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline dark:text-indigo-400 dark:disabled:text-gray-500"
+      >
+        Show all
+      </button>
+    </div>
+
+    {columns.map((column) => {
+      const sortKey = sortingOn ? column.sortKey : undefined;
+
+      return (
+        <div key={column.key} className="flex items-center gap-1 py-0.5">
+          <span
+            className="min-w-0 flex-1"
+            // The one switch that will not move, and why. Without this the
+            // reader clicks it, nothing happens, and there is no way to find out
+            // that the table is refusing rather than broken.
+            title={
+              String(column.key) === lastShownMenuKey
+                ? 'A table needs at least one column'
+                : undefined
+            }
+          >
+            <ToggleSwitch
+              id={`${menuId}-${column.key}`}
+              name={String(column.key)}
+              label={column.header}
+              // ⚠️ ON MEANS SHOWN. The switch is drawn left-to-right like any
+              // other switch in the app, so the reader reads it as "this column
+              // is on" -- not as "this column is hidden", which is what the
+              // stored list actually holds.
+              checked={!hiddenColumns.includes(column.key)}
+              onChange={() => onToggle(String(column.key))}
+              disabled={String(column.key) === lastShownMenuKey}
+              className="w-full"
+              // ⚠️ The sorted COLUMN is named as well as its direction. A filled
+              // arrow says which way; on a list of seven it takes a moment to
+              // see which row that arrow belongs to, and the row's own label
+              // saying so is what the eye lands on first.
+              labelClassName={
+                'min-w-0 truncate text-xs ' +
+                (sortKey && sortedKey === sortKey
+                  ? 'font-semibold text-indigo-600 dark:text-indigo-400'
+                  : 'text-gray-700 dark:text-gray-300')
+              }
+            />
+          </span>
+
+          {/* ⚠️ The sort pair sits BESIDE the switch rather than in a row of its
+              own: it belongs to this column, and a second line per column would
+              turn a list of seven into a list of fourteen. Nothing is drawn for
+              a column the screen did not name a sort key for -- Sl and the
+              action columns among them. */}
+          {sortKey ? (
+            <SortArrows
+              columnLabel={headerText(column)}
+              active={sortedKey === sortKey}
+              dir={sortedDir}
+              onPick={(dir) => onSortChange?.({ key: sortKey, dir })}
+            />
+          ) : null}
+        </div>
+      );
+    })}
+
+    {/* ⚠️ ONLY WHERE A SORT IS IN FORCE, and that is what makes it a way back
+        rather than a button that mostly does nothing. What it restores is the
+        order the list opens in -- not a sort of its own, and not "ascending by
+        whatever was last chosen". */}
+    {sortingOn && sortedKey ? (
+      <div className="mt-1 border-t border-[rgb(var(--c-border))] pt-1">
+        <button
+          type="button"
+          onClick={() => onSortChange?.(null)}
+          title="Back to the list's own order"
+          className="w-full rounded-sm px-1 py-1 text-left text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700"
+        >
+          Reset sorting
+        </button>
+      </div>
+    ) : null}
+  </div>
+);
+
 const Table: React.FC<TableProps> = ({
   columns,
   data,
@@ -145,6 +387,8 @@ const Table: React.FC<TableProps> = ({
   tableStyle,
   renderRowExpansion,
   bordered = true,
+  sort = null,
+  onSortChange,
 }) => {
   /**
    * ⚠️ --c-border, THE TABLE'S OWN EDGE COLOUR, and it is deliberately quiet.
@@ -168,6 +412,18 @@ const Table: React.FC<TableProps> = ({
   const menuColumns = allColumns.filter((column) => !isActionColumn(column));
   // One column is not a table, so the menu is not offered for it either.
   const canHide = menuColumns.length > 1;
+
+  /**
+   * Whether this table offers sorting at all.
+   *
+   * ⚠️ TWO CONDITIONS, AND BOTH BELONG TO THE SCREEN. A `onSortChange` says the
+   * screen can actually act on a chosen order -- it has somewhere to send it --
+   * and a column carrying a `sortKey` says there is something to order by.
+   * Missing either, the panel below draws exactly what it drew before.
+   */
+  const sortingOn = Boolean(onSortChange) && allColumns.some((column) => column.sortKey);
+  const sortedKey = sort?.key ?? null;
+  const sortedDir: SortDirection = sort?.dir ?? 'asc';
 
   const storageKey = `${STORAGE_PREFIX}${window.location.pathname}#${allColumns
     .map((column) => column.key)
@@ -406,55 +662,21 @@ const Table: React.FC<TableProps> = ({
       ) : null}
 
       {menuOpen && menuPos ? (
-        <div
-          ref={panelRef}
-          style={menuPos}
-          className="z-50 w-64 overflow-y-auto rounded-sm border border-[rgb(var(--c-border))] bg-white p-2 shadow-lg dark:bg-[rgb(var(--c-boxdark))]"
-        >
-          <div className="mb-1 flex items-center justify-between border-b border-[rgb(var(--c-border))] pb-1">
-            <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
-              Columns
-            </span>
-            <button
-              type="button"
-              onClick={showAllColumns}
-              disabled={!hiddenCount}
-              className="text-xs text-indigo-600 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline dark:text-indigo-400 dark:disabled:text-gray-500"
-            >
-              Show all
-            </button>
-          </div>
-
-          {menuColumns.map((column) => (
-            <div
-              key={column.key}
-              className="py-0.5"
-              // The one switch that will not move, and why. Without this the
-              // reader clicks it, nothing happens, and there is no way to find
-              // out that the table is refusing rather than broken.
-              title={
-                String(column.key) === lastShownMenuKey
-                  ? 'A table needs at least one column'
-                  : undefined
-              }
-            >
-              <ToggleSwitch
-                id={`${menuId}-${column.key}`}
-                name={String(column.key)}
-                label={column.header}
-                // ⚠️ ON MEANS SHOWN. The switch is drawn left-to-right like any
-                // other switch in the app, so the reader reads it as "this
-                // column is on" -- not as "this column is hidden", which is
-                // what the stored list actually holds.
-                checked={!hiddenColumns.includes(column.key)}
-                onChange={() => toggleColumn(String(column.key))}
-                disabled={String(column.key) === lastShownMenuKey}
-                className="w-full"
-                labelClassName="min-w-0 truncate text-xs text-gray-700 dark:text-gray-300"
-              />
-            </div>
-          ))}
-        </div>
+        <TableColumnsPanel
+          columns={menuColumns}
+          hiddenColumns={hiddenColumns}
+          hiddenCount={hiddenCount}
+          lastShownMenuKey={lastShownMenuKey}
+          menuId={menuId}
+          menuPos={menuPos}
+          panelRef={panelRef}
+          onToggle={toggleColumn}
+          onShowAll={showAllColumns}
+          sortingOn={sortingOn}
+          sortedKey={sortedKey}
+          sortedDir={sortedDir}
+          onSortChange={onSortChange}
+        />
       ) : null}
 
       <div className="overflow-x-auto">

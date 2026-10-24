@@ -75,16 +75,19 @@ const ProductPrint = React.forwardRef<HTMLDivElement, Props>(
     const printableRows: PrintRow[] = useMemo(() => {
       const rowsArr: ProductRow[] = Array.isArray(rows) ? rows : [];
 
-      // ✅ sort: category first, then product name
-      const sorted = [...rowsArr].sort((a, b) => {
-        const c1 = String(a.category || '').localeCompare(String(b.category || ''));
-        if (c1 !== 0) return c1;
-        return String(a.name || '').localeCompare(String(b.name || ''));
-      });
+      /* ⚠️ NO SORT OF ITS OWN HERE -- and it used to have one. It put the rows
+         back into category-then-name order, which is precisely what silently
+         undid the sort the clerk had just chosen on the screen: the paper came
+         out in an order nobody had asked for, and the screen behind it disagreed
+         with the sheet in the manager's hand.
 
-      // ✅ group by category
+         The rows are handed over in the order the table draws them -- sorted by
+         the API, and only ever that order -- so the sheet and the screen are the
+         same list read twice. Grouping keeps that order too: a heading is put
+         where its first product appears, so the categories come out in the order
+         the list is in, which is what a Category sort changes. */
       const map = new Map<string, ProductRow[]>();
-      for (const r of sorted) {
+      for (const r of rowsArr) {
         const key = (r.category || 'Uncategorized').trim() || 'Uncategorized';
         if (!map.has(key)) map.set(key, []);
         map.get(key)!.push(r);
