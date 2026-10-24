@@ -30,6 +30,16 @@ type SheetColumn = {
   header: string;
   width: string;
   align?: 'text-center' | 'text-right';
+  /**
+   * The cell's own `vertical-align`, for a column that should sit in the middle
+   * of its row rather than at the top.
+   *
+   * ⚠️ THE ROW IS `align-top` ON PURPOSE -- a name or an address that runs to a
+   * second line should start at the top of the row, not float against a
+   * one-line figure beside it. A column that asks for `middle` overrides that
+   * on its OWN cells only; the rest of the row is left as it was.
+   */
+  valign?: 'middle';
   value: (row: any) => string | number;
   sum?: (rows: any[]) => number;
 };
@@ -73,6 +83,19 @@ const CustomerListPrint = React.forwardRef<HTMLDivElement, Props>(
     const allRows = Array.isArray(rows) ? rows : [];
 
     /**
+     * One cell's classes, for the heading, the body and the totals alike.
+     *
+     * ⚠️ ONE PLACE, so a column's alignment cannot be right in the heading and
+     * wrong in the row under it -- and so `valign` reaches all three without
+     * being repeated at each. Horizontal alignment is untouched: `align` is
+     * passed through exactly as the column declared it.
+     */
+    const columnCells = (column: SheetColumn) =>
+      [cell, column.align ?? '', column.valign ? 'align-middle' : '']
+        .filter(Boolean)
+        .join(' ');
+
+    /**
      * ⚠️ ONE LIST, TWO USES: the heading row and every cell are drawn from it,
      * and the "No data found" row spans its length. Counting the columns by hand
      * beside it is how the span ends up covering a column the table no longer
@@ -84,6 +107,7 @@ const CustomerListPrint = React.forwardRef<HTMLDivElement, Props>(
         header: 'SL',
         width: 'w-10',
         align: 'text-center',
+        valign: 'middle',
         value: (row) => row?.serial ?? '',
       },
       { key: 'name', header: 'Name', width: 'w-36', value: (row) => row?.name || '-' },
@@ -102,6 +126,9 @@ const CustomerListPrint = React.forwardRef<HTMLDivElement, Props>(
         key: 'manual_address',
         header: 'Address',
         width: '',
+        // ⚠️ Horizontal alignment stays LEFT (no `align`): only the vertical
+        // position was asked for.
+        valign: 'middle',
         value: (row) => row?.manual_address || '',
       },
       ...(showLedgerPage
@@ -111,6 +138,7 @@ const CustomerListPrint = React.forwardRef<HTMLDivElement, Props>(
               header: 'Ledger Page',
               width: 'w-20',
               align: 'text-center' as const,
+              valign: 'middle' as const,
               value: (row: any) => row?.ledger_page || '',
             },
           ]
@@ -120,6 +148,7 @@ const CustomerListPrint = React.forwardRef<HTMLDivElement, Props>(
         header: 'Mobile',
         width: 'w-28',
         align: 'text-center',
+        valign: 'middle',
         value: (row) => formatMobile(row?.mobile, mobileFormat),
       },
       ...(showOpening
@@ -140,6 +169,7 @@ const CustomerListPrint = React.forwardRef<HTMLDivElement, Props>(
         header: 'Balance',
         width: 'w-24',
         align: 'text-right',
+        valign: 'middle',
         value: (row) => thousandSeparator(Number(row?.balance ?? 0)),
         sum: (rows) => rows.reduce((total, row) => total + Number(row?.balance ?? 0), 0),
       },
@@ -174,7 +204,7 @@ const CustomerListPrint = React.forwardRef<HTMLDivElement, Props>(
           <td
             key={column.key}
             style={{ fontSize: fs }}
-            className={`${cell} ${column.align ?? ''}`}
+            className={columnCells(column)}
           >
             {column.sum ? thousandSeparator(column.sum(source)) : ''}
           </td>
@@ -216,7 +246,7 @@ const CustomerListPrint = React.forwardRef<HTMLDivElement, Props>(
                     <th
                       key={column.key}
                       style={{ fontSize: fs }}
-                      className={`${cell} ${column.width} ${column.align ?? ''}`}
+                      className={`${columnCells(column)} ${column.width}`}
                     >
                       {column.header}
                     </th>
@@ -232,7 +262,7 @@ const CustomerListPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td
                           key={column.key}
                           style={{ fontSize: fs }}
-                          className={`${cell} ${column.align ?? ''}`}
+                          className={columnCells(column)}
                         >
                           {column.value(row)}
                         </td>

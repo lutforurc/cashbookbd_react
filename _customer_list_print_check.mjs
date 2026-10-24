@@ -34,20 +34,38 @@ const handler = screen.slice(
 
 assert.ok(handler.length > 0, 'handlePrintList is gone from the screen');
 
+/**
+ * ⚠️ `per_page: 0` IS "EVERY ROW THE FILTERS MATCHED", which the API answers in
+ * one page. It used to be sized from the screen's own `totalRecords` -- the
+ * list's meta -- and stale or empty that collapsed to the page size, so a sheet
+ * with fourteen customers to show carried ten. See apiContactDetails, which
+ * treats a non-positive page size as the filtered set's own count.
+ */
 assert.ok(
-  /per_page:\s*Math\.max\(totalRecords,\s*perPage\)/.test(handler),
-  'the print asks for the page size, not for every row -- the sheet would carry ten customers',
+  /per_page:\s*0/.test(handler),
+  'the print asks for a page size, not for every row -- the sheet would carry one page',
+);
+assert.ok(
+  // The expression, not the word: the comment above explains the old bug by name.
+  !/per_page:[^,\n]*totalRecords/.test(handler),
+  '⚠️ the print sizes itself from the list meta again -- a stale total prints one page',
 );
 assert.ok(
   /page:\s*1/.test(handler),
   'the print does not ask for the first page, so serials start where the desk was',
 );
 
-// The same two filters the list itself is under.
+// Every filter the list is under -- the search, the client type, and whose
+// customers they are. The employee one was missing, so one person's list
+// printed as everybody's.
 assert.ok(/search[,:}]/.test(handler), 'the print drops the search the list is under');
 assert.ok(
   /party_type_id/.test(handler),
   'the print drops the client type the list is under',
+);
+assert.ok(
+  /handle_by_employee_id/.test(handler),
+  '⚠️ the print drops the employee the list is under -- one person\'s customers print as everybody\'s',
 );
 
 // Into this component's own state -- a dispatch would move the desk to another
@@ -59,6 +77,27 @@ assert.ok(
 assert.ok(
   !/dispatch\(getCustomer/.test(handler),
   'the print refetches through the slice, which moves the list the desk is reading',
+);
+
+/* -- and the sheet says which set it is holding ---------------------------- */
+
+assert.ok(
+  /Employee: \$\{employeeName\}/.test(screen),
+  'the sheet does not name the employee the list was narrowed to',
+);
+assert.ok(
+  /\$\{rows\.length\} \$\{rows\.length === 1 \? 'customer' : 'customers'\}/.test(screen),
+  'the sheet does not state how many customers it carries',
+);
+// ⚠️ A selected type must never print as "All Types": that fallback was what
+// put a narrowed list under a heading saying it was not narrowed.
+assert.ok(
+  /\(typeValue \|\| 'All Types'\)/.test(screen),
+  'a selected client type can still print as "All Types" -- the fallback lies about the list',
+);
+assert.ok(
+  !/\?\?\.name \|\|[\s\S]{0,40}'All Types'/.test(screen),
+  'the client-type lookup still falls back to "All Types" when the id does not match',
 );
 
 /* -- the button stands to the right of Search ------------------------------ */
@@ -243,6 +282,39 @@ assert.ok(
   /sheetColumns\.slice\(totalLabelSpan\)\.map/.test(sheet) &&
     /column\.sum \? thousandSeparator\(column\.sum\(source\)\) : ''/.test(sheet),
   'the total cells are not drawn from the same column list as the heading, so they can drift',
+);
+
+/* -- five columns sit in the middle of their row --------------------------- */
+
+/**
+ * ⚠️ THE ROW IS `align-top` ON PURPOSE -- a name or an address that wraps should
+ * start at the top of the row. These five were asked to sit in the middle of it
+ * instead, and the override has to be on the CELLS: put it on the row and every
+ * column moves with them, Name included.
+ */
+for (const key of ['serial', 'manual_address', 'ledger_page', 'mobile', 'balance']) {
+  assert.ok(
+    new RegExp(`key: '${key}'[\\s\\S]{0,240}?valign: 'middle'`).test(sheet),
+    `the ${key} column is not vertically centred on the sheet`,
+  );
+}
+
+assert.ok(
+  !/key: 'name'[\s\S]{0,160}?valign:/.test(sheet),
+  'the Name column was centred too -- only the five named columns were asked for',
+);
+assert.ok(
+  /column\.valign \? 'align-middle' : ''/.test(sheet),
+  'the column flag is declared but never drawn -- nothing on paper would move',
+);
+assert.ok(
+  (sheet.match(/columnCells\(column\)/g) || []).length >= 3,
+  'the column classes are not used by the heading, the body row AND the totals row',
+);
+// Horizontal alignment and widths are untouched by any of it.
+assert.ok(
+  /\{ key: 'name', header: 'Name', width: 'w-36', value:/.test(sheet),
+  'the Name column lost its width or its alignment while the valign was added',
 );
 
 console.log('ok -- the Customer list prints every row, in the same row as Search, on a sheet drawn after the fetch');

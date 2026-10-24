@@ -776,16 +776,29 @@ const CustomerSupplier = () => {
     setPrintingList(true);
 
     try {
+      /**
+       * ⚠️ THE PRINT ASKS FOR THE WHOLE FILTERED SET, IN THE SCREEN'S OWN TERMS.
+       *
+       * It used to build a body of its own: `page: 1`, the search, the client
+       * type -- and no employee at all, so a list narrowed to one person's
+       * customers came out as somebody else's. It also sized the request from
+       * `totalRecords`, the meta the list happened to be holding: stale or
+       * empty, that collapsed to the screen's page size, and the sheet carried
+       * ten of fourteen names.
+       *
+       * So: the same filters the list sends (including the 'none' that asks for
+       * the customers nobody holds), and `per_page: 0`, which the API answers
+       * as every row it matched -- same shape as any page, serials from 1,
+       * totals intact.
+       */
       const body: Record<string, any> = {
-        // Never fewer than the screen's own page: a list that has not answered
-        // yet reads total 0, and asking for nought rows would print nothing
-        // rather than the row that is there.
-        per_page: Math.max(totalRecords, perPage),
+        per_page: 0,
         page: 1,
         search,
       };
 
       if (partyTypeId) body.party_type_id = partyTypeId;
+      if (employeeId) body.handle_by_employee_id = employeeId;
 
       const { data } = await httpService.post(API_CONTACT_DETAILS_LIST_URL, body);
       const rows = data?.data?.data?.data;
@@ -795,16 +808,40 @@ const CustomerSupplier = () => {
         return;
       }
 
-      // The sheet says which list it is: an empty box and "All Types" are
-      // choices too, and four hundred names with no heading look like every
-      // customer the company has.
+      /**
+       * The sheet says which list it is: an empty box and "All Types" are
+       * choices too, and four hundred names with no heading look like every
+       * customer the company has.
+       *
+       * ⚠️ A TYPE THAT IS SET IS NEVER PRINTED AS "All Types". The lookup used
+       * to fall back to it whenever the id did not match exactly -- a padded or
+       * handed-over value -- so a narrowed list could go out under a heading
+       * saying it was not narrowed. Trimmed, and an unknown id prints as itself
+       * rather than as a lie.
+       */
+      const typeValue = String(partyTypeId ?? '').trim();
       const typeName =
-        CUSTOMER_TYPE_FILTER.find((entry) => String(entry.id) === String(partyTypeId))?.name ||
-        'All Types';
+        CUSTOMER_TYPE_FILTER.find((entry) => String(entry.id) === typeValue)?.name ??
+        (typeValue || 'All Types');
+
+      // And whose customers, when that is what the list was narrowed to.
+      const employeeName = employeeId
+        ? employeeFilterData.find((entry) => String(entry.id) === String(employeeId))?.name ||
+          employeeId
+        : null;
+
+      // The count is the set the sheet actually holds, so a short sheet cannot
+      // be mistaken for a filter that matched little.
+      const count = `${rows.length} ${rows.length === 1 ? 'customer' : 'customers'}`;
 
       setPrintRows(rows);
       setPrintFilterLine(
-        [`Client Type: ${typeName}`, search.trim() ? `Search: ${search.trim()}` : null]
+        [
+          `Client Type: ${typeName}`,
+          employeeName ? `Employee: ${employeeName}` : null,
+          search.trim() ? `Search: ${search.trim()}` : null,
+          count,
+        ]
           .filter(Boolean)
           .join('  |  '),
       );
