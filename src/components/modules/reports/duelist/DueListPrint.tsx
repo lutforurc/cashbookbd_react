@@ -36,6 +36,24 @@ const aged = (row: DueRow, label: string) =>
 type Props = {
   rows: DueRow[];
   endDate?: string;
+  /**
+   * The two filters the sheet names, as the screen applied them.
+   *
+   * ⚠️ `employee` IS EMPTY WHERE THE FILTER IS NOT OFFERED -- the branch does
+   * not run the field, or the classification is Supplier. The sheet then says
+   * nothing about an employee rather than naming one the report was never
+   * narrowed by.
+   */
+  clientType?: string;
+  employee?: string;
+  /**
+   * The foot's figures, from the API's own summary of the filtered set.
+   *
+   * ⚠️ Handed in rather than re-derived from the rows here, so the sheet and
+   * the screen cannot come to different totals -- and so the Balance is stated
+   * ONCE, outside the rows, instead of being drawn as a customer.
+   */
+  summary: { debit: number; credit: number; balance: number };
   title?: string;
   rowsPerPage?: number;
   fontSize?: number;
@@ -56,10 +74,20 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
 };
 
 const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ rows, endDate, title = "Due List", rowsPerPage = 20, fontSize = 10, showAgeing = false }, ref) => {
+  ({ rows, endDate, clientType = '', employee = '', summary, title = "Due List", rowsPerPage = 20, fontSize = 10, showAgeing = false }, ref) => {
     const rowsArr = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(rowsArr, rowsPerPage);
     const fs = fontSize;
+
+    /** Two decimals, through the app's own formatter, as the cells above are. */
+    const money = (value: number) => thousandSeparator(Number(Number(value ?? 0).toFixed(2)));
+
+    /**
+     * A bucket's total over EVERY matching record, not over the sheet in hand --
+     * the same list the Debit and Credit totals come from.
+     */
+    const bucketTotal = (label: string) =>
+      rowsArr.reduce((total, row) => total + aged(row, label), 0);
     const settings = useSelector((state: any) => state.settings);
     const mobileFormat = useMobileFormat();
 
@@ -80,8 +108,27 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
             {/* Header */}
             <div className="mb-4 text-center">
               <h1 className="text-2xl font-bold">{title}</h1>
-              <div className="text-xs mt-1">
-                <span className="font-semibold">As On:</span> {endDate || "-"}
+              {/* ⚠️ The sheet says which list it is. A page of names and
+                  figures with no filters on it reads as the whole branch --
+                  and this report is read by somebody who may never have seen
+                  the screen it came from. */}
+              <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 text-xs">
+                <span>
+                  <span className="font-semibold">As On:</span> {endDate || "-"}
+                </span>
+                <span aria-hidden>|</span>
+                <span>
+                  <span className="font-semibold">Client Type:</span>{' '}
+                  {clientType || 'All Types'}
+                </span>
+                {employee ? (
+                  <>
+                    <span aria-hidden>|</span>
+                    <span>
+                      <span className="font-semibold">Employee:</span> {employee}
+                    </span>
+                  </>
+                ) : null}
               </div>
 
               {/* On the paper, not only the screen. The buckets are the result
@@ -215,9 +262,61 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                   </tr>
                 )}
               </tbody>
+
+              {/**
+                * ⚠️ THE FOOT, ONCE, AND OVER THE WHOLE LIST.
+                *
+                * A grand total at the bottom of every sheet is not one -- it is
+                * the same figure repeated -- so it goes on the last sheet only,
+                * where a reader looks for it. And it is drawn by the table, so
+                * each figure stands under its own heading on every layout the
+                * report can take: Ageing on or off, address on or off.
+                */}
+              {pIdx === pages.length - 1 ? (
+                <tfoot>
+                  <tr className="font-bold">
+                    <td
+                      colSpan={3}
+                      style={{ fontSize: fs }}
+                      className="border border-gray-900 px-2 py-1 text-right"
+                    >
+                      Grand Total
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {money(summary.debit)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {money(summary.credit)}
+                    </td>
+                    {/* Last Paid has no total -- a date is not a sum. */}
+                    {showAgeing ? (
+                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1" />
+                    ) : null}
+                    {showAgeing
+                      ? BUCKETS.map((label) => (
+                          <td
+                            key={label}
+                            style={{ fontSize: fs }}
+                            className="border border-gray-900 px-2 py-1 text-right"
+                          >
+                            {money(bucketTotal(label))}
+                          </td>
+                        ))
+                      : null}
+                  </tr>
+                </tfoot>
+              ) : null}
             </table>
 
-            {/* Footer */}
+            {/* ⚠️ The net, stated once and OUTSIDE the rows: a balance is not a
+                party, and nothing adds it up with them again. */}
+            {pIdx === pages.length - 1 ? (
+              <div className="mt-2 text-right" style={{ fontSize: fs }}>
+                <span className="font-semibold">Balance (Debit − Credit): </span>
+                <span className="font-bold">{money(summary.balance)}</span>
+              </div>
+            ) : null}
+
             <PrintFooter page={pIdx + 1} total={pages.length} fontSize={fs} />
 
             {pIdx !== pages.length - 1 && <div className="page-break" />}

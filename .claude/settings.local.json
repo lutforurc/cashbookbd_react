@@ -22,7 +22,11 @@
       "Read(//f/All_Database/www/cashbook_api/app/Helpers/**)",
       "Read(//f/All_Database/www/cashbook_api/app/Repositories/**)",
       "Read(//f/All_Database/www/cashbook_api/app/**)",
-      "Bash(php \"C:/Users/lutfo/AppData/Local/Temp/claude/f--All-Database-cashbookbd-react/2175b759-53ea-48f6-824a-344e7b93385d/tasks/dbg.php\")"
+      "Bash(php \"C:/Users/lutfo/AppData/Local/Temp/claude/f--All-Database-cashbookbd-react/2175b759-53ea-48f6-824a-344e7b93385d/tasks/dbg.php\")",
+      "WebFetch(domain:github.com)",
+      "Read(//f/All_Database/www/cashbook_api/config/**)",
+      "WebFetch(domain:packagist.org)",
+      "WebSearch"
     ],
     "additionalDirectories": [
       "F:\\All_Database\\www\\cashbook_api\\config",

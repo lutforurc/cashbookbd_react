@@ -25,6 +25,26 @@ export type DueListDocumentOptions = {
   showAgeing: boolean;
   mobileFormat?: string | null;
   branchName?: string | null;
+  /** The classification the report was run under, as the sheet names it. */
+  clientType?: string | null;
+  /**
+   * The employee filter, or empty where it is not offered. ⚠️ A layout that
+   * names it on a branch that does not run the field prints nothing, which is
+   * the truth -- `hideIfEmpty` keeps the line off entirely.
+   */
+  employee?: string | null;
+  /**
+   * The foot's figures, as the API worked them out over the filtered set.
+   *
+   * ⚠️ SEPARATE FROM THE ROWS, and that is the point: a layout that prints them
+   * is printing a summary, not another party. The table's own Grand Total row
+   * foots the Debit and Credit columns off `products`, which are customers only.
+   */
+  summary?: {
+    debit: number;
+    credit: number;
+    balance: number;
+  } | null;
 };
 
 /** A row's own figure for one bucket. Absent means nothing owed, not unknown. */
@@ -38,6 +58,9 @@ export const toDueListDocumentData = ({
   showAgeing,
   mobileFormat,
   branchName,
+  clientType,
+  employee,
+  summary,
 }: DueListDocumentOptions): DocumentData => {
   const list = Array.isArray(rows) ? rows : [];
 
@@ -87,6 +110,28 @@ export const toDueListDocumentData = ({
       ageing_rule: showAgeing ? 'From voucher date, oldest unpaid amount settled first.' : '',
       party_count: list.length,
       branch_name: branchName ?? '',
+      /**
+       * ⚠️ THE SAME FILTERS THE SCREEN WAS UNDER, on the paper. A layout can
+       * print them one at a time (`party_type_label`, `employee_name`) or as
+       * the joined line the bespoke sheet shows (`filter_line`), which
+       * DocumentPrint's `{filter_line}` token resolves because it reads `basic`.
+       */
+      party_type_label: clientType || 'All Types',
+      employee_name: employee ?? '',
+      /**
+       * The three figures, each with its own meaning. A layout may print them in
+       * a totals band; ⚠️ it must not print them as rows, or the table's own
+       * foot would add them to the customers a second time.
+       */
+      total_debit: Number(summary?.debit ?? 0),
+      total_credit: Number(summary?.credit ?? 0),
+      balance_amount: Number(summary?.balance ?? 0),
+      filter_line: [
+        `Client Type: ${clientType || 'All Types'}`,
+        employee ? `Employee: ${employee}` : '',
+      ]
+        .filter(Boolean)
+        .join('  |  '),
     },
     products,
   };

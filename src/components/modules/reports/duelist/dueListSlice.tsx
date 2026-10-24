@@ -8,6 +8,12 @@ interface cashBookParam {
   endDate: string;
   /** A `cust_party_infos.party_type_id`, or '' / null / undefined for every party. */
   partyTypeId?: string | number | null;
+  /**
+   * A `cust_party_infos.handle_by_employee_id`, or the word 'none' for the
+   * parties nobody has been given to -- the same two things List Customers
+   * sends. '' / null / undefined is every party.
+   */
+  employeeId?: string | number | null;
 }
 
 /**
@@ -22,7 +28,7 @@ interface cashBookParam {
  */
 let latestRequestId = 0;
 
-export const getDueList = ({ branchId, endDate, partyTypeId }: cashBookParam) => (dispatch: any) => {
+export const getDueList = ({ branchId, endDate, partyTypeId, employeeId }: cashBookParam) => (dispatch: any) => {
   const requestId = ++latestRequestId;
 
   dispatch({ type: DUE_LIST_DATA_PENDING });
@@ -36,6 +42,11 @@ export const getDueList = ({ branchId, endDate, partyTypeId }: cashBookParam) =>
   if (partyTypeId !== '' && partyTypeId !== null && partyTypeId !== undefined) {
     params.party_type_id = partyTypeId;
   }
+  // Same rule for the employee, and 'none' is a real value here -- it asks for
+  // the parties nobody holds, so it must not be read as "no filter".
+  if (employeeId !== '' && employeeId !== null && employeeId !== undefined) {
+    params.handle_by_employee_id = employeeId;
+  }
 
   httpService.get(API_REPORT_DUE_LIST_URL, { params })
     .then((res) => {
@@ -44,9 +55,16 @@ export const getDueList = ({ branchId, endDate, partyTypeId }: cashBookParam) =>
 
       let _data = res.data;
       if (_data.success) {
+        /**
+         * ⚠️ `{records, summary}` -- two things, and no longer one array with a
+         * 'Total' and a 'Balance' row pushed onto the end of it. The rows are
+         * the customers; the figures the footer needs are beside them, so
+         * nothing downstream has to recognise a summary by its name to keep it
+         * out of the customer list.
+         */
         dispatch({
           type: DUE_LIST_DATA_SUCCESS,
-          payload: _data.data.data.original,
+          payload: _data.data.data,
         });
       } else {
         dispatch({
