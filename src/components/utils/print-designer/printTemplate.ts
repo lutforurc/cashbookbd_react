@@ -3234,7 +3234,14 @@ const salesInvoice = (): PrintTemplate => ({
       bordered: true,
       repeatHeader: true,
       fillerRows: 0,
-      totalRow: false,
+      // ⚠️ ON, and it is the columns that decide what it says. The foot prints
+      // a total only for a column the paper knows one for -- `qty` and `amount`
+      // here, and the rate beside them not at all (six identical prices do not
+      // add up to anything a reader wants). So the row arrives already summing
+      // just the quantity and the money, with no rule of its own to learn.
+      // A tenant who has saved a layout of their own keeps their own setting;
+      // this is the built-in default, as every default here is.
+      totalRow: true,
       totalRowLabel: 'Grand Total',
       columns: [
         { field: 'sl', label: '#', width: 5, align: 'center' },
@@ -3394,7 +3401,10 @@ const purchaseInvoice = (): PrintTemplate => ({
       bordered: true,
       repeatHeader: true,
       fillerRows: 0,
-      totalRow: false,
+      // Same foot as the Sales Invoice's -- see the note there. `qty` and
+      // `amount` foot, the rate does not; a tenant with a saved layout keeps
+      // whatever they set.
+      totalRow: true,
       totalRowLabel: 'Grand Total',
       columns: [
         { field: 'sl', label: '#', width: 6, align: 'center' },

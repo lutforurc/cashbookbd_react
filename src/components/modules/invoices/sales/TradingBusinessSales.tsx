@@ -22,6 +22,7 @@ import {
   FiTrash2,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import ProductTotalsRow from '../../../utils/utils-functions/ProductTotalsRow';
 import SelectWeightVariance from '../../../utils/utils-functions/SelectWeightVariance';
 import {
   tradingSalesEdit,
@@ -1847,6 +1848,14 @@ const TradingBusinessSales = () => {
                 </tr>
               ))}
           </tbody>
+          <tfoot>
+            <ProductTotalsRow
+              products={formData.products}
+              columnCount={7}
+              qtyColumn={3}
+              totalColumn={5}
+            />
+          </tfoot>
         </table>
       </div>
       <div className="hidden">

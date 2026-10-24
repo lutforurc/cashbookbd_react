@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 import Loader from '../../../../common/Loader';
 import { FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import ProductTotalsRow from '../../../utils/utils-functions/ProductTotalsRow';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler';
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
 import { validateForm } from '../../../utils/utils-functions/validationUtils';
@@ -1011,6 +1012,14 @@ const TilesBusinessPurchaseReturn = () => {
               </tr>
             ))}
           </tbody>
+          <tfoot>
+            <ProductTotalsRow
+              products={formData.products}
+              columnCount={6}
+              qtyColumn={2}
+              totalColumn={4}
+            />
+          </tfoot>
         </table>
       </div>
 

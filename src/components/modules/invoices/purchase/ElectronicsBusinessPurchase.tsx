@@ -22,6 +22,7 @@ import {
   FiTrash2,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator.tsx';
+import ProductTotalsRow from '../../../utils/utils-functions/ProductTotalsRow';
 import dayjs from 'dayjs';
 import { validateForm } from '../../../utils/utils-functions/validationUtils.ts';
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage.ts';
@@ -1067,6 +1068,14 @@ const ElectronicsBusinessPurchase = () => {
                 </tr>
               ))}
           </tbody>
+          <tfoot>
+            <ProductTotalsRow
+              products={formData.products}
+              columnCount={6}
+              qtyColumn={2}
+              totalColumn={4}
+            />
+          </tfoot>
         </table>
       </div>
       <QuickCustomerModal

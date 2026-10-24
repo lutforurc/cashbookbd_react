@@ -22,6 +22,7 @@ import {
   FiTrash2,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import ProductTotalsRow from '../../../utils/utils-functions/ProductTotalsRow';
 import dayjs from 'dayjs';
 import {
   purchaseStore,
@@ -1494,6 +1495,14 @@ const TilesBusinessPurchase = () => {
                 </tr>
               ))}
           </tbody>
+          <tfoot>
+            <ProductTotalsRow
+              products={formData.products}
+              columnCount={6}
+              qtyColumn={2}
+              totalColumn={4}
+            />
+          </tfoot>
         </table>
       </div>
       <div className="hidden">

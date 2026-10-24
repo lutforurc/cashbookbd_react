@@ -16,6 +16,7 @@ import timezone from 'dayjs/plugin/timezone';
 import Loader from '../../../../common/Loader';
 import { FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiShare, FiTrash2 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import ProductTotalsRow from '../../../utils/utils-functions/ProductTotalsRow';
 import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import { FIELD_HEIGHT } from '../../../../theme/fieldStyles';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler';
@@ -1746,6 +1747,14 @@ const CompanySchemeSales = () => {
                 </tr>
               ))}
           </tbody>
+          <tfoot>
+            <ProductTotalsRow
+              products={formData.products}
+              columnCount={6}
+              qtyColumn={2}
+              totalColumn={4}
+            />
+          </tfoot>
         </table>
       </div>
 

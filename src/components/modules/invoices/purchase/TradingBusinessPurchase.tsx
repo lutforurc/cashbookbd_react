@@ -23,6 +23,7 @@ import {
   FiTrash2,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import ProductTotalsRow from '../../../utils/utils-functions/ProductTotalsRow';
 import dayjs from 'dayjs';
 import SelectWeightVariance from '../../../utils/utils-functions/SelectWeightVariance';
 import {
@@ -1783,6 +1784,14 @@ const TradingBusinessPurchase = () => {
                 </tr>
               ))}
           </tbody>
+          <tfoot>
+            <ProductTotalsRow
+              products={formData.products}
+              columnCount={7}
+              qtyColumn={3}
+              totalColumn={5}
+            />
+          </tfoot>
         </table>
       </div>
       <div className="hidden">

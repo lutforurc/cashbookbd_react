@@ -17,6 +17,7 @@ import { validateForm } from '../../../utils/utils-functions/validationUtils';
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import ProductTotalsRow from '../../../utils/utils-functions/ProductTotalsRow';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
@@ -663,6 +664,14 @@ const ConstructionBusinessPurchaseReturn = () => {
               </tr>
             ))}
           </tbody>
+          <tfoot>
+            <ProductTotalsRow
+              products={formData.products}
+              columnCount={6}
+              qtyColumn={2}
+              totalColumn={4}
+            />
+          </tfoot>
         </table>
       </div>
       <QuickCustomerModal
