@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CashBookBD — Intro</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1920px; height:1080px; overflow:hidden; }
+  body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    background:#05090a;
+    color:#e8f5f2;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .bg {
+    position:absolute; inset:0;
+    background:
+      radial-gradient(1100px 700px at 22% 18%, rgba(16,185,129,.20), transparent 60%),
+      radial-gradient(900px 600px at 82% 82%, rgba(13,148,136,.16), transparent 62%),
+      linear-gradient(160deg,#05090a 0%,#07100f 55%,#040807 100%);
+  }
+  .grid {
+    position:absolute; inset:0; opacity:.30;
+    background-image:linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+                     linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(900px 620px at 50% 45%, #000 30%, transparent 78%);
+    -webkit-mask-image:radial-gradient(900px 620px at 50% 45%, #000 30%, transparent 78%);
+  }
+  .content { position:relative; text-align:center; padding:0 80px; }
+  .badge {
+    display:inline-flex; align-items:center; gap:12px;
+    padding:12px 26px; border-radius:999px;
+    border:1px solid rgba(16,185,129,.35);
+    background:rgba(16,185,129,.08);
+    font-size:22px; letter-spacing:.34em; font-weight:600;
+    color:#5eead4; text-transform:uppercase;
+  }
+  .dot { width:11px; height:11px; border-radius:50%; background:#34d399; box-shadow:0 0 18px #34d399; }
+  h1 {
+    margin-top:52px; font-size:132px; line-height:1.05; font-weight:800;
+    letter-spacing:-.02em; color:#ffffff;
+  }
+  h1 .accent { color:#2dd4bf; }
+  p.sub {
+    margin-top:38px; font-size:38px; font-weight:400; color:#9fb4b0; letter-spacing:.01em;
+  }
+  .rule { margin:64px auto 0; width:420px; height:2px; background:linear-gradient(90deg,transparent,rgba(45,212,191,.7),transparent); }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid"></div>
+  <div class="content">
+    <span class="badge"><span class="dot"></span> CashBookBD</span>
+    <h1>Accounts, Inventory<br>and <span class="accent">HRM</span></h1>
+    <p class="sub">Multi-branch accounting, inventory and payroll — one system</p>
+    <div class="rule"></div>
+  </div>
+</body>
+</html>

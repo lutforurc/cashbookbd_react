@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CashBookBD — Outro</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1920px; height:1080px; overflow:hidden; }
+  body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    background:#05090a; color:#e8f5f2;
+    display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  .bg {
+    position:absolute; inset:0;
+    background:
+      radial-gradient(1000px 640px at 78% 22%, rgba(16,185,129,.18), transparent 60%),
+      radial-gradient(900px 620px at 18% 84%, rgba(13,148,136,.15), transparent 62%),
+      linear-gradient(200deg,#05090a 0%,#07100f 55%,#040807 100%);
+  }
+  .grid {
+    position:absolute; inset:0; opacity:.26;
+    background-image:linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+                     linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(900px 620px at 50% 45%, #000 30%, transparent 78%);
+    -webkit-mask-image:radial-gradient(900px 620px at 50% 45%, #000 30%, transparent 78%);
+  }
+  .content { position:relative; text-align:center; padding:0 80px; }
+  .mark {
+    display:inline-flex; align-items:center; gap:16px; margin-bottom:44px;
+  }
+  .dot { width:16px; height:16px; border-radius:50%; background:#34d399; box-shadow:0 0 26px #34d399; }
+  .wordmark { font-size:46px; font-weight:700; letter-spacing:.02em; color:#ffffff; }
+  h1 { font-size:104px; line-height:1.08; font-weight:800; letter-spacing:-.02em; color:#fff; }
+  h1 .accent { color:#2dd4bf; }
+  p.sub { margin-top:34px; font-size:34px; color:#9fb4b0; }
+  .cta {
+    margin-top:60px; display:inline-block; padding:20px 46px; border-radius:14px;
+    background:linear-gradient(90deg,#10b981,#0d9488); color:#04120f;
+    font-size:28px; font-weight:700; letter-spacing:.02em;
+  }
+  .rule { margin:56px auto 0; width:380px; height:2px; background:linear-gradient(90deg,transparent,rgba(45,212,191,.7),transparent); }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid"></div>
+  <div class="content">
+    <div class="mark"><span class="dot"></span><span class="wordmark">CashBookBD</span></div>
+    <h1>Run your whole business<br>from <span class="accent">one book</span></h1>
+    <p class="sub">Cash, bank, invoices, stock, reports and payroll</p>
+    <div class="cta">Start your free trial</div>
+    <div class="rule"></div>
+  </div>
+</body>
+</html>
