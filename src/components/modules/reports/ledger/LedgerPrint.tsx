@@ -11,6 +11,7 @@ export type LedgerRow = {
   sl_number?: string | number;
   vr_date?: string; // already formatted string or ISO
   vr_no?: string | number;
+  cash_transaction_type?: string; // 'Cash Received' (1-) / 'Cash Payment' (2-)
   name?: string; // plain text description
   remarks?: string;
   debit?: number; // money out
@@ -256,6 +257,11 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                               {row?.vr_date && formatDate(dayjs(row?.vr_date).format('YYYY-MM-DD'))}
                               {/* { row?.vr_date } */}
                             </div>
+                            {row?.cash_transaction_type ? (
+                              <div className={`text-left text-[${fs}px]`}>
+                                {row.cash_transaction_type}
+                              </div>
+                            ) : null}
                           </td>
                           <td
                             style={{ fontSize: fs }}

@@ -35,6 +35,8 @@ export interface TableRow {
    */
   manual_voucher_no?: string | null;
   manual_challan_no?: string | null;
+  /** 'Cash Received' (1-) or 'Cash Payment' (2-) from the server, '' otherwise. */
+  cash_transaction_type?: string;
   debit: number;
   credit: number;
   voucher_image: string | null;
@@ -98,6 +100,9 @@ export const generateTableData = (data: any, descending = false): TableRow[] => 
   // type.
   manual_voucher_no: trx.manual_voucher_no ?? null,
   manual_challan_no: trx.manual_challan_no ?? null,
+  // Same whitelist: the voucher's Cash Received / Cash Payment label, shared
+  // with Ledger Details and decided on the server.
+  cash_transaction_type: trx.cash_transaction_type || '',
   debit: parseFloat(trx.debit || 0),
   credit: parseFloat(trx.credit || 0),
   voucher_image: trx.voucher_image || null,
