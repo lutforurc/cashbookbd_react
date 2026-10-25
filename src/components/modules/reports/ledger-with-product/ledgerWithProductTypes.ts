@@ -14,6 +14,12 @@ export type LedgerWithProductRow = {
    * isPurchaseRow in ledgerWithProductUtils.
    */
   trx_type?: string;
+  /**
+   * 'Cash Received' (1-) or 'Cash Payment' (2-), from the voucher
+   * number's prefix on the server; '' for every other kind. Display only --
+   * nothing on the money side reads it.
+   */
+  cash_transaction_type?: string;
   quantity?: number | string;
   rate?: number | string;
   total?: number | string;

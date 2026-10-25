@@ -323,6 +323,9 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     >
                       <div style={{ fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }}>{row.vr_no || ''}</div>
                       <div style={{ fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }} className="block align-middle ">{row.vr_date || ''}</div>
+                      {row.cash_transaction_type ? (
+                        <div style={{ fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }} className="text-xs">{row.cash_transaction_type}</div>
+                      ) : null}
                     </td>
 
                     <td

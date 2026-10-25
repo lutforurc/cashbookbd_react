@@ -484,9 +484,9 @@ const LedgerWithProduct = (user: any) => {
 
   const transactionTypeLabel =
     transactionType === '2'
-      ? 'Purchase'
+      ? 'Cash Payment'
       : transactionType === '1'
-        ? 'Sales'
+        ? 'Cash Received'
         : 'All';
   /**
    * How many rows a printed page carries, or 0 for "do not split at all".
@@ -754,6 +754,7 @@ const LedgerWithProduct = (user: any) => {
     const tableRows = rows
       .map((row) => {
         const description = [
+          row.cash_transaction_type ? `[${row.cash_transaction_type}]` : '',
           row.transaction_name,
           row.sales_item_name ? `(${row.sales_item_name})` : '',
           row.remarks,
@@ -918,6 +919,11 @@ const LedgerWithProduct = (user: any) => {
               {row.vr_no || ''}
             </div>
             <div>{row.vr_date || ''}</div>
+            {row.cash_transaction_type ? (
+              <div className="text-xs text-slate-500 dark:text-slate-300">
+                {row.cash_transaction_type}
+              </div>
+            ) : null}
           </>
         );
       },

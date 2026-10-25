@@ -46,8 +46,11 @@ const TransactionTypes: React.FC<OrderProps> = ({
       <option disabled value="">
         {selectOption}
       </option>
-      <option value="2">Purchase</option>
-      <option value="1">Sales</option>
+      {/* acc_vr_type ids; the server matches them on the voucher prefix --
+          1 is 1-, 2 is 2-. They were labelled Sales / Purchase, which is not
+          what either value ever returned. */}
+      <option value="1">Cash Received</option>
+      <option value="2">Cash Payment</option>
     </Select>
   );
 };
