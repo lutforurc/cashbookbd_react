@@ -110,9 +110,12 @@ const DailyAccountBookPrint = React.forwardRef<HTMLDivElement, Props>(
               <tbody>
                 {block.map((row: any) => (
                   <tr key={`${section.key}-${row.mtm_id}`}>
-                    <td className={`${cell} text-center`}>{row.sl}</td>
-                    <td className={cell}>{row.description}</td>
-                    <td className={figure}>{money(row.amount)}</td>
+                    <td className={`${cell} text-center align-middle`}>{row.sl}</td>
+                    <td className={cell}>
+                      {row.description}
+                      {row.bank_name ? <div>{row.bank_name}</div> : null}
+                    </td>
+                    <td className={`${figure} align-middle`}>{money(row.amount)}</td>
                   </tr>
                 ))}
 

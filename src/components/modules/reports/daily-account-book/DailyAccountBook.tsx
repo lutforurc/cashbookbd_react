@@ -126,11 +126,13 @@ const SectionTable = ({ section, onPrint }: { section: any; onPrint: (row: any) 
             {rows.length ? (
               rows.map((row: any) => (
                 <tr key={row.mtm_id} className="align-top hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                  <td className="border border-slate-200 px-2 py-1 text-center dark:border-slate-700 dark:text-slate-300">{row.sl}</td>
+                  <td className="border border-slate-200 px-2 py-1 text-center align-middle dark:border-slate-700 dark:text-slate-300">{row.sl}</td>
                   <td className="border border-slate-200 px-2 py-1 dark:border-slate-700 dark:text-slate-300">
                     <VoucherDescription row={row} onPrint={onPrint} />
+                    {/* BANK PAYMENT TO SUPPLIER: which bank paid, on its own line. */}
+                    {row.bank_name ? <div>{row.bank_name}</div> : null}
                   </td>
-                  <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right dark:border-slate-700 dark:text-slate-300">
+                  <td className="whitespace-nowrap border border-slate-200 px-2 py-1 text-right align-middle dark:border-slate-700 dark:text-slate-300">
                     {money(row.amount)}
                   </td>
                 </tr>
