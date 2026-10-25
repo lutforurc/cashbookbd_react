@@ -483,11 +483,11 @@ const Ledger = (user: any) => {
           }
         >
           {row.vr_no}
-          {row.cash_transaction_type ? (
+          {/* {row.cash_transaction_type ? (
             <div className="text-xs text-slate-500 dark:text-slate-300">
               {row.cash_transaction_type}
             </div>
-          ) : null}
+          ) : null} */}
         </div>
       ),
     },
@@ -496,7 +496,7 @@ const Ledger = (user: any) => {
       header: 'Description',
       render: (row: any) => (
         <>
-          <p>{getLedgerRowName(row)}</p>
+          <p>{ row.cash_transaction_type ? row.cash_transaction_type : getLedgerRowName(row)}</p>
           <div className="text-sm text-gray-500 lg:max-w-150 wrap-break-word whitespace-normal block">
             <span
               className={highlightLineClass(
