@@ -294,7 +294,7 @@ const CashVoucherPrintBase = React.forwardRef<HTMLDivElement, Props>(
                   </tr>
                   <tr>
                     <td className="border border-black px-2 py-1 text-right font-semibold">
-                      <div className="mr-2">Net Received{variant.startsWith('half') ? '' : ' (Taka)'}</div>
+                      <div className="mr-2">{mode === 'payment' ? 'Net Paid' : 'Net Received'}{variant.startsWith('half') ? '' : ' (Taka)'}</div>
                     </td>
                     <td className="border border-black px-2 py-1 text-right font-semibold">
                       <div className="mr-2">{thousandSeparator(printData.amount)}</div>

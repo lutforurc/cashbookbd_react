@@ -71,7 +71,7 @@ import SalesLedger from './components/modules/reports/salesledger/SalesLedger';
 import ReturnLedger from './components/modules/reports/returnledger/ReturnLedger';
 import CustomerSalesReport from './components/modules/reports/customer-sales/CustomerSalesReport';
 import BankReceivedIndex from './components/modules/transactions/bankreceived/BankReceivedIndex';
-import BankPayment from './components/modules/transactions/bankpayment/BankPayment';
+import BankPaymentIndex from './components/modules/transactions/bankpayment/BankPaymentIndex';
 import Journal from './components/modules/transactions/journal/Journal';
 import Dayclose from './components/modules/dayclose/Dayclose';
 import Orders from './components/modules/orders/Orders';
@@ -643,7 +643,7 @@ function App() {
               <Route path={routes.bank_receive} element={<BankReceivedIndex />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.payment.create']} loading={permissionsLoading} />}>
-              <Route path={routes.bank_payment} element={<BankPayment />} />
+              <Route path={routes.bank_payment} element={<BankPaymentIndex />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.loan.create']} loading={permissionsLoading} />}>
               <Route path={routes.employee_loan} element={<EmployeeLoan />} />
