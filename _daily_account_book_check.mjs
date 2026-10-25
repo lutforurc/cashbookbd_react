@@ -157,9 +157,10 @@ assert.deepEqual(paymentOrder, [...paymentOrder].sort((a, b) => a - b), 'the PAY
    something else, which is precisely the gap this check could not see.
 
    ⚠️ THE TWO SECTIONS SWAPPED NAMES, and are asserted SEPARATELY so a swap can
-   never pass: the CASH catch-all is PAYMENT TO OTHERS (counted into the payment
-   total), and the NO-CASH journal memorandum is PAYMENT BY JOURNAL VOUCHER
-   (kept out of it). Asserting one name alone would go green on a mis-swap. */
+   never pass: the CASH catch-all is CASH PAYMENT TO OTHERS (counted into the
+   payment total), and the NO-CASH journal memorandum is PAYMENT BY JOURNAL
+   VOUCHER (kept out of it). Asserting one name alone would go green on a
+   mis-swap. */
 const SERVICE =
   process.env.CASHBOOK_API_DAILY_ACCOUNT_BOOK ||
   '../cashbook_api/app/Services/Reports/DailyAccountBook.php';
@@ -175,10 +176,10 @@ if (existsSync(SERVICE)) {
     'the API service still carries an obsolete section name',
   );
 
-  // The CASH catch-all: PAYMENT TO OTHERS, counted into the side total.
+  // The CASH catch-all: CASH PAYMENT TO OTHERS, counted into the side total.
   assert.ok(
-    /'key' => 'payment_to_others',\s*'title' => 'PAYMENT TO OTHERS',\s*'in_total' => true/.test(api),
-    'the API service does not define the PAYMENT TO OTHERS section that counts into the payment total',
+    /'key' => 'payment_to_others',\s*'title' => 'CASH PAYMENT TO OTHERS',\s*'in_total' => true/.test(api),
+    'the API service does not define the CASH PAYMENT TO OTHERS section that counts into the payment total',
   );
   assert.ok(
     /'section' => 'payment_to_others'/.test(api),
