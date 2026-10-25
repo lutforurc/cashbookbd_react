@@ -919,11 +919,11 @@ const LedgerWithProduct = (user: any) => {
               {row.vr_no || ''}
             </div>
             <div>{row.vr_date || ''}</div>
-            {row.cash_transaction_type ? (
+            {/* {row.cash_transaction_type ? (
               <div className="text-xs text-slate-500 dark:text-slate-300">
                 {row.cash_transaction_type}
               </div>
-            ) : null}
+            ) : null} */}
           </>
         );
       },
@@ -936,7 +936,7 @@ const LedgerWithProduct = (user: any) => {
       render: (row: any) => (
         <div>
           <div className="whitespace-normal">
-            {row.transaction_name}
+            { row.cash_transaction_type ? row.cash_transaction_type :  row.transaction_name}
             { row.sales_item_name && (
             <span className="mt-1 text-xs text-green-400"> &nbsp;({row.sales_item_name})</span>
           )}
