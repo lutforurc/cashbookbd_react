@@ -536,7 +536,8 @@ interface BookingState {
   bookings: Paged<Booking>;
   /** What was free the last time somebody asked. Never a reservation. */
   availability: Availability | null;
-  halls: null as any,
+  /** What is free in the halls on one date -- advisory, like `availability`. */
+  halls: any | null;
   opened: Booking | null;
   /** The booking being checked in, room by room. */
   allotment: Allotment | null;
@@ -598,6 +599,7 @@ interface BookingState {
 const initialState: BookingState = {
   bookings: { ...emptyPage },
   availability: null,
+  halls: null,
   opened: null,
   allotment: null,
   folio: null,
