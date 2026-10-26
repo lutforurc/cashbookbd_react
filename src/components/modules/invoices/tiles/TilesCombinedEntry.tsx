@@ -892,7 +892,14 @@ const TilesCombinedEntry = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {/* The two discounts and the bill's note in one row: the discounts
+                of equal width, the note taking what is left. items-end keeps the
+                three boxes level whatever the header above them does -- the
+                Notes header carries the applies-to strip. Below md they stack,
+                one to a line. The Notes column is the wider one for the reason
+                the Trading screen's is: its strip, icons only, is 114px and has
+                to sit beside the word Notes. */}
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.25fr] gap-2 items-end">
               <InputElement
                 id="purchaseDiscountAmt"
                 value={String(formData.purchaseDiscountAmt ?? '')}
@@ -915,6 +922,51 @@ const TilesCombinedEntry = () => {
                 onChange={handleFormChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')}
               />
+              <div>
+                {/* @container: below 270px the strip shows icons
+                    (NotesApplyToStrip), so label and strip share the line. */}
+                <div className="@container mb-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                  <label htmlFor="notes" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
+                    Notes
+                  </label>
+
+                  {showCombinedInvoiceNote && (
+                    <NotesApplyToStrip value={formData.notesApplyTo} onChange={handleNotesApplyToChange} />
+                  )}
+                </div>
+                {formData.notesApplyTo === 'separate' ? (
+                  <div className="relative">
+                    <Input
+                      id="notes"
+                      value={`P: ${formData.purchaseNotes || '-'} | S: ${formData.salesNotes || '-'}`}
+                      name="notes"
+                      readOnly
+                      title={`Purchase: ${formData.purchaseNotes || '-'}\nSales: ${formData.salesNotes || '-'}`}
+                      onFocus={() => setShowNotesModal(true)}
+                      onKeyDown={(e) => handleInputKeyDown(e, 'product')}
+                      className={fieldClass(undefined, 'w-full cursor-pointer pr-9')}
+                    />
+                    <IconButton
+                      icon={<FiEdit2 className="h-4 w-4" />}
+                      title="Edit the two notes"
+                      tone="primary"
+                      onClick={() => setShowNotesModal(true)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2"
+                    />
+                  </div>
+                ) : (
+                  <Input
+                    id="notes"
+                    value={formData.notes}
+                    name="notes"
+                    placeholder="Notes"
+                    autoComplete="off"
+                    onChange={handleFormChange}
+                    onKeyDown={(e) => handleInputKeyDown(e, 'product')}
+                    className={fieldClass(undefined, 'w-full')}
+                  />
+                )}
+              </div>
             </div>
 
             {/* The shop's own figures, one set per leg: the memo pair and the
@@ -1016,49 +1068,6 @@ const TilesCombinedEntry = () => {
                   />
                 </div>
               </div>
-            </div>
-            <div>
-              <div className="@container mb-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-                <label htmlFor="notes" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
-                  Notes
-                </label>
-
-                {showCombinedInvoiceNote && (
-                  <NotesApplyToStrip value={formData.notesApplyTo} onChange={handleNotesApplyToChange} />
-                )}
-              </div>
-              {formData.notesApplyTo === 'separate' ? (
-                <div className="relative">
-                  <Input
-                    id="notes"
-                    value={`P: ${formData.purchaseNotes || '-'} | S: ${formData.salesNotes || '-'}`}
-                    name="notes"
-                    readOnly
-                    title={`Purchase: ${formData.purchaseNotes || '-'}\nSales: ${formData.salesNotes || '-'}`}
-                    onFocus={() => setShowNotesModal(true)}
-                    onKeyDown={(e) => handleInputKeyDown(e, 'product')}
-                    className={fieldClass(undefined, 'w-full cursor-pointer pr-9')}
-                  />
-                  <IconButton
-                    icon={<FiEdit2 className="h-4 w-4" />}
-                    title="Edit the two notes"
-                    tone="primary"
-                    onClick={() => setShowNotesModal(true)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2"
-                  />
-                </div>
-              ) : (
-                <Input
-                  id="notes"
-                  value={formData.notes}
-                  name="notes"
-                  placeholder="Notes"
-                  autoComplete="off"
-                  onChange={handleFormChange}
-                  onKeyDown={(e) => handleInputKeyDown(e, 'product')}
-                  className={fieldClass(undefined, 'w-full')}
-                />
-              )}
             </div>
           </div>
         </div>
