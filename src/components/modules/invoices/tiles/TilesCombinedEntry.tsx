@@ -396,7 +396,7 @@ const TilesCombinedEntry = () => {
     ['Previous Payable', purchasePreviousPayable],
     ['Current Purchase', purchaseTotal],
     ['Discount', purchaseDiscount],
-    ['Pmt Amt Tk.', paymentAmount],
+    ['Payment Amount Tk.', paymentAmount],
   ];
   const salesTerms: [string, number][] = [
     ['Previous Balance', salesPreviousBalance],
@@ -849,11 +849,6 @@ const TilesCombinedEntry = () => {
                 />
               </div>
             </div>
-
-            {/* The two money boxes, and the date. Paid to the supplier on the
-                left, taken from the customer on the right -- independent, and
-                either may be nought. A cash party's box is shut: a cash
-                purchase is settled in full, and so is a cash sale. */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
                 id="paymentAmount"
@@ -861,7 +856,7 @@ const TilesCombinedEntry = () => {
                 name="paymentAmount"
                 type="number"
                 placeholder="Payment Amount"
-                label="Pmt Amt Tk."
+                label="Payment Tk."
                 disabled={Number(formData.supplierAccount) === 17}
                 className="py-1"
                 onChange={handleFormChange}
@@ -873,7 +868,7 @@ const TilesCombinedEntry = () => {
                 name="receivedAmount"
                 type="number"
                 placeholder="Received Amount"
-                label="Rcvd Amt Tk."
+                label="Received Tk."
                 disabled={Number(formData.customerAccount) === 17}
                 className="py-1"
                 onChange={handleFormChange}
@@ -969,13 +964,10 @@ const TilesCombinedEntry = () => {
               </div>
             </div>
 
-            {/* The shop's own figures, one set per leg: the memo pair and the
-                delivery challan's, written on the purchase voucher and on the
-                sales voucher. None reaches the posting -- the vouchers post on
-                vr_date under vr_no -- and all eight are optional. */}
+
             <div className="grid grid-cols-1 gap-2">
               <div>
-                <p className="mb-1 text-xs uppercase text-gray-500 dark:text-gray-400">Purchase</p>
+                <p className="mb-0 mt-1 text-xs uppercase text-gray-500 dark:text-gray-400">Purchase</p>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
                   <InputElement
                     id="purchase_manual_voucher_no"
@@ -1022,7 +1014,7 @@ const TilesCombinedEntry = () => {
                 </div>
               </div>
               <div>
-                <p className="mb-1 text-xs uppercase text-gray-500 dark:text-gray-400">Sales</p>
+                <p className="mb-0 mt-1 text-xs uppercase text-gray-500 dark:text-gray-400">Sales</p>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
                   <InputElement
                     id="manual_voucher_no"
@@ -1194,12 +1186,9 @@ const TilesCombinedEntry = () => {
               />
             </div>
 
-            {/* The two running figures, side by side, one term to a line with
-                the answer under a rule. Every term shows, nought included: a
-                line that comes and goes leaves the block a different height and
-                hides the very term the desk wants to see was counted. */}
-            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="ml-auto w-full max-w-xs text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
+
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="w-full text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
                 <p className="mb-1 text-xs uppercase text-gray-500 dark:text-gray-400">Purchase</p>
                 {purchaseTerms.map(([label, amount]) => (
                   <div key={label} className="flex justify-between gap-4">
@@ -1213,7 +1202,7 @@ const TilesCombinedEntry = () => {
                   <span>{money(purchaseTotalTk)}</span>
                 </div>
               </div>
-              <div className="ml-auto w-full max-w-xs text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
+              <div className="ml-auto w-full text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
                 <p className="mb-1 text-xs uppercase text-gray-500 dark:text-gray-400">Sales</p>
                 {salesTerms.map(([label, amount]) => (
                   <div key={label} className="flex justify-between gap-4">
