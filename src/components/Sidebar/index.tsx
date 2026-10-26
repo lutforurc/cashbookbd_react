@@ -1015,8 +1015,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
                           {/* The unified entries. Offered unless the branch has
                               chosen the separate cash/bank way; Automatic shows
-                              them, as before. */}
-                          {showUnifiedReceived && (
+                              them, as before. ⚠️ Each on its OWN key now -- the
+                              same one its route guard and search entry ask for.
+                              No Hotel permission: these are general Transaction
+                              features, and a shop that never ran a hotel can be
+                              given them. */}
+                          {showUnifiedReceived && hasPermission(permissions, 'transaction.received.create') && (
                             <li style={subSlot('transaction', 'hotel_received_entry')}>
                               <NavLink to={routes.hotel_received_entry} className={subMenuLinkClass}>
                                 Received Entry
@@ -1024,7 +1028,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {showUnifiedPayment && (
+                          {showUnifiedPayment && hasPermission(permissions, 'transaction.payment.create') && (
                             <li style={subSlot('transaction', 'hotel_payment_entry')}>
                               <NavLink to={routes.hotel_payment_entry} className={subMenuLinkClass}>
                                 Payment Entry

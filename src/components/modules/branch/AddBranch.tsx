@@ -1057,6 +1057,54 @@ const AddBranch = () => {
   const receivedUnified = String(formData?.received_entry_mode || '') === 'unified';
   const paymentUnified = String(formData?.payment_entry_mode || '') === 'unified';
 
+  // A form may only be chosen by someone who may open it: the four separate
+  // cash/bank forms on their own create permission, and each unified entry on
+  // its own transaction key -- the same keys its route guard, menu entry and
+  // search entry ask for. No Hotel permission is involved. Disabling a choice
+  // never touches a saved value -- the metas are written from formData, which
+  // is left exactly as it is.
+  const userPermissions = settings?.data?.permissions || [];
+  const canReceivedEntry = hasPermission(userPermissions, 'transaction.received.create');
+  const canPaymentEntry = hasPermission(userPermissions, 'transaction.payment.create');
+  const canCashReceived = hasPermission(userPermissions, 'cash.received.create');
+  const canBankReceived = hasPermission(userPermissions, 'bank.received.create');
+  const canCashPayment = hasPermission(userPermissions, 'cash.payment.create');
+  const canBankPayment = hasPermission(userPermissions, 'bank.payment.create');
+
+  const receivedModeOptions = FORM_VARIANT_OPTIONS.received_entry_mode.map((option) => ({
+    ...option,
+    disabled: option.id === 'unified' && !canReceivedEntry,
+  }));
+  const paymentModeOptions = FORM_VARIANT_OPTIONS.payment_entry_mode.map((option) => ({
+    ...option,
+    disabled: option.id === 'unified' && !canPaymentEntry,
+  }));
+
+  const receivedNote = receivedUnified
+    ? 'Received Entry Form is the one screen this branch uses, so Cash Received and Bank Received are not used. Their saved choices are kept, and come back if Separate is chosen.'
+    : [
+        !canReceivedEntry
+          ? 'You do not have permission to open the Received Entry form, so that mode cannot be selected.'
+          : '',
+        !canCashReceived || !canBankReceived
+          ? 'You do not have permission to open every cash/bank received form, so those cannot be selected.'
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+  const paymentNote = paymentUnified
+    ? 'Payment Entry Form is the one screen this branch uses, so Cash Payment and Bank Payment are not used. Their saved choices are kept, and come back if Separate is chosen.'
+    : [
+        !canPaymentEntry
+          ? 'You do not have permission to open the Payment Entry form, so that mode cannot be selected.'
+          : '',
+        !canCashPayment || !canBankPayment
+          ? 'You do not have permission to open every cash/bank payment form, so those cannot be selected.'
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+
   useEffect(() => {
     return () => {
       if (padHeaderPreview.startsWith('blob:')) {
@@ -1888,7 +1936,8 @@ const AddBranch = () => {
                     </div>
 
                     {/* Received: one unified screen, or the two separate ones.
-                        Automatic keeps both on offer, exactly as before. */}
+                        Automatic keeps both on offer, exactly as before. A form
+                        may only be chosen by somebody who may open it. */}
                     <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       Received Forms
                     </h4>
@@ -1901,7 +1950,7 @@ const AddBranch = () => {
                         onChange={handleOnSelectChange}
                         value={String(formData?.received_entry_mode || '')}
                         className="bg-transparent"
-                        data={FORM_VARIANT_OPTIONS.received_entry_mode}
+                        data={receivedModeOptions}
                       />
                       <DropdownCommon
                         id="form_variant_cash_received"
@@ -1911,7 +1960,7 @@ const AddBranch = () => {
                         onChange={handleOnSelectChange}
                         value={String(formData?.form_variant_cash_received || '')}
                         className="bg-transparent"
-                        disabled={receivedUnified}
+                        disabled={receivedUnified || !canCashReceived}
                         data={FORM_VARIANT_OPTIONS.form_variant_cash_received}
                       />
                       <DropdownCommon
@@ -1922,15 +1971,13 @@ const AddBranch = () => {
                         onChange={handleOnSelectChange}
                         value={String(formData?.form_variant_bank_received || '')}
                         className="bg-transparent"
-                        disabled={receivedUnified}
+                        disabled={receivedUnified || !canBankReceived}
                         data={FORM_VARIANT_OPTIONS.form_variant_bank_received}
                       />
                     </div>
-                    {receivedUnified && (
+                    {receivedNote && (
                       <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
-                        Received Entry Form is the one screen this branch uses, so
-                        Cash Received and Bank Received are not used. Their saved
-                        choices are kept, and come back if Separate is chosen.
+                        {receivedNote}
                       </p>
                     )}
 
@@ -1947,7 +1994,7 @@ const AddBranch = () => {
                         onChange={handleOnSelectChange}
                         value={String(formData?.payment_entry_mode || '')}
                         className="bg-transparent"
-                        data={FORM_VARIANT_OPTIONS.payment_entry_mode}
+                        data={paymentModeOptions}
                       />
                       <DropdownCommon
                         id="form_variant_cash_payment"
@@ -1957,7 +2004,7 @@ const AddBranch = () => {
                         onChange={handleOnSelectChange}
                         value={String(formData?.form_variant_cash_payment || '')}
                         className="bg-transparent"
-                        disabled={paymentUnified}
+                        disabled={paymentUnified || !canCashPayment}
                         data={FORM_VARIANT_OPTIONS.form_variant_cash_payment}
                       />
                       <DropdownCommon
@@ -1968,15 +2015,13 @@ const AddBranch = () => {
                         onChange={handleOnSelectChange}
                         value={String(formData?.form_variant_bank_payment || '')}
                         className="bg-transparent"
-                        disabled={paymentUnified}
+                        disabled={paymentUnified || !canBankPayment}
                         data={FORM_VARIANT_OPTIONS.form_variant_bank_payment}
                       />
                     </div>
-                    {paymentUnified && (
+                    {paymentNote && (
                       <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
-                        Payment Entry Form is the one screen this branch uses, so
-                        Cash Payment and Bank Payment are not used. Their saved
-                        choices are kept, and come back if Separate is chosen.
+                        {paymentNote}
                       </p>
                     )}
                   </>

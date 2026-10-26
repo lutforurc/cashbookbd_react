@@ -236,8 +236,8 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Housekeeping', path: routes.hotel_housekeeping, group: 'Hotel', permissions: ['hotel.housekeeping.view'] },
   { title: 'Amenity Issue & Stock', path: routes.hotel_amenity_issue, group: 'Hotel', permissions: ['hotel.housekeeping.view'] },
   { title: 'Hotel Asset Purchase', path: routes.hotel_asset_purchase, group: 'Hotel', permissions: ['hotel.building.view', 'hotel.floor.view', 'hotel.room.type.view', 'hotel.resource.view', 'hotel.booking.view'] },
-  { title: 'Hotel Payment Entry', path: routes.hotel_payment_entry, group: 'Transaction', permissions: ['hotel.building.view', 'hotel.floor.view', 'hotel.room.type.view', 'hotel.resource.view', 'hotel.booking.view'], when: 'unifiedPayment' },
-  { title: 'Hotel Received Entry', path: routes.hotel_received_entry, group: 'Transaction', permissions: ['hotel.building.view', 'hotel.floor.view', 'hotel.room.type.view', 'hotel.resource.view', 'hotel.booking.view'], when: 'unifiedReceived' },
+  { title: 'Hotel Payment Entry', path: routes.hotel_payment_entry, group: 'Transaction', permissions: ['transaction.payment.create'], when: 'unifiedPayment' },
+  { title: 'Hotel Received Entry', path: routes.hotel_received_entry, group: 'Transaction', permissions: ['transaction.received.create'], when: 'unifiedReceived' },
   { title: 'Hotel Reports', path: routes.hotel_reports, group: 'Hotel', permissions: ['hotel.report.view'] },
   { title: 'Hotel Setup', path: routes.hotel_setup, group: 'Hotel', keywords: ['rooms', 'halls', 'floors', 'room types', 'shift'], permissions: ['hotel.building.view', 'hotel.floor.view', 'hotel.room.type.view', 'hotel.resource.view'] },
 

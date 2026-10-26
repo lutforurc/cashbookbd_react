@@ -14,7 +14,7 @@ interface SelectOptionProps {
   className?: string;
   /** Shut the box: it still shows the saved choice, but will not change it. */
   disabled?: boolean;
-  data: { id: number | string; name: string }[];
+  data: { id: number | string; name: string; disabled?: boolean }[];
   /** A line under the box saying what the choice decides. */
   description?: React.ReactNode;
 }
@@ -56,7 +56,7 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
         className={fieldClass(undefined, `w-full block text-sm ${className}`)}
       >
         {data.map((item) => (
-          <option key={item.id} value={item.id}>
+          <option key={item.id} value={item.id} disabled={item.disabled}>
             {item.name}
           </option>
         ))}

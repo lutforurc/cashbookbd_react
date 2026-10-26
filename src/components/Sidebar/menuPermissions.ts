@@ -16,6 +16,11 @@ export const MENU_PERMISSIONS = {
     'inventory.received.create',
     'product.transfer.create',
     'product.received.create',
+    // The unified Received / Payment Entry. Their own keys, so a user holding
+    // only one of them still reaches the menu the entry lives in -- without
+    // being handed the Hotel module or the cash/bank screens.
+    'transaction.received.create',
+    'transaction.payment.create',
   ],
   invoice: ['purchase.create', 'sales.create', 'labour.invoice.create', 'delivery.view'],
   labour_items: ['labour.category.view', 'labour.item.view'],

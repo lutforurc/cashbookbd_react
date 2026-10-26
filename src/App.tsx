@@ -973,7 +973,31 @@ function App() {
               }
             >
               <Route path={routes.hotel_asset_purchase} element={<HotelAssetPurchase />} />
+            </Route>
+            {/* Received Entry and Payment Entry are general Transaction features
+                now, each behind its own key. They keep their hotel URLs, but no
+                Hotel permission is asked for: a shop that never ran a hotel can
+                still be given the receipt and payment books. */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['transaction.payment.create']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
               <Route path={routes.hotel_payment_entry} element={<HotelPaymentEntry />} />
+            </Route>
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['transaction.received.create']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
               <Route path={routes.hotel_received_entry} element={<HotelReceivedEntry />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
