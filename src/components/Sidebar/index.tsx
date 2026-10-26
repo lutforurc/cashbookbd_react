@@ -55,6 +55,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'inv_delivery', title: "Delivery" },
     { id: 'invoice/labour-invoice', title: "Labour Invoice" },
     { id: 'inv_trading_combined', title: "Combined Invoice" },
+    { id: 'inv_tiles_combined', title: "Combined Invoice" },
   ],
   'labour_items': [
     { id: 'labour_category', title: "Category" },
@@ -1146,6 +1147,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <li style={subSlot('invoice', 'inv_trading_combined')}>
                                 <NavLink
                                   to={routes.inv_trading_combined}
+                                  className={subMenuLinkClass}
+                                >
+                                  Combined Invoice
+                                </NavLink>
+                              </li>
+                            )}
+                          {/* The same screen for a Tiles and Sanitary branch, whose
+                              two money boxes replace Trading's single amount. By
+                              the branch flag, not the system id: a tiles branch
+                              runs Trading's inventory system row. */}
+                          {currentBranch?.is_tiles_and_sanitary &&
+                            hasPermission(permissions, 'purchase.create') &&
+                            hasPermission(permissions, 'sales.create') && (
+                              <li style={subSlot('invoice', 'inv_tiles_combined')}>
+                                <NavLink
+                                  to={routes.inv_tiles_combined}
                                   className={subMenuLinkClass}
                                 >
                                   Combined Invoice

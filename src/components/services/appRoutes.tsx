@@ -265,6 +265,10 @@ const ROUTES = {
   inv_purchase: '/invoice/purchase',
   inv_purchase_import: '/invoice/purchase-import',
   inv_trading_combined: '/invoice/trading-combined',
+  // The same one-form-buys-and-sells screen for a Tiles and Sanitary branch,
+  // whose two money boxes replace Trading's single amount. Its own route so the
+  // menu, the search and the report Edit buttons can point at the right one.
+  inv_tiles_combined: '/invoice/tiles-combined',
   inv_purchase_return: '/invoice/purchase-return',
   // Sales
   inv_sales: '/invoice/sales',

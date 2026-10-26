@@ -62,6 +62,7 @@ const GlobalSearch = () => {
       deliveryStock: Number(settingsData?.branch?.deduct_stock_on_delivery) === 1,
       yearClosing: Number(currentBranch?.company?.year_closing_enabled) === 1,
       tradingCombined: currentBranch?.business_type_id === 8,
+      tilesCombined: Boolean(currentBranch?.is_tiles_and_sanitary),
       installmentTrade: currentBranch?.business_type_id == 4,
       platformAdmin: Boolean(settingsData?.is_platform_admin),
     }),

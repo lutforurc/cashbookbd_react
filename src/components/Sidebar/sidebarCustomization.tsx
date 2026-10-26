@@ -552,6 +552,7 @@ export const SIDEBAR_SUB_DEFAULTS: Record<string, string[]> = {
     'inv_purchase_return',
     'divider:ioth:Other',
     'inv_trading_combined',
+    'inv_tiles_combined',
     'invoice/labour-invoice',
   ],
   admin: [

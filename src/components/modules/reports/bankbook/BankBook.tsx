@@ -38,6 +38,7 @@ import {
   getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
+import { useCombinedEntryRoute } from '../../../utils/hooks/useCombinedEntryRoute';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import routes from '../../../services/appRoutes';
 import { reportDescription as description } from '../../../utils/utils-functions/reportDescription';
@@ -81,6 +82,8 @@ const readSavedBankBookFilters = (): BankBookSavedFilters | null => {
 const BankBook = (user: any) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  // Trading's combined screen or Tiles', whichever this branch writes.
+  const combinedEntryRoute = useCombinedEntryRoute();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const bankBookData = useSelector((state) => state.bankBook);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -275,7 +278,7 @@ const BankBook = (user: any) => {
         return;
       }
 
-      navigate(routes.inv_trading_combined, {
+      navigate(combinedEntryRoute, {
         state: {
           combinedAutoEdit: true,
           combinedNumber,

@@ -58,6 +58,7 @@ import {
   getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
+import { useCombinedEntryRoute } from '../../../utils/hooks/useCombinedEntryRoute';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import routes from '../../../services/appRoutes';
 import SearchInput from '../../../utils/fields/SearchInput';
@@ -119,6 +120,8 @@ const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
   const highlightRules = useHighlightRules();
   const navigate = useNavigate();
+  // Trading's combined screen or Tiles', whichever this branch writes.
+  const combinedEntryRoute = useCombinedEntryRoute();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const ledgerData = useSelector((state: any) => state.salesLedger);
   const settings = useSelector((state: any) => state.settings);
@@ -492,7 +495,7 @@ const SalesLedger = (user: any) => {
         return;
       }
 
-      navigate(routes.inv_trading_combined, {
+      navigate(combinedEntryRoute, {
         state: {
           combinedAutoEdit: true,
           combinedNumber,

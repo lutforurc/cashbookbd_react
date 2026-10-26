@@ -42,6 +42,7 @@ import {
   getVoucherEditTarget,
   getVoucherEditTargetForRow,
 } from '../../../utils/utils-functions/voucherEditNavigation';
+import { useCombinedEntryRoute } from '../../../utils/hooks/useCombinedEntryRoute';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import routes from '../../../services/appRoutes';
 import { reportDescription as description } from '../../../utils/utils-functions/reportDescription';
@@ -70,6 +71,8 @@ const CashBook = (user: any) => {
   const dispatch = useDispatch();
   const highlightRules = useHighlightRules();
   const navigate = useNavigate();
+  // Trading's combined screen or Tiles', whichever this branch writes.
+  const combinedEntryRoute = useCombinedEntryRoute();
   const [params, setParams] = useSearchParams();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const cashBookData = useSelector((state) => state.cashBook);
@@ -341,7 +344,7 @@ const CashBook = (user: any) => {
         return;
       }
 
-      navigate(routes.inv_trading_combined, {
+      navigate(combinedEntryRoute, {
         state: {
           combinedAutoEdit: true,
           combinedNumber,

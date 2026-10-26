@@ -40,6 +40,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.inv_sales_return,
     '/invoice/labour-invoice',
     routes.inv_trading_combined,
+    routes.inv_tiles_combined,
   ],
   'branch-transfer': [
     routes.branch_transfer,

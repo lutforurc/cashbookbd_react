@@ -6,7 +6,7 @@ import { MENU_PERMISSIONS } from '../Sidebar/menuPermissions';
  * branch the user is working in. GlobalSearch decides each one exactly as the
  * sidebar does, so search never offers a screen the menu hides.
  */
-export type GlobalSearchCondition = 'deliveryStock' | 'yearClosing' | 'tradingCombined' | 'installmentTrade' | 'platformAdmin';
+export type GlobalSearchCondition = 'deliveryStock' | 'yearClosing' | 'tradingCombined' | 'tilesCombined' | 'installmentTrade' | 'platformAdmin';
 
 export type GlobalSearchItem = {
   title: string;
@@ -42,6 +42,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Receive List', path: routes.report_branch_receive_list, group: 'Report', keywords: ['received challans', 'branch receive list'], permissions: ['branch.received.create', 'inventory.received.create', 'product.received.create', 'product.stock.view'] },
 
   { title: 'Trading Combined', path: routes.inv_trading_combined, group: 'Invoice', permissions: ['purchase.create', 'sales.create'], when: 'tradingCombined' },
+  { title: 'Combined Invoice', path: routes.inv_tiles_combined, group: 'Invoice', keywords: ['tiles combined', 'tiles and sanitary'], permissions: ['purchase.create', 'sales.create'], when: 'tilesCombined' },
   { title: 'Purchase Invoice', path: routes.inv_purchase, group: 'Invoice', keywords: ['new purchase', 'buy', 'purchase entry'], permissions: ['purchase.create'] },
   { title: 'Purchase Import', path: routes.inv_purchase_import, group: 'Invoice', permissions: ['purchase.create', 'purchase.import'] },
   { title: 'Purchase Return', path: routes.inv_purchase_return, group: 'Invoice', permissions: ['purchase.create', 'purchase.return.view'] },

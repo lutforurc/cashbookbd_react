@@ -98,6 +98,7 @@ import DeliveryDashboard from './components/modules/delivery/DeliveryDashboard';
 import TradingSalesImport from './components/modules/invoices/sales/TradingSalesImport';
 import GeneralBusinessSalesReturn from './components/modules/invoices/sales/GeneralBusinessSalesReturn';
 import TradingCombinedEntry from './components/modules/invoices/trading/TradingCombinedEntry';
+import TilesCombinedEntry from './components/modules/invoices/tiles/TilesCombinedEntry';
 import CashReceivedIndex from './components/modules/transactions/cashreceived/CashReceivedIndex';
 import CashPaymentIndex from './components/modules/transactions/cashpayment/CashPaymentIndex';
 import ChangeVoucherType from './components/modules/change_voucher_type/ChangeVoucherType';
@@ -1298,6 +1299,7 @@ function App() {
             {/* Invoices */}
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create', 'sales.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_trading_combined} element={<TradingCombinedEntry />} />
+              <Route path={routes.inv_tiles_combined} element={<TilesCombinedEntry />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_purchase} element={<PurchaseIndex />} />

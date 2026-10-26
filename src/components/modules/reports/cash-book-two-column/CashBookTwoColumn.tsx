@@ -32,6 +32,7 @@ import {
   getEditableVoucherNo,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
+import { useCombinedEntryRoute } from '../../../utils/hooks/useCombinedEntryRoute';
 import {
   useRemoveVoucherApproval,
   useVoucherPrint,
@@ -144,6 +145,8 @@ const CashBookTwoColumn = ({ user }: any) => {
   // shows a wrong figure is only useful if the voucher behind it can be reached
   // from the line it is on.
   const navigate = useNavigate();
+  // Trading's combined screen or Tiles', whichever this branch writes.
+  const combinedEntryRoute = useCombinedEntryRoute();
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
@@ -369,7 +372,7 @@ const CashBookTwoColumn = ({ user }: any) => {
         return;
       }
 
-      navigate(routes.inv_trading_combined, {
+      navigate(combinedEntryRoute, {
         state: { combinedAutoEdit: true, combinedNumber },
       });
       return;
