@@ -7,10 +7,12 @@ import HeadOfficeCashReceived from './HeadOfficeCashReceived';
 import TilesCashReceived from './TilesCashReceived';
 import { userCurrentBranch } from '../../branch/branchSlice';
 import Loader from '../../../../common/Loader';
+import { branchFormVariant } from '../../../utils/userFeatureSettings';
 
 const CashReceivedIndex = () => {
   const dispatch = useDispatch();
   const currentBranch = useSelector((state: any) => state.branchList.currentBranch);
+  const settings = useSelector((state: any) => state.settings);
 
   useEffect(() => {
     if (!currentBranch?.inventory_system_id) {
@@ -21,6 +23,18 @@ const CashReceivedIndex = () => {
   if (!currentBranch?.inventory_system_id) {
     return <Loader />;
   }
+
+  // Branch Setup -> Forms Setup: the branch's own choice, when it has made one,
+  // opens before anything here would decide. An empty preference is Automatic
+  // and falls through to the logic below, unchanged. Under the unified Received
+  // Entry mode this screen is no longer the branch's way in, so its saved form
+  // preference is ignored and the screen keeps its own choice.
+  const preferred = branchFormVariant(settings, 'received_entry_mode') === 'unified'
+    ? ''
+    : branchFormVariant(settings, 'form_variant_cash_received');
+  if (preferred === 'tiles') return <TilesCashReceived />;
+  if (preferred === 'trading') return <TradingCashReceived />;
+  if (preferred === 'general') return <GeneralCashReceived />;
 
   // Head office is a branch role, not an inventory system, so it keeps its own
   // business_type_id check and wins over the inventory-system mapping below.

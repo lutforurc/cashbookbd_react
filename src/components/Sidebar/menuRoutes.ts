@@ -25,6 +25,10 @@ export const MENU_ROUTES: Record<string, string[]> = {
     '/accounts/bank/payment',
     routes.bank_reconciliation,
     routes.cheque_register,
+    // Moved here from the Hotel menu, so the Transaction menu stays open and
+    // marked while one of these is on screen.
+    routes.hotel_received_entry,
+    routes.hotel_payment_entry,
     routes.year_closing,
     routes.budget,
     routes.installment_list,

@@ -8,10 +8,12 @@ import TilesCashPayment from './TilesCashPayment';
 import ProjectExpense from '../../real-estate/project-expense/ProjectExpense';
 import { userCurrentBranch } from '../../branch/branchSlice';
 import Loader from '../../../../common/Loader';
+import { branchFormVariant } from '../../../utils/userFeatureSettings';
 
 const CashPaymentIndex = () => {
   const dispatch = useDispatch();
   const currentBranch = useSelector((state: any) => state.branchList.currentBranch);
+  const settings = useSelector((state: any) => state.settings);
 
   useEffect(() => {
     if (!currentBranch?.inventory_system_id) {
@@ -23,6 +25,18 @@ const CashPaymentIndex = () => {
     return <Loader />;
   }
   
+  // Branch Setup -> Forms Setup: the branch's own choice, when it has made one,
+  // opens before anything here would decide. An empty preference is Automatic
+  // and falls through to the logic below, unchanged. Under the unified Payment
+  // Entry mode this screen is no longer the branch's way in, so its saved form
+  // preference is ignored and the screen keeps its own choice.
+  const preferred = branchFormVariant(settings, 'payment_entry_mode') === 'unified'
+    ? ''
+    : branchFormVariant(settings, 'form_variant_cash_payment');
+  if (preferred === 'tiles') return <TilesCashPayment />;
+  if (preferred === 'trading') return <TradingCashPayment />;
+  if (preferred === 'general') return <GeneralCashPayment />;
+
   console.log('Current Branch:', currentBranch);
 
   // Head office is a branch role, not an inventory system, so it keeps its own

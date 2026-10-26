@@ -13,11 +13,19 @@ import { getAverageOrderPrice } from './ordersSlice';
 import { toast } from 'react-toastify';
 import checkNumber from '../../utils/utils-functions/numberCheck';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { branchFormVariant, separateEntriesShown } from '../../utils/userFeatureSettings';
 
 const AveragePrice = (user: any) => {
     const categoryData = useSelector((state) => state.category);
     const branchDdlData = useSelector((state) => state.branchDdl);
     const orders = useSelector((state) => state.orders);
+    const settings = useSelector((state: any) => state.settings);
+    // Branch Setup -> Forms Setup: the shortcut below opens the separate Cash
+    // Received screen, so it follows the received mode -- not offered at all
+    // when the branch takes the unified Received Entry instead.
+    const showSeparateReceived = separateEntriesShown(
+        branchFormVariant(settings, 'received_entry_mode')
+    );
     const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);
     const [dropdownData, setDropdownData] = useState<any[]>([]);
     const [buttonLoading, setButtonLoading] = useState(false);
@@ -162,7 +170,7 @@ const AveragePrice = (user: any) => {
                             </div>
                             <div className="grid grid-cols-2 gap-2 border-b border-black dark:border-white pb-1 pt-1 text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
                                 <div className="">
-                                    {orderData?.data?.order_number ? (
+                                    {orderData?.data?.order_number && showSeparateReceived ? (
                                         <a
                                             href={`/accounts/cash/receive/${orderData?.data?.order_number}`}
                                             target="_blank"

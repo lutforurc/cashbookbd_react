@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { matchSorter } from 'match-sorter';
 import { FiSearch, FiX } from 'react-icons/fi';
 import { hasAnyPermission, Permission } from '../Sidebar/permissionUtils';
+import { branchFormVariant, branchInvoiceVariant, separateEntriesShown, unifiedEntryShown } from '../utils/userFeatureSettings';
 import { getVoucherEditTarget } from '../utils/utils-functions/voucherEditNavigation';
 import { VoucherPrintRegistry } from '../modules/vouchers/VoucherPrintRegistry';
 import routes from '../services/appRoutes';
@@ -55,18 +56,34 @@ const GlobalSearch = () => {
   const permissions = useSelector((state: any) => state.settings?.data?.permissions ?? []);
   const settingsData = useSelector((state: any) => state.settings?.data);
   const currentBranch = useSelector((state: any) => state.branchList?.currentBranch);
+  const settings = useSelector((state: any) => state.settings);
+
+  // Branch Setup -> Invoice Setup: an explicit combined choice is the only
+  // combined entry search offers; Automatic leaves the business type to decide,
+  // exactly as the sidebar does.
+  const combinedVariant = branchInvoiceVariant(settings, 'invoice_variant_combined');
+
+  // Branch Setup -> Forms Setup: which way the branch takes its received and
+  // payment entries. Automatic leaves both ways on offer, exactly as the
+  // sidebar does.
+  const receivedMode = branchFormVariant(settings, 'received_entry_mode');
+  const paymentMode = branchFormVariant(settings, 'payment_entry_mode');
 
   // Read exactly as the sidebar reads them, so search offers what the menu offers.
   const conditions = useMemo<Record<GlobalSearchCondition, boolean>>(
     () => ({
       deliveryStock: Number(settingsData?.branch?.deduct_stock_on_delivery) === 1,
       yearClosing: Number(currentBranch?.company?.year_closing_enabled) === 1,
-      tradingCombined: currentBranch?.business_type_id === 8,
-      tilesCombined: Boolean(currentBranch?.is_tiles_and_sanitary),
+      tradingCombined: combinedVariant ? combinedVariant === 'trading' : currentBranch?.business_type_id === 8,
+      tilesCombined: combinedVariant ? combinedVariant === 'tiles' : Boolean(currentBranch?.is_tiles_and_sanitary),
       installmentTrade: currentBranch?.business_type_id == 4,
       platformAdmin: Boolean(settingsData?.is_platform_admin),
+      separateReceived: separateEntriesShown(receivedMode),
+      unifiedReceived: unifiedEntryShown(receivedMode),
+      separatePayment: separateEntriesShown(paymentMode),
+      unifiedPayment: unifiedEntryShown(paymentMode),
     }),
-    [settingsData, currentBranch],
+    [settingsData, currentBranch, combinedVariant, receivedMode, paymentMode],
   );
 
   const availableItems = useMemo(

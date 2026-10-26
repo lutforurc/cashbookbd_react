@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import routes from '../../services/appRoutes';
+import { branchInvoiceVariant, combinedScreenFor } from '../userFeatureSettings';
 
 /**
  * Which Combined Invoice screen a `combined_number` row opens on.
@@ -18,8 +19,18 @@ import routes from '../../services/appRoutes';
  */
 export const useCombinedEntryRoute = (): string => {
   const currentBranch = useSelector((s: any) => s.branchList?.currentBranch);
+  const settings = useSelector((s: any) => s.settings);
 
-  return Boolean(currentBranch?.is_tiles_and_sanitary)
-    ? routes.inv_tiles_combined
-    : routes.inv_trading_combined;
+  // Branch Setup -> Invoice Setup: a chosen combined form opens its own screen.
+  // Automatic and Not Applicable both resolve by the branch flag -- see
+  // combinedScreenFor() -- so the reports' Edit button always opens a real
+  // screen and never builds an invalid link. Not Applicable only keeps the
+  // entry out of the menu and the search; it does not hide a combined voucher
+  // written before it was chosen.
+  const screen = combinedScreenFor(
+    branchInvoiceVariant(settings, 'invoice_variant_combined'),
+    Boolean(currentBranch?.is_tiles_and_sanitary),
+  );
+
+  return screen === 'tiles' ? routes.inv_tiles_combined : routes.inv_trading_combined;
 };

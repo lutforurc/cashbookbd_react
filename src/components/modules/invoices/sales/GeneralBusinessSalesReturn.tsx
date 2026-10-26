@@ -30,6 +30,7 @@ import { userCurrentBranch } from '../../branch/branchSlice';
 import TilesBusinessSalesReturn from './TilesBusinessSalesReturn';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
+import { branchInvoiceVariant } from '../../../utils/userFeatureSettings';
 
 interface Product {
   id: number;
@@ -80,6 +81,7 @@ const GeneralBusinessSalesReturn = () => {
   const navigate = useNavigate();
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const currentBranch = useSelector((state: any) => state.branchList.currentBranch);
+  const settings = useSelector((state: any) => state.settings);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [unit, setUnit] = useState<string | null>(null);
@@ -345,10 +347,17 @@ const GeneralBusinessSalesReturn = () => {
     0,
   );
 
+  // Branch Setup -> Invoice Setup: an explicit choice opens its own form and
+  // wins over the branch flag. An empty preference is Automatic, which keeps
+  // the flag deciding.
+  const preferred = branchInvoiceVariant(settings, 'invoice_variant_sales_return');
+
   // ⚠️ Before the screen is drawn, and by the branch flag rather than the
   // system id: a Tiles and Sanitary branch runs inventory_system_id 4, which is
   // Trading's row, so it reaches this file today and would go on doing so.
-  if (currentBranch?.is_tiles_and_sanitary) return <TilesBusinessSalesReturn />;
+  if (preferred === 'tiles' || (preferred === '' && currentBranch?.is_tiles_and_sanitary)) {
+    return <TilesBusinessSalesReturn />;
+  }
 
   return (
     <>

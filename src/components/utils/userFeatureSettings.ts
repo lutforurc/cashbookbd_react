@@ -33,6 +33,61 @@ export const isBranchSettingOn = (settings: any, key: string): boolean =>
   settingOn(settings?.data?.branch?.[key]);
 
 /**
+ * A branch's preferred existing form for one category, as chosen on Branch
+ * Setup -- the invoice categories and the cash/bank ones alike.
+ *
+ * The meta table stores every answer as text, so an untouched branch answers
+ * null and a reset one answers ''. Both read as the empty string here, which is
+ * what the screens test for before falling back to choosing the form for
+ * themselves -- so Automatic is exactly the behaviour that came before the
+ * setting existed.
+ */
+export const branchFormVariant = (settings: any, key: string): string =>
+  String(settings?.data?.branch?.[key] ?? '').trim();
+
+/** The same question, under the name the invoice screens have always called it. */
+export const branchInvoiceVariant = (settings: any, key: string): string =>
+  branchFormVariant(settings, key);
+
+/**
+ * Which way a branch takes its received (or its payment) entries, as chosen on
+ * Branch Setup -> Forms Setup. The two are independent.
+ *
+ *   ''          Automatic -- both the separate Cash/Bank entries and the
+ *               unified Received/Payment Entry stay on offer, exactly as before
+ *               the setting existed.
+ *   'unified'   Only the one unified Received/Payment Entry is offered.
+ *   'separate'  Only the separate Cash and Bank entries are offered.
+ *
+ * Both readers are allow-lists, so a blank or an unrecognised value keeps the
+ * automatic behaviour rather than hiding anything.
+ */
+export const separateEntriesShown = (mode: string): boolean => mode !== 'unified';
+export const unifiedEntryShown = (mode: string): boolean => mode !== 'separate';
+
+/**
+ * Which existing Combined screen a branch resolves to: 'tiles' or 'trading'.
+ *
+ * An explicit Elegant ('tiles') or Essential ('trading') answers for itself.
+ * Every other value resolves by the branch flag, exactly as it always did:
+ *   - Automatic (''), the branch has not chosen;
+ *   - Not Applicable ('not_applicable'), which hides the Combined entry from
+ *     the menu and the search but must still open a combined voucher written
+ *     before that choice, from the reports' Edit button.
+ *
+ * The return type is the point: it can only ever be one of the two real
+ * screens, so a caller can never build a link to a screen that does not exist.
+ */
+export const combinedScreenFor = (
+  preferred: string,
+  isTilesAndSanitary: unknown,
+): 'tiles' | 'trading' => {
+  if (preferred === 'tiles') return 'tiles';
+  if (preferred === 'trading') return 'trading';
+  return isTilesAndSanitary ? 'tiles' : 'trading';
+};
+
+/**
  * What this branch calls one of its own figures, as typed on Branch Setup.
  *
  * ⚠️ THE FALLBACK LIVES AT THE CALL SITE. The server stores only what the branch

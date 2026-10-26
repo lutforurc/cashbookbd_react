@@ -12,6 +12,8 @@ interface SelectOptionProps {
   onBlur?: (event: React.FocusEvent<HTMLSelectElement>) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLSelectElement>) => void;
   className?: string;
+  /** Shut the box: it still shows the saved choice, but will not change it. */
+  disabled?: boolean;
   data: { id: number | string; name: string }[];
   /** A line under the box saying what the choice decides. */
   description?: React.ReactNode;
@@ -27,6 +29,7 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
   onBlur,
   onKeyDown,
   className,
+  disabled,
   data = [],
   description,
 }) => {
@@ -46,6 +49,7 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
         name={name}
         value={value}                 // ✅ parent controls value
         defaultValue={defaultValue}
+        disabled={disabled}
         onChange={onChange}
         onBlur={onBlur}
         onKeyDown={onKeyDown}

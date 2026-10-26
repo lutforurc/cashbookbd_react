@@ -6,7 +6,7 @@ import TilesBusinessSales from './TilesBusinessSales';
 import CompanySchemeSales from './CompanySchemeSales';
 import Loader from '../../../../common/Loader';
 import { userCurrentBranch } from '../../branch/branchSlice';
-import { isBranchSettingOn } from '../../../utils/userFeatureSettings';
+import { branchInvoiceVariant, isBranchSettingOn } from '../../../utils/userFeatureSettings';
 import { useEffect } from 'react';
 
 const SalesIndex = () => {
@@ -23,6 +23,16 @@ const SalesIndex = () => {
   if (!currentBranch?.inventory_system_id) {
     return <Loader />;
   }
+
+  // Branch Setup -> Invoice Setup: the branch's own choice, when it has made
+  // one, opens before anything the business type would decide. An empty
+  // preference is Automatic and falls through to the logic below, unchanged.
+  const preferred = branchInvoiceVariant(settings, 'invoice_variant_sales');
+  if (preferred === 'tiles') return <TilesBusinessSales />;
+  if (preferred === 'electronics') return <ElectronicsBusinessSales />;
+  if (preferred === 'company_scheme') return <CompanySchemeSales />;
+  if (preferred === 'trading') return <TradingBusinessSales />;
+  if (preferred === 'general') return <GeneralBusinessSales />;
 
   // ⚠️ Before the map, and by the branch flag rather than the system id: a
   // Tiles and Sanitary branch runs inventory_system_id 4, which is Trading's

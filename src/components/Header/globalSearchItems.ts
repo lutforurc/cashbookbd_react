@@ -6,7 +6,7 @@ import { MENU_PERMISSIONS } from '../Sidebar/menuPermissions';
  * branch the user is working in. GlobalSearch decides each one exactly as the
  * sidebar does, so search never offers a screen the menu hides.
  */
-export type GlobalSearchCondition = 'deliveryStock' | 'yearClosing' | 'tradingCombined' | 'tilesCombined' | 'installmentTrade' | 'platformAdmin';
+export type GlobalSearchCondition = 'deliveryStock' | 'yearClosing' | 'tradingCombined' | 'tilesCombined' | 'installmentTrade' | 'platformAdmin' | 'separateReceived' | 'unifiedReceived' | 'separatePayment' | 'unifiedPayment';
 
 export type GlobalSearchItem = {
   title: string;
@@ -28,10 +28,10 @@ const globalSearchItems: GlobalSearchItem[] = [
 
   { title: 'Reseller Dashboard', path: routes.reseller_dashboard, group: 'Reseller', permissions: ['reseller.dashboard.view'] },
 
-  { title: 'Cash Received', path: routes.cash_receive, group: 'Transaction', keywords: ['cash receive', 'new cash receive', 'money received'], permissions: ['cash.received.create'] },
-  { title: 'Cash Payment', path: routes.cash_payment, group: 'Transaction', keywords: ['new cash payment', 'pay cash'], permissions: ['cash.payment.create'] },
-  { title: 'Bank Received', path: routes.bank_receive, group: 'Transaction', permissions: ['bank.received.create'] },
-  { title: 'Bank Payment', path: routes.bank_payment, group: 'Transaction', permissions: ['bank.payment.create'] },
+  { title: 'Cash Received', path: routes.cash_receive, group: 'Transaction', keywords: ['cash receive', 'new cash receive', 'money received'], permissions: ['cash.received.create'], when: 'separateReceived' },
+  { title: 'Cash Payment', path: routes.cash_payment, group: 'Transaction', keywords: ['new cash payment', 'pay cash'], permissions: ['cash.payment.create'], when: 'separatePayment' },
+  { title: 'Bank Received', path: routes.bank_receive, group: 'Transaction', permissions: ['bank.received.create'], when: 'separateReceived' },
+  { title: 'Bank Payment', path: routes.bank_payment, group: 'Transaction', permissions: ['bank.payment.create'], when: 'separatePayment' },
   { title: 'Employee Loan', path: routes.employee_loan, group: 'Transaction', permissions: ['hrm.loan.create'] },
   { title: 'Journal', path: routes.journal, group: 'Transaction', permissions: ['journal.create'] },
 
@@ -236,8 +236,8 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Housekeeping', path: routes.hotel_housekeeping, group: 'Hotel', permissions: ['hotel.housekeeping.view'] },
   { title: 'Amenity Issue & Stock', path: routes.hotel_amenity_issue, group: 'Hotel', permissions: ['hotel.housekeeping.view'] },
   { title: 'Hotel Asset Purchase', path: routes.hotel_asset_purchase, group: 'Hotel', permissions: ['hotel.building.view', 'hotel.floor.view', 'hotel.room.type.view', 'hotel.resource.view', 'hotel.booking.view'] },
-  { title: 'Hotel Payment Entry', path: routes.hotel_payment_entry, group: 'Hotel', permissions: ['hotel.building.view', 'hotel.floor.view', 'hotel.room.type.view', 'hotel.resource.view', 'hotel.booking.view'] },
-  { title: 'Hotel Received Entry', path: routes.hotel_received_entry, group: 'Hotel', permissions: ['hotel.building.view', 'hotel.floor.view', 'hotel.room.type.view', 'hotel.resource.view', 'hotel.booking.view'] },
+  { title: 'Hotel Payment Entry', path: routes.hotel_payment_entry, group: 'Transaction', permissions: ['hotel.building.view', 'hotel.floor.view', 'hotel.room.type.view', 'hotel.resource.view', 'hotel.booking.view'], when: 'unifiedPayment' },
+  { title: 'Hotel Received Entry', path: routes.hotel_received_entry, group: 'Transaction', permissions: ['hotel.building.view', 'hotel.floor.view', 'hotel.room.type.view', 'hotel.resource.view', 'hotel.booking.view'], when: 'unifiedReceived' },
   { title: 'Hotel Reports', path: routes.hotel_reports, group: 'Hotel', permissions: ['hotel.report.view'] },
   { title: 'Hotel Setup', path: routes.hotel_setup, group: 'Hotel', keywords: ['rooms', 'halls', 'floors', 'room types', 'shift'], permissions: ['hotel.building.view', 'hotel.floor.view', 'hotel.room.type.view', 'hotel.resource.view'] },
 

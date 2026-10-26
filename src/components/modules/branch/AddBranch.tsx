@@ -68,6 +68,24 @@ interface branchItem {
   purchase_note: string;
   sales_note: string;
   combined_invoice_note: boolean;
+  /**
+   * The preferred existing form for each invoice category, or '' for Automatic.
+   * Automatic keeps choosing the form from the business type, exactly as the
+   * screens did before this setting existed.
+   */
+  invoice_variant_purchase: string;
+  invoice_variant_sales: string;
+  invoice_variant_purchase_return: string;
+  invoice_variant_sales_return: string;
+  invoice_variant_combined: string;
+  form_variant_cash_received: string;
+  form_variant_cash_payment: string;
+  form_variant_bank_received: string;
+  form_variant_bank_payment: string;
+  /** Which way this branch takes its received entries: '', 'unified' or 'separate'. */
+  received_entry_mode: string;
+  /** The same, chosen on its own, for its payment entries. */
+  payment_entry_mode: string;
   money_format: string;
   mobile_number_format: string;
   phone: string;
@@ -280,6 +298,85 @@ const buildBranchFormData = (data: branchItem, file: File | null) => {
   return payload;
 };
 
+/**
+ * The forms a branch may choose, one list per category.
+ *
+ * The values are the identifiers the screens already switch on, so a saved
+ * choice opens the matching existing form; '' is Automatic, which keeps
+ * choosing the form as before. The labels are the trade-neutral names the
+ * branch sees, never the business-type names behind them. Only forms a
+ * category actually has are listed, and no two entries open the same form.
+ */
+const FORM_VARIANT_OPTIONS: Record<string, { id: string; name: string }[]> = {
+  invoice_variant_purchase: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'electronics', name: 'Smart' },
+    { id: 'construction', name: 'Classic' },
+    { id: 'trading', name: 'Essential' },
+  ],
+  invoice_variant_sales: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'electronics', name: 'Smart' },
+    { id: 'company_scheme', name: 'Partner' },
+    { id: 'trading', name: 'Essential' },
+    { id: 'general', name: 'Standard' },
+  ],
+  invoice_variant_purchase_return: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'standard', name: 'Standard' },
+  ],
+  invoice_variant_sales_return: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'general', name: 'Standard' },
+  ],
+  invoice_variant_combined: [
+    { id: '', name: 'Automatic' },
+    { id: 'not_applicable', name: 'Not Applicable' },
+    { id: 'trading', name: 'Essential' },
+    { id: 'tiles', name: 'Elegant' },
+  ],
+  // Cash and bank: the trade screens these categories actually have. Cash has a
+  // trading screen; bank has only the tiles and the one generic screen.
+  form_variant_cash_received: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'trading', name: 'Essential' },
+    { id: 'general', name: 'Standard' },
+  ],
+  form_variant_cash_payment: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'trading', name: 'Essential' },
+    { id: 'general', name: 'Standard' },
+  ],
+  form_variant_bank_received: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'general', name: 'Standard' },
+  ],
+  form_variant_bank_payment: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'general', name: 'Standard' },
+  ],
+  // The received and payment sides, each taken as one unified screen or as its
+  // two separate cash/bank ones. The two choices are independent.
+  received_entry_mode: [
+    { id: '', name: 'Automatic' },
+    { id: 'unified', name: 'Received Entry Form' },
+    { id: 'separate', name: 'Separate Cash & Bank Forms' },
+  ],
+  payment_entry_mode: [
+    { id: '', name: 'Automatic' },
+    { id: 'unified', name: 'Payment Entry Form' },
+    { id: 'separate', name: 'Separate Cash & Bank Forms' },
+  ],
+};
+
 const toBooleanFlag = (value: unknown) => value == 1 || value === '1' || value === true;
 
 /**
@@ -429,6 +526,7 @@ const AddBranch = () => {
     'Basic Info',
     'Print Setup',
     'Invoice Setup',
+    'Forms Setup',
     'Customer Setup',
     'Product Setup',
     'Dropdown',
@@ -476,6 +574,17 @@ const AddBranch = () => {
     purchase_note: '',
     sales_note: '',
     combined_invoice_note: false,
+    invoice_variant_purchase: '',
+    invoice_variant_sales: '',
+    invoice_variant_purchase_return: '',
+    invoice_variant_sales_return: '',
+    invoice_variant_combined: '',
+    form_variant_cash_received: '',
+    form_variant_cash_payment: '',
+    form_variant_bank_received: '',
+    form_variant_bank_payment: '',
+    received_entry_mode: '',
+    payment_entry_mode: '',
     money_format: '',
     mobile_number_format: '',
     phone: '',
@@ -942,6 +1051,12 @@ const AddBranch = () => {
   // One bar serves both buttons, and it spins while either is working.
   const clearInFlight = clearingOpening || clearingTransactions;
 
+  // Branch Setup -> Forms Setup: unified hides the two separate selectors on
+  // that side. Their saved values stay in formData and are saved back
+  // untouched, so switching to Separate brings the choices back.
+  const receivedUnified = String(formData?.received_entry_mode || '') === 'unified';
+  const paymentUnified = String(formData?.payment_entry_mode || '') === 'unified';
+
   useEffect(() => {
     return () => {
       if (padHeaderPreview.startsWith('blob:')) {
@@ -1119,6 +1234,7 @@ const AddBranch = () => {
                     {currentStep === stepIndex('Basic Info') && 'Branch identity, contact details, and status.'}
                     {currentStep === stepIndex('Print Setup') && 'Print preferences, page size, and letterhead setup.'}
                     {currentStep === stepIndex('Invoice Setup') && 'Invoice labels, notes, formatting, and invoice display options.'}
+                    {currentStep === stepIndex('Forms Setup') && 'Which existing form each invoice category opens.'}
                     {currentStep === stepIndex('Customer Setup') && 'Customer and supplier related options for this branch.'}
                     {currentStep === stepIndex('Product Setup') && 'How products are ordered and priced in this branch.'}
                     {currentStep === stepIndex('Dropdown') &&
@@ -1704,6 +1820,165 @@ const AddBranch = () => {
                         }
                       />
                     </div>
+                  </>
+                )}
+
+                {currentStep === stepIndex('Forms Setup') && (
+                  <>
+                    {/* Which existing form each invoice category opens on.
+                        Automatic leaves the choice to the Business Type, exactly
+                        as it was before this setting existed. */}
+                    <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Invoice Forms
+                    </h4>
+                    <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                      Choose your preferred form for each invoice category. Automatic keeps the current default.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="invoice_variant_purchase"
+                        name="invoice_variant_purchase"
+                        label="Purchase Invoice"
+                        description="Which purchase invoice form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.invoice_variant_purchase || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.invoice_variant_purchase}
+                      />
+                      <DropdownCommon
+                        id="invoice_variant_sales"
+                        name="invoice_variant_sales"
+                        label="Sales Invoice"
+                        description="Which sales invoice form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.invoice_variant_sales || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.invoice_variant_sales}
+                      />
+                      <DropdownCommon
+                        id="invoice_variant_purchase_return"
+                        name="invoice_variant_purchase_return"
+                        label="Purchase Return"
+                        description="Which purchase return form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.invoice_variant_purchase_return || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.invoice_variant_purchase_return}
+                      />
+                      <DropdownCommon
+                        id="invoice_variant_sales_return"
+                        name="invoice_variant_sales_return"
+                        label="Sales Return"
+                        description="Which sales return form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.invoice_variant_sales_return || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.invoice_variant_sales_return}
+                      />
+                      <DropdownCommon
+                        id="invoice_variant_combined"
+                        name="invoice_variant_combined"
+                        label="Combined Invoice"
+                        description="Which combined invoice form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.invoice_variant_combined || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.invoice_variant_combined}
+                      />
+                    </div>
+
+                    {/* Received: one unified screen, or the two separate ones.
+                        Automatic keeps both on offer, exactly as before. */}
+                    <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Received Forms
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="received_entry_mode"
+                        name="received_entry_mode"
+                        label="Mode"
+                        description="Automatic offers both ways; Received Entry Form uses the one unified screen; Separate Cash & Bank Forms uses the two beside it."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.received_entry_mode || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.received_entry_mode}
+                      />
+                      <DropdownCommon
+                        id="form_variant_cash_received"
+                        name="form_variant_cash_received"
+                        label="Cash Received"
+                        description="Which cash received form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.form_variant_cash_received || '')}
+                        className="bg-transparent"
+                        disabled={receivedUnified}
+                        data={FORM_VARIANT_OPTIONS.form_variant_cash_received}
+                      />
+                      <DropdownCommon
+                        id="form_variant_bank_received"
+                        name="form_variant_bank_received"
+                        label="Bank Received"
+                        description="Which bank received form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.form_variant_bank_received || '')}
+                        className="bg-transparent"
+                        disabled={receivedUnified}
+                        data={FORM_VARIANT_OPTIONS.form_variant_bank_received}
+                      />
+                    </div>
+                    {receivedUnified && (
+                      <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                        Received Entry Form is the one screen this branch uses, so
+                        Cash Received and Bank Received are not used. Their saved
+                        choices are kept, and come back if Separate is chosen.
+                      </p>
+                    )}
+
+                    {/* Payment: the same two ways, chosen on its own. */}
+                    <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Payment Forms
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="payment_entry_mode"
+                        name="payment_entry_mode"
+                        label="Mode"
+                        description="Automatic offers both ways; Payment Entry Form uses the one unified screen; Separate Cash & Bank Forms uses the two beside it."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.payment_entry_mode || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.payment_entry_mode}
+                      />
+                      <DropdownCommon
+                        id="form_variant_cash_payment"
+                        name="form_variant_cash_payment"
+                        label="Cash Payment"
+                        description="Which cash payment form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.form_variant_cash_payment || '')}
+                        className="bg-transparent"
+                        disabled={paymentUnified}
+                        data={FORM_VARIANT_OPTIONS.form_variant_cash_payment}
+                      />
+                      <DropdownCommon
+                        id="form_variant_bank_payment"
+                        name="form_variant_bank_payment"
+                        label="Bank Payment"
+                        description="Which bank payment form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.form_variant_bank_payment || '')}
+                        className="bg-transparent"
+                        disabled={paymentUnified}
+                        data={FORM_VARIANT_OPTIONS.form_variant_bank_payment}
+                      />
+                    </div>
+                    {paymentUnified && (
+                      <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                        Payment Entry Form is the one screen this branch uses, so
+                        Cash Payment and Bank Payment are not used. Their saved
+                        choices are kept, and come back if Separate is chosen.
+                      </p>
+                    )}
                   </>
                 )}
 

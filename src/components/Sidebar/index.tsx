@@ -39,6 +39,8 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'accounts/bank/payment', title: "Bank Payment" },
     { id: 'accounts/bank/reconciliation', title: "Bank Reconciliation" },
     { id: 'accounts/cheque-register', title: "Cheque Register" },
+    { id: 'hotel_received_entry', title: "Received Entry" },
+    { id: 'hotel_payment_entry', title: "Payment Entry" },
     { id: 'accounts/year-closing', title: "Year Closing" },
     { id: 'accounts/budget', title: "Budget" },
     { id: 'installment_list', title: "Installments" },
@@ -175,8 +177,6 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'hotel_housekeeping', title: "Housekeeping" },
     { id: 'hotel_amenity_issue', title: "Amenity Issue & Stock" },
     { id: 'hotel_asset_purchase', title: "Assets Purchase" },
-    { id: 'hotel_payment_entry', title: "Payment Entry" },
-    { id: 'hotel_received_entry', title: "Received Entry" },
     { id: 'hotel_reports', title: "Reports" },
     { id: 'hotel_setup', title: "Rooms & Seats Setup" },
   ],
@@ -333,6 +333,7 @@ import {
 } from 'react-icons/fi';
 import { FaBluetooth, FaRegStar } from 'react-icons/fa6';
 import { hasPermission } from '../utils/permissionChecker';
+import { branchFormVariant, branchInvoiceVariant, separateEntriesShown, unifiedEntryShown } from '../utils/userFeatureSettings';
 import { useSelector } from 'react-redux';
 import './Sidebar.css';
 import routes from '../services/appRoutes';
@@ -368,6 +369,28 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   // or hides them with the branch.
   const deductStockOnDelivery =
     Number(settings?.data?.branch?.deduct_stock_on_delivery) === 1;
+
+  // Branch Setup -> Invoice Setup: the combined form this branch has chosen.
+  // Blank is Automatic, and the business type decides exactly as before; an
+  // explicit choice shows only its own entry.
+  const combinedVariant = branchInvoiceVariant(settings, 'invoice_variant_combined');
+  const showTradingCombined = combinedVariant
+    ? combinedVariant === 'trading'
+    : currentBranch?.business_type_id === 8;
+  const showTilesCombined = combinedVariant
+    ? combinedVariant === 'tiles'
+    : Boolean(currentBranch?.is_tiles_and_sanitary);
+
+  // Branch Setup -> Forms Setup: which way this branch takes its received and
+  // payment entries. Automatic (blank) leaves both the separate cash/bank
+  // entries and the unified entry on offer, exactly as before. The two sides
+  // are chosen independently.
+  const receivedMode = branchFormVariant(settings, 'received_entry_mode');
+  const paymentMode = branchFormVariant(settings, 'payment_entry_mode');
+  const showSeparateReceived = separateEntriesShown(receivedMode);
+  const showUnifiedReceived = unifiedEntryShown(receivedMode);
+  const showSeparatePayment = separateEntriesShown(paymentMode);
+  const showUnifiedPayment = unifiedEntryShown(paymentMode);
 
   // ⚠️ THE INVOICE MENU OPENS ON EXACTLY WHAT ITS ITEMS SHOW ON. The generic
   // list (MENU_PERMISSIONS.invoice) counted delivery.view on its own, so on a
@@ -882,7 +905,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
                             </li>
                           ))}
-                          {hasPermission(permissions, 'cash.received.create') && (
+                          {hasPermission(permissions, 'cash.received.create') && showSeparateReceived && (
                             <li style={subSlot('transaction', 'cash_receive')}>
                               <NavLink
                                 to={routes.cash_receive}
@@ -894,7 +917,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
                           
 
-                          {hasPermission(permissions, 'cash.payment.create') && (
+                          {hasPermission(permissions, 'cash.payment.create') && showSeparatePayment && (
                             <li style={subSlot('transaction', 'accounts/cash/payment')}>
                               <NavLink
                                 to="/accounts/cash/payment"
@@ -904,7 +927,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'bank.received.create') && (
+                          {hasPermission(permissions, 'bank.received.create') && showSeparateReceived && (
                             <li style={subSlot('transaction', 'accounts/bank/receive')}>
                               <NavLink
                                 to="/accounts/bank/receive"
@@ -914,7 +937,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'bank.payment.create') && (
+                          {hasPermission(permissions, 'bank.payment.create') && showSeparatePayment && (
                             <li style={subSlot('transaction', 'accounts/bank/payment')}>
                               <NavLink
                                 to="/accounts/bank/payment"
@@ -986,6 +1009,25 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Employee Loan
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {/* The unified entries. Offered unless the branch has
+                              chosen the separate cash/bank way; Automatic shows
+                              them, as before. */}
+                          {showUnifiedReceived && (
+                            <li style={subSlot('transaction', 'hotel_received_entry')}>
+                              <NavLink to={routes.hotel_received_entry} className={subMenuLinkClass}>
+                                Received Entry
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {showUnifiedPayment && (
+                            <li style={subSlot('transaction', 'hotel_payment_entry')}>
+                              <NavLink to={routes.hotel_payment_entry} className={subMenuLinkClass}>
+                                Payment Entry
                               </NavLink>
                             </li>
                           )}
@@ -1141,7 +1183,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {currentBranch?.business_type_id === 8 &&
+                          {showTradingCombined &&
                             hasPermission(permissions, 'purchase.create') &&
                             hasPermission(permissions, 'sales.create') && (
                               <li style={subSlot('invoice', 'inv_trading_combined')}>
@@ -1157,7 +1199,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               two money boxes replace Trading's single amount. By
                               the branch flag, not the system id: a tiles branch
                               runs Trading's inventory system row. */}
-                          {currentBranch?.is_tiles_and_sanitary &&
+                          {showTilesCombined &&
                             hasPermission(permissions, 'purchase.create') &&
                             hasPermission(permissions, 'sales.create') && (
                               <li style={subSlot('invoice', 'inv_tiles_combined')}>
@@ -2710,20 +2752,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           <li style={subSlot('hotel', 'hotel_asset_purchase')}>
                             <NavLink to={routes.hotel_asset_purchase} className={subMenuLinkClass}>
                               Accounts Transaction
-                            </NavLink>
-                          </li>
-
-                          {/* Money going out to a supplier or a person. */}
-                          <li style={subSlot('hotel', 'hotel_payment_entry')}>
-                            <NavLink to={routes.hotel_payment_entry} className={subMenuLinkClass}>
-                              Payment Entry
-                            </NavLink>
-                          </li>
-
-                          {/* Money coming in, the mirror of it. */}
-                          <li style={subSlot('hotel', 'hotel_received_entry')}>
-                            <NavLink to={routes.hotel_received_entry} className={subMenuLinkClass}>
-                              Received Entry
                             </NavLink>
                           </li>
 
