@@ -490,6 +490,8 @@ const BookingFormScreen = ({ user }: any) => {
     setForm((prev: any) => ({
       ...prev,
       booking_type: chosen,
+      // The company's name goes with the type, for the same reason as above.
+      bill_name: chosen === 'corporate' ? prev.bill_name : '',
       // Nothing is held, so there is nothing to hold ON to. The server forces
       // this as well; setting it here keeps the form from showing a state the
       // booking will not be saved in.
@@ -521,6 +523,7 @@ const BookingFormScreen = ({ user }: any) => {
         check_out_date: String(booking.check_out_date ?? '').slice(0, 10),
         booker_name: booking.booker_name ?? '',
         booker_mobile: booking.booker_mobile ?? '',
+        bill_name: booking.bill_name ?? '',
         stated_adults: booking.stated_adults ?? 0,
         stated_children: booking.stated_children ?? 0,
         notes: booking.notes ?? '',
@@ -897,8 +900,8 @@ const BookingFormScreen = ({ user }: any) => {
     // ⚠️ Asked here as well as on the server, and the server keeps the last
     // word. This one only saves the clerk a round trip that ends in a refusal
     // -- the reason for it is in the controller, beside the rule.
-    if (!form.id && form.booking_type === 'corporate' && !billedTo?.value) {
-      toast.error('Which company is billed? Pick one from the list.');
+    if (!form.id && form.booking_type === 'corporate' && !String(form.bill_name ?? '').trim()) {
+      toast.error('Write the company name the bill is made out to.');
       return;
     }
 
@@ -960,6 +963,11 @@ const BookingFormScreen = ({ user }: any) => {
             billed_to_party_id:
               form.booking_type === 'corporate' && billedTo?.value
                 ? Number(billedTo.value)
+                : undefined,
+            // The company's name, typed -- what the bill is made out to.
+            bill_name:
+              form.booking_type === 'corporate'
+                ? String(form.bill_name ?? '').trim()
                 : undefined,
             status: form.status,
             booker_name: form.booker_name,
@@ -1204,22 +1212,19 @@ const BookingFormScreen = ({ user }: any) => {
           the answer needs it is read. */}
               {form.booking_type === 'corporate' ? (
                 <div className="mt-2 max-w-lg">
-                  <label
-                    htmlFor="billed_to_party_id"
-                    className="mb-1 block text-sm text-black dark:text-white"
-                  >
-                    Billed to <span className="text-danger">*</span>
-                  </label>
-
-                  <DdlMultiline
-                    id="billed_to_party_id"
-                    name="billed_to_party_id"
-                    fetchOptions={findParties}
-                    defaultOptions
-                    value={billedTo}
-                    onSelect={(chosen: any) => setBilledTo(chosen)}
-                    placeholder="Search a company by name, mobile or code"
-                    isDisabled={Boolean(form.id)}
+                  {/* ⚠️ TYPED, NOT PICKED (owner, 2026-10-26). The company's name
+                      as the bill is to carry it -- saved as bill_name, which is
+                      what the bill prints under "Billed to". */}
+                  <InputElement
+                    id="bill_name"
+                    name="bill_name"
+                    label="Company Name"
+                    placeholder="Company name for the bill"
+                    value={form.bill_name ?? ''}
+                    onChange={(e: any) =>
+                      setForm((prev: any) => ({ ...prev, bill_name: e.target.value }))
+                    }
+                    disabled={Boolean(form.id)}
                   />
 
                   <p className="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
@@ -1236,9 +1241,7 @@ const BookingFormScreen = ({ user }: any) => {
                       </>
                     ) : (
                       <>
-                        Corporate is billed to a company, not to the guest. Picked from the customer
-                        list rather than typed, so every stay this company pays for can be found under
-                        one name.
+                        The bill and the other papers are made out in this name.
                       </>
                     )}
                   </p>
