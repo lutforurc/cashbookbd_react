@@ -3223,6 +3223,9 @@ const salesInvoice = (): PrintTemplate => ({
         { field: 'vr_date', label: 'Date' },
         { field: 'manual_address', label: 'Address', hideIfEmpty: true },
         { field: 'notes', label: 'Notes', hideIfEmpty: true },
+        // Hidden when the sale has none, so a trade that never types one keeps
+        // the paper it had.
+        { field: 'vehicle_no', label: 'Vehicle No', hideIfEmpty: true },
         { field: 'manual_voucher_no', label: 'Manual Voucher No', hideIfEmpty: true },
         { field: 'manual_voucher_date', label: 'Manual Voucher Date', hideIfEmpty: true },
         { field: 'manual_challan_no', label: 'Manual Challan No', hideIfEmpty: true },
