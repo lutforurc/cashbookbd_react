@@ -1500,7 +1500,7 @@ export const PURCHASE_INVOICE_FIELD_CATALOG: FieldDef[] = [
   // Which paper this is
   { key: 'vr_no', name: 'Voucher No', group: 'voucher' },
   { key: 'vr_date', name: 'Date', group: 'voucher', format: 'date' },
-  { key: 'order_number', name: 'Order Number', group: 'voucher' },
+  { key: 'order_number', name: 'Purchase Order', group: 'voucher' },
   { key: 'delivery_location', name: 'Delivery Location', group: 'voucher' },
   { key: 'vehicle_no', name: 'Vehicle No', group: 'transport' },
   // ⚠️ THE SAME FOUR THE SALES INVOICE CARRIES, because they are the same four
@@ -3226,6 +3226,7 @@ const salesInvoice = (): PrintTemplate => ({
         // Hidden when the sale has none, so a trade that never types one keeps
         // the paper it had.
         { field: 'vehicle_no', label: 'Vehicle No', hideIfEmpty: true },
+        { field: 'order_number', label: 'Sales Order', hideIfEmpty: true },
         { field: 'manual_voucher_no', label: 'Manual Voucher No', hideIfEmpty: true },
         { field: 'manual_voucher_date', label: 'Manual Voucher Date', hideIfEmpty: true },
         { field: 'manual_challan_no', label: 'Manual Challan No', hideIfEmpty: true },
@@ -3393,6 +3394,7 @@ const purchaseInvoice = (): PrintTemplate => ({
         { field: 'vr_date', label: 'Date' },
         { field: 'manual_address', label: 'Address', hideIfEmpty: true },
         { field: 'notes', label: 'Notes', hideIfEmpty: true },
+        { field: 'order_number', label: 'Purchase Order', hideIfEmpty: true },
         { field: 'manual_voucher_no', label: 'Manual Voucher No', hideIfEmpty: true },
         { field: 'manual_voucher_date', label: 'Manual Voucher Date', hideIfEmpty: true },
         { field: 'manual_challan_no', label: 'Manual Challan No', hideIfEmpty: true },
