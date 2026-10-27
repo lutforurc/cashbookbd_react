@@ -371,10 +371,23 @@ const CheckOutScreen = () => {
         {/* ⚠️ The figure above is not the folio's. Said here rather than left
             for somebody to discover by comparing two screens. */}
         <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          This counts the {plan.nights_to_bill}{' '}
-          {plan.nights_to_bill === 1 ? 'night' : 'nights'}{' '}
-          {closing ? '' : `in the ${plan.rooms_leaving === 1 ? 'room' : 'rooms'} leaving `}
-          still to be billed. The folio will not show them until check-out puts them on it.
+          {plan.same_day ? (
+            <>
+              They arrived and are leaving on the same day, so no night was slept — but the{' '}
+              <strong className="text-black dark:text-white">
+                night of {formatDayMonthYear(plan.last_night_billed)}
+              </strong>{' '}
+              was taken and is charged. Everything after it goes back on the market.
+            </>
+          ) : (
+            <>
+              This counts the {plan.nights_to_bill}{' '}
+              {plan.nights_to_bill === 1 ? 'night' : 'nights'}{' '}
+              {closing ? '' : `in the ${plan.rooms_leaving === 1 ? 'room' : 'rooms'} leaving `}
+              still to be billed. The folio will not show them until check-out puts them on
+              it.
+            </>
+          )}
           {closing ? null : (
             <>
               {' '}
@@ -484,19 +497,37 @@ const CheckOutScreen = () => {
         <div className="md:col-span-2 flex items-end">
           {/* The check-out day is not a night (spec: 15th to 18th is three
               nights). Worth saying beside the date, because the desk reads the
-              box as "last night here" at least once. */}
+              box as "last night here" at least once.
+
+              ⚠️ EXCEPT ON A SAME-DAY DEPARTURE, where it is the opposite and
+              the screen has to say so: they go the day they came, no night was
+              slept, and the one night they took the room for is on the bill. */}
           <p className="text-xs leading-snug text-gray-500 dark:text-gray-400">
-            The day they leave is not charged as a night.
-            {plan.leaving_early ? (
+            {plan.same_day ? (
               <>
-                {' '}
-                <strong className="text-danger dark:text-red-400">
-                  {plan.nights_released} bed-{plan.nights_released === 1 ? 'night' : 'nights'}
+                They are leaving on the day they arrived. The{' '}
+                <strong className="text-black dark:text-white">
+                  night of {formatDayMonthYear(plan.last_night_billed)}
                 </strong>{' '}
-                will go back on the market — this is an early departure.
+                is still charged — the room was taken for it and could not be sold to
+                anybody else. Cancel the booking instead if the room was never really used.
               </>
             ) : (
-              ' They are leaving on the day the booking ends, so nothing goes back.'
+              <>
+                The day they leave is not charged as a night.
+                {plan.leaving_early ? (
+                  <>
+                    {' '}
+                    <strong className="text-danger dark:text-red-400">
+                      {plan.nights_released} bed-
+                      {plan.nights_released === 1 ? 'night' : 'nights'}
+                    </strong>{' '}
+                    will go back on the market — this is an early departure.
+                  </>
+                ) : (
+                  ' They are leaving on the day the booking ends, so nothing goes back.'
+                )}
+              </>
             )}
           </p>
         </div>
@@ -668,6 +699,16 @@ const CheckOutScreen = () => {
               <span className="mt-2 block">
                 {plan.nights_to_bill} {plan.nights_to_bill === 1 ? 'night' : 'nights'} will go
                 on the bill at the rates in force on {plan.nights_to_bill === 1 ? 'it' : 'each'}.
+              </span>
+            ) : null}
+
+            {/* The same-day charge, said before the button rather than argued
+                about at the counter. */}
+            {plan.same_day ? (
+              <span className="mt-2 block">
+                They arrived and leave on the same day, so no night was slept — the night of{' '}
+                {formatDayMonthYear(plan.last_night_billed)} is charged anyway, because the
+                room was taken for it.
               </span>
             ) : null}
 

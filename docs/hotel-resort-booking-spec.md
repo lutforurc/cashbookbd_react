@@ -5485,3 +5485,58 @@ locked to 30/06/2027 (§42).
 — and `syncPermissions()` the one new permission; the same four changes are in
 `database/sql/2026_09_15_hotel_*.sql` for a database the command cannot
 reach. New routes: `route:clear`.
+
+## 44. Checking out the same day they checked in, 2026-10-27
+
+A guest who takes a room and then has to leave the same afternoon could not be
+checked out at all. `CheckOutController::departureDate()` refused any departure
+on or before the arrival night with *"Nobody slept a night — cancel the booking
+instead"*, and cancelling is the wrong record: the room **was** taken, the guests
+**were** in it, and the register that says so is the one thing a cancellation
+deletes. The client asked for the opposite — a guest with a problem at home must
+be able to go, and the bill must stay.
+
+### 44.1 The rule: one night is always billed
+
+A night row means the room from one day's check-in to the next day's check-out,
+so a same-day departure slept no night — and held the room for that night, which
+nobody else could be sold. `departureDate()` therefore now returns **two** dates:
+
+| | |
+|---|---|
+| `departure` | the day the stay ends — today, for a same-day check-out |
+| `cutoff` | the first night that goes back on the market |
+
+They are the same day on every ordinary departure. They part company only when
+`departure <= arrived`, where `cutoff` becomes the morning after the night they
+arrived: that night is **billed**, and every night after it is released. A
+four-night booking whose guest leaves on arrival day bills one night and puts
+three back on the market.
+
+Everything that asked "the departure date" now asks the cutoff instead —
+`roomsOnStay()`, the release count, the already-billed-ahead count, and the
+night delete in `checkOut()`. `BookingRoomCheckout` still records the calendar
+date the desk was told, which is the day the room was actually let go.
+
+The remaining refusal is leaving **before** they arrive: *"These guests do not
+arrive until the 27th, so they cannot leave on the 26th."*
+
+### 44.2 Saying it on the screen
+
+The check-out screen said *"The day they leave is not charged as a night"*,
+which is the opposite of what happens here. The plan now carries `same_day` and
+`last_night_billed`, and the screen uses them in three places: the summary, the
+note beside the date box, and the confirmation — each saying that the night of
+the arrival day is charged because the room was taken for it, and that cancelling
+instead is the way to give the money back if the room was never really used.
+
+The desk needs nothing new to reach it: **Check out** on a checked-in booking
+already appears the moment the guests are recorded, and the date box defaults to
+today.
+
+### Still not built
+
+Early check-in (arriving before the booked date) is still refused, and so are
+the early-check-in / late-check-out **charges** of §6.2 — both wait on the
+client's rules. Nothing here changes what a night costs; it changes which nights
+are on the bill.
