@@ -320,6 +320,16 @@ const TaxRatesTab = () => {
             VAT is the item&rsquo;s — set it on <strong>Room Types</strong> and{' '}
             <strong>Charges</strong>.
           </span>
+          {/* ⚠️ Whether the rate card is read as tax-before or tax-included is
+              NOT set here, and somebody setting rates is exactly who needs to
+              know that -- the same 3,000 is two different prices depending on
+              it. Named, with where it lives, rather than left to be discovered
+              on a bill that came out wrong. */}
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            Whether a rate is before or including VAT and service charge is set per property on{' '}
+            <strong>Add / Edit Branch</strong> → <strong>Hotel Setup</strong> →{' '}
+            <strong>VAT Setup</strong>.
+          </span>
         </div>
       ) : null}
 

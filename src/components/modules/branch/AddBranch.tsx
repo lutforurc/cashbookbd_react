@@ -207,6 +207,16 @@ interface branchItem {
   hotel_hold_max_hours: string;
   /** The small print under the registration card a guest signs at check-in. */
   hotel_registration_terms: string;
+  /**
+   * How this property quotes its rates: 'exclusive' (the rate is before VAT and
+   * service charge, both added on the bill -- the way every property has billed
+   * so far) or 'inclusive' (the rate the guest is quoted is the whole price, and
+   * the bill works the tax and service charge back out of it).
+   *
+   * ⚠️ A SNAPSHOT, NOT A RECALCULATION. A bill already made keeps the figures it
+   * was made at; this only changes what the NEXT line is worked out as.
+   */
+  hotel_vat_mode: string;
   salutation_male: string;
   salutation_female: string;
   salutation_other: string;
@@ -498,6 +508,53 @@ const metaNumberOr = (value: unknown, fallback: number): number => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+/**
+ * VAT Setup — the two ways a hotel bill can read its own rate card.
+ *
+ * ⚠️ THIS IS ABOUT WHAT A RATE MEANS, NOT WHAT A TAX IS. Both modes charge the
+ * same service charge and the same VAT out of the same bill; they differ only
+ * in whether the rate the guest was quoted is the room BEFORE those or the whole
+ * price WITH them inside. A hotel that advertises a room at 3,000 and takes
+ * 3,000 is inclusive even though the desk still separates rent, service charge
+ * and VAT behind it.
+ *
+ * The figures below are worked at a 3,000 room, the 5% service charge and 15%
+ * VAT, so the two cards can be read against each other line by line. They are
+ * an illustration, not this property's rates — those live on Hotel Setup →
+ * Service Charge and on each Room Type and Charge.
+ *
+ * ⚠️ INCLUSIVE ROUNDS ITS PARTS, NOT ITS TOTAL. Rent and service charge are
+ * worked back out of the quoted price and rounded, and VAT is what is LEFT —
+ * so the parts always add up to exactly what the guest was quoted. Rounding VAT
+ * on its own would leave the bill a paisa off the rate card.
+ */
+const HOTEL_VAT_MODES = [
+  {
+    id: 'exclusive',
+    label: 'VAT Excluding',
+    blurb:
+      'The rate is the room alone. Service charge and VAT come on top, so a 3,000 room bills more than 3,000.',
+    lines: [
+      ['Room rent', '3,000.00'],
+      ['Service charge, 5%', '150.00'],
+      ['VAT, 15% on 3,150.00', '472.50'],
+    ],
+    total: ['The guest pays', '3,622.50'],
+  },
+  {
+    id: 'inclusive',
+    label: 'VAT Including',
+    blurb:
+      'The rate is the whole price. The guest pays exactly it, and rent, service charge and VAT are worked back out of it.',
+    lines: [
+      ['Room rent', '2,484.47'],
+      ['Service charge, 5%', '124.22'],
+      ['VAT, the rest of the 3,000', '391.31'],
+    ],
+    total: ['The guest pays', '3,000.00'],
+  },
+];
+
 const AddBranch = () => {
   const navigate = useNavigate();
   const branchEditData = useSelector((state: any) => state.branchList);
@@ -676,6 +733,8 @@ const AddBranch = () => {
     hotel_hold_hours: '2',
     hotel_hold_max_hours: '24',
     hotel_registration_terms: '',
+    // The way every property has billed so far: the rate is before tax.
+    hotel_vat_mode: 'exclusive',
     salutation_male: '',
     salutation_female: '',
     salutation_other: '',
@@ -954,6 +1013,10 @@ const AddBranch = () => {
         hotel_hold_hours: String(b.hotel_hold_hours ?? 2),
         hotel_hold_max_hours: String(b.hotel_hold_max_hours ?? 24),
         hotel_registration_terms: b.hotel_registration_terms ? String(b.hotel_registration_terms) : '',
+        // Anything other than the one other answer reads as the default, so a
+        // value written by another version cannot leave the screen in a mode it
+        // does not know how to bill.
+        hotel_vat_mode: metaTextOr(b.hotel_vat_mode, 'exclusive') === 'inclusive' ? 'inclusive' : 'exclusive',
         salutation_male: b.salutation_male ? String(b.salutation_male) : '',
         salutation_female: b.salutation_female ? String(b.salutation_female) : '',
         salutation_other: b.salutation_other ? String(b.salutation_other) : '',
@@ -1056,6 +1119,12 @@ const AddBranch = () => {
   // untouched, so switching to Separate brings the choices back.
   const receivedUnified = String(formData?.received_entry_mode || '') === 'unified';
   const paymentUnified = String(formData?.payment_entry_mode || '') === 'unified';
+
+  // Hotel Setup -> VAT Setup. Anything that is not the one other answer reads as
+  // excluding, which is how every property has billed so far -- so a branch
+  // saved by another version, or not saved at all, lands on the behaviour it
+  // already has rather than on one it was never set up for.
+  const hotelVatMode = String(formData?.hotel_vat_mode || '') === 'inclusive' ? 'inclusive' : 'exclusive';
 
   // A form may only be chosen by someone who may open it: the four separate
   // cash/bank forms on their own create permission, and each unified entry on
@@ -2768,6 +2837,105 @@ const AddBranch = () => {
                         </p>
                       </div>
                     </div>
+
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      VAT Setup
+                    </h4>
+
+                    {/* ⚠️ WHAT A RATE MEANS, NOT WHAT A TAX IS. Properties differ
+                      on this, not by law but by how they advertise: one prints a
+                      room at 3,000 plus tax, another prints 3,000 and means it.
+                      Both keep the same books -- rent, service charge and VAT are
+                      separated either way -- so this is one setting, not two
+                      systems.
+
+                      ⚠️ IT DOES NOT CONVERT ANYTHING. The rates on Room Types and
+                      Charges are numbers, and this only changes how a number is
+                      read: switching to including re-reads a 3,000 room as the
+                      whole price, not as the rent. A property whose intention is
+                      to keep collecting the same money has to raise its rate card
+                      first, which is why the warning under the cards says so. */}
+                    <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                      {HOTEL_VAT_MODES.map((mode) => {
+                        const chosen = hotelVatMode === mode.id;
+
+                        return (
+                          <label
+                            key={mode.id}
+                            className={`flex cursor-pointer items-start gap-2 rounded-xs border p-3 transition ${
+                              chosen
+                                ? 'border-primary bg-primary/5'
+                                : 'border-[rgb(var(--c-border))] hover:border-primary'
+                            }`}
+                          >
+                            {/* The name IS the meta key, so the same handler that
+                                serves every other field writes it -- and what is
+                                saved is the id, never the label, which is free to
+                                be reworded later. */}
+                            <input
+                              type="radio"
+                              name="hotel_vat_mode"
+                              value={mode.id}
+                              checked={chosen}
+                              onChange={handleOnChange}
+                              className="mt-0.5"
+                            />
+                            <span className="min-w-0 text-sm">
+                              <strong className="block text-black dark:text-white">
+                                {mode.label}
+                              </strong>
+                              <span className="mt-0.5 block text-xs leading-snug text-gray-500 dark:text-gray-400">
+                                {mode.blurb}
+                              </span>
+
+                              {/* The two cards worked side by side, at the same
+                                  quoted rate. The money is what settles the
+                                  question -- no one has to take the sentence on
+                                  trust. */}
+                              <span className="mt-1.5 block border-t border-[rgb(var(--c-border))] pt-1.5 text-xs">
+                                {mode.lines.map(([what, howMuch]) => (
+                                  <span key={what} className="flex justify-between gap-2">
+                                    <span className="text-gray-500 dark:text-gray-400">{what}</span>
+                                    <span className="tabular-nums text-black dark:text-white">
+                                      {howMuch}
+                                    </span>
+                                  </span>
+                                ))}
+                                <span className="mt-1 flex justify-between gap-2 border-t border-[rgb(var(--c-border))] pt-1">
+                                  <span className="font-medium text-gray-500 dark:text-gray-400">
+                                    {mode.total[0]}
+                                  </span>
+                                  <strong className="tabular-nums text-black dark:text-white">
+                                    {mode.total[1]}
+                                  </strong>
+                                </span>
+                              </span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+
+                    <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                      Worked at a 3,000 room, the 5% service charge and 15% VAT. The rates themselves
+                      are set on <strong>Hotel Setup &rarr; Service Charge</strong> and on each{' '}
+                      <strong>Room Type</strong> and <strong>Charge</strong>.
+                    </p>
+
+                    {/* ⚠️ THE WARNING THAT MATTERS. Switching to including does not
+                        raise the rate card to compensate, so a property that had
+                        been taking 3,622.50 for a 3,000 room starts taking 3,000
+                        the moment this is saved -- VAT and service charge still
+                        due, but out of the same money. That is 17% off the
+                        takings, and it must not be something somebody finds out
+                        from the month's report. */}
+                    <p className="mb-2 rounded-xs border border-amber-300 bg-amber-50 p-2 text-xs leading-snug text-amber-900 dark:border-amber-500/50 dark:bg-amber-500/10 dark:text-amber-200">
+                      <strong>Nothing already on file is converted.</strong> Bills already made keep
+                      the figures they were made at, and the rates already typed on Room Types and
+                      Charges are not changed. Switching to <strong>VAT Including</strong> re-reads
+                      those rates as whole prices from that day on — so a property that means to go
+                      on collecting the same money must raise its rate card first.
+                    </p>
 
                     <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       What the guest signs

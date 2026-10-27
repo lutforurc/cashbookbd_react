@@ -869,6 +869,14 @@ client's VAT consultant; this is the common practice, not a certainty.)*
 That last row is deliberate. A guessed rate prints wrong bills silently; a zero rate
 is visible on the first bill and somebody asks.
 
+**✅ Added 2026-10-27 — a rate card may quote VAT *inside* the price.** Two kinds of
+client use this system: one prints a room at 3,000 plus tax, the other prints 3,000 and
+means it. Both keep the same books and the same VAT; only the reading of the rate card
+differs, so it is one setting — **Add / Edit Branch → Hotel Setup → VAT Setup**,
+`metas.hotel_vat_mode`, `exclusive` (the default, everything above) or `inclusive`.
+The arithmetic, the line snapshot and the migration are in
+`docs/hotel-vat-inclusive.md`.
+
 **✅ Settled 2026-08-26 — VAT falls due when the BILL is made.** The client's
 answer, and it is the one this standard was already written for: *at service*, not
 at receipt. So §2.6 stands untouched — an advance is `Dr Cash / Cr Advance Against

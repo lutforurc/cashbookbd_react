@@ -129,6 +129,16 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
   // all. They are cleared after a save, and by the clerk.
   const total = picked.reduce((sum, one) => sum + one.rent, 0);
 
+  /**
+   * ⚠️ How this property reads its rate card (Add / Edit Branch -> Hotel Setup
+   * -> VAT Setup). On an inclusive one the rent under each pick is the WHOLE
+   * price -- the service charge and the VAT live inside it -- so saying "before
+   * service charge and VAT" would tell the clerk the guest owes more than the
+   * sitting costs. The server sends the same setting the bill itself is made by,
+   * rather than the screen guessing.
+   */
+  const inclusive = String(halls?.times?.vat_mode ?? '') === 'inclusive';
+
   const confirm = async () => {
     try {
       const result = await dispatch(
@@ -318,7 +328,9 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {money(total)}{' '}
-              <span className="text-xs">before service charge and VAT</span>
+              <span className="text-xs">
+                {inclusive ? 'including service charge and VAT' : 'before service charge and VAT'}
+              </span>
             </div>
           </div>
 
@@ -435,8 +447,8 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
                 they were confirmed at, and billed on the folio. Said so the
                 figure above is not read as an invoice. */}
             <span className="mt-2 block">
-              {money(total)} before service charge and VAT. Nothing is billed yet — that
-              happens on the folio.
+              {money(total)} {inclusive ? 'including' : 'before'} service charge and VAT. Nothing
+              is billed yet — that happens on the folio.
             </span>
           </>
         }

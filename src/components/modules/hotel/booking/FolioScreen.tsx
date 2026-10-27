@@ -554,6 +554,16 @@ const FolioScreen = () => {
   const booking = folio?.booking;
   const totals = folio?.totals;
 
+  /**
+   * ⚠️ Is this property's rate card a tax-inclusive one? (Add / Edit Branch ->
+   * Hotel Setup -> VAT Setup.)
+   *
+   * Said on the footing so the desk can answer "why is the rent only 2,484.47
+   * when the room is 3,000" without leaving the screen. Nothing is recalculated
+   * here -- every figure below is what the line STORED; this only names it.
+   */
+  const inclusiveBill = String(folio?.vat_mode ?? '') === 'inclusive';
+
   // The company's own list, or the shipped seven until it arrives.
   const chargeOptions = folio?.charge_types?.length
     ? folio.charge_types
@@ -1065,7 +1075,8 @@ const FolioScreen = () => {
                 bill with one of them reads as it always did. */}
             {Number(totals.vat) ? (
               <span>
-                VAT{' '}
+                VAT
+                {inclusiveBill ? ' (included)' : ''}{' '}
                 {(totals.vat_bands ?? []).length > 1
                   ? (totals.vat_bands ?? [])
                       .map((band: any) => `${Number(band.rate)}% ${money(band.vat)}`)
