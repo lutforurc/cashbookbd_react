@@ -919,11 +919,6 @@ const LedgerWithProduct = (user: any) => {
               {row.vr_no || ''}
             </div>
             <div>{row.vr_date || ''}</div>
-            {/* {row.cash_transaction_type ? (
-              <div className="text-xs text-slate-500 dark:text-slate-300">
-                {row.cash_transaction_type}
-              </div>
-            ) : null} */}
           </>
         );
       },

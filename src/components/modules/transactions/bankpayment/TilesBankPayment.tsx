@@ -79,7 +79,6 @@ const initialPaymentItem: PaymentItem = {
  * useVoucherAutoEditSearch().
  */
 const TilesBankPayment = () => {
-  const prevDataRef = useRef(null);
   const dispatch = useDispatch();
   const coal3 = useSelector((s: any) => s.coal3);
   const [search, setSearch] = useState('');
@@ -133,14 +132,15 @@ const TilesBankPayment = () => {
   };
 
   const [tableData, setTableData] = useState<PaymentItem[]>([]);
-  const [bankId, setBankId] = useState<number | string | null>(null);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentItem | null>(null);
   const [isLoading, setIsLoading] = useState(false); // ✅ new
-  const searchingRef = useRef(false); // ✅ guard against concurrent searches
+  // A newer search supersedes an older one: each run takes a number and only the
+  // newest may write its result. The boolean this replaces was set on every run
+  // and never read, so two overlapping searches could land out of order and
+  // leave the earlier voucher on the screen.
+  const searchSeqRef = useRef(0);
   const [updateTransactionId, setUpdateTransactionId] = useState<number | null>(
     null,
   );
@@ -170,7 +170,6 @@ const TilesBankPayment = () => {
   useEffect(() => {
     if (Array.isArray(coal3?.coal4)) {
       setDdlBankList(coal3?.coal4 || []);
-      setBankId(coal3?.coal4[0]?.id ?? null);
     }
   }, [coal3]);
 
@@ -246,10 +245,17 @@ const TilesBankPayment = () => {
       return;
     }
 
+    // A newer search wins. This run's number is the newest only while no later
+    // run has taken one after it, so a reply that is no longer the newest is
+    // dropped -- two overlapping searches can never leave the older voucher on
+    // the screen. (The ref this replaces was written but never read.)
+    const seq = ++searchSeqRef.current;
+
     try {
-      searchingRef.current = true;
       setIsLoading(true);
       const response = await dispatch(editBankPayment({ id: invoiceNo })).unwrap();
+
+      if (seq !== searchSeqRef.current) return; // superseded: another search is in flight
 
       const mapped = mapPaymentData(response);
       setPaymentData(mapped);
@@ -261,13 +267,15 @@ const TilesBankPayment = () => {
       toast.success(response?.message || 'Search successful.');
 
     } catch (error: any) {
+      if (seq !== searchSeqRef.current) return; // superseded: its own error is not ours to show
       setIsUpdateButton(false);
       setPaymentData(null);
       toast.error(error?.message || 'Error searching invoice.');
       console.error('Error searching invoice:', error);
     } finally {
-      setIsLoading(false);   // ✅ hide Loader
-      searchingRef.current = false;
+      // Only the newest run clears the spinner; a superseded one must not hide
+      // the loader the newer search is still using.
+      if (seq === searchSeqRef.current) setIsLoading(false);   // ✅ hide Loader
     }
   };
 

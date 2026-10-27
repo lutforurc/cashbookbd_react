@@ -955,13 +955,15 @@ function App() {
               <Route path={routes.hotel_amenity_issue_new} element={<AmenityIssueForm />} />
             </Route>
             {/*
-              Buying what the hotel is furnished with. ⚠️ DESIGN ONLY — the form
-              is drawn and nothing is saved.
+              Buying what the hotel is furnished with -- beds, chairs, a
+              generator. It saves an ordinary cash payment voucher (see
+              AssetPurchaseController); CASH only so far, with bank and credit
+              still to come.
 
               ⚠️ Gated on the Hotel menu's own permission list rather than on a
               new one, so what the menu offers and what the route allows cannot
-              drift apart while the screen is only being looked at. When it is
-              wired for real it wants a permission of its own.
+              drift apart. It wants a permission of its own once the bank and
+              credit halves are built.
             */}
             <Route
               element={
