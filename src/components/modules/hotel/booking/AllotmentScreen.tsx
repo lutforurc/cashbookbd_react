@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
-import { FiArrowLeft, FiPlus, FiPrinter, FiSave, FiTrash2, FiX } from 'react-icons/fi';
+import { FiArrowLeft, FiLogOut, FiPlus, FiPrinter, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
@@ -476,6 +476,23 @@ const AllotmentScreen = () => {
                 buttonLoading={fetchingCards}
                 label="Print registration cards"
                 icon={<FiPrinter size={16} />}
+              />
+            ) : null}
+
+            {/* ⚠️ THE SAME DAY THEY CAME IN is a real departure, and this is
+                where it starts: a guest with a problem at home is checked in
+                and turned round at one desk, and hunting for the icon in the
+                list's action column while they wait is the wrong order.
+                Offered the moment the status says checked in -- which the
+                server sets on the first room recorded, and this page re-reads.
+
+                ⚠️ The stay is NOT cancelled by it. The one night the room was
+                taken for goes on the bill; see CheckOutController. */}
+            {booking?.status === 'checked_in' ? (
+              <ButtonLoading
+                onClick={() => navigate(`${routes.hotel_booking_check_out}/${bookingId}`)}
+                label="Check out"
+                icon={<FiLogOut size={16} />}
               />
             ) : null}
             <span className="text-gray-500 dark:text-gray-400">
