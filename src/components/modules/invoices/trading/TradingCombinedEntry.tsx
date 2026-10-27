@@ -26,6 +26,7 @@ import { userCurrentBranch } from '../../branch/branchSlice';
 import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
 import SeparateNotesModal from './SeparateNotesModal';
+import StockShortageModal, { StockShortage } from '../../../utils/components/StockShortageModal';
 import NotesApplyToStrip, { NotesApplyTo } from './NotesApplyToStrip';
 import httpService from '../../../services/httpService';
 import {
@@ -167,6 +168,7 @@ const TradingCombinedEntry = () => {
   const navigate = useNavigate();
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const [stockWarning, setStockWarning] = useState<StockShortage | null>(null);
   const [buttonLoading] = useState(false);
   const [selectedSupplierOption, setSelectedSupplierOption] = useState<any>(null);
   const [selectedCustomerOption, setSelectedCustomerOption] = useState<any>(null);
@@ -1072,7 +1074,9 @@ const TradingCombinedEntry = () => {
     setEditingCombinedNumber('');
   };
 
-  const handleSave = async () => {
+  // allowNegative is the operator's "Continue Save" on the stock-shortage
+  // question: the same form sent again, with the branch's warning answered.
+  const handleSave = async (allowNegative = false) => {
     const amount = Number(formData.amount || 0);
 
     if (!formData.supplierAccount) {
@@ -1139,6 +1143,7 @@ const TradingCombinedEntry = () => {
         trackedProductId: formData.trackedProductId,
         products: formData.products,
         ...(editingCombinedNumber ? { combined_number: editingCombinedNumber } : {}),
+        ...(allowNegative ? { allow_negative: true } : {}),
       };
 
       const response = await httpService.post(
@@ -1146,6 +1151,18 @@ const TradingCombinedEntry = () => {
         payload,
       );
       const result = response?.data;
+
+      // Not enough stock: nothing saved, nothing wrong. Put the branch's
+      // question (or its refusal) the way the Sales Invoice does.
+      if (result?.stock_shortage) {
+        setStockWarning({
+          rows: Array.isArray(result?.shortage_rows) ? result.shortage_rows : [],
+          shortages: Array.isArray(result?.shortages) ? result.shortages : [],
+          message: result?.message || 'Not enough stock.',
+          blocked: Boolean(result?.stock_blocked),
+        });
+        return;
+      }
 
       if (result?.success) {
         const data = result?.data?.data || {};
@@ -1169,7 +1186,7 @@ const TradingCombinedEntry = () => {
     }
   };
 
-  useCtrlS(handleSave);
+  useCtrlS(() => handleSave());
 
   return (
     <>
@@ -1562,7 +1579,7 @@ const TradingCombinedEntry = () => {
                 }
               />
               <ButtonLoading
-                onClick={handleSave}
+                onClick={() => handleSave()}
                 buttonLoading={saveButtonLoading}
                 label={saveButtonLoading ? 'Saving...' : editingCombinedNumber ? 'Update' : 'Save'}
                 responsiveLabel="xl"
@@ -1671,6 +1688,16 @@ const TradingCombinedEntry = () => {
         </div>
       </div>
 
+      <StockShortageModal
+        warning={stockWarning}
+        action="sell"
+        saving={saveButtonLoading}
+        onCancel={() => setStockWarning(null)}
+        onContinue={() => {
+          setStockWarning(null);
+          void handleSave(true);
+        }}
+      />
       <SeparateNotesModal
         isOpen={showNotesModal}
         purchaseNotes={formData.purchaseNotes}

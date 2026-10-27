@@ -28,6 +28,7 @@ import { useTilesWarehouseField } from '../../../utils/hooks/useTilesWarehouseFi
 import { branchLabel } from '../../../utils/userFeatureSettings';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
 import SeparateNotesModal from '../trading/SeparateNotesModal';
+import StockShortageModal, { StockShortage } from '../../../utils/components/StockShortageModal';
 import NotesApplyToStrip, { NotesApplyTo } from '../trading/NotesApplyToStrip';
 import httpService from '../../../services/httpService';
 import {
@@ -142,6 +143,7 @@ const TilesCombinedEntry = () => {
   const fieldLabel = (key: string, fallback: string) => branchLabel(settings, key, fallback);
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const [stockWarning, setStockWarning] = useState<StockShortage | null>(null);
   const [buttonLoading] = useState(false);
   const [selectedSupplierOption, setSelectedSupplierOption] = useState<any>(null);
   const [selectedCustomerOption, setSelectedCustomerOption] = useState<any>(null);
@@ -698,7 +700,9 @@ const TilesCombinedEntry = () => {
     setEditingCombinedNumber('');
   };
 
-  const handleSave = async () => {
+  // allowNegative is the operator's "Continue Save" on the stock-shortage
+  // question: the same form sent again, with the branch's warning answered.
+  const handleSave = async (allowNegative = false) => {
     const payment = Number(formData.paymentAmount || 0);
     const received = Number(formData.receivedAmount || 0);
 
@@ -764,6 +768,7 @@ const TilesCombinedEntry = () => {
         manual_challan_date: formData.manual_challan_date || null,
         products: formData.products,
         ...(editingCombinedNumber ? { combined_number: editingCombinedNumber } : {}),
+        ...(allowNegative ? { allow_negative: true } : {}),
       };
 
       const response = await httpService.post(
@@ -771,6 +776,18 @@ const TilesCombinedEntry = () => {
         payload,
       );
       const result = response?.data;
+
+      // Not enough stock: nothing saved, nothing wrong. Put the branch's
+      // question (or its refusal) the way the Sales Invoice does.
+      if (result?.stock_shortage) {
+        setStockWarning({
+          rows: Array.isArray(result?.shortage_rows) ? result.shortage_rows : [],
+          shortages: Array.isArray(result?.shortages) ? result.shortages : [],
+          message: result?.message || 'Not enough stock.',
+          blocked: Boolean(result?.stock_blocked),
+        });
+        return;
+      }
 
       if (result?.success) {
         const data = result?.data?.data || {};
@@ -797,7 +814,7 @@ const TilesCombinedEntry = () => {
     }
   };
 
-  useCtrlS(handleSave);
+  useCtrlS(() => handleSave());
 
   return (
     <>
@@ -1160,7 +1177,7 @@ const TilesCombinedEntry = () => {
                 }
               />
               <ButtonLoading
-                onClick={handleSave}
+                onClick={() => handleSave()}
                 buttonLoading={saveButtonLoading}
                 label={saveButtonLoading ? 'Saving...' : editingCombinedNumber ? 'Update' : 'Save'}
                 responsiveLabel="xl"
@@ -1290,6 +1307,16 @@ const TilesCombinedEntry = () => {
         </div>
       </div>
 
+      <StockShortageModal
+        warning={stockWarning}
+        action="sell"
+        saving={saveButtonLoading}
+        onCancel={() => setStockWarning(null)}
+        onContinue={() => {
+          setStockWarning(null);
+          void handleSave(true);
+        }}
+      />
       <SeparateNotesModal
         isOpen={showNotesModal}
         purchaseNotes={formData.purchaseNotes}
