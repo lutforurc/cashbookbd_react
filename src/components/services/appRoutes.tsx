@@ -465,6 +465,9 @@ const ROUTES = {
   // two tabs, because both are asked at the same moment of the morning and a
   // second screen would be a second place to pick a branch and a date.
   hotel_reports: '/hotel/reports',
+  // Ended stays that still owe -- bill-wise due. Its own screen and menu entry:
+  // it is the list somebody works down, not a tab of figures to read.
+  hotel_booking_due: '/hotel/booking-due',
   // The property over time -- the month at a glance, and the tape chart the
   // desk reads for gaps. Its own screen: the availability grid answers a
   // question about two dates, and neither of these could be asked of it.

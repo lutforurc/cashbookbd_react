@@ -55,6 +55,7 @@ import {
   folioBillName,
   folioCharge,
   folioDiscount,
+  folioWriteOff,
   folioReceive,
   folioRead,
   tillList,
@@ -380,6 +381,9 @@ const FolioScreen = () => {
    * and "500 off" cannot say which one it charged.
    */
   const [discount, setDiscount] = useState<any>(null);
+
+  /** The open write-off panel (bill-wise due): how much of what is owed, and why. */
+  const [writeOff, setWriteOff] = useState<{ amount: string; reason: string } | null>(null);
 
   /**
    * The open "move this bill" panel: who it is going to, and why.
@@ -864,6 +868,36 @@ const FolioScreen = () => {
     }
   };
 
+  /**
+   * Forgive what a guest left owing after check-out. The server re-checks the
+   * amount against what is outstanding; the reason is insisted on here so the
+   * desk is told before the request, not after.
+   */
+  const saveWriteOff = async () => {
+    const amount = Number(writeOff?.amount) || 0;
+
+    if (amount <= 0) {
+      toast.error('Enter how much to write off.');
+      return;
+    }
+
+    if (!String(writeOff?.reason ?? '').trim()) {
+      toast.error('Say why the balance is being written off — it goes on the record.');
+      return;
+    }
+
+    try {
+      const result = await dispatch(
+        folioWriteOff({ id: Number(id), amount, reason: String(writeOff?.reason).trim() }),
+      ).unwrap();
+
+      toast.success(result.message);
+      setWriteOff(null);
+    } catch (error: any) {
+      toast.error(String(error));
+    }
+  };
+
   const moveBill = async () => {
     const owing = Number(bill?.outstanding ?? 0);
 
@@ -1042,8 +1076,27 @@ const FolioScreen = () => {
                 {money(Math.abs(balance))}
               </div>
             </div>
+            {Number(folio.written_off) > 0 ? (
+              <div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Written off</div>
+                <div className="text-base font-semibold text-black dark:text-white">
+                  {money(folio.written_off)}
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
+
+        {/* Bill-wise due: the guest has gone and this is still owing. Said at the
+            top, with the three ways out beside it, so a balance left on a
+            checked-out booking is never something to go looking for. */}
+        {booking?.status === 'checked_out' && balance > 0 ? (
+          <p className="mb-3 rounded border border-warning bg-amber-50 p-2.5 text-xs text-amber-900 dark:border-warning dark:bg-amber-500/15 dark:text-amber-50">
+            <strong>{money(balance)} is still owing on this booking.</strong> Take the money with
+            Receive Money, move it to a party with Bill To
+            {folio.can_writeoff ? ', or write it off' : ''}.
+          </p>
+        ) : null}
 
         {/* ⚠️ HOW THE CHARGED FIGURE WAS ARRIVED AT, in the order it is worked
             out (client, 2026-08-29): what was sold, the service charge and the
@@ -1234,6 +1287,19 @@ const FolioScreen = () => {
             label={discount ? 'Close' : Number(totals?.discount) ? 'Discount…' : 'Give a discount'}
             icon={discount ? <FiX size={16} /> : <FiPercent size={16} />}
             disabled={!!folio.chart_missing?.length}
+          />
+        ) : null}
+
+        {/* Forgiving what a checked-out guest left owing. The server's answer
+            (`can_writeoff`) decides: checked out, not moved to a party, a balance
+            there, and the permission. */}
+        {folio.can_writeoff ? (
+          <ButtonLoading
+            onClick={() =>
+              setWriteOff(writeOff ? null : { amount: balance > 0 ? balance.toFixed(2) : '', reason: '' })
+            }
+            label={writeOff ? 'Close' : 'Write off balance'}
+            icon={writeOff ? <FiX size={16} /> : <FiPercent size={16} />}
           />
         ) : null}
 
@@ -1566,6 +1632,55 @@ const FolioScreen = () => {
               buttonLoading={saving}
               icon={<FiPlus className="h-5 w-5" />}
               label="Add to the bill"
+              variant="primary"
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {writeOff ? (
+        <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
+          <div className="mb-2 text-sm font-medium text-black dark:text-white">
+            Write off what is owing
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
+            <InputElement
+              id="writeoff_amount"
+              name="amount"
+              label="Amount"
+              type="number"
+              min={0}
+              max={balance > 0 ? balance : undefined}
+              value={writeOff.amount}
+              onChange={(e: any) => setWriteOff({ ...writeOff, amount: e.target.value })}
+              description={`Up to ${money(balance)}, which is what is owing.`}
+            />
+
+            <div className="md:col-span-3">
+              <InputElement
+                id="writeoff_reason"
+                name="reason"
+                label="Why"
+                placeholder="Guest could not pay — manager agreed"
+                value={writeOff.reason}
+                onChange={(e: any) => setWriteOff({ ...writeOff, reason: e.target.value })}
+                description="Kept with who wrote it off and when."
+              />
+            </div>
+          </div>
+
+          <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+            Debited to <strong>Hotel Discount Allowed</strong> and taken off Advance Against
+            Booking. The bill is not changed — it stays as it was printed — and a written-off
+            balance is not moved to a party.
+          </p>
+
+          <div className="mt-3">
+            <ButtonLoading
+              onClick={saveWriteOff}
+              buttonLoading={saving}
+              label="Write off"
               variant="primary"
             />
           </div>

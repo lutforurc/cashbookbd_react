@@ -168,6 +168,7 @@ import AllotmentScreen from './components/modules/hotel/booking/AllotmentScreen'
 import FolioScreen from './components/modules/hotel/booking/FolioScreen';
 import CheckOutScreen from './components/modules/hotel/booking/CheckOutScreen';
 import HotelReports from './components/modules/hotel/reports/HotelReports';
+import BookingDueReport from './components/modules/hotel/reports/BookingDueReport';
 import HotelCalendar from './components/modules/hotel/calendar/HotelCalendar';
 import HousekeepingBoard from './components/modules/hotel/housekeeping/HousekeepingBoard';
 import AmenityIssue from './components/modules/hotel/amenity/AmenityIssue';
@@ -914,6 +915,21 @@ function App() {
               }
             >
               <Route path={routes.hotel_reports} element={<HotelReports />} />
+            </Route>
+            {/*
+              Booking-wise due. On hotel.booking.view, like the API route it
+              reads: the desk that can open a folio can see who is still owing.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.booking.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_booking_due} element={<BookingDueReport />} />
             </Route>
             {/*
               The property over time -- the month, and the tape chart.

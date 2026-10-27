@@ -1253,6 +1253,9 @@ export const HOTEL_BILL_FIELDS: FieldDef[] = [
   { key: 'bill_rounded', name: 'Grand Total', group: 'bill', numeric: true, format: 'money2' },
   { key: 'bill_words', name: 'Grand Total In Words', group: 'bill', format: 'words', from: 'bill_rounded' },
   { key: 'bill_paid', name: 'Paid', group: 'bill', numeric: true, format: 'money2' },
+  // A balance forgiven after check-out (bill-wise due). Comes off what is owed
+  // like Paid does, so Grand Total - Paid - Written off = Balance Due.
+  { key: 'bill_written_off', name: 'Written Off', group: 'bill', numeric: true, format: 'money2' },
   // Negative means the hotel is holding money over the bill, which is the
   // ordinary state of a booking with an advance and no nights billed yet.
   { key: 'bill_due', name: 'Balance Due', group: 'bill', numeric: true, format: 'money2' },
@@ -3035,6 +3038,9 @@ const hotelBill = (): PrintTemplate => ({
         // the catalogue -- a property that wants the amount spelled out adds it
         // back in the designer -- it is simply not on the bill as it ships.
         { field: 'bill_paid', label: 'Paid' },
+        // Only on a bill that had a balance forgiven after check-out; the
+        // nought on every other bill is hidden.
+        { field: 'bill_written_off', label: 'Written off', hideIfEmpty: true },
         // And again: what was paid comes off what is owed.
         { field: 'bill_due', label: 'Balance Due', ruleAbove: true },
       ],
