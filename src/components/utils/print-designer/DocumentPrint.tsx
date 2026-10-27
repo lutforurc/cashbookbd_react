@@ -178,15 +178,23 @@ const declared = (key: string, raw: any, source: any): string => {
     return thousandSeparator(num(raw));
   }
 
+  if (field?.format === 'money2') {
+    const figure = num(raw);
+    // Nothing still reads as a dash, like `money`; everything else keeps both
+    // decimals, so a gross of 1,200 prints as 1,200.00.
+    return Math.round(figure * 100) === 0
+      ? '-'
+      : figure.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
   if (field?.format === 'date') {
     return dayjs(raw).isValid() ? dayjs(raw).format('DD/MM/YYYY') : String(raw);
   }
 
-  // "15%" and "7.5%" -- a rate as somebody says it. The trailing noughts go:
-  // "15.00%" beside "7.50%" reads as two kinds of thing, and a bill is read by
-  // people rather than parsed.
+  // "15.00%" and "7.50%" -- always two decimals, so a column of rates lines up
+  // with the money beside it (owner, 2026-10-27).
   if (field?.format === 'percent') {
-    return `${Number(raw).toFixed(2).replace(/\.?0+$/, '')}%`;
+    return `${Number(raw).toFixed(2)}%`;
   }
 
   return String(raw);
