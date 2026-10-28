@@ -42,6 +42,9 @@ import { useVoucherPrint } from '../../vouchers';
 import QuickCustomerModal from './QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import SalesBalanceSummary, {
+  usePreviousBalance,
+} from '../../../utils/components/SalesBalanceSummary';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { getSalesTypeForVoucher } from '../../../utils/utils-functions/voucherEditNavigation';
 import StockShortageModal, {
@@ -504,6 +507,21 @@ const ElectronicsBusinessSales = () => {
   const totalAmount = formData.products.reduce(
     (sum, row) => sum + Number(row.qty) * Number(row.price),
     0,
+  );
+
+  // The bill before the discount: discount is a term of the summary's sum.
+  const billAmount =
+    totalAmount +
+    (Number(formData.serviceCharge) || 0) +
+    (Number(formData.tdsAmount) || 0) +
+    (Number(formData.transportationAmt) || 0);
+
+  // A saved bill is part of the party's balance, so a new voucher number
+  // refreshes the Previous Balance line.
+  const previousBalance = usePreviousBalance(
+    formData.account,
+    formData.mtmId,
+    sales?.data?.vr_no,
   );
 
   const addProduct = () => {
@@ -1207,52 +1225,12 @@ const ElectronicsBusinessSales = () => {
           </div>
           {/* Installment Popup */}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
-            <div className="mt-4">
-              <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
-                Total Tk. {thousandSeparator((totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)))}  {Number(formData?.receivedAmt) > 0 ? `(${(totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)) - Number(formData?.receivedAmt)})` : ""}
-              </p>
-            </div>
-            {hasPermission(permissions, 'sales.edit') && (
-              <>
-                <div className="mt-2">
-                  <DropdownCommon
- id="saleType"
- name="saleType"
- onChange={handleSalesType}
- defaultValue={productData?.variance_type || ''}
- data={SalesType}
- className="w-full "
-                  />
-                </div>
-                <div className="relative">
-                  <div className="w-full -gap-2 mt-2">
-                    <InputOnly
-                      id="search"
-                      value={search}
-                      name="search"
-                      placeholder="Search Invoice"
-                      label=""
-                      className="py-1 w-full bg-white"
-                      onChange={(e) => setSearch(e.target.value)}
-                      onKeyDown={(e) => handleInputKeyDown(e, 'searchInvoice')}
-                    />
-                    <ButtonLoading
-                      id="searchInvoice"
-                      name="searchInvoice"
-                      onClick={searchInvoice}
-                      buttonLoading={buttonLoading}
-                      label=""
-                      className="whitespace-nowrap bg-transparent! text-center -mr-2 py-2 absolute right-0 top-2 pr-2! pl-2!"
-                      icon={
-                        <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg ml-2 mr-2" />
-                      }
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          <SalesBalanceSummary
+            previousBalance={previousBalance}
+            billAmount={billAmount}
+            discount={Number(formData.discountAmt) || 0}
+            received={Number(formData.receivedAmt) || 0}
+          />
         </div>
         <div className="">
           <div className="grid grid-cols-1 gap-y-1">

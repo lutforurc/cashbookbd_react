@@ -187,6 +187,7 @@ interface branchItem {
   /** 'single' or 'multiple', for the party box. */
   party_ddl_lines: string;
   show_spelling_of_money: boolean;
+  show_sales_balance_summary: boolean;
   need_demo_tutorial: boolean;
   need_customer_contact_person: boolean;
   due_list_with_address: boolean;
@@ -716,6 +717,7 @@ const AddBranch = () => {
     party_ddl_show_father: true,
     party_ddl_lines: 'multiple',
     show_spelling_of_money: false,
+    show_sales_balance_summary: false,
     need_demo_tutorial: false,
     need_customer_contact_person: false,
     due_list_with_address: false,
@@ -1002,6 +1004,7 @@ const AddBranch = () => {
         use_bangla: toBooleanFlag(b.use_bangla),
         show_instalment_list: toBooleanFlag(b.show_instalment_list),
         show_spelling_of_money: toBooleanFlag(b.show_spelling_of_money),
+        show_sales_balance_summary: toBooleanFlag(b.show_sales_balance_summary),
         need_demo_tutorial: toBooleanFlag(b.need_demo_tutorial),
         need_customer_contact_person: toBooleanFlag(b.need_customer_contact_person),
         due_list_with_address: toBooleanFlag(b.due_list_with_address),
@@ -1874,6 +1877,14 @@ const AddBranch = () => {
                         checked={Boolean(formData.show_spelling_of_money)}
                         onChange={(checked) =>
                           handleToggleFieldChange('show_spelling_of_money', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Balance Summary in Sales Invoice"
+                        description="Shows Previous Balance, Current Invoice, Discount, Received Amount and Total Tk. on the sales invoice screen. Off, the block is not drawn."
+                        checked={Boolean(formData.show_sales_balance_summary)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_sales_balance_summary', checked)
                         }
                       />
                       <FormToggleField

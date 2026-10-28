@@ -54,6 +54,9 @@ import {
   API_ORDERS_DDL_URL,
   API_TRADING_SALES_SUGGESTIONS_URL,
 } from '../../../services/apiRoutes';
+import SalesBalanceSummary, {
+  usePreviousBalance,
+} from '../../../utils/components/SalesBalanceSummary';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { getSalesTypeForVoucher } from '../../../utils/utils-functions/voucherEditNavigation';
 import { getDdlProduct } from '../../product/productSlice';
@@ -449,23 +452,23 @@ const TradingBusinessSales = () => {
 
   // Process `purchase.data` when it updates
   useEffect(() => {
-	    if (sales.data.transaction) {
-	      const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
-	        id: detail.id,
-	        product: detail.product.id,
-	        product_name: detail.product.name,
-	        product_code: detail.product.code,
-	        serial_no: detail.serial_no,
-	        bag: detail.bag || '',
-	        unit: detail.product.unit.name,
-	        qty: detail.quantity,
-	        price: detail.sales_price,
-	        variance: detail.weight_variance || '',
-	        variance_type: detail.variance_type || '',
-	        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
-	        ...measurementFromDetail(detail),
-	      }),
-	      );
+    if (sales.data.transaction) {
+      const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
+        id: detail.id,
+        product: detail.product.id,
+        product_name: detail.product.name,
+        product_code: detail.product.code,
+        serial_no: detail.serial_no,
+        bag: detail.bag || '',
+        unit: detail.product.unit.name,
+        qty: detail.quantity,
+        price: detail.sales_price,
+        variance: detail.weight_variance || '',
+        variance_type: detail.variance_type || '',
+        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+        ...measurementFromDetail(detail),
+      }),
+      );
 
       // Find accountName
       let accountName = '-';
@@ -511,6 +514,14 @@ const TradingBusinessSales = () => {
   const totalAmount = formData.products.reduce(
     (sum, row) => sum + Number(row.qty) * Number(row.price),
     0,
+  );
+
+  // A saved bill is part of the party's balance, so a new voucher number
+  // refreshes the Previous Balance line.
+  const previousBalance = usePreviousBalance(
+    formData.account,
+    formData.mtmId,
+    sales?.data?.vr_no,
   );
 
   const addProduct = () => {
@@ -897,24 +908,24 @@ const TradingBusinessSales = () => {
   // }, [formData.account, formData.products, formData.discountAmt]);
 
   useEffect(() => {
-	    if (sales.data.transaction) {
-	      const products = sales.data.transaction?.sales_master.details.map(
-	        (detail: any) => ({
-	          id: detail.id,
-	          product: detail.product.id,
-	          product_name: detail.product.name,
-	          product_code: detail.product.code,
-	          serial_no: detail.serial_no,
-	          bag: detail.bag || '',
-	          unit: detail.product.unit.name,
-	          qty: detail.quantity,
-	          price: detail.sales_price,
-	          variance: detail.weight_variance || '',
-	          variance_type: detail.variance_type || '',
-	          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
-	          ...measurementFromDetail(detail),
-	        }),
-	      );
+    if (sales.data.transaction) {
+      const products = sales.data.transaction?.sales_master.details.map(
+        (detail: any) => ({
+          id: detail.id,
+          product: detail.product.id,
+          product_name: detail.product.name,
+          product_code: detail.product.code,
+          serial_no: detail.serial_no,
+          bag: detail.bag || '',
+          unit: detail.product.unit.name,
+          qty: detail.quantity,
+          price: detail.sales_price,
+          variance: detail.weight_variance || '',
+          variance_type: detail.variance_type || '',
+          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+          ...measurementFromDetail(detail),
+        }),
+      );
 
       // Find accountName
       let accountName = '-';
@@ -1317,9 +1328,9 @@ const TradingBusinessSales = () => {
                         selectedCustomerOption ||
                         (formData.account
                           ? {
-                              value: formData.account,
-                              label: formData.accountName,
-                            }
+                            value: formData.account,
+                            label: formData.accountName,
+                          }
                           : null)
                       }
                       onKeyDown={(e) => {
@@ -1357,11 +1368,11 @@ const TradingBusinessSales = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-	            <div>
-	                <div>
-	                  <label htmlFor="">Select Purchase Order</label>
-	                  <OrderDropdown
-	                    id="purchaseOrderNumber"
+              <div>
+                <div>
+                  <label htmlFor="">Select Purchase Order</label>
+                  <OrderDropdown
+                    id="purchaseOrderNumber"
                     name="purchaseOrderNumber"
                     onSelect={purchaseOrderNumberHandler}
                     value={
@@ -1379,14 +1390,14 @@ const TradingBusinessSales = () => {
                           handleSelectKeyDown(e, '#salesOrderNumber');
                         }, 150);
                       }
-	                    }}
-	                  />
-	                </div>
-	              </div>
-	              <div>
-	                <div>
-	                  <label htmlFor="">Select Sales Order</label>
-	                  <OrderDropdown
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div>
+                  <label htmlFor="">Select Sales Order</label>
+                  <OrderDropdown
                     id="salesOrderNumber"
                     name="salesOrderNumber"
                     onSelect={salesOrderNumberHandler}
@@ -1399,10 +1410,10 @@ const TradingBusinessSales = () => {
                         : null
                     }
                     orderType="2"
-	                    onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')}
-	                  />
-	                </div>
-	              </div>
+                    onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')}
+                  />
+                </div>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
@@ -1472,56 +1483,12 @@ const TradingBusinessSales = () => {
               </datalist>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
-            <div className="mt-4 ">
-              <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
-                Total Tk. {thousandSeparator(totalAmount)}
-              </p>
-            </div>
-            {hasPermission(userPermissions, 'sales.edit') && (
-              <>
-                <div className="mt-2">
-                  <DropdownCommon
- id="saleType"
- name="saleType"
- onChange={handleSalesType}
- defaultValue={productData?.variance_type || ''}
- data={SalesType}
- className="w-full "
-                  />
-                </div>
-                <div className="relative">
-                  <div className="w-full -gap-2 mt-2 ">
-                    <div className="">
-                      <InputOnly
-                        id="search"
-                        value={search}
-                        name="search"
-                        placeholder={'Search Invoice'}
-                        label={''}
-                        className={'py-1 w-full bg-white'}
-                        onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={(e) =>
-                          handleInputKeyDown(e, 'searchInvoice')
-                        }
-                      />
-                    </div>
-                    <ButtonLoading
-                      id="searchInvoice"
-                      name="searchInvoice"
-                      onClick={searchInvoice}
-                      buttonLoading={buttonLoading}
-                      label=""
-                      className="whitespace-nowrap bg-transparent! text-center -mr-2 py-2 absolute right-0 top-2 background-red-500 pr-2! pl-2!"
-                      icon={
-                        <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg ml-2  mr-2" />
-                      }
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          <SalesBalanceSummary
+            previousBalance={previousBalance}
+            billAmount={totalAmount}
+            discount={Number(formData.discountAmt) || 0}
+            received={Number(formData.receivedAmt) || 0}
+          />
 
           {/* One product for the whole invoice, picked by hand. It sits below
               the totals rather than among the fields above because it is not
@@ -1550,11 +1517,11 @@ const TradingBusinessSales = () => {
               <div>
                 <label htmlFor="">Select Product</label>
                 <ProductDropdown
- id="products"
- name="products"
- className={`${autofillHighlights.product ? autofillHighlightClass : ''}`}
- onSelect={productSelectHandler}
- onKeyDown={(e) => {
+                  id="products"
+                  name="products"
+                  className={`${autofillHighlights.product ? autofillHighlightClass : ''}`}
+                  onSelect={productSelectHandler}
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       // Delay to allow react-select to complete selection
                       setTimeout(() => {
@@ -1761,17 +1728,17 @@ const TradingBusinessSales = () => {
                 {' '}
                 Sl. No.{' '}
               </th>
-	              <th scope="col" className={`px-2 py-2 `}>
-	                {' '}
-	                Product Name{' '}
-	              </th>
-	              <th scope="col" className={`px-2 py-2 text-right`}>
-	                {' '}
-	                Weight Variance{' '}
-	              </th>
-	              <th scope="col" className={`px-2 py-2 text-right`}>
-	                {' '}
-	                Quantity{' '}
+              <th scope="col" className={`px-2 py-2 `}>
+                {' '}
+                Product Name{' '}
+              </th>
+              <th scope="col" className={`px-2 py-2 text-right`}>
+                {' '}
+                Weight Variance{' '}
+              </th>
+              <th scope="col" className={`px-2 py-2 text-right`}>
+                {' '}
+                Quantity{' '}
               </th>
               <th scope="col" className={`px-2 py-2 text-right`}>
                 {' '}
@@ -1798,24 +1765,24 @@ const TradingBusinessSales = () => {
                   >
                     {++index}
                   </td>
-	                  <td
-	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] `}
-	                  >
-	                    {row.product_code
-	                      ? `${row.product_code} - ${row.product_name}`
-	                      : row.product_name}
-	                    <LineMeasurementCell {...row} />
-	                  </td>
-	                  <td
-	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
-	                  >
-	                    {row.variance && row.variance_type && row.variance_type !== 'Not Applicable'
-	                      ? `(${row.variance_type || '-'}) ${thousandSeparator(Number(row.variance))}`
-	                      : '-'}
-	                  </td>
-	                  <td
-	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
-	                  >
+                  <td
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] `}
+                  >
+                    {row.product_code
+                      ? `${row.product_code} - ${row.product_name}`
+                      : row.product_name}
+                    <LineMeasurementCell {...row} />
+                  </td>
+                  <td
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
+                  >
+                    {row.variance && row.variance_type && row.variance_type !== 'Not Applicable'
+                      ? `(${row.variance_type || '-'}) ${thousandSeparator(Number(row.variance))}`
+                      : '-'}
+                  </td>
+                  <td
+                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
+                  >
                     {row.qty} {row.unit}
                   </td>
                   <td

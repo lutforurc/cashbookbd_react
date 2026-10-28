@@ -41,6 +41,9 @@ import { SalesType } from '../../../../common/dropdownData';
 import QuickCustomerModal from './QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import SalesBalanceSummary, {
+  usePreviousBalance,
+} from '../../../utils/components/SalesBalanceSummary';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { getSalesTypeForVoucher } from '../../../utils/utils-functions/voucherEditNavigation';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
@@ -354,6 +357,14 @@ const GeneralBusinessSales = () => {
     }));
     setIsReceivedAmtManuallyEdited(false);
   }, [sales?.data?.transaction, sales?.data?.mtmId]);
+
+  // A saved bill is part of the party's balance, so a new voucher number
+  // refreshes the Previous Balance line.
+  const previousBalance = usePreviousBalance(
+    formData.account,
+    formData.mtmId,
+    sales?.data?.vr_no,
+  );
 
   const addProduct = () => {
     if (!validateProductData(productData)) return;
@@ -757,54 +768,12 @@ const GeneralBusinessSales = () => {
               </datalist>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
-            <div className="grid grid-cols-2 md:gap-x-1 mt-3 ">
-              <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">Total Tk.</p>
-              <span className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
-                {' '}
-                {thousandSeparator(totalAmount)}
-              </span>
-            </div>
-            {hasPermission(permissions, 'sales.edit') && (
-              <>
-                <div className="mt-2">
-                  <DropdownCommon
- id="saleType"
- name="saleType"
- onChange={handleSalesType}
- defaultValue={productData?.variance_type || ''}
- data={SalesType}
- className="w-full "
-                  />
-                </div>
-                <div className="relative mt-2">
-                  <div className="w-full ">
-                    <InputOnly
-                      id="search"
-                      value={search}
-                      name="search"
-                      placeholder={'Search Invoice'}
-                      label={''}
-                      className={'py-1 w-full'}
-                      onChange={(e) => setSearch(e.target.value)}
-                      onKeyDown={(e) => handleInputKeyDown(e, 'searchInvoice')}
-                    />
-                  </div>
-                  <ButtonLoading
-                    id="searchInvoice"
-                    name="searchInvoice"
-                    onClick={searchInvoice}
-                    buttonLoading={buttonLoading}
-                    label=""
-                    className="whitespace-nowrap bg-transparent! text-center mr-0 py-2 absolute right-0 top-0 background-red-500 pr-2! pl-2!"
-                    icon={
-                      <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg ml-2  mr-2" />
-                    }
-                  />
-                </div>
-              </>
-            )}
-          </div>
+          <SalesBalanceSummary
+            previousBalance={previousBalance}
+            billAmount={totalAmount}
+            discount={Number(formData.discountAmt) || 0}
+            received={Number(formData.receivedAmt) || 0}
+          />
         </div>
         <div className="">
           <div className="grid grid-cols-1 gap-y-1">
