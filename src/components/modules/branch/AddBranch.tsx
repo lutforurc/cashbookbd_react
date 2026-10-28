@@ -1880,8 +1880,8 @@ const AddBranch = () => {
                         }
                       />
                       <FormToggleField
-                        label="Show Balance Summary in Sales Invoice"
-                        description="Shows Previous Balance, Current Invoice, Discount, Received Amount and Total Tk. on the sales invoice screen. Off, the block is not drawn."
+                        label="Show Balance Summary in Sales & Purchase Invoice"
+                        description="Shows Previous Balance, Current Invoice, Discount, Received/Payment Amount and Total Tk. on the sales and purchase invoice screens. Off, the block is not drawn."
                         checked={Boolean(formData.show_sales_balance_summary)}
                         onChange={(checked) =>
                           handleToggleFieldChange('show_sales_balance_summary', checked)

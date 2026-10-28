@@ -72,10 +72,14 @@ interface Props {
   billAmount: number;
   discount: number;
   received: number;
+  /** A purchase runs the other way round: the supplier's ledger falls by the
+      bill and rises by what was paid and discounted. */
+  kind?: 'sales' | 'purchase';
 }
 
 /**
- * Total Tk. = Previous Balance + Current Invoice − Discount − Received Amount.
+ * Sales:    Total Tk. = Previous Balance + Current Invoice − Discount − Received Amount
+ * Purchase: Total Tk. = Previous Balance − Current Invoice + Discount + Payment Amount
  * Every term shows, nought included, so the sum can be followed term by term.
  */
 const SalesBalanceSummary: React.FC<Props> = ({
@@ -83,11 +87,15 @@ const SalesBalanceSummary: React.FC<Props> = ({
   billAmount,
   discount,
   received,
+  kind = 'sales',
 }) => {
   const enabled = useSummaryEnabled();
   if (!enabled) return null;
 
-  const total = previousBalance + billAmount - discount - received;
+  const purchase = kind === 'purchase';
+  const total = purchase
+    ? previousBalance - billAmount + discount + received
+    : previousBalance + billAmount - discount - received;
 
   return (
     <div className="mt-2 w-full max-w-xs text-sm font-semibold text-gray-800 dark:text-[rgb(var(--c-text))]">
@@ -96,7 +104,7 @@ const SalesBalanceSummary: React.FC<Props> = ({
           ['Previous Balance', previousBalance],
           ['Current Invoice', billAmount],
           ['Discount', discount],
-          ['Received Amount', received],
+          [purchase ? 'Payment Amount' : 'Received Amount', received],
         ] as [string, number][]
       ).map(([label, amount]) => (
         <div key={label} className="flex justify-between gap-4">
