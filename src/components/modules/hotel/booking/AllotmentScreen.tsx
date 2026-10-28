@@ -444,7 +444,7 @@ const AllotmentScreen = () => {
       <button
         type="button"
         onClick={back}
-        className="mb-3 flex items-center gap-1.5 text-sm text-primary hover:underline dark:text-secondary"
+        className="mb-3 flex items-center gap-1.5 text-base text-primary hover:underline dark:text-secondary"
       >
         <FiArrowLeft size={15} /> All bookings
       </button>
