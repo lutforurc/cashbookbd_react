@@ -33,9 +33,12 @@ Open check: the ratio columns (0.29, 0.90, 0.30 etc.) must NOT be typed per purc
 
 ## 3. Settings module (requested)
 
-### 3.1 Financial calendar
-- `quarter_start_month`: declared by the company (e.g. July → Q1 = Jul–Sep, Q2 = Oct–Dec).
-- Derives month, quarter, half-year and year boundaries for all reports.
+### 3.1 Financial calendar (per company)
+- `companies.quarter_start_month`: each company declares its own quarter start (e.g. July → Q1 = Jul–Sep, Q2 = Oct–Dec). Different companies may use different months.
+- Month, quarter, half-year and year boundaries are derived from that company's calendar, never from a single global setting.
+- The same purchase date can fall in different quarters for different companies, so every monthly, quarterly and Offer calculation uses the purchase's company calendar.
+- Reports and progress screens label periods with the company, e.g. "Akij Q1 (Jul–Sep 2026)".
+- Open: whether a company can change its quarter start mid-year, and how earlier periods are then treated (see section 4).
 
 ### 3.2 Targets
 - **Mandatory: item-level targets** (client confirmed).
@@ -67,10 +70,12 @@ Table `special_offers`: name, start/end date, scope (company / item / all), offe
 2. Does the company Offer apply only when the quarter target is met, or on any SFT above it?
 3. Offer value: is it priced at Rate (Offer SFT × Rate, as in the sample), or free (zero value)?
 4. Broken ratio: how is it derived? (Sample ratio ≈ 0.2925 vs displayed 0.29.)
+5. Quarter start month: confirm the start month for each company. Can it change mid-year, and if so, how are earlier periods treated?
+6. Half-year and year: do they follow each company's own calendar, or one common calendar?
 
 ## 5. Next steps (once questions answered)
 1. Confirm allocation rules (section 4).
-2. Design schema: `company_measurement`, `purchase_targets`, `special_offers`, purchase line fields (box, pcs, sft, bucket allocations, offer snapshot).
+2. Design schema: `companies.quarter_start_month`, `company_measurement`, `purchase_targets`, `special_offers`, purchase line fields (box, pcs, sft, bucket allocations, offer snapshot).
 3. Design the Settings screen and the per-invoice report.
 4. Implement in cashbook_api (`krishibitandatabase`) first, then the Android screens.
 
