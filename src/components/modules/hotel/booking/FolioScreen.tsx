@@ -47,6 +47,14 @@ import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import { money } from '../setupHelpers';
 import MoveRoomDialog from './MoveRoomDialog';
 import {
+  AMOUNT_EXCEEDS_BALANCE,
+  PURPOSE_ADVANCE,
+  PURPOSE_SETTLEMENT,
+  asMinorUnits,
+  exceedsBalance,
+  purposeForAmount,
+} from './paymentPurpose';
+import {
   billRead,
   billTransfer,
   clearBill,
@@ -373,6 +381,43 @@ const FolioScreen = () => {
   const [payment, setPayment] = useState<any>(null);
 
   /**
+   * What "What for" was before the Amount box chose Settlement for the clerk.
+   *
+   * ⚠️ REMEMBERED, NOT FIXED. A clerk who had picked Refund and then typed the
+   * whole balance to settle it gets Refund back the moment the figure comes down
+   * again; a form nobody has touched comes back to Advance.
+   */
+  const purposeBeforeSettlement = useRef<string>(PURPOSE_ADVANCE);
+
+  /**
+   * What is still owed on this bill -- the figure the Amount box is judged
+   * against. Read up here, above this screen's early returns, because the
+   * settlement rule below is a hook and has to run on every render, bill or no
+   * bill.
+   */
+  const balance = Number(folio?.balance ?? 0);
+
+  /**
+   * Is the figure typed more than the bill still owes?
+   *
+   * ⚠️ READ FROM THE SAME `balance` THE OWED COLUMN PRINTS, so the cap and the
+   * figure it caps against can never be two numbers.
+   *
+   * ⚠️ ONLY ONCE THE BILL EXISTS. A booking nobody has billed for owes nothing
+   * and is still exactly the booking a guest leaves an ADVANCE on -- money the
+   * hotel HOLDS, not the settlement of a bill -- so capping it at a nought the
+   * bill has not reached yet would make a deposit impossible to take. A refund
+   * is money going OUT and is bounded by what was taken, not by what is owed.
+   */
+  const billHasLines = (folio?.lines ?? []).length > 0;
+
+  const paymentOverpaid =
+    payment !== null &&
+    payment.purpose !== 'refund' &&
+    billHasLines &&
+    exceedsBalance(payment.amount, balance);
+
+  /**
    * The open discount panel: how much, which way, and why.
    *
    * ⚠️ `mode` is not decoration. A percentage follows the bill as it grows and
@@ -542,6 +587,45 @@ const FolioScreen = () => {
   useEffect(() => {
     if (!tills?.length) dispatch(tillList());
   }, [dispatch, tills?.length]);
+
+  /**
+   * The Amount box choosing "Settlement" for the desk.
+   *
+   * ⚠️ RE-EVALUATED WHENEVER EITHER SIDE MOVES -- the figure typed, or the bill
+   * itself. A guest who pays the balance after a late charge still lands on
+   * Settlement; one who takes the figure down to a part payment does not. It is
+   * the AMOUNT and the OWED that trigger this, never the purpose: a clerk who
+   * deliberately picks something else keeps it, because the money has not moved
+   * underneath them.
+   *
+   * The figure it is decided from is held in the updater rather than read from
+   * `payment`, so a keystroke and the effect that follows it can never act on
+   * two different amounts.
+   */
+  useEffect(() => {
+    if (!payment) return;
+
+    setPayment((prev: any) => {
+      if (!prev) return prev;
+
+      const full = balance > 0 && asMinorUnits(prev.amount) === asMinorUnits(balance);
+
+      if (full && prev.purpose !== PURPOSE_SETTLEMENT) {
+        return { ...prev, purpose: PURPOSE_SETTLEMENT };
+      }
+
+      // Taken back off a settlement -- a part payment, or the box emptied. The
+      // purpose that was there before comes back, or the form's own default.
+      if (!full && prev.purpose === PURPOSE_SETTLEMENT) {
+        return { ...prev, purpose: purposeBeforeSettlement.current || PURPOSE_ADVANCE };
+      }
+
+      return prev;
+    });
+    // ⚠️ Deliberately not keyed on `payment`: doing so would re-run the moment
+    // this effect set the purpose and fight a clerk who had chosen otherwise.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payment?.amount, balance]);
 
   // The shape DropdownCommon wants, with the group in the label: 'Cash' and
   // 'Cash — Social Islami Bank (0225)' are told apart by a clerk at a glance,
@@ -944,8 +1028,21 @@ const FolioScreen = () => {
   };
 
   const savePayment = async () => {
-    if (!Number(payment?.amount)) {
+    // ⚠️ Empty, zero AND negative are refused here, not merely by the server: a
+    // nought is a keystroke away from any figure, and a negative is a refund
+    // wearing the wrong purpose.
+    const amount = Number(payment?.amount);
+
+    if (!payment?.amount || Number.isNaN(amount) || amount <= 0) {
       toast.error('How much?');
+      return;
+    }
+
+    // ⚠️ The cap, before the round trip. The server checks it too, under a lock
+    // -- see receive() -- because this figure is a moment old the instant it is
+    // read and two tills can be open on one booking.
+    if (paymentOverpaid) {
+      toast.error(AMOUNT_EXCEEDS_BALANCE);
       return;
     }
 
@@ -957,8 +1054,19 @@ const FolioScreen = () => {
       return;
     }
 
+    // ⚠️ The same rule the box follows, applied once more on the way out. A Save
+    // pressed in the same breath as the last keystroke must send the purpose the
+    // figure now means, not the one it meant a render ago.
+    const purpose = purposeForAmount(
+      payment.amount,
+      balance,
+      payment.purpose === PURPOSE_SETTLEMENT
+        ? purposeBeforeSettlement.current || PURPOSE_ADVANCE
+        : payment.purpose,
+    );
+
     try {
-      const result = await dispatch(folioReceive({ id: Number(id), ...payment })).unwrap();
+      const result = await dispatch(folioReceive({ id: Number(id), ...payment, purpose })).unwrap();
       toast.success(result.message);
       setPayment(null);
     } catch (error: any) {
@@ -978,8 +1086,6 @@ const FolioScreen = () => {
       </div>
     );
   }
-
-  const balance = Number(folio.balance ?? 0);
 
   return (
     <div>
@@ -1226,33 +1332,41 @@ const FolioScreen = () => {
           disabled={!!folio.chart_missing?.length}
         />
         <ButtonLoading
-          onClick={() =>
-            setPayment(
-              payment
-                ? null
-                : {
-                    purpose: 'advance',
-                    // ⚠️ WHAT IS OWED, ready to take. It is the figure the desk
-                    // asks the guest for nine times in ten, and it was being
-                    // read off the corner of the screen and typed back in --
-                    // which is where a 450 becomes a 45. Still a plain field:
-                    // a guest paying half, or rounding up, types over it.
-                    //
-                    // Blank where nothing is owed. A bill already settled, or
-                    // one in credit, has no amount to suggest, and a nought
-                    // sitting in the box reads as a figure somebody meant.
-                    amount: balance > 0 ? balance.toFixed(2) : '',
-                    method: 'cash',
-                    payment_date: today(),
-                    reference: '',
-                    // The first till on the list, which on a property with one
-                    // drawer is the only one and saves a decision nobody has.
-                    // Wrong on a property with several, which is exactly why
-                    // the field sits beside the amount rather than out of sight.
-                    coa4_id: tillOptions[0]?.id ?? '',
-                  },
-            )
-          }
+          onClick={() => {
+            if (payment) {
+              setPayment(null);
+              return;
+            }
+
+            // A fresh form: nothing has been chosen yet, so the one thing to
+            // come back to, if the figure stops clearing the bill, is Advance.
+            purposeBeforeSettlement.current = PURPOSE_ADVANCE;
+
+            setPayment({
+              // ⚠️ THE BOX OPENS ON WHAT IS OWED, so it opens SETTLED. A bill in
+              // credit, or one already settled, owes nothing and opens on Advance
+              // with an empty box -- see purposeForAmount.
+              purpose: purposeForAmount(balance.toFixed(2), balance, PURPOSE_ADVANCE),
+              // ⚠️ WHAT IS OWED, ready to take. It is the figure the desk
+              // asks the guest for nine times in ten, and it was being
+              // read off the corner of the screen and typed back in --
+              // which is where a 450 becomes a 45. Still a plain field:
+              // a guest paying half, or rounding up, types over it.
+              //
+              // Blank where nothing is owed. A bill already settled, or
+              // one in credit, has no amount to suggest, and a nought
+              // sitting in the box reads as a figure somebody meant.
+              amount: balance > 0 ? balance.toFixed(2) : '',
+              method: 'cash',
+              payment_date: today(),
+              reference: '',
+              // The first till on the list, which on a property with one
+              // drawer is the only one and saves a decision nobody has.
+              // Wrong on a property with several, which is exactly why
+              // the field sits beside the amount rather than out of sight.
+              coa4_id: tillOptions[0]?.id ?? '',
+            });
+          }}
           label={payment ? 'Close' : 'Receive Money'}
           icon={payment ? <FiX size={16} /> : <FiPlus size={16} />}
           disabled={!!folio.chart_missing?.length}
@@ -1787,7 +1901,17 @@ const FolioScreen = () => {
               label="What for"
               data={PURPOSE_OPTIONS}
               value={payment.purpose}
-              onChange={(e: any) => setPayment({ ...payment, purpose: e.target.value })}
+              onChange={(e: any) => {
+                const chosen = e.target.value;
+
+                // Remembered so the automatic choice can be given back when the
+                // figure stops clearing the bill. Settlement itself is not
+                // remembered: it is the automatic answer, never a previous one
+                // to restore.
+                if (chosen !== PURPOSE_SETTLEMENT) purposeBeforeSettlement.current = chosen;
+
+                setPayment({ ...payment, purpose: chosen });
+              }}
             />
             <InputElement
               id="payment_amount"
@@ -1825,6 +1949,15 @@ const FolioScreen = () => {
             />
           </div>
 
+          {/* ⚠️ Said the moment the figure is too big, and in the server's own
+              words -- one rule, one sentence. Save is disabled below while it
+              stands, so the round trip is never made in the first place. */}
+          {paymentOverpaid ? (
+            <p className="mt-2 text-xs font-medium text-danger dark:text-red-400">
+              {AMOUNT_EXCEEDS_BALANCE}
+            </p>
+          ) : null}
+
           <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-5">
             {/* ⚠️ The ACCOUNT, which is not the same question as "How" above.
                 Method is how the guest handed it over; this is which of the
@@ -1861,6 +1994,10 @@ const FolioScreen = () => {
             <ButtonLoading
               onClick={savePayment}
               buttonLoading={saving}
+              // ⚠️ Not offered while the figure is over the balance. The refusal
+              // is the server's, but a button that would only be refused is a
+              // button that teaches the clerk to distrust the screen.
+              disabled={paymentOverpaid}
               icon={
                 payment.purpose === 'refund' ? (
                   <FiUpload className="h-5 w-5" />
